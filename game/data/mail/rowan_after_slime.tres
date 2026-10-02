@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MailData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/mail/mail_data.gd" id="1_mail"]
+
+[resource]
+script = ExtResource("1_mail")
+id = &"rowan_after_slime"
+sender_npc_id = &"rowan"
+subject = "For the next repair"
+body = "Heard you handled the slime problem in the old mine. That place rewards preparation more than courage. Here is some copper ore from an old repair stock. Put it to better use than I was. — Rowan"
+required_completed_quest_id = &"defeat_green_slime"
+reward_items = {"copper_ore": 2}

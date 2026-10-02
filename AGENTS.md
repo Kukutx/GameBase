@@ -1,0 +1,21 @@
+# GameBase development rules
+
+- Target the current stable **Godot 4.x** line. The CI validation baseline lives in `.godot-version` and is currently **4.7.2**; it is a validation baseline, not a permanent engine lock.
+- Newer stable Godot 4.x releases are allowed. When upgrading, update `.godot-version`, confirm addon compatibility, run `tools/validate.ps1`, and verify all export presets. Do not use dev/RC engine builds for the shared baseline unless explicitly requested.
+- Keep `project.godot` on the oldest feature level the project actually needs. Do not bump its feature marker merely to match a patch release; this preserves forward compatibility with newer Godot 4.x versions.
+- Prefer built-in Godot capabilities first. When a mature solution already exists, prefer a mainstream, actively maintained Godot 4.x addon over rebuilding the same infrastructure.
+- Addons must have clear maintenance activity, broad community usage, compatible releases, and acceptable licensing. Avoid abandoned, obscure, or single-purpose dependencies that are easy to implement locally.
+- Current approved infrastructure addons: **Dialogue Manager 3.10.5** for authored branching dialogue and **GUT 9.7.1** for tests. Upgrade them when the engine compatibility line requires it, but avoid unrelated major-version migrations without a migration plan and passing tests.
+- Keep third-party addon code under `addons/`; keep game-owned code under `game/`. Do not mix gameplay-specific logic into vendored addons unless fixing a verified upstream compatibility bug.
+- Wrap heavy or replaceable systems behind game-owned interfaces. Do not make save data or core domain models depend directly on a third-party addon.
+- `Godot-GameTemplate` is the upstream foundation and visual/reference baseline. Reference repositories live outside this repo under `../GodotReferences/GameBaseReferences/` and are not production dependencies.
+- Use Microverse as an AI/NPC design reference later. Introduce a behavior-tree addon such as LimboAI only when NPC behavior complexity justifies it; do not add it preemptively.
+- Every reusable gameplay system should get a focused GUT test where practical. Run headless import/parse, GUT, runtime smoke, and relevant export validation after changes.
+- Prefer a small, clean game layer over carrying unused demo/editor systems from the template.
+- Register production content in `game/data/content_manifest.tres` and resolve it through `ContentDB`; do not add new scattered hard-coded resource path dictionaries.
+- World travel should use stable Location IDs and Spawn IDs. Keep direct scene-path travel only as a compatibility escape hatch.
+- NPC authored dialogue and future local-AI dialogue share `ConversationService`, `NpcContext`, and `NpcMemory`. Model/provider code must not own gameplay state or save data.
+- Purchased raw art under `game/art/licensed/` is local-only and Git-ignored. Never commit or redistribute those source assets; use `tools/sync_licensed_assets.ps1` to restore them locally.
+- Preserve save compatibility through `SaveMigration` whenever the save schema version changes.
+- `export_presets.cfg`, CI workflows, validation scripts, and release documentation are production infrastructure and must stay version-controlled.
+- Keep `AGENTS.md` as the project instruction source. Do not add `CLAUDE.md` or duplicate agent instruction files.

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MailData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/mail/mail_data.gd" id="1_mail"]
+
+[resource]
+script = ExtResource("1_mail")
+id = &"neri_first_catch"
+sender_npc_id = &"neri"
+subject = "Not bad for a first catch"
+body = "Word travels fast along the water. Your first proper catch was not embarrassing, so I am sending you some seaweed. It is useful in the kitchen, and no, that does not make it glamorous. — Neri"
+required_completed_quest_id = &"catch_first_fish"
+reward_items = {"seaweed": 2}

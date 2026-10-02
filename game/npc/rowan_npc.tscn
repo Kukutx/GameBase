@@ -1,0 +1,9 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://game/npc/npc.tscn" id="1_base"]
+[ext_resource type="Resource" path="res://game/data/npcs/rowan.tres" id="2_profile"]
+[ext_resource type="Resource" path="res://game/dialogue/rowan.dialogue" id="3_dialogue"]
+
+[node name="Rowan" instance=ExtResource("1_base")]
+profile = ExtResource("2_profile")
+dialogue = ExtResource("3_dialogue")

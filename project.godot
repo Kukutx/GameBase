@@ -14,9 +14,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="Game Template"
-run/main_scene="res://addons/top_down/scenes/ui/screens/boot_load.tscn"
-config/features=PackedStringArray("4.6", "Forward Plus")
+config/name="GameBase"
+run/main_scene="res://game/ui/title_screen.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -26,6 +26,46 @@ SoundManager="*res://addons/top_down/scenes/autoloads/sound_manager.tscn"
 Music="*res://addons/top_down/scenes/autoloads/music.tscn"
 Transition="*res://addons/top_down/scenes/autoloads/transition.tscn"
 PersistentData="*res://addons/top_down/scenes/autoloads/persistent_data.tscn"
+DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
+GameSettings="*res://game/core/settings/game_settings.gd"
+GameEvents="*res://game/core/events/game_events.gd"
+WorldClock="*res://game/core/time/game_clock.gd"
+WeatherState="*res://game/core/time/weather_system.gd"
+ContentDB="*res://game/core/content/content_database.gd"
+ItemCatalog="*res://game/core/items/item_catalog.gd"
+CropCatalog="*res://game/core/farming/crop_catalog.gd"
+InventoryState="*res://game/core/items/inventory_store.gd"
+PlayerState="*res://game/core/player/player_state.gd"
+WorldState="*res://game/core/world/world_state.gd"
+EventState="*res://game/core/events/calendar_event_manager.gd"
+NpcCatalog="*res://game/core/npc/npc_catalog.gd"
+RelationshipState="*res://game/core/npc/relationship_manager.gd"
+HeartEvents="*res://game/core/npc/heart_event_service.gd"
+QuestState="*res://game/core/quests/quest_manager.gd"
+MailState="*res://game/core/mail/mail_service.gd"
+Skills="*res://game/core/skills/skill_manager.gd"
+BuffState="*res://game/core/buffs/buff_service.gd"
+NpcMemory="*res://game/core/npc/npc_memory_store.gd"
+NpcContext="*res://game/core/npc/npc_context_service.gd"
+ShopState="*res://game/core/shop/shop_service.gd"
+CraftingState="*res://game/core/crafting/crafting_service.gd"
+UpgradeState="*res://game/core/upgrades/tool_upgrade_service.gd"
+ShippingState="*res://game/core/economy/shipping_service.gd"
+CollectionState="*res://game/core/collections/collection_service.gd"
+CollectionMilestones="*res://game/core/collections/collection_milestone_service.gd"
+DailyContractState="*res://game/core/contracts/daily_contract_service.gd"
+TownProjects="*res://game/core/projects/town_project_service.gd"
+FarmExpansionState="*res://game/core/expansions/farm_expansion_service.gd"
+MineState="*res://game/core/mining/mine_run_state.gd"
+StorageState="*res://game/core/storage/storage_service.gd"
+AnimalState="*res://game/core/animals/animal_ownership_service.gd"
+BuildingState="*res://game/core/building/building_placement_service.gd"
+FishingState="*res://game/core/fishing/fishing_service.gd"
+ConversationService="*res://game/core/dialogue/conversation_service.gd"
+LocationCatalog="*res://game/core/world/world_location_catalog.gd"
+WorldTravel="*res://game/core/world/world_travel.gd"
+SaveManager="*res://game/core/save/game_save_manager.gd"
+GameSession="*res://game/core/session/game_session.gd"
 
 [display]
 
@@ -36,13 +76,9 @@ window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep_height"
 
-[editor]
-
-movie_writer/movie_file="O:/Projects/Godot/Tutorials/Zombie Shooter/bug.avi"
-
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/kanban_tasks/plugin.cfg", "res://addons/resource_manager/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/gut/plugin.cfg")
 
 [input]
 
@@ -92,6 +128,50 @@ ui_down={
 , Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
 ]
 }
+interact={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":69,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
+]
+}
+quick_save={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":75,"key_label":0,"unicode":107,"location":0,"echo":false,"script":null)
+]
+}
+quick_load={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":76,"key_label":0,"unicode":108,"location":0,"echo":false,"script":null)
+]
+}
+debug_advance_time={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":84,"key_label":0,"unicode":116,"location":0,"echo":false,"script":null)
+]
+}
+use_tool={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":70,"key_label":0,"unicode":102,"location":0,"echo":false,"script":null)
+]
+}
+give_gift={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":71,"key_label":0,"unicode":103,"location":0,"echo":false,"script":null)
+]
+}
+remove_building={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":82,"key_label":0,"unicode":114,"location":0,"echo":false,"script":null)
+]
+}
+open_menu={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":73,"key_label":0,"unicode":105,"location":0,"echo":false,"script":null)
+]
+}
+
+[internationalization]
+
+locale/translations_pot_files=PackedStringArray("res://game/dialogue/intro.dialogue", "res://game/dialogue/neri.dialogue", "res://game/dialogue/rowan.dialogue", "res://.dev/vendor/DialogueManager-3.10.5/tests/main.dialogue", "res://.dev/vendor/DialogueManager-3.10.5/tests/snippets.dialogue")
 
 [layer_names]
 
@@ -99,6 +179,12 @@ ui_down={
 2d_physics/layer_2="Player"
 2d_physics/layer_3="Enemy"
 2d_physics/layer_4="Navigation Obstacle"
+2d_physics/layer_5="Interactable"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 
 [navigation]
 

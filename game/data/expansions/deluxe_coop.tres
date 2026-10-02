@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FarmExpansionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/expansions/farm_expansion_data.gd" id="1_expansion"]
+
+[resource]
+script = ExtResource("1_expansion")
+id = &"deluxe_coop"
+display_name = "Deluxe Coop"
+description = "Expand the Big Coop from 8 to 12 animal slots using deep-mine metals."
+housing_id = &"starter_coop"
+capacity_after = 12
+money_cost = 6000
+materials = {"wood": 50, "iron_bar": 3, "gold_bar": 1}
+prerequisites = Array[StringName]([&"big_coop"])
+required_world_flag = &"project:riverside_workshop:complete"

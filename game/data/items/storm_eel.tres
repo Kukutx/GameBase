@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"storm_eel"
+display_name = "Storm Eel"
+description = "A rare eel that surfaces only when violent weather churns Harbor waters."
+max_stack = 12
+kind = 1
+buy_price = 0
+sell_price = 240
+energy_restore = 22
+tags = PackedStringArray("food", "fish", "ocean", "rare", "storm")

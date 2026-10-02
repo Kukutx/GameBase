@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/crafting/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"storage_chest"
+display_name = "Storage Chest"
+ingredients = {"wood": 10}
+output_item_id = &"storage_chest"
+output_quantity = 1

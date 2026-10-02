@@ -1,0 +1,89 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://game/core/interactions/interaction_controller.gd" id="2_interaction"]
+[ext_resource type="Script" path="res://game/player/farm_tool_controller.gd" id="3_farm_tool"]
+[ext_resource type="Script" path="res://game/player/melee_controller.gd" id="4_melee"]
+[ext_resource type="Script" path="res://game/core/visual/directional_actor_visual.gd" id="5_visual"]
+
+[sub_resource type="CapsuleShape2D" id="Capsule_player"]
+radius = 6.0
+height = 16.0
+
+[sub_resource type="CircleShape2D" id="Circle_interaction"]
+radius = 24.0
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+z_index = 10
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_player")
+
+[node name="Body" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-7, -9, 7, -9, 7, 9, -7, 9)
+color = Color(0.28, 0.72, 0.95, 1)
+
+[node name="Facing" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-3, -8, 3, -8, 0, -13)
+color = Color(0.92, 0.97, 1, 1)
+
+[node name="ActorVisual" type="Node" parent="."]
+script = ExtResource("5_visual")
+strip_root = "res://game/art/licensed/craftpix_roguelike/character1"
+sprite_offset = Vector2(0, -8)
+
+[node name="Sprite" type="AnimatedSprite2D" parent="ActorVisual"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 2)
+shape = SubResource("Capsule_player")
+
+[node name="InteractionController" type="Area2D" parent="." node_paths=PackedStringArray("actor", "prompt_label")]
+collision_layer = 0
+collision_mask = 16
+monitoring = true
+monitorable = false
+script = ExtResource("2_interaction")
+actor = NodePath("..")
+prompt_label = NodePath("../HUD/Prompt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionController"]
+shape = SubResource("Circle_interaction")
+
+[node name="FarmToolController" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 16
+monitoring = true
+monitorable = false
+script = ExtResource("3_farm_tool")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FarmToolController"]
+shape = SubResource("Circle_interaction")
+
+[node name="MeleeController" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitoring = true
+monitorable = false
+script = ExtResource("4_melee")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeController"]
+shape = SubResource("Circle_interaction")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+enabled = true
+position_smoothing_enabled = true
+position_smoothing_speed = 7.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="Prompt" type="Label" parent="HUD"]
+visible = false
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 260.0
+offset_bottom = 52.0
+theme_override_font_sizes/font_size = 18
+text = "[E] Interact"

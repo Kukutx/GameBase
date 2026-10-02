@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CollectionMilestoneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/collections/collection_milestone_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"fish_archive"
+display_name = "Angler Archive"
+description = "Catch every fish species recorded by the archive."
+category = &"fish"
+reward_money = 650
+reward_items = {"fish_soup": 2}
+unlock_flags = Array[StringName]([&"collection:fish_archive"])

@@ -1,0 +1,290 @@
+[gd_scene load_steps=34 format=3]
+
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://game/npc/mira_npc.tscn" id="2_npc"]
+[ext_resource type="Script" path="res://game/core/time/day_night_modulate.gd" id="4_daynight"]
+[ext_resource type="PackedScene" path="res://game/core/items/item_pickup.tscn" id="5_pickup"]
+[ext_resource type="Resource" path="res://game/data/items/berry.tres" id="6_berry"]
+[ext_resource type="Resource" path="res://game/data/items/wood.tres" id="7_wood"]
+[ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://game/core/world/scene_portal.tscn" id="9_portal"]
+[ext_resource type="Script" path="res://game/core/world/world_spawn_point.gd" id="10_spawn"]
+[ext_resource type="Script" path="res://game/world/dev_world.gd" id="11_world"]
+[ext_resource type="Script" path="res://game/core/farming/farm_field.gd" id="12_farm"]
+[ext_resource type="PackedScene" path="res://game/core/shop/shop_stand.tscn" id="13_shop"]
+[ext_resource type="PackedScene" path="res://game/core/shop/shop_menu.tscn" id="14_shop_menu"]
+[ext_resource type="Script" path="res://game/art/licensed_art_sprite.gd" id="15_art"]
+[ext_resource type="Script" path="res://game/core/events/calendar_event_visual.gd" id="16_event_visual"]
+[ext_resource type="Script" path="res://game/art/licensed_terrain_layer.gd" id="20_terrain"]
+[ext_resource type="PackedScene" path="res://game/core/economy/shipping_bin.tscn" id="21_shipping"]
+[ext_resource type="Script" path="res://game/core/forage/forage_spawner.gd" id="22_forage"]
+[ext_resource type="Script" path="res://game/core/building/build_zone.gd" id="23_build_zone"]
+[ext_resource type="Script" path="res://game/core/world/simple_navigation_region.gd" id="24_nav"]
+[ext_resource type="PackedScene" path="res://game/core/mail/mailbox.tscn" id="25_mailbox"]
+[ext_resource type="Script" path="res://game/core/animals/animal_housing.gd" id="26_housing"]
+[ext_resource type="PackedScene" path="res://game/core/animals/feed_trough.tscn" id="27_trough"]
+[ext_resource type="PackedScene" path="res://game/core/contracts/notice_board.tscn" id="28_notice_board"]
+[ext_resource type="PackedScene" path="res://game/core/animals/animal_ledger.tscn" id="29_animal_ledger"]
+[ext_resource type="PackedScene" path="res://game/core/projects/town_project_board.tscn" id="30_project_board"]
+[ext_resource type="Script" path="res://game/core/projects/project_completion_visual.gd" id="31_project_visual"]
+[ext_resource type="PackedScene" path="res://game/core/events/calendar_event_booth.tscn" id="32_festival_booth"]
+[ext_resource type="PackedScene" path="res://game/npc/rowan_npc.tscn" id="33_rowan"]
+[ext_resource type="PackedScene" path="res://game/npc/neri_npc.tscn" id="34_neri"]
+
+[sub_resource type="RectangleShape2D" id="Rect_horizontal"]
+size = Vector2(800, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_vertical"]
+size = Vector2(16, 460)
+
+[sub_resource type="RectangleShape2D" id="Rect_build_zone"]
+size = Vector2(190, 120)
+
+[node name="DevWorld" type="Node2D"]
+script = ExtResource("11_world")
+
+[node name="DayNight" type="CanvasModulate" parent="."]
+script = ExtResource("4_daynight")
+
+[node name="NavigationRegion" type="NavigationRegion2D" parent="."]
+script = ExtResource("24_nav")
+walkable_rects = Array[Rect2]([Rect2(-392, -222, 784, 444)])
+
+[node name="Ground" type="Polygon2D" parent="."]
+z_index = -3
+polygon = PackedVector2Array(-400, -230, 400, -230, 400, 230, -400, 230)
+color = Color(0.14, 0.22, 0.20, 1)
+
+[node name="LicensedGround" type="TileMapLayer" parent="."]
+z_index = -2
+texture_filter = 1
+script = ExtResource("20_terrain")
+asset_path = "res://game/art/licensed/gandalf_village/Pixel Art Village full sheet.png"
+atlas_coord = Vector2i(18, 23)
+tile_size = Vector2i(32, 32)
+origin_cell = Vector2i(-13, -7)
+grid_size = Vector2i(26, 15)
+
+[node name="Path" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-52, -230, 52, -230, 52, 230, -52, 230)
+color = Color(0.27, 0.31, 0.26, 1)
+
+[node name="House" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-62, -218, 62, -218, 62, -156, -62, -156)
+color = Color(0.34, 0.26, 0.20, 1)
+
+[node name="HouseArt" type="Sprite2D" parent="."]
+position = Vector2(0, -186)
+scale = Vector2(0.5, 0.5)
+z_index = 1
+script = ExtResource("15_art")
+asset_path = "res://game/art/licensed/gandalf_village/House.png"
+
+[node name="FarmPatch" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(145, 42, 285, 42, 285, 104, 145, 104)
+color = Color(0.20, 0.25, 0.17, 1)
+
+[node name="FarmLabel" type="Label" parent="."]
+offset_left = 154.0
+offset_top = 20.0
+offset_right = 282.0
+offset_bottom = 38.0
+theme_override_font_sizes/font_size = 10
+text = "Starter Farm"
+horizontal_alignment = 1
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -230)
+shape = SubResource("Rect_horizontal")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 230)
+shape = SubResource("Rect_horizontal")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-400, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(400, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="HomeReturnSpawn" type="Marker2D" parent="."]
+position = Vector2(0, -120)
+script = ExtResource("10_spawn")
+spawn_id = &"from_home"
+
+[node name="HomePortal" parent="." instance=ExtResource("9_portal")]
+position = Vector2(0, -154)
+target_location_id = &"player_home"
+target_spawn_id = &"from_town"
+
+[node name="Mailbox" parent="." instance=ExtResource("25_mailbox")]
+position = Vector2(82, -150)
+
+[node name="NoticeBoard" parent="." instance=ExtResource("28_notice_board")]
+position = Vector2(145, -140)
+
+[node name="TownProjectBoard" parent="." instance=ExtResource("30_project_board")]
+position = Vector2(215, -140)
+location_id = &"starter_town"
+
+[node name="CommunityGardenProgress" type="Node2D" parent="."]
+position = Vector2(270, -88)
+script = ExtResource("31_project_visual")
+completion_flag = &"project:starter_garden:complete"
+pending_text = "Community Garden · overgrown"
+completed_text = "Community Garden · restored"
+
+[node name="Visual" type="Polygon2D" parent="CommunityGardenProgress"]
+polygon = PackedVector2Array(-46, -18, 46, -18, 46, 18, -46, 18)
+
+[node name="Label" type="Label" parent="CommunityGardenProgress"]
+offset_left = -72.0
+offset_top = -36.0
+offset_right = 72.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 9
+text = "Community Garden · overgrown"
+horizontal_alignment = 1
+
+[node name="RiversideReturnSpawn" type="Marker2D" parent="."]
+position = Vector2(-340, 0)
+script = ExtResource("10_spawn")
+spawn_id = &"from_riverside"
+
+[node name="RiversidePortal" parent="." instance=ExtResource("9_portal")]
+position = Vector2(-372, 0)
+target_location_id = &"riverside_town"
+target_spawn_id = &"from_starter"
+
+[node name="Mira" parent="." instance=ExtResource("2_npc")]
+position = Vector2(-115, -34)
+
+[node name="Rowan" parent="." instance=ExtResource("33_rowan")]
+position = Vector2(-210, 105)
+
+[node name="Neri" parent="." instance=ExtResource("34_neri")]
+position = Vector2(-150, 95)
+
+[node name="GeneralStoreArt" type="Sprite2D" parent="."]
+position = Vector2(250, -112)
+scale = Vector2(0.36, 0.36)
+z_index = 1
+script = ExtResource("15_art")
+asset_path = "res://game/art/licensed/gandalf_village/shop.png"
+
+[node name="GeneralStore" parent="." instance=ExtResource("13_shop")]
+position = Vector2(250, -54)
+
+[node name="VillageMarketVisual" type="Node2D" parent="."]
+position = Vector2(-180, 118)
+script = ExtResource("16_event_visual")
+event_id = &"village_market"
+
+[node name="Stall1" type="Sprite2D" parent="VillageMarketVisual"]
+position = Vector2(-52, 0)
+scale = Vector2(0.55, 0.55)
+script = ExtResource("15_art")
+asset_path = "res://game/art/licensed/gandalf_village/market stall1.png"
+
+[node name="Stall2" type="Sprite2D" parent="VillageMarketVisual"]
+scale = Vector2(0.55, 0.55)
+script = ExtResource("15_art")
+asset_path = "res://game/art/licensed/gandalf_village/market stall2.png"
+
+[node name="Stall3" type="Sprite2D" parent="VillageMarketVisual"]
+position = Vector2(52, 0)
+scale = Vector2(0.55, 0.55)
+script = ExtResource("15_art")
+asset_path = "res://game/art/licensed/gandalf_village/market stall3.png"
+
+[node name="FarmField" type="Node2D" parent="."]
+position = Vector2(215, 70)
+script = ExtResource("12_farm")
+field_id = &"dev_farm"
+location_id = &"starter_town"
+columns = 3
+rows = 1
+cell_spacing = Vector2(45, 32)
+
+[node name="FarmBuildZone" type="Area2D" parent="."]
+position = Vector2(215, 85)
+script = ExtResource("23_build_zone")
+allowed_placeable_ids = Array[StringName]([&"basic_sprinkler", &"storage_chest", &"copper_furnace", &"oil_maker"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FarmBuildZone"]
+shape = SubResource("Rect_build_zone")
+
+[node name="ShippingBin" parent="." instance=ExtResource("21_shipping")]
+position = Vector2(330, -28)
+
+[node name="DailyForage" type="Node2D" parent="."]
+script = ExtResource("22_forage")
+spawner_id = &"starter_west_forage"
+location_id = &"starter_town"
+spawn_rect = Rect2(-340, -150, 210, 280)
+spawn_count = 3
+
+[node name="CoopHousing" type="Node2D" parent="."]
+position = Vector2(306, 132)
+script = ExtResource("26_housing")
+housing_id = &"starter_coop"
+location_id = &"starter_town"
+housing_type = &"coop"
+capacity = 4
+spawn_positions = Array[Vector2]([Vector2(0, 0), Vector2(-28, -10), Vector2(26, -16), Vector2(-6, -34)])
+
+[node name="BarnHousing" type="Node2D" parent="."]
+position = Vector2(338, 92)
+script = ExtResource("26_housing")
+housing_id = &"starter_barn"
+location_id = &"starter_town"
+housing_type = &"barn"
+capacity = 4
+spawn_positions = Array[Vector2]([Vector2(0, 0), Vector2(-34, 20), Vector2(32, 18), Vector2(-4, 42)])
+
+[node name="CoopFeedTrough" parent="." instance=ExtResource("27_trough")]
+position = Vector2(254, 174)
+housing_id = &"starter_coop"
+display_name = "Coop"
+
+[node name="BarnFeedTrough" parent="." instance=ExtResource("27_trough")]
+position = Vector2(366, 174)
+housing_id = &"starter_barn"
+display_name = "Barn"
+
+[node name="AnimalLedger" parent="." instance=ExtResource("29_animal_ledger")]
+position = Vector2(310, 204)
+location_id = &"starter_town"
+
+[node name="SpringSeedFairBooth" parent="." instance=ExtResource("32_festival_booth")]
+position = Vector2(-250, 118)
+event_id = &"spring_seed_fair"
+
+[node name="WinterLanternBooth" parent="." instance=ExtResource("32_festival_booth")]
+position = Vector2(210, 150)
+event_id = &"winter_lantern_night"
+
+[node name="BerryPickup" parent="." instance=ExtResource("5_pickup")]
+position = Vector2(-92, 76)
+item = ExtResource("6_berry")
+quantity = 3
+persistent_id = &"dev_world_berry_01"
+
+[node name="WoodPickup" parent="." instance=ExtResource("5_pickup")]
+position = Vector2(94, 82)
+item = ExtResource("7_wood")
+quantity = 5
+persistent_id = &"dev_world_wood_01"
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(0, 128)
+
+[node name="WorldHud" parent="." instance=ExtResource("8_hud")]
+
+[node name="ShopMenu" parent="." instance=ExtResource("14_shop_menu")]

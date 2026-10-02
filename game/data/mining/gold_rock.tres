@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MiningNodeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/mining/mining_node_data.gd" id="1_node"]
+
+[resource]
+script = ExtResource("1_node")
+id = &"gold_rock"
+display_name = "Gold Vein"
+durability = 7
+minimum_mine_floor = 20
+required_tool_power = 3
+energy_cost = 6
+drop_item_id = &"gold_ore"
+drop_quantity = 2
+respawn_days = 1
+visual_color = Color(0.82, 0.67, 0.22, 1)

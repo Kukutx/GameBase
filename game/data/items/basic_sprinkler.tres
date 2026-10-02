@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"basic_sprinkler"
+display_name = "Basic Sprinkler"
+description = "Place it on the Starter Farm to water nearby plots each morning."
+max_stack = 8
+kind = 7
+buy_price = 0
+sell_price = 160
+tags = PackedStringArray("machine", "farming", "automation", "placeable")
+placeable_id = &"basic_sprinkler"

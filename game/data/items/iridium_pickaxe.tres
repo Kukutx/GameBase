@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"iridium_pickaxe"
+display_name = "Iridium Pickaxe"
+description = "A top-tier pickaxe forged for the final depths of the Old Mine."
+max_stack = 1
+kind = 3
+tool_action = &"pickaxe"
+tool_power = 5
+tags = PackedStringArray("tool", "iridium")

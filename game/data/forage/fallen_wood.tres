@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ForageEntryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/forage/forage_entry_data.gd" id="1_entry"]
+
+[resource]
+script = ExtResource("1_entry")
+id = &"fallen_wood"
+item_id = &"wood"
+locations = Array[StringName]([&"starter_town", &"riverside_town"])
+weight = 1.0
+min_quantity = 1
+max_quantity = 2

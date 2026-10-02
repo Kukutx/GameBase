@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"potato_seeds"
+display_name = "Potato Seeds"
+description = "Reliable Spring and Autumn seed potatoes."
+max_stack = 99
+kind = 2
+buy_price = 40
+sell_price = 20
+crop_id = &"potato"
+tags = PackedStringArray("seed")

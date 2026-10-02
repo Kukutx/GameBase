@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CollectionMilestoneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/collections/collection_milestone_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"mineral_archive"
+display_name = "Prospector Archive"
+description = "Mine every mineral type recorded by the archive."
+category = &"minerals"
+reward_money = 900
+reward_items = {"gold_bar": 1}
+unlock_flags = Array[StringName]([&"collection:mineral_archive"])

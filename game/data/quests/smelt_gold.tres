@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"smelt_gold"
+title = "Refine the Gold"
+description = "Smelt two Gold Bars at Rowan's furnace."
+objective_type = 6
+target_id = &"smelt_gold_bar"
+required_amount = 2
+reward_money = 500
+next_quest_id = &"reach_iridium_depth"

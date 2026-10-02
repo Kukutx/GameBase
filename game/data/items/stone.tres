@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"stone"
+display_name = "Stone"
+description = "Common building stone from the old mine."
+max_stack = 99
+kind = 0
+buy_price = 25
+sell_price = 10
+tags = PackedStringArray("material", "mining")

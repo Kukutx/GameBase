@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/crafting/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"field_snack"
+display_name = "Field Snack"
+ingredients = {"berry": 2}
+output_item_id = &"field_snack"
+output_quantity = 1
+required_skill = &"foraging"
+required_level = 1

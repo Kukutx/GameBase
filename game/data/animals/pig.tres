@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="FarmAnimalData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/animals/farm_animal_data.gd" id="1_animal"]
+
+[resource]
+script = ExtResource("1_animal")
+id = &"pig"
+display_name = "Pig"
+sprite_path = "res://game/art/licensed/gandalf_animals/Brown Pig sheet.png"
+frame_size = Vector2i(80, 48)
+animation_fps = 10
+idle_from = 0
+idle_to = 7
+walk_from = 8
+walk_to = 14
+eat_from = 15
+eat_to = 22
+move_speed = 20.0
+wander_radius = 60.0
+collision_size = Vector2(21, 12)
+visual_offset = Vector2(0, -12)
+visual_scale = 0.7
+housing_type = &"barn"
+purchase_price = 2400
+product_item_id = &"truffle"
+premium_product_item_id = &"prime_truffle"
+premium_happiness_threshold = 85
+product_quantity = 1
+product_interval_days = 2
+pet_happiness_gain = 4

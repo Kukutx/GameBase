@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"catch_first_fish"
+title = "Fresh Catch"
+description = "Catch any fish in Riverside or Harbor."
+objective_type = 3
+target_id = &""
+required_amount = 1
+reward_money = 100
+next_quest_id = &"mine_stone"

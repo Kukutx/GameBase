@@ -1,0 +1,163 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://game/core/world/scene_portal.tscn" id="3_portal"]
+[ext_resource type="Script" path="res://game/core/world/world_spawn_point.gd" id="4_spawn"]
+[ext_resource type="Script" path="res://game/core/time/day_night_modulate.gd" id="5_daynight"]
+[ext_resource type="Script" path="res://game/art/licensed_art_sprite.gd" id="6_art"]
+[ext_resource type="PackedScene" path="res://game/core/fishing/fishing_spot.tscn" id="7_fishing"]
+[ext_resource type="Script" path="res://game/art/licensed_terrain_layer.gd" id="8_terrain"]
+[ext_resource type="PackedScene" path="res://game/npc/neri_npc.tscn" id="9_neri"]
+[ext_resource type="Script" path="res://game/core/forage/forage_spawner.gd" id="10_forage"]
+[ext_resource type="Script" path="res://game/core/world/simple_navigation_region.gd" id="11_nav"]
+[ext_resource type="PackedScene" path="res://game/core/projects/town_project_board.tscn" id="12_project_board"]
+[ext_resource type="Script" path="res://game/core/projects/project_completion_visual.gd" id="13_project_visual"]
+[ext_resource type="PackedScene" path="res://game/core/events/calendar_event_booth.tscn" id="14_festival_booth"]
+[ext_resource type="PackedScene" path="res://game/npc/mira_npc.tscn" id="15_mira"]
+[ext_resource type="PackedScene" path="res://game/npc/rowan_npc.tscn" id="16_rowan"]
+
+[sub_resource type="RectangleShape2D" id="Rect_horizontal"]
+size = Vector2(760, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_vertical"]
+size = Vector2(16, 420)
+
+[node name="HarborTown" type="Node2D"]
+
+[node name="DayNight" type="CanvasModulate" parent="."]
+script = ExtResource("5_daynight")
+
+[node name="NavigationRegion" type="NavigationRegion2D" parent="."]
+script = ExtResource("11_nav")
+walkable_rects = Array[Rect2]([Rect2(-372, -202, 452, 404), Rect2(80, -44, 140, 88)])
+
+[node name="Ground" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-380, -210, 380, -210, 380, 210, -380, 210)
+color = Color(0.22, 0.25, 0.24, 1)
+
+[node name="Sea" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(80, -210, 380, -210, 380, 210, 80, 210)
+color = Color(0.10, 0.28, 0.43, 1)
+
+[node name="Dock" type="Polygon2D" parent="."]
+z_index = -1
+polygon = PackedVector2Array(20, -44, 220, -44, 220, 44, 20, 44)
+color = Color(0.39, 0.30, 0.22, 1)
+
+[node name="LicensedDock" type="TileMapLayer" parent="."]
+texture_filter = 1
+script = ExtResource("8_terrain")
+asset_path = "res://game/art/licensed/gandalf_house/House outside Tiles 32x32 v1.png"
+atlas_coord = Vector2i(3, 2)
+tile_size = Vector2i(32, 32)
+origin_cell = Vector2i(1, -1)
+grid_size = Vector2i(7, 3)
+
+[node name="HarborFishingSpot" parent="." instance=ExtResource("7_fishing")]
+position = Vector2(210, 66)
+location_id = &"harbor_town"
+
+[node name="MarketQuarter" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-300, -96, -70, -96, -70, 96, -300, 96)
+color = Color(0.28, 0.28, 0.24, 1)
+
+[node name="HarborShopArt" type="Sprite2D" parent="."]
+position = Vector2(-205, -112)
+scale = Vector2(0.34, 0.34)
+z_index = 1
+script = ExtResource("6_art")
+asset_path = "res://game/art/licensed/gandalf_village/shop.png"
+
+[node name="StorageArt" type="Sprite2D" parent="."]
+position = Vector2(-205, 106)
+scale = Vector2(0.42, 0.42)
+z_index = 1
+script = ExtResource("6_art")
+asset_path = "res://game/art/licensed/gandalf_village/Stable or Storage.png"
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -210)
+shape = SubResource("Rect_horizontal")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 210)
+shape = SubResource("Rect_horizontal")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-380, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(380, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="FromRiversideSpawn" type="Marker2D" parent="."]
+position = Vector2(-330, 0)
+script = ExtResource("4_spawn")
+spawn_id = &"from_riverside"
+
+[node name="RiversidePortal" parent="." instance=ExtResource("3_portal")]
+position = Vector2(-354, 0)
+target_location_id = &"riverside_town"
+target_spawn_id = &"from_harbor"
+
+[node name="Mira" parent="." instance=ExtResource("15_mira")]
+position = Vector2(105, 8)
+
+[node name="Rowan" parent="." instance=ExtResource("16_rowan")]
+position = Vector2(145, 28)
+
+[node name="Neri" parent="." instance=ExtResource("9_neri")]
+position = Vector2(165, 34)
+
+[node name="TownProjectBoard" parent="." instance=ExtResource("12_project_board")]
+position = Vector2(80, -150)
+location_id = &"harbor_town"
+
+[node name="HarborSupplyProgress" type="Node2D" parent="."]
+position = Vector2(245, 92)
+script = ExtResource("13_project_visual")
+completion_flag = &"project:harbor_supply:complete"
+pending_text = "Harbor stores · depleted"
+completed_text = "Harbor stores · restocked"
+pending_color = Color(0.34, 0.26, 0.20, 1)
+completed_color = Color(0.26, 0.54, 0.66, 1)
+
+[node name="Visual" type="Polygon2D" parent="HarborSupplyProgress"]
+polygon = PackedVector2Array(-52, -18, 52, -18, 52, 18, -52, 18)
+
+[node name="Label" type="Label" parent="HarborSupplyProgress"]
+offset_left = -72.0
+offset_top = -36.0
+offset_right = 72.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 9
+text = "Harbor stores · depleted"
+horizontal_alignment = 1
+
+[node name="DailyForage" type="Node2D" parent="."]
+script = ExtResource("10_forage")
+spawner_id = &"harbor_shore_forage"
+location_id = &"harbor_town"
+spawn_rect = Rect2(100, -155, 245, 310)
+spawn_count = 3
+
+[node name="FallHarborDerbyBooth" parent="." instance=ExtResource("14_festival_booth")]
+position = Vector2(180, -10)
+event_id = &"fall_harbor_derby"
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(-300, 0)
+
+[node name="WorldHud" parent="." instance=ExtResource("2_hud")]
+
+[node name="TownLabel" type="Label" parent="."]
+position = Vector2(-50, -184)
+theme_override_colors/font_color = Color(0.82, 0.88, 0.92, 1)
+theme_override_font_sizes/font_size = 16
+text = "Harbor Town"

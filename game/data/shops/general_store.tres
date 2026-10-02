@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ShopData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/shop/shop_data.gd" id="1_shop"]
+
+[resource]
+script = ExtResource("1_shop")
+id = &"general_store"
+display_name = "Village General Store"
+stock = {"berry": 45, "hay": 20, "fishing_rod": 300, "pickaxe": 600, "rusty_sword": 500}
+seasonal_stock = {"Spring": {"turnip_seeds": 20, "carrot_seeds": 30, "potato_seeds": 40}, "Summer": {"tomato_seeds": 45}, "Autumn": {"carrot_seeds": 30, "pumpkin_seeds": 90}, "Winter": {"frostroot_seeds": 55}}
+animal_stock = Array[StringName]([&"chicken", &"cow", &"pig"])

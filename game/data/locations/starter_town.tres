@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="WorldLocationData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/world/world_location_data.gd" id="1_location"]
+
+[resource]
+script = ExtResource("1_location")
+id = &"starter_town"
+display_name = "Starter Town"
+scene_path = "res://game/world/dev_world.tscn"
+type = 0
+default_spawn_id = &"from_home"

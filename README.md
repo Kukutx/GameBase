@@ -1,51 +1,127 @@
-# Godot Game Template
+﻿# GameBase
 
-[itch.io WEB DEMO](https://nezvers.itch.io/advanced-godot-template-isometric)    
+Godot 4.x life-sim / RPG foundation built from the Godot-GameTemplate repository and extended into a data-driven multi-town game prototype. The shared CI validation baseline is stored in `.godot-version` (currently 4.7.2) so engine upgrades remain centralized instead of being hard-coded throughout the project.
 
-A starting point and reference project for creating games with the Godot Engine, particularly suited for top-down shooter games.
-Project is located in [addons/top_down](addons/top_down/) to keep project conflicts to a minimum. It showcases recommended project structure.
+The current project is a reusable gameplay base rather than a finished content release. The main playable loop already connects farming, fishing, mining/combat, animals, crafting/processing, NPC relationships, quests, weather/calendar systems, town progression, saving and world travel.
 
-This repository also includes [addons/great_games_library](addons/great_games_library), a collection of scripts that offer general-purpose solutions applicable across various games.
+## Engine and addons
 
-Additionally, for task organization, the project includes a simple [Kanban Tasks - Todo Manager](https://godotengine.org/asset-library/asset/1474) plugin.
+- Godot **4.x**; current CI validation baseline: **4.7.2** via `.godot-version`
+- Dialogue Manager **3.10.5**
+- GUT **9.7.1** for automated tests
+- Existing `addons/top_down` / `addons/great_games_library` code inherited from the upstream template
 
-> **⚠️ CAUTION:**  
-> Due to an issues with a custom `AudioBusLayout` resource locations in Godot, I've kept the audio bus layout at its default location and name as [default_bus_layout.tres](default_bus_layout.tres).
+Stable Godot 4.x upgrades are expected. Update the single `.godot-version` CI baseline, confirm addon compatibility, and run the full validation/export suite. Check `AGENTS.md` before framework or dependency changes.
 
-> **NOTE:**  
-> - This template is not recommended for beginners who may need a guidance.  
-> - It serves as my personal project template and will continue to evolve as I develop my own game. Updates will be made until the project starts to go beyond the needs of a generic top-down shooter and into game-specific content.
-> - All assets are made by me and are free to be modified and used for inclusion in commercial products, but not sold as your creation. Soon will be released as a separate package on [nezvers.itch.io](https://nezvers.itch.io)
+## Run
 
-![PREVIEW](addons/top_down/assets/images/project_preview.png)
+Open this folder in a compatible stable Godot 4.x release and run the project. The current shared validation baseline is Godot 4.7.2. The main scene is:
 
-## Main Features
-- Menu system
-	- Full Screen
-	- Audio (Master, Music, Sounds)
-	- Button state style tweaning
-- Pausing system
-- Input Rebinding
-- Frame by frame debug pausing (`P` - pause and advance, `[ + P` to unpause)
-- Scene transition using shader on a screenshot
-- precompile (Shader, CanvasMaterial, ParticleProcessMaterial) and preload scenes [boot_load.tscn](addons/top_down/scenes/ui/screens/)
-- Node reference managment [ReferenceNodeResource](addons/great_games_library/resources/ReferenceNodeResource/)
-- Easy instancing with configuration callbacks and dynamic instance pooling [InstanceResource](addons/great_games_library/resources/InstanceResource/)
-- Static functions for threaded loading [ThreadUtility](addons/great_games_library/static/ThreadUtility/ThreadUtility.gd)
-- Sound effect system [SoundResource](addons/great_games_library/resources/SoundResource/) with autoloaded [SoundManager](addons/great_games_library/autoload/SoundManager.gd)
-- Resource saving [SaveableResource](addons/great_games_library/resources/SaveableResource/SaveableResource.gd)
-- Data transmission system used for damage, pickups, obstacles [AreaTransmitter](addons/great_games_library/nodes/AreaTransmitter/)
-- Scene central data collection [ResourceNode](addons/great_games_library/nodes/ResourceNode/)
-- Enemy AI Astar grid path finding
-- Enemy wave spawning
+```text
+res://game/ui/title_screen.tscn
+```
 
-## Recommendations
-To have easier learning experience on how project works I would suggest to start with these scenes:
-- Menu - addons/top_down/scenes/ui/screens/title.tscn
-- Rooms - addons/top_down/scenes/levels/room_0.tscn
-- Actors - addons/top_down/scenes/actors/actor.tscn
-- Weapons - addons/top_down/scenes/weapons/weapon.tscn
-- Projectiles - addons/top_down/scenes/projectiles/projectile.tscn
+Full local validation:
 
-## Project breakdown
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/2ZRxUUY6SeM/0.jpg)](https://www.youtube.com/watch?v=2ZRxUUY6SeM)
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/validate.ps1
+```
+
+The script uses `GODOT_BIN` when set, otherwise `godot` from `PATH`. It accepts newer stable Godot 4.x versions and warns when the local engine differs from the shared CI baseline.
+
+A successful runtime integration check ends with:
+
+```text
+LIFE_SIMULATION_SMOKE_OK
+```
+
+## Current gameplay foundation
+
+- Three connected settlements: Starter Town, Riverside Town and Harbor Town
+- Player home and Old Mine interiors/areas
+- Farming with seasonal crops, watering, harvests and sprinkler automation
+- Fishing with location, season, time and weather-specific pools
+- 120-floor Old Mine progression with persistent depth, 5-floor elevator checkpoints, Iron at Floor 6, Gold at Floor 20, Iridium at Floor 60, escalating enemy tiers through the Ancient Slimes on Floor 120, melee combat and renewable resource nodes
+- Farm animals with housing, feeding, happiness, naming, selling, premium products and purchasable 4→8→12 slot coop/barn expansions
+- Inventory, hotbar, shops, crafting, cooking, buffs, processing and copper→iron→gold→iridium tool/weapon upgrades
+- Placeable storage, machines and persistent building placement
+- Shipping bin and overnight economy settlement
+- NPC schedules, cross-town movement, gifts, 0→10-heart relationship dialogue stages and five heart-event tiers per core NPC, with later events tied to town progress
+- Dialogue abstraction plus bounded NPC memory/context for optional AI dialogue later
+- A long mining quest chain from copper tools through Iron, Gold and Iridium to Floor 120, plus progression mail that can react immediately to completed quests and world flags
+- A deterministic calendar/weather system with four recurring seasonal festivals, in-world participation booths and once-per-year rewards
+- Daily contracts that filter mining targets by discovered mine depth, harvest work by crop maturation/season time remaining, and weather-locked fish by reachable forecast windows
+- Chained long-term town restoration projects with world-state visuals, NPC-context exposure and immediate completion mail
+- Six skills with Lv5/Lv10 passive gameplay perks and persisted highest-earned level entitlements, so later XP-threshold rebalance cannot take away an already-earned skill level/perk; collections include premium animal products and Iridium content with claimable archive milestones
+- Three save slots with Save v8 migration, stable Location-ID recovery across scene renames, millisecond-aware primary/backup/temp crash recovery (including a newer complete temp written before primary removal), and protection for newer-version primary saves when an older build falls back to a compatible backup
+- Stable world travel end-to-end: new game, scene portals, mine ladders/elevators and save recovery resolve Location/Spawn IDs instead of depending on gameplay scene filenames
+- Long-lived save repair for content evolution: appended quest/project chains backfill on load; completed projects reapply current unlock flags; paid coop/barn capacity is preserved independently from expansion resource IDs; already-ready archive milestones remain qualified when catalogs grow; and removed crops/animals/placeables/contracts/processing content plus legacy inventory items degrade safely instead of blocking play or silently deleting player value
+- Deferred rewards are snapshotted when promised (mail delivery, project completion, archive readiness and blocked quest completion), preserving the original money/items even if later content updates rebalance or retire reward entries
+- Sleep, defeat/collapse recovery and late-night exhaustion handling
+- Rebindable controls and game/settings menus
+
+## Project structure
+
+```text
+game/core/      Reusable gameplay services and components
+game/data/      Data resources indexed through ContentDB
+game/world/     Playable locations and shared world HUD
+game/npc/       NPC scenes and presentation
+game/player/    Player scene/controller
+game/ui/        Title, pause, settings and game menus
+test/unit/      Focused GUT regression tests
+test/runtime/   End-to-end life-simulation smoke test
+tools/          Local project utilities
+docs/           Project-specific documentation
+```
+
+New reusable content should normally be added to `game/data/content_manifest.tres` and accessed through `ContentDB` rather than hard-coded lookup tables.
+
+## Validation and release
+
+The repository tracks `export_presets.cfg` for Windows, Linux and Web. Local exports:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/export.ps1
+```
+
+GitHub Actions provides:
+
+- `.github/workflows/ci.yml`: import/parse, GUT, runtime smoke, and Windows/Linux/Web export validation on pushes and pull requests.
+- `.github/workflows/release.yml`: packaged Windows/Linux/Web builds; pushing a `v*` tag publishes a GitHub Release automatically.
+- `.github/dependabot.yml`: weekly GitHub Actions dependency maintenance.
+
+The engine version used by CI is read from `.godot-version`. To move the shared validation baseline to a newer stable Godot 4.x release:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/update_engine_baseline.ps1 -Version <next-stable-4.x-version>
+```
+
+Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md` and `docs/RELEASE.md`.
+
+## Licensed local art
+
+Purchased/local source art is intentionally excluded from Git under:
+
+```text
+game/art/licensed/
+```
+
+On the owner's workstation, restore the selected runtime assets with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/sync_licensed_assets.ps1
+```
+
+See `docs/LICENSED_ASSETS.md` for the packs currently used and redistribution constraints. Gameplay scenes must remain runnable when those local files are absent; fallback visuals are part of the project design.
+
+## Development rules
+
+`AGENTS.md` is the source of truth for project constraints. In particular:
+
+- keep the project on stable Godot 4.x and treat `.godot-version` as an updateable CI validation baseline rather than a permanent patch-version lock;
+- prefer built-in Godot features and established, maintained addons;
+- keep third-party code under `addons/` and game-specific code under `game/`;
+- preserve stable content/location/spawn IDs and save compatibility;
+- add focused GUT coverage for reusable gameplay systems;
+- keep the optional AI dialogue layer behind `ConversationService`, `NpcContext` and `NpcMemory` rather than coupling gameplay to a model runtime.

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MailData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/mail/mail_data.gd" id="1_mail"]
+
+[resource]
+script = ExtResource("1_mail")
+id = &"mira_garden_restored"
+sender_npc_id = &"mira"
+subject = "The garden is growing again"
+body = "I walked past the community garden this morning. It looks cared for again instead of abandoned. That changes how a town feels more than people admit. I left you a stew for one of the long work days ahead. — Mira"
+required_world_flag = &"project:starter_garden:complete"
+reward_items = {"vegetable_stew": 1}

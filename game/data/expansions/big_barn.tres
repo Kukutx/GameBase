@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FarmExpansionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/expansions/farm_expansion_data.gd" id="1_expansion"]
+
+[resource]
+script = ExtResource("1_expansion")
+id = &"big_barn"
+display_name = "Big Barn"
+description = "Expand the Starter Farm barn from 4 to 8 animal slots."
+housing_id = &"starter_barn"
+capacity_after = 8
+money_cost = 3000
+materials = {"wood": 40, "stone": 20}
+required_world_flag = &"project:starter_garden:complete"

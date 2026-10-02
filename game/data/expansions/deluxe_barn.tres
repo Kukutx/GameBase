@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FarmExpansionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/expansions/farm_expansion_data.gd" id="1_expansion"]
+
+[resource]
+script = ExtResource("1_expansion")
+id = &"deluxe_barn"
+display_name = "Deluxe Barn"
+description = "Expand the Big Barn from 8 to 12 animal slots using deep-mine metals."
+housing_id = &"starter_barn"
+capacity_after = 12
+money_cost = 8000
+materials = {"wood": 60, "iron_bar": 4, "gold_bar": 2}
+prerequisites = Array[StringName]([&"big_barn"])
+required_world_flag = &"project:riverside_workshop:complete"

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CropData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/farming/crop_data.gd" id="1_crop"]
+
+[resource]
+script = ExtResource("1_crop")
+id = &"turnip"
+display_name = "Turnip"
+days_to_mature = 4
+regrow_days = 0
+harvest_item_id = &"turnip"
+harvest_quantity = 1
+allowed_seasons = PackedStringArray("Spring", "Autumn")

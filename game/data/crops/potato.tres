@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CropData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/farming/crop_data.gd" id="1_crop"]
+
+[resource]
+script = ExtResource("1_crop")
+id = &"potato"
+display_name = "Potato"
+days_to_mature = 6
+regrow_days = 0
+harvest_item_id = &"potato"
+harvest_quantity = 1
+allowed_seasons = PackedStringArray("Spring", "Autumn")
+sprout_color = Color(0.36, 0.61, 0.27, 1)
+mature_color = Color(0.69, 0.57, 0.34, 1)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"copper_furnace"
+display_name = "Copper Furnace"
+description = "A placeable furnace for smelting Copper Bars. Active jobs continue while you are away."
+max_stack = 4
+kind = 7
+sell_price = 260
+tags = PackedStringArray("machine", "processing", "building", "placeable")
+placeable_id = &"copper_furnace"

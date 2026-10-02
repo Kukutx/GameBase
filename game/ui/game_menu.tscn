@@ -1,0 +1,114 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/ui/game_menu.gd" id="1_menu"]
+
+[node name="GameMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_menu")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.58)
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 22.0
+offset_right = 440.0
+offset_bottom = 248.0
+
+[node name="Layout" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Tabs" type="HBoxContainer" parent="Panel/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Inventory" type="Button" parent="Panel/Layout/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "Items"
+
+[node name="Quests" type="Button" parent="Panel/Layout/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "Quests"
+
+[node name="Social" type="Button" parent="Panel/Layout/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "Social"
+
+[node name="Skills" type="Button" parent="Panel/Layout/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "Skills"
+
+[node name="Calendar" type="Button" parent="Panel/Layout/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "Calendar"
+
+[node name="World" type="Button" parent="Panel/Layout/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "World"
+
+[node name="Collections" type="Button" parent="Panel/Layout/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 8
+text = "Log"
+
+[node name="Content" type="RichTextLabel" parent="Panel/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = false
+scroll_active = true
+text = "Inventory"
+
+[node name="HotbarEditor" type="HBoxContainer" parent="Panel/Layout"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Item" type="OptionButton" parent="Panel/Layout/HotbarEditor"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Slot" type="OptionButton" parent="Panel/Layout/HotbarEditor"]
+layout_mode = 2
+custom_minimum_size = Vector2(78, 0)
+
+[node name="Assign" type="Button" parent="Panel/Layout/HotbarEditor"]
+layout_mode = 2
+text = "Assign"
+
+[node name="CollectionClaim" type="Button" parent="Panel/Layout"]
+visible = false
+layout_mode = 2
+text = "Claim Archive Reward"
+
+[node name="Close" type="Button" parent="Panel/Layout"]
+layout_mode = 2
+text = "Close"

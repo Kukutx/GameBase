@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"oil_maker"
+display_name = "Oil Maker"
+description = "A placeable artisan machine for pressing valuable oils. Active jobs continue while you are away."
+max_stack = 4
+kind = 7
+sell_price = 420
+tags = PackedStringArray("machine", "processing", "artisan", "building", "placeable")
+placeable_id = &"oil_maker"

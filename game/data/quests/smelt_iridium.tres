@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"smelt_iridium"
+title = "Refine the Iridium"
+description = "Smelt two Iridium Bars and prepare for the final descent."
+objective_type = 6
+target_id = &"smelt_iridium_bar"
+required_amount = 2
+reward_money = 1200
+next_quest_id = &"reach_mine_bottom"

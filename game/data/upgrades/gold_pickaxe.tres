@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ToolUpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/upgrades/tool_upgrade_data.gd" id="1_upgrade"]
+
+[resource]
+script = ExtResource("1_upgrade")
+id = &"gold_pickaxe_upgrade"
+display_name = "Gold Pickaxe"
+source_item_id = &"iron_pickaxe"
+result_item_id = &"gold_pickaxe"
+materials = {"gold_bar": 5}
+money_cost = 4000
+required_skill = &"mining"
+required_level = 5

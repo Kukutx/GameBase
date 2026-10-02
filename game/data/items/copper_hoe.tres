@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"copper_hoe"
+display_name = "Copper Hoe"
+description = "A reinforced hoe that tills soil with less effort."
+max_stack = 1
+kind = 3
+buy_price = 0
+tool_action = &"hoe"
+tool_power = 2
+tags = PackedStringArray("tool", "copper")

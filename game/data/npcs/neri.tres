@@ -1,0 +1,102 @@
+[gd_resource type="Resource" script_class="NpcProfileData" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://game/core/npc/npc_profile_data.gd" id="1_profile"]
+[ext_resource type="Script" path="res://game/core/npc/npc_schedule_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="Schedule_morning"]
+script = ExtResource("2_entry")
+minute_of_day = 390
+location_id = &"harbor_town"
+target_position = Vector2(165, 34)
+activity = "Inspect the morning catch"
+
+[sub_resource type="Resource" id="Schedule_market"]
+script = ExtResource("2_entry")
+minute_of_day = 600
+location_id = &"harbor_town"
+target_position = Vector2(-205, -20)
+activity = "Trade at the harbor market"
+
+[sub_resource type="Resource" id="Schedule_afternoon"]
+script = ExtResource("2_entry")
+minute_of_day = 900
+location_id = &"harbor_town"
+target_position = Vector2(150, 52)
+activity = "Sort nets at the dock"
+
+[sub_resource type="Resource" id="Schedule_evening"]
+script = ExtResource("2_entry")
+minute_of_day = 1140
+location_id = &"harbor_town"
+target_position = Vector2(-205, 106)
+activity = "Close the storage shed"
+
+[sub_resource type="Resource" id="Schedule_storm"]
+script = ExtResource("2_entry")
+minute_of_day = 0
+priority = 20
+location_id = &"harbor_town"
+target_position = Vector2(-205, 106)
+activity = "Secure the shed during the storm"
+allowed_weather = PackedStringArray("Storm")
+
+[sub_resource type="Resource" id="Schedule_festival_spring_seed_fair"]
+script = ExtResource("2_entry")
+minute_of_day = 540
+priority = 40
+location_id = &"starter_town"
+target_position = Vector2(-150, 95)
+activity = "Visit the Spring Seed Fair"
+required_world_flag = &"event:spring_seed_fair:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_summer_river_fair"]
+script = ExtResource("2_entry")
+minute_of_day = 600
+priority = 40
+location_id = &"riverside_town"
+target_position = Vector2(205, -100)
+activity = "Join the Summer River Fair"
+required_world_flag = &"event:summer_river_fair:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_fall_harbor_derby"]
+script = ExtResource("2_entry")
+minute_of_day = 360
+priority = 40
+location_id = &"harbor_town"
+target_position = Vector2(210, 8)
+activity = "Watch the Harbor Derby"
+required_world_flag = &"event:fall_harbor_derby:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_winter_lantern_night"]
+script = ExtResource("2_entry")
+minute_of_day = 1020
+priority = 40
+location_id = &"starter_town"
+target_position = Vector2(265, 132)
+activity = "Attend Lantern Night"
+required_world_flag = &"event:winter_lantern_night:active"
+required_flag_value = true
+
+[resource]
+script = ExtResource("1_profile")
+id = &"neri"
+display_name = "Neri"
+role = "Harbor fishmonger"
+background = "Neri grew up around Harbor Town's docks and now buys, sorts, and sells the morning catch. She knows tides, storms, fish seasons, and nearly every rumor carried in by boat."
+personality = "Quick-witted, energetic, observant, competitive about fishing knowledge. Friendly to people who respect the sea and keep their word."
+speaking_style = "Lively and concise. Uses harbor slang sparingly and often mentions tides, weather, catches, or boats."
+home_location_id = &"harbor_town"
+default_location_id = &"harbor_town"
+birthday_season = "Summer"
+birthday_day = 7
+ai_enabled = true
+dialogue_titles_by_hearts = {0: "start", 2: "friend_2", 4: "friend_4", 6: "friend_6", 8: "friend_8", 10: "friend_10"}
+visual_strip_root = "res://game/art/licensed/craftpix_roguelike/character1"
+visual_modulate = Color(0.72, 0.9, 1, 1)
+schedule_entries = Array[ExtResource("2_entry")]([SubResource("Schedule_morning"), SubResource("Schedule_market"), SubResource("Schedule_afternoon"), SubResource("Schedule_evening"), SubResource("Schedule_storm"), SubResource("Schedule_festival_spring_seed_fair"), SubResource("Schedule_festival_summer_river_fair"), SubResource("Schedule_festival_fall_harbor_derby"), SubResource("Schedule_festival_winter_lantern_night")])
+loved_items = Array[StringName]([&"mackerel"])
+liked_items = Array[StringName]([&"sardine", &"river_trout"])
+liked_tags = PackedStringArray("fish", "ocean")

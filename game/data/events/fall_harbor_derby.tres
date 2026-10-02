@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CalendarEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/events/calendar_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"fall_harbor_derby"
+display_name = "Fall Harbor Derby"
+location_id = &"harbor_town"
+seasons = PackedStringArray("Autumn")
+day_of_season = 14
+start_minute = 360
+end_minute = 1080
+reward_money = 400
+reward_items = {"fish_soup": 2}
+reward_skill = &"fishing"
+reward_skill_xp = 150

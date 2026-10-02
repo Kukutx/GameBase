@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CalendarEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/events/calendar_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"winter_lantern_night"
+display_name = "Winter Lantern Night"
+location_id = &"starter_town"
+seasons = PackedStringArray("Winter")
+day_of_season = 21
+start_minute = 1020
+end_minute = 1380
+reward_money = 600
+reward_items = {"frostroot_seeds": 6}
+reward_skill = &"social"
+reward_skill_xp = 200

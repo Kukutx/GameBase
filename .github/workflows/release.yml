@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      engine_version:
+        description: Optional Godot version override for this build
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            preset: Windows Desktop
+            output: build/windows/GameBase.exe
+            package: GameBase-windows-x86_64.zip
+            package_command: cd build/windows && zip -r ../../dist/GameBase-windows-x86_64.zip .
+          - name: Linux
+            preset: Linux
+            output: build/linux/GameBase.x86_64
+            package: GameBase-linux-x86_64.tar.gz
+            package_command: chmod +x build/linux/GameBase.x86_64 && tar -czf dist/GameBase-linux-x86_64.tar.gz -C build/linux .
+          - name: Web
+            preset: Web
+            output: build/web/index.html
+            package: GameBase-web.zip
+            package_command: cd build/web && zip -r ../../dist/GameBase-web.zip .
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve Godot version
+        id: engine
+        shell: bash
+        env:
+          INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
+        run: |
+          version="$INPUT_ENGINE_VERSION"
+          if [ -z "$version" ]; then
+            version="$(tr -d '\r\n ' < .godot-version)"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Godot with export templates
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ steps.engine.outputs.version }}
+          use-dotnet: false
+          include-templates: true
+
+      - name: Import and validate
+        shell: bash
+        run: |
+          godot --headless --path . --editor --quit
+          godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig.json
+          godot --headless --path . -s test/runtime/world_services_smoke.gd
+
+      - name: Export
+        shell: bash
+        run: |
+          mkdir -p "$(dirname "${{ matrix.output }}")" dist
+          godot --headless --path . --export-release "${{ matrix.preset }}" "${{ matrix.output }}"
+          test -f "${{ matrix.output }}"
+
+      - name: Package
+        shell: bash
+        run: ${{ matrix.package_command }}
+
+      - name: Upload packaged build
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.name }}
+          path: dist/${{ matrix.package }}
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download packaged builds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --generate-notes --verify-tag

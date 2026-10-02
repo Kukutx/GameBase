@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"gold_ore"
+display_name = "Gold Ore"
+description = "Rare ore found in the deeper mine from Floor 20 onward."
+max_stack = 99
+kind = 0
+sell_price = 90
+tags = PackedStringArray("ore", "mining", "gold", "valuable")

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WorldLocationData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/world/world_location_data.gd" id="1_location"]
+
+[resource]
+script = ExtResource("1_location")
+id = &"old_mine"
+display_name = "Old Mine"
+scene_path = "res://game/world/old_mine.tscn"
+type = 3
+weather_exposed = false
+default_spawn_id = &"from_riverside"

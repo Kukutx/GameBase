@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ToolUpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/upgrades/tool_upgrade_data.gd" id="1_upgrade"]
+
+[resource]
+script = ExtResource("1_upgrade")
+id = &"iron_sword_upgrade"
+display_name = "Iron Sword"
+source_item_id = &"copper_sword"
+result_item_id = &"iron_sword"
+materials = {"iron_bar": 4}
+money_cost = 1600
+required_skill = &"combat"
+required_level = 3

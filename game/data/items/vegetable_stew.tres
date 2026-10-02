@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"vegetable_stew"
+display_name = "Vegetable Stew"
+description = "A filling stew made from fresh farm vegetables."
+max_stack = 12
+kind = 1
+sell_price = 180
+energy_restore = 45
+health_restore = 20
+food_buff_id = &"hearty_worker"
+tags = PackedStringArray("food", "cooked", "vegetable", "meal")

@@ -1,0 +1,110 @@
+~ start
+Mira: Welcome. This is the first playable slice of GameBase.
+- What can I do here?
+	Mira: Walk around, approach me, and press E to interact. The next systems will build on this same interaction layer.
+	=> start
+- Why does the menu look different from the world?
+	Mira: The menu comes from the preserved Godot-GameTemplate foundation. The game-specific layer is kept separate so we can upgrade or replace systems cleanly.
+	=> start
+- See you later.
+	Mira: See you around.
+	=> END
+
+~ friend_2
+Mira: You have become part of the rhythm around here. I notice when the farm is quiet now.
+- Anything I can help with?
+
+Mira: Keep an eye on the weather. A rainy morning can save you a surprising amount of work.
+
+=> END
+- I will see you around.
+
+Mira: I am counting on it.
+
+=> END
+
+~ friend_4
+Mira: I used to think of your farm as the new place outside town. Now it just feels like part of home.
+- That means a lot.
+
+Mira: Good. I meant it.
+
+=> END
+- You are getting sentimental.
+
+Mira: Do not get used to it.
+
+=> END
+
+~ heart_2
+Mira: I saved some time for you. Walk with me for a minute?
+Mira: When you first arrived, I expected another person who would rush through a season and disappear.
+Mira: You stayed, helped people, and actually learned how this place works. I am glad I was wrong.
+- I am glad I stayed too.
+
+Mira: Then keep staying.
+
+=> END
+- I still have a lot to learn.
+
+Mira: That is probably why you fit in.
+
+=> END
+
+~ friend_6
+Mira: I started leaving a little space in the garden plan for whatever strange crop you decide to bring home next.
+- You plan around me now?
+	Mira: Around your surprises. There is a difference.
+	=> END
+- I will try to make it worth the space.
+	Mira: You usually do.
+	=> END
+
+~ friend_8
+Mira: When I set aside good seed now, I catch myself wondering what you would grow with it.
+- Save me the difficult ones.
+	Mira: I knew you would say that.
+	=> END
+- Keep some for yourself too.
+	Mira: That is why I trust you with the rest.
+	=> END
+
+~ friend_10
+Mira: I used to measure seasons by planting dates. Lately I measure them by who I expect to still be here when they change.
+- I am not going anywhere.
+	Mira: Good. Neither am I.
+	=> END
+
+~ heart_4
+Mira: Look at the garden beds now. Before the restoration, half of this ground was giving up.
+Mira: You did more than donate materials. You convinced people the place was worth investing in again.
+- The town did the work together.
+	Mira: Exactly. You are learning what makes a place last.
+	=> END
+- I just wanted the garden back.
+	Mira: Practical motives can still grow into something bigger.
+	=> END
+
+~ heart_6
+Mira: Funny meeting you in Riverside. A year ago these towns felt farther apart than the road says they are.
+Mira: Now I hear your name here almost as often as back home.
+- I like having reasons to cross the bridge.
+	Mira: Then keep making good ones.
+	=> END
+- Maybe the valley is getting smaller.
+	Mira: Or our idea of home is getting larger.
+	=> END
+
+~ heart_8
+Mira: People ask me what you think before they start new work now.
+Mira: I hope you realize that trust is heavier than praise. You have to keep carrying it after everyone stops clapping.
+- I can carry it.
+	Mira: I know. That is why I said it to you.
+	=> END
+
+~ heart_10
+Mira: The three towns are arguing about ordinary things again. That is how I know the rebuilding worked.
+Mira: No emergency meetings, no broken routes. Just people planning next season.
+- What are you planning?
+	Mira: A garden with enough room for whatever comes next. I already saved you a row.
+	=> END

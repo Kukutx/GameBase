@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="FarmAnimalData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/animals/farm_animal_data.gd" id="1_animal"]
+
+[resource]
+script = ExtResource("1_animal")
+id = &"cow"
+display_name = "Cow"
+sprite_path = "res://game/art/licensed/gandalf_animals/Brown Cow sheet.png"
+frame_size = Vector2i(112, 80)
+animation_fps = 11
+idle_from = 0
+idle_to = 7
+walk_from = 8
+walk_to = 14
+eat_from = 15
+eat_to = 22
+move_speed = 18.0
+wander_radius = 64.0
+collision_size = Vector2(24, 13)
+visual_offset = Vector2(0, -17)
+visual_scale = 0.55
+housing_type = &"barn"
+purchase_price = 1800
+product_item_id = &"milk"
+premium_product_item_id = &"large_milk"
+premium_happiness_threshold = 80
+product_quantity = 1
+product_interval_days = 1
+pet_happiness_gain = 4

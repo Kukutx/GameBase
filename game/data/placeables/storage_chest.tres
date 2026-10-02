@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/building/placeable_data.gd" id="1_placeable"]
+
+[resource]
+script = ExtResource("1_placeable")
+id = &"storage_chest"
+display_name = "Storage Chest"
+item_id = &"storage_chest"
+scene_path = "res://game/core/storage/storage_chest.tscn"
+grid_size = Vector2i(1, 1)
+snap_size = 16
+minimum_spacing = 24.0
+allowed_location_types = Array[int]([0, 1])
+allowed_location_ids = Array[StringName]([&"starter_town", &"player_home"])

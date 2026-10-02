@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"iron_pickaxe"
+display_name = "Iron Pickaxe"
+description = "An iron pickaxe capable of breaking Gold Veins."
+max_stack = 1
+kind = 3
+tool_action = &"pickaxe"
+tool_power = 3
+tags = PackedStringArray("tool", "iron")

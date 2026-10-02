@@ -1,0 +1,116 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://game/core/world/scene_portal.tscn" id="3_portal"]
+[ext_resource type="Script" path="res://game/core/world/world_spawn_point.gd" id="4_spawn"]
+[ext_resource type="PackedScene" path="res://game/core/player/sleep_spot.tscn" id="5_sleep"]
+[ext_resource type="PackedScene" path="res://game/core/crafting/crafting_station.tscn" id="6_crafting"]
+[ext_resource type="PackedScene" path="res://game/core/crafting/crafting_menu.tscn" id="7_crafting_menu"]
+[ext_resource type="Script" path="res://game/art/licensed_terrain_layer.gd" id="8_terrain"]
+[ext_resource type="PackedScene" path="res://game/core/storage/storage_chest.tscn" id="9_chest"]
+[ext_resource type="Script" path="res://game/core/building/build_zone.gd" id="10_build_zone"]
+[ext_resource type="Script" path="res://game/core/world/simple_navigation_region.gd" id="11_nav"]
+
+[sub_resource type="RectangleShape2D" id="Rect_horizontal"]
+size = Vector2(360, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_vertical"]
+size = Vector2(16, 230)
+
+[sub_resource type="RectangleShape2D" id="Rect_storage_build_zone"]
+size = Vector2(100, 50)
+
+[node name="HomeInterior" type="Node2D"]
+
+[node name="NavigationRegion" type="NavigationRegion2D" parent="."]
+script = ExtResource("11_nav")
+walkable_rects = Array[Rect2]([Rect2(-172, -107, 344, 214)])
+
+[node name="Floor" type="Polygon2D" parent="."]
+z_index = -3
+polygon = PackedVector2Array(-180, -115, 180, -115, 180, 115, -180, 115)
+color = Color(0.24, 0.19, 0.16, 1)
+
+[node name="LicensedFloor" type="TileMapLayer" parent="."]
+z_index = -2
+texture_filter = 1
+script = ExtResource("8_terrain")
+asset_path = "res://game/art/licensed/gandalf_house/House Inside Tiles 32x32 v1.png"
+atlas_coord = Vector2i(1, 3)
+tile_size = Vector2i(32, 32)
+origin_cell = Vector2i(-6, -4)
+grid_size = Vector2i(12, 8)
+
+[node name="Rug" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-55, -25, 55, -25, 55, 45, -55, 45)
+color = Color(0.38, 0.24, 0.20, 1)
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -115)
+shape = SubResource("Rect_horizontal")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 115)
+shape = SubResource("Rect_horizontal")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-180, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(180, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="TownDoorSpawn" type="Marker2D" parent="."]
+position = Vector2(0, 72)
+script = ExtResource("4_spawn")
+spawn_id = &"from_town"
+
+[node name="ExitPortal" parent="." instance=ExtResource("3_portal")]
+position = Vector2(0, 98)
+target_location_id = &"starter_town"
+target_spawn_id = &"from_home"
+
+[node name="Bed" parent="." instance=ExtResource("5_sleep")]
+position = Vector2(-108, -58)
+
+[node name="Workbench" parent="." instance=ExtResource("6_crafting")]
+position = Vector2(108, -58)
+station_name = "Workbench"
+
+[node name="Kitchen" parent="." instance=ExtResource("6_crafting")]
+position = Vector2(-108, 20)
+category = 1
+station_name = "Kitchen"
+
+[node name="StorageChest" parent="." instance=ExtResource("9_chest")]
+position = Vector2(0, -58)
+container_id = &"home_chest_01"
+display_name = "Home Chest"
+max_slots = 24
+
+[node name="HomeStorageBuildZone" type="Area2D" parent="."]
+position = Vector2(70, 35)
+script = ExtResource("10_build_zone")
+allowed_placeable_ids = Array[StringName]([&"storage_chest"])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HomeStorageBuildZone"]
+shape = SubResource("Rect_storage_build_zone")
+
+[node name="CraftingMenu" parent="." instance=ExtResource("7_crafting_menu")]
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(0, 55)
+
+[node name="WorldHud" parent="." instance=ExtResource("2_hud")]
+
+[node name="InteriorLabel" type="Label" parent="."]
+position = Vector2(-55, -88)
+theme_override_colors/font_color = Color(0.86, 0.76, 0.62, 1)
+theme_override_font_sizes/font_size = 14
+text = "Home Interior"

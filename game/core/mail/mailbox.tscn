@@ -1,0 +1,43 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/core/mail/mailbox.gd" id="1_mailbox"]
+[ext_resource type="Script" path="res://game/core/interactions/interactable.gd" id="2_interactable"]
+
+[sub_resource type="RectangleShape2D" id="Rect_interact"]
+size = Vector2(30, 28)
+
+[node name="Mailbox" type="Node2D"]
+z_index = 4
+script = ExtResource("1_mailbox")
+
+[node name="Post" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-2, -2, 2, -2, 2, 15, -2, 15)
+color = Color(0.34, 0.24, 0.17, 1)
+
+[node name="Box" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-9, -13, 8, -13, 11, -8, 11, 1, -9, 1)
+color = Color(0.35, 0.48, 0.38, 1)
+
+[node name="Flag" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(8, -10, 14, -10, 14, -2, 12, -2, 12, -7, 8, -7)
+color = Color(0.78, 0.33, 0.25, 1)
+
+[node name="Label" type="Label" parent="."]
+offset_left = -45.0
+offset_top = 15.0
+offset_right = 45.0
+offset_bottom = 30.0
+theme_override_font_sizes/font_size = 8
+text = "Mailbox"
+horizontal_alignment = 1
+
+[node name="Interactable" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("2_interactable")
+prompt_text = "Check Mailbox"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("Rect_interact")

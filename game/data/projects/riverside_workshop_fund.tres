@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TownProjectData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/projects/town_project_data.gd" id="1_project"]
+
+[resource]
+script = ExtResource("1_project")
+id = &"riverside_workshop_fund"
+display_name = "Riverside Workshop Fund"
+description = "Supply Rowan with enough materials to expand the riverside workshop and local processing tools."
+location_id = &"riverside_town"
+prerequisites = Array[StringName]([&"starter_garden_restoration"])
+requirements = {"copper_bar": 3, "stone": 12, "wood": 15}
+reward_money = 800
+reward_items = {"oil_maker": 1}
+unlock_flags = Array[StringName]([&"project:riverside_workshop:complete"])

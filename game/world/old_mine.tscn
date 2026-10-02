@@ -1,0 +1,130 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://game/core/world/scene_portal.tscn" id="3_portal"]
+[ext_resource type="Script" path="res://game/core/world/world_spawn_point.gd" id="4_spawn"]
+[ext_resource type="PackedScene" path="res://game/core/mining/mining_node.tscn" id="5_mining"]
+[ext_resource type="Resource" path="res://game/data/mining/stone_rock.tres" id="6_stone"]
+[ext_resource type="Resource" path="res://game/data/mining/copper_rock.tres" id="7_copper"]
+[ext_resource type="PackedScene" path="res://game/core/combat/hostile_creature.tscn" id="8_enemy"]
+[ext_resource type="Resource" path="res://game/data/enemies/green_slime.tres" id="9_slime"]
+[ext_resource type="Script" path="res://game/art/licensed_terrain_layer.gd" id="10_terrain"]
+[ext_resource type="Script" path="res://game/core/world/simple_navigation_region.gd" id="11_nav"]
+[ext_resource type="Script" path="res://game/core/mining/mine_floor_controller.gd" id="12_floor_controller"]
+[ext_resource type="PackedScene" path="res://game/core/mining/mine_ladder.tscn" id="13_ladder"]
+[ext_resource type="PackedScene" path="res://game/core/mining/mine_elevator.tscn" id="14_elevator"]
+
+[sub_resource type="RectangleShape2D" id="Rect_horizontal"]
+size = Vector2(720, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_vertical"]
+size = Vector2(16, 380)
+
+[node name="OldMine" type="Node2D"]
+script = ExtResource("12_floor_controller")
+
+[node name="NavigationRegion" type="NavigationRegion2D" parent="."]
+script = ExtResource("11_nav")
+walkable_rects = Array[Rect2]([Rect2(-352, -182, 704, 364)])
+
+[node name="Background" type="ColorRect" parent="."]
+z_index = -4
+offset_left = -360.0
+offset_top = -190.0
+offset_right = 360.0
+offset_bottom = 190.0
+color = Color(0.055, 0.058, 0.064, 1)
+mouse_filter = 2
+
+[node name="Floor" type="Polygon2D" parent="."]
+z_index = -3
+polygon = PackedVector2Array(-340, -170, 340, -170, 340, 170, -340, 170)
+color = Color(0.18, 0.17, 0.16, 1)
+
+[node name="LicensedGround" type="TileMapLayer" parent="."]
+z_index = -2
+texture_filter = 1
+script = ExtResource("10_terrain")
+asset_path = "res://game/art/licensed/gandalf_farming/GandalfHardcore Farming Tiles and Crops 32x32.png"
+atlas_coord = Vector2i(9, 0)
+tile_size = Vector2i(32, 32)
+origin_cell = Vector2i(-11, -5)
+grid_size = Vector2i(22, 11)
+
+[node name="Tunnel" type="Polygon2D" parent="."]
+z_index = -1
+polygon = PackedVector2Array(-330, -42, 330, -42, 330, 42, -330, 42)
+color = Color(0.24, 0.22, 0.19, 0.72)
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -190)
+shape = SubResource("Rect_horizontal")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 190)
+shape = SubResource("Rect_horizontal")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-360, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(360, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="FromRiversideSpawn" type="Marker2D" parent="."]
+position = Vector2(-305, 0)
+script = ExtResource("4_spawn")
+spawn_id = &"from_riverside"
+
+[node name="FloorEntrySpawn" type="Marker2D" parent="."]
+position = Vector2(-255, 0)
+script = ExtResource("4_spawn")
+spawn_id = &"floor_entry"
+
+[node name="RiversidePortal" parent="." instance=ExtResource("3_portal")]
+position = Vector2(-334, 0)
+target_location_id = &"riverside_town"
+target_spawn_id = &"from_mine"
+
+[node name="StoneRockA" parent="." instance=ExtResource("5_mining")]
+position = Vector2(-90, -92)
+data = ExtResource("6_stone")
+persistent_id = &"old_mine_stone_01"
+
+[node name="StoneRockB" parent="." instance=ExtResource("5_mining")]
+position = Vector2(95, 92)
+data = ExtResource("6_stone")
+persistent_id = &"old_mine_stone_02"
+
+[node name="CopperRock" parent="." instance=ExtResource("5_mining")]
+position = Vector2(215, -88)
+data = ExtResource("7_copper")
+persistent_id = &"old_mine_copper_01"
+
+[node name="GreenSlime" parent="." instance=ExtResource("8_enemy")]
+position = Vector2(92, -5)
+data = ExtResource("9_slime")
+persistent_id = &"old_mine_slime_01"
+
+[node name="MineElevator" parent="." instance=ExtResource("14_elevator")]
+position = Vector2(-260, 92)
+
+[node name="DeepLadder" parent="." instance=ExtResource("13_ladder")]
+position = Vector2(300, 0)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(-270, 0)
+
+[node name="WorldHud" parent="." instance=ExtResource("2_hud")]
+
+[node name="MineLabel" type="Label" parent="."]
+position = Vector2(-54, -158)
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 16
+text = "Old Mine"

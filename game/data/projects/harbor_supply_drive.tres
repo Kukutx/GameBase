@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TownProjectData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/projects/town_project_data.gd" id="1_project"]
+
+[resource]
+script = ExtResource("1_project")
+id = &"harbor_supply_drive"
+display_name = "Harbor Supply Drive"
+description = "Restock the harbor pantry with food from the sea and farms so crews can stay supplied through rough weather."
+location_id = &"harbor_town"
+prerequisites = Array[StringName]([&"riverside_workshop_fund"])
+requirements = {"sardine": 2, "seaweed": 4, "egg": 2, "milk": 2}
+reward_money = 1000
+reward_items = {"fish_soup": 2}
+unlock_flags = Array[StringName]([&"project:harbor_supply:complete"])

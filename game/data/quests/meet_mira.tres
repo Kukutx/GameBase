@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"meet_mira"
+entry_point = true
+auto_start = true
+title = "Meet the Neighbour"
+description = "Talk to Mira near the village path."
+objective_type = 1
+target_id = &"mira"
+required_amount = 1
+reward_money = 50

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/combat/enemy_data.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"red_slime"
+display_name = "Red Slime"
+sprite_path = "res://game/art/licensed/gandalf_slime/Slime red.png"
+frame_size = Vector2i(32, 32)
+animation_fps = 13
+idle_from = 0
+idle_to = 4
+move_from = 5
+move_to = 12
+death_from = 13
+death_to = 18
+max_health = 90
+move_speed = 40.0
+chase_radius = 125.0
+attack_range = 17.0
+contact_damage = 18
+attack_cooldown = 1.0
+collision_size = Vector2(16, 12)
+visual_offset = Vector2(0, -6)
+visual_scale = 1.0
+drop_item_id = &"slime_gel"
+drop_quantity = 3
+respawn_days = 1
+combat_xp = 60

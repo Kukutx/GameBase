@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MiningNodeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/mining/mining_node_data.gd" id="1_node"]
+
+[resource]
+script = ExtResource("1_node")
+id = &"iron_rock"
+display_name = "Iron Vein"
+durability = 5
+minimum_mine_floor = 6
+required_tool_power = 2
+energy_cost = 5
+drop_item_id = &"iron_ore"
+drop_quantity = 2
+respawn_days = 1
+visual_color = Color(0.48, 0.52, 0.56, 1)

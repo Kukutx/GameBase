@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ToolUpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/upgrades/tool_upgrade_data.gd" id="1_upgrade"]
+
+[resource]
+script = ExtResource("1_upgrade")
+id = &"iridium_pickaxe_upgrade"
+display_name = "Iridium Pickaxe"
+source_item_id = &"gold_pickaxe"
+result_item_id = &"iridium_pickaxe"
+materials = {"iridium_bar": 5}
+money_cost = 9000
+required_skill = &"mining"
+required_level = 7

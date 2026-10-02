@@ -1,0 +1,83 @@
+~ start
+Rowan: Bridge is holding. That's a good day by my standards.
+- What are you working on?
+	Rowan: Mostly the east rail today. Water finds every weak joint eventually.
+	=> start
+- Any advice for the mine?
+	Rowan: Take a pickaxe, keep your energy up, and don't let the quiet fool you. Old places make their own trouble.
+	=> start
+- See you later.
+	Rowan: Keep your tools dry.
+	=> END
+
+~ friend_2
+Rowan: You have stopped looking like someone borrowing tools and started looking like someone who knows why they break.
+- I will take that as a compliment.
+
+Rowan: You should. I do not hand them out often.
+
+=> END
+
+~ friend_4
+Rowan: If you ever need a hand reinforcing the farm, ask before the roof is already falling in.
+- I thought you liked difficult repairs.
+
+Rowan: I like repairs. I dislike preventable ones.
+
+=> END
+
+~ heart_2
+Rowan: Hold this end of the rail for me.
+Rowan: Most people only notice a bridge when it fails. You have been showing up before things fail.
+Rowan: That matters more than people think.
+- Reliable work deserves company.
+
+Rowan: Hm. Maybe you are learning.
+
+=> END
+
+~ friend_6
+Rowan: I left a spare key for the workshop shelf. Do not make me regret that sentence.
+- That almost sounds like trust.
+	Rowan: Do not ruin it by naming it.
+	=> END
+
+~ friend_8
+Rowan: The bridge sounds different after a proper repair. Less complaining in the joints.
+- You can hear that?
+	Rowan: You can too. You just have to stop talking first.
+	=> END
+
+~ friend_10
+Rowan: If I ever rebuild the whole waterwheel, I already know who I am asking to stand on the unsafe side.
+- That is your highest compliment yet.
+	Rowan: Correct.
+	=> END
+
+~ heart_4
+Rowan: Workshop fund came through. New braces, dry storage, tools that are not older than I am.
+Rowan: Most people like finished buildings. You helped before there was anything impressive to look at.
+- Foundations matter.
+	Rowan: Now you are stealing my lines.
+	=> END
+
+~ heart_6
+Rowan: Here. Take this plane for a moment.
+Rowan: I do not lend that one out. The balance is right and replacing it would annoy me for years.
+- Then why hand it to me?
+	Rowan: Because I know you will hand it back in the same condition.
+	=> END
+
+~ heart_8
+Rowan: I used to repair the bridge because somebody had to.
+Rowan: Lately I catch myself thinking about what it connects instead of what might fail next.
+- That sounds healthier.
+	Rowan: Do not get ambitious. I still inspect every joint.
+	=> END
+
+~ heart_10
+Rowan: Good structures are not one beam holding everything up. They work because the load gets shared.
+Rowan: The towns finally feel like that again.
+- And us?
+	Rowan: Same principle. Reliable, tested, and worth maintaining.
+	=> END

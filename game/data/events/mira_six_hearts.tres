@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="HeartEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/npc/heart_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"mira_six_hearts"
+npc_id = &"mira"
+required_hearts = 6
+dialogue_title = "heart_6"
+location_id = &"riverside_town"
+start_minute = 540
+end_minute = 1080

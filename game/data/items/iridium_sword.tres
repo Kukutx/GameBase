@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"iridium_sword"
+display_name = "Iridium Sword"
+description = "A late-game blade capable of cutting through the strongest mine creatures."
+max_stack = 1
+kind = 3
+tool_action = &"attack"
+tool_power = 72
+tags = PackedStringArray("tool", "weapon", "iridium")

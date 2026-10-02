@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MiningNodeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/mining/mining_node_data.gd" id="1_node"]
+
+[resource]
+script = ExtResource("1_node")
+id = &"iridium_rock"
+display_name = "Iridium Vein"
+durability = 10
+minimum_mine_floor = 60
+required_tool_power = 4
+energy_cost = 8
+drop_item_id = &"iridium_ore"
+drop_quantity = 2
+respawn_days = 1
+visual_color = Color(0.56, 0.34, 0.78, 1)

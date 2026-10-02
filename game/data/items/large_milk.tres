@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"large_milk"
+display_name = "Large Milk"
+description = "High-quality milk from a very happy cow."
+max_stack = 12
+kind = 1
+sell_price = 155
+energy_restore = 34
+tags = PackedStringArray("food", "animal_product", "premium")

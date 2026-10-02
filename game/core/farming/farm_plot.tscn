@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/core/farming/farm_plot.gd" id="1_plot"]
+
+[sub_resource type="RectangleShape2D" id="Rect_plot"]
+size = Vector2(28, 24)
+
+[node name="FarmPlot" type="Area2D"]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("1_plot")
+prompt_text = "Farm plot"
+
+[node name="Soil" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-14, -10, 14, -10, 14, 10, -14, 10)
+color = Color(0.27, 0.22, 0.16, 1)
+
+[node name="Crop" type="Polygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(-6, 7, 6, 7, 5, -5, -5, -5)
+color = Color(0.45, 0.72, 0.30, 1)
+
+[node name="StateLabel" type="Label" parent="."]
+offset_left = -36.0
+offset_top = 13.0
+offset_right = 36.0
+offset_bottom = 31.0
+theme_override_font_sizes/font_size = 8
+text = "Soil"
+horizontal_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Rect_plot")

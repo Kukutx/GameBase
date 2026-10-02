@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ToolUpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/upgrades/tool_upgrade_data.gd" id="1_upgrade"]
+
+[resource]
+script = ExtResource("1_upgrade")
+id = &"iridium_sword_upgrade"
+display_name = "Iridium Sword"
+source_item_id = &"gold_sword"
+result_item_id = &"iridium_sword"
+materials = {"iridium_bar": 6}
+money_cost = 10000
+required_skill = &"combat"
+required_level = 7

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ToolUpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/upgrades/tool_upgrade_data.gd" id="1_upgrade"]
+
+[resource]
+script = ExtResource("1_upgrade")
+id = &"copper_hoe_upgrade"
+display_name = "Copper Hoe"
+source_item_id = &"hoe"
+result_item_id = &"copper_hoe"
+materials = {"copper_bar": 2}
+money_cost = 250
+required_skill = &"farming"
+required_level = 1

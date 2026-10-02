@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FishData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/fishing/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"river_trout"
+item_id = &"river_trout"
+locations = Array[StringName]([&"riverside_town"])
+seasons = PackedStringArray("Spring", "Autumn")
+start_minute = 360
+end_minute = 1200
+allowed_weather = PackedStringArray("Clear", "Rain")
+catch_weight = 1.2
+difficulty = 3

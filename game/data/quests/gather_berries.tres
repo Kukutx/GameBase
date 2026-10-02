@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"gather_berries"
+entry_point = true
+auto_start = true
+title = "Foraging Basics"
+description = "Gather three wild berries around town."
+objective_type = 0
+target_id = &"berry"
+required_amount = 3
+reward_money = 100
+next_quest_id = &"first_harvest"

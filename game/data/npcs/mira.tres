@@ -1,0 +1,115 @@
+[gd_resource type="Resource" script_class="NpcProfileData" load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://game/core/npc/npc_profile_data.gd" id="1_profile"]
+[ext_resource type="Script" path="res://game/core/npc/npc_schedule_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="Schedule_morning"]
+script = ExtResource("2_entry")
+minute_of_day = 480
+location_id = &"starter_town"
+target_position = Vector2(-115, -34)
+activity = "Morning walk"
+
+[sub_resource type="Resource" id="Schedule_market"]
+script = ExtResource("2_entry")
+minute_of_day = 540
+priority = 10
+location_id = &"starter_town"
+target_position = Vector2(0, 56)
+activity = "Browse Village Market"
+required_world_flag = &"event:village_market:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_midday"]
+script = ExtResource("2_entry")
+minute_of_day = 600
+location_id = &"starter_town"
+target_position = Vector2(120, -34)
+activity = "Visit the east side"
+
+[sub_resource type="Resource" id="Schedule_evening"]
+script = ExtResource("2_entry")
+minute_of_day = 1080
+location_id = &"starter_town"
+target_position = Vector2(0, -34)
+activity = "Return home"
+
+[sub_resource type="Resource" id="Schedule_sunday_riverside"]
+script = ExtResource("2_entry")
+minute_of_day = 540
+priority = 5
+location_id = &"riverside_town"
+target_position = Vector2(0, 10)
+activity = "Sunday visit to Riverside"
+days_of_week = PackedInt32Array(6)
+
+[sub_resource type="Resource" id="Schedule_storm"]
+script = ExtResource("2_entry")
+minute_of_day = 0
+priority = 20
+location_id = &"starter_town"
+target_position = Vector2(0, -142)
+activity = "Shelter from the storm"
+allowed_weather = PackedStringArray("Storm")
+
+[sub_resource type="Resource" id="Schedule_festival_spring_seed_fair"]
+script = ExtResource("2_entry")
+minute_of_day = 540
+priority = 40
+location_id = &"starter_town"
+target_position = Vector2(-270, 90)
+activity = "Visit the Spring Seed Fair"
+required_world_flag = &"event:spring_seed_fair:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_summer_river_fair"]
+script = ExtResource("2_entry")
+minute_of_day = 600
+priority = 40
+location_id = &"riverside_town"
+target_position = Vector2(80, -108)
+activity = "Join the Summer River Fair"
+required_world_flag = &"event:summer_river_fair:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_fall_harbor_derby"]
+script = ExtResource("2_entry")
+minute_of_day = 360
+priority = 40
+location_id = &"harbor_town"
+target_position = Vector2(105, 8)
+activity = "Watch the Harbor Derby"
+required_world_flag = &"event:fall_harbor_derby:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_winter_lantern_night"]
+script = ExtResource("2_entry")
+minute_of_day = 1020
+priority = 40
+location_id = &"starter_town"
+target_position = Vector2(145, 132)
+activity = "Attend Lantern Night"
+required_world_flag = &"event:winter_lantern_night:active"
+required_flag_value = true
+
+[resource]
+script = ExtResource("1_profile")
+id = &"mira"
+display_name = "Mira"
+role = "Village gardener"
+background = "Mira grew up around the starter town and helps maintain its small gardens and market flower beds. She knows the rhythms of planting, weather, and the people who pass through town."
+personality = "Warm, observant, practical, quietly curious. She likes useful work and remembers small acts of kindness."
+speaking_style = "Friendly and concise. Uses everyday language, occasionally mentions plants, weather, or town life. Avoids long speeches unless asked."
+home_location_id = &"starter_town"
+default_location_id = &"starter_town"
+birthday_season = "Spring"
+birthday_day = 14
+ai_enabled = true
+context_world_keys = Array[StringName]([&"event:village_market:active"])
+dialogue_titles_by_hearts = {0: "start", 2: "friend_2", 4: "friend_4", 6: "friend_6", 8: "friend_8", 10: "friend_10"}
+visual_strip_root = "res://game/art/licensed/craftpix_roguelike/character2"
+schedule_entries = Array[ExtResource("2_entry")]([SubResource("Schedule_morning"), SubResource("Schedule_market"), SubResource("Schedule_midday"), SubResource("Schedule_evening"), SubResource("Schedule_sunday_riverside"), SubResource("Schedule_storm"), SubResource("Schedule_festival_spring_seed_fair"), SubResource("Schedule_festival_summer_river_fair"), SubResource("Schedule_festival_fall_harbor_derby"), SubResource("Schedule_festival_winter_lantern_night")])
+loved_items = Array[StringName]([&"berry"])
+liked_items = Array[StringName]([&"turnip"])
+loved_tags = PackedStringArray("sweet")
+liked_tags = PackedStringArray("crop", "flower")

@@ -1,0 +1,94 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/core/animals/animal_management_menu.gd" id="1_menu"]
+[ext_resource type="Theme" path="res://addons/top_down/resources/theme/game_gui_theme.theme" id="2_theme"]
+
+[node name="AnimalManagementMenu" type="CanvasLayer"]
+layer = 80
+script = ExtResource("1_menu")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_left = 70.0
+offset_top = 24.0
+offset_right = 410.0
+offset_bottom = 254.0
+theme = ExtResource("2_theme")
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Animal Ledger"
+horizontal_alignment = 1
+
+[node name="Summary" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "Coop 0/4 · Barn 0/4 · Hay 0"
+horizontal_alignment = 1
+
+[node name="AnimalSelect" type="OptionButton" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Details" type="RichTextLabel" parent="Panel/VBox"]
+custom_minimum_size = Vector2(0, 78)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = false
+scroll_active = false
+text = "No animal selected."
+
+[node name="RenameRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Name" type="LineEdit" parent="Panel/VBox/RenameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_length = 20
+placeholder_text = "Animal name"
+
+[node name="Rename" type="Button" parent="Panel/VBox/RenameRow"]
+layout_mode = 2
+text = "Rename"
+
+[node name="FeedRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="FeedCoop" type="Button" parent="Panel/VBox/FeedRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Feed Coop (0)"
+
+[node name="FeedBarn" type="Button" parent="Panel/VBox/FeedRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Feed Barn (0)"
+
+[node name="ExpansionRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="ExpandCoop" type="Button" parent="Panel/VBox/ExpansionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Coop"
+
+[node name="ExpandBarn" type="Button" parent="Panel/VBox/ExpansionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Barn"
+
+[node name="Sell" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Sell Animal"
+
+[node name="Close" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Close"
+
+[node name="ConfirmSell" type="ConfirmationDialog" parent="."]
+title = "Sell Animal"
+dialog_text = "Sell this animal?"
+ok_button_text = "Sell"

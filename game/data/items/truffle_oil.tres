@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"truffle_oil"
+display_name = "Truffle Oil"
+description = "Rich oil pressed from a fresh truffle. A valuable artisan product."
+max_stack = 12
+kind = 0
+sell_price = 850
+tags = PackedStringArray("artisan", "animal_product", "valuable", "oil")

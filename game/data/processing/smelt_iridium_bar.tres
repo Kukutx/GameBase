@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ProcessingRecipeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/processing/processing_recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"smelt_iridium_bar"
+display_name = "Smelt Iridium Bar"
+inputs = {"iridium_ore": 4, "wood": 1}
+output_item_id = &"iridium_bar"
+output_quantity = 1
+process_minutes = 180
+required_skill = &"mining"
+required_level = 7

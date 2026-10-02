@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"iridium_bar"
+display_name = "Iridium Bar"
+description = "A late-game alloy used for the strongest tools and weapons."
+max_stack = 99
+kind = 0
+sell_price = 850
+tags = PackedStringArray("bar", "mining", "iridium", "processed", "valuable")

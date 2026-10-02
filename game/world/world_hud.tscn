@@ -1,0 +1,135 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://game/world/world_hud.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://game/ui/game_menu.tscn" id="2_menu"]
+[ext_resource type="PackedScene" path="res://game/ui/pause_menu.tscn" id="3_pause"]
+[ext_resource type="Script" path="res://game/world/weather_overlay.gd" id="4_weather"]
+[ext_resource type="PackedScene" path="res://game/core/storage/storage_menu.tscn" id="5_storage_menu"]
+[ext_resource type="PackedScene" path="res://game/core/mail/mailbox_menu.tscn" id="6_mailbox_menu"]
+[ext_resource type="PackedScene" path="res://game/core/contracts/daily_contract_menu.tscn" id="7_contract_menu"]
+[ext_resource type="PackedScene" path="res://game/core/animals/animal_management_menu.tscn" id="8_animal_menu"]
+[ext_resource type="PackedScene" path="res://game/core/projects/town_project_menu.tscn" id="9_project_menu"]
+
+[node name="WorldHud" type="CanvasLayer"]
+layer = 5
+script = ExtResource("1_hud")
+
+[node name="WeatherOverlay" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_weather")
+
+[node name="Stats" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 10.0
+offset_right = 238.0
+offset_bottom = 30.0
+theme_override_colors/font_color = Color(0.92, 0.9, 0.76, 1)
+theme_override_font_sizes/font_size = 12
+text = "Energy 100/100   ·   500g"
+
+[node name="Clock" type="Label" parent="."]
+offset_left = 218.0
+offset_top = 10.0
+offset_right = 464.0
+offset_bottom = 30.0
+theme_override_colors/font_color = Color(0.94, 0.94, 0.88, 1)
+theme_override_font_sizes/font_size = 12
+text = "Spring 1  08:00 · Clear"
+horizontal_alignment = 2
+
+[node name="Quest" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 33.0
+offset_right = 464.0
+offset_bottom = 51.0
+theme_override_colors/font_color = Color(0.78, 0.84, 0.68, 1)
+theme_override_font_sizes/font_size = 10
+text = "Quest: Meet the Neighbour 0/1"
+
+[node name="Skills" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 52.0
+offset_right = 280.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(0.67, 0.76, 0.82, 1)
+theme_override_font_sizes/font_size = 9
+text = "Farm 1 · Forage 1 · Social 1"
+
+[node name="Status" type="Label" parent="."]
+offset_left = 120.0
+offset_top = 52.0
+offset_right = 464.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(0.94, 0.78, 0.48, 1)
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 2
+
+[node name="Buffs" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 72.0
+offset_right = 464.0
+offset_bottom = 90.0
+theme_override_colors/font_color = Color(0.78, 0.68, 0.96, 1)
+theme_override_font_sizes/font_size = 9
+text = ""
+clip_text = true
+
+[node name="FishingStatus" type="Label" parent="."]
+visible = false
+offset_left = 130.0
+offset_top = 166.0
+offset_right = 350.0
+offset_bottom = 190.0
+theme_override_colors/font_color = Color(0.52, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Fishing · Waiting..."
+horizontal_alignment = 1
+
+[node name="Hotbar" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 199.0
+offset_right = 464.0
+offset_bottom = 217.0
+theme_override_colors/font_color = Color(0.95, 0.89, 0.70, 1)
+theme_override_font_sizes/font_size = 9
+text = ">1:Hoe   2:Watering Can   3:Turnip Seeds x10"
+clip_text = true
+
+[node name="Inventory" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 220.0
+offset_right = 464.0
+offset_bottom = 238.0
+theme_override_colors/font_color = Color(0.84, 0.86, 0.80, 1)
+theme_override_font_sizes/font_size = 9
+text = "Inventory: empty"
+clip_text = true
+
+[node name="Info" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 245.0
+offset_right = 468.0
+offset_bottom = 265.0
+theme_override_colors/font_color = Color(0.65, 0.70, 0.67, 1)
+theme_override_font_sizes/font_size = 8
+text = "WASD move · E interact · F tool/eat/place · R pack building · G gift · I menu · 1-9 hotbar · K/L save/load"
+
+[node name="GameMenu" parent="." instance=ExtResource("2_menu")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("3_pause")]
+
+[node name="StorageMenu" parent="." instance=ExtResource("5_storage_menu")]
+
+[node name="MailboxMenu" parent="." instance=ExtResource("6_mailbox_menu")]
+
+[node name="DailyContractMenu" parent="." instance=ExtResource("7_contract_menu")]
+
+[node name="AnimalManagementMenu" parent="." instance=ExtResource("8_animal_menu")]
+
+[node name="TownProjectMenu" parent="." instance=ExtResource("9_project_menu")]

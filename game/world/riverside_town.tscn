@@ -1,0 +1,224 @@
+[gd_scene load_steps=23 format=3]
+
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://game/core/world/scene_portal.tscn" id="3_portal"]
+[ext_resource type="Script" path="res://game/core/world/world_spawn_point.gd" id="4_spawn"]
+[ext_resource type="Script" path="res://game/core/time/day_night_modulate.gd" id="5_daynight"]
+[ext_resource type="PackedScene" path="res://game/npc/mira_npc.tscn" id="6_npc"]
+[ext_resource type="Script" path="res://game/art/licensed_art_sprite.gd" id="7_art"]
+[ext_resource type="PackedScene" path="res://game/core/fishing/fishing_spot.tscn" id="8_fishing"]
+[ext_resource type="Script" path="res://game/art/licensed_terrain_layer.gd" id="9_terrain"]
+[ext_resource type="PackedScene" path="res://game/npc/rowan_npc.tscn" id="10_rowan"]
+[ext_resource type="Script" path="res://game/core/forage/forage_spawner.gd" id="11_forage"]
+[ext_resource type="PackedScene" path="res://game/core/processing/processing_station.tscn" id="12_furnace"]
+[ext_resource type="PackedScene" path="res://game/core/upgrades/tool_upgrade_station.tscn" id="13_forge"]
+[ext_resource type="PackedScene" path="res://game/core/upgrades/tool_upgrade_menu.tscn" id="14_upgrade_menu"]
+[ext_resource type="Script" path="res://game/core/world/simple_navigation_region.gd" id="15_nav"]
+[ext_resource type="PackedScene" path="res://game/core/projects/town_project_board.tscn" id="16_project_board"]
+[ext_resource type="Script" path="res://game/core/projects/project_completion_visual.gd" id="17_project_visual"]
+[ext_resource type="PackedScene" path="res://game/core/events/calendar_event_booth.tscn" id="18_festival_booth"]
+[ext_resource type="PackedScene" path="res://game/npc/neri_npc.tscn" id="19_neri"]
+
+[sub_resource type="RectangleShape2D" id="Rect_horizontal"]
+size = Vector2(760, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_vertical"]
+size = Vector2(16, 420)
+
+[sub_resource type="RectangleShape2D" id="Rect_river"]
+size = Vector2(64, 420)
+
+[node name="RiversideTown" type="Node2D"]
+
+[node name="DayNight" type="CanvasModulate" parent="."]
+script = ExtResource("5_daynight")
+
+[node name="NavigationRegion" type="NavigationRegion2D" parent="."]
+script = ExtResource("15_nav")
+walkable_rects = Array[Rect2]([Rect2(-372, -202, 340, 404), Rect2(-32, -24, 64, 48), Rect2(32, -202, 340, 404)])
+
+[node name="Ground" type="Polygon2D" parent="."]
+z_index = -3
+polygon = PackedVector2Array(-380, -210, 380, -210, 380, 210, -380, 210)
+color = Color(0.17, 0.27, 0.19, 1)
+
+[node name="LicensedGround" type="TileMapLayer" parent="."]
+z_index = -2
+texture_filter = 1
+script = ExtResource("9_terrain")
+asset_path = "res://game/art/licensed/gandalf_village/Pixel Art Village full sheet.png"
+atlas_coord = Vector2i(18, 23)
+tile_size = Vector2i(32, 32)
+origin_cell = Vector2i(-12, -7)
+grid_size = Vector2i(24, 14)
+
+[node name="River" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-32, -210, 32, -210, 32, 210, -32, 210)
+color = Color(0.12, 0.32, 0.48, 1)
+
+[node name="Bridge" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-40, -24, 40, -24, 40, 24, -40, 24)
+color = Color(0.42, 0.31, 0.20, 1)
+
+[node name="RiverFishingSpot" parent="." instance=ExtResource("8_fishing")]
+position = Vector2(-60, 100)
+location_id = &"riverside_town"
+
+[node name="WestDistrict" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-340, -70, -90, -70, -90, 70, -340, 70)
+color = Color(0.20, 0.31, 0.22, 1)
+
+[node name="EastDistrict" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(90, -70, 340, -70, 340, 70, 90, 70)
+color = Color(0.21, 0.30, 0.21, 1)
+
+[node name="WestHouseArt" type="Sprite2D" parent="."]
+position = Vector2(-230, -110)
+scale = Vector2(0.46, 0.46)
+z_index = 1
+script = ExtResource("7_art")
+asset_path = "res://game/art/licensed/gandalf_village/House2.png"
+
+[node name="EastHouseArt" type="Sprite2D" parent="."]
+position = Vector2(220, -110)
+scale = Vector2(0.46, 0.46)
+z_index = 1
+script = ExtResource("7_art")
+asset_path = "res://game/art/licensed/gandalf_village/House3.png"
+
+[node name="TavernArt" type="Sprite2D" parent="."]
+position = Vector2(210, 126)
+scale = Vector2(0.34, 0.34)
+z_index = 1
+script = ExtResource("7_art")
+asset_path = "res://game/art/licensed/gandalf_village/Tavern green roof.png"
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -210)
+shape = SubResource("Rect_horizontal")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 210)
+shape = SubResource("Rect_horizontal")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-380, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(380, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="RiverCollision" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="RiverShapeTop" type="CollisionShape2D" parent="RiverCollision"]
+position = Vector2(0, -117)
+shape = SubResource("Rect_river")
+
+[node name="RiverShapeBottom" type="CollisionShape2D" parent="RiverCollision"]
+position = Vector2(0, 117)
+shape = SubResource("Rect_river")
+
+[node name="FromStarterSpawn" type="Marker2D" parent="."]
+position = Vector2(-330, 0)
+script = ExtResource("4_spawn")
+spawn_id = &"from_starter"
+
+[node name="FromHarborSpawn" type="Marker2D" parent="."]
+position = Vector2(330, 0)
+script = ExtResource("4_spawn")
+spawn_id = &"from_harbor"
+
+[node name="FromMineSpawn" type="Marker2D" parent="."]
+position = Vector2(-250, 132)
+script = ExtResource("4_spawn")
+spawn_id = &"from_mine"
+
+[node name="StarterPortal" parent="." instance=ExtResource("3_portal")]
+position = Vector2(-354, 0)
+target_location_id = &"starter_town"
+target_spawn_id = &"from_riverside"
+
+[node name="HarborPortal" parent="." instance=ExtResource("3_portal")]
+position = Vector2(354, 0)
+target_location_id = &"harbor_town"
+target_spawn_id = &"from_riverside"
+
+[node name="MinePortal" parent="." instance=ExtResource("3_portal")]
+position = Vector2(-250, 164)
+target_location_id = &"old_mine"
+target_spawn_id = &"from_riverside"
+
+[node name="Mira" parent="." instance=ExtResource("6_npc")]
+position = Vector2(0, 10)
+
+[node name="Rowan" parent="." instance=ExtResource("10_rowan")]
+position = Vector2(-225, -30)
+
+[node name="Neri" parent="." instance=ExtResource("19_neri")]
+position = Vector2(205, -100)
+
+[node name="TownProjectBoard" parent="." instance=ExtResource("16_project_board")]
+position = Vector2(-105, -150)
+location_id = &"riverside_town"
+
+[node name="WorkshopProgress" type="Node2D" parent="."]
+position = Vector2(-205, -116)
+script = ExtResource("17_project_visual")
+completion_flag = &"project:riverside_workshop:complete"
+pending_text = "Workshop · cramped"
+completed_text = "Workshop · expanded"
+pending_color = Color(0.34, 0.28, 0.22, 1)
+completed_color = Color(0.38, 0.58, 0.70, 1)
+
+[node name="Visual" type="Polygon2D" parent="WorkshopProgress"]
+polygon = PackedVector2Array(-48, -18, 48, -18, 48, 18, -48, 18)
+
+[node name="Label" type="Label" parent="WorkshopProgress"]
+offset_left = -65.0
+offset_top = -36.0
+offset_right = 65.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 9
+text = "Workshop · cramped"
+horizontal_alignment = 1
+
+[node name="CopperFurnace" parent="." instance=ExtResource("12_furnace")]
+position = Vector2(-170, -92)
+station_id = &"riverside_copper_furnace"
+display_name = "Copper Furnace"
+recipe_ids = Array[StringName]([&"smelt_copper_bar", &"smelt_iron_bar", &"smelt_gold_bar", &"smelt_iridium_bar"])
+
+[node name="Forge" parent="." instance=ExtResource("13_forge")]
+position = Vector2(-230, -88)
+
+[node name="DailyForage" type="Node2D" parent="."]
+script = ExtResource("11_forage")
+spawner_id = &"riverside_bank_forage"
+location_id = &"riverside_town"
+spawn_rect = Rect2(-325, -150, 650, 300)
+spawn_count = 4
+
+[node name="SummerRiverFairBooth" parent="." instance=ExtResource("18_festival_booth")]
+position = Vector2(120, -120)
+event_id = &"summer_river_fair"
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(-300, 0)
+
+[node name="WorldHud" parent="." instance=ExtResource("2_hud")]
+
+[node name="ToolUpgradeMenu" parent="." instance=ExtResource("14_upgrade_menu")]
+
+[node name="TownLabel" type="Label" parent="."]
+position = Vector2(-62, -184)
+theme_override_colors/font_color = Color(0.86, 0.91, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Riverside Town"

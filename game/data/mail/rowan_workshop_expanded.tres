@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MailData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/mail/mail_data.gd" id="1_mail"]
+
+[resource]
+script = ExtResource("1_mail")
+id = &"rowan_workshop_expanded"
+sender_npc_id = &"rowan"
+subject = "More room, fewer excuses"
+body = "The workshop finally has room to breathe. I can keep proper stock now instead of stacking repair lumber where people need to walk. You did your share, so take these for the next long repair day. — Rowan"
+required_world_flag = &"project:riverside_workshop:complete"
+reward_items = {"field_snack": 2}

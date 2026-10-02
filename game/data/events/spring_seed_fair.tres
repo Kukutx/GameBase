@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CalendarEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/events/calendar_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"spring_seed_fair"
+display_name = "Spring Seed Fair"
+location_id = &"starter_town"
+seasons = PackedStringArray("Spring")
+day_of_season = 9
+start_minute = 540
+end_minute = 1020
+reward_money = 150
+reward_items = {"carrot_seeds": 5}
+reward_skill = &"farming"
+reward_skill_xp = 75

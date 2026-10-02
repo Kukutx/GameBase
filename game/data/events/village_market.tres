@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CalendarEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/events/calendar_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"village_market"
+display_name = "Village Market"
+location_id = &"starter_town"
+days_of_week = PackedInt32Array(5)
+start_minute = 540
+end_minute = 960

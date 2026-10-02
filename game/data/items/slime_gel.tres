@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"slime_gel"
+display_name = "Slime Gel"
+description = "A sticky material left behind by cave slimes."
+max_stack = 99
+kind = 0
+buy_price = 60
+sell_price = 25
+tags = PackedStringArray("material", "monster_drop")

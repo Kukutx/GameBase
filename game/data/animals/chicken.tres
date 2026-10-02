@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="FarmAnimalData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/animals/farm_animal_data.gd" id="1_animal"]
+
+[resource]
+script = ExtResource("1_animal")
+id = &"chicken"
+display_name = "Chicken"
+sprite_path = "res://game/art/licensed/gandalf_animals/Brown Chicken sheet.png"
+frame_size = Vector2i(32, 32)
+animation_fps = 10
+idle_from = 0
+idle_to = 7
+walk_from = 8
+walk_to = 13
+eat_from = 14
+eat_to = 17
+move_speed = 24.0
+wander_radius = 52.0
+collision_size = Vector2(12, 8)
+visual_offset = Vector2(0, -7)
+visual_scale = 1.0
+housing_type = &"coop"
+purchase_price = 800
+product_item_id = &"egg"
+premium_product_item_id = &"large_egg"
+premium_happiness_threshold = 80
+product_quantity = 1
+product_interval_days = 1
+pet_happiness_gain = 5

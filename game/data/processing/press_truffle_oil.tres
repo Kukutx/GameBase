@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ProcessingRecipeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/processing/processing_recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"press_truffle_oil"
+display_name = "Truffle Oil"
+inputs = {"truffle": 1}
+output_item_id = &"truffle_oil"
+output_quantity = 1
+process_minutes = 180
+required_skill = &"farming"
+required_level = 2

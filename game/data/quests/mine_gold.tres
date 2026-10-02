@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"mine_gold"
+title = "Gold in the Deep"
+description = "Break Gold Veins in the deeper mine."
+objective_type = 4
+target_id = &"gold_rock"
+required_amount = 2
+reward_money = 350
+next_quest_id = &"smelt_gold"

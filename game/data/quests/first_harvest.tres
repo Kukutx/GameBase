@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"first_harvest"
+title = "First Harvest"
+description = "Grow and harvest three turnips."
+objective_type = 2
+target_id = &"turnip"
+required_amount = 3
+reward_money = 250
+reward_items = {"turnip_seeds": 5}
+next_quest_id = &"catch_first_fish"

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MailData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/mail/mail_data.gd" id="1_mail"]
+
+[resource]
+script = ExtResource("1_mail")
+id = &"mira_welcome"
+sender_npc_id = &"mira"
+subject = "A few extra seeds"
+body = "You made it through your first day. I left a few extra turnip seeds with this note. Keep them dry until you are ready to plant. — Mira"
+available_from_day = 2
+reward_items = {"turnip_seeds": 3}

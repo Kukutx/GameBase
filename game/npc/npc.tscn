@@ -1,0 +1,79 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://game/npc/npc.gd" id="1_npc"]
+[ext_resource type="Script" path="res://game/core/interactions/interactable.gd" id="2_interactable"]
+[ext_resource type="Script" path="res://game/core/npc/npc_schedule.gd" id="3_schedule"]
+[ext_resource type="Script" path="res://game/core/visual/directional_actor_visual.gd" id="4_visual"]
+
+[sub_resource type="CapsuleShape2D" id="Capsule_npc"]
+radius = 7.0
+height = 18.0
+
+[sub_resource type="CircleShape2D" id="Circle_interactable"]
+radius = 20.0
+
+[node name="Npc" type="CharacterBody2D" groups=["npc"]]
+z_index = 8
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_npc")
+
+[node name="Body" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-7, -9, 7, -9, 7, 9, -7, 9)
+color = Color(0.95, 0.63, 0.32, 1)
+
+[node name="Facing" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-3, -8, 3, -8, 0, -13)
+color = Color(1, 0.88, 0.64, 1)
+
+[node name="ActorVisual" type="Node" parent="."]
+script = ExtResource("4_visual")
+sprite_offset = Vector2(0, -8)
+
+[node name="Sprite" type="AnimatedSprite2D" parent="ActorVisual"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 2)
+shape = SubResource("Capsule_npc")
+
+[node name="NameLabel" type="Label" parent="."]
+offset_left = -52.0
+offset_top = -36.0
+offset_right = 52.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 12
+text = "NPC"
+horizontal_alignment = 1
+
+[node name="ActivityLabel" type="Label" parent="."]
+offset_left = -78.0
+offset_top = -22.0
+offset_right = 78.0
+offset_bottom = -8.0
+theme_override_colors/font_color = Color(0.74, 0.74, 0.68, 1)
+theme_override_font_sizes/font_size = 9
+text = "Idle"
+horizontal_alignment = 1
+
+[node name="Interactable" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("2_interactable")
+prompt_text = "Talk"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("Circle_interactable")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 4.0
+target_desired_distance = 4.0
+radius = 7.0
+
+[node name="Schedule" type="Node" parent="." node_paths=PackedStringArray("actor", "navigation_agent")]
+script = ExtResource("3_schedule")
+actor = NodePath("..")
+navigation_agent = NodePath("../NavigationAgent2D")
+move_speed = 42.0

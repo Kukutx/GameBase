@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"defeat_green_slime"
+title = "Cave Pest"
+description = "Defeat a Green Slime in the Old Mine."
+objective_type = 5
+target_id = &"green_slime"
+required_amount = 1
+reward_money = 200
+reward_items = {"field_snack": 1}
+next_quest_id = &"smelt_copper"

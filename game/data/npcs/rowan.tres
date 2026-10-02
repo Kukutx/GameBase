@@ -1,0 +1,101 @@
+[gd_resource type="Resource" script_class="NpcProfileData" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://game/core/npc/npc_profile_data.gd" id="1_profile"]
+[ext_resource type="Script" path="res://game/core/npc/npc_schedule_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="Schedule_morning"]
+script = ExtResource("2_entry")
+minute_of_day = 450
+location_id = &"riverside_town"
+target_position = Vector2(-225, -30)
+activity = "Open the workshop"
+
+[sub_resource type="Resource" id="Schedule_bridge"]
+script = ExtResource("2_entry")
+minute_of_day = 600
+location_id = &"riverside_town"
+target_position = Vector2(-58, 0)
+activity = "Inspect the bridge"
+
+[sub_resource type="Resource" id="Schedule_lunch"]
+script = ExtResource("2_entry")
+minute_of_day = 780
+location_id = &"riverside_town"
+target_position = Vector2(205, 105)
+activity = "Lunch at the tavern"
+
+[sub_resource type="Resource" id="Schedule_evening"]
+script = ExtResource("2_entry")
+minute_of_day = 1020
+location_id = &"riverside_town"
+target_position = Vector2(-225, -30)
+activity = "Finish repairs"
+
+[sub_resource type="Resource" id="Schedule_storm"]
+script = ExtResource("2_entry")
+minute_of_day = 0
+priority = 20
+location_id = &"riverside_town"
+target_position = Vector2(205, 105)
+activity = "Wait out the storm at the tavern"
+allowed_weather = PackedStringArray("Storm")
+
+[sub_resource type="Resource" id="Schedule_festival_spring_seed_fair"]
+script = ExtResource("2_entry")
+minute_of_day = 540
+priority = 40
+location_id = &"starter_town"
+target_position = Vector2(-210, 105)
+activity = "Visit the Spring Seed Fair"
+required_world_flag = &"event:spring_seed_fair:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_summer_river_fair"]
+script = ExtResource("2_entry")
+minute_of_day = 600
+priority = 40
+location_id = &"riverside_town"
+target_position = Vector2(145, -105)
+activity = "Join the Summer River Fair"
+required_world_flag = &"event:summer_river_fair:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_fall_harbor_derby"]
+script = ExtResource("2_entry")
+minute_of_day = 360
+priority = 40
+location_id = &"harbor_town"
+target_position = Vector2(145, 28)
+activity = "Watch the Harbor Derby"
+required_world_flag = &"event:fall_harbor_derby:active"
+required_flag_value = true
+
+[sub_resource type="Resource" id="Schedule_festival_winter_lantern_night"]
+script = ExtResource("2_entry")
+minute_of_day = 1020
+priority = 40
+location_id = &"starter_town"
+target_position = Vector2(205, 122)
+activity = "Attend Lantern Night"
+required_world_flag = &"event:winter_lantern_night:active"
+required_flag_value = true
+
+[resource]
+script = ExtResource("1_profile")
+id = &"rowan"
+display_name = "Rowan"
+role = "Riverside carpenter"
+background = "Rowan repairs Riverside's bridge, sheds, and old wooden waterworks. He knows the roads between towns and hears plenty of travelers' stories while working."
+personality = "Steady, dry-humored, reliable, slightly skeptical of shortcuts. Appreciates practical help and well-made things."
+speaking_style = "Brief and grounded. Often compares problems to woodwork, tools, bridges, or maintenance."
+home_location_id = &"riverside_town"
+default_location_id = &"riverside_town"
+birthday_season = "Spring"
+birthday_day = 21
+ai_enabled = true
+dialogue_titles_by_hearts = {0: "start", 2: "friend_2", 4: "friend_4", 6: "friend_6", 8: "friend_8", 10: "friend_10"}
+visual_strip_root = "res://game/art/licensed/craftpix_roguelike/character3"
+schedule_entries = Array[ExtResource("2_entry")]([SubResource("Schedule_morning"), SubResource("Schedule_bridge"), SubResource("Schedule_lunch"), SubResource("Schedule_evening"), SubResource("Schedule_storm"), SubResource("Schedule_festival_spring_seed_fair"), SubResource("Schedule_festival_summer_river_fair"), SubResource("Schedule_festival_fall_harbor_derby"), SubResource("Schedule_festival_winter_lantern_night")])
+loved_items = Array[StringName]([&"field_snack"])
+liked_items = Array[StringName]([&"wood", &"potato"])
+liked_tags = PackedStringArray("crafted", "crop")

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="HeartEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/npc/heart_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"neri_eight_hearts"
+npc_id = &"neri"
+required_hearts = 8
+dialogue_title = "heart_8"
+location_id = &"harbor_town"
+start_minute = 1080
+end_minute = 1380

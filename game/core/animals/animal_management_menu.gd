@@ -1,0 +1,208 @@
+class_name AnimalManagementMenu
+extends CanvasLayer
+
+@onready var title_label: Label = $Panel/VBox/Title
+@onready var summary_label: Label = $Panel/VBox/Summary
+@onready var animal_select: OptionButton = $Panel/VBox/AnimalSelect
+@onready var details_label: RichTextLabel = $Panel/VBox/Details
+@onready var name_edit: LineEdit = $Panel/VBox/RenameRow/Name
+@onready var rename_button: Button = $Panel/VBox/RenameRow/Rename
+@onready var feed_coop_button: Button = $Panel/VBox/FeedRow/FeedCoop
+@onready var feed_barn_button: Button = $Panel/VBox/FeedRow/FeedBarn
+@onready var expand_coop_button: Button = $Panel/VBox/ExpansionRow/ExpandCoop
+@onready var expand_barn_button: Button = $Panel/VBox/ExpansionRow/ExpandBarn
+@onready var sell_button: Button = $Panel/VBox/Sell
+@onready var close_button: Button = $Panel/VBox/Close
+@onready var confirm_sell: ConfirmationDialog = $ConfirmSell
+
+var _location_id: StringName
+var _selected_instance_id: StringName
+
+func _ready() -> void:
+	add_to_group("animal_management_menu")
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	visible = false
+	animal_select.item_selected.connect(_on_animal_selected)
+	rename_button.pressed.connect(_rename_selected)
+	feed_coop_button.pressed.connect(_feed_housing.bind(&"starter_coop"))
+	feed_barn_button.pressed.connect(_feed_housing.bind(&"starter_barn"))
+	expand_coop_button.pressed.connect(_purchase_next_expansion.bind(&"starter_coop"))
+	expand_barn_button.pressed.connect(_purchase_next_expansion.bind(&"starter_barn"))
+	sell_button.pressed.connect(_request_sell)
+	close_button.pressed.connect(close)
+	confirm_sell.confirmed.connect(_sell_selected)
+	AnimalState.ownership_changed.connect(_on_ownership_changed)
+	AnimalState.housing_fed.connect(_on_housing_fed)
+	FarmExpansionState.expansion_completed.connect(_on_expansion_completed)
+	WorldClock.day_changed.connect(_on_day_changed)
+
+func open(location_id: StringName) -> void:
+	_location_id = location_id
+	visible = true
+	get_tree().paused = true
+	_rebuild()
+
+func close() -> void:
+	if not visible:
+		return
+	visible = false
+	get_tree().paused = false
+
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and event.is_action_pressed("ui_cancel"):
+		close()
+		get_viewport().set_input_as_handled()
+
+func _rebuild() -> void:
+	var previous := _selected_instance_id
+	animal_select.clear()
+	var records := AnimalState.get_owned(_location_id)
+	for record: Dictionary in records:
+		var instance_id := StringName(String(record.get("instance_id", "")))
+		var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+		if instance_id == &"" or data == null:
+			continue
+		var custom_name := String(record.get("custom_name", ""))
+		var display_name := custom_name if not custom_name.is_empty() else data.display_name
+		animal_select.add_item("%s · %s" % [display_name, data.display_name])
+		animal_select.set_item_metadata(animal_select.item_count - 1, String(instance_id))
+		if instance_id == previous:
+			animal_select.select(animal_select.item_count - 1)
+
+	if animal_select.item_count > 0:
+		if animal_select.selected < 0:
+			animal_select.select(0)
+		_selected_instance_id = StringName(String(animal_select.get_item_metadata(animal_select.selected)))
+	else:
+		_selected_instance_id = &""
+	_refresh_summary()
+	_refresh_selected()
+
+func _refresh_summary() -> void:
+	title_label.text = "Animal Ledger"
+	var coop_count := AnimalState.get_housing_occupancy(&"starter_coop")
+	var coop_capacity := AnimalState.get_housing_capacity(&"starter_coop")
+	var barn_count := AnimalState.get_housing_occupancy(&"starter_barn")
+	var barn_capacity := AnimalState.get_housing_capacity(&"starter_barn")
+	var hay := InventoryState.get_quantity(&"hay")
+	summary_label.text = "Coop %d/%d · Barn %d/%d · Hay %d" % [coop_count, coop_capacity, barn_count, barn_capacity, hay]
+	var coop_unfed := AnimalState.get_unfed_count(&"starter_coop")
+	var barn_unfed := AnimalState.get_unfed_count(&"starter_barn")
+	feed_coop_button.text = "Feed Coop (%d)" % coop_unfed
+	feed_barn_button.text = "Feed Barn (%d)" % barn_unfed
+	feed_coop_button.disabled = coop_unfed <= 0 or hay <= 0
+	feed_barn_button.disabled = barn_unfed <= 0 or hay <= 0
+	_refresh_expansion_button(expand_coop_button, &"starter_coop")
+	_refresh_expansion_button(expand_barn_button, &"starter_barn")
+
+func _refresh_selected() -> void:
+	var record := AnimalState.get_record(_selected_instance_id)
+	if record.is_empty():
+		details_label.text = "No animals owned here."
+		name_edit.text = ""
+		rename_button.disabled = true
+		sell_button.disabled = true
+		return
+	var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+	if data == null:
+		return
+	var custom_name := String(record.get("custom_name", ""))
+	var display_name := custom_name if not custom_name.is_empty() else data.display_name
+	name_edit.text = display_name
+	var state_raw: Variant = WorldState.get_value(StringName("animal:%s" % String(_selected_instance_id)), {})
+	var state: Dictionary = state_raw if state_raw is Dictionary else {}
+	var happiness := int(state.get("happiness", 50))
+	var fed_today := int(state.get("last_fed_day", 0)) >= WorldClock.day
+	var last_product_day := int(state.get("last_product_day", WorldClock.day))
+	var product_ready := fed_today and WorldClock.day - last_product_day >= data.product_interval_days
+	var product := ContentDB.get_item(data.product_item_id)
+	var product_name := product.display_name if product != null else "None"
+	details_label.text = "[b]%s[/b]\nSpecies: %s\nHousing: %s\nHappiness: %d/100\nFed today: %s\nProduct: %s%s" % [
+		display_name,
+		data.display_name,
+		String(data.housing_type).capitalize(),
+		happiness,
+		"Yes" if fed_today else "No",
+		product_name,
+		" · ready" if product_ready else "",
+	]
+	rename_button.disabled = false
+	sell_button.disabled = false
+	sell_button.text = "Sell %s · %dg" % [display_name, int(round(float(data.purchase_price) * 0.5))]
+
+func _on_animal_selected(index: int) -> void:
+	if index < 0 or index >= animal_select.item_count:
+		return
+	_selected_instance_id = StringName(String(animal_select.get_item_metadata(index)))
+	_refresh_selected()
+
+func _rename_selected() -> void:
+	if AnimalState.rename_animal(_selected_instance_id, name_edit.text):
+		_rebuild()
+	else:
+		GameEvents.toast("Animal name must be 1–20 characters")
+
+func _request_sell() -> void:
+	var record := AnimalState.get_record(_selected_instance_id)
+	if record.is_empty():
+		return
+	var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+	if data == null:
+		return
+	var display_name := String(record.get("custom_name", ""))
+	if display_name.is_empty():
+		display_name = data.display_name
+	confirm_sell.dialog_text = "Sell %s for %dg? This cannot be undone." % [display_name, int(round(float(data.purchase_price) * 0.5))]
+	confirm_sell.popup_centered()
+
+func _sell_selected() -> void:
+	AnimalState.sell_animal(_selected_instance_id)
+	_selected_instance_id = &""
+	_rebuild()
+
+func _feed_housing(housing_id: StringName) -> void:
+	var fed := AnimalState.feed_housing(housing_id)
+	GameEvents.toast("Fed %d animal%s" % [fed, "s" if fed != 1 else ""] if fed > 0 else "No animals were fed")
+	_refresh_summary()
+	_refresh_selected()
+
+func _refresh_expansion_button(button: Button, housing_id: StringName) -> void:
+	var expansion := FarmExpansionState.get_next_expansion_for_housing(housing_id)
+	if expansion == null:
+		button.text = "%s Maxed" % String(housing_id).trim_prefix("starter_").capitalize()
+		button.tooltip_text = "Maximum housing capacity reached"
+		button.disabled = true
+		return
+	button.text = "%s · %dg" % [expansion.display_name, expansion.money_cost]
+	var requirements := PackedStringArray()
+	for raw_id: Variant in expansion.materials.keys():
+		var item_id := StringName(String(raw_id))
+		var item := ContentDB.get_item(item_id)
+		requirements.append("%s x%d" % [item.display_name if item != null else String(item_id).capitalize(), int(expansion.materials[raw_id])])
+	button.tooltip_text = "%s\n%s" % [expansion.description, " · ".join(requirements)]
+	button.disabled = not FarmExpansionState.can_purchase(expansion.id)
+
+func _purchase_next_expansion(housing_id: StringName) -> void:
+	var expansion := FarmExpansionState.get_next_expansion_for_housing(housing_id)
+	if expansion == null:
+		return
+	FarmExpansionState.purchase(expansion.id)
+	_refresh_summary()
+
+func _on_expansion_completed(_expansion_id: StringName, _housing_id: StringName, _capacity: int) -> void:
+	if visible:
+		_refresh_summary()
+
+func _on_ownership_changed(location_id: StringName) -> void:
+	if visible and location_id == _location_id:
+		_rebuild()
+
+func _on_housing_fed(_housing_id: StringName, _count: int) -> void:
+	if visible:
+		_refresh_summary()
+		_refresh_selected()
+
+func _on_day_changed(_day: int) -> void:
+	if visible:
+		_refresh_summary()
+		_refresh_selected()

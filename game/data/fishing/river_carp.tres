@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FishData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/fishing/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"river_carp"
+item_id = &"river_carp"
+locations = Array[StringName]([&"riverside_town"])
+start_minute = 300
+end_minute = 1380
+catch_weight = 1.0
+difficulty = 2

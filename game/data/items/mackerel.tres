@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"mackerel"
+display_name = "Mackerel"
+description = "A fast coastal fish with rich meat."
+max_stack = 24
+kind = 1
+buy_price = 190
+sell_price = 110
+energy_restore = 20
+tags = PackedStringArray("food", "fish", "ocean")

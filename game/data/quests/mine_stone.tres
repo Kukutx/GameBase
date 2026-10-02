@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+id = &"mine_stone"
+title = "Into the Mine"
+description = "Break a stone rock in the Old Mine."
+objective_type = 4
+target_id = &"stone_rock"
+required_amount = 2
+reward_money = 150
+next_quest_id = &"defeat_green_slime"

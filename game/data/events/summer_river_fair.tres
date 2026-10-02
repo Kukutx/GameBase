@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CalendarEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/events/calendar_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"summer_river_fair"
+display_name = "Summer River Fair"
+location_id = &"riverside_town"
+seasons = PackedStringArray("Summer")
+day_of_season = 14
+start_minute = 600
+end_minute = 1080
+reward_money = 250
+reward_items = {"field_snack": 2}
+reward_skill = &"foraging"
+reward_skill_xp = 100

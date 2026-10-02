@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"carrot_seeds"
+display_name = "Carrot Seeds"
+description = "Fast-growing seeds for Spring and Autumn."
+max_stack = 99
+kind = 2
+buy_price = 30
+sell_price = 15
+crop_id = &"carrot"
+tags = PackedStringArray("seed")

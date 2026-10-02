@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TownProjectData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/projects/town_project_data.gd" id="1_project"]
+
+[resource]
+script = ExtResource("1_project")
+id = &"starter_garden_restoration"
+display_name = "Community Garden Restoration"
+description = "Rebuild the neglected community plots so the town can share produce again."
+location_id = &"starter_town"
+requirements = {"turnip": 3, "carrot": 3, "potato": 3, "wood": 10}
+reward_money = 600
+reward_items = {"tomato_seeds": 6}
+unlock_flags = Array[StringName]([&"project:starter_garden:complete"])

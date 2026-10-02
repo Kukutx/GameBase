@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      engine_version:
+        description: Optional Godot version override for this run
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve Godot version
+        id: engine
+        shell: bash
+        env:
+          INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
+        run: |
+          version="$INPUT_ENGINE_VERSION"
+          if [ -z "$version" ]; then
+            version="$(tr -d '\r\n ' < .godot-version)"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Using Godot $version"
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ steps.engine.outputs.version }}
+          use-dotnet: false
+          include-templates: true
+
+      - name: Import and parse project
+        run: godot --headless --path . --editor --quit
+
+      - name: Run GUT
+        run: godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig.json
+
+      - name: Run runtime smoke
+        run: godot --headless --path . -s test/runtime/world_services_smoke.gd
+
+  export:
+    name: Export ${{ matrix.name }}
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            preset: Windows Desktop
+            output: build/windows/GameBase.exe
+            artifact: gamebase-windows
+            path: build/windows
+          - name: Linux
+            preset: Linux
+            output: build/linux/GameBase.x86_64
+            artifact: gamebase-linux
+            path: build/linux
+          - name: Web
+            preset: Web
+            output: build/web/index.html
+            artifact: gamebase-web
+            path: build/web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve Godot version
+        id: engine
+        shell: bash
+        env:
+          INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
+        run: |
+          version="$INPUT_ENGINE_VERSION"
+          if [ -z "$version" ]; then
+            version="$(tr -d '\r\n ' < .godot-version)"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Godot with export templates
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ steps.engine.outputs.version }}
+          use-dotnet: false
+          include-templates: true
+
+      - name: Import project
+        run: godot --headless --path . --editor --quit
+
+      - name: Export
+        run: |
+          mkdir -p "$(dirname "${{ matrix.output }}")"
+          godot --headless --path . --export-release "${{ matrix.preset }}" "${{ matrix.output }}"
+          test -f "${{ matrix.output }}"
+
+      - name: Preserve Linux executable bit
+        if: matrix.name == 'Linux'
+        run: chmod +x build/linux/GameBase.x86_64
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.path }}
+          if-no-files-found: error
+          retention-days: 7

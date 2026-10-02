@@ -1,0 +1,64 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/ui/pause_menu.gd" id="1_pause"]
+[ext_resource type="PackedScene" path="res://game/ui/settings_menu.tscn" id="2_settings"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+layer = 70
+script = ExtResource("1_pause")
+
+[node name="Dim" type="ColorRect" parent="."]
+offset_right = 480.0
+offset_bottom = 270.0
+color = Color(0, 0, 0, 0.62)
+
+[node name="Panel" type="PanelContainer" parent="Dim"]
+layout_mode = 0
+offset_left = 130.0
+offset_top = 38.0
+offset_right = 350.0
+offset_bottom = 232.0
+
+[node name="Layout" type="VBoxContainer" parent="Dim/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Header" type="Label" parent="Dim/Panel/Layout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="Resume" type="Button" parent="Dim/Panel/Layout"]
+layout_mode = 2
+text = "Resume"
+
+[node name="Save" type="Button" parent="Dim/Panel/Layout"]
+layout_mode = 2
+text = "Save Game"
+
+[node name="Load" type="Button" parent="Dim/Panel/Layout"]
+layout_mode = 2
+text = "Load Game"
+
+[node name="Settings" type="Button" parent="Dim/Panel/Layout"]
+layout_mode = 2
+text = "Settings"
+
+[node name="ReturnTitle" type="Button" parent="Dim/Panel/Layout"]
+layout_mode = 2
+text = "Return to Title"
+
+[node name="Status" type="Label" parent="Dim/Panel/Layout"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.74, 0.52, 1)
+theme_override_font_sizes/font_size = 9
+horizontal_alignment = 1
+
+[node name="SettingsMenu" parent="." instance=ExtResource("2_settings")]
+
+[node name="ConfirmTitle" type="ConfirmationDialog" parent="."]
+title = "Return to Title"
+dialog_text = "Unsaved progress will be lost. Return to the title screen?"
+ok_button_text = "Return to Title"

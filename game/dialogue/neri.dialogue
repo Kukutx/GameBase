@@ -1,0 +1,83 @@
+~ start
+Neri: Harbor's awake. Fish don't wait for sleepy people.
+- What's biting today?
+	Neri: River fish are calmer inland. Out here, sardines are steady and mackerel get more interesting when conditions line up.
+	=> start
+- Heard anything from the boats?
+	Neri: Enough rumors to fill a warehouse. Bring me a good catch and I might sort truth from dockside nonsense.
+	=> start
+- See you later.
+	Neri: Watch the tide on your way back.
+	=> END
+
+~ friend_2
+Neri: You are getting better at reading the harbor. At least you no longer look surprised when the weather changes its mind.
+- High praise.
+
+Neri: From me? Absolutely.
+
+=> END
+
+~ friend_4
+Neri: I kept the better catch aside because I knew you would come by.
+- You were expecting me?
+
+Neri: Do not make it dramatic. I am good at patterns.
+
+=> END
+
+~ heart_2
+Neri: Come here. Watch the water between those two boats.
+Neri: See how the surface changes before the wind reaches us? My family taught me that when I was little.
+Neri: I do not usually stop long enough to teach anyone else.
+- Thanks for showing me.
+
+Neri: Remember it next time the sky looks harmless.
+
+=> END
+
+~ friend_6
+Neri: I can tell which crate you are going to check before you even reach the stall now.
+- Predictable?
+	Neri: Consistent. Fishermen pretend there is a difference, so you can too.
+	=> END
+
+~ friend_8
+Neri: Boats coming in from the outer route have started asking whether you have been through lately.
+- Should I be worried?
+	Neri: Only if you dislike having a reputation for actually helping.
+	=> END
+
+~ friend_10
+Neri: Harbor used to feel like a place everyone was about to leave. It does not feel that way lately.
+- What changed?
+	Neri: Enough people decided to come back tomorrow.
+	=> END
+
+~ heart_4
+Neri: Riverside is moving supplies again. That means Harbor can finally stop rationing half the repair stock.
+Neri: You keep fixing problems upstream and somehow they wash up here as good news.
+- I will take that kind of current.
+	Neri: Me too. We have enough of the other kind.
+	=> END
+
+~ heart_6
+Neri: Watch the line where the dark water meets the bright water.
+Neri: You can read a tide chart, sure. But knowing when not to trust the chart takes years.
+- You are teaching me the exceptions now?
+	Neri: That is what happens when someone keeps showing up.
+	=> END
+
+~ heart_8
+Neri: I know every captain who exaggerates, every dockhand who forgets details, and every gull that steals from this stall.
+Neri: Somehow you made it onto the short list of people I do not have to second-guess.
+- That sounds exhausting.
+	Neri: Trust is extremely efficient. I recommend it selectively.
+	=> END
+
+~ heart_10
+Neri: Look at the docks. Full stores, open routes, boats leaving because they have work instead of because there is nothing here.
+Neri: We spent so long keeping Harbor alive that I forgot it could actually grow.
+- What do you want it to become?
+	Neri: A place worth returning to. Seems we are already getting there.
+	=> END
