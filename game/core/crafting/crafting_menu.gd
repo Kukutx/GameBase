@@ -14,6 +14,7 @@ func _ready() -> void:
 	visible = false
 	close_button.pressed.connect(close)
 	InventoryState.changed.connect(_refresh_if_visible)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 
 func open(category: RecipeData.Category = RecipeData.Category.CRAFTING, station_name: String = "Crafting") -> void:
 	current_category = category
@@ -34,7 +35,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _rebuild() -> void:
-	title_label.text = current_station_name
+	title_label.text = tr(current_station_name)
 	for child: Node in recipes_container.get_children():
 		child.queue_free()
 	var first_button: Button
@@ -57,13 +58,16 @@ func _recipe_text(recipe: RecipeData) -> String:
 	var parts: PackedStringArray = []
 	for raw_id: Variant in recipe.ingredients.keys():
 		var item := ItemCatalog.get_item(StringName(String(raw_id)))
-		var label := item.display_name if item != null else String(raw_id)
+		var label := tr(item.display_name) if item != null else String(raw_id)
 		parts.append("%s x%d" % [label, int(recipe.ingredients[raw_id])])
-	return "%s  (%s)" % [recipe.display_name, ", ".join(parts)]
+	return "%s  (%s)" % [tr(recipe.display_name), ", ".join(parts)]
 
 func _craft(recipe_id: StringName) -> void:
 	CraftingState.craft(recipe_id)
 	_rebuild()
+
+func _on_locale_changed(_locale: String) -> void:
+	_refresh_if_visible()
 
 func _refresh_if_visible() -> void:
 	if visible:

@@ -39,6 +39,8 @@ powershell -ExecutionPolicy Bypass -File tools/sync_licensed_assets.ps1
 
 The script restores the selected runtime PNGs from the owner's local source archives.
 
+Release resource packs explicitly exclude `game/art/licensed/`, even when that directory exists on the build machine. `tools/verify_export_contents.ps1` loads each produced PCK and fails the export if the raw licensed tree is present.
+
 Scenes/components using licensed art must degrade cleanly when the local files are absent:
 
 - `LicensedArtSprite` hides itself when a texture is unavailable.

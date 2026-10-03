@@ -18,7 +18,10 @@ func open() -> void:
 	visible = true
 	get_tree().paused = true
 	_refresh()
-	action_button.grab_focus()
+	if action_button.disabled:
+		close_button.grab_focus()
+	else:
+		action_button.grab_focus()
 
 func close() -> void:
 	if not visible:

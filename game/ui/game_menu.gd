@@ -49,6 +49,8 @@ func _ready() -> void:
 	DailyContractState.contract_changed.connect(_on_daily_contract_changed)
 	TownProjects.project_changed.connect(_on_town_project_changed)
 	GameSettings.locale_changed.connect(_on_locale_changed)
+	for button: Button in _tab_buttons():
+		button.toggle_mode = true
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("open_menu"):
@@ -276,14 +278,17 @@ func _location_type_name(location_type: WorldLocationData.LocationType) -> Strin
 		WorldLocationData.LocationType.DUNGEON: return "Dungeon"
 		_: return "Town"
 
+func _tab_buttons() -> Array[Button]:
+	return [inventory_button, quests_button, social_button, skills_button, calendar_button, world_button, collections_button]
+
 func _update_tab_buttons() -> void:
-	inventory_button.disabled = _tab == "inventory"
-	quests_button.disabled = _tab == "quests"
-	social_button.disabled = _tab == "social"
-	skills_button.disabled = _tab == "skills"
-	calendar_button.disabled = _tab == "calendar"
-	world_button.disabled = _tab == "world"
-	collections_button.disabled = _tab == "collections"
+	inventory_button.button_pressed = _tab == "inventory"
+	quests_button.button_pressed = _tab == "quests"
+	social_button.button_pressed = _tab == "social"
+	skills_button.button_pressed = _tab == "skills"
+	calendar_button.button_pressed = _tab == "calendar"
+	world_button.button_pressed = _tab == "world"
+	collections_button.button_pressed = _tab == "collections"
 	match _tab:
 		"quests": quests_button.grab_focus()
 		"social": social_button.grab_focus()

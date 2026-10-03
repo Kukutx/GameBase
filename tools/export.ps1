@@ -26,6 +26,11 @@ $Outputs = @{
     "Linux" = "build/linux/GameBase.x86_64"
     "Web" = "build/web/index.html"
 }
+$Packs = @{
+    "Windows Desktop" = "build/windows/GameBase.pck"
+    "Linux" = "build/linux/GameBase.pck"
+    "Web" = "build/web/index.pck"
+}
 
 Push-Location $Root
 try {
@@ -33,6 +38,9 @@ try {
         $RelativeOutput = $Outputs[$Name]
         $AbsoluteOutput = Join-Path $Root $RelativeOutput
         $Parent = Split-Path -Parent $AbsoluteOutput
+        if (Test-Path $Parent) {
+            Remove-Item -Recurse -Force $Parent
+        }
         New-Item -ItemType Directory -Force -Path $Parent | Out-Null
 
         Write-Host ""
@@ -54,6 +62,28 @@ try {
         }
         if (-not (Test-Path $AbsoluteOutput)) {
             throw "Export '$Name' did not create '$RelativeOutput'."
+        }
+
+        $PackPath = $Packs[$Name]
+        if (-not (Test-Path (Join-Path $Root $PackPath))) {
+            throw "Export '$Name' did not create expected resource pack '$PackPath'."
+        }
+        & (Join-Path $PSScriptRoot "verify_export_contents.ps1") -PckPath $PackPath -GodotBin $GodotBin
+        if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+        }
+
+        # Distribution licenses stay beside the executable/Web payload rather
+        # than inside the Godot PCK. This keeps development/legal documents out
+        # of res:// while ensuring every packaged artifact carries notices.
+        $LicenseTarget = Join-Path $Parent "licenses"
+        Copy-Item -Path (Join-Path $Root "licenses") -Destination $LicenseTarget -Recurse -Force
+        Copy-Item -Path (Join-Path $Root "THIRD_PARTY_NOTICES.md") -Destination (Join-Path $Parent "THIRD_PARTY_NOTICES.md") -Force
+        if (-not (Test-Path (Join-Path $LicenseTarget "GODOT_LICENSE.txt")) -or
+            -not (Test-Path (Join-Path $LicenseTarget "GODOT_COPYRIGHT.txt")) -or
+            -not (Test-Path (Join-Path $LicenseTarget "DIALOGUE_MANAGER_LICENSE.txt")) -or
+            -not (Test-Path (Join-Path $LicenseTarget "GAMEBASE_LICENSE.txt"))) {
+            throw "Export '$Name' is missing required distribution license files."
         }
     }
 

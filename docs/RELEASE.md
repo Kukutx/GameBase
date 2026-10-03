@@ -32,10 +32,12 @@ It performs:
 5. a three-year long-horizon soak (336 day transitions, 12 real disk Save/Load round-trips, and the Year 4 boundary);
 6. main-scene boot smoke;
 7. Windows, Linux and Web release exports;
-8. Windows exported-build smoke on Windows hosts;
-9. Web payload validation;
-10. deterministic npm install and Chromium setup;
-11. a Playwright browser launch of the Web export with console, page and network error checks.
+8. resource-pack content verification: runtime resources must be present while tests, GUT, local licensed raw art, tools/docs/CI metadata and repository-only files must be absent;
+9. distribution license/notices copied beside each platform payload;
+10. Windows exported-build smoke on Windows hosts;
+11. Web payload validation;
+12. deterministic npm install and Chromium setup;
+13. a Playwright browser launch of the Web export with console, page and network error checks.
 
 Use `-SkipBrowserSmoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/validate.ps1 -SkipSoak` exists only for fast local iteration; CI and release candidates run the soak by default.
 
@@ -45,7 +47,7 @@ Expected outputs:
 - `build/linux/GameBase.x86_64`
 - `build/web/index.html`
 
-Generated build, browser and diagnostic artifacts are intentionally ignored by Git.
+Generated build, browser and diagnostic artifacts are intentionally ignored by Git. Every platform output also contains `THIRD_PARTY_NOTICES.md` plus the `licenses/` directory with the project, Godot Engine and Dialogue Manager notices. Those legal files are copied after PCK verification and are intentionally not part of `res://`.
 
 ## Continuous integration
 

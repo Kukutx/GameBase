@@ -42,6 +42,7 @@ func open(location_id: StringName) -> void:
 	visible = true
 	get_tree().paused = true
 	_rebuild()
+	_focus_primary_control()
 
 func close() -> void:
 	if not visible:
@@ -78,6 +79,20 @@ func _rebuild() -> void:
 		_selected_instance_id = &""
 	_refresh_summary()
 	_refresh_selected()
+
+func _focus_primary_control() -> void:
+	if animal_select.item_count > 0:
+		animal_select.grab_focus()
+	elif not feed_coop_button.disabled:
+		feed_coop_button.grab_focus()
+	elif not feed_barn_button.disabled:
+		feed_barn_button.grab_focus()
+	elif not expand_coop_button.disabled:
+		expand_coop_button.grab_focus()
+	elif not expand_barn_button.disabled:
+		expand_barn_button.grab_focus()
+	else:
+		close_button.grab_focus()
 
 func _refresh_summary() -> void:
 	title_label.text = tr("Animal Ledger")

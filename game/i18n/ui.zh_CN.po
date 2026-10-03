@@ -2270,3 +2270,243 @@ msgstr "奈莉"
 msgctxt "dialogue"
 msgid "Rowan"
 msgstr "罗文"
+
+msgid "A balanced copper blade with a much cleaner edge than the rusty starter sword."
+msgstr "一把平衡良好的铜剑，刀刃比初始的生锈长剑利落得多。"
+
+msgid "A basic crafting and building material."
+msgstr "基础的制作与建造材料。"
+
+msgid "A basic rod for fishing in rivers and at the harbor."
+msgstr "一根基础钓竿，可用于河流和港口钓鱼。"
+
+msgid "A common but dependable river catch."
+msgstr "常见但可靠的河鱼。"
+
+msgid "A crisp root crop that thrives in Winter soil."
+msgstr "清脆的根茎作物，适合在冬季土壤中生长。"
+
+msgid "A crisp root vegetable grown on the farm."
+msgstr "农场种出的清脆根茎蔬菜。"
+
+msgid "A crisp root vegetable."
+msgstr "清脆的根茎蔬菜。"
+
+msgid "A fast coastal fish with rich meat."
+msgstr "游速很快的近海鱼，肉质丰厚。"
+
+msgid "A filling stew made from fresh farm vegetables."
+msgstr "用新鲜农场蔬菜炖成的饱腹料理。"
+
+msgid "A fresh farm egg."
+msgstr "新鲜的农场鸡蛋。"
+
+msgid "A gold hoe that tills four nearby plots per swing."
+msgstr "金锄头，每次可耕作附近四块土地。"
+
+msgid "A gold pickaxe built for the late mine floors before Iridium becomes necessary."
+msgstr "用于矿井后段的金镐，在必须使用铱制工具之前足以应对深层矿石。"
+
+msgid "A gold watering can that waters four nearby plots per use."
+msgstr "金洒水壶，每次可为附近四块土地浇水。"
+
+msgid "A hearty farm staple."
+msgstr "朴实耐饱的农场主食。"
+
+msgid "A heavy Autumn pumpkin with strong market value."
+msgstr "沉甸甸的秋季南瓜，市场价值很高。"
+
+msgid "A juicy summer tomato from a regrowing vine."
+msgstr "多汁的夏季番茄，藤蔓收获后还能继续结果。"
+
+msgid "A late-game alloy used for the strongest tools and weapons."
+msgstr "后期合金，用于打造最强等级的工具与武器。"
+
+msgid "A late-game blade capable of cutting through the strongest mine creatures."
+msgstr "后期强力刀剑，足以对付矿井中最危险的生物。"
+
+msgid "A light harbor-style soup that sharpens your fishing rhythm."
+msgstr "清爽的港口风味鱼汤，能让钓鱼节奏更加敏锐。"
+
+msgid "A lively freshwater trout."
+msgstr "活力十足的淡水鳟鱼。"
+
+msgid "A placeable 24-slot storage chest. Empty it before packing it up."
+msgstr "可放置的 24 格储物箱。收起前必须先清空。"
+
+msgid "A placeable artisan machine for pressing valuable oils. Active jobs continue while you are away."
+msgstr "可放置的加工机器，用于压榨高价值油品。离开场景后加工仍会继续。"
+
+msgid "A placeable furnace for smelting Copper Bars. Active jobs continue while you are away."
+msgstr "可放置的熔炉，用于冶炼铜锭。离开场景后冶炼仍会继续。"
+
+msgid "A powerful late-mine sword for the dangerous tiers before Iridium weapons."
+msgstr "矿井后段使用的强力长剑，在获得铱制武器前足以应对危险层级。"
+
+msgid "A rare eel that surfaces only when violent weather churns Harbor waters."
+msgstr "只有恶劣天气搅动港口海水时才会出现的稀有鳗鱼。"
+
+msgid "A refined gold bar used for advanced tools and late-game construction."
+msgstr "精炼金锭，用于高级工具和后期建设。"
+
+msgid "A refined iron bar used for stronger tools and construction."
+msgstr "精炼铁锭，用于更强的工具与建设。"
+
+msgid "A reinforced hoe that tills soil with less effort."
+msgstr "经过加固的锄头，耕地时更省体力。"
+
+msgid "A reliable iron sword for the middle mine floors."
+msgstr "可靠的铁剑，适合矿井中层使用。"
+
+msgid "A rich egg produced by a very happy chicken."
+msgstr "幸福度很高的鸡产下的优质鸡蛋。"
+
+msgid "A simple berry snack for long days outside."
+msgstr "简单的野莓点心，适合长时间外出时补充体力。"
+
+msgid "A small schooling fish from Harbor waters."
+msgstr "港口水域常见的小型群游鱼。"
+
+msgid "A sticky material left behind by cave slimes."
+msgstr "洞穴史莱姆留下的黏性材料。"
+
+msgid "A stronger pickaxe that breaks early mine nodes faster."
+msgstr "更强的镐，可更快击碎矿井前段的矿点。"
+
+msgid "A sturdy watering can that uses less energy per plot."
+msgstr "结实的洒水壶，每块土地消耗的体力更少。"
+
+msgid "A sweet berry gathered near town. Restores a little energy and makes a simple gift."
+msgstr "城镇附近采到的甜野莓。可恢复少量体力，也适合作为简单礼物。"
+
+msgid "A top-tier pickaxe forged for the final depths of the Old Mine."
+msgstr "顶级镐，专为旧矿井最深处打造。"
+
+msgid "A valuable truffle found by a well-kept pig."
+msgstr "由照料良好的猪找到的高价值松露。"
+
+msgid "An exceptional truffle found by a very happy pig."
+msgstr "幸福度极高的猪找到的极品松露。"
+
+msgid "An iridium hoe that tills five nearby plots per swing."
+msgstr "铱锄头，每次可耕作附近五块土地。"
+
+msgid "An iridium watering can that waters five nearby plots per use."
+msgstr "铱洒水壶，每次可为附近五块土地浇水。"
+
+msgid "An iron hoe that tills three nearby plots per swing."
+msgstr "铁锄头，每次可耕作附近三块土地。"
+
+msgid "An iron pickaxe capable of breaking Gold Veins."
+msgstr "铁镐，可以开采金矿脉。"
+
+msgid "An iron watering can that waters three nearby plots per use."
+msgstr "铁洒水壶，每次可为附近三块土地浇水。"
+
+msgid "An old blade. Crude, but enough for cave pests."
+msgstr "一把老旧的剑。虽然粗糙，但对付洞穴害兽足够了。"
+
+msgid "Breaks rocks and ore nodes."
+msgstr "用于击碎岩石和矿点。"
+
+msgid "Catch every fish species recorded by the archive."
+msgstr "钓到档案中记录的所有鱼类。"
+
+msgid "Cold-hardy seeds bred to grow through Winter."
+msgstr "耐寒种子，可在冬季生长。"
+
+msgid "Collect every animal product recorded by the archive."
+msgstr "收集档案中记录的所有动物产物。"
+
+msgid "Common building stone from the old mine."
+msgstr "旧矿井中常见的建筑石料。"
+
+msgid "Dense ore found from Mine Floor 6 onward."
+msgstr "从矿井第 6 层开始出现的高密度矿石。"
+
+msgid "Dense violet ore found from Mine Floor 60 onward."
+msgstr "从矿井第 60 层开始出现的致密紫色矿石。"
+
+msgid "Dry feed for Coop and Barn animals. One piece feeds one animal for the day."
+msgstr "供鸡舍和畜棚动物食用的干草。一份可供一只动物一天所需。"
+
+msgid "Expand the Big Barn from 8 to 12 animal slots using deep-mine metals."
+msgstr "使用深层矿井金属，将大型畜棚容量从 8 扩至 12。"
+
+msgid "Expand the Big Coop from 8 to 12 animal slots using deep-mine metals."
+msgstr "使用深层矿井金属，将大型鸡舍容量从 8 扩至 12。"
+
+msgid "Expand the Starter Farm barn from 4 to 8 animal slots."
+msgstr "将起始农场畜棚容量从 4 扩至 8。"
+
+msgid "Expand the Starter Farm coop from 4 to 8 animal slots."
+msgstr "将起始农场鸡舍容量从 4 扩至 8。"
+
+msgid "Fast-growing seeds for Spring and Autumn."
+msgstr "适合春季和秋季的快速生长种子。"
+
+msgid "Fresh milk from a happy cow."
+msgstr "幸福奶牛产出的新鲜牛奶。"
+
+msgid "Fresh seaweed gathered along Harbor Town's shoreline."
+msgstr "从港口镇海岸采集的新鲜海草。"
+
+msgid "Harvest every crop recorded by the valley archive."
+msgstr "收获山谷档案中记录的所有作物。"
+
+msgid "High-quality milk from a very happy cow."
+msgstr "幸福度很高的奶牛产出的优质牛奶。"
+
+msgid "Mine every mineral type recorded by the archive."
+msgstr "开采档案中记录的所有矿物种类。"
+
+msgid "Place it on the Starter Farm to water nearby plots each morning."
+msgstr "放置在起始农场后，每天早晨会自动为附近土地浇水。"
+
+msgid "Plant in tilled soil during Spring or Autumn."
+msgstr "春季或秋季可种在已耕土地上。"
+
+msgid "Rare ore found in the deeper mine from Floor 20 onward."
+msgstr "从矿井第 20 层开始出现的稀有矿石。"
+
+msgid "Raw copper ore from mineral veins."
+msgstr "从矿脉中开采出的原始铜矿石。"
+
+msgid "Refined copper used for tool upgrades and machinery."
+msgstr "精炼铜锭，用于工具升级和机器制作。"
+
+msgid "Reliable Spring and Autumn seed potatoes."
+msgstr "适合春季和秋季种植的可靠土豆种薯。"
+
+msgid "Rich oil pressed from a fresh truffle. A valuable artisan product."
+msgstr "用新鲜松露压榨出的浓郁油品，是高价值的加工产品。"
+
+msgid "Slow-growing Autumn seeds with a valuable harvest."
+msgstr "生长较慢的秋季种子，但收获价值很高。"
+
+msgid "Smelt Gold Bar"
+msgstr "冶炼金锭"
+
+msgid "Smelt Iridium Bar"
+msgstr "冶炼铱锭"
+
+msgid "Smelt Iron Bar"
+msgstr "冶炼铁锭"
+
+msgid "Steadies your hands and makes bites easier to react to."
+msgstr "让双手更加稳定，更容易及时应对鱼咬钩。"
+
+msgid "Summer seeds that keep producing after the first harvest."
+msgstr "夏季种子，第一次收获后还能继续结果。"
+
+msgid "Tills a farm plot."
+msgstr "用于耕作农田。"
+
+msgid "Warm food makes chores easier for a while."
+msgstr "热腾腾的食物能在一段时间内让劳作更轻松。"
+
+msgid "Waters tilled soil so crops can grow overnight."
+msgstr "为已耕土地浇水，让作物能在夜间生长。"
+
+msgid "Kitchen"
+msgstr "厨房"

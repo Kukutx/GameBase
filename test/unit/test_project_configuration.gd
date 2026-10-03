@@ -63,7 +63,23 @@ func test_export_presets_cover_supported_release_targets() -> void:
 	assert_true(presets.contains('name="Windows Desktop"'))
 	assert_true(presets.contains('name="Linux"'))
 	assert_true(presets.contains('name="Web"'))
-	assert_eq(presets.count('exclude_filter="test/*,addons/gut/*"'), 3)
+	var hardened_filter := 'exclude_filter="test/*,addons/gut/*,game/art/licensed/*,.gutconfig.json,.devmate/*,tools/*,docs/*,.github/*,build/*,artifacts/*,licenses/*,AGENTS.md,README.md,THIRD_PARTY_NOTICES.md,LICENSE"'
+	assert_eq(presets.count(hardened_filter), 3)
+
+func test_release_packaging_verifies_contents_and_distribution_licenses() -> void:
+	var exporter := _read_text("res://tools/export.ps1")
+	var verifier := _read_text("res://tools/verify_export_contents.ps1")
+	assert_true(exporter.contains("verify_export_contents.ps1"))
+	assert_true(exporter.contains("THIRD_PARTY_NOTICES.md"))
+	assert_true(exporter.contains("GODOT_COPYRIGHT.txt"))
+	assert_true(verifier.contains("res://game/art/licensed"))
+	assert_true(verifier.contains("res://addons/gut"))
+	assert_true(verifier.contains("res://test"))
+	assert_true(FileAccess.file_exists("res://THIRD_PARTY_NOTICES.md"))
+	assert_true(FileAccess.file_exists("res://licenses/GAMEBASE_LICENSE.txt"))
+	assert_true(FileAccess.file_exists("res://licenses/GODOT_LICENSE.txt"))
+	assert_true(FileAccess.file_exists("res://licenses/GODOT_COPYRIGHT.txt"))
+	assert_true(FileAccess.file_exists("res://licenses/DIALOGUE_MANAGER_LICENSE.txt"))
 
 func test_latest_engine_compatibility_workflow_exists() -> void:
 	var workflow := _read_text("res://.github/workflows/engine-compat.yml")

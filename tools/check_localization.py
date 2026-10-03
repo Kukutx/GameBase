@@ -17,6 +17,8 @@ CALL_PATTERNS = [
     re.compile(r'\bset_prompt\("((?:[^"\\]|\\.)*)"'),
 ]
 
+DATA_PATTERN = re.compile(r'^(?:display_name|title|description|subject|body|role) = "((?:[^"\\\\]|\\\\.)*)"$', re.MULTILINE)
+
 SCENE_PATTERNS = [
     re.compile(r'^text = "((?:[^"\\]|\\.)*)"$', re.MULTILINE),
     re.compile(r'^dialog_text = "((?:[^"\\]|\\.)*)"$', re.MULTILINE),
@@ -52,6 +54,12 @@ def collect_source_keys() -> set[str]:
                 value = decode_godot_string(raw)
                 if value:
                     keys.add(value)
+    for path in (GAME / "data").rglob("*.tres"):
+        text = path.read_text(encoding="utf-8-sig")
+        for raw in DATA_PATTERN.findall(text):
+            value = decode_godot_string(raw)
+            if value:
+                keys.add(value)
     for path in GAME.rglob("*.dialogue"):
         for raw_line in path.read_text(encoding="utf-8-sig").splitlines():
             line = raw_line.strip()
