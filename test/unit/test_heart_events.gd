@@ -37,6 +37,59 @@ func test_all_core_npcs_have_friendship_dialogue_stages_through_ten_hearts() -> 
 		assert_eq(profile.get_dialogue_title("start", 8), "friend_8")
 		assert_eq(profile.get_dialogue_title("start", 10), "friend_10")
 
+func test_authored_dialogue_is_translated_at_runtime() -> void:
+	var previous := TranslationServer.get_locale()
+	TranslationServer.set_locale("zh_CN")
+	await get_tree().process_frame
+
+	var cases := [
+		{
+			"path": "res://game/dialogue/intro.dialogue",
+			"line": "欢迎来到起始镇。看到那座老农场重新有了动静，真不错。",
+			"response": "我该从哪里开始？",
+			"character": "Mira",
+			"character_zh": "米拉",
+		},
+		{
+			"path": "res://game/dialogue/neri.dialogue",
+			"line": "港口醒了。鱼可不会等爱睡懒觉的人。",
+			"response": "今天什么鱼咬钩？",
+			"character": "Neri",
+			"character_zh": "奈莉",
+		},
+		{
+			"path": "res://game/dialogue/rowan.dialogue",
+			"line": "桥还撑得住。按我的标准，这就算好日子。",
+			"response": "你在忙什么？",
+			"character": "Rowan",
+			"character_zh": "罗文",
+		},
+	]
+	for data: Dictionary in cases:
+		var dialogue := load(String(data["path"])) as DialogueResource
+		assert_not_null(dialogue)
+		if dialogue == null:
+			continue
+		var line := await dialogue.get_next_dialogue_line("start")
+		assert_not_null(line)
+		if line == null:
+			continue
+		assert_eq(line.text, String(data["line"]))
+		assert_gt(line.responses.size(), 0)
+		if not line.responses.is_empty():
+			assert_eq((line.responses[0] as DialogueResponse).text, String(data["response"]))
+		assert_eq(TranslationServer.translate(String(data["character"]), &"dialogue"), String(data["character_zh"]))
+		# Dialogue Manager injects the DialogueResource into extra_game_states as
+		# `self`. Clear the test-only resolved line state so the resource cache can
+		# release cleanly before the headless test process exits.
+		line.extra_game_states.clear()
+		for raw_id: Variant in dialogue.lines.keys():
+			var raw_line: Variant = dialogue.lines[raw_id]
+			if raw_line is Dictionary:
+				(raw_line as Dictionary).erase("resource")
+
+	TranslationServer.set_locale(previous)
+
 func test_authored_daily_and_heart_event_titles_exist_in_dialogue_resources() -> void:
 	var dialogue_by_npc := {
 		"mira": load("res://game/dialogue/intro.dialogue") as DialogueResource,

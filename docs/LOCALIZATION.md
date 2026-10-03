@@ -31,11 +31,11 @@ Scene-authored Control text participates in Godot translation automatically. Run
 
 Stable gameplay IDs, save keys, resource IDs, location IDs and internal enum/string values must never be translated.
 
-`tools/check_localization.py` scans runtime translation calls plus player-visible scene properties and fails when a Simplified Chinese entry is missing or empty. This check is part of `tools/validate.ps1` and therefore part of CI and release readiness.
+`tools/check_localization.py` scans runtime translation calls, player-visible scene properties, and authored Dialogue Manager lines/responses. It fails when a Simplified Chinese entry is missing or empty. This check is part of `tools/validate.ps1` and therefore part of CI and release readiness.
 
 ## Dialogue
 
-Dialogue Manager remains the authored-dialogue layer. Dialogue source files under `game/dialogue/` are registered as translation sources in `project.godot`.
+Dialogue Manager remains the authored-dialogue layer. Dialogue source files under `game/dialogue/` are registered as translation sources in `project.godot`. The current Mira, Neri and Rowan authored dialogue lines and player responses have Simplified Chinese coverage in `game/i18n/ui.zh_CN.po`; character names use the `dialogue` PO context expected by the Dialogue Manager balloon.
 
 Keep dialogue translation data separate from gameplay state. Translation changes must not alter dialogue title IDs used by heart events or NPC progression.
 

@@ -52,6 +52,17 @@ def collect_source_keys() -> set[str]:
                 value = decode_godot_string(raw)
                 if value:
                     keys.add(value)
+    for path in GAME.rglob("*.dialogue"):
+        for raw_line in path.read_text(encoding="utf-8-sig").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith(("~", "=>", "#")):
+                continue
+            if line.startswith("- "):
+                keys.add(line[2:].strip())
+                continue
+            match = re.match(r"^[^:]+:\s*(.+)$", line)
+            if match:
+                keys.add(match.group(1).strip())
     return keys
 
 def collect_po_entries() -> dict[str, str]:

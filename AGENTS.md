@@ -19,5 +19,5 @@
 - Preserve save compatibility through `SaveMigration` whenever the save schema version changes.
 - `export_presets.cfg`, CI workflows, validation scripts, browser/native smoke tooling, and release documentation are production infrastructure and must stay version-controlled. Release exports must exclude `test/` and `addons/gut/`.
 - Before a release candidate, run `tools/release_readiness.ps1`; Godot `ERROR:` or `SCRIPT ERROR:` output is a failure even when the engine process returns exit code 0.
-- All player-visible literal UI, toast, prompt, dialog, placeholder, tooltip, and project-progress strings must have a non-empty Simplified Chinese entry. `tools/check_localization.py` is a release gate; dynamic domain IDs and save keys remain untranslated.
+- All player-visible literal UI, toast, prompt, authored Dialogue Manager line/response, dialog, placeholder, tooltip, and project-progress strings must have a non-empty Simplified Chinese entry. `tools/check_localization.py` is a release gate; dynamic domain IDs and save keys remain untranslated.
 - Keep `AGENTS.md` as the project instruction source. Do not add `CLAUDE.md` or duplicate agent instruction files.
