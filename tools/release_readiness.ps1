@@ -14,6 +14,7 @@ try {
     $Required = @(
         "AGENTS.md",
         ".godot-version",
+        ".game-version",
         "project.godot",
         "export_presets.cfg",
         ".github/workflows/ci.yml",
@@ -30,6 +31,7 @@ try {
         "licenses/GODOT_COPYRIGHT.txt",
         "licenses/DIALOGUE_MANAGER_LICENSE.txt",
         "tools/install_export_templates.ps1",
+        "tools/update_game_version.ps1",
         "tools/smoke_export.ps1",
         "tools/web_smoke/.gdignore",
         "tools/web_smoke/run.js",

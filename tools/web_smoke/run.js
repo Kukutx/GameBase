@@ -133,14 +133,21 @@ async function main() {
   page.on("requestfailed", (request) => {
     const errorText = request.failure()?.errorText || "failed";
     const requestUrl = request.url();
-    // Godot's Web loader may cancel an initial pack request after issuing a
-    // replacement range request. Treat only that narrow, successful-loader
-    // cancellation as benign; all other network failures remain fatal.
+    // Godot's Web loader may cancel an initial core-asset request after
+    // issuing a replacement range request. Chromium can also report the
+    // explicit HEAD probes below as aborted after the 200 response is already
+    // available to fetch(). Only these exact resources are eligible; their
+    // final HTTP status is still asserted below.
     if (
       errorText === "net::ERR_ABORTED" &&
-      ["index.js", "index.wasm", "index.pck"].some((asset) =>
-        requestUrl.endsWith(asset),
-      )
+      [
+        "index.js",
+        "index.wasm",
+        "index.pck",
+        "BUILD_INFO.json",
+        "THIRD_PARTY_NOTICES.md",
+        "licenses/GODOT_LICENSE.txt",
+      ].some((asset) => requestUrl.endsWith(asset))
     ) {
       benignAbortedRequests.push(requestUrl);
       return;
@@ -181,7 +188,14 @@ async function main() {
 
     const assetChecks = await page.evaluate(async () => {
       const results = {};
-      for (const asset of ["index.js", "index.wasm", "index.pck"]) {
+      for (const asset of [
+        "index.js",
+        "index.wasm",
+        "index.pck",
+        "BUILD_INFO.json",
+        "THIRD_PARTY_NOTICES.md",
+        "licenses/GODOT_LICENSE.txt",
+      ]) {
         const response = await fetch(asset, {
           method: "HEAD",
           cache: "no-store",

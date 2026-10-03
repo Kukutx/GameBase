@@ -1,6 +1,7 @@
 class_name GameTitleScreen
 extends ColorRect
 
+@onready var version_label: Label = $Center/Menu/Version
 @onready var slot_select: OptionButton = $Center/Menu/SaveSlot
 @onready var slot_info: Label = $Center/Menu/SlotInfo
 @onready var continue_button: Button = $Center/Menu/Continue
@@ -14,6 +15,7 @@ extends ColorRect
 @onready var confirm_delete: ConfirmationDialog = $ConfirmDelete
 
 func _ready() -> void:
+	version_label.text = "v%s" % String(ProjectSettings.get_setting("application/config/version", "unknown"))
 	_build_slot_selector()
 	slot_select.item_selected.connect(_on_slot_selected)
 	continue_button.pressed.connect(_continue_game)

@@ -27,6 +27,8 @@ if ([string]::IsNullOrWhiteSpace($PythonBin)) {
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $BaselinePath = Join-Path $Root ".godot-version"
 $Baseline = if (Test-Path $BaselinePath) { (Get-Content $BaselinePath -Raw).Trim() } else { "" }
+$GameVersionPath = Join-Path $Root ".game-version"
+$GameVersion = if (Test-Path $GameVersionPath) { (Get-Content $GameVersionPath -Raw).Trim() } else { "" }
 
 function Invoke-GodotStep {
     param(
@@ -68,6 +70,16 @@ try {
 
     $Version = [string]($VersionOutput | Select-Object -First 1)
     Write-Host "Godot: $Version"
+
+    if ([string]::IsNullOrWhiteSpace($GameVersion) -or $GameVersion -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z-]+)*)?$') {
+        throw "Missing or invalid .game-version. Expected semantic version such as 0.1.0 or 1.0.0-rc.1."
+    }
+    $ProjectText = Get-Content (Join-Path $Root "project.godot") -Raw
+    $ExpectedProjectVersion = 'config/version="' + $GameVersion + '"'
+    if ($ProjectText -notmatch ("(?m)^" + [regex]::Escape($ExpectedProjectVersion) + "$")) {
+        throw "project.godot application version does not match .game-version ($GameVersion). Run tools/update_game_version.ps1."
+    }
+    Write-Host "GameBase: $GameVersion"
 
     if ($Version -notmatch '^4\.') {
         throw "GameBase requires Godot 4.x; detected '$Version'."

@@ -35,6 +35,16 @@ func test_input_and_autosave_services_are_registered() -> void:
 	assert_true(project.contains('InputPrompts="*res://game/core/input/input_prompt_service.gd"'))
 	assert_true(project.contains('AutoSave="*res://game/core/save/auto_save_service.gd"'))
 
+func test_game_version_is_semver_and_matches_project_and_diagnostics() -> void:
+	var version := _read_text("res://.game-version").strip_edges()
+	var regex := RegEx.new()
+	assert_eq(regex.compile("^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z]+(?:\\.[0-9A-Za-z-]+)*)?$"), OK)
+	assert_not_null(regex.search(version), "Game version must be semantic")
+	var project := _read_text("res://project.godot")
+	assert_true(project.contains('config/version="%s"' % version))
+	var context := GameDiagnostics.get_runtime_context()
+	assert_eq(String(context.get("game_version", "")), version)
+
 func test_release_diagnostics_are_configured() -> void:
 	var project := _read_text("res://project.godot")
 	assert_true(project.contains('GameDiagnostics="*res://game/core/diagnostics/game_diagnostics.gd"'))
@@ -63,7 +73,7 @@ func test_export_presets_cover_supported_release_targets() -> void:
 	assert_true(presets.contains('name="Windows Desktop"'))
 	assert_true(presets.contains('name="Linux"'))
 	assert_true(presets.contains('name="Web"'))
-	var hardened_filter := 'exclude_filter="test/*,addons/gut/*,game/art/licensed/*,.gutconfig.json,.devmate/*,tools/*,docs/*,.github/*,build/*,artifacts/*,licenses/*,AGENTS.md,README.md,THIRD_PARTY_NOTICES.md,LICENSE"'
+	var hardened_filter := 'exclude_filter="test/*,addons/gut/*,game/art/licensed/*,.gutconfig.json,.godot-version,.game-version,.gitattributes,.gitignore,.devmate/*,tools/*,docs/*,.github/*,build/*,artifacts/*,licenses/*,AGENTS.md,README.md,THIRD_PARTY_NOTICES.md,LICENSE"'
 	assert_eq(presets.count(hardened_filter), 3)
 
 func test_release_packaging_verifies_contents_and_distribution_licenses() -> void:
@@ -72,14 +82,24 @@ func test_release_packaging_verifies_contents_and_distribution_licenses() -> voi
 	assert_true(exporter.contains("verify_export_contents.ps1"))
 	assert_true(exporter.contains("THIRD_PARTY_NOTICES.md"))
 	assert_true(exporter.contains("GODOT_COPYRIGHT.txt"))
+	assert_true(exporter.contains("BUILD_INFO.json"))
 	assert_true(verifier.contains("res://game/art/licensed"))
 	assert_true(verifier.contains("res://addons/gut"))
 	assert_true(verifier.contains("res://test"))
+	assert_true(verifier.contains("res://.game-version"))
+	assert_true(verifier.contains("res://BUILD_INFO.json"))
 	assert_true(FileAccess.file_exists("res://THIRD_PARTY_NOTICES.md"))
 	assert_true(FileAccess.file_exists("res://licenses/GAMEBASE_LICENSE.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/GODOT_LICENSE.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/GODOT_COPYRIGHT.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/DIALOGUE_MANAGER_LICENSE.txt"))
+
+func test_release_workflow_requires_exact_game_version_tag() -> void:
+	var workflow := _read_text("res://.github/workflows/release.yml")
+	assert_true(workflow.contains(".game-version"))
+	assert_true(workflow.contains("game_version: ${{ steps.game.outputs.version }}"))
+	assert_true(workflow.contains('expected="v${{ needs.validate.outputs.game_version }}"'))
+	assert_true(workflow.contains('GITHUB_REF_NAME" != "$expected'))
 
 func test_latest_engine_compatibility_workflow_exists() -> void:
 	var workflow := _read_text("res://.github/workflows/engine-compat.yml")

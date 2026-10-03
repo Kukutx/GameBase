@@ -1,5 +1,6 @@
 # GameBase development rules
 
+- The GameBase application version lives in `.game-version` and must match `project.godot` `application/config/version`; update both only through `tools/update_game_version.ps1`. Release tags must exactly match `v<game-version>`. This version is independent from the engine baseline.
 - Target the current stable **Godot 4.x** line. The CI validation baseline lives in `.godot-version` and is currently **4.7.2**; it is a validation baseline, not a permanent engine lock.
 - Newer stable Godot 4.x releases are allowed. When upgrading, update `.godot-version`, confirm addon compatibility, run `tools/validate.ps1`, and verify all export presets. Do not use dev/RC engine builds for the shared baseline unless explicitly requested.
 - Keep `project.godot` on the oldest feature level the project actually needs. Do not bump its feature marker merely to match a patch release; this preserves forward compatibility with newer Godot 4.x versions.

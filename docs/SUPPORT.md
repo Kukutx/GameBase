@@ -24,6 +24,7 @@ The Web build uses the browser console instead of desktop file logging.
 The diagnostic payload contains only technical game context:
 
 - diagnostic schema version
+- GameBase application version
 - Godot engine version
 - operating system name
 - active locale
@@ -38,9 +39,11 @@ It intentionally does not record user account data, personal files, precise devi
 Ask for:
 
 1. the newest `gamebase.log`;
-2. the affected save slot files when the problem is save-specific;
-3. the exact action that triggered the issue;
-4. the Godot/GameBase build or Git revision used.
+2. the adjacent release `BUILD_INFO.json` when available;
+3. the affected save slot files when the problem is save-specific;
+4. the exact action that triggered the issue.
+
+`BUILD_INFO.json` identifies the GameBase version, exact Git commit, actual Godot engine used for the export, whether the source tree was dirty, and the target platform.
 
 Search the log for `GAMEBASE_DIAGNOSTIC`, `ERROR:`, and `SCRIPT ERROR:` first.
 

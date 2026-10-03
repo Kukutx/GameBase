@@ -15,6 +15,7 @@ func get_runtime_context() -> Dictionary:
 			location_id = String(location.id)
 	return {
 		"diagnostic_schema": DIAGNOSTIC_SCHEMA,
+		"game_version": String(ProjectSettings.get_setting("application/config/version", "unknown")),
 		"engine": Engine.get_version_info().get("string", "unknown"),
 		"os": OS.get_name(),
 		"locale": TranslationServer.get_locale(),

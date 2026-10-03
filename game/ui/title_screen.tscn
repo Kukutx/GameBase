@@ -40,6 +40,12 @@ theme_override_font_sizes/font_size = 12
 text = "A living-world RPG foundation"
 horizontal_alignment = 1
 
+[node name="Version" type="Label" parent="Center/Menu"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.66, 0.62, 1)
+theme_override_font_sizes/font_size = 9
+horizontal_alignment = 1
+
 [node name="Spacer" type="Control" parent="Center/Menu"]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2

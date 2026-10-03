@@ -4,7 +4,8 @@ GameBase has reproducible Windows, Linux and Web exports, strict source validati
 
 ## Prerequisites
 
-- A compatible stable Godot 4.x build. The shared CI baseline is read from `.godot-version`.
+- A valid application SemVer in `.game-version`, matching `project.godot` `application/config/version`.
+- A compatible stable Godot 4.x build. The shared CI baseline is read independently from `.godot-version`.
 - Matching Godot export templates.
 - Python 3.12+ for localization coverage validation.
 - Node.js 24+ for the Playwright Web-export smoke test.
@@ -47,7 +48,7 @@ Expected outputs:
 - `build/linux/GameBase.x86_64`
 - `build/web/index.html`
 
-Generated build, browser and diagnostic artifacts are intentionally ignored by Git. Every platform output also contains `THIRD_PARTY_NOTICES.md` plus the `licenses/` directory with the project, Godot Engine and Dialogue Manager notices. Those legal files are copied after PCK verification and are intentionally not part of `res://`.
+Generated build, browser and diagnostic artifacts are intentionally ignored by Git. Every platform output also contains `BUILD_INFO.json`, `THIRD_PARTY_NOTICES.md`, and the `licenses/` directory. `BUILD_INFO.json` records the application version, actual Godot version, Git commit, dirty state, and target platform. These distribution metadata/legal files are written after PCK verification and are intentionally not part of `res://`.
 
 ## Continuous integration
 
@@ -68,12 +69,17 @@ A change should not be merged while any of these checks fail.
 
 ## Publishing a release
 
-Use semantic tags such as:
+First bump and commit the application version, then tag that exact version:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File tools/update_game_version.ps1 -Version 0.1.0
+git add .game-version project.godot
+git commit -m "chore: release 0.1.0"
 git tag v0.1.0
 git push origin v0.1.0
 ```
+
+The Release workflow rejects a tag unless it is exactly `v` plus the committed `.game-version`.
 
 `.github/workflows/release.yml` validates the source, exports and packages all three targets, performs Web browser smoke plus Windows/Linux packaged-build smoke, and only then publishes the GitHub Release.
 

@@ -32,6 +32,33 @@ $Packs = @{
     "Web" = "build/web/index.pck"
 }
 
+$GameVersionPath = Join-Path $Root ".game-version"
+if (-not (Test-Path $GameVersionPath)) {
+    throw "Missing .game-version."
+}
+$GameVersion = (Get-Content $GameVersionPath -Raw).Trim()
+if ($GameVersion -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z-]+)*)?$') {
+    throw "Invalid .game-version: $GameVersion"
+}
+$EngineVersionOutput = & $GodotBin --version 2>&1
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not resolve Godot version for BUILD_INFO.json."
+}
+$EngineVersion = [string]($EngineVersionOutput | Select-Object -First 1)
+$GitCommit = "unknown"
+$GitDirty = $true
+if ($null -ne (Get-Command git -ErrorAction SilentlyContinue)) {
+    $CommitOutput = & git -C $Root rev-parse HEAD 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        $GitCommit = ([string]($CommitOutput | Select-Object -First 1)).Trim()
+    }
+    $DirtyOutput = @(& git -C $Root status --porcelain 2>$null)
+    if ($LASTEXITCODE -eq 0) {
+        $GitDirty = $DirtyOutput.Count -gt 0
+    }
+}
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+
 Push-Location $Root
 try {
     foreach ($Name in $Preset) {
@@ -85,6 +112,17 @@ try {
             -not (Test-Path (Join-Path $LicenseTarget "GAMEBASE_LICENSE.txt"))) {
             throw "Export '$Name' is missing required distribution license files."
         }
+
+        $BuildInfo = [ordered]@{
+            schema = 1
+            game_version = $GameVersion
+            engine = $EngineVersion
+            git_commit = $GitCommit
+            dirty = [bool]$GitDirty
+            target = $Name
+        }
+        $BuildInfoJson = $BuildInfo | ConvertTo-Json -Depth 3
+        [System.IO.File]::WriteAllText((Join-Path $Parent "BUILD_INFO.json"), $BuildInfoJson + [Environment]::NewLine, $Utf8NoBom)
     }
 
     Write-Host ""

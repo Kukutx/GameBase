@@ -69,6 +69,11 @@ func _initialize() -> void:
 		"res://README.md",
 		"res://LICENSE",
 		"res://THIRD_PARTY_NOTICES.md",
+		"res://.godot-version",
+		"res://.game-version",
+		"res://.gitattributes",
+		"res://.gitignore",
+		"res://BUILD_INFO.json",
 	]
 	for path: String in forbidden_files:
 		if FileAccess.file_exists(path) or ResourceLoader.exists(path):

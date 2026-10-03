@@ -1,11 +1,12 @@
 ﻿# GameBase
 
-Godot 4.x life-sim / RPG foundation built from the Godot-GameTemplate repository and extended into a data-driven multi-town game prototype. The shared CI validation baseline is stored in `.godot-version` (currently 4.7.2) so engine upgrades remain centralized instead of being hard-coded throughout the project.
+Godot 4.x life-sim / RPG foundation built from the Godot-GameTemplate repository and extended into a data-driven multi-town game prototype. The application version lives in `.game-version`; the independent shared engine-validation baseline lives in `.godot-version` (currently 4.7.2), so game releases and Godot upgrades can move independently.
 
 The current project is a reusable gameplay base rather than a finished content release. The main playable loop already connects farming, fishing, mining/combat, animals, crafting/processing, NPC relationships, quests, weather/calendar systems, town progression, saving and world travel.
 
 ## Engine and addons
 
+- GameBase application version: `.game-version` (mirrored to `application/config/version`)
 - Godot **4.x**; current CI validation baseline: **4.7.2** via `.godot-version`
 - Dialogue Manager **3.10.5**
 - GUT **9.7.1** for automated tests
@@ -101,6 +102,12 @@ GitHub Actions provides:
 - `.github/workflows/release.yml`: gated Windows/Linux/Web packages, native/browser smoke, SHA-256 checksums, and automatic GitHub Release publishing for `v*` tags.
 - `.github/workflows/engine-compat.yml`: weekly validation against the newest stable Godot 4.x release without silently moving the shared baseline.
 - `.github/dependabot.yml`: weekly GitHub Actions and npm QA-tool dependency maintenance.
+
+The game version and engine baseline are intentionally separate. Bump the application version with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/update_game_version.ps1 -Version <next-semver>
+```
 
 The engine version used by CI is read from `.godot-version`. To move the shared validation baseline to a newer stable Godot 4.x release:
 

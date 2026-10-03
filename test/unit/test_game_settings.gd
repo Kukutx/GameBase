@@ -2,6 +2,9 @@ extends GutTest
 
 const TEST_PATH := "user://game_settings_test.cfg"
 
+func _read_project_version() -> String:
+	return String(ProjectSettings.get_setting("application/config/version", "unknown"))
+
 func after_each() -> void:
 	if FileAccess.file_exists(TEST_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_PATH))
@@ -63,6 +66,8 @@ func test_title_screen_static_and_dynamic_labels_translate_in_runtime() -> void:
 	var settings_button := title.get_node("Center/Menu/Settings") as Button
 	assert_eq(TranslationServer.translate(continue_button.text), "继续游戏")
 	assert_eq(TranslationServer.translate(settings_button.text), "设置")
+	var version_label := title.get_node("Center/Menu/Version") as Label
+	assert_eq(version_label.text, "v%s" % _read_project_version())
 	var slots := title.get_node("Center/Menu/SaveSlot") as OptionButton
 	assert_eq(slots.get_item_text(0), "存档位 1")
 	TranslationServer.set_locale(previous)
