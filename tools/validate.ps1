@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$GodotBin = $env:GODOT_BIN,
-    [switch]$SkipImport
+    [switch]$SkipImport,
+    [switch]$CleanImport
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,14 +23,31 @@ function Invoke-GodotStep {
 
     Write-Host ""
     Write-Host "==> $Name"
-    & $GodotBin @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "$Name failed with exit code $LASTEXITCODE"
+    $SafeName = ($Name -replace '[^A-Za-z0-9._-]', '_')
+    $TempRoot = [System.IO.Path]::GetTempPath()
+    $LogPath = Join-Path $TempRoot ("gamebase-" + $SafeName + ".log")
+    Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
+
+    & $GodotBin @Arguments 2>&1 | Tee-Object -FilePath $LogPath
+    $ExitCode = $LASTEXITCODE
+    $EngineErrors = @(Select-String -Path $LogPath -Pattern '^(?:ERROR|SCRIPT ERROR):' -CaseSensitive:$false -ErrorAction SilentlyContinue)
+    Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
+
+    if ($ExitCode -ne 0) {
+        throw "$Name failed with exit code $ExitCode"
+    }
+    if ($EngineErrors.Count -gt 0) {
+        throw "$Name emitted $($EngineErrors.Count) Godot error line(s)."
     }
 }
 
 Push-Location $Root
 try {
+    if ($CleanImport -and (Test-Path (Join-Path $Root ".godot"))) {
+        Write-Host "Removing generated .godot cache for a clean validation..."
+        Remove-Item -Recurse -Force (Join-Path $Root ".godot")
+    }
+
     $VersionOutput = & $GodotBin --version 2>&1
     if ($LASTEXITCODE -ne 0) {
         throw "Could not run Godot executable '$GodotBin'."
@@ -61,6 +79,11 @@ try {
     Invoke-GodotStep -Name "Runtime integration smoke" -Arguments @(
         "--headless", "--path", $Root,
         "-s", "test/runtime/world_services_smoke.gd"
+    )
+
+    Invoke-GodotStep -Name "Main scene boot smoke" -Arguments @(
+        "--headless", "--path", $Root,
+        "--quit-after", "120"
     )
 
     Write-Host ""

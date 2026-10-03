@@ -21,11 +21,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-SteamInit="*res://addons/great_games_library/autoload/SteamInit.gd"
-SoundManager="*res://addons/top_down/scenes/autoloads/sound_manager.tscn"
-Music="*res://addons/top_down/scenes/autoloads/music.tscn"
-Transition="*res://addons/top_down/scenes/autoloads/transition.tscn"
-PersistentData="*res://addons/top_down/scenes/autoloads/persistent_data.tscn"
+Transition="*res://game/core/world/scene_transition.gd"
 DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 GameSettings="*res://game/core/settings/game_settings.gd"
 GameEvents="*res://game/core/events/game_events.gd"
@@ -171,7 +167,8 @@ open_menu={
 
 [internationalization]
 
-locale/translations_pot_files=PackedStringArray("res://game/dialogue/intro.dialogue", "res://game/dialogue/neri.dialogue", "res://game/dialogue/rowan.dialogue", "res://.dev/vendor/DialogueManager-3.10.5/tests/main.dialogue", "res://.dev/vendor/DialogueManager-3.10.5/tests/snippets.dialogue")
+locale/translations=PackedStringArray("res://game/i18n/ui.zh_CN.po")
+locale/translations_pot_files=PackedStringArray("res://game/dialogue/intro.dialogue", "res://game/dialogue/neri.dialogue", "res://game/dialogue/rowan.dialogue")
 
 [layer_names]
 
@@ -181,11 +178,6 @@ locale/translations_pot_files=PackedStringArray("res://game/dialogue/intro.dialo
 2d_physics/layer_4="Navigation Obstacle"
 2d_physics/layer_5="Interactable"
 
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
-
 [navigation]
 
 2d/use_edge_connections=false
@@ -194,4 +186,6 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 [rendering]
 
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 textures/canvas_textures/default_texture_filter=3

@@ -9,7 +9,7 @@ GameBase follows stable Godot 4.x releases without permanently locking the repos
 - Local development may use a newer stable Godot 4.x release before the shared CI baseline is advanced.
 - Development, beta and release-candidate engine builds are not shared baselines unless explicitly requested.
 
-This keeps builds reproducible while allowing regular engine upgrades.
+This keeps builds reproducible while allowing regular engine upgrades. `.github/workflows/engine-compat.yml` also runs weekly against the newest stable Godot 4.x release and verifies both the test suite and all release exports without automatically changing the shared baseline.
 
 ## Upgrade procedure
 

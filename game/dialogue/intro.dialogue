@@ -1,10 +1,10 @@
 ~ start
-Mira: Welcome. This is the first playable slice of GameBase.
-- What can I do here?
-	Mira: Walk around, approach me, and press E to interact. The next systems will build on this same interaction layer.
+Mira: Welcome to Starter Town. It is good to see the old farm active again.
+- Where should I begin?
+	Mira: Tend the field, explore the valley, and talk to people when you see them. There is always more work than one pair of hands can finish.
 	=> start
-- Why does the menu look different from the world?
-	Mira: The menu comes from the preserved Godot-GameTemplate foundation. The game-specific layer is kept separate so we can upgrade or replace systems cleanly.
+- What is beyond town?
+	Mira: Riverside is across the bridge, Harbor Town is farther east, and the Old Mine is worth visiting once you have a proper pickaxe.
 	=> start
 - See you later.
 	Mira: See you around.

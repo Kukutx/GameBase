@@ -12,32 +12,18 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build ${{ matrix.name }}
+  validate:
+    name: Validate release source
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Windows
-            preset: Windows Desktop
-            output: build/windows/GameBase.exe
-            package: GameBase-windows-x86_64.zip
-            package_command: cd build/windows && zip -r ../../dist/GameBase-windows-x86_64.zip .
-          - name: Linux
-            preset: Linux
-            output: build/linux/GameBase.x86_64
-            package: GameBase-linux-x86_64.tar.gz
-            package_command: chmod +x build/linux/GameBase.x86_64 && tar -czf dist/GameBase-linux-x86_64.tar.gz -C build/linux .
-          - name: Web
-            preset: Web
-            output: build/web/index.html
-            package: GameBase-web.zip
-            package_command: cd build/web && zip -r ../../dist/GameBase-web.zip .
-
+    outputs:
+      engine_version: ${{ steps.engine.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,31 +39,100 @@ jobs:
             version="$(tr -d '\r\n ' < .godot-version)"
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Using Godot $version"
 
-      - name: Setup Godot with export templates
+      - name: Setup Godot
         uses: chickensoft-games/setup-godot@v2
         with:
           version: ${{ steps.engine.outputs.version }}
           use-dotnet: false
+          include-templates: false
+
+      - name: Validate project
+        shell: pwsh
+        run: ./tools/validate.ps1 -GodotBin godot -CleanImport
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            preset: Windows Desktop
+            package: GameBase-windows-x86_64.zip
+            package_command: cd build/windows && zip -r ../../dist/GameBase-windows-x86_64.zip .
+          - name: Linux
+            preset: Linux
+            package: GameBase-linux-x86_64.tar.gz
+            package_command: chmod +x build/linux/GameBase.x86_64 && tar -czf dist/GameBase-linux-x86_64.tar.gz -C build/linux .
+          - name: Web
+            preset: Web
+            package: GameBase-web.zip
+            package_command: cd build/web && zip -r ../../dist/GameBase-web.zip .
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Godot with export templates
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ needs.validate.outputs.engine_version }}
+          use-dotnet: false
           include-templates: true
 
-      - name: Import and validate
-        shell: bash
-        run: |
-          godot --headless --path . --editor --quit
-          godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig.json
-          godot --headless --path . -s test/runtime/world_services_smoke.gd
+      - name: Import project
+        run: godot --headless --path . --editor --quit
 
       - name: Export
+        shell: pwsh
+        run: ./tools/export.ps1 -GodotBin godot -Preset '${{ matrix.preset }}' -SkipValidation
+
+      - name: Verify Web payload
+        if: matrix.name == 'Web'
         shell: bash
         run: |
-          mkdir -p "$(dirname "${{ matrix.output }}")" dist
-          godot --headless --path . --export-release "${{ matrix.preset }}" "${{ matrix.output }}"
-          test -f "${{ matrix.output }}"
+          test -n "$(find build/web -maxdepth 1 -name '*.wasm' -print -quit)"
+          test -n "$(find build/web -maxdepth 1 -name '*.pck' -print -quit)"
+          test -n "$(find build/web -maxdepth 1 -name '*.js' -print -quit)"
+
+      - name: Setup Node
+        if: matrix.name == 'Web'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tools/web_smoke/package-lock.json
+
+      - name: Install Web smoke dependencies
+        if: matrix.name == 'Web'
+        run: npm ci --prefix tools/web_smoke
+
+      - name: Install Chromium
+        if: matrix.name == 'Web'
+        run: npm exec --prefix tools/web_smoke -- playwright install --with-deps chromium
+
+      - name: Browser smoke Web export
+        if: matrix.name == 'Web'
+        run: npm run --prefix tools/web_smoke smoke:web
+
+      - name: Upload Web smoke diagnostics
+        if: matrix.name == 'Web' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-web-smoke-release
+          path: artifacts/web-smoke
+          if-no-files-found: ignore
+          retention-days: 30
 
       - name: Package
         shell: bash
-        run: ${{ matrix.package_command }}
+        run: |
+          mkdir -p dist
+          ${{ matrix.package_command }}
 
       - name: Upload packaged build
         uses: actions/upload-artifact@v4
@@ -87,11 +142,65 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  native-smoke:
+    name: Native smoke ${{ matrix.name }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            artifact: release-Windows
+          - name: Linux
+            os: ubuntu-latest
+            artifact: release-Linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Download packaged build
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist
+
+      - name: Smoke Windows package
+        if: matrix.name == 'Windows'
+        shell: pwsh
+        run: |
+          Expand-Archive -Path .\dist\GameBase-windows-x86_64.zip -DestinationPath .\smoke
+          $stdout = Join-Path $env:RUNNER_TEMP "gamebase.stdout.log"
+          $stderr = Join-Path $env:RUNNER_TEMP "gamebase.stderr.log"
+          $process = Start-Process -FilePath ".\smoke\GameBase.exe" -ArgumentList @("--headless", "--quit-after", "120") -RedirectStandardOutput $stdout -RedirectStandardError $stderr -Wait -PassThru
+          Get-Content $stdout, $stderr -ErrorAction SilentlyContinue
+          if ($process.ExitCode -ne 0) {
+            throw "Windows release package exited with code $($process.ExitCode)"
+          }
+          $errors = @(Select-String -Path $stdout, $stderr -Pattern '^(?:ERROR|SCRIPT ERROR):' -CaseSensitive:$false -ErrorAction SilentlyContinue)
+          if ($errors.Count -gt 0) {
+            throw "Windows release package emitted $($errors.Count) Godot runtime error(s)"
+          }
+
+      - name: Smoke Linux package
+        if: matrix.name == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p smoke
+          tar -xzf dist/GameBase-linux-x86_64.tar.gz -C smoke
+          chmod +x smoke/GameBase.x86_64
+          set -o pipefail
+          smoke/GameBase.x86_64 --headless --quit-after 120 2>&1 | tee "$RUNNER_TEMP/gamebase.log"
+          if grep -E '^(ERROR|SCRIPT ERROR):' "$RUNNER_TEMP/gamebase.log"; then
+            echo "Linux release package emitted Godot runtime errors" >&2
+            exit 1
+          fi
+
   publish:
     name: Publish GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [build, native-smoke]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download packaged builds
         uses: actions/download-artifact@v4
@@ -99,6 +208,21 @@ jobs:
           pattern: release-*
           path: dist
           merge-multiple: true
+
+      - name: Validate release tag
+        shell: bash
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release tags must be semantic versions such as v0.1.0 or v1.0.0-rc.1" >&2
+            exit 1
+          fi
+
+      - name: Generate SHA-256 checksums
+        shell: bash
+        run: |
+          cd dist
+          sha256sum GameBase-* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
 
       - name: Publish release
         env:

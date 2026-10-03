@@ -11,11 +11,12 @@
 - `Godot-GameTemplate` is the upstream foundation and visual/reference baseline. Reference repositories live outside this repo under `../GodotReferences/GameBaseReferences/` and are not production dependencies.
 - Use Microverse as an AI/NPC design reference later. Introduce a behavior-tree addon such as LimboAI only when NPC behavior complexity justifies it; do not add it preemptively.
 - Every reusable gameplay system should get a focused GUT test where practical. Run headless import/parse, GUT, runtime smoke, and relevant export validation after changes.
-- Prefer a small, clean game layer over carrying unused demo/editor systems from the template.
+- Prefer a small, clean game layer over carrying unused demo/editor systems from the template. The inherited `addons/top_down` and `addons/great_games_library` runtime stacks have been removed and must not be reintroduced as hidden dependencies.
 - Register production content in `game/data/content_manifest.tres` and resolve it through `ContentDB`; do not add new scattered hard-coded resource path dictionaries.
 - World travel should use stable Location IDs and Spawn IDs. Keep direct scene-path travel only as a compatibility escape hatch.
 - NPC authored dialogue and future local-AI dialogue share `ConversationService`, `NpcContext`, and `NpcMemory`. Model/provider code must not own gameplay state or save data.
 - Purchased raw art under `game/art/licensed/` is local-only and Git-ignored. Never commit or redistribute those source assets; use `tools/sync_licensed_assets.ps1` to restore them locally.
 - Preserve save compatibility through `SaveMigration` whenever the save schema version changes.
-- `export_presets.cfg`, CI workflows, validation scripts, and release documentation are production infrastructure and must stay version-controlled.
+- `export_presets.cfg`, CI workflows, validation scripts, browser/native smoke tooling, and release documentation are production infrastructure and must stay version-controlled. Release exports must exclude `test/` and `addons/gut/`.
+- Before a release candidate, run `tools/release_readiness.ps1`; Godot `ERROR:` or `SCRIPT ERROR:` output is a failure even when the engine process returns exit code 0.
 - Keep `AGENTS.md` as the project instruction source. Do not add `CLAUDE.md` or duplicate agent instruction files.

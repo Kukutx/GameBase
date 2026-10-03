@@ -6,8 +6,10 @@
 # Export output / local export credentials
 export.cfg
 export_credentials.cfg
-build/
-artifacts/
+build/*
+!build/.gdignore
+artifacts/*
+!artifacts/.gdignore
 
 # Imported/generated resources
 *.translation
@@ -17,6 +19,9 @@ artifacts/
 .mono/
 data_*/
 mono_crash.*.json
+
+# Node-based QA tooling cache
+node_modules/
 
 # Local development probes, references, and vendored upgrade staging
 .dev/

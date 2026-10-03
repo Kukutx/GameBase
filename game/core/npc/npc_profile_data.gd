@@ -30,8 +30,8 @@ extends Resource
 @export var loved_items: Array[StringName] = []
 @export var liked_items: Array[StringName] = []
 @export var disliked_items: Array[StringName] = []
-@export var loved_tags: PackedStringArray = []
-@export var liked_tags: PackedStringArray = []
+@export var loved_tags: PackedStringArray = PackedStringArray()
+@export var liked_tags: PackedStringArray = PackedStringArray()
 
 func is_birthday(target_day: int = -1) -> bool:
 	var resolved_day := WorldClock.day if target_day < 1 else target_day

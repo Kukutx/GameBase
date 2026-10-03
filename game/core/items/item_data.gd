@@ -23,7 +23,7 @@ enum Kind {
 @export_range(0, 999, 1) var energy_restore := 0
 @export_range(0, 999, 1) var health_restore := 0
 @export var food_buff_id: StringName
-@export var tags: PackedStringArray = []
+@export var tags: PackedStringArray = PackedStringArray()
 @export var tool_action: StringName
 @export_range(1, 999, 1) var tool_power := 1
 @export var crop_id: StringName

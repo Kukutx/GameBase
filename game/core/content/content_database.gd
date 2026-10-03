@@ -550,14 +550,16 @@ func _validate_references(errors: PackedStringArray) -> void:
 			else:
 				var product_item := _items[String(animal.product_item_id)] as ItemData
 				if product_item == null or not product_item.has_tag("animal_product"):
-					errors.append("farm animal '%s' product '%s' lacks animal_product tag" % [animal.id, animal.product_item_id])
+					var product_tags: Variant = product_item.tags if product_item != null else null
+					errors.append("farm animal '%s' product '%s' lacks animal_product tag (tags=%s)" % [animal.id, animal.product_item_id, product_tags])
 		if animal.premium_product_item_id != &"":
 			if not _items.has(String(animal.premium_product_item_id)):
 				errors.append("farm animal '%s' references unknown premium product '%s'" % [animal.id, animal.premium_product_item_id])
 			else:
 				var premium_item := _items[String(animal.premium_product_item_id)] as ItemData
 				if premium_item == null or not premium_item.has_tag("animal_product"):
-					errors.append("farm animal '%s' premium product '%s' lacks animal_product tag" % [animal.id, animal.premium_product_item_id])
+					var premium_tags: Variant = premium_item.tags if premium_item != null else null
+					errors.append("farm animal '%s' premium product '%s' lacks animal_product tag (tags=%s)" % [animal.id, animal.premium_product_item_id, premium_tags])
 		if animal.feed_item_id != &"" and not _items.has(String(animal.feed_item_id)):
 			errors.append("farm animal '%s' references unknown feed item '%s'" % [animal.id, animal.feed_item_id])
 
@@ -570,7 +572,8 @@ func _validate_references(errors: PackedStringArray) -> void:
 		else:
 			var fish_item := _items[String(fish.item_id)] as ItemData
 			if fish_item == null or not fish_item.has_tag("fish"):
-				errors.append("fish '%s' item '%s' lacks fish tag" % [fish.id, fish.item_id])
+				var fish_tags: Variant = fish_item.tags if fish_item != null else null
+				errors.append("fish '%s' item '%s' lacks fish tag (tags=%s)" % [fish.id, fish.item_id, fish_tags])
 		if fish.start_minute == fish.end_minute:
 			errors.append("fish '%s' has an empty time window" % fish.id)
 		if fish.catch_weight <= 0.0:
@@ -689,7 +692,8 @@ func _validate_references(errors: PackedStringArray) -> void:
 		else:
 			var mining_item := _items[String(mining.drop_item_id)] as ItemData
 			if mining_item == null or not mining_item.has_tag("mining"):
-				errors.append("mining node '%s' drop '%s' lacks mining tag" % [mining.id, mining.drop_item_id])
+				var mining_tags: Variant = mining_item.tags if mining_item != null else null
+				errors.append("mining node '%s' drop '%s' lacks mining tag (tags=%s)" % [mining.id, mining.drop_item_id, mining_tags])
 
 	for raw: Variant in _enemies.values():
 		var enemy := raw as EnemyData
@@ -1100,7 +1104,8 @@ func _validate_location_node_references(node: Node, location: WorldLocationData,
 			errors.append("location '%s' feed trough '%s' references unknown housing '%s'" % [location_id, node.name, trough.housing_id])
 		var feed_item := get_item(trough.feed_item_id)
 		if trough.feed_item_id == &"" or feed_item == null or not feed_item.has_tag("animal_feed"):
-			errors.append("location '%s' feed trough '%s' references invalid feed item '%s'" % [location_id, node.name, trough.feed_item_id])
+			var feed_tags: Variant = feed_item.tags if feed_item != null else null
+			errors.append("location '%s' feed trough '%s' references invalid feed item '%s' (tags=%s)" % [location_id, node.name, trough.feed_item_id, feed_tags])
 	elif node is FarmField:
 		var field := node as FarmField
 		if field.location_id != &"" and field.location_id != location_id:

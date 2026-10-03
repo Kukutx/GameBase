@@ -3,8 +3,14 @@ extends Node
 
 signal changed
 signal controls_changed
+signal locale_changed(locale: String)
 
 const DEFAULT_SETTINGS_PATH := "user://settings.cfg"
+const SUPPORTED_LOCALE_IDS := ["en", "zh_CN"]
+const LOCALE_DISPLAY_NAMES := {
+	"en": "English",
+	"zh_CN": "简体中文",
+}
 const CONTROL_ACTIONS = [
 	&"move_up", &"move_down", &"move_left", &"move_right",
 	&"interact", &"use_tool", &"give_gift", &"remove_building",
@@ -42,6 +48,15 @@ const SECONDARY_CONTROL_KEYS := {
 	"move_left": KEY_LEFT,
 	"move_right": KEY_RIGHT,
 }
+const DEFAULT_GAMEPAD_BUTTONS := {
+	"interact": JOY_BUTTON_A,
+	"use_tool": JOY_BUTTON_X,
+	"give_gift": JOY_BUTTON_Y,
+	"remove_building": JOY_BUTTON_RIGHT_SHOULDER,
+	"open_menu": JOY_BUTTON_START,
+	"quick_save": JOY_BUTTON_LEFT_STICK,
+	"quick_load": JOY_BUTTON_RIGHT_STICK,
+}
 
 var settings_path := DEFAULT_SETTINGS_PATH
 var master_volume := 1.0
@@ -49,6 +64,7 @@ var music_volume := 0.8
 var sounds_volume := 0.9
 var fullscreen := false
 var vsync := true
+var locale := "en"
 var key_bindings: Dictionary = {}
 
 func _ready() -> void:
@@ -83,6 +99,20 @@ func set_vsync(value: bool) -> void:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
 	_save_and_emit()
 
+func set_locale(value: String) -> void:
+	var resolved := value if SUPPORTED_LOCALE_IDS.has(value) else "en"
+	locale = resolved
+	TranslationServer.set_locale(locale)
+	save_settings()
+	locale_changed.emit(locale)
+	changed.emit()
+
+func get_supported_locales() -> PackedStringArray:
+	return PackedStringArray(SUPPORTED_LOCALE_IDS)
+
+func get_locale_display_name(value: String) -> String:
+	return String(LOCALE_DISPLAY_NAMES.get(value, value))
+
 func get_control_actions() -> Array[StringName]:
 	var result: Array[StringName] = []
 	for action: StringName in CONTROL_ACTIONS:
@@ -90,7 +120,7 @@ func get_control_actions() -> Array[StringName]:
 	return result
 
 func get_control_label(action: StringName) -> String:
-	return String(CONTROL_LABELS.get(String(action), String(action).capitalize()))
+	return tr(String(CONTROL_LABELS.get(String(action), String(action).capitalize())))
 
 func get_key_binding(action: StringName) -> Key:
 	var raw := int(key_bindings.get(String(action), int(DEFAULT_CONTROL_KEYS.get(String(action), KEY_NONE))))
@@ -98,7 +128,7 @@ func get_key_binding(action: StringName) -> Key:
 
 func get_key_binding_text(action: StringName) -> String:
 	var key := get_key_binding(action)
-	return OS.get_keycode_string(key) if key != KEY_NONE else "Unbound"
+	return OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound")
 
 func set_key_binding(action: StringName, key: Key) -> bool:
 	if not CONTROL_ACTIONS.has(action) or key == KEY_NONE:
@@ -125,6 +155,7 @@ func reset_controls() -> void:
 	changed.emit()
 
 func apply() -> void:
+	TranslationServer.set_locale(locale)
 	_apply_bus(&"Master", master_volume)
 	_apply_bus(&"Music", music_volume)
 	_apply_bus(&"Sounds", sounds_volume)
@@ -140,6 +171,7 @@ func save_settings() -> void:
 	config.set_value("audio", "sounds", sounds_volume)
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("display", "vsync", vsync)
+	config.set_value("localization", "locale", locale)
 	for action: StringName in CONTROL_ACTIONS:
 		config.set_value("controls", String(action), int(get_key_binding(action)))
 	config.save(settings_path)
@@ -155,6 +187,8 @@ func load_settings() -> void:
 	sounds_volume = clampf(float(config.get_value("audio", "sounds", 0.9)), 0.0, 1.0)
 	fullscreen = bool(config.get_value("display", "fullscreen", false))
 	vsync = bool(config.get_value("display", "vsync", true))
+	var loaded_locale := String(config.get_value("localization", "locale", "en"))
+	locale = loaded_locale if SUPPORTED_LOCALE_IDS.has(loaded_locale) else "en"
 	for action: StringName in CONTROL_ACTIONS:
 		var fallback := int(DEFAULT_CONTROL_KEYS[String(action)])
 		var value := int(config.get_value("controls", String(action), fallback))
@@ -175,12 +209,21 @@ func _apply_input_bindings() -> void:
 		if secondary != KEY_NONE and secondary != get_key_binding(action):
 			_add_key_event(action, secondary)
 		_add_gamepad_movement_events(action)
+		_add_gamepad_action_event(action)
 
 func _add_key_event(action: StringName, key: Key) -> void:
 	if key == KEY_NONE:
 		return
 	var event := InputEventKey.new()
 	event.physical_keycode = key
+	InputMap.action_add_event(action, event)
+
+func _add_gamepad_action_event(action: StringName) -> void:
+	var raw_button := int(DEFAULT_GAMEPAD_BUTTONS.get(String(action), -1))
+	if raw_button < 0:
+		return
+	var event := InputEventJoypadButton.new()
+	event.button_index = raw_button as JoyButton
 	InputMap.action_add_event(action, event)
 
 func _add_gamepad_movement_events(action: StringName) -> void:

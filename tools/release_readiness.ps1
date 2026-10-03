@@ -2,7 +2,8 @@
 param(
     [string]$GodotBin = $env:GODOT_BIN,
     [switch]$SkipValidation,
-    [switch]$SkipExport
+    [switch]$SkipExport,
+    [switch]$SkipBrowserSmoke
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,8 +18,15 @@ try {
         "export_presets.cfg",
         ".github/workflows/ci.yml",
         ".github/workflows/release.yml",
+        ".github/workflows/engine-compat.yml",
         "tools/validate.ps1",
-        "tools/export.ps1"
+        "tools/export.ps1",
+        "tools/install_export_templates.ps1",
+        "tools/smoke_export.ps1",
+        "tools/web_smoke/.gdignore",
+        "tools/web_smoke/run.js",
+        "tools/web_smoke/package.json",
+        "tools/web_smoke/package-lock.json"
     )
 
     foreach ($Path in $Required) {
@@ -49,7 +57,7 @@ try {
     }
 
     if (-not $SkipValidation) {
-        & (Join-Path $PSScriptRoot "validate.ps1") -GodotBin $GodotBin
+        & (Join-Path $PSScriptRoot "validate.ps1") -GodotBin $GodotBin -CleanImport
         if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
         }
@@ -59,6 +67,40 @@ try {
         & (Join-Path $PSScriptRoot "export.ps1") -GodotBin $GodotBin -SkipValidation
         if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
+        }
+        $SmokeTargets = @("Web")
+        if ($env:OS -eq "Windows_NT") {
+            $SmokeTargets = @("Windows", "Web")
+        }
+        & (Join-Path $PSScriptRoot "smoke_export.ps1") -Target $SmokeTargets
+        if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+        }
+
+        if (-not $SkipBrowserSmoke) {
+            if ($null -eq (Get-Command npm -ErrorAction SilentlyContinue)) {
+                throw "npm is required for the Web browser smoke. Install Node.js 24+ or use -SkipBrowserSmoke."
+            }
+            Write-Host ""
+            Write-Host "==> Installing deterministic Web smoke dependencies"
+            & npm ci --prefix tools/web_smoke --ignore-scripts
+            if ($LASTEXITCODE -ne 0) {
+                throw "npm ci failed with exit code $LASTEXITCODE."
+            }
+
+            Write-Host ""
+            Write-Host "==> Ensuring Playwright Chromium is installed"
+            & npm exec --prefix tools/web_smoke -- playwright install chromium
+            if ($LASTEXITCODE -ne 0) {
+                throw "Playwright Chromium installation failed with exit code $LASTEXITCODE."
+            }
+
+            Write-Host ""
+            Write-Host "==> Browser smoke Web export"
+            & npm run --prefix tools/web_smoke smoke:web
+            if ($LASTEXITCODE -ne 0) {
+                throw "Web browser smoke failed with exit code $LASTEXITCODE."
+            }
         }
     }
 

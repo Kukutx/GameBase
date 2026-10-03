@@ -4,10 +4,10 @@ extends Resource
 @export var id: StringName
 @export var item_id: StringName
 @export var locations: Array[StringName] = []
-@export var seasons: PackedStringArray = []
+@export var seasons: PackedStringArray = PackedStringArray()
 @export_range(0, 1439, 1) var start_minute := 6 * 60
 @export_range(1, 1440, 1) var end_minute := 22 * 60
-@export var allowed_weather: PackedStringArray = []
+@export var allowed_weather: PackedStringArray = PackedStringArray()
 @export_range(0.01, 100.0, 0.01) var catch_weight := 1.0
 @export_range(1, 10, 1) var difficulty := 1
 

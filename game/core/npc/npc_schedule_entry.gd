@@ -6,9 +6,9 @@ extends Resource
 @export var location_id: StringName
 @export var target_position := Vector2.ZERO
 @export var activity: String = "Idle"
-@export var days_of_week: PackedInt32Array = []
-@export var seasons: PackedStringArray = []
-@export var allowed_weather: PackedStringArray = []
+@export var days_of_week: PackedInt32Array = PackedInt32Array()
+@export var seasons: PackedStringArray = PackedStringArray()
+@export var allowed_weather: PackedStringArray = PackedStringArray()
 @export var required_world_flag: StringName
 @export var required_flag_value := true
 

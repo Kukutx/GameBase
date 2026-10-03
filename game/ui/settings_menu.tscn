@@ -14,13 +14,13 @@ color = Color(0, 0, 0, 0.7)
 [node name="Panel" type="PanelContainer" parent="Dim"]
 layout_mode = 0
 offset_left = 102.0
-offset_top = 28.0
+offset_top = 12.0
 offset_right = 378.0
-offset_bottom = 242.0
+offset_bottom = 258.0
 
 [node name="Layout" type="VBoxContainer" parent="Dim/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 5
 
 [node name="Title" type="Label" parent="Dim/Panel/Layout"]
 layout_mode = 2
@@ -81,6 +81,18 @@ text = "Fullscreen"
 layout_mode = 2
 text = "VSync"
 button_pressed = true
+
+[node name="Language" type="HBoxContainer" parent="Dim/Panel/Layout"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Dim/Panel/Layout/Language"]
+custom_minimum_size = Vector2(92, 0)
+layout_mode = 2
+text = "Language"
+
+[node name="Select" type="OptionButton" parent="Dim/Panel/Layout/Language"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="ControlsButton" type="Button" parent="Dim/Panel/Layout"]
 layout_mode = 2

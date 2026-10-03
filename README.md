@@ -9,7 +9,7 @@ The current project is a reusable gameplay base rather than a finished content r
 - Godot **4.x**; current CI validation baseline: **4.7.2** via `.godot-version`
 - Dialogue Manager **3.10.5**
 - GUT **9.7.1** for automated tests
-- Existing `addons/top_down` / `addons/great_games_library` code inherited from the upstream template
+- Game-owned runtime layer; the inherited shooter/template addons are no longer production dependencies
 
 Stable Godot 4.x upgrades are expected. Update the single `.godot-version` CI baseline, confirm addon compatibility, and run the full validation/export suite. Check `AGENTS.md` before framework or dependency changes.
 
@@ -58,7 +58,8 @@ LIFE_SIMULATION_SMOKE_OK
 - Long-lived save repair for content evolution: appended quest/project chains backfill on load; completed projects reapply current unlock flags; paid coop/barn capacity is preserved independently from expansion resource IDs; already-ready archive milestones remain qualified when catalogs grow; and removed crops/animals/placeables/contracts/processing content plus legacy inventory items degrade safely instead of blocking play or silently deleting player value
 - Deferred rewards are snapshotted when promised (mail delivery, project completion, archive readiness and blocked quest completion), preserving the original money/items even if later content updates rebalance or retire reward entries
 - Sleep, defeat/collapse recovery and late-night exhaustion handling
-- Rebindable controls and game/settings menus
+- Rebindable keyboard controls, D-Pad/analog movement and default gamepad bindings for all core actions, plus game/settings menus
+- Persistent English / Simplified Chinese UI locale selection, with dialogue localization kept behind Dialogue Manager
 
 ## Project structure
 
@@ -85,11 +86,20 @@ The repository tracks `export_presets.cfg` for Windows, Linux and Web. Local exp
 powershell -ExecutionPolicy Bypass -File tools/export.ps1
 ```
 
+Preferred full pre-release verification:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/release_readiness.ps1
+```
+
+That command performs a clean import, the full test suite, all three exports, native exported-build smoke where supported, and a real Chromium smoke of the Web build.
+
 GitHub Actions provides:
 
-- `.github/workflows/ci.yml`: import/parse, GUT, runtime smoke, and Windows/Linux/Web export validation on pushes and pull requests.
-- `.github/workflows/release.yml`: packaged Windows/Linux/Web builds; pushing a `v*` tag publishes a GitHub Release automatically.
-- `.github/dependabot.yml`: weekly GitHub Actions dependency maintenance.
+- `.github/workflows/ci.yml`: strict clean-import validation, GUT/runtime/main-scene smoke, Windows/Linux/Web exports, native Windows/Linux execution and Chromium Web smoke.
+- `.github/workflows/release.yml`: gated Windows/Linux/Web packages, native/browser smoke, SHA-256 checksums, and automatic GitHub Release publishing for `v*` tags.
+- `.github/workflows/engine-compat.yml`: weekly validation against the newest stable Godot 4.x release without silently moving the shared baseline.
+- `.github/dependabot.yml`: weekly GitHub Actions and npm QA-tool dependency maintenance.
 
 The engine version used by CI is read from `.godot-version`. To move the shared validation baseline to a newer stable Godot 4.x release:
 
@@ -97,7 +107,7 @@ The engine version used by CI is read from `.godot-version`. To move the shared 
 powershell -ExecutionPolicy Bypass -File tools/update_engine_baseline.ps1 -Version <next-stable-4.x-version>
 ```
 
-Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md` and `docs/RELEASE.md`.
+Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md`, `docs/RELEASE.md`, and `docs/LOCALIZATION.md`.
 
 ## Licensed local art
 

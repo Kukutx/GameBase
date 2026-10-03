@@ -1,0 +1,178 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "A living-world RPG foundation"
+msgstr "一个持续运转的世界 RPG 基础"
+
+msgid "Empty slot"
+msgstr "空存档位"
+
+msgid "Continue"
+msgstr "继续游戏"
+
+msgid "New Game"
+msgstr "新游戏"
+
+msgid "Delete Save"
+msgstr "删除存档"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Quit"
+msgstr "退出"
+
+msgid "Start New Game"
+msgstr "开始新游戏"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Paused"
+msgstr "已暂停"
+
+msgid "Resume"
+msgstr "继续"
+
+msgid "Save Game"
+msgstr "保存游戏"
+
+msgid "Load Game"
+msgstr "读取游戏"
+
+msgid "Return to Title"
+msgstr "返回标题画面"
+
+msgid "Unsaved progress will be lost. Return to the title screen?"
+msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
+
+msgid "Master"
+msgstr "主音量"
+
+msgid "Music"
+msgstr "音乐"
+
+msgid "Sounds"
+msgstr "音效"
+
+msgid "Fullscreen"
+msgstr "全屏"
+
+msgid "VSync"
+msgstr "垂直同步"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Controls..."
+msgstr "按键设置..."
+
+msgid "Key Bindings"
+msgstr "按键绑定"
+
+msgid "Reset Defaults"
+msgstr "恢复默认"
+
+msgid "Back"
+msgstr "返回"
+
+msgid "Settings are saved automatically."
+msgstr "设置会自动保存。"
+
+msgid "Press a key..."
+msgstr "请按一个按键..."
+
+msgid "Unbound"
+msgstr "未绑定"
+
+msgid "Move Up"
+msgstr "向上移动"
+
+msgid "Move Down"
+msgstr "向下移动"
+
+msgid "Move Left"
+msgstr "向左移动"
+
+msgid "Move Right"
+msgstr "向右移动"
+
+msgid "Interact / Reel"
+msgstr "互动 / 收线"
+
+msgid "Use Tool / Item"
+msgstr "使用工具 / 物品"
+
+msgid "Give Gift"
+msgstr "赠送礼物"
+
+msgid "Pack Building"
+msgstr "收起建筑"
+
+msgid "Open Menu"
+msgstr "打开菜单"
+
+msgid "Quick Save"
+msgstr "快速保存"
+
+msgid "Quick Load"
+msgstr "快速读取"
+
+msgid "Items"
+msgstr "物品"
+
+msgid "Quests"
+msgstr "任务"
+
+msgid "Social"
+msgstr "社交"
+
+msgid "Skills"
+msgstr "技能"
+
+msgid "Calendar"
+msgstr "日历"
+
+msgid "World"
+msgstr "世界"
+
+msgid "Log"
+msgstr "日志"
+
+msgid "Inventory"
+msgstr "背包"
+
+msgid "Assign"
+msgstr "分配"
+
+msgid "Claim Archive Reward"
+msgstr "领取收藏奖励"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "General Store"
+msgstr "杂货店"
+
+msgid "Animal Ledger"
+msgstr "动物管理"
+
+msgid "Town Notice Board"
+msgstr "城镇公告板"
+
+msgid "Town Projects"
+msgstr "城镇建设"
+
+msgid "Mailbox"
+msgstr "邮箱"
+
+msgid "Forge"
+msgstr "锻造台"
+
+msgid "Storage Chest"
+msgstr "储物箱"

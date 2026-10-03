@@ -11,6 +11,8 @@ signal closed
 @onready var sounds_slider: HSlider = $Dim/Panel/Layout/Sounds/Slider
 @onready var fullscreen_check: CheckButton = $Dim/Panel/Layout/Fullscreen
 @onready var vsync_check: CheckButton = $Dim/Panel/Layout/VSync
+@onready var language_row: HBoxContainer = $Dim/Panel/Layout/Language
+@onready var language_select: OptionButton = $Dim/Panel/Layout/Language/Select
 @onready var controls_button: Button = $Dim/Panel/Layout/ControlsButton
 @onready var controls_page: VBoxContainer = $Dim/Panel/Layout/ControlsPage
 @onready var controls_list: VBoxContainer = $Dim/Panel/Layout/ControlsPage/Scroll/List
@@ -31,6 +33,8 @@ func _ready() -> void:
 	sounds_slider.value_changed.connect(_on_sounds_changed)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	vsync_check.toggled.connect(_on_vsync_toggled)
+	_build_language_selector()
+	language_select.item_selected.connect(_on_language_selected)
 	controls_button.pressed.connect(_show_controls.bind(true))
 	controls_reset.pressed.connect(_reset_controls)
 	controls_back.pressed.connect(_show_controls.bind(false))
@@ -82,9 +86,29 @@ func _sync_from_settings() -> void:
 	sounds_slider.value = GameSettings.sounds_volume * 100.0
 	fullscreen_check.button_pressed = GameSettings.fullscreen
 	vsync_check.button_pressed = GameSettings.vsync
+	_select_current_language()
 	_syncing = false
 	if controls_page.visible:
 		_rebuild_controls()
+
+func _build_language_selector() -> void:
+	language_select.clear()
+	for locale_id: String in GameSettings.get_supported_locales():
+		var index := language_select.item_count
+		language_select.add_item(GameSettings.get_locale_display_name(locale_id))
+		language_select.set_item_metadata(index, locale_id)
+	_select_current_language()
+
+func _select_current_language() -> void:
+	for index in range(language_select.item_count):
+		if String(language_select.get_item_metadata(index)) == GameSettings.locale:
+			language_select.select(index)
+			return
+
+func _on_language_selected(index: int) -> void:
+	if _syncing or index < 0 or index >= language_select.item_count:
+		return
+	GameSettings.set_locale(String(language_select.get_item_metadata(index)))
 
 func _show_controls(show: bool) -> void:
 	_waiting_action = &""
@@ -94,6 +118,7 @@ func _show_controls(show: bool) -> void:
 	sounds_row.visible = not show
 	fullscreen_check.visible = not show
 	vsync_check.visible = not show
+	language_row.visible = not show
 	controls_button.visible = not show
 	hint_label.visible = not show
 	controls_page.visible = show
@@ -123,7 +148,7 @@ func _rebuild_controls() -> void:
 func _begin_rebind(action: StringName, button: Button) -> void:
 	_waiting_action = action
 	_waiting_button = button
-	button.text = "Press a key..."
+	button.text = tr("Press a key...")
 	button.grab_focus()
 
 func _cancel_rebind() -> void:

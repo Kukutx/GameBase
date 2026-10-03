@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://game/ui/title_screen.gd" id="1_title"]
-[ext_resource type="Theme" path="res://addons/top_down/resources/theme/game_gui_theme.theme" id="2_theme"]
+[ext_resource type="Theme" path="res://game/ui/game_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" path="res://game/ui/settings_menu.tscn" id="3_settings"]
 
 [node name="TitleScreen" type="ColorRect"]

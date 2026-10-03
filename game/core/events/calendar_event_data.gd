@@ -4,9 +4,9 @@ extends Resource
 @export var id: StringName
 @export var display_name: String
 @export var location_id: StringName
-@export var seasons: PackedStringArray = []
+@export var seasons: PackedStringArray = PackedStringArray()
 @export_range(0, 28, 1) var day_of_season := 0
-@export var days_of_week: PackedInt32Array = []
+@export var days_of_week: PackedInt32Array = PackedInt32Array()
 @export_range(0, 1439, 1) var start_minute := 9 * 60
 @export_range(1, 1440, 1) var end_minute := 17 * 60
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://game/core/animals/animal_management_menu.gd" id="1_menu"]
-[ext_resource type="Theme" path="res://addons/top_down/resources/theme/game_gui_theme.theme" id="2_theme"]
+[ext_resource type="Theme" path="res://game/ui/game_theme.tres" id="2_theme"]
 
 [node name="AnimalManagementMenu" type="CanvasLayer"]
 layer = 80

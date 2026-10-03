@@ -6,7 +6,7 @@ extends Resource
 @export_range(0, 10, 1) var required_hearts := 2
 @export var dialogue_title: String = "heart_event"
 @export var location_id: StringName
-@export var seasons: PackedStringArray = []
+@export var seasons: PackedStringArray = PackedStringArray()
 @export_range(0, 1439, 1) var start_minute := 0
 @export_range(1, 1440, 1) var end_minute := 1440
 @export var required_world_flag: StringName
