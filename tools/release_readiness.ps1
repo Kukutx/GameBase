@@ -13,6 +13,7 @@ Push-Location $Root
 try {
     $Required = @(
         "AGENTS.md",
+        "docs/AUDIO.md",
         ".godot-version",
         ".game-version",
         "project.godot",

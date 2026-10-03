@@ -9,3 +9,4 @@ display_name = "Harbor Town"
 scene_path = "res://game/world/harbor_town.tscn"
 type = 0
 default_spawn_id = &"from_riverside"
+music_cue_id = &"music_harbor_town"

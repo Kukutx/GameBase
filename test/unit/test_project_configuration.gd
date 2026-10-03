@@ -31,9 +31,10 @@ func test_localization_resources_are_registered() -> void:
 	assert_true(project.contains('locale/translations=PackedStringArray("res://game/i18n/ui.zh_CN.po")'))
 	assert_true(FileAccess.file_exists("res://game/i18n/ui.zh_CN.po"))
 
-func test_input_and_autosave_services_are_registered() -> void:
+func test_input_audio_and_autosave_services_are_registered() -> void:
 	var project := _read_text("res://project.godot")
 	assert_true(project.contains('InputPrompts="*res://game/core/input/input_prompt_service.gd"'))
+	assert_true(project.contains('GameAudio="*res://game/core/audio/game_audio_service.gd"'))
 	assert_true(project.contains('AutoSave="*res://game/core/save/auto_save_service.gd"'))
 
 func test_game_version_is_semver_and_matches_project_and_diagnostics() -> void:

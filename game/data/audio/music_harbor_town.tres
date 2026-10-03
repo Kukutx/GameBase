@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AudioCueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/core/audio/audio_cue_data.gd" id="1_audio"]
+
+[resource]
+script = ExtResource("1_audio")
+id = &"music_harbor_town"
+cue_type = 1
+pitch_min = 1
+pitch_max = 1

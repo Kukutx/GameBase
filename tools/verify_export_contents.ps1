@@ -55,6 +55,8 @@ func _initialize() -> void:
 	var required := [
 		"res://game/ui/title_screen.tscn",
 		"res://game/i18n/ui.zh_CN.po",
+		"res://game/core/audio/game_audio_service.gd",
+		"res://game/data/audio/music_old_mine.tres",
 		"res://addons/dialogue_manager/dialogue_manager.gd",
 		"res://addons/dialogue_manager/compiler/compiler.gd",
 		"res://addons/dialogue_manager/settings.gd",

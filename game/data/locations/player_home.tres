@@ -10,3 +10,4 @@ scene_path = "res://game/world/home_interior.tscn"
 type = 1
 weather_exposed = false
 default_spawn_id = &"from_town"
+music_cue_id = &"music_player_home"

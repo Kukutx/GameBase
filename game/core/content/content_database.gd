@@ -27,6 +27,7 @@ var _recipes: Dictionary = {}
 var _locations: Dictionary = {}
 var _location_spawn_ids: Dictionary = {}
 var _calendar_events: Dictionary = {}
+var _audio_cues: Dictionary = {}
 
 func _ready() -> void:
 	rebuild()
@@ -55,6 +56,7 @@ func rebuild() -> PackedStringArray:
 	_locations.clear()
 	_location_spawn_ids.clear()
 	_calendar_events.clear()
+	_audio_cues.clear()
 	var errors := PackedStringArray()
 	if manifest == null:
 		errors.append("Content manifest is missing")
@@ -81,6 +83,7 @@ func rebuild() -> PackedStringArray:
 	_index_resources(manifest.recipes, _recipes, "recipe", errors)
 	_index_resources(manifest.locations, _locations, "location", errors)
 	_index_resources(manifest.calendar_events, _calendar_events, "calendar event", errors)
+	_index_resources(manifest.audio_cues, _audio_cues, "audio cue", errors)
 	_validate_references(errors)
 	for message: String in errors:
 		push_error("ContentDatabase: " + message)
@@ -172,6 +175,9 @@ func has_location_spawn(location_id: StringName, spawn_id: StringName) -> bool:
 
 func get_calendar_event(id: StringName) -> CalendarEventData:
 	return _calendar_events.get(String(id)) as CalendarEventData
+
+func get_audio_cue(id: StringName) -> AudioCueData:
+	return _audio_cues.get(String(id)) as AudioCueData
 
 func has_item(id: StringName) -> bool:
 	return _items.has(String(id))
@@ -300,6 +306,12 @@ func get_all_calendar_events() -> Array[CalendarEventData]:
 	var result: Array[CalendarEventData] = []
 	for value: Variant in _sorted_values(_calendar_events):
 		result.append(value as CalendarEventData)
+	return result
+
+func get_all_audio_cues() -> Array[AudioCueData]:
+	var result: Array[AudioCueData] = []
+	for value: Variant in _sorted_values(_audio_cues):
+		result.append(value as AudioCueData)
 	return result
 
 func _index_resources(resources: Array, target: Dictionary, kind: String, errors: PackedStringArray) -> void:
@@ -805,6 +817,17 @@ func _validate_references(errors: PackedStringArray) -> void:
 		if recipe.required_level < 1 or recipe.required_level > SkillManager.LEVEL_THRESHOLDS.size():
 			errors.append("recipe '%s' has invalid required level %d" % [recipe.id, recipe.required_level])
 
+	for raw: Variant in _audio_cues.values():
+		var cue := raw as AudioCueData
+		if cue == null:
+			continue
+		if not [AudioCueData.CueType.SFX, AudioCueData.CueType.MUSIC].has(cue.cue_type):
+			errors.append("audio cue '%s' has invalid cue type %d" % [cue.id, cue.cue_type])
+		if cue.pitch_min <= 0.0 or cue.pitch_max <= 0.0:
+			errors.append("audio cue '%s' has non-positive pitch range" % cue.id)
+		if cue.pitch_min > cue.pitch_max:
+			errors.append("audio cue '%s' has inverted pitch range" % cue.id)
+
 	var scene_paths: Dictionary = {}
 	var persistent_state_keys: Dictionary = {}
 	for raw: Variant in _locations.values():
@@ -851,6 +874,12 @@ func _validate_references(errors: PackedStringArray) -> void:
 			errors.append("location '%s' has an empty default spawn id" % location.id)
 		elif not spawn_counts.has(String(location.default_spawn_id)):
 			errors.append("location '%s' default spawn '%s' is missing from scene '%s'" % [location.id, location.default_spawn_id, location.scene_path])
+		if location.music_cue_id != &"":
+			var music_cue := get_audio_cue(location.music_cue_id)
+			if music_cue == null:
+				errors.append("location '%s' references unknown music cue '%s'" % [location.id, location.music_cue_id])
+			elif not music_cue.is_music():
+				errors.append("location '%s' music cue '%s' is not MUSIC" % [location.id, location.music_cue_id])
 		for portal: Dictionary in _get_scene_portal_records(packed):
 			_validate_portal_record(location, portal, errors)
 

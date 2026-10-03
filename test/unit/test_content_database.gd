@@ -20,10 +20,13 @@ func test_manifest_indexes_all_core_content() -> void:
 	assert_not_null(ContentDB.get_location(&"starter_town"))
 	assert_not_null(ContentDB.get_location(&"riverside_town"))
 	assert_not_null(ContentDB.get_location(&"harbor_town"))
+	assert_not_null(ContentDB.get_audio_cue(&"sfx_pickup"))
+	assert_not_null(ContentDB.get_audio_cue(&"music_old_mine"))
 
 func test_unknown_ids_return_null() -> void:
 	assert_null(ContentDB.get_item(&"does_not_exist"))
 	assert_null(ContentDB.get_location(&"does_not_exist"))
+	assert_null(ContentDB.get_audio_cue(&"does_not_exist"))
 
 func test_locations_have_packed_scenes_and_unique_default_spawn_points() -> void:
 	var locations := ContentDB.get_all_locations()

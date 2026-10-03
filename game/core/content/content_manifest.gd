@@ -23,3 +23,4 @@ extends Resource
 @export var recipes: Array[RecipeData] = []
 @export var locations: Array[WorldLocationData] = []
 @export var calendar_events: Array[CalendarEventData] = []
+@export var audio_cues: Array[AudioCueData] = []

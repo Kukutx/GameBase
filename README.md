@@ -62,6 +62,7 @@ LIFE_SIMULATION_SMOKE_OK
 - Rebindable keyboard controls, D-Pad/analog movement, LT/RT hotbar cycling, device-aware interaction prompts and default gamepad bindings for all core actions
 - Safe periodic/travel autosave using the same atomic backup path as manual saves; autosave can be disabled in Settings
 - Persistent English / Simplified Chinese UI locale selection, with dialogue localization kept behind Dialogue Manager
+- Data-driven `GameAudio` layer with separate Music/Sounds buses, stable gameplay cue IDs and per-location music slots; production audio streams are intentionally still pending rather than filled with placeholder tracks
 
 ## Project structure
 
@@ -75,7 +76,7 @@ game/ui/        Title, pause, settings and game menus
 test/unit/      Focused GUT regression tests
 test/runtime/   End-to-end life-simulation smoke test
 tools/          Local project utilities
-docs/           Project-specific documentation
+docs/           Project-specific documentation (release, localization, audio, support, engine upgrades)
 ```
 
 New reusable content should normally be added to `game/data/content_manifest.tres` and accessed through `ContentDB` rather than hard-coded lookup tables.
@@ -116,7 +117,7 @@ The engine version used by CI is read from `.godot-version`. To move the shared 
 powershell -ExecutionPolicy Bypass -File tools/update_engine_baseline.ps1 -Version <next-stable-4.x-version>
 ```
 
-Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md`, `docs/RELEASE.md`, `docs/LOCALIZATION.md`, and `docs/SUPPORT.md`.
+Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md`, `docs/RELEASE.md`, `docs/LOCALIZATION.md`, `docs/AUDIO.md`, and `docs/SUPPORT.md`.
 
 ## Licensed local art
 

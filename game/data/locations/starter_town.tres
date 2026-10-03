@@ -9,3 +9,4 @@ display_name = "Starter Town"
 scene_path = "res://game/world/dev_world.tscn"
 type = 0
 default_spawn_id = &"from_home"
+music_cue_id = &"music_starter_town"

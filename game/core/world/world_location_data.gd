@@ -14,3 +14,4 @@ enum LocationType {
 @export var type: LocationType = LocationType.TOWN
 @export var weather_exposed := true
 @export var default_spawn_id: StringName
+@export var music_cue_id: StringName

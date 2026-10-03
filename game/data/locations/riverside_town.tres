@@ -9,3 +9,4 @@ display_name = "Riverside Town"
 scene_path = "res://game/world/riverside_town.tscn"
 type = 0
 default_spawn_id = &"from_starter"
+music_cue_id = &"music_riverside_town"

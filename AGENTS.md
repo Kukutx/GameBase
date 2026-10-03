@@ -14,6 +14,7 @@
 - Every reusable gameplay system should get a focused GUT test where practical. Run headless import/parse, GUT, runtime smoke, and relevant export validation after changes.
 - Prefer a small, clean game layer over carrying unused demo/editor systems from the template. The inherited `addons/top_down` and `addons/great_games_library` runtime stacks have been removed and must not be reintroduced as hidden dependencies.
 - Register production content in `game/data/content_manifest.tres` and resolve it through `ContentDB`; do not add new scattered hard-coded resource path dictionaries.
+- Gameplay audio must go through game-owned `GameAudio` + `AudioCueData` stable cue IDs registered in `ContentDB`. Do not load music/SFX file paths directly from gameplay systems. Empty cue streams are valid while production audio is pending; do not ship low-quality placeholder audio merely to avoid silence.
 - World travel should use stable Location IDs and Spawn IDs. Keep direct scene-path travel only as a compatibility escape hatch.
 - NPC authored dialogue and future local-AI dialogue share `ConversationService`, `NpcContext`, and `NpcMemory`. Model/provider code must not own gameplay state or save data.
 - Purchased raw art under `game/art/licensed/` is local-only and Git-ignored. Never commit or redistribute those source assets; use `tools/sync_licensed_assets.ps1` to restore them locally.

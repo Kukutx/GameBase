@@ -10,3 +10,4 @@ scene_path = "res://game/world/old_mine.tscn"
 type = 3
 weather_exposed = false
 default_spawn_id = &"from_riverside"
+music_cue_id = &"music_old_mine"
