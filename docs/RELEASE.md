@@ -29,14 +29,15 @@ It performs:
 2. a clean Godot import from a regenerated `.godot/` cache;
 3. GUT unit tests;
 4. runtime integration smoke;
-5. main-scene boot smoke;
-6. Windows, Linux and Web release exports;
-7. Windows exported-build smoke on Windows hosts;
-8. Web payload validation;
-9. deterministic npm install and Chromium setup;
-10. a Playwright browser launch of the Web export with console, page and network error checks.
+5. a three-year long-horizon soak (336 day transitions, 12 real disk Save/Load round-trips, and the Year 4 boundary);
+6. main-scene boot smoke;
+7. Windows, Linux and Web release exports;
+8. Windows exported-build smoke on Windows hosts;
+9. Web payload validation;
+10. deterministic npm install and Chromium setup;
+11. a Playwright browser launch of the Web export with console, page and network error checks.
 
-Use `-SkipBrowserSmoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch.
+Use `-SkipBrowserSmoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/validate.ps1 -SkipSoak` exists only for fast local iteration; CI and release candidates run the soak by default.
 
 Expected outputs:
 

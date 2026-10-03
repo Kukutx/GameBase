@@ -47,6 +47,12 @@ func test_release_diagnostics_are_configured() -> void:
 	assert_false(String(context.get("engine", "")).is_empty())
 	assert_false(String(context.get("os", "")).is_empty())
 
+func test_validation_pipeline_includes_long_horizon_soak() -> void:
+	var validation := _read_text("res://tools/validate.ps1")
+	assert_true(FileAccess.file_exists("res://test/runtime/long_horizon_soak.gd"))
+	assert_true(validation.contains('test/runtime/long_horizon_soak.gd'))
+	assert_true(validation.contains('[switch]$SkipSoak'))
+
 func test_project_uses_web_compatible_renderer() -> void:
 	var project := _read_text("res://project.godot")
 	assert_true(project.contains('config/features=PackedStringArray("4.7", "GL Compatibility")'))

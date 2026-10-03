@@ -3,6 +3,7 @@ param(
     [string]$GodotBin = $env:GODOT_BIN,
     [string]$PythonBin = $env:PYTHON_BIN,
     [switch]$SkipImport,
+    [switch]$SkipSoak,
     [switch]$CleanImport
 )
 
@@ -99,6 +100,13 @@ try {
         "--headless", "--path", $Root,
         "-s", "test/runtime/world_services_smoke.gd"
     )
+
+    if (-not $SkipSoak) {
+        Invoke-GodotStep -Name "Three-year save/load soak" -Arguments @(
+            "--headless", "--path", $Root,
+            "-s", "test/runtime/long_horizon_soak.gd"
+        )
+    }
 
     Invoke-GodotStep -Name "Main scene boot smoke" -Arguments @(
         "--headless", "--path", $Root,

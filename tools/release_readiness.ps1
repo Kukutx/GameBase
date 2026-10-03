@@ -21,6 +21,7 @@ try {
         ".github/workflows/engine-compat.yml",
         "tools/validate.ps1",
         "tools/check_localization.py",
+        "test/runtime/long_horizon_soak.gd",
         "tools/export.ps1",
         "tools/install_export_templates.ps1",
         "tools/smoke_export.ps1",
