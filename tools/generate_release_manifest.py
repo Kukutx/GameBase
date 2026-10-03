@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import io
 import json
 import pathlib
 import re
 import subprocess
+import sys
 import tarfile
 import zipfile
 
@@ -24,6 +24,11 @@ REQUIRED_PACKAGE_FILES = {
     "licenses/GODOT_COPYRIGHT.txt",
     "licenses/GODOT_VERSION.txt",
     "licenses/DIALOGUE_MANAGER_LICENSE.txt",
+}
+TARGET_REQUIRED_FILES = {
+    "windows": {"GameBase.exe", "GameBase.pck"},
+    "linux": {"GameBase.x86_64", "GameBase.pck"},
+    "web": {"index.html", "index.js", "index.wasm", "index.pck"},
 }
 
 
@@ -110,9 +115,17 @@ def validate_package(
         raise RuntimeError(f"Missing or empty {target} package: {path}")
 
     names, payloads = package_members(path)
-    missing = sorted(REQUIRED_PACKAGE_FILES - names)
+    missing = sorted((REQUIRED_PACKAGE_FILES | TARGET_REQUIRED_FILES[target]) - names)
     if missing:
-        raise RuntimeError(f"{path.name} is missing distribution files: {', '.join(missing)}")
+        raise RuntimeError(f"{path.name} is missing distribution/runtime files: {', '.join(missing)}")
+
+    if target == "linux":
+        with tarfile.open(path, "r:gz") as archive:
+            executable = archive.getmember("GameBase.x86_64")
+            if executable.mode & 0o111 == 0:
+                raise RuntimeError(
+                    f"{path.name} GameBase.x86_64 is not executable (mode {oct(executable.mode)})"
+                )
 
     try:
         build_info = json.loads(payloads["BUILD_INFO.json"].decode("utf-8-sig"))
@@ -234,4 +247,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except (OSError, RuntimeError, subprocess.SubprocessError, tarfile.TarError, zipfile.BadZipFile) as exc:
+        print(f"Release manifest validation failed: {exc}", file=sys.stderr)
+        raise SystemExit(1)

@@ -35,12 +35,13 @@ It performs:
 7. Windows, Linux and Web release exports;
 8. resource-pack content verification: runtime resources must be present while tests, GUT, local licensed raw art, tools/docs/CI metadata and repository-only files must be absent;
 9. distribution license/notices copied beside each platform payload;
-10. Windows exported-build smoke on Windows hosts;
-11. Web payload validation;
-12. deterministic npm install and Chromium setup;
-13. a Playwright browser launch of the Web export with console, page and network error checks, plus live resize checks at 1280×720, 1024×768, 2560×1080 and 800×600; the Godot canvas must remain visible and fully contained in each viewport.
+10. deterministic archive packaging through `tools/package_release.py`, with sorted paths, commit-derived timestamps and canonical permissions/ownership metadata;
+11. Windows exported-build smoke on Windows hosts;
+12. Web payload validation;
+13. deterministic npm install and Chromium setup;
+14. a Playwright browser launch of the Web export with console, page and network error checks, plus live resize checks at 1280×720, 1024×768, 2560×1080 and 800×600; the Godot canvas must remain visible and fully contained in each viewport.
 
-Use `-SkipBrowserSmoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/validate.ps1 -SkipSoak` exists only for fast local iteration; CI and release candidates run the soak by default.
+Use `-SkipBrowserSmoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/release_readiness.ps1` also requires a clean Git working tree so packaged `BUILD_INFO.json` can point to one exact commit with `dirty=false`. `tools/validate.ps1 -SkipSoak` exists only for fast local iteration; CI and release candidates run the soak by default.
 
 Expected outputs:
 
@@ -81,7 +82,7 @@ git push origin v0.1.0
 
 The Release workflow rejects a tag unless it is exactly `v` plus the committed `.game-version`.
 
-`.github/workflows/release.yml` validates the source, exports and packages all three targets, performs Web browser smoke plus Windows/Linux packaged-build smoke, and only then publishes the GitHub Release.
+`.github/workflows/release.yml` validates the source, exports all three targets, packages them with the repository-owned deterministic packager, performs Web browser smoke plus Windows/Linux packaged-build smoke, validates package-internal identity, and only then publishes the GitHub Release. The packager derives archive timestamps from `SOURCE_DATE_EPOCH` when set or from the Git commit timestamp, sorts every member path and normalizes modes/ownership so repackaging the same payload is byte-for-byte stable.
 
 Published assets include:
 

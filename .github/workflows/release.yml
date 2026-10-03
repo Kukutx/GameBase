@@ -90,19 +90,21 @@ jobs:
           - name: Windows
             preset: Windows Desktop
             package: GameBase-windows-x86_64.zip
-            package_command: cd build/windows && zip -r ../../dist/GameBase-windows-x86_64.zip .
           - name: Linux
             preset: Linux
             package: GameBase-linux-x86_64.tar.gz
-            package_command: chmod +x build/linux/GameBase.x86_64 && tar -czf dist/GameBase-linux-x86_64.tar.gz -C build/linux .
           - name: Web
             preset: Web
             package: GameBase-web.zip
-            package_command: cd build/web && zip -r ../../dist/GameBase-web.zip .
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Setup Godot with export templates
         uses: chickensoft-games/setup-godot@v2
@@ -163,11 +165,9 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-      - name: Package
+      - name: Package deterministically
         shell: bash
-        run: |
-          mkdir -p dist
-          ${{ matrix.package_command }}
+        run: python tools/package_release.py --target "${{ matrix.name }}"
 
       - name: Upload packaged build
         uses: actions/upload-artifact@v4

@@ -23,9 +23,11 @@ try {
         "tools/validate.ps1",
         "tools/check_localization.py",
         "test/runtime/long_horizon_soak.gd",
+        "dist/.gdignore",
         "tools/export.ps1",
         "tools/verify_export_contents.ps1",
         "tools/generate_release_manifest.py",
+        "tools/package_release.py",
         "THIRD_PARTY_NOTICES.md",
         "licenses/GAMEBASE_LICENSE.txt",
         "licenses/GODOT_LICENSE.txt",
@@ -60,6 +62,15 @@ try {
     }
     if ($TrackedLicensed.Count -gt 0) {
         throw "Purchased raw art is tracked by Git. Remove it before releasing."
+    }
+
+    $DirtyEntries = @(git status --porcelain --untracked-files=all)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not inspect Git working tree cleanliness."
+    }
+    if ($DirtyEntries.Count -gt 0) {
+        Write-Host ($DirtyEntries -join [Environment]::NewLine)
+        throw "Release readiness requires a clean Git working tree so BUILD_INFO.json can prove an exact commit."
     }
 
     # Third-party addon sources are kept byte-for-byte close to upstream; some
@@ -114,6 +125,38 @@ try {
             if ($LASTEXITCODE -ne 0) {
                 throw "Web browser smoke failed with exit code $LASTEXITCODE."
             }
+        }
+
+        $PythonCommand = $env:PYTHON_BIN
+        if ([string]::IsNullOrWhiteSpace($PythonCommand)) {
+            if ($null -ne (Get-Command python -ErrorAction SilentlyContinue)) {
+                $PythonCommand = "python"
+            }
+            elseif ($null -ne (Get-Command python3 -ErrorAction SilentlyContinue)) {
+                $PythonCommand = "python3"
+            }
+            else {
+                throw "Python 3.12+ is required for deterministic release packaging."
+            }
+        }
+
+        Write-Host ""
+        Write-Host "==> Deterministic release archives"
+        $DistRoot = Join-Path $Root "dist"
+        New-Item -ItemType Directory -Force -Path $DistRoot | Out-Null
+        Get-ChildItem -Path $DistRoot -Force -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -ne ".gdignore" } |
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        & $PythonCommand "tools/package_release.py" "--target" "All"
+        if ($LASTEXITCODE -ne 0) {
+            throw "Deterministic release packaging failed with exit code $LASTEXITCODE."
+        }
+
+        Write-Host ""
+        Write-Host "==> Release package identity + manifest"
+        & $PythonCommand "tools/generate_release_manifest.py" "--dist" "dist"
+        if ($LASTEXITCODE -ne 0) {
+            throw "Release manifest generation failed with exit code $LASTEXITCODE."
         }
     }
 

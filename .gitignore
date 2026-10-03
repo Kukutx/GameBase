@@ -10,6 +10,8 @@ build/*
 !build/.gdignore
 artifacts/*
 !artifacts/.gdignore
+dist/*
+!dist/.gdignore
 
 # Imported/generated resources
 *.translation

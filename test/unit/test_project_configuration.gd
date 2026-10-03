@@ -23,6 +23,7 @@ func test_legacy_shooter_addons_are_absent() -> void:
 func test_generated_output_directories_are_godot_ignored() -> void:
 	assert_true(FileAccess.file_exists("res://build/.gdignore"))
 	assert_true(FileAccess.file_exists("res://artifacts/.gdignore"))
+	assert_true(FileAccess.file_exists("res://dist/.gdignore"))
 	assert_true(FileAccess.file_exists("res://tools/web_smoke/.gdignore"))
 
 func test_localization_resources_are_registered() -> void:
@@ -79,6 +80,7 @@ func test_export_presets_cover_supported_release_targets() -> void:
 		"game/art/licensed/*",
 		"tools/*",
 		"docs/*",
+		"dist/*",
 		".github/*",
 		"licenses/*",
 		"addons/dialogue_manager/assets/*",
@@ -111,6 +113,7 @@ func test_release_packaging_verifies_contents_and_distribution_licenses() -> voi
 	assert_true(verifier.contains("res://game/art/licensed"))
 	assert_true(verifier.contains("res://addons/gut"))
 	assert_true(verifier.contains("res://test"))
+	assert_true(verifier.contains("res://dist"))
 	assert_true(verifier.contains("res://.game-version"))
 	assert_true(verifier.contains("res://BUILD_INFO.json"))
 	assert_true(FileAccess.file_exists("res://THIRD_PARTY_NOTICES.md"))
@@ -119,6 +122,27 @@ func test_release_packaging_verifies_contents_and_distribution_licenses() -> voi
 	assert_true(FileAccess.file_exists("res://licenses/GODOT_COPYRIGHT.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/GODOT_VERSION.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/DIALOGUE_MANAGER_LICENSE.txt"))
+
+func test_release_archives_use_deterministic_repository_packager() -> void:
+	var workflow := _read_text("res://.github/workflows/release.yml")
+	var validation := _read_text("res://tools/validate.ps1")
+	var packager := _read_text("res://tools/package_release.py")
+	assert_true(workflow.contains("tools/package_release.py"))
+	assert_false(workflow.contains("zip -r"))
+	assert_false(workflow.contains("tar -czf"))
+	assert_true(workflow.contains('python-version: "3.12"'))
+	assert_true(validation.contains('tools/package_release.py'))
+	assert_true(validation.contains('"--self-test"'))
+	assert_true(packager.contains("SOURCE_DATE_EPOCH"))
+	assert_true(packager.contains("DETERMINISTIC_PACKAGING_OK"))
+	assert_true(packager.contains("info.uid = 0"))
+	assert_true(packager.contains("info.gid = 0"))
+	assert_true(packager.contains("canonical_mode"))
+	var readiness := _read_text("res://tools/release_readiness.ps1")
+	assert_true(readiness.contains('"tools/package_release.py" "--target" "All"'))
+	assert_true(readiness.contains('"tools/generate_release_manifest.py" "--dist" "dist"'))
+	assert_true(readiness.contains("git status --porcelain --untracked-files=all"))
+	assert_true(readiness.contains("clean Git working tree"))
 
 func test_release_workflow_validates_packaged_identity_and_manifest() -> void:
 	var workflow := _read_text("res://.github/workflows/release.yml")

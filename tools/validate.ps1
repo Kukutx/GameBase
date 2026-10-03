@@ -132,6 +132,13 @@ try {
         throw "Localization coverage validation failed with exit code $LASTEXITCODE."
     }
 
+    Write-Host ""
+    Write-Host "==> Deterministic release packaging self-test"
+    & $PythonBin "tools/package_release.py" "--self-test"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Deterministic packaging self-test failed with exit code $LASTEXITCODE."
+    }
+
     Invoke-GodotStep -Name "GUT unit tests" -Arguments @(
         "--headless", "--path", $Root,
         "-s", "addons/gut/gut_cmdln.gd",

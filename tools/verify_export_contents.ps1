@@ -113,6 +113,7 @@ func _initialize() -> void:
 		"res://.devmate",
 		"res://build",
 		"res://artifacts",
+		"res://dist",
 		"res://licenses",
 		"res://addons/dialogue_manager/assets",
 		"res://addons/dialogue_manager/components",
