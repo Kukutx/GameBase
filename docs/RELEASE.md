@@ -88,7 +88,10 @@ Published assets include:
 - `GameBase-windows-x86_64.zip`
 - `GameBase-linux-x86_64.tar.gz`
 - `GameBase-web.zip`
+- `RELEASE_MANIFEST.json`
 - `SHA256SUMS.txt`
+
+Before publishing, `tools/generate_release_manifest.py` opens every ZIP/TAR package and verifies its internal `BUILD_INFO.json`, GameBase/Godot versions, exact Git commit, clean-source flag, target name, Godot legal marker, third-party notices and required license files. Only then does it emit the external manifest and checksums. `RELEASE_MANIFEST.json` records the game version, Godot/legal-bundle version, vendored Dialogue Manager/GUT versions and the SHA-256/size of all three platform packages.
 
 The workflow can also be started manually to test packaging and smoke checks without publishing a GitHub Release. A manual `engine_version` override is treated as a compatibility build: exports explicitly use `-AllowEngineDrift`, synchronize a temporary Godot legal bundle to that actual stable engine, and are not publishable release candidates. Tag-triggered releases use the committed `.godot-version` baseline.
 

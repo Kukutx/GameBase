@@ -25,6 +25,7 @@ try {
         "test/runtime/long_horizon_soak.gd",
         "tools/export.ps1",
         "tools/verify_export_contents.ps1",
+        "tools/generate_release_manifest.py",
         "THIRD_PARTY_NOTICES.md",
         "licenses/GAMEBASE_LICENSE.txt",
         "licenses/GODOT_LICENSE.txt",

@@ -99,7 +99,7 @@ That command performs a clean import, the full test suite, all three exports, na
 GitHub Actions provides:
 
 - `.github/workflows/ci.yml`: strict clean-import validation, GUT/runtime/main-scene smoke, Windows/Linux/Web exports, native Windows/Linux execution and Chromium Web smoke.
-- `.github/workflows/release.yml`: gated Windows/Linux/Web packages, native/browser smoke, SHA-256 checksums, and automatic GitHub Release publishing for `v*` tags.
+- `.github/workflows/release.yml`: gated Windows/Linux/Web packages, native/browser smoke, package-internal identity verification, `RELEASE_MANIFEST.json`, SHA-256 checksums, and automatic GitHub Release publishing for `v*` tags.
 - `.github/workflows/engine-compat.yml`: weekly validation against the newest stable Godot 4.x release without silently moving the shared baseline; compatibility artifacts explicitly allow engine drift and carry the matching temporary Godot legal bundle.
 - `.github/workflows/addon-freshness.yml`: weekly stable-tag comparison for vendored Dialogue Manager and GUT; it maintains one upgrade-reminder issue when upstream moves ahead, but never auto-replaces vendored addon code.
 - `.github/dependabot.yml`: weekly GitHub Actions and npm QA-tool dependency maintenance.

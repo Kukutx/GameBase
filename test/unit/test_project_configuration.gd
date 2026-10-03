@@ -107,6 +107,7 @@ func test_release_packaging_verifies_contents_and_distribution_licenses() -> voi
 	assert_true(exporter.contains("GODOT_VERSION.txt"))
 	assert_true(exporter.contains("legal_bundle_version"))
 	assert_true(exporter.contains("BUILD_INFO.json"))
+	assert_true(FileAccess.file_exists("res://tools/generate_release_manifest.py"))
 	assert_true(verifier.contains("res://game/art/licensed"))
 	assert_true(verifier.contains("res://addons/gut"))
 	assert_true(verifier.contains("res://test"))
@@ -119,12 +120,27 @@ func test_release_packaging_verifies_contents_and_distribution_licenses() -> voi
 	assert_true(FileAccess.file_exists("res://licenses/GODOT_VERSION.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/DIALOGUE_MANAGER_LICENSE.txt"))
 
+func test_release_workflow_validates_packaged_identity_and_manifest() -> void:
+	var workflow := _read_text("res://.github/workflows/release.yml")
+	var generator := _read_text("res://tools/generate_release_manifest.py")
+	assert_true(workflow.contains("tools/generate_release_manifest.py"))
+	assert_true(workflow.contains("RELEASE_MANIFEST.json") or generator.contains("RELEASE_MANIFEST.json"))
+	assert_true(workflow.contains("SHA256SUMS.txt"))
+	assert_true(generator.contains("BUILD_INFO.json"))
+	assert_true(generator.contains("THIRD_PARTY_NOTICES.md"))
+	assert_true(generator.contains("licenses/GODOT_VERSION.txt"))
+	assert_true(generator.contains("dirty"))
+	assert_true(generator.contains("dialogue_manager"))
+	assert_true(generator.contains("gut"))
+
 func test_release_workflow_requires_exact_game_version_tag() -> void:
 	var workflow := _read_text("res://.github/workflows/release.yml")
 	assert_true(workflow.contains(".game-version"))
 	assert_true(workflow.contains("game_version: ${{ steps.game.outputs.version }}"))
 	assert_true(workflow.contains('expected="v${{ needs.validate.outputs.game_version }}"'))
 	assert_true(workflow.contains('GITHUB_REF_NAME" != "$expected'))
+	assert_true(workflow.contains("github.event_name != 'workflow_dispatch'"))
+	assert_true(workflow.contains("inputs.engine_version == ''"))
 
 func test_manual_engine_overrides_use_explicit_compatibility_exports() -> void:
 	var ci := _read_text("res://.github/workflows/ci.yml")
