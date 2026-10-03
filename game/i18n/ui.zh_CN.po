@@ -2516,3 +2516,18 @@ msgstr "存档结构 v%d · 需要更新版本的游戏"
 
 msgid " · GameBase v%s"
 msgstr " · GameBase v%s"
+
+msgid "Accessibility..."
+msgstr "无障碍设置..."
+
+msgid "Accessibility"
+msgstr "无障碍设置"
+
+msgid "Weather Effects"
+msgstr "天气视觉效果"
+
+msgid "Reduce Motion"
+msgstr "减少动态效果"
+
+msgid "Reduce Motion removes scene fades and animated rain/lightning while preserving weather gameplay."
+msgstr "减少动态效果会关闭场景淡入淡出和动态雨/闪电，同时保留天气玩法。"

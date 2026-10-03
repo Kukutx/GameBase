@@ -126,7 +126,7 @@ try {
         Write-Host ""
         Write-Host "==> Exporting $Name -> $RelativeOutput"
         $SafeName = ($Name -replace '[^A-Za-z0-9._-]', '_')
-        $LogPath = Join-Path ([System.IO.Path]::GetTempPath()) ("gamebase-export-" + $SafeName + ".log")
+        $LogPath = Join-Path ([System.IO.Path]::GetTempPath()) ("gamebase-export-" + $PID + "-" + $SafeName + ".log")
         Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
 
         & $GodotBin --headless --path $Root --export-release $Name $RelativeOutput 2>&1 | Tee-Object -FilePath $LogPath

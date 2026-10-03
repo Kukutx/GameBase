@@ -5,7 +5,12 @@ const { chromium } = require("playwright");
 
 const root = path.resolve(__dirname, "..", "..");
 const artifactDir = path.join(root, "artifacts", "web-smoke");
-const screenshotPath = path.join(artifactDir, "web-export.png");
+const viewportProfiles = [
+  { name: "720p-16x9", width: 1280, height: 720 },
+  { name: "xga-4x3", width: 1024, height: 768 },
+  { name: "ultrawide-21x9", width: 2560, height: 1080 },
+  { name: "small-desktop-4x3", width: 800, height: 600 },
+];
 const webRoot = path.join(root, "build", "web");
 const host = "127.0.0.1";
 const port = Number(process.env.GAMEBASE_WEB_PORT || 8123);
@@ -119,7 +124,10 @@ async function main() {
 
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({
-    viewport: { width: 1280, height: 720 },
+    viewport: {
+      width: viewportProfiles[0].width,
+      height: viewportProfiles[0].height,
+    },
   });
   const consoleErrors = [];
   const pageErrors = [];
@@ -207,7 +215,35 @@ async function main() {
       return results;
     });
 
-    await page.screenshot({ path: screenshotPath, fullPage: true });
+    const viewportChecks = [];
+    for (const profile of viewportProfiles) {
+      await page.setViewportSize({
+        width: profile.width,
+        height: profile.height,
+      });
+      await page.waitForTimeout(500);
+      const viewportState = await page.evaluate(() => {
+        const canvas = document.querySelector("canvas");
+        const rect = canvas?.getBoundingClientRect();
+        return {
+          innerWidth: window.innerWidth,
+          innerHeight: window.innerHeight,
+          canvasWidth: canvas?.width ?? 0,
+          canvasHeight: canvas?.height ?? 0,
+          cssWidth: rect?.width ?? 0,
+          cssHeight: rect?.height ?? 0,
+          left: rect?.left ?? 0,
+          top: rect?.top ?? 0,
+          right: rect?.right ?? 0,
+          bottom: rect?.bottom ?? 0,
+        };
+      });
+      viewportChecks.push({ profile, state: viewportState });
+      await page.screenshot({
+        path: path.join(artifactDir, `web-export-${profile.name}.png`),
+        fullPage: true,
+      });
+    }
 
     const failures = [];
     if (state.readyState !== "complete")
@@ -225,6 +261,37 @@ async function main() {
     if (state.statusDisplay !== "none" && state.statusDisplay !== "missing") {
       failures.push(`Godot status overlay still visible: ${state.statusText}`);
     }
+    for (const check of viewportChecks) {
+      const { profile, state: viewportState } = check;
+      if (
+        viewportState.innerWidth !== profile.width ||
+        viewportState.innerHeight !== profile.height
+      ) {
+        failures.push(
+          `${profile.name} viewport mismatch ${JSON.stringify(viewportState)}`,
+        );
+      }
+      if (
+        viewportState.canvasWidth < 1 ||
+        viewportState.canvasHeight < 1 ||
+        viewportState.cssWidth < 1 ||
+        viewportState.cssHeight < 1
+      ) {
+        failures.push(
+          `${profile.name} canvas has invalid size ${JSON.stringify(viewportState)}`,
+        );
+      }
+      if (
+        viewportState.left < -1 ||
+        viewportState.top < -1 ||
+        viewportState.right > profile.width + 1 ||
+        viewportState.bottom > profile.height + 1
+      ) {
+        failures.push(
+          `${profile.name} canvas escapes viewport ${JSON.stringify(viewportState)}`,
+        );
+      }
+    }
     if (consoleErrors.length)
       failures.push(`console errors: ${consoleErrors.join(" | ")}`);
     if (pageErrors.length)
@@ -240,6 +307,7 @@ async function main() {
       JSON.stringify(
         {
           state,
+          viewportChecks,
           assetChecks,
           consoleErrors,
           pageErrors,

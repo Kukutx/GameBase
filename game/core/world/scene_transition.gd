@@ -24,7 +24,8 @@ func change_scene(path: String) -> void:
 		push_error("Transition: scene is unavailable: %s" % path)
 		return
 	_busy = true
-	if DisplayServer.get_name() != "headless":
+	var animate := DisplayServer.get_name() != "headless" and not GameSettings.reduced_motion
+	if animate:
 		_overlay.visible = true
 		var fade_out := create_tween()
 		fade_out.tween_property(_overlay, "color:a", 1.0, FADE_SECONDS)
@@ -36,7 +37,7 @@ func change_scene(path: String) -> void:
 		_overlay.color.a = 0.0
 		_busy = false
 		return
-	if DisplayServer.get_name() != "headless":
+	if animate:
 		await get_tree().process_frame
 		var fade_in := create_tween()
 		fade_in.tween_property(_overlay, "color:a", 0.0, FADE_SECONDS)

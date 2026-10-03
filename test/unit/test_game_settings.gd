@@ -20,6 +20,8 @@ func test_settings_round_trip() -> void:
 	source.fullscreen = true
 	source.vsync = false
 	source.autosave = false
+	source.weather_effects = false
+	source.reduced_motion = true
 	source.locale = "zh_CN"
 	source.save_settings()
 
@@ -33,6 +35,8 @@ func test_settings_round_trip() -> void:
 	assert_true(restored.fullscreen)
 	assert_false(restored.vsync)
 	assert_false(restored.autosave)
+	assert_false(restored.weather_effects)
+	assert_true(restored.reduced_motion)
 	assert_eq(restored.locale, "zh_CN")
 
 func test_supported_locale_translation_and_selector() -> void:
@@ -54,6 +58,23 @@ func test_supported_locale_translation_and_selector() -> void:
 	await get_tree().process_frame
 	var selector := menu.get_node("Dim/Panel/Layout/Language/Select") as OptionButton
 	assert_eq(selector.item_count, GameSettings.get_supported_locales().size())
+	var accessibility_button := menu.get_node("Dim/Panel/Layout/AccessibilityButton") as Button
+	var accessibility_page := menu.get_node("Dim/Panel/Layout/AccessibilityPage") as VBoxContainer
+	var weather_effects := menu.get_node("Dim/Panel/Layout/AccessibilityPage/WeatherEffects") as CheckButton
+	var reduced_motion := menu.get_node("Dim/Panel/Layout/AccessibilityPage/ReducedMotion") as CheckButton
+	assert_not_null(accessibility_button)
+	assert_not_null(weather_effects)
+	assert_not_null(reduced_motion)
+	menu.open()
+	menu.call("_show_accessibility", true)
+	await get_tree().process_frame
+	assert_true(accessibility_page.visible)
+	assert_eq(get_viewport().gui_get_focus_owner(), weather_effects)
+	menu.call("_show_accessibility", false)
+	await get_tree().process_frame
+	assert_false(accessibility_page.visible)
+	assert_eq(get_viewport().gui_get_focus_owner(), accessibility_button)
+	menu.close()
 
 func test_title_screen_static_and_dynamic_labels_translate_in_runtime() -> void:
 	var previous := TranslationServer.get_locale()

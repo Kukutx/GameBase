@@ -38,7 +38,7 @@ It performs:
 10. Windows exported-build smoke on Windows hosts;
 11. Web payload validation;
 12. deterministic npm install and Chromium setup;
-13. a Playwright browser launch of the Web export with console, page and network error checks.
+13. a Playwright browser launch of the Web export with console, page and network error checks, plus live resize checks at 1280×720, 1024×768, 2560×1080 and 800×600; the Godot canvas must remain visible and fully contained in each viewport.
 
 Use `-SkipBrowserSmoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/validate.ps1 -SkipSoak` exists only for fast local iteration; CI and release candidates run the soak by default.
 

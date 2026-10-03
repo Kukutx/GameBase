@@ -23,7 +23,7 @@ if (Test-Path $GodotBin) {
     $GodotCommand = (Resolve-Path $GodotBin).Path
 }
 
-$ProbeRoot = Join-Path (Join-Path $Root ".dev") "export-pack-probe"
+$ProbeRoot = Join-Path (Join-Path $Root ".dev") ("export-pack-probe-" + $PID)
 New-Item -ItemType Directory -Force -Path $ProbeRoot | Out-Null
 
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
@@ -124,19 +124,24 @@ func _initialize() -> void:
 $ProbeScriptPath = Join-Path $ProbeRoot "probe.gd"
 [System.IO.File]::WriteAllText($ProbeScriptPath, $ProbeScript, $Utf8NoBom)
 
-$LogPath = Join-Path ([System.IO.Path]::GetTempPath()) "gamebase-export-pack-probe.log"
+$LogPath = Join-Path ([System.IO.Path]::GetTempPath()) ("gamebase-export-pack-probe-" + $PID + ".log")
 Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
 
-& $GodotCommand --headless --path $ProbeRoot -s $ProbeScriptPath -- $ResolvedPck 2>&1 | Tee-Object -FilePath $LogPath
-$ExitCode = $LASTEXITCODE
-$Output = Get-Content $LogPath -Raw
-Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
+try {
+    & $GodotCommand --headless --path $ProbeRoot -s $ProbeScriptPath -- $ResolvedPck 2>&1 | Tee-Object -FilePath $LogPath
+    $ExitCode = $LASTEXITCODE
+    $Output = Get-Content $LogPath -Raw
 
-if ($ExitCode -ne 0) {
-    throw "Export content verification failed for '$PckPath' with exit code $ExitCode."
-}
-if ($Output -notmatch "EXPORT_CONTENTS_OK") {
-    throw "Export content verification did not report success for '$PckPath'."
-}
+    if ($ExitCode -ne 0) {
+        throw "Export content verification failed for '$PckPath' with exit code $ExitCode."
+    }
+    if ($Output -notmatch "EXPORT_CONTENTS_OK") {
+        throw "Export content verification did not report success for '$PckPath'."
+    }
 
-Write-Host "Export content verification passed: $PckPath"
+    Write-Host "Export content verification passed: $PckPath"
+}
+finally {
+    Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
+    Remove-Item $ProbeRoot -Recurse -Force -ErrorAction SilentlyContinue
+}

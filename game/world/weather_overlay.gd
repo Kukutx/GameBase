@@ -11,6 +11,7 @@ var _weather_exposed := true
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	WeatherState.weather_changed.connect(_on_weather_changed)
+	GameSettings.changed.connect(_on_settings_changed)
 	_refresh_location_exposure()
 	_set_weather(WeatherState.current_weather)
 
@@ -29,9 +30,12 @@ func _on_weather_changed(_day: int, weather: GameWeatherSystem.Weather) -> void:
 
 func _set_weather(weather: GameWeatherSystem.Weather) -> void:
 	_weather = weather
-	visible = _weather_exposed and (_weather == GameWeatherSystem.Weather.RAIN or _weather == GameWeatherSystem.Weather.STORM)
-	set_process(visible)
+	visible = GameSettings.weather_effects and _weather_exposed and (_weather == GameWeatherSystem.Weather.RAIN or _weather == GameWeatherSystem.Weather.STORM)
+	set_process(visible and not GameSettings.reduced_motion)
 	queue_redraw()
+
+func _on_settings_changed() -> void:
+	_set_weather(_weather)
 
 func _refresh_location_exposure() -> void:
 	var location := ContentDB.get_current_location(get_tree())
@@ -46,6 +50,9 @@ func _draw() -> void:
 	var storm := _weather == GameWeatherSystem.Weather.STORM
 	var tint := Color(0.10, 0.16, 0.24, 0.10 if not storm else 0.17)
 	draw_rect(Rect2(Vector2.ZERO, viewport_size), tint)
+
+	if GameSettings.reduced_motion:
+		return
 
 	var count := rain_streaks + (24 if storm else 0)
 	var speed := fall_speed * (1.3 if storm else 1.0)

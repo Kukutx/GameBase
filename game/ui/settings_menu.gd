@@ -14,6 +14,11 @@ signal closed
 @onready var autosave_check: CheckButton = $Dim/Panel/Layout/Autosave
 @onready var language_row: HBoxContainer = $Dim/Panel/Layout/Language
 @onready var language_select: OptionButton = $Dim/Panel/Layout/Language/Select
+@onready var accessibility_button: Button = $Dim/Panel/Layout/AccessibilityButton
+@onready var accessibility_page: VBoxContainer = $Dim/Panel/Layout/AccessibilityPage
+@onready var weather_effects_check: CheckButton = $Dim/Panel/Layout/AccessibilityPage/WeatherEffects
+@onready var reduced_motion_check: CheckButton = $Dim/Panel/Layout/AccessibilityPage/ReducedMotion
+@onready var accessibility_back: Button = $Dim/Panel/Layout/AccessibilityPage/Back
 @onready var controls_button: Button = $Dim/Panel/Layout/ControlsButton
 @onready var controls_page: VBoxContainer = $Dim/Panel/Layout/ControlsPage
 @onready var controls_list: VBoxContainer = $Dim/Panel/Layout/ControlsPage/Scroll/List
@@ -35,6 +40,10 @@ func _ready() -> void:
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	vsync_check.toggled.connect(_on_vsync_toggled)
 	autosave_check.toggled.connect(_on_autosave_toggled)
+	weather_effects_check.toggled.connect(_on_weather_effects_toggled)
+	reduced_motion_check.toggled.connect(_on_reduced_motion_toggled)
+	accessibility_button.pressed.connect(_show_accessibility.bind(true))
+	accessibility_back.pressed.connect(_show_accessibility.bind(false))
 	_build_language_selector()
 	language_select.item_selected.connect(_on_language_selected)
 	controls_button.pressed.connect(_show_controls.bind(true))
@@ -77,6 +86,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if controls_page.visible:
 			_show_controls(false)
+		elif accessibility_page.visible:
+			_show_accessibility(false)
 		else:
 			close()
 		get_viewport().set_input_as_handled()
@@ -89,6 +100,8 @@ func _sync_from_settings() -> void:
 	fullscreen_check.button_pressed = GameSettings.fullscreen
 	vsync_check.button_pressed = GameSettings.vsync
 	autosave_check.button_pressed = GameSettings.autosave
+	weather_effects_check.button_pressed = GameSettings.weather_effects
+	reduced_motion_check.button_pressed = GameSettings.reduced_motion
 	_select_current_language()
 	_syncing = false
 	if controls_page.visible:
@@ -123,7 +136,9 @@ func _show_controls(show: bool) -> void:
 	vsync_check.visible = not show
 	autosave_check.visible = not show
 	language_row.visible = not show
+	accessibility_button.visible = not show
 	controls_button.visible = not show
+	accessibility_page.visible = false
 	hint_label.visible = not show
 	controls_page.visible = show
 	if show:
@@ -131,6 +146,26 @@ func _show_controls(show: bool) -> void:
 		controls_back.grab_focus()
 	else:
 		controls_button.grab_focus()
+
+func _show_accessibility(show: bool) -> void:
+	_waiting_action = &""
+	_waiting_button = null
+	master_row.visible = not show
+	music_row.visible = not show
+	sounds_row.visible = not show
+	fullscreen_check.visible = not show
+	vsync_check.visible = not show
+	autosave_check.visible = not show
+	language_row.visible = not show
+	accessibility_button.visible = not show
+	controls_button.visible = not show
+	hint_label.visible = not show
+	controls_page.visible = false
+	accessibility_page.visible = show
+	if show:
+		weather_effects_check.grab_focus()
+	else:
+		accessibility_button.grab_focus()
 
 func _rebuild_controls() -> void:
 	for child: Node in controls_list.get_children():
@@ -189,3 +224,11 @@ func _on_vsync_toggled(value: bool) -> void:
 func _on_autosave_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_autosave(value)
+
+func _on_weather_effects_toggled(value: bool) -> void:
+	if not _syncing:
+		GameSettings.set_weather_effects(value)
+
+func _on_reduced_motion_toggled(value: bool) -> void:
+	if not _syncing:
+		GameSettings.set_reduced_motion(value)

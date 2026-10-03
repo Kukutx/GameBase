@@ -69,6 +69,8 @@ var sounds_volume := 0.9
 var fullscreen := false
 var vsync := true
 var autosave := true
+var weather_effects := true
+var reduced_motion := false
 var locale := "en"
 var key_bindings: Dictionary = {}
 
@@ -106,6 +108,14 @@ func set_vsync(value: bool) -> void:
 
 func set_autosave(value: bool) -> void:
 	autosave = value
+	_save_and_emit()
+
+func set_weather_effects(value: bool) -> void:
+	weather_effects = value
+	_save_and_emit()
+
+func set_reduced_motion(value: bool) -> void:
+	reduced_motion = value
 	_save_and_emit()
 
 func set_locale(value: String) -> void:
@@ -184,6 +194,8 @@ func save_settings() -> void:
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("display", "vsync", vsync)
 	config.set_value("gameplay", "autosave", autosave)
+	config.set_value("accessibility", "weather_effects", weather_effects)
+	config.set_value("accessibility", "reduced_motion", reduced_motion)
 	config.set_value("localization", "locale", locale)
 	for action: StringName in CONTROL_ACTIONS:
 		config.set_value("controls", String(action), int(get_key_binding(action)))
@@ -201,6 +213,8 @@ func load_settings() -> void:
 	fullscreen = bool(config.get_value("display", "fullscreen", false))
 	vsync = bool(config.get_value("display", "vsync", true))
 	autosave = bool(config.get_value("gameplay", "autosave", true))
+	weather_effects = bool(config.get_value("accessibility", "weather_effects", true))
+	reduced_motion = bool(config.get_value("accessibility", "reduced_motion", false))
 	var loaded_locale := String(config.get_value("localization", "locale", "en"))
 	locale = loaded_locale if SUPPORTED_LOCALE_IDS.has(loaded_locale) else "en"
 	for action: StringName in CONTROL_ACTIONS:

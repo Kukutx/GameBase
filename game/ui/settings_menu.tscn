@@ -14,13 +14,13 @@ color = Color(0, 0, 0, 0.7)
 [node name="Panel" type="PanelContainer" parent="Dim"]
 layout_mode = 0
 offset_left = 102.0
-offset_top = 12.0
+offset_top = 4.0
 offset_right = 378.0
-offset_bottom = 258.0
+offset_bottom = 266.0
 
 [node name="Layout" type="VBoxContainer" parent="Dim/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 5
+theme_override_constants/separation = 4
 
 [node name="Title" type="Label" parent="Dim/Panel/Layout"]
 layout_mode = 2
@@ -99,9 +99,42 @@ text = "Language"
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="AccessibilityButton" type="Button" parent="Dim/Panel/Layout"]
+layout_mode = 2
+text = "Accessibility..."
+
 [node name="ControlsButton" type="Button" parent="Dim/Panel/Layout"]
 layout_mode = 2
 text = "Controls..."
+
+[node name="AccessibilityPage" type="VBoxContainer" parent="Dim/Panel/Layout"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+text = "Accessibility"
+horizontal_alignment = 1
+
+[node name="WeatherEffects" type="CheckButton" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+text = "Weather Effects"
+button_pressed = true
+
+[node name="ReducedMotion" type="CheckButton" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+text = "Reduce Motion"
+
+[node name="Description" type="Label" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+autowrap_mode = 2
+text = "Reduce Motion removes scene fades and animated rain/lightning while preserving weather gameplay."
+
+[node name="Back" type="Button" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+text = "Back"
 
 [node name="ControlsPage" type="VBoxContainer" parent="Dim/Panel/Layout"]
 visible = false

@@ -42,7 +42,7 @@ function Invoke-GodotStep {
     Write-Host "==> $Name"
     $SafeName = ($Name -replace '[^A-Za-z0-9._-]', '_')
     $TempRoot = [System.IO.Path]::GetTempPath()
-    $LogPath = Join-Path $TempRoot ("gamebase-" + $SafeName + ".log")
+    $LogPath = Join-Path $TempRoot ("gamebase-" + $PID + "-" + $SafeName + ".log")
     Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
 
     & $GodotBin @Arguments 2>&1 | Tee-Object -FilePath $LogPath
