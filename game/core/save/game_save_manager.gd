@@ -87,6 +87,8 @@ func _build_slot_summary(slot: int, candidate: Dictionary) -> Dictionary:
 		"recovery_source": recovery_source,
 		"version": stored_version,
 		"future_version": stored_version > SAVE_VERSION,
+		"game_version": _safe_string(data.get("game_version", "")),
+		"engine_version": _safe_string(data.get("engine_version", "")),
 		"saved_at_unix": _safe_int(data.get("saved_at_unix", 0), 0),
 		"scene": _safe_string(data.get("scene", "")),
 		"day": day,
@@ -279,6 +281,8 @@ func build_snapshot() -> Dictionary:
 		}
 	return {
 		"version": SAVE_VERSION,
+		"game_version": String(ProjectSettings.get_setting("application/config/version", "unknown")),
+		"engine_version": String(Engine.get_version_info().get("string", "unknown")),
 		"slot": active_slot,
 		"saved_at_unix": saved_at,
 		"saved_at_unix_msec": int(round(saved_at * 1000.0)),
@@ -470,6 +474,8 @@ func _apply_player_spawn(player: Node2D, spawn_id: StringName) -> bool:
 	return false
 
 func _sync_snapshot_runtime_sections(data: Dictionary) -> void:
+	data["game_version"] = String(ProjectSettings.get_setting("application/config/version", "unknown"))
+	data["engine_version"] = String(Engine.get_version_info().get("string", "unknown"))
 	# Load-time reconciliation can repair quest chains, project flags, expansion
 	# entitlements, milestone qualification/rewards and newly delivered mail. Keep
 	# those repairs in the candidate dictionary so promoting a backup/temp writes

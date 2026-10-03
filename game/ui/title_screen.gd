@@ -53,8 +53,11 @@ func _refresh_slot_ui() -> void:
 	slot_info.text = _format_slot_summary(summary, loadable)
 
 func _format_slot_summary(summary: Dictionary, loadable: bool) -> String:
+	var saved_game_version := String(summary.get("game_version", ""))
+	var provenance := tr(" · GameBase v%s") % saved_game_version if not saved_game_version.is_empty() else ""
 	if bool(summary.get("future_version", false)) and not loadable:
-		return tr("Save v%d · requires a newer game version") % int(summary.get("version", 0))
+		var future_text := tr("Save schema v%d · requires a newer game version") % int(summary.get("version", 0))
+		return future_text + provenance
 	var minute := int(summary.get("minute_of_day", 8 * 60))
 	var recovery_source := String(summary.get("recovery_source", "primary"))
 	var recovery := ""
@@ -64,7 +67,7 @@ func _format_slot_summary(summary: Dictionary, loadable: bool) -> String:
 		recovery = tr(" · temporary save recovery") if recovery_source == "temp" else tr(" · backup available")
 	elif not loadable:
 		recovery = tr(" · unavailable")
-	return tr("%s %d · Day %d · %02d:%02d · %dg%s") % [
+	var base_text := tr("%s %d · Day %d · %02d:%02d · %dg%s") % [
 		tr(String(summary.get("season", "Spring"))),
 		int(summary.get("day_of_season", 1)),
 		int(summary.get("day", 1)),
@@ -73,6 +76,7 @@ func _format_slot_summary(summary: Dictionary, loadable: bool) -> String:
 		int(summary.get("money", 0)),
 		recovery,
 	]
+	return base_text + provenance
 
 func _new_game() -> void:
 	if SaveManager.has_save():

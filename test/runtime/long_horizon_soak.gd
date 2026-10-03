@@ -84,6 +84,8 @@ func _run() -> void:
 
 			var raw: Dictionary = save_manager.call("_read_dictionary", SOAK_SAVE_PATH)
 			_check(int(raw.get("version", 0)) == current_save_version, "Checkpoint schema mismatch on Day %d" % day)
+			_check(String(raw.get("game_version", "")) == String(ProjectSettings.get_setting("application/config/version", "unknown")), "Checkpoint game provenance mismatch on Day %d" % day)
+			_check(not String(raw.get("engine_version", "")).is_empty(), "Checkpoint engine provenance missing on Day %d" % day)
 			var raw_clock: Variant = raw.get("clock", {})
 			if raw_clock is Dictionary:
 				_check(int((raw_clock as Dictionary).get("day", 0)) == day, "Checkpoint wrote wrong day on Day %d" % day)

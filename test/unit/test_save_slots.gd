@@ -36,6 +36,8 @@ func test_silent_save_uses_atomic_path_without_emitting_manual_save_status() -> 
 	assert_false(FileAccess.file_exists(TEST_TEMP))
 	var saved := manager.call("_read_dictionary", TEST_SAVE) as Dictionary
 	assert_eq(int(saved.get("version", 0)), GameSaveManager.SAVE_VERSION)
+	assert_eq(String(saved.get("game_version", "")), String(ProjectSettings.get_setting("application/config/version", "unknown")))
+	assert_false(String(saved.get("engine_version", "")).is_empty())
 
 func test_slot_paths_keep_legacy_slot_one_and_isolate_other_slots() -> void:
 	var manager := GameSaveManager.new()
@@ -69,6 +71,8 @@ func test_legacy_slot_summary_uses_migrated_defaults_without_hiding_stored_versi
 	assert_eq(int(summary.get("day", 0)), 3)
 	assert_eq(int(summary.get("minute_of_day", 0)), 600)
 	assert_eq(int(summary.get("money", 0)), 500)
+	assert_eq(String(summary.get("game_version", "")), "")
+	assert_eq(String(summary.get("engine_version", "")), "")
 
 func test_v8_missing_scene_resolves_through_stable_location_id() -> void:
 	var manager := GameSaveManager.new()
@@ -408,7 +412,7 @@ func test_title_screen_exposes_three_slot_controls() -> void:
 	assert_not_null(title.get_node_or_null("Center/Menu/SlotInfo"))
 	assert_not_null(title.get_node_or_null("Center/Menu/DeleteSave"))
 	assert_not_null(title.get_node_or_null("ConfirmDelete"))
-	assert_eq(String(title.call("_format_slot_summary", {"future_version": true, "version": 9}, false)), "Save v9 · requires a newer game version")
+	assert_eq(String(title.call("_format_slot_summary", {"future_version": true, "version": 9}, false)), "Save schema v9 · requires a newer game version")
 	var compatible_text := String(title.call("_format_slot_summary", {
 		"future_version": false,
 		"season": "Autumn",
@@ -416,11 +420,13 @@ func test_title_screen_exposes_three_slot_controls() -> void:
 		"day": 68,
 		"minute_of_day": 600,
 		"money": 4321,
+		"game_version": "0.1.0",
 		"newer_primary_preserved": true,
 		"recovery_source": "backup",
 	}, true))
 	assert_string_contains(compatible_text, "Autumn 12 · Day 68 · 10:00 · 4321g")
 	assert_string_contains(compatible_text, "compatible backup · newer save preserved")
+	assert_string_contains(compatible_text, "GameBase v0.1.0")
 
 func _cleanup_files() -> void:
 	for path in [TEST_SAVE, TEST_TEMP, TEST_BACKUP]:

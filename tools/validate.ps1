@@ -114,6 +114,15 @@ try {
         Invoke-GodotStep -Name "Headless import / parse" -Arguments @(
             "--headless", "--path", $Root, "--editor", "--quit"
         )
+        if ($CleanImport) {
+            # A first import from an empty .godot cache can finish editor startup
+            # before every optional local texture artifact is durably visible to
+            # the next process. A second pass is fast and guarantees that all
+            # importer outputs/references have settled before GUT starts.
+            Invoke-GodotStep -Name "Post-import settle / parse" -Arguments @(
+                "--headless", "--path", $Root, "--editor", "--quit"
+            )
+        }
     }
 
     Write-Host ""

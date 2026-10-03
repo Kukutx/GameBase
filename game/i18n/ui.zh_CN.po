@@ -2510,3 +2510,9 @@ msgstr "为已耕土地浇水，让作物能在夜间生长。"
 
 msgid "Kitchen"
 msgstr "厨房"
+
+msgid "Save schema v%d · requires a newer game version"
+msgstr "存档结构 v%d · 需要更新版本的游戏"
+
+msgid " · GameBase v%s"
+msgstr " · GameBase v%s"
