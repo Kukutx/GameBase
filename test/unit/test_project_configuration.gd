@@ -48,9 +48,9 @@ func test_game_version_is_semver_and_matches_project_and_diagnostics() -> void:
 func test_release_diagnostics_are_configured() -> void:
 	var project := _read_text("res://project.godot")
 	assert_true(project.contains('GameDiagnostics="*res://game/core/diagnostics/game_diagnostics.gd"'))
-	assert_true(project.contains('file_logging/enable_file_logging.pc=true'))
+	assert_true(bool(ProjectSettings.get_setting("debug/file_logging/enable_file_logging.pc", true)))
 	assert_true(project.contains('file_logging/log_path="user://logs/gamebase.log"'))
-	assert_true(project.contains('file_logging/max_log_files=5'))
+	assert_eq(int(ProjectSettings.get_setting("debug/file_logging/max_log_files", 5)), 5)
 	assert_true(project.contains('settings/gdscript/always_track_call_stacks=true'))
 	var context := GameDiagnostics.get_runtime_context()
 	assert_eq(int(context.get("save_schema", 0)), GameSaveManager.SAVE_VERSION)
@@ -85,9 +85,16 @@ func test_export_presets_cover_supported_release_targets() -> void:
 		"addons/dialogue_manager/components/*",
 		"addons/dialogue_manager/views/*",
 		"addons/dialogue_manager/plugin.gd*",
+		"addons/dialogue_manager/debugger_plugin.gd*",
 		"addons/dialogue_manager/import_plugin.gd*",
 		"addons/dialogue_manager/export_plugin.gd*",
 		"addons/dialogue_manager/inspector_plugin.gd*",
+		"addons/dialogue_manager/*.cs*",
+		"addons/dialogue_manager/example_balloon/*.cs*",
+		"addons/dialogue_manager/example_balloon/ExampleBalloon.tscn",
+		"addons/dialogue_manager/example_balloon/SmallExampleBalloon.tscn",
+		"addons/dialogue_manager/nodes/dialogue_label/DialogueLabel.tscn",
+		"addons/dialogue_manager/nodes/responses_menu/*.cs*",
 	]:
 		assert_eq(presets.count(required_exclusion), 3, "Missing release exclusion: %s" % required_exclusion)
 
@@ -152,9 +159,14 @@ func test_godot_legal_bundle_tracks_engine_baseline() -> void:
 	assert_true(updater.contains("COPYRIGHT.txt"))
 	assert_true(updater.contains("GODOT_VERSION.txt"))
 
-func test_test_framework_matches_godot_47_line() -> void:
-	var plugin := _read_text("res://addons/gut/plugin.cfg")
-	var versions := _read_text("res://addons/gut/versions.json")
-	assert_true(plugin.contains('version="9.7.1"'))
-	assert_true(versions.contains('"9.7.1"'))
-	assert_true(versions.contains('"godot_min":"4.7"'))
+func test_addon_versions_match_godot_47_line() -> void:
+	var gut_plugin := _read_text("res://addons/gut/plugin.cfg")
+	var gut_versions := _read_text("res://addons/gut/versions.json")
+	assert_true(gut_plugin.contains('version="9.7.1"'))
+	assert_true(gut_versions.contains('"9.7.1"'))
+	assert_true(gut_versions.contains('"godot_min":"4.7"'))
+	var dialogue_plugin := _read_text("res://addons/dialogue_manager/plugin.cfg")
+	assert_true(dialogue_plugin.contains('version="4.1.0"'))
+	var dialogue_resource := _read_text("res://addons/dialogue_manager/dialogue_resource.gd")
+	assert_true(dialogue_resource.contains("var cues: Dictionary"))
+	assert_true(dialogue_resource.contains("var first_cue: String"))

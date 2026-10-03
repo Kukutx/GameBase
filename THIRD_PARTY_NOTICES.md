@@ -22,7 +22,7 @@ the licensing information for third-party code distributed with the engine.
 
 ## Dialogue Manager
 
-GameBase includes Dialogue Manager 3.10.5 by Nathan Hoad and contributors,
+GameBase includes Dialogue Manager 4.1.0 by Nathan Hoad and contributors,
 licensed under the MIT license. Its license is distributed as
 `licenses/DIALOGUE_MANAGER_LICENSE.txt`.
 

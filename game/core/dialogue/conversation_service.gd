@@ -105,8 +105,8 @@ func _dialogue_has_key(dialogue: DialogueResource, key: String) -> bool:
 	if dialogue == null:
 		return false
 	if key.is_empty():
-		return not dialogue.first_title.is_empty() or not dialogue.lines.is_empty()
-	return dialogue.titles.has(key) or dialogue.lines.has(key)
+		return not dialogue.first_cue.is_empty() or not dialogue.lines.is_empty()
+	return dialogue.cues.has(key) or dialogue.lines.has(key)
 
 func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 	return NpcContext.build_context(npc_id, actor)

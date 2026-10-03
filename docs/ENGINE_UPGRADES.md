@@ -45,4 +45,4 @@ The current shared validation baseline is Godot 4.7.2. The project feature marke
 
 Do not upgrade a dependency only because a newer major version exists. Prefer the newest compatible patch/minor release that does not force unrelated gameplay migrations. Major addon upgrades should be isolated, migration-tested and reversible.
 
-Dialogue Manager remains on the v3.10 line for now because v4 contains authored-dialogue format/API changes. GUT is on the 9.7 line to match Godot 4.7.
+Dialogue Manager is on v4.1.0. The v3→v4 migration has been completed: GameBase uses `DialogueResource.cues`/`first_cue`, authored line/response translations use `msgctxt "dialogue"`, and the release PCK verifier preserves the v4 runtime `nodes/` dependencies while excluding editor/debugger tooling. GUT is on the 9.7 line to match Godot 4.7.

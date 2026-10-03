@@ -69,9 +69,7 @@ GameDiagnostics="*res://game/core/diagnostics/game_diagnostics.gd"
 
 [debug]
 
-file_logging/enable_file_logging.pc=true
 file_logging/log_path="user://logs/gamebase.log"
-file_logging/max_log_files=5
 settings/gdscript/always_track_call_stacks=true
 
 [display]
@@ -197,6 +195,6 @@ locale/translations_pot_files=PackedStringArray("res://game/dialogue/intro.dialo
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=3
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-textures/canvas_textures/default_texture_filter=3

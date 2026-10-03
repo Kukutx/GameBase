@@ -38,7 +38,23 @@ def decode_godot_string(raw: str) -> str:
     except (SyntaxError, ValueError):
         return raw
 
-def collect_source_keys() -> set[str]:
+def collect_dialogue_keys() -> set[str]:
+    keys: set[str] = set()
+    for path in GAME.rglob("*.dialogue"):
+        for raw_line in path.read_text(encoding="utf-8-sig").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith(("~", "=>", "#")):
+                continue
+            if line.startswith("- "):
+                keys.add(line[2:].strip())
+                continue
+            match = re.match(r"^[^:]+:\s*(.+)$", line)
+            if match:
+                keys.add(match.group(1).strip())
+    return keys
+
+
+def collect_non_dialogue_keys() -> set[str]:
     keys: set[str] = set()
     for path in GAME.rglob("*.gd"):
         text = path.read_text(encoding="utf-8-sig")
@@ -60,35 +76,32 @@ def collect_source_keys() -> set[str]:
             value = decode_godot_string(raw)
             if value:
                 keys.add(value)
-    for path in GAME.rglob("*.dialogue"):
-        for raw_line in path.read_text(encoding="utf-8-sig").splitlines():
-            line = raw_line.strip()
-            if not line or line.startswith(("~", "=>", "#")):
-                continue
-            if line.startswith("- "):
-                keys.add(line[2:].strip())
-                continue
-            match = re.match(r"^[^:]+:\s*(.+)$", line)
-            if match:
-                keys.add(match.group(1).strip())
     return keys
 
-def collect_po_entries() -> dict[str, str]:
-    entries: dict[str, str] = {}
-    msgid: str | None = None
-    for raw_line in PO.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if line.startswith("msgid "):
+
+def collect_source_keys() -> set[str]:
+    return collect_non_dialogue_keys() | collect_dialogue_keys()
+
+
+def collect_po_entries() -> dict[tuple[str, str], str]:
+    entries: dict[tuple[str, str], str] = {}
+    for block in PO.read_text(encoding="utf-8").split("\n\n"):
+        context = ""
+        msgid: str | None = None
+        msgstr: str | None = None
+        for raw_line in block.splitlines():
+            line = raw_line.strip()
             try:
-                msgid = ast.literal_eval(line[6:])
+                if line.startswith("msgctxt "):
+                    context = ast.literal_eval(line[8:])
+                elif line.startswith("msgid "):
+                    msgid = ast.literal_eval(line[6:])
+                elif line.startswith("msgstr "):
+                    msgstr = ast.literal_eval(line[7:])
             except (SyntaxError, ValueError):
-                msgid = None
-        elif line.startswith("msgstr ") and msgid is not None:
-            try:
-                entries[msgid] = ast.literal_eval(line[7:])
-            except (SyntaxError, ValueError):
-                entries[msgid] = ""
-            msgid = None
+                continue
+        if msgid is not None and msgstr is not None:
+            entries[(context, msgid)] = msgstr
     return entries
 
 def main() -> int:
@@ -96,17 +109,29 @@ def main() -> int:
     parser.add_argument("--report-only", action="store_true", help="Print gaps without failing.")
     args = parser.parse_args()
 
-    keys = collect_source_keys()
+    dialogue_keys = collect_dialogue_keys()
+    non_dialogue_keys = collect_non_dialogue_keys()
+    keys = non_dialogue_keys | dialogue_keys
     entries = collect_po_entries()
-    missing = sorted(key for key in keys if key not in entries or not entries[key])
+    missing_generic = sorted(
+        key for key in non_dialogue_keys if not entries.get(("", key), "")
+    )
+    missing_dialogue = sorted(
+        key for key in dialogue_keys if not entries.get(("dialogue", key), "")
+    )
+    missing_count = len(missing_generic) + len(missing_dialogue)
 
     print(f"LOCALIZATION_SOURCE_KEYS={len(keys)}")
     print(f"LOCALIZATION_PO_ENTRIES={len(entries)}")
-    print(f"LOCALIZATION_MISSING={len(missing)}")
-    for key in missing:
+    print(f"LOCALIZATION_DIALOGUE_KEYS={len(dialogue_keys)}")
+    print(f"LOCALIZATION_MISSING={missing_count}")
+    print(f"LOCALIZATION_DIALOGUE_CONTEXT_MISSING={len(missing_dialogue)}")
+    for key in missing_generic:
         print(f"MISSING: {key}")
+    for key in missing_dialogue:
+        print(f"MISSING_DIALOGUE_CONTEXT: {key}")
 
-    if missing and not args.report_only:
+    if missing_count and not args.report_only:
         return 1
     return 0
 

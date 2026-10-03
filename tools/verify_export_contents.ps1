@@ -61,8 +61,8 @@ func _initialize() -> void:
 		"res://addons/dialogue_manager/test_scene.tscn",
 		"res://addons/dialogue_manager/example_balloon/example_balloon.gd",
 		"res://addons/dialogue_manager/example_balloon/example_balloon.tscn",
-		"res://addons/dialogue_manager/dialogue_label.tscn",
-		"res://addons/dialogue_manager/dialogue_responses_menu.gd",
+		"res://addons/dialogue_manager/nodes/dialogue_label/dialogue_label.tscn",
+		"res://addons/dialogue_manager/nodes/responses_menu/dialogue_responses_menu.gd",
 	]
 	for path: String in required:
 		if not ResourceLoader.exists(path) and not FileAccess.file_exists(path):
@@ -83,12 +83,19 @@ func _initialize() -> void:
 		"res://BUILD_INFO.json",
 		"res://addons/dialogue_manager/plugin.gd",
 		"res://addons/dialogue_manager/plugin.cfg",
+		"res://addons/dialogue_manager/debugger_plugin.gd",
 		"res://addons/dialogue_manager/inspector_plugin.gd",
 		"res://addons/dialogue_manager/import_plugin.gd",
 		"res://addons/dialogue_manager/export_plugin.gd",
 		"res://addons/dialogue_manager/editor_translation_parser_plugin.gd",
 		"res://addons/dialogue_manager/DialogueManager.cs",
+		"res://addons/dialogue_manager/DialogueManager.cs",
 		"res://addons/dialogue_manager/example_balloon/ExampleBalloon.cs",
+		"res://addons/dialogue_manager/example_balloon/ExampleBalloon.tscn",
+		"res://addons/dialogue_manager/example_balloon/SmallExampleBalloon.tscn",
+		"res://addons/dialogue_manager/nodes/dialogue_label/DialogueLabel.cs",
+		"res://addons/dialogue_manager/nodes/dialogue_label/DialogueLabel.tscn",
+		"res://addons/dialogue_manager/nodes/responses_menu/DialogueResponsesMenu.cs",
 	]
 	for path: String in forbidden_files:
 		if FileAccess.file_exists(path) or ResourceLoader.exists(path):

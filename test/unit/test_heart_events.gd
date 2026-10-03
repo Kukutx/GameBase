@@ -105,12 +105,12 @@ func test_authored_daily_and_heart_event_titles_exist_in_dialogue_resources() ->
 			continue
 		for hearts: int in [0, 2, 4, 6, 8, 10]:
 			var title := profile.get_dialogue_title("start", hearts)
-			assert_true(dialogue.titles.has(title), "%s daily dialogue title '%s' is missing" % [String(npc_id), title])
+			assert_true(dialogue.cues.has(title), "%s daily dialogue cue '%s' is missing" % [String(npc_id), title])
 	for event: HeartEventData in ContentDB.get_all_heart_events():
 		var dialogue: DialogueResource = dialogue_by_npc.get(String(event.npc_id))
 		assert_not_null(dialogue)
 		if dialogue != null:
-			assert_true(dialogue.titles.has(event.dialogue_title), "%s heart-event title '%s' is missing" % [String(event.id), event.dialogue_title])
+			assert_true(dialogue.cues.has(event.dialogue_title), "%s heart-event cue '%s' is missing" % [String(event.id), event.dialogue_title])
 
 func test_heart_event_priority_disables_ai_and_daily_title_falls_back_safely() -> void:
 	var service := GameConversationService.new()

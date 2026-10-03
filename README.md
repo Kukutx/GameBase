@@ -8,7 +8,7 @@ The current project is a reusable gameplay base rather than a finished content r
 
 - GameBase application version: `.game-version` (mirrored to `application/config/version`)
 - Godot **4.x**; current CI validation baseline: **4.7.2** via `.godot-version`
-- Dialogue Manager **3.10.5**
+- Dialogue Manager **4.1.0**
 - GUT **9.7.1** for automated tests
 - Game-owned runtime layer; the inherited shooter/template addons are no longer production dependencies
 
