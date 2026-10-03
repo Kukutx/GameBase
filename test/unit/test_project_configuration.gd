@@ -64,6 +64,8 @@ func test_validation_pipeline_includes_long_horizon_soak() -> void:
 	assert_true(FileAccess.file_exists("res://test/runtime/long_horizon_soak.gd"))
 	assert_true(validation.contains('test/runtime/long_horizon_soak.gd'))
 	assert_true(validation.contains('[switch]$SkipSoak'))
+	assert_true(validation.contains('"--import"'))
+	assert_false(validation.contains("Post-import settle / parse"))
 
 func test_project_uses_web_compatible_renderer() -> void:
 	var project := _read_text("res://project.godot")

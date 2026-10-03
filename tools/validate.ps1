@@ -111,18 +111,13 @@ try {
     }
 
     if (-not $SkipImport) {
+        # Godot's dedicated import mode waits for importer/editor-plugin work to
+        # settle before exiting. This is more deterministic than launching the
+        # full editor and immediately quitting, especially on Windows headless
+        # builds where GUT's editor-only font imports can otherwise race shutdown.
         Invoke-GodotStep -Name "Headless import / parse" -Arguments @(
-            "--headless", "--path", $Root, "--editor", "--quit"
+            "--headless", "--path", $Root, "--import"
         )
-        if ($CleanImport) {
-            # A first import from an empty .godot cache can finish editor startup
-            # before every optional local texture artifact is durably visible to
-            # the next process. A second pass is fast and guarantees that all
-            # importer outputs/references have settled before GUT starts.
-            Invoke-GodotStep -Name "Post-import settle / parse" -Arguments @(
-                "--headless", "--path", $Root, "--editor", "--quit"
-            )
-        }
     }
 
     Write-Host ""
