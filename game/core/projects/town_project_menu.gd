@@ -14,6 +14,7 @@ func _ready() -> void:
 	close_button.pressed.connect(close)
 	TownProjects.project_changed.connect(_on_project_changed)
 	InventoryState.changed.connect(_refresh_if_visible)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 
 func open(location_id: StringName) -> void:
 	_location_id = location_id
@@ -36,17 +37,17 @@ func _rebuild() -> void:
 	for child: Node in projects_container.get_children():
 		child.queue_free()
 	var location := ContentDB.get_location(_location_id)
-	title_label.text = "%s Projects" % (location.display_name if location != null else "Town")
+	title_label.text = tr("%s Projects") % (tr(location.display_name) if location != null else tr("Town"))
 	var projects := TownProjects.get_projects_for_location(_location_id)
 	var first_button: Button
 	if projects.is_empty():
 		var empty := Label.new()
-		empty.text = "No restoration projects are registered here yet."
+		empty.text = tr("No restoration projects are registered here yet.")
 		projects_container.add_child(empty)
 	for project: TownProjectData in projects:
 		var block := VBoxContainer.new()
 		var heading := Label.new()
-		heading.text = project.display_name
+		heading.text = tr(project.display_name)
 		heading.add_theme_font_size_override("font_size", 14)
 		block.add_child(heading)
 		var body := RichTextLabel.new()
@@ -67,39 +68,39 @@ func _rebuild() -> void:
 		close_button.grab_focus()
 
 func _project_text(project: TownProjectData) -> String:
-	var lines := PackedStringArray([project.description, "", "[b]Materials[/b]"])
+	var lines := PackedStringArray([tr(project.description), "", "[b]%s[/b]" % tr("Materials")])
 	for raw_id: Variant in project.requirements.keys():
 		var item_id := StringName(String(raw_id))
 		var item := ContentDB.get_item(item_id)
 		var required := project.get_required_quantity(item_id)
 		var progress := TownProjects.get_progress(project.id, item_id)
 		var carried := InventoryState.get_quantity(item_id)
-		lines.append("• %s  %d/%d  (carrying %d)" % [item.display_name if item != null else String(item_id), progress, required, carried])
+		lines.append(tr("• %s  %d/%d  (carrying %d)") % [tr(item.display_name) if item != null else String(item_id), progress, required, carried])
 	lines.append("")
-	lines.append("[b]Reward[/b]")
+	lines.append("[b]%s[/b]" % tr("Reward"))
 	if project.reward_money > 0:
 		lines.append("• %dg" % project.reward_money)
 	for raw_id: Variant in project.reward_items.keys():
 		var item := ContentDB.get_item(StringName(String(raw_id)))
-		lines.append("• %s x%d" % [item.display_name if item != null else String(raw_id), int(project.reward_items[raw_id])])
+		lines.append("• %s x%d" % [tr(item.display_name) if item != null else String(raw_id), int(project.reward_items[raw_id])])
 	if not project.prerequisites.is_empty() and not TownProjects.is_available(project.id):
 		lines.append("")
-		lines.append("[i]Complete the earlier town project first.[/i]")
+		lines.append("[i]%s[/i]" % tr("Complete the earlier town project first."))
 	return "\n".join(lines)
 
 func _configure_action(button: Button, project: TownProjectData) -> void:
 	if not TownProjects.is_available(project.id):
-		button.text = "Locked"
+		button.text = tr("Locked")
 		button.disabled = true
 	elif TownProjects.is_claimed(project.id):
-		button.text = "Completed"
+		button.text = tr("Completed")
 		button.disabled = true
 	elif TownProjects.is_completed(project.id):
-		button.text = "Claim Reward"
+		button.text = tr("Claim Reward")
 		button.disabled = false
 		button.pressed.connect(_claim.bind(project.id))
 	else:
-		button.text = "Donate Available Materials"
+		button.text = tr("Donate Available Materials")
 		button.disabled = not _has_any_donation(project)
 		button.pressed.connect(_donate.bind(project.id))
 
@@ -112,7 +113,7 @@ func _has_any_donation(project: TownProjectData) -> bool:
 
 func _donate(project_id: StringName) -> void:
 	if TownProjects.contribute_all_available(project_id) <= 0:
-		GameEvents.toast("You are not carrying any needed materials")
+		GameEvents.toast(tr("You are not carrying any needed materials"))
 	_rebuild()
 
 func _claim(project_id: StringName) -> void:
@@ -120,6 +121,9 @@ func _claim(project_id: StringName) -> void:
 	_rebuild()
 
 func _on_project_changed(_project_id: StringName, _state: Dictionary) -> void:
+	_refresh_if_visible()
+
+func _on_locale_changed(_locale: String) -> void:
 	_refresh_if_visible()
 
 func _refresh_if_visible() -> void:

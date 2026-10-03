@@ -57,6 +57,10 @@ const DEFAULT_GAMEPAD_BUTTONS := {
 	"quick_save": JOY_BUTTON_LEFT_STICK,
 	"quick_load": JOY_BUTTON_RIGHT_STICK,
 }
+const HOTBAR_GAMEPAD_AXES := {
+	"hotbar_prev": JOY_AXIS_TRIGGER_LEFT,
+	"hotbar_next": JOY_AXIS_TRIGGER_RIGHT,
+}
 
 var settings_path := DEFAULT_SETTINGS_PATH
 var master_volume := 1.0
@@ -64,6 +68,7 @@ var music_volume := 0.8
 var sounds_volume := 0.9
 var fullscreen := false
 var vsync := true
+var autosave := true
 var locale := "en"
 var key_bindings: Dictionary = {}
 
@@ -99,6 +104,10 @@ func set_vsync(value: bool) -> void:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
 	_save_and_emit()
 
+func set_autosave(value: bool) -> void:
+	autosave = value
+	_save_and_emit()
+
 func set_locale(value: String) -> void:
 	var resolved := value if SUPPORTED_LOCALE_IDS.has(value) else "en"
 	locale = resolved
@@ -121,6 +130,9 @@ func get_control_actions() -> Array[StringName]:
 
 func get_control_label(action: StringName) -> String:
 	return tr(String(CONTROL_LABELS.get(String(action), String(action).capitalize())))
+
+func get_gamepad_button(action: StringName) -> int:
+	return int(DEFAULT_GAMEPAD_BUTTONS.get(String(action), -1))
 
 func get_key_binding(action: StringName) -> Key:
 	var raw := int(key_bindings.get(String(action), int(DEFAULT_CONTROL_KEYS.get(String(action), KEY_NONE))))
@@ -171,6 +183,7 @@ func save_settings() -> void:
 	config.set_value("audio", "sounds", sounds_volume)
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("display", "vsync", vsync)
+	config.set_value("gameplay", "autosave", autosave)
 	config.set_value("localization", "locale", locale)
 	for action: StringName in CONTROL_ACTIONS:
 		config.set_value("controls", String(action), int(get_key_binding(action)))
@@ -187,6 +200,7 @@ func load_settings() -> void:
 	sounds_volume = clampf(float(config.get_value("audio", "sounds", 0.9)), 0.0, 1.0)
 	fullscreen = bool(config.get_value("display", "fullscreen", false))
 	vsync = bool(config.get_value("display", "vsync", true))
+	autosave = bool(config.get_value("gameplay", "autosave", true))
 	var loaded_locale := String(config.get_value("localization", "locale", "en"))
 	locale = loaded_locale if SUPPORTED_LOCALE_IDS.has(loaded_locale) else "en"
 	for action: StringName in CONTROL_ACTIONS:
@@ -210,6 +224,7 @@ func _apply_input_bindings() -> void:
 			_add_key_event(action, secondary)
 		_add_gamepad_movement_events(action)
 		_add_gamepad_action_event(action)
+	_apply_gamepad_hotbar_events()
 
 func _add_key_event(action: StringName, key: Key) -> void:
 	if key == KEY_NONE:
@@ -217,6 +232,17 @@ func _add_key_event(action: StringName, key: Key) -> void:
 	var event := InputEventKey.new()
 	event.physical_keycode = key
 	InputMap.action_add_event(action, event)
+
+func _apply_gamepad_hotbar_events() -> void:
+	for action_name: String in HOTBAR_GAMEPAD_AXES:
+		var action := StringName(action_name)
+		if not InputMap.has_action(action):
+			InputMap.add_action(action)
+		InputMap.action_erase_events(action)
+		var event := InputEventJoypadMotion.new()
+		event.axis = int(HOTBAR_GAMEPAD_AXES[action_name]) as JoyAxis
+		event.axis_value = 1.0
+		InputMap.action_add_event(action, event)
 
 func _add_gamepad_action_event(action: StringName) -> void:
 	var raw_button := int(DEFAULT_GAMEPAD_BUTTONS.get(String(action), -1))

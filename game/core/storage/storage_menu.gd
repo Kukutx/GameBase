@@ -26,6 +26,7 @@ func _ready() -> void:
 	storage_list.item_activated.connect(_on_storage_activated)
 	InventoryState.changed.connect(_refresh_if_open)
 	StorageState.container_changed.connect(_on_container_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 
 func open(container_id: StringName, display_name: String, max_slots: int) -> void:
 	if container_id == &"":
@@ -60,14 +61,14 @@ func _rebuild() -> void:
 	storage_list.clear()
 	if _container_id == &"":
 		return
-	title_label.text = _display_name
+	title_label.text = tr(_display_name)
 	for entry: Dictionary in InventoryState.get_entries():
 		if not bool(entry.get("known", true)):
 			continue
-		var index := inventory_list.add_item("%s  x%d" % [entry["display_name"], entry["quantity"]])
+		var index := inventory_list.add_item("%s  x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
 		inventory_list.set_item_metadata(index, StringName(String(entry["id"])))
 	for entry: Dictionary in StorageState.get_entries(_container_id):
-		var index := storage_list.add_item("%s  x%d" % [entry["display_name"], entry["quantity"]])
+		var index := storage_list.add_item("%s  x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
 		storage_list.set_item_metadata(index, StringName(String(entry["id"])))
 	_refresh_slots()
 	_refresh_buttons()
@@ -99,11 +100,14 @@ func _selected_item_id(list: ItemList) -> StringName:
 
 func _refresh_slots() -> void:
 	var used := StorageState.get_used_slots(_container_id)
-	slots_label.text = "Storage slots: %d/%d" % [used, _max_slots]
+	slots_label.text = tr("Storage slots: %d/%d") % [used, _max_slots]
 
 func _refresh_buttons() -> void:
 	store_button.disabled = _selected_item_id(inventory_list) == &""
 	take_button.disabled = _selected_item_id(storage_list) == &""
+
+func _on_locale_changed(_locale: String) -> void:
+	_refresh_if_open()
 
 func _refresh_if_open() -> void:
 	if visible:

@@ -30,7 +30,7 @@ func _ready() -> void:
 func _build_slot_selector() -> void:
 	slot_select.clear()
 	for slot in range(1, SaveManager.SLOT_COUNT + 1):
-		slot_select.add_item("Save Slot %d" % slot, slot)
+		slot_select.add_item(tr("Save Slot %d") % slot, slot)
 	slot_select.select(clampi(SaveManager.active_slot - 1, 0, SaveManager.SLOT_COUNT - 1))
 	SaveManager.select_slot(slot_select.selected + 1)
 
@@ -46,24 +46,24 @@ func _refresh_slot_ui() -> void:
 	continue_button.disabled = not loadable
 	delete_button.disabled = not exists
 	if not exists:
-		slot_info.text = "Empty slot"
+		slot_info.text = tr("Empty slot")
 		return
 	slot_info.text = _format_slot_summary(summary, loadable)
 
 func _format_slot_summary(summary: Dictionary, loadable: bool) -> String:
 	if bool(summary.get("future_version", false)) and not loadable:
-		return "Save v%d · requires a newer game version" % int(summary.get("version", 0))
+		return tr("Save v%d · requires a newer game version") % int(summary.get("version", 0))
 	var minute := int(summary.get("minute_of_day", 8 * 60))
 	var recovery_source := String(summary.get("recovery_source", "primary"))
 	var recovery := ""
 	if bool(summary.get("newer_primary_preserved", false)):
-		recovery = " · compatible %s · newer save preserved" % ("temporary recovery" if recovery_source == "temp" else "backup")
+		recovery = tr(" · compatible %s · newer save preserved") % (tr("temporary recovery") if recovery_source == "temp" else tr("backup"))
 	elif bool(summary.get("recoverable", false)):
-		recovery = " · temporary save recovery" if recovery_source == "temp" else " · backup available"
+		recovery = tr(" · temporary save recovery") if recovery_source == "temp" else tr(" · backup available")
 	elif not loadable:
-		recovery = " · unavailable"
-	return "%s %d · Day %d · %02d:%02d · %dg%s" % [
-		String(summary.get("season", "Spring")),
+		recovery = tr(" · unavailable")
+	return tr("%s %d · Day %d · %02d:%02d · %dg%s") % [
+		tr(String(summary.get("season", "Spring"))),
 		int(summary.get("day_of_season", 1)),
 		int(summary.get("day", 1)),
 		minute / 60,
@@ -74,7 +74,7 @@ func _format_slot_summary(summary: Dictionary, loadable: bool) -> String:
 
 func _new_game() -> void:
 	if SaveManager.has_save():
-		confirm_new_game.dialog_text = "Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?" % SaveManager.active_slot
+		confirm_new_game.dialog_text = tr("Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?") % SaveManager.active_slot
 		confirm_new_game.popup_centered()
 		return
 	_start_new_game()
@@ -84,29 +84,29 @@ func _start_new_game() -> void:
 	# GameSession owns replacement of the selected slot so it can preflight the
 	# starting Location before any destructive save operation occurs.
 	if not GameSession.start_new_game():
-		status_label.text = "Could not open the starting location"
+		status_label.text = tr("Could not open the starting location")
 		_set_buttons_disabled(false)
 		_refresh_slot_ui()
 
 func _continue_game() -> void:
 	_set_buttons_disabled(true)
-	status_label.text = "Loading Slot %d..." % SaveManager.active_slot
+	status_label.text = tr("Loading Slot %d...") % SaveManager.active_slot
 	var success: bool = await GameSession.continue_game()
 	if not success:
-		status_label.text = "No valid save found"
+		status_label.text = tr("No valid save found")
 		_set_buttons_disabled(false)
 		_refresh_slot_ui()
 
 func _delete_save() -> void:
 	if not SaveManager.has_save():
 		return
-	confirm_delete.dialog_text = "Delete Save Slot %d? This removes the primary save and its backup." % SaveManager.active_slot
+	confirm_delete.dialog_text = tr("Delete Save Slot %d? This removes the primary save and its backup.") % SaveManager.active_slot
 	confirm_delete.popup_centered()
 
 func _confirm_delete_save() -> void:
 	var slot := SaveManager.active_slot
 	var success := SaveManager.delete_save()
-	status_label.text = "Deleted Slot %d" % slot if success else "Could not delete Slot %d" % slot
+	status_label.text = tr("Deleted Slot %d") % slot if success else tr("Could not delete Slot %d") % slot
 	_refresh_slot_ui()
 
 func _open_settings() -> void:
@@ -115,6 +115,7 @@ func _open_settings() -> void:
 
 func _on_settings_closed() -> void:
 	_set_buttons_disabled(false)
+	_build_slot_selector()
 	_refresh_slot_ui()
 	settings_button.grab_focus()
 

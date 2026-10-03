@@ -37,7 +37,7 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 		ai_provider.call("start_conversation", npc, actor, context)
 		return
 	if dialogue == null:
-		GameEvents.toast("%s has nothing to say yet" % npc.display_name)
+		GameEvents.toastf("%s has nothing to say yet", [npc.display_name])
 		return
 
 	var resolved_title := title
@@ -50,7 +50,7 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 	else:
 		resolved_title = _resolve_daily_title(dialogue, npc.profile, title, RelationshipState.get_hearts(npc_id))
 		if not _dialogue_has_key(dialogue, resolved_title):
-			GameEvents.toast("%s has nothing to say yet" % npc.display_name)
+			GameEvents.toastf("%s has nothing to say yet", [npc.display_name])
 			return
 
 	if is_instance_valid(_active_balloon):

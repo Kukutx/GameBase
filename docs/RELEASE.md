@@ -6,6 +6,7 @@ GameBase has reproducible Windows, Linux and Web exports, strict source validati
 
 - A compatible stable Godot 4.x build. The shared CI baseline is read from `.godot-version`.
 - Matching Godot export templates.
+- Python 3.12+ for localization coverage validation.
 - Node.js 24+ for the Playwright Web-export smoke test.
 
 Install the export templates for the current shared baseline with:

@@ -27,7 +27,7 @@ horizontal_alignment = 1
 [node name="Summary" type="Label" parent="Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 10
-text = "Coop 0/4 · Barn 0/4 · Hay 0"
+text = ""
 horizontal_alignment = 1
 
 [node name="AnimalSelect" type="OptionButton" parent="Panel/VBox"]
@@ -39,7 +39,7 @@ layout_mode = 2
 bbcode_enabled = true
 fit_content = false
 scroll_active = false
-text = "No animal selected."
+text = ""
 
 [node name="RenameRow" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
@@ -60,12 +60,12 @@ layout_mode = 2
 [node name="FeedCoop" type="Button" parent="Panel/VBox/FeedRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Feed Coop (0)"
+text = ""
 
 [node name="FeedBarn" type="Button" parent="Panel/VBox/FeedRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Feed Barn (0)"
+text = ""
 
 [node name="ExpansionRow" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
@@ -73,12 +73,12 @@ layout_mode = 2
 [node name="ExpandCoop" type="Button" parent="Panel/VBox/ExpansionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Upgrade Coop"
+text = ""
 
 [node name="ExpandBarn" type="Button" parent="Panel/VBox/ExpansionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Upgrade Barn"
+text = ""
 
 [node name="Sell" type="Button" parent="Panel/VBox"]
 layout_mode = 2

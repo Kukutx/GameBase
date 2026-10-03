@@ -47,5 +47,5 @@ func _craft_internal(recipe_id: StringName) -> bool:
 	if output.is_placeable():
 		PlayerState.ensure_hotbar_item(output.id)
 	crafted.emit(recipe.id, recipe.output_item_id, recipe.output_quantity)
-	GameEvents.toast("Crafted %s" % recipe.display_name)
+	GameEvents.toastf("Crafted %s", [recipe.display_name])
 	return true

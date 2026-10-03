@@ -82,6 +82,11 @@ layout_mode = 2
 text = "VSync"
 button_pressed = true
 
+[node name="Autosave" type="CheckButton" parent="Dim/Panel/Layout"]
+layout_mode = 2
+text = "Autosave"
+button_pressed = true
+
 [node name="Language" type="HBoxContainer" parent="Dim/Panel/Layout"]
 layout_mode = 2
 

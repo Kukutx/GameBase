@@ -7,7 +7,7 @@ extends Node2D
 func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	if shop != null:
-		interactable.prompt_text = "Shop: %s" % shop.display_name
+		interactable.set_prompt("Shop: %s", [shop.display_name])
 
 func _on_interacted(_actor: Node) -> void:
 	var menu := get_tree().get_first_node_in_group("shop_menu") as ShopMenu

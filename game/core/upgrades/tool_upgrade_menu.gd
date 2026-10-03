@@ -14,6 +14,7 @@ func _ready() -> void:
 	PlayerState.money_changed.connect(_on_money_changed)
 	Skills.skill_xp_changed.connect(_on_skill_changed)
 	UpgradeState.tool_upgraded.connect(_on_tool_upgraded)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 
 func open() -> void:
 	visible = true
@@ -34,13 +35,13 @@ func _unhandled_input(event: InputEvent) -> void:
 func _rebuild() -> void:
 	for child: Node in items_container.get_children():
 		child.queue_free()
-	money_label.text = "Money: %dg" % PlayerState.money
+	money_label.text = tr("Money: %dg") % PlayerState.money
 	var first_button: Button
 	for upgrade: ToolUpgradeData in UpgradeState.get_all_upgrades():
 		if upgrade == null:
 			continue
 		var button := Button.new()
-		button.text = "%s — %s" % [upgrade.display_name, UpgradeState.get_requirement_text(upgrade)]
+		button.text = "%s — %s" % [tr(upgrade.display_name), UpgradeState.get_requirement_text(upgrade)]
 		button.disabled = not UpgradeState.can_upgrade(upgrade)
 		button.pressed.connect(_upgrade.bind(upgrade.id))
 		items_container.add_child(button)
@@ -58,6 +59,9 @@ func _upgrade(upgrade_id: StringName) -> void:
 func _refresh_if_open() -> void:
 	if visible:
 		_rebuild()
+
+func _on_locale_changed(_locale: String) -> void:
+	_refresh_if_open()
 
 func _on_money_changed(_amount: int) -> void:
 	_refresh_if_open()

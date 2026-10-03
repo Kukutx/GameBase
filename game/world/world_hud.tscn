@@ -31,7 +31,7 @@ offset_right = 238.0
 offset_bottom = 30.0
 theme_override_colors/font_color = Color(0.92, 0.9, 0.76, 1)
 theme_override_font_sizes/font_size = 12
-text = "Energy 100/100   ·   500g"
+text = ""
 
 [node name="Clock" type="Label" parent="."]
 offset_left = 218.0
@@ -40,7 +40,7 @@ offset_right = 464.0
 offset_bottom = 30.0
 theme_override_colors/font_color = Color(0.94, 0.94, 0.88, 1)
 theme_override_font_sizes/font_size = 12
-text = "Spring 1  08:00 · Clear"
+text = ""
 horizontal_alignment = 2
 
 [node name="Quest" type="Label" parent="."]
@@ -50,7 +50,7 @@ offset_right = 464.0
 offset_bottom = 51.0
 theme_override_colors/font_color = Color(0.78, 0.84, 0.68, 1)
 theme_override_font_sizes/font_size = 10
-text = "Quest: Meet the Neighbour 0/1"
+text = ""
 
 [node name="Skills" type="Label" parent="."]
 offset_left = 16.0
@@ -59,7 +59,7 @@ offset_right = 280.0
 offset_bottom = 68.0
 theme_override_colors/font_color = Color(0.67, 0.76, 0.82, 1)
 theme_override_font_sizes/font_size = 9
-text = "Farm 1 · Forage 1 · Social 1"
+text = ""
 
 [node name="Status" type="Label" parent="."]
 offset_left = 120.0
@@ -88,7 +88,7 @@ offset_right = 350.0
 offset_bottom = 190.0
 theme_override_colors/font_color = Color(0.52, 0.86, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "Fishing · Waiting..."
+text = ""
 horizontal_alignment = 1
 
 [node name="Hotbar" type="Label" parent="."]
@@ -98,7 +98,7 @@ offset_right = 464.0
 offset_bottom = 217.0
 theme_override_colors/font_color = Color(0.95, 0.89, 0.70, 1)
 theme_override_font_sizes/font_size = 9
-text = ">1:Hoe   2:Watering Can   3:Turnip Seeds x10"
+text = ""
 clip_text = true
 
 [node name="Inventory" type="Label" parent="."]
@@ -108,7 +108,7 @@ offset_right = 464.0
 offset_bottom = 238.0
 theme_override_colors/font_color = Color(0.84, 0.86, 0.80, 1)
 theme_override_font_sizes/font_size = 9
-text = "Inventory: empty"
+text = ""
 clip_text = true
 
 [node name="Info" type="Label" parent="."]
@@ -118,7 +118,7 @@ offset_right = 468.0
 offset_bottom = 265.0
 theme_override_colors/font_color = Color(0.65, 0.70, 0.67, 1)
 theme_override_font_sizes/font_size = 8
-text = "WASD move · E interact · F tool/eat/place · R pack building · G gift · I menu · 1-9 hotbar · K/L save/load"
+text = ""
 
 [node name="GameMenu" parent="." instance=ExtResource("2_menu")]
 

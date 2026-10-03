@@ -52,7 +52,7 @@ func _upgrade_internal(upgrade_id: StringName) -> bool:
 			PlayerState.set_hotbar_item(index, result.id)
 	tool_upgraded.emit(upgrade_data.id, source.id, result.id)
 	GameEvents.tool_upgraded.emit(upgrade_data.id, result.id)
-	GameEvents.toast("Upgraded to %s" % result.display_name)
+	GameEvents.toastf("Upgraded to %s", [result.display_name])
 	return true
 
 func get_requirement_text(upgrade: ToolUpgradeData) -> String:
@@ -65,10 +65,10 @@ func get_requirement_text(upgrade: ToolUpgradeData) -> String:
 	material_ids.sort()
 	for raw_id: String in material_ids:
 		var item := ContentDB.get_item(StringName(raw_id))
-		var name_text := item.display_name if item != null else raw_id
+		var name_text := tr(item.display_name) if item != null else raw_id
 		parts.append("%s x%d" % [name_text, int(upgrade.materials[raw_id])])
 	if upgrade.money_cost > 0:
 		parts.append("%dg" % upgrade.money_cost)
 	if upgrade.required_skill != &"":
-		parts.append("%s Lv%d" % [String(upgrade.required_skill).capitalize(), upgrade.required_level])
+		parts.append("%s Lv%d" % [tr(String(upgrade.required_skill).capitalize()), upgrade.required_level])
 	return " · ".join(parts)

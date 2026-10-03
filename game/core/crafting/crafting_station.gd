@@ -9,7 +9,7 @@ extends Node2D
 
 func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
-	interactable.prompt_text = "Use %s" % station_name
+	interactable.set_prompt("Use %s", [station_name])
 	if label != null:
 		label.text = station_name
 

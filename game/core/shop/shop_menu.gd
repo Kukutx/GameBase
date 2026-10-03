@@ -44,8 +44,8 @@ func _rebuild() -> void:
 		child.queue_free()
 	if _shop == null:
 		return
-	title_label.text = _shop.display_name
-	money_label.text = "Money: %dg" % PlayerState.money
+	title_label.text = tr(_shop.display_name)
+	money_label.text = tr("Money: %dg") % PlayerState.money
 	var ids: Array[String] = []
 	for raw: Variant in _shop.get_stock().keys():
 		ids.append(String(raw))
@@ -58,7 +58,7 @@ func _rebuild() -> void:
 			continue
 		var price := _shop.get_buy_price(item)
 		var button := Button.new()
-		button.text = "Buy %s — %dg" % [item.display_name, price]
+		button.text = tr("Buy %s — %dg") % [tr(item.display_name), price]
 		button.pressed.connect(_buy.bind(item_id))
 		items_container.add_child(button)
 		if first_button == null:
@@ -71,7 +71,7 @@ func _rebuild() -> void:
 			continue
 		var button := Button.new()
 		var slots := AnimalState.get_available_slots(location_id, animal.housing_type) if location_id != &"" else 0
-		button.text = "Buy %s — %dg  ·  %s slots %d" % [animal.display_name, animal.purchase_price, String(animal.housing_type).capitalize(), slots]
+		button.text = tr("Buy %s — %dg  ·  %s slots %d") % [tr(animal.display_name), animal.purchase_price, tr(String(animal.housing_type).capitalize()), slots]
 		button.disabled = location_id == &"" or not AnimalState.can_purchase(animal_id, location_id)
 		button.pressed.connect(_buy_animal.bind(animal_id))
 		items_container.add_child(button)
@@ -85,7 +85,7 @@ func _rebuild() -> void:
 
 func _buy(item_id: StringName) -> void:
 	ShopState.buy(_shop, item_id, 1)
-	money_label.text = "Money: %dg" % PlayerState.money
+	money_label.text = tr("Money: %dg") % PlayerState.money
 	_refresh_sell_button()
 
 func _buy_animal(animal_id: StringName) -> void:
@@ -98,7 +98,7 @@ func _buy_animal(animal_id: StringName) -> void:
 func _sell_selected() -> void:
 	var item_id := PlayerState.get_selected_item_id()
 	ShopState.sell(item_id, 1)
-	money_label.text = "Money: %dg" % PlayerState.money
+	money_label.text = tr("Money: %dg") % PlayerState.money
 	_refresh_sell_button()
 
 func _refresh_sell_button() -> void:
@@ -109,13 +109,13 @@ func _refresh_sell_button() -> void:
 	var can_sell := item != null and item.sell_price > 0 and InventoryState.get_quantity(item_id) > 0
 	sell_button.disabled = not can_sell
 	if can_sell:
-		sell_button.text = "Sell selected: %s — %dg" % [item.display_name, item.sell_price]
+		sell_button.text = tr("Sell selected: %s — %dg") % [tr(item.display_name), item.sell_price]
 	else:
-		sell_button.text = "Sell selected"
+		sell_button.text = tr("Sell selected")
 
 func _on_money_changed(_amount: int) -> void:
 	if visible:
-		money_label.text = "Money: %dg" % PlayerState.money
+		money_label.text = tr("Money: %dg") % PlayerState.money
 
 func _on_selected_changed(_index: int, _item_id: StringName) -> void:
 	_refresh_sell_button()

@@ -41,13 +41,13 @@ func _use_item_internal(item_id: StringName) -> bool:
 		return false
 	var item := ContentDB.get_item(item_id)
 	if item == null or not item.is_tool() or item.tool_action != &"pickaxe":
-		GameEvents.toast("Use a pickaxe on %s" % data.display_name)
+		GameEvents.toastf("Use a pickaxe on %s", [data.display_name])
 		return false
 	if item.tool_power < data.required_tool_power:
 		GameEvents.toast("This pickaxe is not strong enough")
 		return false
 	if not InventoryState.has_item(item.id, 1):
-		GameEvents.toast("You do not have %s" % item.display_name)
+		GameEvents.toastf("You do not have %s", [item.display_name])
 		return false
 	var energy_multiplier := BuffState.get_multiplier(&"tool_energy") * Skills.get_energy_multiplier(SkillManager.MINING)
 	var energy_cost := maxi(int(floor(float(data.energy_cost) * energy_multiplier)), 1)
@@ -60,7 +60,7 @@ func _use_item_internal(item_id: StringName) -> bool:
 	else:
 		_persist()
 		_refresh_visual()
-		GameEvents.toast("%s · %d hits left" % [data.display_name, durability_left])
+		GameEvents.toastf("%s · %d hits left", [data.display_name, durability_left])
 	return true
 
 func get_state_data() -> Dictionary:
@@ -105,7 +105,7 @@ func _break_node() -> void:
 	_refresh_visual()
 	depleted.emit(data.id)
 	GameEvents.resource_mined.emit(data.id, item.id, data.drop_quantity)
-	GameEvents.toast("Mined %s x%d" % [item.display_name, data.drop_quantity])
+	GameEvents.toastf("Mined %s x%d", [item.display_name, data.drop_quantity])
 
 func _spawn_drop(item: ItemData, quantity: int) -> void:
 	if quantity <= 0 or get_tree().current_scene == null:
@@ -164,11 +164,11 @@ func _refresh_visual() -> void:
 	rock_visual.color = data.visual_color
 	rock_visual.modulate.a = 0.20 if is_depleted else 1.0
 	state_label.visible = not is_depleted
-	state_label.text = "%s %d/%d" % [data.display_name, durability_left, data.durability]
+	state_label.text = "%s %d/%d" % [tr(data.display_name), durability_left, data.durability]
 	enabled = not is_depleted
 	collision_layer = 16 if enabled else 0
 	monitorable = enabled
-	prompt_text = "Mine %s" % data.display_name
+	set_prompt("Mine %s", [data.display_name])
 
 func _persist() -> void:
 	if persistent_id == &"":

@@ -9,7 +9,7 @@ The current UI locale set is:
 - `en` — English
 - `zh_CN` — Simplified Chinese
 
-The selected locale is stored in `user://settings.cfg` by `GameSettings` and applied through Godot's `TranslationServer`.
+The selected locale is stored in `user://settings.cfg` by `GameSettings` and applied through Godot's `TranslationServer`. Runtime-created HUD/menu/interact text must pass through `tr(...)`; input prompts also update when the active input device changes.
 
 The settings menu exposes the locale selector and persists changes automatically.
 
@@ -30,6 +30,8 @@ game/i18n/ui.zh_CN.po
 Scene-authored Control text participates in Godot translation automatically. Runtime-created text must use `tr(...)` or `TranslationServer.translate(...)` for translatable labels.
 
 Stable gameplay IDs, save keys, resource IDs, location IDs and internal enum/string values must never be translated.
+
+`tools/check_localization.py` scans runtime translation calls plus player-visible scene properties and fails when a Simplified Chinese entry is missing or empty. This check is part of `tools/validate.ps1` and therefore part of CI and release readiness.
 
 ## Dialogue
 

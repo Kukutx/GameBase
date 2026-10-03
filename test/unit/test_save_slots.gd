@@ -19,6 +19,24 @@ func after_each() -> void:
 	WorldClock.set_time(_clock_day, _clock_minute)
 	_cleanup_files()
 
+func test_silent_save_uses_atomic_path_without_emitting_manual_save_status() -> void:
+	var manager := GameSaveManager.new()
+	add_child_autofree(manager)
+	manager.save_path = TEST_SAVE
+	manager.temp_path = TEST_TEMP
+	manager.backup_path = TEST_BACKUP
+	assert_true(manager.delete_save())
+	var emitted := {"count": 0}
+	manager.save_completed.connect(func(_success: bool, _message: String) -> void:
+		emitted["count"] = int(emitted["count"]) + 1
+	)
+	assert_true(manager.save_game_silent(true))
+	assert_eq(int(emitted["count"]), 0)
+	assert_true(FileAccess.file_exists(TEST_SAVE))
+	assert_false(FileAccess.file_exists(TEST_TEMP))
+	var saved := manager.call("_read_dictionary", TEST_SAVE) as Dictionary
+	assert_eq(int(saved.get("version", 0)), GameSaveManager.SAVE_VERSION)
+
 func test_slot_paths_keep_legacy_slot_one_and_isolate_other_slots() -> void:
 	var manager := GameSaveManager.new()
 	autofree(manager)

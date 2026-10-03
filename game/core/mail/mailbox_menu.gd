@@ -27,7 +27,7 @@ func _ready() -> void:
 func open() -> void:
 	_mail = MailState.get_received_mail()
 	if _mail.is_empty():
-		GameEvents.toast("The mailbox is empty")
+		GameEvents.toast(tr("The mailbox is empty"))
 		return
 	_index = _first_unread_index()
 	visible = true
@@ -52,14 +52,14 @@ func _show_current() -> void:
 	_index = clampi(_index, 0, _mail.size() - 1)
 	var mail := _mail[_index]
 	MailState.mark_read(mail.id)
-	title_label.text = mail.subject
-	sender_label.text = "From: %s   ·   %d/%d" % [mail.get_sender_display_name(), _index + 1, _mail.size()]
-	body_label.text = mail.body
+	title_label.text = tr(mail.subject)
+	sender_label.text = tr("From: %s   ·   %d/%d") % [mail.get_sender_display_name(), _index + 1, _mail.size()]
+	body_label.text = tr(mail.body)
 	rewards_label.text = _reward_text(mail)
 	var has_rewards := mail.reward_money > 0 or not mail.reward_items.is_empty()
 	claim_button.visible = has_rewards
 	claim_button.disabled = not has_rewards or MailState.is_claimed(mail.id)
-	claim_button.text = "Claimed" if MailState.is_claimed(mail.id) else "Claim rewards"
+	claim_button.text = tr("Claimed") if MailState.is_claimed(mail.id) else tr("Claim rewards")
 	previous_button.disabled = _index <= 0
 	next_button.disabled = _index >= _mail.size() - 1
 	if not claim_button.disabled:
@@ -71,17 +71,17 @@ func _reward_text(mail: MailData) -> String:
 	var parts: PackedStringArray = []
 	for raw_id: Variant in mail.reward_items.keys():
 		var item := ContentDB.get_item(StringName(String(raw_id)))
-		parts.append("%s x%d" % [item.display_name if item != null else String(raw_id), int(mail.reward_items[raw_id])])
+		parts.append("%s x%d" % [tr(item.display_name) if item != null else String(raw_id), int(mail.reward_items[raw_id])])
 	if mail.reward_money > 0:
 		parts.append("%dg" % mail.reward_money)
-	return "Attachments: " + ", ".join(parts) if not parts.is_empty() else "No attachments"
+	return tr("Attachments: %s") % ", ".join(parts) if not parts.is_empty() else tr("No attachments")
 
 func _claim() -> void:
 	if _mail.is_empty():
 		return
 	var mail := _mail[_index]
 	if MailState.claim_rewards(mail.id):
-		GameEvents.toast("Claimed attachments from %s" % mail.get_sender_display_name())
+		GameEvents.toast(tr("Claimed attachments from %s") % mail.get_sender_display_name())
 	_show_current()
 
 func _previous() -> void:

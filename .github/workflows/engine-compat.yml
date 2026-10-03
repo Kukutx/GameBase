@@ -56,6 +56,11 @@ jobs:
           echo "Target Godot: $version"
           echo "Shared baseline: $baseline"
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Setup target Godot
         uses: chickensoft-games/setup-godot@v2
         with:

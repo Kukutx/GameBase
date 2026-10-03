@@ -280,7 +280,7 @@ func _refresh_health_label() -> void:
 		return
 	health_label.visible = not is_defeated and data != null
 	if data != null:
-		health_label.text = "%s %d/%d" % [data.display_name, health, data.max_health]
+		health_label.text = "%s %d/%d" % [tr(data.display_name), health, data.max_health]
 
 func _persist() -> void:
 	if persistent_id == &"":

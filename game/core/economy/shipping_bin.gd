@@ -24,5 +24,5 @@ func _refresh() -> void:
 	if label == null or interactable == null:
 		return
 	var total := ShippingState.get_pending_total()
-	label.text = "Shipping\n%dg pending" % total if total > 0 else "Shipping\nEmpty"
+	label.text = tr("Shipping\n%dg pending") % total if total > 0 else tr("Shipping\nEmpty")
 	interactable.prompt_text = "Ship selected item"

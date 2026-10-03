@@ -101,7 +101,7 @@ func rename_animal(instance_id: StringName, requested_name: String) -> bool:
 		var location_id := StringName(String(record.get("location_id", "")))
 		ownership_changed.emit(location_id)
 		animal_renamed.emit(instance_id, next_name)
-		GameEvents.toast("Renamed animal to %s" % next_name)
+		GameEvents.toastf("Renamed animal to %s", [next_name])
 		return true
 	return false
 
@@ -127,7 +127,7 @@ func sell_animal(instance_id: StringName) -> int:
 			PlayerState.add_money(refund)
 		ownership_changed.emit(location_id)
 		animal_sold.emit(instance_id, refund)
-		GameEvents.toast("Sold %s for %dg" % [data.display_name, refund])
+		GameEvents.toastf("Sold %s for %dg", [data.display_name, refund])
 		return refund
 	return 0
 
@@ -220,7 +220,7 @@ func _purchase_internal(animal_id: StringName, location_id: StringName) -> Strin
 		return &""
 	var housing_id := _find_housing_with_space(location_id, data.housing_type)
 	if housing_id == &"":
-		GameEvents.toast("No free %s slots" % String(data.housing_type).capitalize())
+		GameEvents.toastf("No free %s slots", [String(data.housing_type).capitalize()])
 		return &""
 	if not PlayerState.spend_money(data.purchase_price):
 		GameEvents.toast("Not enough money")
@@ -250,7 +250,7 @@ func _purchase_internal(animal_id: StringName, location_id: StringName) -> Strin
 	})
 	ownership_changed.emit(location_id)
 	animal_purchased.emit(instance_id, animal_id, data.purchase_price)
-	GameEvents.toast("Bought %s for %dg" % [data.display_name, data.purchase_price])
+	GameEvents.toastf("Bought %s for %dg", [data.display_name, data.purchase_price])
 	return instance_id
 
 func _next_unique_sequence(animal_id: StringName) -> int:

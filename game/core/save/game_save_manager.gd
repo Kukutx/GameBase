@@ -128,18 +128,24 @@ func get_save_block_reason() -> String:
 	return ""
 
 func save_game(allow_unregistered_scene: bool = false) -> bool:
+	return _save_game_internal(allow_unregistered_scene, true)
+
+func save_game_silent(allow_unregistered_scene: bool = false) -> bool:
+	return _save_game_internal(allow_unregistered_scene, false)
+
+func _save_game_internal(allow_unregistered_scene: bool, emit_result: bool) -> bool:
 	if not allow_unregistered_scene:
 		var block_reason := get_save_block_reason()
 		if not block_reason.is_empty():
-			save_completed.emit(false, block_reason)
+			_emit_save_result(emit_result, false, block_reason)
 			return false
 	var snapshot := build_snapshot()
 	if not _write_dictionary(temp_path, snapshot):
 		var message := "Could not open temporary save file"
-		save_completed.emit(false, message)
+		_emit_save_result(emit_result, false, message)
 		return false
 	if _should_preserve_newer_primary():
-		return _finalize_compatible_backup_save()
+		return _finalize_compatible_backup_save(emit_result)
 
 	# Keep the last valid primary as a backup before replacing it. Slot 1 keeps
 	# the legacy savegame.json path, so existing saves remain compatible.
@@ -151,7 +157,7 @@ func save_game(allow_unregistered_scene: bool = false) -> bool:
 		# intact.
 		if _is_snapshot_usable(existing):
 			if not _write_dictionary(backup_path, existing):
-				save_completed.emit(false, "Could not create save backup")
+				_emit_save_result(emit_result, false, "Could not create save backup")
 				return false
 
 	var temp_absolute := ProjectSettings.globalize_path(temp_path)
@@ -165,11 +171,15 @@ func save_game(allow_unregistered_scene: bool = false) -> bool:
 		if not backup.is_empty():
 			_write_dictionary(save_path, backup)
 		var message := "Could not finalize save file (%d)" % rename_error
-		save_completed.emit(false, message)
+		_emit_save_result(emit_result, false, message)
 		return false
 
-	save_completed.emit(true, "Game saved · Slot %d" % active_slot)
+	_emit_save_result(emit_result, true, "Game saved · Slot %d" % active_slot)
 	return true
+
+func _emit_save_result(enabled: bool, success: bool, message: String) -> void:
+	if enabled:
+		save_completed.emit(success, message)
 
 func _should_preserve_newer_primary() -> bool:
 	# Detect a newer primary on every save, not only after this session already
@@ -183,7 +193,7 @@ func _should_preserve_newer_primary() -> bool:
 	_preserve_newer_primary = false
 	return false
 
-func _finalize_compatible_backup_save() -> bool:
+func _finalize_compatible_backup_save(emit_result: bool = true) -> bool:
 	var previous_backup := _read_dictionary(backup_path)
 	var temp_absolute := ProjectSettings.globalize_path(temp_path)
 	var backup_absolute := ProjectSettings.globalize_path(backup_path)
@@ -193,9 +203,9 @@ func _finalize_compatible_backup_save() -> bool:
 	if rename_error != OK:
 		if not previous_backup.is_empty():
 			_write_dictionary(backup_path, previous_backup)
-		save_completed.emit(false, "Could not update compatible backup (%d)" % rename_error)
+		_emit_save_result(emit_result, false, "Could not update compatible backup (%d)" % rename_error)
 		return false
-	save_completed.emit(true, "Game saved to compatible backup · newer primary preserved")
+	_emit_save_result(emit_result, true, "Game saved to compatible backup · newer primary preserved")
 	return true
 
 func load_game() -> bool:

@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$GodotBin = $env:GODOT_BIN,
+    [string]$PythonBin = $env:PYTHON_BIN,
     [switch]$SkipImport,
     [switch]$CleanImport
 )
@@ -9,6 +10,17 @@ $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($GodotBin)) {
     $GodotBin = "godot"
+}
+if ([string]::IsNullOrWhiteSpace($PythonBin)) {
+    if ($null -ne (Get-Command python -ErrorAction SilentlyContinue)) {
+        $PythonBin = "python"
+    }
+    elseif ($null -ne (Get-Command python3 -ErrorAction SilentlyContinue)) {
+        $PythonBin = "python3"
+    }
+    else {
+        throw "Python 3 is required for localization coverage validation. Install Python 3.12+ or set PYTHON_BIN."
+    }
 }
 
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -68,6 +80,13 @@ try {
         Invoke-GodotStep -Name "Headless import / parse" -Arguments @(
             "--headless", "--path", $Root, "--editor", "--quit"
         )
+    }
+
+    Write-Host ""
+    Write-Host "==> Simplified Chinese localization coverage"
+    & $PythonBin "tools/check_localization.py"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Localization coverage validation failed with exit code $LASTEXITCODE."
     }
 
     Invoke-GodotStep -Name "GUT unit tests" -Arguments @(

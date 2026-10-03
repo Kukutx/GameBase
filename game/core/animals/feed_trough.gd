@@ -14,21 +14,22 @@ func _ready() -> void:
 	WorldClock.day_changed.connect(_on_day_changed)
 	AnimalState.ownership_changed.connect(_on_ownership_changed)
 	AnimalState.housing_fed.connect(_on_housing_fed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh()
 
 func _on_interacted(_actor: Node) -> void:
 	var unfed := AnimalState.get_unfed_count(housing_id)
 	if unfed <= 0:
-		GameEvents.toast("%s animals are fed for today" % display_name)
+		GameEvents.toastf("%s animals are fed for today", [display_name])
 		return
 	var available := InventoryState.get_quantity(feed_item_id)
 	if available <= 0:
 		var feed := ContentDB.get_item(feed_item_id)
-		GameEvents.toast("No %s available" % (feed.display_name if feed != null else "feed"))
+		GameEvents.toastf("No %s available", [feed.display_name if feed != null else "feed"])
 		return
 	var fed := AnimalState.feed_housing(housing_id, feed_item_id)
 	if fed > 0:
-		GameEvents.toast("Fed %d %s animals" % [fed, display_name])
+		GameEvents.toastf("Fed %d %s animals", [fed, display_name])
 	_refresh()
 
 func _on_day_changed(_day: int) -> void:
@@ -41,6 +42,9 @@ func _on_housing_fed(changed_housing_id: StringName, _count: int) -> void:
 	if changed_housing_id == housing_id:
 		_refresh()
 
+func _on_locale_changed(_locale: String) -> void:
+	_refresh()
+
 func _refresh() -> void:
 	if interactable == null or label == null:
 		return
@@ -48,8 +52,8 @@ func _refresh() -> void:
 	var feed := ContentDB.get_item(feed_item_id)
 	var feed_name := feed.display_name if feed != null else "Feed"
 	if unfed <= 0:
-		label.text = "%s\nFed today" % display_name
-		interactable.prompt_text = "%s fed" % display_name
+		label.text = tr("%s\nFed today") % tr(display_name)
+		interactable.set_prompt("%s fed", [display_name])
 	else:
-		label.text = "%s\n%d need %s" % [display_name, unfed, feed_name]
-		interactable.prompt_text = "Feed %s x%d" % [display_name, unfed]
+		label.text = tr("%s\n%d need %s") % [tr(display_name), unfed, tr(feed_name)]
+		interactable.set_prompt("Feed %s x%d", [display_name, unfed])

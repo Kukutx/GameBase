@@ -13,6 +13,9 @@ var _focused: Interactable
 func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 	area_exited.connect(_on_area_exited)
+	InputPrompts.input_method_changed.connect(_on_prompt_context_changed)
+	GameSettings.controls_changed.connect(_on_prompt_context_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh_focus()
 
 func _process(_delta: float) -> void:
@@ -64,4 +67,10 @@ func _update_prompt() -> void:
 	if prompt_label == null:
 		return
 	prompt_label.visible = _focused != null
-	prompt_label.text = "[E] %s" % _focused.prompt_text if _focused != null else ""
+	prompt_label.text = "[%s] %s" % [InputPrompts.get_action_prompt(action), _focused.get_prompt_text()] if _focused != null else ""
+
+func _on_prompt_context_changed(_value: Variant = null) -> void:
+	_update_prompt()
+
+func _on_locale_changed(_locale: String) -> void:
+	_update_prompt()

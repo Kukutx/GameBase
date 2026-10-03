@@ -11,6 +11,7 @@ signal closed
 @onready var sounds_slider: HSlider = $Dim/Panel/Layout/Sounds/Slider
 @onready var fullscreen_check: CheckButton = $Dim/Panel/Layout/Fullscreen
 @onready var vsync_check: CheckButton = $Dim/Panel/Layout/VSync
+@onready var autosave_check: CheckButton = $Dim/Panel/Layout/Autosave
 @onready var language_row: HBoxContainer = $Dim/Panel/Layout/Language
 @onready var language_select: OptionButton = $Dim/Panel/Layout/Language/Select
 @onready var controls_button: Button = $Dim/Panel/Layout/ControlsButton
@@ -33,6 +34,7 @@ func _ready() -> void:
 	sounds_slider.value_changed.connect(_on_sounds_changed)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	vsync_check.toggled.connect(_on_vsync_toggled)
+	autosave_check.toggled.connect(_on_autosave_toggled)
 	_build_language_selector()
 	language_select.item_selected.connect(_on_language_selected)
 	controls_button.pressed.connect(_show_controls.bind(true))
@@ -86,6 +88,7 @@ func _sync_from_settings() -> void:
 	sounds_slider.value = GameSettings.sounds_volume * 100.0
 	fullscreen_check.button_pressed = GameSettings.fullscreen
 	vsync_check.button_pressed = GameSettings.vsync
+	autosave_check.button_pressed = GameSettings.autosave
 	_select_current_language()
 	_syncing = false
 	if controls_page.visible:
@@ -118,6 +121,7 @@ func _show_controls(show: bool) -> void:
 	sounds_row.visible = not show
 	fullscreen_check.visible = not show
 	vsync_check.visible = not show
+	autosave_check.visible = not show
 	language_row.visible = not show
 	controls_button.visible = not show
 	hint_label.visible = not show
@@ -181,3 +185,7 @@ func _on_fullscreen_toggled(value: bool) -> void:
 func _on_vsync_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_vsync(value)
+
+func _on_autosave_toggled(value: bool) -> void:
+	if not _syncing:
+		GameSettings.set_autosave(value)

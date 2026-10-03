@@ -23,7 +23,7 @@ offset_top = 10.0
 offset_right = 52.0
 offset_bottom = 36.0
 theme_override_font_sizes/font_size = 8
-text = "Trough\nFed today"
+text = ""
 horizontal_alignment = 1
 
 [node name="Interactable" type="Area2D" parent="."]

@@ -19,10 +19,10 @@ func _on_interacted(_actor: Node) -> void:
 		GameEvents.toast("This festival booth is closed")
 		return
 	if not event.has_participation_reward():
-		GameEvents.toast(event.display_name)
+		GameEvents.toastf("%s", [event.display_name])
 		return
 	if EventState.has_claimed_participation(event_id):
-		GameEvents.toast("You already joined %s this year" % event.display_name)
+		GameEvents.toastf("You already joined %s this year", [event.display_name])
 		return
 	if not EventState.claim_participation(event_id):
 		GameEvents.toast("Could not claim the festival reward")
@@ -42,6 +42,6 @@ func _refresh() -> void:
 		return
 	var display := event.display_name if event != null else idle_text
 	if label != null:
-		label.text = "%s\n%s" % [display, "Joined" if EventState.has_claimed_participation(event_id) else "Join for festival reward"]
+		label.text = "%s\n%s" % [tr(display), tr("Joined") if EventState.has_claimed_participation(event_id) else tr("Join for festival reward")]
 	if interactable != null:
-		interactable.prompt_text = "Visit %s" % display
+		interactable.set_prompt("Visit %s", [display])

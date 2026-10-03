@@ -10,6 +10,7 @@ extends CanvasLayer
 @onready var status_label: Label = $Status
 @onready var fishing_label: Label = $FishingStatus
 @onready var buffs_label: Label = $Buffs
+@onready var info_label: Label = $Info
 
 var _status_seconds := 0.0
 
@@ -32,6 +33,9 @@ func _ready() -> void:
 	GameEvents.toast_requested.connect(_show_status)
 	SaveManager.save_completed.connect(_on_save_completed)
 	SaveManager.load_completed.connect(_on_load_completed)
+	InputPrompts.input_method_changed.connect(_on_input_method_changed)
+	GameSettings.controls_changed.connect(_refresh_controls_hint)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh_all()
 	_refresh_fishing()
 
@@ -56,6 +60,7 @@ func _refresh_all() -> void:
 	_refresh_hotbar()
 	_refresh_inventory()
 	_refresh_buffs()
+	_refresh_controls_hint()
 
 func _on_time_changed(_day: int, _minute_of_day: int) -> void:
 	_refresh_clock()
@@ -89,13 +94,20 @@ func _on_fishing_state_changed(_state: FishingService.CastState, _message: Strin
 	_refresh_fishing()
 
 func _on_save_completed(success: bool, message: String) -> void:
-	_show_status(message if success else "Save failed: " + message)
+	_show_status(message if success else tr("Save failed: %s") % tr(message))
 
 func _on_load_completed(success: bool, message: String) -> void:
-	_show_status(message if success else "Load failed: " + message)
+	_show_status(message if success else tr("Load failed: %s") % tr(message))
 	if success:
 		_refresh_all()
 		_refresh_fishing()
+
+func _on_input_method_changed(_using_gamepad: bool) -> void:
+	_refresh_controls_hint()
+
+func _on_locale_changed(_locale: String) -> void:
+	_refresh_all()
+	_refresh_fishing()
 
 func _refresh_clock() -> void:
 	if not is_inside_tree():
@@ -103,15 +115,16 @@ func _refresh_clock() -> void:
 	var location := ContentDB.get_current_location(get_tree())
 	var location_id := location.id if location != null else &""
 	var event_summary := EventState.get_summary(location_id)
-	clock_label.text = "%s · %s" % [WorldClock.get_calendar_text(), WeatherState.get_weather_name()]
+	var calendar_text := tr("%s %d  %02d:%02d") % [tr(WorldClock.get_season_name()), WorldClock.get_day_of_season(), WorldClock.get_hour(), WorldClock.get_minute()]
+	clock_label.text = "%s · %s" % [calendar_text, tr(WeatherState.get_weather_name())]
 	if not event_summary.is_empty():
-		clock_label.text += " · " + event_summary
+		clock_label.text += " · " + tr(event_summary)
 
 func _refresh_stats() -> void:
-	stats_label.text = "HP %d/%d   ·   Energy %d/%d   ·   %dg" % [PlayerState.health, PlayerState.max_health, PlayerState.energy, PlayerState.max_energy, PlayerState.money]
+	stats_label.text = tr("HP %d/%d   ·   Energy %d/%d   ·   %dg") % [PlayerState.health, PlayerState.max_health, PlayerState.energy, PlayerState.max_energy, PlayerState.money]
 
 func _refresh_quest() -> void:
-	quest_label.text = "Quest: " + QuestState.get_active_summary()
+	quest_label.text = tr("Quest: %s") % QuestState.get_active_summary()
 
 func _refresh_skills() -> void:
 	skills_label.text = Skills.get_summary()
@@ -124,8 +137,12 @@ func _refresh_inventory() -> void:
 
 func _refresh_buffs() -> void:
 	var summary := BuffState.get_summary()
-	buffs_label.text = "Buffs: " + summary if not summary.is_empty() else ""
+	buffs_label.text = tr("Buffs: %s") % summary if not summary.is_empty() else ""
 	buffs_label.visible = not buffs_label.text.is_empty()
+
+func _refresh_controls_hint() -> void:
+	if info_label != null:
+		info_label.text = InputPrompts.get_controls_summary()
 
 func _refresh_fishing() -> void:
 	fishing_label.text = FishingState.get_status_text()

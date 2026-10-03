@@ -25,6 +25,7 @@ func on_removed() -> void:
 func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	StorageState.container_changed.connect(_on_container_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh()
 
 func _on_interacted(_actor: Node) -> void:
@@ -38,9 +39,12 @@ func _on_container_changed(changed_id: StringName) -> void:
 	if changed_id == container_id:
 		_refresh()
 
+func _on_locale_changed(_locale: String) -> void:
+	_refresh()
+
 func _refresh() -> void:
 	if label == null or interactable == null:
 		return
 	var used := StorageState.get_used_slots(container_id)
-	label.text = "%s\n%d/%d slots" % [display_name, used, max_slots]
-	interactable.prompt_text = "Open %s" % display_name
+	label.text = tr("%s\n%d/%d slots") % [tr(display_name), used, max_slots]
+	interactable.set_prompt("Open %s", [display_name])

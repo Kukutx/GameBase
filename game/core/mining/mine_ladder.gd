@@ -16,8 +16,13 @@ func set_unlocked(value: bool) -> void:
 		return
 	var next_floor := mini(MineState.get_current_floor() + 1, MineRunState.MAX_FLOOR)
 	interactable.enabled = unlocked
-	interactable.prompt_text = "Descend to Floor %d" % next_floor if unlocked else ("Deepest floor reached" if MineState.get_current_floor() >= MineRunState.MAX_FLOOR else "Clear the floor first")
-	label.text = "Ladder ↓ F%d" % next_floor if unlocked else ("Ladder · bottom" if MineState.get_current_floor() >= MineRunState.MAX_FLOOR else "Ladder locked")
+	if unlocked:
+		interactable.set_prompt("Descend to Floor %d", [next_floor])
+	elif MineState.get_current_floor() >= MineRunState.MAX_FLOOR:
+		interactable.set_prompt("Deepest floor reached")
+	else:
+		interactable.set_prompt("Clear the floor first")
+	label.text = tr("Ladder ↓ F%d") % next_floor if unlocked else (tr("Ladder · bottom") if MineState.get_current_floor() >= MineRunState.MAX_FLOOR else tr("Ladder locked"))
 	modulate.a = 1.0 if unlocked else 0.55
 
 func _on_interacted(_actor: Node) -> void:
@@ -28,4 +33,4 @@ func _on_interacted(_actor: Node) -> void:
 		GameEvents.toast("Could not descend right now")
 		return
 	MineState.set_floor(next_floor)
-	GameEvents.toast("Descending to Mine Floor %d" % next_floor)
+	GameEvents.toastf("Descending to Mine Floor %d", [next_floor])

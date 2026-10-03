@@ -111,7 +111,7 @@ func claim_participation(event_id: StringName) -> bool:
 	WorldState.set_value(_participation_key(event_id, claim_year), true)
 	participation_claimed.emit(event_id, claim_year)
 	_claiming.erase(claim_key)
-	GameEvents.toast("Joined %s" % event.display_name)
+	GameEvents.toastf("Joined %s", [event.display_name])
 	return true
 
 func get_participation_summary(event_id: StringName) -> String:

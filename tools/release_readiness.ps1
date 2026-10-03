@@ -20,6 +20,7 @@ try {
         ".github/workflows/release.yml",
         ".github/workflows/engine-compat.yml",
         "tools/validate.ps1",
+        "tools/check_localization.py",
         "tools/export.ps1",
         "tools/install_export_templates.ps1",
         "tools/smoke_export.ps1",

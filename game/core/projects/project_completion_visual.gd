@@ -12,15 +12,19 @@ extends Node2D
 
 func _ready() -> void:
 	WorldState.changed.connect(_on_world_state_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh()
 
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
 	if key == &"" or key == completion_flag:
 		_refresh()
 
+func _on_locale_changed(_locale: String) -> void:
+	_refresh()
+
 func _refresh() -> void:
 	var completed := completion_flag != &"" and WorldState.get_bool(completion_flag)
 	if visual != null:
 		visual.color = completed_color if completed else pending_color
 	if label != null:
-		label.text = completed_text if completed else pending_text
+		label.text = tr(completed_text) if completed else tr(pending_text)

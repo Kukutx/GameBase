@@ -7,6 +7,7 @@ extends Node2D
 func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	DailyContractState.contract_changed.connect(_on_contract_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh()
 
 func _on_interacted(_actor: Node) -> void:
@@ -19,20 +20,23 @@ func _on_interacted(_actor: Node) -> void:
 func _on_contract_changed(_contract: Dictionary) -> void:
 	_refresh()
 
+func _on_locale_changed(_locale: String) -> void:
+	_refresh()
+
 func _refresh() -> void:
 	if label == null or interactable == null:
 		return
 	var state := DailyContractState.get_contract()
 	if state.is_empty():
-		label.text = "Notice Board"
-		interactable.prompt_text = "Check notice board"
+		label.text = tr("Notice Board")
+		interactable.set_prompt("Check notice board")
 		return
 	if bool(state.get("claimed", false)):
-		label.text = "Notice Board\nDone today"
+		label.text = tr("Notice Board\nDone today")
 	elif bool(state.get("completed", false)):
-		label.text = "Notice Board\nReward ready"
+		label.text = tr("Notice Board\nReward ready")
 	elif bool(state.get("accepted", false)):
-		label.text = "Notice Board\n%d/%d" % [int(state.get("progress", 0)), int(state.get("required", 1))]
+		label.text = tr("Notice Board\n%d/%d") % [int(state.get("progress", 0)), int(state.get("required", 1))]
 	else:
-		label.text = "Notice Board\nNew request"
-	interactable.prompt_text = "Read notice board"
+		label.text = tr("Notice Board\nNew request")
+	interactable.set_prompt("Read notice board")

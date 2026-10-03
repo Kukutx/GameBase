@@ -45,18 +45,18 @@ func purchase(expansion_id: StringName) -> bool:
 	if data == null or not is_available(expansion_id):
 		return false
 	if not can_purchase(expansion_id):
-		GameEvents.toast("Missing money or materials for %s" % data.display_name)
+		GameEvents.toastf("Missing money or materials for %s", [data.display_name])
 		return false
 	_purchasing[purchase_key] = true
 	var inventory_snapshot := InventoryState.to_save_data()
 	if not InventoryState.apply_transaction_atomic(data.materials, {}):
 		_purchasing.erase(purchase_key)
-		GameEvents.toast("Materials changed before %s could be purchased" % data.display_name)
+		GameEvents.toastf("Materials changed before %s could be purchased", [data.display_name])
 		return false
 	if data.money_cost > 0 and not PlayerState.spend_money(data.money_cost):
 		InventoryState.load_save_data(inventory_snapshot)
 		_purchasing.erase(purchase_key)
-		GameEvents.toast("Money changed before %s could be purchased" % data.display_name)
+		GameEvents.toastf("Money changed before %s could be purchased", [data.display_name])
 		return false
 	var state := _get_state()
 	state[String(expansion_id)] = true
@@ -66,7 +66,7 @@ func purchase(expansion_id: StringName) -> bool:
 	WorldState.set_value(CAPACITY_KEY, capacities)
 	expansion_completed.emit(expansion_id, data.housing_id, data.capacity_after)
 	_purchasing.erase(purchase_key)
-	GameEvents.toast("Expansion complete: %s" % data.display_name)
+	GameEvents.toastf("Expansion complete: %s", [data.display_name])
 	return true
 
 func get_capacity(housing_id: StringName, base_capacity: int) -> int:

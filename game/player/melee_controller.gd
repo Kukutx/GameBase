@@ -25,7 +25,7 @@ func attack_selected_weapon() -> bool:
 
 func _attack(weapon: ItemData) -> bool:
 	if not InventoryState.has_item(weapon.id, 1):
-		GameEvents.toast("You do not have %s" % weapon.display_name)
+		GameEvents.toastf("You do not have %s", [weapon.display_name])
 		return false
 	var energy_multiplier := BuffState.get_multiplier(&"tool_energy") * Skills.get_energy_multiplier(SkillManager.COMBAT)
 	var adjusted_cost := maxi(int(floor(float(energy_cost) * energy_multiplier)), 1)
@@ -41,7 +41,7 @@ func _attack(weapon: ItemData) -> bool:
 		hits += 1
 	GameEvents.item_used.emit(weapon.id)
 	if hits == 0:
-		GameEvents.toast("Swung %s" % weapon.display_name)
+		GameEvents.toastf("Swung %s", [weapon.display_name])
 	return true
 
 func get_attack_damage(weapon: ItemData) -> int:

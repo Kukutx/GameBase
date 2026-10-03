@@ -39,6 +39,7 @@ func on_removed() -> void:
 func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	WorldClock.minute_changed.connect(_on_time_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_load_state()
 	_update_job()
 	_refresh()
@@ -71,7 +72,7 @@ func _start_recipe_internal(recipe_id: StringName) -> bool:
 	_persist()
 	_refresh()
 	job_started.emit(station_id, recipe.id, finish_at)
-	GameEvents.toast("Started %s" % recipe.display_name)
+	GameEvents.toastf("Started %s", [recipe.display_name])
 	return true
 
 func collect_output() -> bool:
@@ -112,7 +113,7 @@ func _collect_output_internal() -> bool:
 	_clear_job()
 	output_collected.emit(station_id, collected_id, collected_quantity)
 	GameEvents.item_processed.emit(collected_recipe_id, collected_id, collected_quantity)
-	GameEvents.toast("Collected %s x%d" % [item.display_name, collected_quantity])
+	GameEvents.toastf("Collected %s x%d", [item.display_name, collected_quantity])
 	return true
 
 func get_minutes_remaining() -> int:
@@ -180,7 +181,7 @@ func _on_interacted(_actor: Node) -> void:
 		collect_output()
 		return
 	if active_recipe_id != &"":
-		GameEvents.toast("%s · %d min remaining" % [display_name, get_minutes_remaining()])
+		GameEvents.toastf("%s · %d min remaining", [display_name, get_minutes_remaining()])
 		return
 	for recipe_id: StringName in recipe_ids:
 		var recipe := _get_recipe(recipe_id)
@@ -204,7 +205,7 @@ func _update_job() -> void:
 	job_finished.emit(station_id, active_recipe_id)
 	var recipe := _get_recipe(active_recipe_id)
 	if recipe != null:
-		GameEvents.toast("%s finished %s" % [display_name, recipe.display_name])
+		GameEvents.toastf("%s finished %s", [display_name, recipe.display_name])
 
 func _get_recipe(recipe_id: StringName) -> ProcessingRecipeData:
 	if not recipe_ids.has(recipe_id):
@@ -240,20 +241,23 @@ func _refresh() -> void:
 	if interactable == null or state_label == null:
 		return
 	if output_ready:
-		interactable.prompt_text = "Collect output"
-		state_label.text = "%s · Ready" % display_name
+		interactable.set_prompt("Collect output")
+		state_label.text = tr("%s · Ready") % tr(display_name)
 		if body_visual != null:
 			body_visual.modulate = Color(1.0, 0.82, 0.48, 1.0)
 	elif active_recipe_id != &"":
-		interactable.prompt_text = "Check %s" % display_name
-		state_label.text = "%s · %d min" % [display_name, get_minutes_remaining()]
+		interactable.set_prompt("Check %s", [display_name])
+		state_label.text = tr("%s · %d min") % [tr(display_name), get_minutes_remaining()]
 		if body_visual != null:
 			body_visual.modulate = Color(1.0, 0.58, 0.32, 1.0)
 	else:
-		interactable.prompt_text = "Use %s" % display_name
-		state_label.text = display_name
+		interactable.set_prompt("Use %s", [display_name])
+		state_label.text = tr(display_name)
 		if body_visual != null:
 			body_visual.modulate = Color.WHITE
+
+func _on_locale_changed(_locale: String) -> void:
+	_refresh()
 
 func _persist() -> void:
 	if station_id == &"":

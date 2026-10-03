@@ -22,6 +22,7 @@ var _interaction_busy := false
 
 func _ready() -> void:
 	WorldClock.day_changed.connect(_on_day_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_load_state()
 	if last_processed_day <= 0:
 		last_processed_day = WorldClock.day
@@ -55,7 +56,7 @@ func _use_item_internal(item_id: StringName, consume_energy: bool, show_message:
 	if item.is_seed():
 		return _plant(item)
 	if show_message:
-		GameEvents.toast("%s cannot be used on soil" % item.display_name)
+		GameEvents.toastf("%s cannot be used on soil", [item.display_name])
 	return false
 
 func can_apply_tool_action(tool_action: StringName) -> bool:
@@ -173,10 +174,10 @@ func _plant(seed: ItemData) -> bool:
 	if crop == null:
 		return false
 	if not crop.can_grow_in(WorldClock.get_season_name()):
-		GameEvents.toast("%s cannot grow in %s" % [crop.display_name, WorldClock.get_season_name()])
+		GameEvents.toastf("%s cannot grow in %s", [crop.display_name, WorldClock.get_season_name()])
 		return false
 	if not InventoryState.has_item(seed.id, 1):
-		GameEvents.toast("No %s left" % seed.display_name)
+		GameEvents.toastf("No %s left", [seed.display_name])
 		return false
 	if plant_energy_cost > 0 and not PlayerState.consume_energy(plant_energy_cost):
 		GameEvents.toast("Not enough energy")
@@ -317,11 +318,17 @@ func _refresh_visual() -> void:
 			Vector2(-5, 7 - half_height * 2.0),
 		])
 		crop_visual.color = crop.sprout_color.lerp(crop.mature_color, progress)
-		state_label.text = "%s %d/%d" % [crop.display_name, growth_days, crop.days_to_mature]
+		state_label.text = "%s %d/%d" % [tr(crop.display_name), growth_days, crop.days_to_mature]
 	else:
-		state_label.text = "Tilled" if tilled else "Soil"
+		state_label.text = tr("Tilled") if tilled else tr("Soil")
 	enabled = can_harvest()
-	prompt_text = "Harvest %s" % crop.display_name if enabled and crop != null else "Farm plot"
+	if enabled and crop != null:
+		set_prompt("Harvest %s", [crop.display_name])
+	else:
+		set_prompt("Farm plot")
+
+func _on_locale_changed(_locale: String) -> void:
+	_refresh_visual()
 
 func _safe_int(value: Variant, fallback: int) -> int:
 	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:

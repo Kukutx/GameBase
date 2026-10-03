@@ -31,8 +31,9 @@ func _process(delta: float) -> void:
 	if cast_state == CastState.WAITING:
 		cast_state = CastState.BITE
 		_time_remaining = get_effective_bite_window()
-		cast_state_changed.emit(cast_state, "BITE! Press E to reel in")
-		GameEvents.toast("BITE! Press E")
+		var prompt := InputPrompts.get_action_prompt(&"interact")
+		cast_state_changed.emit(cast_state, tr("BITE! Press %s to reel in") % prompt)
+		GameEvents.toast(tr("BITE! Press %s") % prompt)
 		return
 	if cast_state == CastState.BITE:
 		_finish_session(false, "The fish got away")
@@ -168,9 +169,9 @@ func get_effective_bite_window() -> float:
 func get_status_text() -> String:
 	match cast_state:
 		CastState.WAITING:
-			return "Fishing · Waiting..."
+			return tr("Fishing · Waiting...")
 		CastState.BITE:
-			return "Fishing · BITE!  Press E"
+			return tr("Fishing · BITE!  Press %s") % InputPrompts.get_action_prompt(&"interact")
 		_:
 			return ""
 
@@ -198,7 +199,7 @@ func _award_fish(fish: FishData) -> bool:
 		return false
 	fish_caught.emit(fish.id, fish.item_id)
 	GameEvents.fish_caught.emit(fish.id, fish.item_id)
-	GameEvents.toast("Caught %s" % item.display_name)
+	GameEvents.toastf("Caught %s", [item.display_name])
 	return true
 
 func _finish_session(success: bool, message: String) -> void:

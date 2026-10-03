@@ -57,7 +57,7 @@ func _save_game() -> void:
 
 func _load_game() -> void:
 	if not SaveManager.has_save():
-		status_label.text = "No save available"
+		status_label.text = tr("No save available")
 		return
 	visible = false
 	get_tree().paused = false
@@ -83,11 +83,11 @@ func _return_to_title() -> void:
 
 func _on_save_completed(success: bool, message: String) -> void:
 	if visible:
-		status_label.text = message if success else "Save failed: " + message
+		status_label.text = tr(message) if success else tr("Save failed: %s") % tr(message)
 
 func _on_load_completed(success: bool, message: String) -> void:
 	if visible:
-		status_label.text = message if success else "Load failed: " + message
+		status_label.text = tr(message) if success else tr("Load failed: %s") % tr(message)
 
 func _set_main_buttons_disabled(value: bool) -> void:
 	resume_button.disabled = value

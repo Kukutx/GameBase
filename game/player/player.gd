@@ -48,6 +48,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		_remove_focused_building()
 		get_viewport().set_input_as_handled()
 		return
+	if event.is_action_pressed("hotbar_prev"):
+		PlayerState.cycle_slot(-1)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("hotbar_next"):
+		PlayerState.cycle_slot(1)
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		var slot := _slot_for_key(event.physical_keycode)
 		if slot >= 0:
@@ -88,7 +96,7 @@ func _remove_focused_building() -> void:
 		return
 	var data := structure.get_placeable_data()
 	if BuildingState.remove_placement(structure.location_id, structure.placement_id, true):
-		GameEvents.toast("Packed up %s" % (data.display_name if data != null else "structure"))
+		GameEvents.toastf("Packed up %s", [data.display_name if data != null else "structure"])
 
 func _slot_for_key(keycode: Key) -> int:
 	match keycode:

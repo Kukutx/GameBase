@@ -58,7 +58,8 @@ LIFE_SIMULATION_SMOKE_OK
 - Long-lived save repair for content evolution: appended quest/project chains backfill on load; completed projects reapply current unlock flags; paid coop/barn capacity is preserved independently from expansion resource IDs; already-ready archive milestones remain qualified when catalogs grow; and removed crops/animals/placeables/contracts/processing content plus legacy inventory items degrade safely instead of blocking play or silently deleting player value
 - Deferred rewards are snapshotted when promised (mail delivery, project completion, archive readiness and blocked quest completion), preserving the original money/items even if later content updates rebalance or retire reward entries
 - Sleep, defeat/collapse recovery and late-night exhaustion handling
-- Rebindable keyboard controls, D-Pad/analog movement and default gamepad bindings for all core actions, plus game/settings menus
+- Rebindable keyboard controls, D-Pad/analog movement, LT/RT hotbar cycling, device-aware interaction prompts and default gamepad bindings for all core actions
+- Safe periodic/travel autosave using the same atomic backup path as manual saves; autosave can be disabled in Settings
 - Persistent English / Simplified Chinese UI locale selection, with dialogue localization kept behind Dialogue Manager
 
 ## Project structure
@@ -107,7 +108,7 @@ The engine version used by CI is read from `.godot-version`. To move the shared 
 powershell -ExecutionPolicy Bypass -File tools/update_engine_baseline.ps1 -Version <next-stable-4.x-version>
 ```
 
-Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md`, `docs/RELEASE.md`, and `docs/LOCALIZATION.md`.
+Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md`, `docs/RELEASE.md`, `docs/LOCALIZATION.md`, and `docs/SUPPORT.md`.
 
 ## Licensed local art
 

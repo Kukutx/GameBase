@@ -26,5 +26,8 @@ func _refresh() -> void:
 	if interactable == null or label == null:
 		return
 	var unread := MailState.get_unread_mail().size()
-	label.text = "Mailbox" if unread <= 0 else "Mailbox · %d new" % unread
-	interactable.prompt_text = "Check Mailbox" if unread <= 0 else "Read Mail (%d new)" % unread
+	label.text = tr("Mailbox") if unread <= 0 else tr("Mailbox · %d new") % unread
+	if unread <= 0:
+		interactable.set_prompt("Check Mailbox")
+	else:
+		interactable.set_prompt("Read Mail (%d new)", [unread])

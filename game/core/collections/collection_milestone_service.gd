@@ -81,7 +81,7 @@ func claim(id: StringName) -> bool:
 	WorldState.set_value(_claim_key(id), true)
 	milestone_claimed.emit(id)
 	_claiming.erase(claim_key)
-	GameEvents.toast("Archive reward: %s" % milestone.display_name)
+	GameEvents.toastf("Archive reward: %s", [milestone.display_name])
 	_check_ready_milestones()
 	return true
 
@@ -131,7 +131,7 @@ func _check_ready_milestones() -> void:
 			continue
 		WorldState.set_value(notify_key, true)
 		milestone_ready.emit(milestone.id)
-		GameEvents.toast("Archive milestone ready: %s" % milestone.display_name)
+		GameEvents.toastf("Archive milestone ready: %s", [milestone.display_name])
 
 func _get_reward_snapshot(milestone: CollectionMilestoneData) -> Dictionary:
 	if milestone == null:

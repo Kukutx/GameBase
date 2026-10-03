@@ -98,9 +98,9 @@ func contribute(project_id: StringName, item_id: StringName, quantity: int = 999
 	_contributing_projects.erase(project_key)
 	if bool(state.get("completed", false)):
 		project_completed.emit(project_id)
-		GameEvents.toast("Project complete: %s" % project.display_name)
+		GameEvents.toastf("Project complete: %s", [project.display_name])
 	else:
-		GameEvents.toast("Donated %d %s" % [donated, _item_name(item_id)])
+		GameEvents.toastf("Donated %d %s", [donated, _item_name(item_id)])
 	return donated
 
 func contribute_all_available(project_id: StringName) -> int:
@@ -193,7 +193,7 @@ func claim_reward(project_id: StringName) -> bool:
 	_set_state(project_id, state)
 	project_claimed.emit(project_id)
 	_claiming_projects.erase(claim_key)
-	GameEvents.toast("Project reward claimed: %s" % project.display_name)
+	GameEvents.toastf("Project reward claimed: %s", [project.display_name])
 	return true
 
 func get_project_summary(project_id: StringName) -> String:

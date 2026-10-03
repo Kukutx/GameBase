@@ -56,11 +56,11 @@ func _refresh_label() -> void:
 	if label == null:
 		return
 	if item == null:
-		label.text = "Item"
+		label.text = tr("Item")
 		return
 	var name_text := item.display_name if not item.display_name.is_empty() else String(item.id)
-	label.text = "%s x%d" % [name_text, quantity]
-	interactable.prompt_text = "Pick up %s" % name_text
+	label.text = "%s x%d" % [tr(name_text), quantity]
+	interactable.set_prompt("Pick up %s", [name_text])
 
 func _collected_key() -> StringName:
 	return StringName("pickup:%s" % String(persistent_id))

@@ -29,7 +29,7 @@ func _ship_item_internal(item_id: StringName, quantity: int) -> bool:
 		GameEvents.toast("That item cannot be shipped")
 		return false
 	if not InventoryState.remove_item(item_id, quantity):
-		GameEvents.toast("You do not have enough %s" % item.display_name)
+		GameEvents.toastf("You do not have enough %s", [item.display_name])
 		return false
 	var key := String(item_id)
 	var entry: Dictionary = _pending.get(key, {"quantity": 0, "value": 0})
@@ -38,7 +38,7 @@ func _ship_item_internal(item_id: StringName, quantity: int) -> bool:
 	_pending[key] = entry
 	shipment_changed.emit()
 	item_shipped.emit(item_id, quantity, item.sell_price * quantity)
-	GameEvents.toast("Shipped %s x%d" % [item.display_name, quantity])
+	GameEvents.toastf("Shipped %s x%d", [item.display_name, quantity])
 	return true
 
 func get_pending_total() -> int:
@@ -70,7 +70,7 @@ func payout_pending() -> int:
 	PlayerState.add_money(amount)
 	shipment_changed.emit()
 	payout_completed.emit(amount)
-	GameEvents.toast("Overnight shipping earned %dg" % amount)
+	GameEvents.toastf("Overnight shipping earned %dg", [amount])
 	return amount
 
 func reset_new_game() -> void:

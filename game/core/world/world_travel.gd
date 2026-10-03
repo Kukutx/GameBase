@@ -47,7 +47,7 @@ func travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 	var location := LocationCatalog.get_location(location_id)
 	if location == null:
 		travel_failed.emit("", spawn_id, "Unknown location: %s" % String(location_id))
-		GameEvents.toast("Unknown location: %s" % String(location_id))
+		GameEvents.toastf("Unknown location: %s", [String(location_id)])
 		return false
 	var target_spawn := spawn_id if spawn_id != &"" else location.default_spawn_id
 	if target_spawn == &"" or not ContentDB.has_location_spawn(location_id, target_spawn):

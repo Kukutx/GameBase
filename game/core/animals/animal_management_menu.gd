@@ -35,6 +35,7 @@ func _ready() -> void:
 	AnimalState.housing_fed.connect(_on_housing_fed)
 	FarmExpansionState.expansion_completed.connect(_on_expansion_completed)
 	WorldClock.day_changed.connect(_on_day_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 
 func open(location_id: StringName) -> void:
 	_location_id = location_id
@@ -64,7 +65,7 @@ func _rebuild() -> void:
 			continue
 		var custom_name := String(record.get("custom_name", ""))
 		var display_name := custom_name if not custom_name.is_empty() else data.display_name
-		animal_select.add_item("%s · %s" % [display_name, data.display_name])
+		animal_select.add_item("%s · %s" % [display_name, tr(data.display_name)])
 		animal_select.set_item_metadata(animal_select.item_count - 1, String(instance_id))
 		if instance_id == previous:
 			animal_select.select(animal_select.item_count - 1)
@@ -79,17 +80,17 @@ func _rebuild() -> void:
 	_refresh_selected()
 
 func _refresh_summary() -> void:
-	title_label.text = "Animal Ledger"
+	title_label.text = tr("Animal Ledger")
 	var coop_count := AnimalState.get_housing_occupancy(&"starter_coop")
 	var coop_capacity := AnimalState.get_housing_capacity(&"starter_coop")
 	var barn_count := AnimalState.get_housing_occupancy(&"starter_barn")
 	var barn_capacity := AnimalState.get_housing_capacity(&"starter_barn")
 	var hay := InventoryState.get_quantity(&"hay")
-	summary_label.text = "Coop %d/%d · Barn %d/%d · Hay %d" % [coop_count, coop_capacity, barn_count, barn_capacity, hay]
+	summary_label.text = tr("Coop %d/%d · Barn %d/%d · Hay %d") % [coop_count, coop_capacity, barn_count, barn_capacity, hay]
 	var coop_unfed := AnimalState.get_unfed_count(&"starter_coop")
 	var barn_unfed := AnimalState.get_unfed_count(&"starter_barn")
-	feed_coop_button.text = "Feed Coop (%d)" % coop_unfed
-	feed_barn_button.text = "Feed Barn (%d)" % barn_unfed
+	feed_coop_button.text = tr("Feed Coop (%d)") % coop_unfed
+	feed_barn_button.text = tr("Feed Barn (%d)") % barn_unfed
 	feed_coop_button.disabled = coop_unfed <= 0 or hay <= 0
 	feed_barn_button.disabled = barn_unfed <= 0 or hay <= 0
 	_refresh_expansion_button(expand_coop_button, &"starter_coop")
@@ -98,7 +99,7 @@ func _refresh_summary() -> void:
 func _refresh_selected() -> void:
 	var record := AnimalState.get_record(_selected_instance_id)
 	if record.is_empty():
-		details_label.text = "No animals owned here."
+		details_label.text = tr("No animals owned here.")
 		name_edit.text = ""
 		rename_button.disabled = true
 		sell_button.disabled = true
@@ -116,19 +117,19 @@ func _refresh_selected() -> void:
 	var last_product_day := int(state.get("last_product_day", WorldClock.day))
 	var product_ready := fed_today and WorldClock.day - last_product_day >= data.product_interval_days
 	var product := ContentDB.get_item(data.product_item_id)
-	var product_name := product.display_name if product != null else "None"
-	details_label.text = "[b]%s[/b]\nSpecies: %s\nHousing: %s\nHappiness: %d/100\nFed today: %s\nProduct: %s%s" % [
+	var product_name := tr(product.display_name) if product != null else tr("None")
+	details_label.text = tr("[b]%s[/b]\nSpecies: %s\nHousing: %s\nHappiness: %d/100\nFed today: %s\nProduct: %s%s") % [
 		display_name,
-		data.display_name,
-		String(data.housing_type).capitalize(),
+		tr(data.display_name),
+		tr(String(data.housing_type).capitalize()),
 		happiness,
-		"Yes" if fed_today else "No",
+		tr("Yes") if fed_today else tr("No"),
 		product_name,
-		" · ready" if product_ready else "",
+		tr(" · ready") if product_ready else "",
 	]
 	rename_button.disabled = false
 	sell_button.disabled = false
-	sell_button.text = "Sell %s · %dg" % [display_name, int(round(float(data.purchase_price) * 0.5))]
+	sell_button.text = tr("Sell %s · %dg") % [display_name, int(round(float(data.purchase_price) * 0.5))]
 
 func _on_animal_selected(index: int) -> void:
 	if index < 0 or index >= animal_select.item_count:
@@ -140,7 +141,7 @@ func _rename_selected() -> void:
 	if AnimalState.rename_animal(_selected_instance_id, name_edit.text):
 		_rebuild()
 	else:
-		GameEvents.toast("Animal name must be 1–20 characters")
+		GameEvents.toast(tr("Animal name must be 1–20 characters"))
 
 func _request_sell() -> void:
 	var record := AnimalState.get_record(_selected_instance_id)
@@ -152,7 +153,7 @@ func _request_sell() -> void:
 	var display_name := String(record.get("custom_name", ""))
 	if display_name.is_empty():
 		display_name = data.display_name
-	confirm_sell.dialog_text = "Sell %s for %dg? This cannot be undone." % [display_name, int(round(float(data.purchase_price) * 0.5))]
+	confirm_sell.dialog_text = tr("Sell %s for %dg? This cannot be undone.") % [display_name, int(round(float(data.purchase_price) * 0.5))]
 	confirm_sell.popup_centered()
 
 func _sell_selected() -> void:
@@ -162,24 +163,24 @@ func _sell_selected() -> void:
 
 func _feed_housing(housing_id: StringName) -> void:
 	var fed := AnimalState.feed_housing(housing_id)
-	GameEvents.toast("Fed %d animal%s" % [fed, "s" if fed != 1 else ""] if fed > 0 else "No animals were fed")
+	GameEvents.toast(tr("Fed %d animals") % fed if fed > 0 else tr("No animals were fed"))
 	_refresh_summary()
 	_refresh_selected()
 
 func _refresh_expansion_button(button: Button, housing_id: StringName) -> void:
 	var expansion := FarmExpansionState.get_next_expansion_for_housing(housing_id)
 	if expansion == null:
-		button.text = "%s Maxed" % String(housing_id).trim_prefix("starter_").capitalize()
-		button.tooltip_text = "Maximum housing capacity reached"
+		button.text = tr("%s Maxed") % tr(String(housing_id).trim_prefix("starter_").capitalize())
+		button.tooltip_text = tr("Maximum housing capacity reached")
 		button.disabled = true
 		return
-	button.text = "%s · %dg" % [expansion.display_name, expansion.money_cost]
+	button.text = "%s · %dg" % [tr(expansion.display_name), expansion.money_cost]
 	var requirements := PackedStringArray()
 	for raw_id: Variant in expansion.materials.keys():
 		var item_id := StringName(String(raw_id))
 		var item := ContentDB.get_item(item_id)
-		requirements.append("%s x%d" % [item.display_name if item != null else String(item_id).capitalize(), int(expansion.materials[raw_id])])
-	button.tooltip_text = "%s\n%s" % [expansion.description, " · ".join(requirements)]
+		requirements.append("%s x%d" % [tr(item.display_name) if item != null else tr(String(item_id).capitalize()), int(expansion.materials[raw_id])])
+	button.tooltip_text = "%s\n%s" % [tr(expansion.description), " · ".join(requirements)]
 	button.disabled = not FarmExpansionState.can_purchase(expansion.id)
 
 func _purchase_next_expansion(housing_id: StringName) -> void:
@@ -206,3 +207,7 @@ func _on_day_changed(_day: int) -> void:
 	if visible:
 		_refresh_summary()
 		_refresh_selected()
+
+func _on_locale_changed(_locale: String) -> void:
+	if visible:
+		_rebuild()

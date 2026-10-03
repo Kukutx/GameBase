@@ -37,7 +37,7 @@ func start_quest(quest_id: StringName) -> bool:
 		return false
 	_states[String(quest_id)] = {"status": Status.ACTIVE, "progress": 0}
 	quest_started.emit(quest_id)
-	GameEvents.toast("Quest started: %s" % quest.title)
+	GameEvents.toastf("Quest started: %s", [quest.title])
 	if quest.objective_type == QuestData.ObjectiveType.REACH_MINE_FLOOR:
 		_sync_mine_floor_progress(quest)
 	return true
@@ -250,7 +250,7 @@ func _complete(quest: QuestData) -> bool:
 	if reward_money > 0:
 		PlayerState.add_money(reward_money)
 	quest_completed.emit(quest.id)
-	GameEvents.toast("Quest complete: %s" % quest.title)
+	GameEvents.toastf("Quest complete: %s", [quest.title])
 	if quest.next_quest_id != &"":
 		start_quest(quest.next_quest_id)
 	return true

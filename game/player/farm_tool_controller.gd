@@ -27,12 +27,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not owns_action:
 		return
 	if selected.kind == ItemData.Kind.TOOL and not InventoryState.has_item(selected.id):
-		GameEvents.toast("You do not have %s" % selected.display_name)
+		GameEvents.toastf("You do not have %s", [selected.display_name])
 		get_viewport().set_input_as_handled()
 		return
 	var target := get_nearest_tool_target()
 	if target == null:
-		GameEvents.toast("Nothing to use %s on" % selected.display_name)
+		GameEvents.toastf("Nothing to use %s on", [selected.display_name])
 		get_viewport().set_input_as_handled()
 		return
 	var used := false
@@ -102,7 +102,7 @@ func _use_multi_plot_tool_internal(tool: ItemData, target: FarmPlot) -> bool:
 			PlayerState.restore_energy(energy_cost)
 		return false
 	var verb := "Tilled" if tool.tool_action == &"hoe" else "Watered"
-	GameEvents.toast("%s %d plots" % [verb, affected])
+	GameEvents.toastf("%s %d plots", [verb, affected])
 	return true
 
 func _consume_food(item: ItemData) -> void:
@@ -114,7 +114,7 @@ func _consume_food(item: ItemData) -> void:
 
 func _consume_food_internal(item: ItemData) -> void:
 	if item == null or not item.is_edible() or not InventoryState.has_item(item.id):
-		GameEvents.toast("No %s available" % (item.display_name if item != null else "food"))
+		GameEvents.toastf("No %s available", [item.display_name if item != null else "food"])
 		return
 	var can_restore_energy := item.energy_restore > 0 and PlayerState.energy < PlayerState.max_energy
 	var can_restore_health := item.health_restore > 0 and PlayerState.health < PlayerState.max_health
@@ -133,10 +133,11 @@ func _consume_food_internal(item: ItemData) -> void:
 	GameEvents.item_used.emit(item.id)
 	var parts := PackedStringArray()
 	if item.energy_restore > 0:
-		parts.append("+%d energy" % item.energy_restore)
+		parts.append(tr("+%d energy") % item.energy_restore)
 	if item.health_restore > 0:
-		parts.append("+%d HP" % item.health_restore)
-	GameEvents.toast("Ate %s%s" % [item.display_name, " (" + ", ".join(parts) + ")" if not parts.is_empty() else ""])
+		parts.append(tr("+%d HP") % item.health_restore)
+	var suffix := " (" + ", ".join(parts) + ")" if not parts.is_empty() else ""
+	GameEvents.toastf("Ate %s%s", [item.display_name, suffix])
 
 func _place_selected(item: ItemData) -> void:
 	if _action_busy:
@@ -154,15 +155,15 @@ func _place_selected_internal(item: ItemData) -> void:
 		return
 	var data := ContentDB.get_placeable(item.placeable_id)
 	if data == null or not data.is_allowed_in(location):
-		GameEvents.toast("%s cannot be placed here" % item.display_name)
+		GameEvents.toastf("%s cannot be placed here", [item.display_name])
 		return
 	var record := BuildingState.place_from_inventory(item.placeable_id, location.id, global_position)
 	if record.is_empty():
-		GameEvents.toast("Not enough space to place %s" % item.display_name)
+		GameEvents.toastf("Not enough space to place %s", [item.display_name])
 		return
 	_play_use_animation()
 	GameEvents.item_used.emit(item.id)
-	GameEvents.toast("Placed %s" % item.display_name)
+	GameEvents.toastf("Placed %s", [item.display_name])
 
 func _play_use_animation() -> void:
 	var actor := get_parent()

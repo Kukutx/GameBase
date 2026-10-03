@@ -16,6 +16,7 @@ func test_settings_round_trip() -> void:
 	source.sounds_volume = 0.75
 	source.fullscreen = true
 	source.vsync = false
+	source.autosave = false
 	source.locale = "zh_CN"
 	source.save_settings()
 
@@ -28,6 +29,7 @@ func test_settings_round_trip() -> void:
 	assert_almost_eq(restored.sounds_volume, 0.75, 0.001)
 	assert_true(restored.fullscreen)
 	assert_false(restored.vsync)
+	assert_false(restored.autosave)
 	assert_eq(restored.locale, "zh_CN")
 
 func test_supported_locale_translation_and_selector() -> void:
@@ -35,6 +37,12 @@ func test_supported_locale_translation_and_selector() -> void:
 	TranslationServer.set_locale("zh_CN")
 	assert_eq(TranslationServer.translate("Settings"), "设置")
 	assert_eq(TranslationServer.translate("Quick Save"), "快速保存")
+	assert_eq(TranslationServer.translate("Autosave"), "自动保存")
+	assert_eq(TranslationServer.translate("Spring"), "春季")
+	assert_eq(TranslationServer.translate("Rain"), "下雨")
+	assert_eq(TranslationServer.translate("Starter Town"), "起始镇")
+	assert_eq(TranslationServer.translate("Copper Pickaxe"), "铜镐")
+	assert_eq(TranslationServer.translate("BITE! Press %s"), "上钩了！按 %s")
 	TranslationServer.set_locale(previous)
 
 	var scene := load("res://game/ui/settings_menu.tscn") as PackedScene
@@ -43,6 +51,21 @@ func test_supported_locale_translation_and_selector() -> void:
 	await get_tree().process_frame
 	var selector := menu.get_node("Dim/Panel/Layout/Language/Select") as OptionButton
 	assert_eq(selector.item_count, GameSettings.get_supported_locales().size())
+
+func test_title_screen_static_and_dynamic_labels_translate_in_runtime() -> void:
+	var previous := TranslationServer.get_locale()
+	TranslationServer.set_locale("zh_CN")
+	var scene := load("res://game/ui/title_screen.tscn") as PackedScene
+	var title := scene.instantiate() as GameTitleScreen
+	add_child_autofree(title)
+	await get_tree().process_frame
+	var continue_button := title.get_node("Center/Menu/Continue") as Button
+	var settings_button := title.get_node("Center/Menu/Settings") as Button
+	assert_eq(TranslationServer.translate(continue_button.text), "继续游戏")
+	assert_eq(TranslationServer.translate(settings_button.text), "设置")
+	var slots := title.get_node("Center/Menu/SaveSlot") as OptionButton
+	assert_eq(slots.get_item_text(0), "存档位 1")
+	TranslationServer.set_locale(previous)
 
 func test_key_bindings_round_trip_and_apply_to_input_map() -> void:
 	var source := GameSettingsService.new()
@@ -108,6 +131,28 @@ func test_keyboard_rebinding_preserves_gamepad_core_actions() -> void:
 				found = true
 				break
 		assert_true(found, "%s missing default gamepad button" % action)
+
+func test_input_prompts_follow_active_device_and_rebinding() -> void:
+	var previous_gamepad := InputPrompts.using_gamepad
+	InputPrompts.using_gamepad = false
+	assert_eq(InputPrompts.get_action_prompt(&"interact"), GameSettings.get_key_binding_text(&"interact"))
+	InputPrompts.using_gamepad = true
+	assert_eq(InputPrompts.get_action_prompt(&"interact"), "A")
+	assert_eq(InputPrompts.get_action_prompt(&"use_tool"), "X")
+	assert_eq(InputPrompts.get_hotbar_prompt(), "LT/RT")
+	InputPrompts.using_gamepad = previous_gamepad
+
+func test_gamepad_triggers_cycle_hotbar_actions() -> void:
+	var settings := GameSettingsService.new()
+	settings.settings_path = TEST_PATH
+	add_child_autofree(settings)
+	settings.reset_controls()
+	for action: StringName in [&"hotbar_prev", &"hotbar_next"]:
+		var motions := 0
+		for event: InputEvent in InputMap.action_get_events(action):
+			if event is InputEventJoypadMotion:
+				motions += 1
+		assert_eq(motions, 1, "%s should have one trigger binding" % action)
 
 func test_rebindable_movement_keeps_gamepad_axis_and_dpad_support() -> void:
 	var settings := GameSettingsService.new()

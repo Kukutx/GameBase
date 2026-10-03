@@ -15,10 +15,10 @@ func configure_from_record(record: Dictionary) -> void:
 func _on_interacted(_actor: Node) -> void:
 	var data := get_placeable_data()
 	var radius := data.effect_radius if data != null else 0.0
-	GameEvents.toast("Basic Sprinkler · waters nearby plots every morning (%.0f px)" % radius)
+	GameEvents.toastf("Basic Sprinkler · waters nearby plots every morning (%.0f px)", [radius])
 
 func _refresh() -> void:
 	if label != null:
-		label.text = "Sprinkler"
+		label.text = tr("Sprinkler")
 	if interactable != null:
-		interactable.prompt_text = "Check Sprinkler"
+		interactable.set_prompt("Check Sprinkler")

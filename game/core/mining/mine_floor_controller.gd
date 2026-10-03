@@ -36,6 +36,7 @@ func _ready() -> void:
 	GameEvents.resource_mined.connect(_on_floor_progress_event)
 	GameEvents.enemy_defeated.connect(_on_floor_progress_event)
 	WorldClock.day_changed.connect(_on_day_changed)
+	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh_label()
 	if current_floor > 1:
 		for node_name: StringName in FLOOR_ONE_NODE_NAMES:
@@ -153,6 +154,10 @@ func _refresh_ladder() -> void:
 	if elevator != null:
 		elevator.refresh()
 
+func _on_locale_changed(_locale: String) -> void:
+	_refresh_label()
+	_refresh_ladder()
+
 func _refresh_label() -> void:
 	if mine_label != null:
-		mine_label.text = "Old Mine · Floor %d · Deepest %d" % [current_floor, MineState.get_deepest_floor()]
+		mine_label.text = tr("Old Mine · Floor %d · Deepest %d") % [current_floor, MineState.get_deepest_floor()]

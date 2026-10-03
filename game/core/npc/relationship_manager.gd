@@ -45,7 +45,7 @@ func give_gift(profile: NpcProfileData, item_id: StringName) -> int:
 		return 0
 	var key := String(profile.id)
 	if int(_last_gift_day.get(key, 0)) == WorldClock.day:
-		GameEvents.toast("You already gave %s a gift today" % profile.display_name)
+		GameEvents.toastf("You already gave %s a gift today", [profile.display_name])
 		return 0
 	var item := ItemCatalog.get_item(item_id)
 	if item == null or item.kind == ItemData.Kind.TOOL or item.kind == ItemData.Kind.SEED:
@@ -72,7 +72,7 @@ func give_gift(profile: NpcProfileData, item_id: StringName) -> int:
 	add_friendship(profile.id, delta)
 	GameEvents.gift_given.emit(profile.id, item_id, delta)
 	var occasion := " · Birthday!" if birthday else ""
-	GameEvents.toast("Gifted %s to %s (%+d friendship)%s" % [item.display_name, profile.display_name, delta, occasion])
+	GameEvents.toastf("Gifted %s to %s (%+d friendship)%s", [item.display_name, profile.display_name, delta, occasion])
 	return delta
 
 func clear() -> void:

@@ -110,7 +110,7 @@ func load_state_data(state: Dictionary, persist := true) -> void:
 
 func _apply_data() -> void:
 	if data == null:
-		name_label.text = "Animal"
+		name_label.text = tr("Animal")
 		return
 	name_label.text = get_display_name()
 	var rectangle := RectangleShape2D.new()
@@ -222,10 +222,10 @@ func _handle_interaction(_actor: Node) -> void:
 		_persist()
 		happiness_changed.emit(happiness)
 		GameEvents.animal_petted.emit(data.id, happiness)
-		GameEvents.toast("Petted %s · Happiness %d" % [get_display_name(), happiness])
+		GameEvents.toastf("Petted %s · Happiness %d", [get_display_name(), happiness])
 		_refresh_prompt()
 		return
-	GameEvents.toast("%s looks content" % get_display_name())
+	GameEvents.toastf("%s looks content", [get_display_name()])
 
 func _collect_product() -> void:
 	var product := ContentDB.get_item(data.get_product_item_id(happiness))
@@ -241,7 +241,7 @@ func _collect_product() -> void:
 	_persist()
 	product_collected.emit(product.id, collected)
 	GameEvents.animal_product_collected.emit(data.id, product.id, collected)
-	GameEvents.toast("Collected %s x%d" % [product.display_name, collected])
+	GameEvents.toastf("Collected %s x%d", [product.display_name, collected])
 	_refresh_prompt()
 
 func _on_day_changed(day: int) -> void:
@@ -280,14 +280,14 @@ func _refresh_prompt() -> void:
 	if interactable == null or data == null:
 		return
 	if not is_fed_today():
-		interactable.prompt_text = "%s needs feed" % get_display_name()
+		interactable.set_prompt("%s needs feed", [get_display_name()])
 	elif is_product_ready():
 		var product := ContentDB.get_item(data.get_product_item_id(happiness))
-		interactable.prompt_text = "Collect %s" % (product.display_name if product != null else "product")
+		interactable.set_prompt("Collect %s", [product.display_name if product != null else "product"])
 	elif can_pet_today():
-		interactable.prompt_text = "Pet %s" % get_display_name()
+		interactable.set_prompt("Pet %s", [get_display_name()])
 	else:
-		interactable.prompt_text = get_display_name()
+		interactable.set_prompt("%s", [get_display_name()])
 
 func _persist() -> void:
 	if persistent_id == &"":

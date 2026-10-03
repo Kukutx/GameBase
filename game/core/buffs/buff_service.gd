@@ -18,7 +18,7 @@ func apply_buff(buff_id: StringName) -> bool:
 	_active[String(buff_id)] = expires_at
 	buff_applied.emit(buff_id, expires_at)
 	buffs_changed.emit()
-	GameEvents.toast("Buff: %s (%d min)" % [data.display_name, data.duration_minutes])
+	GameEvents.toastf("Buff: %s (%d min)", [data.display_name, data.duration_minutes])
 	return true
 
 func has_buff(buff_id: StringName) -> bool:

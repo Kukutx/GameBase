@@ -20,7 +20,7 @@ func _on_interacted(_actor: Node) -> void:
 		GameEvents.toast("Mine elevator is unavailable right now")
 		return
 	MineState.set_floor(target)
-	GameEvents.toast("Mine elevator → Floor %d" % target)
+	GameEvents.toastf("Mine elevator → Floor %d", [target])
 
 func _on_deepest_changed(_floor: int) -> void:
 	refresh()
@@ -34,10 +34,13 @@ func refresh() -> void:
 	var current := MineState.get_current_floor()
 	if current > 1:
 		interactable.enabled = true
-		interactable.prompt_text = "Elevator to Floor 1"
-		label.text = "Elevator ↑ F1"
+		interactable.set_prompt("Elevator to Floor 1")
+		label.text = tr("Elevator ↑ F1")
 		return
 	var checkpoint := MineState.get_deepest_checkpoint()
 	interactable.enabled = checkpoint >= MineRunState.CHECKPOINT_STEP
-	interactable.prompt_text = "Elevator to Floor %d" % checkpoint if interactable.enabled else "Elevator checkpoint locked"
-	label.text = "Elevator → F%d" % checkpoint if interactable.enabled else "Elevator locked"
+	if interactable.enabled:
+		interactable.set_prompt("Elevator to Floor %d", [checkpoint])
+	else:
+		interactable.set_prompt("Elevator checkpoint locked")
+	label.text = tr("Elevator → F%d") % checkpoint if interactable.enabled else tr("Elevator locked")

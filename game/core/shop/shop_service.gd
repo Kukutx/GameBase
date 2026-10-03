@@ -41,7 +41,7 @@ func _buy_internal(shop: ShopData, item_id: StringName, quantity: int = 1) -> in
 		GameEvents.toast("Inventory changed before the purchase completed")
 		return 0
 	purchase_completed.emit(shop.id, item_id, bought, total)
-	GameEvents.toast("Bought %s x%d for %dg" % [item.display_name, bought, total])
+	GameEvents.toastf("Bought %s x%d for %dg", [item.display_name, bought, total])
 	return bought
 
 func buy_animal(shop: ShopData, animal_id: StringName, location_id: StringName) -> StringName:
@@ -80,5 +80,5 @@ func _sell_internal(item_id: StringName, quantity: int = 1) -> int:
 	var total := available * item.sell_price
 	PlayerState.add_money(total)
 	sale_completed.emit(item_id, available, total)
-	GameEvents.toast("Sold %s x%d for %dg" % [item.display_name, available, total])
+	GameEvents.toastf("Sold %s x%d for %dg", [item.display_name, available, total])
 	return available

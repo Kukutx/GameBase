@@ -30,7 +30,7 @@ func _refresh() -> void:
 		return
 	var projects := TownProjects.get_projects_for_location(location_id)
 	if projects.is_empty():
-		label.text = "Town Projects"
+		label.text = tr("Town Projects")
 		interactable.prompt_text = "Check town projects"
 		return
 	var any_reward := false
@@ -41,9 +41,9 @@ func _refresh() -> void:
 		if not TownProjects.is_claimed(project.id):
 			all_claimed = false
 	if any_reward:
-		label.text = "Town Projects\nReward ready"
+		label.text = tr("Town Projects\nReward ready")
 	elif all_claimed:
-		label.text = "Town Projects\nRestored"
+		label.text = tr("Town Projects\nRestored")
 	else:
-		label.text = "Town Projects\nNeeds help"
+		label.text = tr("Town Projects\nNeeds help")
 	interactable.prompt_text = "Review town projects"

@@ -128,6 +128,6 @@ func _handle_player_defeat() -> void:
 	_handling_defeat = false
 	player_collapsed.emit(loss)
 	if returned_home:
-		GameEvents.toast("You collapsed and lost %dg" % loss if loss > 0 else "You collapsed and woke up at home")
+		GameEvents.toastf("You collapsed and lost %dg", [loss]) if loss > 0 else GameEvents.toast("You collapsed and woke up at home")
 	else:
-		GameEvents.toast("You collapsed, lost %dg, and recovered where you fell" % loss if loss > 0 else "You collapsed and recovered where you fell")
+		GameEvents.toastf("You collapsed, lost %dg, and recovered where you fell", [loss]) if loss > 0 else GameEvents.toast("You collapsed and recovered where you fell")

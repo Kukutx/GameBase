@@ -30,6 +30,23 @@ func test_localization_resources_are_registered() -> void:
 	assert_true(project.contains('locale/translations=PackedStringArray("res://game/i18n/ui.zh_CN.po")'))
 	assert_true(FileAccess.file_exists("res://game/i18n/ui.zh_CN.po"))
 
+func test_input_and_autosave_services_are_registered() -> void:
+	var project := _read_text("res://project.godot")
+	assert_true(project.contains('InputPrompts="*res://game/core/input/input_prompt_service.gd"'))
+	assert_true(project.contains('AutoSave="*res://game/core/save/auto_save_service.gd"'))
+
+func test_release_diagnostics_are_configured() -> void:
+	var project := _read_text("res://project.godot")
+	assert_true(project.contains('GameDiagnostics="*res://game/core/diagnostics/game_diagnostics.gd"'))
+	assert_true(project.contains('file_logging/enable_file_logging.pc=true'))
+	assert_true(project.contains('file_logging/log_path="user://logs/gamebase.log"'))
+	assert_true(project.contains('file_logging/max_log_files=5'))
+	assert_true(project.contains('settings/gdscript/always_track_call_stacks=true'))
+	var context := GameDiagnostics.get_runtime_context()
+	assert_eq(int(context.get("save_schema", 0)), GameSaveManager.SAVE_VERSION)
+	assert_false(String(context.get("engine", "")).is_empty())
+	assert_false(String(context.get("os", "")).is_empty())
+
 func test_project_uses_web_compatible_renderer() -> void:
 	var project := _read_text("res://project.godot")
 	assert_true(project.contains('config/features=PackedStringArray("4.7", "GL Compatibility")'))

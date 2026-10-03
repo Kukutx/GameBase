@@ -32,7 +32,7 @@ func refresh_deliveries() -> Array[StringName]:
 		WorldState.set_value(_key(mail.id, "received"), true)
 		delivered.append(mail.id)
 		mail_received.emit(mail.id)
-		GameEvents.toast("New mail: %s" % mail.subject)
+		GameEvents.toastf("New mail: %s", [mail.subject])
 	return delivered
 
 func get_received_mail() -> Array[MailData]:

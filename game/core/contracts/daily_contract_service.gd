@@ -48,7 +48,7 @@ func accept() -> bool:
 		return false
 	state["accepted"] = true
 	_set_state(state)
-	GameEvents.toast("Accepted: %s" % String(state.get("title", "Daily contract")))
+	GameEvents.toastf("Accepted: %s", [String(state.get("title", "Daily contract"))])
 	return true
 
 func claim() -> int:
@@ -64,7 +64,7 @@ func claim() -> int:
 	if reward > 0:
 		PlayerState.add_money(reward)
 	contract_claimed.emit(state.duplicate(true))
-	GameEvents.toast("Contract complete · +%dg" % reward)
+	GameEvents.toastf("Contract complete · +%dg", [reward])
 	return reward
 
 func get_summary() -> String:
