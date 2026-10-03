@@ -134,6 +134,23 @@ func test_manual_engine_overrides_use_explicit_compatibility_exports() -> void:
 	assert_true(ci.contains("INPUT_ENGINE_VERSION"))
 	assert_true(release.contains("INPUT_ENGINE_VERSION"))
 
+func test_addon_freshness_workflow_exists_and_is_advisory() -> void:
+	var workflow := _read_text("res://.github/workflows/addon-freshness.yml")
+	var checker := _read_text("res://tools/check_addon_updates.py")
+	assert_true(workflow.contains("Addon Freshness"))
+	assert_true(workflow.contains("schedule:"))
+	assert_true(workflow.contains("issues: write"))
+	assert_true(workflow.contains("tools/check_addon_updates.py"))
+	assert_true(workflow.contains("gh issue create"))
+	assert_true(workflow.contains("gh issue close"))
+	assert_false(workflow.contains("git commit"))
+	assert_false(workflow.contains("git push"))
+	assert_true(checker.contains("nathanhoad/godot_dialogue_manager.git"))
+	assert_true(checker.contains("bitwes/Gut.git"))
+	assert_true(checker.contains('"dialogue_manager"'))
+	assert_true(checker.contains('"gut"'))
+	assert_true(checker.contains('"plugin.cfg"'))
+
 func test_latest_engine_compatibility_workflow_exists() -> void:
 	var workflow := _read_text("res://.github/workflows/engine-compat.yml")
 	assert_true(workflow.contains("Godot Compatibility"))

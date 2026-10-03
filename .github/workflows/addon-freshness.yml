@@ -1,0 +1,66 @@
+name: Addon Freshness
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 5 * * 1"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: addon-freshness
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check vendored addon updates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compare upstream stable tags
+        id: addons
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/check_addon_updates.py --github-output "$GITHUB_OUTPUT"
+          cat artifacts/addon-updates.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create or refresh maintenance issue
+        if: steps.addons.outputs.updates_available == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          title="Addon updates available"
+          number="$(gh issue list --state open --limit 100 --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
+          if [[ -n "$number" ]]; then
+            gh issue edit "$number" --body-file artifacts/addon-updates.md
+          else
+            gh issue create --title "$title" --body-file artifacts/addon-updates.md
+          fi
+
+      - name: Close resolved maintenance issue
+        if: steps.addons.outputs.updates_available != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          title="Addon updates available"
+          number="$(gh issue list --state open --limit 100 --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
+          if [[ -n "$number" ]]; then
+            gh issue comment "$number" --body "Installed Dialogue Manager and GUT versions now match the newest stable upstream tags. Closing this maintenance reminder."
+            gh issue close "$number" --reason completed
+          fi
