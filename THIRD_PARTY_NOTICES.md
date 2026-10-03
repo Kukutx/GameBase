@@ -12,13 +12,13 @@ GameBase. A copy is distributed as `licenses/GAMEBASE_LICENSE.txt`.
 ## Godot Engine
 
 GameBase is built with Godot Engine. The shared build baseline is defined in
-`.godot-version` and is currently Godot 4.7.2 stable.
+`.godot-version`. The synchronized legal-bundle version is recorded in
+`licenses/GODOT_VERSION.txt` and must match that baseline.
 
 Godot Engine is primarily licensed under the MIT license. Release packages
-include the official license as `licenses/GODOT_LICENSE.txt` and the official
-Godot 4.7.2 `COPYRIGHT.txt` as `licenses/GODOT_COPYRIGHT.txt`; the latter
-contains the licensing information for third-party code distributed with the
-engine.
+include the official license as `licenses/GODOT_LICENSE.txt` and the matching
+official `COPYRIGHT.txt` as `licenses/GODOT_COPYRIGHT.txt`; the latter contains
+the licensing information for third-party code distributed with the engine.
 
 ## Dialogue Manager
 

@@ -108,7 +108,15 @@ jobs:
 
       - name: Export
         shell: pwsh
-        run: ./tools/export.ps1 -GodotBin godot -Preset '${{ matrix.preset }}' -SkipValidation
+        env:
+          INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:INPUT_ENGINE_VERSION)) {
+            ./tools/export.ps1 -GodotBin godot -Preset '${{ matrix.preset }}' -SkipValidation
+          }
+          else {
+            ./tools/export.ps1 -GodotBin godot -Preset '${{ matrix.preset }}' -SkipValidation -AllowEngineDrift
+          }
 
       - name: Verify Web payload
         if: matrix.name == 'Web'

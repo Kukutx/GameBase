@@ -27,6 +27,8 @@ if ([string]::IsNullOrWhiteSpace($PythonBin)) {
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $BaselinePath = Join-Path $Root ".godot-version"
 $Baseline = if (Test-Path $BaselinePath) { (Get-Content $BaselinePath -Raw).Trim() } else { "" }
+$GodotLegalVersionPath = Join-Path $Root "licenses/GODOT_VERSION.txt"
+$GodotLegalVersion = if (Test-Path $GodotLegalVersionPath) { (Get-Content $GodotLegalVersionPath -Raw).Trim() } else { "" }
 $GameVersionPath = Join-Path $Root ".game-version"
 $GameVersion = if (Test-Path $GameVersionPath) { (Get-Content $GameVersionPath -Raw).Trim() } else { "" }
 
@@ -84,8 +86,27 @@ try {
     if ($Version -notmatch '^4\.') {
         throw "GameBase requires Godot 4.x; detected '$Version'."
     }
+    if ($Baseline -notmatch '^4\.\d+\.\d+$') {
+        throw "Missing or invalid .godot-version stable 4.x baseline."
+    }
+    if ($GodotLegalVersion -ne $Baseline) {
+        throw "Godot legal bundle version '$GodotLegalVersion' does not match .godot-version '$Baseline'. Run tools/update_engine_baseline.ps1."
+    }
+    $GodotLicensePath = Join-Path $Root "licenses/GODOT_LICENSE.txt"
+    $GodotCopyrightPath = Join-Path $Root "licenses/GODOT_COPYRIGHT.txt"
+    if (-not (Test-Path $GodotLicensePath) -or -not (Test-Path $GodotCopyrightPath)) {
+        throw "Missing synchronized Godot legal files."
+    }
+    $GodotLicenseText = Get-Content $GodotLicensePath -Raw
+    $GodotCopyrightText = Get-Content $GodotCopyrightPath -Raw
+    if ($GodotLicenseText.Length -lt 500 -or $GodotLicenseText -notmatch "Godot Engine contributors") {
+        throw "licenses/GODOT_LICENSE.txt does not look like the official Godot license."
+    }
+    if ($GodotCopyrightText.Length -lt 10000 -or $GodotCopyrightText -notmatch "Exhaustive licensing information") {
+        throw "licenses/GODOT_COPYRIGHT.txt does not look like the official Godot copyright bundle."
+    }
 
-    if (-not [string]::IsNullOrWhiteSpace($Baseline) -and $Version -notmatch ("^" + [regex]::Escape($Baseline))) {
+    if ($Version -notmatch ("^" + [regex]::Escape($Baseline))) {
         Write-Warning "Local Godot differs from CI baseline $Baseline. Newer stable Godot 4.x is allowed, but run the full validation before updating the shared baseline."
     }
 

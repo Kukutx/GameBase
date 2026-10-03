@@ -5,7 +5,7 @@ GameBase has reproducible Windows, Linux and Web exports, strict source validati
 ## Prerequisites
 
 - A valid application SemVer in `.game-version`, matching `project.godot` `application/config/version`.
-- A compatible stable Godot 4.x build. The shared CI baseline is read independently from `.godot-version`.
+- A compatible stable Godot 4.x build. Normal release exports must match the shared `.godot-version` baseline; `licenses/GODOT_VERSION.txt` and the official Godot legal bundle must match that same baseline.
 - Matching Godot export templates.
 - Python 3.12+ for localization coverage validation.
 - Node.js 24+ for the Playwright Web-export smoke test.
@@ -90,7 +90,7 @@ Published assets include:
 - `GameBase-web.zip`
 - `SHA256SUMS.txt`
 
-The workflow can also be started manually to test packaging and smoke checks without publishing a GitHub Release.
+The workflow can also be started manually to test packaging and smoke checks without publishing a GitHub Release. A manual `engine_version` override is treated as a compatibility build: exports explicitly use `-AllowEngineDrift`, synchronize a temporary Godot legal bundle to that actual stable engine, and are not publishable release candidates. Tag-triggered releases use the committed `.godot-version` baseline.
 
 ## Secrets and signing
 

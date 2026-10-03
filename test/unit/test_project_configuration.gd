@@ -82,6 +82,8 @@ func test_release_packaging_verifies_contents_and_distribution_licenses() -> voi
 	assert_true(exporter.contains("verify_export_contents.ps1"))
 	assert_true(exporter.contains("THIRD_PARTY_NOTICES.md"))
 	assert_true(exporter.contains("GODOT_COPYRIGHT.txt"))
+	assert_true(exporter.contains("GODOT_VERSION.txt"))
+	assert_true(exporter.contains("legal_bundle_version"))
 	assert_true(exporter.contains("BUILD_INFO.json"))
 	assert_true(verifier.contains("res://game/art/licensed"))
 	assert_true(verifier.contains("res://addons/gut"))
@@ -92,6 +94,7 @@ func test_release_packaging_verifies_contents_and_distribution_licenses() -> voi
 	assert_true(FileAccess.file_exists("res://licenses/GAMEBASE_LICENSE.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/GODOT_LICENSE.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/GODOT_COPYRIGHT.txt"))
+	assert_true(FileAccess.file_exists("res://licenses/GODOT_VERSION.txt"))
 	assert_true(FileAccess.file_exists("res://licenses/DIALOGUE_MANAGER_LICENSE.txt"))
 
 func test_release_workflow_requires_exact_game_version_tag() -> void:
@@ -101,12 +104,20 @@ func test_release_workflow_requires_exact_game_version_tag() -> void:
 	assert_true(workflow.contains('expected="v${{ needs.validate.outputs.game_version }}"'))
 	assert_true(workflow.contains('GITHUB_REF_NAME" != "$expected'))
 
+func test_manual_engine_overrides_use_explicit_compatibility_exports() -> void:
+	var ci := _read_text("res://.github/workflows/ci.yml")
+	var release := _read_text("res://.github/workflows/release.yml")
+	assert_true(ci.contains("-AllowEngineDrift"))
+	assert_true(release.contains("-AllowEngineDrift"))
+	assert_true(ci.contains("INPUT_ENGINE_VERSION"))
+	assert_true(release.contains("INPUT_ENGINE_VERSION"))
+
 func test_latest_engine_compatibility_workflow_exists() -> void:
 	var workflow := _read_text("res://.github/workflows/engine-compat.yml")
 	assert_true(workflow.contains("Godot Compatibility"))
 	assert_true(workflow.contains("godotengine/godot/releases/latest"))
 	assert_true(workflow.contains("./tools/validate.ps1 -GodotBin godot -CleanImport"))
-	assert_true(workflow.contains("./tools/export.ps1 -GodotBin godot -SkipValidation"))
+	assert_true(workflow.contains("./tools/export.ps1 -GodotBin godot -SkipValidation -AllowEngineDrift"))
 
 func test_engine_baseline_is_stable_godot_four() -> void:
 	var version := _read_text("res://.godot-version").strip_edges()
@@ -115,6 +126,16 @@ func test_engine_baseline_is_stable_godot_four() -> void:
 	assert_eq(parts[0], "4")
 	for part: String in parts:
 		assert_true(part.is_valid_int(), "Engine baseline must be numeric semantic version")
+
+func test_godot_legal_bundle_tracks_engine_baseline() -> void:
+	var baseline := _read_text("res://.godot-version").strip_edges()
+	var legal_version := _read_text("res://licenses/GODOT_VERSION.txt").strip_edges()
+	assert_eq(legal_version, baseline)
+	var updater := _read_text("res://tools/update_engine_baseline.ps1")
+	assert_true(updater.contains("$Version-stable"))
+	assert_true(updater.contains("LICENSE.txt"))
+	assert_true(updater.contains("COPYRIGHT.txt"))
+	assert_true(updater.contains("GODOT_VERSION.txt"))
 
 func test_test_framework_matches_godot_47_line() -> void:
 	var plugin := _read_text("res://addons/gut/plugin.cfg")

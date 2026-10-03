@@ -3,7 +3,8 @@ param(
     [ValidateSet("Windows Desktop", "Linux", "Web")]
     [string[]]$Preset = @("Windows Desktop", "Linux", "Web"),
     [string]$GodotBin = $env:GODOT_BIN,
-    [switch]$SkipValidation
+    [switch]$SkipValidation,
+    [switch]$AllowEngineDrift
 )
 
 $ErrorActionPreference = "Stop"
@@ -45,6 +46,58 @@ if ($LASTEXITCODE -ne 0) {
     throw "Could not resolve Godot version for BUILD_INFO.json."
 }
 $EngineVersion = [string]($EngineVersionOutput | Select-Object -First 1)
+$EngineMatch = [regex]::Match($EngineVersion, '^(\d+\.\d+\.\d+)')
+if (-not $EngineMatch.Success) {
+    throw "Could not resolve a stable semantic Godot version from '$EngineVersion'."
+}
+$EngineSemVer = $EngineMatch.Groups[1].Value
+$BaselinePath = Join-Path $Root ".godot-version"
+if (-not (Test-Path $BaselinePath)) {
+    throw "Missing .godot-version."
+}
+$EngineBaseline = (Get-Content $BaselinePath -Raw).Trim()
+if ($EngineBaseline -notmatch '^4\.\d+\.\d+$') {
+    throw "Invalid .godot-version: $EngineBaseline"
+}
+$RepoLegalVersionPath = Join-Path $Root "licenses/GODOT_VERSION.txt"
+if (-not (Test-Path $RepoLegalVersionPath)) {
+    throw "Missing licenses/GODOT_VERSION.txt."
+}
+$RepoLegalVersion = (Get-Content $RepoLegalVersionPath -Raw).Trim()
+if ($RepoLegalVersion -ne $EngineBaseline) {
+    throw "Repository Godot legal bundle $RepoLegalVersion does not match engine baseline $EngineBaseline. Run tools/update_engine_baseline.ps1."
+}
+
+$LegalSourceRoot = Join-Path $Root "licenses"
+$TemporaryLegalRoot = $null
+$LegalBundleVersion = $RepoLegalVersion
+if ($EngineSemVer -ne $EngineBaseline) {
+    if (-not $AllowEngineDrift) {
+        throw "Release export requires Godot $EngineBaseline; detected $EngineSemVer. Update the baseline after compatibility validation, or use -AllowEngineDrift only for compatibility/test artifacts."
+    }
+
+    $LegalBundleVersion = $EngineSemVer
+    $TemporaryLegalRoot = Join-Path (Join-Path $Root ".dev") ("export-legal-" + $EngineSemVer)
+    if (Test-Path $TemporaryLegalRoot) {
+        Remove-Item -Recurse -Force $TemporaryLegalRoot
+    }
+    New-Item -ItemType Directory -Force -Path $TemporaryLegalRoot | Out-Null
+    Copy-Item (Join-Path $Root "licenses/GAMEBASE_LICENSE.txt") (Join-Path $TemporaryLegalRoot "GAMEBASE_LICENSE.txt") -Force
+    Copy-Item (Join-Path $Root "licenses/DIALOGUE_MANAGER_LICENSE.txt") (Join-Path $TemporaryLegalRoot "DIALOGUE_MANAGER_LICENSE.txt") -Force
+    [System.IO.File]::WriteAllText((Join-Path $TemporaryLegalRoot "GODOT_VERSION.txt"), $EngineSemVer + "`n", (New-Object System.Text.UTF8Encoding($false)))
+
+    $Tag = "$EngineSemVer-stable"
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/godotengine/godot/$Tag/LICENSE.txt" -OutFile (Join-Path $TemporaryLegalRoot "GODOT_LICENSE.txt")
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/godotengine/godot/$Tag/COPYRIGHT.txt" -OutFile (Join-Path $TemporaryLegalRoot "GODOT_COPYRIGHT.txt")
+    $DriftLicense = Get-Content (Join-Path $TemporaryLegalRoot "GODOT_LICENSE.txt") -Raw
+    $DriftCopyright = Get-Content (Join-Path $TemporaryLegalRoot "GODOT_COPYRIGHT.txt") -Raw
+    if ($DriftLicense.Length -lt 500 -or $DriftLicense -notmatch 'Godot Engine contributors' -or
+        $DriftCopyright.Length -lt 10000 -or $DriftCopyright -notmatch 'Exhaustive licensing information') {
+        throw "Downloaded legal bundle for Godot $EngineSemVer failed validation."
+    }
+    $LegalSourceRoot = $TemporaryLegalRoot
+    Write-Warning "Exporting compatibility artifact with Godot $EngineSemVer while shared baseline is $EngineBaseline. The output legal bundle was synchronized temporarily to the actual engine."
+}
 $GitCommit = "unknown"
 $GitDirty = $true
 if ($null -ne (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -104,12 +157,13 @@ try {
         # than inside the Godot PCK. This keeps development/legal documents out
         # of res:// while ensuring every packaged artifact carries notices.
         $LicenseTarget = Join-Path $Parent "licenses"
-        Copy-Item -Path (Join-Path $Root "licenses") -Destination $LicenseTarget -Recurse -Force
+        Copy-Item -Path $LegalSourceRoot -Destination $LicenseTarget -Recurse -Force
         Copy-Item -Path (Join-Path $Root "THIRD_PARTY_NOTICES.md") -Destination (Join-Path $Parent "THIRD_PARTY_NOTICES.md") -Force
         if (-not (Test-Path (Join-Path $LicenseTarget "GODOT_LICENSE.txt")) -or
             -not (Test-Path (Join-Path $LicenseTarget "GODOT_COPYRIGHT.txt")) -or
             -not (Test-Path (Join-Path $LicenseTarget "DIALOGUE_MANAGER_LICENSE.txt")) -or
-            -not (Test-Path (Join-Path $LicenseTarget "GAMEBASE_LICENSE.txt"))) {
+            -not (Test-Path (Join-Path $LicenseTarget "GAMEBASE_LICENSE.txt")) -or
+            -not (Test-Path (Join-Path $LicenseTarget "GODOT_VERSION.txt"))) {
             throw "Export '$Name' is missing required distribution license files."
         }
 
@@ -117,6 +171,7 @@ try {
             schema = 1
             game_version = $GameVersion
             engine = $EngineVersion
+            legal_bundle_version = $LegalBundleVersion
             git_commit = $GitCommit
             dirty = [bool]$GitDirty
             target = $Name
@@ -129,5 +184,8 @@ try {
     Write-Host "Requested exports completed."
 }
 finally {
+    if ($null -ne $TemporaryLegalRoot -and (Test-Path $TemporaryLegalRoot)) {
+        Remove-Item -Recurse -Force $TemporaryLegalRoot -ErrorAction SilentlyContinue
+    }
     Pop-Location
 }

@@ -4,23 +4,26 @@ GameBase follows stable Godot 4.x releases without permanently locking the repos
 
 ## Version model
 
-- `.godot-version` is the Godot version used by CI and release builds.
+- `.godot-version` is the Godot version used by CI and normal release builds.
+- `licenses/GODOT_VERSION.txt` must match `.godot-version`; the adjacent Godot LICENSE/COPYRIGHT files are synchronized from that exact stable upstream tag.
 - `project.godot -> application/config/features` is the minimum project feature line, not the CI patch version.
 - Local development may use a newer stable Godot 4.x release before the shared CI baseline is advanced.
 - Development, beta and release-candidate engine builds are not shared baselines unless explicitly requested.
 
-This keeps builds reproducible while allowing regular engine upgrades. `.github/workflows/engine-compat.yml` also runs weekly against the newest stable Godot 4.x release and verifies both the test suite and all release exports without automatically changing the shared baseline.
+This keeps builds reproducible while allowing regular engine upgrades. `.github/workflows/engine-compat.yml` also runs weekly against the newest stable Godot 4.x release and verifies both the test suite and all release exports without automatically changing the shared baseline. Compatibility exports use `-AllowEngineDrift`; the export tool downloads a temporary official legal bundle for the actual tested stable engine and records that version in `BUILD_INFO.json`. These are compatibility artifacts, not release candidates.
 
 ## Upgrade procedure
 
 1. Make sure the current branch is backed up in Git.
 2. Check that GUT, Dialogue Manager and any other enabled addon support the target Godot release.
 3. Install the new stable Godot release.
-4. Update the CI baseline:
+4. Update the CI baseline through the repository tool:
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File tools/update_engine_baseline.ps1 -Version <major.minor.patch>
    ```
+
+   The tool first downloads and validates the official `<version>-stable` `LICENSE.txt` and `COPYRIGHT.txt`. Only after both succeed does it update `.godot-version`, `licenses/GODOT_VERSION.txt`, `licenses/GODOT_LICENSE.txt`, and `licenses/GODOT_COPYRIGHT.txt` together.
 
 5. Open/import the project once with the new engine.
 6. Review any automatic `project.godot`, scene or resource-format changes.
@@ -32,7 +35,7 @@ This keeps builds reproducible while allowing regular engine upgrades. `.github/
    ```
 
 8. Verify save migration/recovery tests and a real save/load cycle.
-9. Commit the engine baseline, addon compatibility updates and any engine-generated project-format changes together.
+9. Commit the engine baseline, synchronized Godot legal bundle, addon compatibility updates and any engine-generated project-format changes together.
 
 ## Current baseline
 

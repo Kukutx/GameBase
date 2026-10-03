@@ -147,6 +147,7 @@ async function main() {
         "BUILD_INFO.json",
         "THIRD_PARTY_NOTICES.md",
         "licenses/GODOT_LICENSE.txt",
+        "licenses/GODOT_VERSION.txt",
       ].some((asset) => requestUrl.endsWith(asset))
     ) {
       benignAbortedRequests.push(requestUrl);
@@ -195,6 +196,7 @@ async function main() {
         "BUILD_INFO.json",
         "THIRD_PARTY_NOTICES.md",
         "licenses/GODOT_LICENSE.txt",
+        "licenses/GODOT_VERSION.txt",
       ]) {
         const response = await fetch(asset, {
           method: "HEAD",

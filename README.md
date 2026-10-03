@@ -100,7 +100,7 @@ GitHub Actions provides:
 
 - `.github/workflows/ci.yml`: strict clean-import validation, GUT/runtime/main-scene smoke, Windows/Linux/Web exports, native Windows/Linux execution and Chromium Web smoke.
 - `.github/workflows/release.yml`: gated Windows/Linux/Web packages, native/browser smoke, SHA-256 checksums, and automatic GitHub Release publishing for `v*` tags.
-- `.github/workflows/engine-compat.yml`: weekly validation against the newest stable Godot 4.x release without silently moving the shared baseline.
+- `.github/workflows/engine-compat.yml`: weekly validation against the newest stable Godot 4.x release without silently moving the shared baseline; compatibility artifacts explicitly allow engine drift and carry the matching temporary Godot legal bundle.
 - `.github/dependabot.yml`: weekly GitHub Actions and npm QA-tool dependency maintenance.
 
 The game version and engine baseline are intentionally separate. Bump the application version with:
@@ -109,7 +109,7 @@ The game version and engine baseline are intentionally separate. Bump the applic
 powershell -ExecutionPolicy Bypass -File tools/update_game_version.ps1 -Version <next-semver>
 ```
 
-The engine version used by CI is read from `.godot-version`. To move the shared validation baseline to a newer stable Godot 4.x release:
+The engine version used by CI is read from `.godot-version`. To move the shared validation baseline to a newer stable Godot 4.x release, use the repository tool; it also downloads and validates the matching official Godot LICENSE/COPYRIGHT bundle before moving the baseline:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/update_engine_baseline.ps1 -Version <next-stable-4.x-version>
