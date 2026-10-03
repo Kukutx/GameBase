@@ -56,6 +56,13 @@ func _initialize() -> void:
 		"res://game/ui/title_screen.tscn",
 		"res://game/i18n/ui.zh_CN.po",
 		"res://addons/dialogue_manager/dialogue_manager.gd",
+		"res://addons/dialogue_manager/compiler/compiler.gd",
+		"res://addons/dialogue_manager/settings.gd",
+		"res://addons/dialogue_manager/test_scene.tscn",
+		"res://addons/dialogue_manager/example_balloon/example_balloon.gd",
+		"res://addons/dialogue_manager/example_balloon/example_balloon.tscn",
+		"res://addons/dialogue_manager/dialogue_label.tscn",
+		"res://addons/dialogue_manager/dialogue_responses_menu.gd",
 	]
 	for path: String in required:
 		if not ResourceLoader.exists(path) and not FileAccess.file_exists(path):
@@ -74,6 +81,14 @@ func _initialize() -> void:
 		"res://.gitattributes",
 		"res://.gitignore",
 		"res://BUILD_INFO.json",
+		"res://addons/dialogue_manager/plugin.gd",
+		"res://addons/dialogue_manager/plugin.cfg",
+		"res://addons/dialogue_manager/inspector_plugin.gd",
+		"res://addons/dialogue_manager/import_plugin.gd",
+		"res://addons/dialogue_manager/export_plugin.gd",
+		"res://addons/dialogue_manager/editor_translation_parser_plugin.gd",
+		"res://addons/dialogue_manager/DialogueManager.cs",
+		"res://addons/dialogue_manager/example_balloon/ExampleBalloon.cs",
 	]
 	for path: String in forbidden_files:
 		if FileAccess.file_exists(path) or ResourceLoader.exists(path):
@@ -92,6 +107,9 @@ func _initialize() -> void:
 		"res://build",
 		"res://artifacts",
 		"res://licenses",
+		"res://addons/dialogue_manager/assets",
+		"res://addons/dialogue_manager/components",
+		"res://addons/dialogue_manager/views",
 	]
 	for path: String in forbidden_dirs:
 		if DirAccess.dir_exists_absolute(path):

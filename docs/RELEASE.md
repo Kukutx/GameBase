@@ -48,7 +48,7 @@ Expected outputs:
 - `build/linux/GameBase.x86_64`
 - `build/web/index.html`
 
-Generated build, browser and diagnostic artifacts are intentionally ignored by Git. Every platform output also contains `BUILD_INFO.json`, `THIRD_PARTY_NOTICES.md`, and the `licenses/` directory. `BUILD_INFO.json` records the application version, actual Godot version, Git commit, dirty state, and target platform. These distribution metadata/legal files are written after PCK verification and are intentionally not part of `res://`.
+Generated build, browser and diagnostic artifacts are intentionally ignored by Git. Dialogue Manager release packs retain the runtime/compiler/settings/balloon/l10n resources required by `DialogueManager`, while editor-only assets/components/views/plugin/import/export/inspector code are excluded and verified absent from the PCK. Every platform output also contains `BUILD_INFO.json`, `THIRD_PARTY_NOTICES.md`, and the `licenses/` directory. `BUILD_INFO.json` records the application version, actual Godot version, Git commit, dirty state, and target platform. These distribution metadata/legal files are written after PCK verification and are intentionally not part of `res://`.
 
 ## Continuous integration
 

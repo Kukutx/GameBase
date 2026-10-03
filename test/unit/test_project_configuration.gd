@@ -73,8 +73,23 @@ func test_export_presets_cover_supported_release_targets() -> void:
 	assert_true(presets.contains('name="Windows Desktop"'))
 	assert_true(presets.contains('name="Linux"'))
 	assert_true(presets.contains('name="Web"'))
-	var hardened_filter := 'exclude_filter="test/*,addons/gut/*,game/art/licensed/*,.gutconfig.json,.godot-version,.game-version,.gitattributes,.gitignore,.devmate/*,tools/*,docs/*,.github/*,build/*,artifacts/*,licenses/*,AGENTS.md,README.md,THIRD_PARTY_NOTICES.md,LICENSE"'
-	assert_eq(presets.count(hardened_filter), 3)
+	for required_exclusion: String in [
+		"test/*",
+		"addons/gut/*",
+		"game/art/licensed/*",
+		"tools/*",
+		"docs/*",
+		".github/*",
+		"licenses/*",
+		"addons/dialogue_manager/assets/*",
+		"addons/dialogue_manager/components/*",
+		"addons/dialogue_manager/views/*",
+		"addons/dialogue_manager/plugin.gd*",
+		"addons/dialogue_manager/import_plugin.gd*",
+		"addons/dialogue_manager/export_plugin.gd*",
+		"addons/dialogue_manager/inspector_plugin.gd*",
+	]:
+		assert_eq(presets.count(required_exclusion), 3, "Missing release exclusion: %s" % required_exclusion)
 
 func test_release_packaging_verifies_contents_and_distribution_licenses() -> void:
 	var exporter := _read_text("res://tools/export.ps1")
