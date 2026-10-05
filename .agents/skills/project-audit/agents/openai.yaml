@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project audit"
+  short_description: "Evidence-backed audit of the current project, scoped or whole-repository; read-only while collecting evidence, and handed over for implementation when repair is already explicitly authorized"
+  default_prompt: "Use $project-audit to perform an evidence-backed scoped audit by default; expand to a full repository audit only when explicitly requested, and hand off high-confidence fixes only when the user has already authorized implementation."

@@ -1,0 +1,32 @@
+# Finding the source of truth across systems
+
+Read this only when a task crosses systems and the owner, the consumers or the verification entry point is not known. This file gives a method of discovery; it holds no content state, fixed version or project status.
+
+## Locate from near to far
+
+1. The source file of the change and its direct call chain.
+2. The data resource class, the content manifest, the save schema, the configuration and the version files.
+3. The real consumers and the related tests.
+4. The current fact pages the Profile names, the scripts under `tools/` and the CI workflows.
+5. The state of an exported build, only when a difference between a local run and an export would affect the conclusion.
+6. The current official documentation, only when an engine or addon capability, a version or a migration strategy is uncertain and would change the solution.
+
+## Common owners
+
+| Topic | Source of truth to look at first |
+| --- | --- |
+| Content of a type (item, crop, NPC, quest, mail, location, audio cue) | the resource class under `game/core/`, the resource under `game/data/`, `game/data/content_manifest.tres`, `ContentDB` |
+| Runtime state of a system | the autoload service that owns it; a scene only presents it |
+| What a save contains | `GameSaveManager`, `SaveMigration`, and the `to_save_data()` / `load_save_data()` pair of the owning service |
+| Player-visible text | the string literal at its call site or in the scene or resource, `game/i18n/ui.zh_CN.po`, `tools/check_localization.js` |
+| Input actions | `game/core/settings/game_settings.gd` for rebindable actions, the `[input]` section of `project.godot` for the rest |
+| Travel between locations | `WorldTravel`, the `WorldLocationData` resources and the `WorldSpawnPoint` nodes |
+| Audio | `GameAudio`, the `AudioCueData` resources, `docs/AUDIO.md` |
+| Engine and application versions | `.godot-version`, `.game-version`, `project.godot`; whether to change them follows the officially supported facts |
+| What an export contains | `export_presets.cfg`, `tools/verify_export_contents.js`, the export assertions in `test/unit/test_project_configuration.gd` |
+| Verification commands | the scripts under `tools/`, `docs/RELEASE.md`, the workflows under `.github/workflows/` |
+| Compatibility obligations | published saves, stable ids, exported resource fields that a derived game sets |
+
+## Stop signal
+
+Once the owner, the affected consumers, the necessary synchronization and a verification entry point that can prove the result are confirmed, do not keep opening unrelated directories. Without evidence of a real consumer or of real data, a compatibility or version judgement does not create a migration layer from a historical template.
