@@ -64,8 +64,8 @@ func get_active_summary() -> String:
 			continue
 		var quest := get_quest(StringName(key))
 		if quest != null:
-			return "%s  %d/%d" % [quest.title, int(state.get("progress", 0)), quest.required_amount]
-	return "No active quest"
+			return "%s  %d/%d" % [tr(quest.title), int(state.get("progress", 0)), quest.required_amount]
+	return tr("No active quest")
 
 func get_journal_entries() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []

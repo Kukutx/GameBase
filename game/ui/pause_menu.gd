@@ -83,11 +83,11 @@ func _return_to_title() -> void:
 
 func _on_save_completed(success: bool, message: String) -> void:
 	if visible:
-		status_label.text = tr(message) if success else tr("Save failed: %s") % tr(message)
+		status_label.text = message if success else tr("Save failed: %s") % message
 
 func _on_load_completed(success: bool, message: String) -> void:
 	if visible:
-		status_label.text = tr(message) if success else tr("Load failed: %s") % tr(message)
+		status_label.text = message if success else tr("Load failed: %s") % message
 
 func _set_main_buttons_disabled(value: bool) -> void:
 	resume_button.disabled = value

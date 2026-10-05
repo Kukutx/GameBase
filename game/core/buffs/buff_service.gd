@@ -60,7 +60,7 @@ func get_summary() -> String:
 		return ""
 	var parts := PackedStringArray()
 	for entry: Dictionary in entries:
-		parts.append("%s %dm" % [entry["display_name"], entry["minutes_remaining"]])
+		parts.append(tr("%s %dm") % [tr(String(entry["display_name"])), entry["minutes_remaining"]])
 	return " · ".join(parts)
 
 func clear() -> void:

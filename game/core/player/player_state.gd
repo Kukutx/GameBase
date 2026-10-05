@@ -158,7 +158,7 @@ func get_hotbar_text() -> String:
 		if item_id == &"":
 			continue
 		var item := ItemCatalog.get_item(item_id)
-		var label := item.display_name if item != null else String(item_id)
+		var label := tr(item.display_name) if item != null else String(item_id)
 		var quantity := InventoryState.get_quantity(item_id)
 		if item != null and item.kind != ItemData.Kind.TOOL:
 			label += " x%d" % quantity

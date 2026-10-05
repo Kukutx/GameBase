@@ -162,7 +162,6 @@ func test_removed_contract_target_is_withdrawn_but_completed_reward_is_preserved
 		"progress": 0,
 		"completed": false,
 		"claimed": false,
-		"title": "Catch retired fish",
 	}
 	WorldState.set_value(DailyContractService.STATE_KEY, invalid)
 	var replacement := DailyContractState.get_contract()
@@ -191,7 +190,6 @@ func test_contract_state_sanitizes_malformed_nested_values_without_crashing() ->
 		"progress": {"bad": true},
 		"completed": false,
 		"claimed": false,
-		"title": {"bad": true},
 	})
 	var normalized := DailyContractState.call("_get_state") as Dictionary
 	assert_eq(int(normalized.get("required", 0)), 1)
@@ -199,7 +197,9 @@ func test_contract_state_sanitizes_malformed_nested_values_without_crashing() ->
 	assert_eq(int(normalized.get("reward_money", -1)), 0)
 	assert_eq(int(normalized.get("generated_day", -1)), 0)
 	assert_false(bool(normalized.get("accepted", true)))
-	assert_eq(String(normalized.get("title", "")), "Daily contract")
+	assert_eq(DailyContractState.get_display_title(normalized), "Forage 1 Wild Berry")
+	assert_eq(DailyContractState.get_display_description(normalized), "Forage 1 Wild Berry for the town request.")
+	assert_eq(DailyContractState.get_display_title({"objective_type": "fish", "target_item_id": "removed_contract_item"}), "Daily contract")
 
 	# Claimed is a durable fact: if it is genuinely boolean true, completion and
 	# acceptance are inferred even when older/malformed saves omit those booleans.

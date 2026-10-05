@@ -66,7 +66,7 @@ func get_summary(location_id: StringName = &"") -> String:
 		return ""
 	var names := PackedStringArray()
 	for event: CalendarEventData in events:
-		names.append(event.display_name)
+		names.append(tr(event.display_name))
 	return ", ".join(names)
 
 func get_event(event_id: StringName) -> CalendarEventData:

@@ -42,7 +42,7 @@ func receive_gift(item_id: StringName) -> int:
 	return RelationshipState.give_gift(profile, item_id)
 
 func get_relationship_text() -> String:
-	return "%d hearts" % RelationshipState.get_hearts(get_npc_id())
+	return tr("%d hearts") % RelationshipState.get_hearts(get_npc_id())
 
 func _on_interacted(actor: Node) -> void:
 	var npc_id := get_npc_id()
@@ -51,7 +51,7 @@ func _on_interacted(actor: Node) -> void:
 	ConversationService.start_conversation(self, actor, dialogue, dialogue_title)
 
 func _on_activity_changed(activity: String) -> void:
-	activity_label.text = "%s · %s" % [activity, get_relationship_text()]
+	activity_label.text = "%s · %s" % [tr(activity), get_relationship_text()]
 
 func _on_friendship_changed(npc_id: StringName, _points: int, _delta: int) -> void:
 	if npc_id == get_npc_id():

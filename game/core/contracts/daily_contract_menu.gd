@@ -56,7 +56,7 @@ func _refresh() -> void:
 		action_button.disabled = true
 		action_button.text = tr("Unavailable")
 		return
-	title_label.text = tr(String(state.get("title", "Town Contract")))
+	title_label.text = DailyContractState.get_display_title(state)
 	var accepted := bool(state.get("accepted", false))
 	var completed := bool(state.get("completed", false))
 	var claimed := bool(state.get("claimed", false))
@@ -64,7 +64,7 @@ func _refresh() -> void:
 	var required := maxi(int(state.get("required", 1)), 1)
 	body_label.text = tr("[b]%s[/b]\n\n%s\n\nProgress: %d/%d\nReward: %dg\nDeadline: Day %d") % [
 		tr("Accepted") if accepted else tr("Available"),
-		tr(String(state.get("description", ""))),
+		DailyContractState.get_display_description(state),
 		progress,
 		required,
 		int(state.get("reward_money", 0)),

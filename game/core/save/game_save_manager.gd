@@ -119,14 +119,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func get_save_block_reason() -> String:
 	if WorldTravel.is_traveling():
-		return "Cannot save while traveling"
+		return tr("Cannot save while traveling")
 	var scene := get_tree().current_scene
 	if scene == null or ContentDB.get_location_for_scene(scene.scene_file_path) == null:
-		return "Save from a playable location"
+		return tr("Save from a playable location")
 	if get_tree().get_first_node_in_group("player") == null:
-		return "Cannot save without the player"
+		return tr("Cannot save without the player")
 	if FishingState.is_active():
-		return "Finish fishing before saving"
+		return tr("Finish fishing before saving")
 	return ""
 
 func save_game(allow_unregistered_scene: bool = false) -> bool:
@@ -143,8 +143,7 @@ func _save_game_internal(allow_unregistered_scene: bool, emit_result: bool) -> b
 			return false
 	var snapshot := build_snapshot()
 	if not _write_dictionary(temp_path, snapshot):
-		var message := "Could not open temporary save file"
-		_emit_save_result(emit_result, false, message)
+		_emit_save_result(emit_result, false, tr("Could not write temporary save file"))
 		return false
 	if _should_preserve_newer_primary():
 		return _finalize_compatible_backup_save(emit_result)
@@ -159,7 +158,7 @@ func _save_game_internal(allow_unregistered_scene: bool, emit_result: bool) -> b
 		# intact.
 		if _is_snapshot_usable(existing):
 			if not _write_dictionary(backup_path, existing):
-				_emit_save_result(emit_result, false, "Could not create save backup")
+				_emit_save_result(emit_result, false, tr("Could not create save backup"))
 				return false
 
 	var temp_absolute := ProjectSettings.globalize_path(temp_path)
@@ -172,11 +171,10 @@ func _save_game_internal(allow_unregistered_scene: bool, emit_result: bool) -> b
 		var backup := _read_dictionary(backup_path)
 		if not backup.is_empty():
 			_write_dictionary(save_path, backup)
-		var message := "Could not finalize save file (%d)" % rename_error
-		_emit_save_result(emit_result, false, message)
+		_emit_save_result(emit_result, false, tr("Could not finalize save file (%d)") % rename_error)
 		return false
 
-	_emit_save_result(emit_result, true, "Game saved · Slot %d" % active_slot)
+	_emit_save_result(emit_result, true, tr("Game saved · Slot %d") % active_slot)
 	return true
 
 func _emit_save_result(enabled: bool, success: bool, message: String) -> void:
@@ -205,28 +203,28 @@ func _finalize_compatible_backup_save(emit_result: bool = true) -> bool:
 	if rename_error != OK:
 		if not previous_backup.is_empty():
 			_write_dictionary(backup_path, previous_backup)
-		_emit_save_result(emit_result, false, "Could not update compatible backup (%d)" % rename_error)
+		_emit_save_result(emit_result, false, tr("Could not update compatible backup (%d)") % rename_error)
 		return false
-	_emit_save_result(emit_result, true, "Game saved to compatible backup · newer primary preserved")
+	_emit_save_result(emit_result, true, tr("Game saved to compatible backup · newer primary preserved"))
 	return true
 
 func load_game() -> bool:
 	if WorldTravel.is_traveling():
-		load_completed.emit(false, "Cannot load while traveling")
+		load_completed.emit(false, tr("Cannot load while traveling"))
 		return false
 	var candidate := _read_best_loadable_slot_snapshot(save_path, temp_path, backup_path)
 	if candidate.is_empty():
 		var unavailable := _read_best_slot_snapshot(save_path, temp_path, backup_path)
 		if not unavailable.is_empty() and _snapshot_version(unavailable["data"] as Dictionary) > SAVE_VERSION:
-			load_completed.emit(false, "Save file is from a newer game version")
+			load_completed.emit(false, tr("Save file is from a newer game version"))
 		else:
-			load_completed.emit(false, "No save file yet")
+			load_completed.emit(false, tr("No save file yet"))
 		return false
 	var data: Dictionary = candidate["data"]
 	data = SaveMigration.migrate(data, SAVE_VERSION)
 	var applied: bool = await apply_snapshot(data)
 	if not applied:
-		load_completed.emit(false, "Save references an unavailable scene")
+		load_completed.emit(false, tr("Save references an unavailable scene"))
 		return false
 
 	var recovery_source := String(candidate.get("source", "primary"))
@@ -253,14 +251,16 @@ func load_game() -> bool:
 		# Repair a damaged/missing primary after successful backup recovery.
 		_write_dictionary(save_path, data)
 	_preserve_newer_primary = recovered and preserve_primary
-	if recovered and preserve_primary:
-		load_completed.emit(true, "Loaded Slot %d from compatible %s · newer primary preserved" % [active_slot, recovery_source])
+	if recovered and preserve_primary and recovery_source == "temp":
+		load_completed.emit(true, tr("Loaded Slot %d from compatible temporary save · newer primary preserved") % active_slot)
+	elif recovered and preserve_primary:
+		load_completed.emit(true, tr("Loaded Slot %d from compatible backup · newer primary preserved") % active_slot)
 	elif recovery_source == "temp":
-		load_completed.emit(true, "Recovered Slot %d from temporary save" % active_slot)
+		load_completed.emit(true, tr("Recovered Slot %d from temporary save") % active_slot)
 	elif recovered:
-		load_completed.emit(true, "Recovered Slot %d from backup" % active_slot)
+		load_completed.emit(true, tr("Recovered Slot %d from backup") % active_slot)
 	else:
-		load_completed.emit(true, "Game loaded · Slot %d" % active_slot)
+		load_completed.emit(true, tr("Game loaded · Slot %d") % active_slot)
 	return true
 
 func build_snapshot() -> Dictionary:
@@ -655,9 +655,9 @@ func _write_dictionary(path: String, data: Dictionary) -> bool:
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		return false
-	file.store_string(JSON.stringify(data, "\t"))
+	var stored := file.store_string(JSON.stringify(data, "\t"))
 	file.close()
-	return true
+	return stored
 
 func _delete_paths(paths: Array[String]) -> bool:
 	var ok := true

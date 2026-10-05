@@ -101,7 +101,8 @@ func rename_animal(instance_id: StringName, requested_name: String) -> bool:
 		var location_id := StringName(String(record.get("location_id", "")))
 		ownership_changed.emit(location_id)
 		animal_renamed.emit(instance_id, next_name)
-		GameEvents.toastf("Renamed animal to %s", [next_name])
+		# The name is the player's own text and is shown as typed.
+		GameEvents.toast(tr("Renamed animal to %s") % next_name)
 		return true
 	return false
 

@@ -1110,9 +1110,6 @@ msgstr "没有可使用%s的目标"
 msgid "Not enough energy"
 msgstr "体力不足"
 
-msgid "%s %d plots"
-msgstr "%s了 %d 块农田"
-
 msgid "No %s available"
 msgstr "没有可用的%s"
 
@@ -3122,3 +3119,282 @@ msgstr "无法创建支持诊断包"
 
 msgid "Support bundle created: %s"
 msgstr "已创建支持诊断包：%s"
+
+msgid "Cannot save while traveling"
+msgstr "旅行途中无法保存"
+
+msgid "Save from a playable location"
+msgstr "请在可游玩的地点保存"
+
+msgid "Cannot save without the player"
+msgstr "找不到玩家角色，无法保存"
+
+msgid "Finish fishing before saving"
+msgstr "请先结束钓鱼再保存"
+
+msgid "Could not write temporary save file"
+msgstr "无法写入临时存档文件"
+
+msgid "Could not create save backup"
+msgstr "无法创建存档备份"
+
+msgid "Could not finalize save file (%d)"
+msgstr "无法完成存档写入（%d）"
+
+msgid "Game saved · Slot %d"
+msgstr "已保存 · 存档位 %d"
+
+msgid "Could not update compatible backup (%d)"
+msgstr "无法更新兼容备份（%d）"
+
+msgid "Game saved to compatible backup · newer primary preserved"
+msgstr "已保存到兼容备份 · 较新的主存档已保留"
+
+msgid "Cannot load while traveling"
+msgstr "旅行途中无法读取"
+
+msgid "Save file is from a newer game version"
+msgstr "该存档来自更新的游戏版本"
+
+msgid "No save file yet"
+msgstr "还没有存档"
+
+msgid "Save references an unavailable scene"
+msgstr "存档指向的场景不可用"
+
+msgid "Loaded Slot %d from compatible temporary save · newer primary preserved"
+msgstr "已从兼容的临时存档读取存档位 %d · 较新的主存档已保留"
+
+msgid "Loaded Slot %d from compatible backup · newer primary preserved"
+msgstr "已从兼容备份读取存档位 %d · 较新的主存档已保留"
+
+msgid "Recovered Slot %d from temporary save"
+msgstr "已从临时存档恢复存档位 %d"
+
+msgid "Recovered Slot %d from backup"
+msgstr "已从备份恢复存档位 %d"
+
+msgid "Game loaded · Slot %d"
+msgstr "已读取 · 存档位 %d"
+
+msgid "Advanced time by 1 hour"
+msgstr "时间已推进 1 小时"
+
+msgid "Farm %d · Forage %d · Fish %d · Mine %d · Combat %d · Social %d"
+msgstr "耕作 %d · 采集 %d · 钓鱼 %d · 采矿 %d · 战斗 %d · 社交 %d"
+
+msgid "Inventory: empty (%d/%d slots)"
+msgstr "背包：空（%d/%d 格）"
+
+msgid "Inventory %d/%d: %s"
+msgstr "背包 %d/%d：%s"
+
+msgid "+%d more"
+msgstr "另有 %d 种"
+
+msgid "No active quest"
+msgstr "没有进行中的任务"
+
+msgid "%s %dm"
+msgstr "%s %d分钟"
+
+msgid "%d hearts"
+msgstr "%d 颗心"
+
+msgid "Next passive at Lv5"
+msgstr "Lv5 解锁下一个被动效果"
+
+msgid "Field Efficiency %s · tool energy -%d%%"
+msgstr "田间效率 %s · 工具体力消耗 -%d%%"
+
+msgid "Gatherer %s · +%d forage quantity"
+msgstr "采集者 %s · 采集数量 +%d"
+
+msgid "Angler %s · bite wait -%d%% · reel window +%d%%"
+msgstr "钓手 %s · 咬钩等待 -%d%% · 收线时间 +%d%%"
+
+msgid "Miner %s · mining energy -%d%%"
+msgstr "矿工 %s · 采矿体力消耗 -%d%%"
+
+msgid "Fighter %s · attack +%d%% · attack energy -%d%%"
+msgstr "战士 %s · 攻击 +%d%% · 攻击体力消耗 -%d%%"
+
+msgid "Neighbor %s · positive gift friendship +%d%%"
+msgstr "好邻居 %s · 喜爱礼物的好感 +%d%%"
+
+msgid "Passive tier %d"
+msgstr "被动效果 %d 级"
+
+msgid "Crops"
+msgstr "作物"
+
+msgid "Animals"
+msgstr "畜产"
+
+msgid "Processed"
+msgstr "加工品"
+
+msgid "Forage"
+msgstr "采集物"
+
+msgid "Shipped"
+msgstr "已出货"
+
+msgid "%s — Claimed"
+msgstr "%s — 已领取"
+
+msgid "%s — Ready"
+msgstr "%s — 可领取"
+
+msgid "Unknown project"
+msgstr "未知建设项目"
+
+msgid "%s · Locked"
+msgstr "%s · 未解锁"
+
+msgid "%s · Complete"
+msgstr "%s · 已完成"
+
+msgid "%s · Reward ready"
+msgstr "%s · 奖励可领取"
+
+msgid "%s · %d/%d donated"
+msgstr "%s · 已捐赠 %d/%d"
+
+msgid "No notice available"
+msgstr "暂无公告"
+
+msgid "Daily contract claimed"
+msgstr "每日委托奖励已领取"
+
+msgid "Offer: %s"
+msgstr "新委托：%s"
+
+msgid "%s · Complete — claim at board · due Day %d"
+msgstr "%s · 已完成——到公告板领取 · 截止第 %d 天"
+
+msgid "%s · %d/%d · due Day %d"
+msgstr "%s · %d/%d · 截止第 %d 天"
+
+msgid "Forage %d %s"
+msgstr "采集 %d 个%s"
+
+msgid "Catch %d %s"
+msgstr "钓到 %d 条%s"
+
+msgid "Mine %d %s"
+msgstr "开采 %d 个%s"
+
+msgid "Ship %d %s"
+msgstr "出货 %d 个%s"
+
+msgid "Harvest %d %s"
+msgstr "收获 %d 个%s"
+
+msgid "Collect %d %s"
+msgstr "收集 %d 个%s"
+
+msgid "%s for the town request."
+msgstr "%s，完成城镇的委托。"
+
+msgid "Soil tilled"
+msgstr "已翻土"
+
+msgid "Soil watered"
+msgstr "已浇水"
+
+msgid "Planted %s"
+msgstr "已种下%s"
+
+msgid "Harvested %s"
+msgstr "已收获%s"
+
+msgid "Tilled %d plots"
+msgstr "已翻耕 %d 块农田"
+
+msgid "Watered %d plots"
+msgstr "已浇灌 %d 块农田"
+
+msgid "The fish got away"
+msgstr "鱼跑掉了"
+
+msgid "Waiting for a bite..."
+msgstr "等待鱼咬钩……"
+
+msgid "Fishing cancelled"
+msgstr "已取消钓鱼"
+
+msgid "Enemy"
+msgstr "敌人"
+
+msgid "Farm Expansion"
+msgstr "农场扩建"
+
+msgid "Town Project"
+msgstr "城镇建设项目"
+
+msgid "Villager"
+msgstr "村民"
+
+msgid "Home Chest"
+msgstr "家用储物箱"
+
+msgid "Morning walk"
+msgstr "晨间散步"
+
+msgid "Browse Village Market"
+msgstr "逛村庄集市"
+
+msgid "Visit the east side"
+msgstr "去镇子东边走走"
+
+msgid "Return home"
+msgstr "回家"
+
+msgid "Sunday visit to Riverside"
+msgstr "周日去河畔镇"
+
+msgid "Shelter from the storm"
+msgstr "躲避暴风雨"
+
+msgid "Open the workshop"
+msgstr "打开工坊"
+
+msgid "Inspect the bridge"
+msgstr "检查桥梁"
+
+msgid "Lunch at the tavern"
+msgstr "在酒馆吃午饭"
+
+msgid "Finish repairs"
+msgstr "完成修理"
+
+msgid "Close the storage shed"
+msgstr "关好储物棚"
+
+msgid "Secure the shed during the storm"
+msgstr "暴风雨中加固储物棚"
+
+msgid "Inspect the morning catch"
+msgstr "查看早晨的渔获"
+
+msgid "Sort nets at the dock"
+msgstr "在码头整理渔网"
+
+msgid "Trade at the harbor market"
+msgstr "在港口集市做买卖"
+
+msgid "Wait out the storm at the tavern"
+msgstr "在酒馆等暴风雨过去"
+
+msgid "Visit the Spring Seed Fair"
+msgstr "逛春季种子集市"
+
+msgid "Join the Summer River Fair"
+msgstr "参加夏季河畔节"
+
+msgid "Watch the Harbor Derby"
+msgstr "观看港口大赛"
+
+msgid "Attend Lantern Night"
+msgstr "参加灯笼夜"

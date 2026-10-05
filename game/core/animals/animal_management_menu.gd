@@ -65,7 +65,7 @@ func _rebuild() -> void:
 		if instance_id == &"" or data == null:
 			continue
 		var custom_name := String(record.get("custom_name", ""))
-		var display_name := custom_name if not custom_name.is_empty() else data.display_name
+		var display_name := custom_name if not custom_name.is_empty() else tr(data.display_name)
 		animal_select.add_item("%s · %s" % [display_name, tr(data.display_name)])
 		animal_select.set_item_metadata(animal_select.item_count - 1, String(instance_id))
 		if instance_id == previous:
@@ -123,8 +123,10 @@ func _refresh_selected() -> void:
 	if data == null:
 		return
 	var custom_name := String(record.get("custom_name", ""))
-	var display_name := custom_name if not custom_name.is_empty() else data.display_name
+	var display_name := custom_name if not custom_name.is_empty() else tr(data.display_name)
 	name_edit.text = display_name
+	# A name typed by the player is inserted into BBCode below as plain text.
+	var details_name := display_name.replace("[", "[lb]")
 	var state_raw: Variant = WorldState.get_value(StringName("animal:%s" % String(_selected_instance_id)), {})
 	var state: Dictionary = state_raw if state_raw is Dictionary else {}
 	var happiness := int(state.get("happiness", 50))
@@ -134,7 +136,7 @@ func _refresh_selected() -> void:
 	var product := ContentDB.get_item(data.product_item_id)
 	var product_name := tr(product.display_name) if product != null else tr("None")
 	details_label.text = tr("[b]%s[/b]\nSpecies: %s\nHousing: %s\nHappiness: %d/100\nFed today: %s\nProduct: %s%s") % [
-		display_name,
+		details_name,
 		tr(data.display_name),
 		tr(String(data.housing_type).capitalize()),
 		happiness,
@@ -167,7 +169,7 @@ func _request_sell() -> void:
 		return
 	var display_name := String(record.get("custom_name", ""))
 	if display_name.is_empty():
-		display_name = data.display_name
+		display_name = tr(data.display_name)
 	confirm_sell.dialog_text = tr("Sell %s for %dg? This cannot be undone.") % [display_name, int(round(float(data.purchase_price) * 0.5))]
 	confirm_sell.popup_centered()
 

@@ -48,7 +48,7 @@ func accept() -> bool:
 		return false
 	state["accepted"] = true
 	_set_state(state)
-	GameEvents.toastf("Accepted: %s", [String(state.get("title", "Daily contract"))])
+	GameEvents.toastf("Accepted: %s", [get_display_title(state)])
 	return true
 
 func claim() -> int:
@@ -70,13 +70,35 @@ func claim() -> int:
 func get_summary() -> String:
 	var state := get_contract()
 	if state.is_empty():
-		return "No notice available"
+		return tr("No notice available")
 	if bool(state.get("claimed", false)):
-		return "Daily contract claimed"
+		return tr("Daily contract claimed")
+	var title := get_display_title(state)
 	if not bool(state.get("accepted", false)):
-		return "Offer: %s" % String(state.get("title", "Contract"))
-	var status := "Complete — claim at board" if bool(state.get("completed", false)) else "%d/%d" % [int(state.get("progress", 0)), int(state.get("required", 1))]
-	return "%s · %s · due Day %d" % [String(state.get("title", "Contract")), status, int(state.get("expires_day", WorldClock.day))]
+		return tr("Offer: %s") % title
+	var expires_day := int(state.get("expires_day", WorldClock.day))
+	if bool(state.get("completed", false)):
+		return tr("%s · Complete — claim at board · due Day %d") % [title, expires_day]
+	return tr("%s · %d/%d · due Day %d") % [title, int(state.get("progress", 0)), int(state.get("required", 1)), expires_day]
+
+# The title is built from the stored objective when it is shown, so it follows
+# the current language and the current name of the item.
+func get_display_title(state: Dictionary) -> String:
+	var item := ContentDB.get_item(StringName(String(state.get("target_item_id", ""))))
+	if item == null:
+		return tr("Daily contract")
+	var amount := maxi(int(state.get("required", 1)), 1)
+	var item_name := tr(item.display_name)
+	match StringName(String(state.get("objective_type", ""))):
+		FORAGE: return tr("Forage %d %s") % [amount, item_name]
+		FISH: return tr("Catch %d %s") % [amount, item_name]
+		MINE: return tr("Mine %d %s") % [amount, item_name]
+		SHIP: return tr("Ship %d %s") % [amount, item_name]
+		HARVEST: return tr("Harvest %d %s") % [amount, item_name]
+		_: return tr("Collect %d %s") % [amount, item_name]
+
+func get_display_description(state: Dictionary) -> String:
+	return tr("%s for the town request.") % get_display_title(state)
 
 func _ensure_contract() -> void:
 	var state := _get_state()
@@ -180,13 +202,6 @@ func _add_candidate(result: Array[Dictionary], objective_type: StringName, item_
 	var item := ContentDB.get_item(item_id)
 	if item == null:
 		return
-	var verb := "Collect"
-	match objective_type:
-		FORAGE: verb = "Forage"
-		FISH: verb = "Catch"
-		MINE: verb = "Mine"
-		SHIP: verb = "Ship"
-		HARVEST: verb = "Harvest"
 	var amount := maxi(required, 1)
 	var reward := base_reward + maxi(item.sell_price, 5) * amount * maxi(value_multiplier, 1)
 	result.append({
@@ -195,8 +210,6 @@ func _add_candidate(result: Array[Dictionary], objective_type: StringName, item_
 		"required": amount,
 		"reward_money": reward,
 		"duration_days": maxi(duration_days, 1),
-		"title": "%s %d %s" % [verb, amount, item.display_name],
-		"description": "%s %d %s for the town request." % [verb, amount, item.display_name],
 	})
 
 func _forage_entry_available_through_deadline(entry: ForageEntryData, start_day: int, duration_days: int) -> bool:
@@ -252,8 +265,6 @@ func _get_state() -> Dictionary:
 	var state: Dictionary = source.duplicate(true)
 	state["objective_type"] = _safe_string(source.get("objective_type", ""))
 	state["target_item_id"] = _safe_string(source.get("target_item_id", ""))
-	state["title"] = _safe_string(source.get("title", "Daily contract"), "Daily contract")
-	state["description"] = _safe_string(source.get("description", ""))
 	var generated_day := maxi(_safe_int(source.get("generated_day", 0), 0), 0)
 	state["generated_day"] = generated_day
 	state["expires_day"] = maxi(_safe_int(source.get("expires_day", generated_day), generated_day), generated_day)

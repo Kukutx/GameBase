@@ -12,6 +12,9 @@ func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
+	# The checks compare text with the English source strings.
+	root.get_node("GameSettings").set("locale", "en")
+	TranslationServer.set_locale("en")
 	var world_clock := root.get_node("WorldClock")
 	var weather_state := root.get_node("WeatherState")
 	var event_state := root.get_node("EventState")

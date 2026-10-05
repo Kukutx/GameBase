@@ -478,3 +478,14 @@ func test_high_happiness_unlocks_premium_animal_products() -> void:
 	chicken.get_node("Interactable").interact(null)
 	assert_eq(InventoryState.get_quantity(&"large_egg"), 1)
 	assert_eq(InventoryState.get_quantity(&"egg"), 0)
+
+func test_animal_name_typed_by_the_player_is_shown_as_plain_text() -> void:
+	assert_true(AnimalState.rename_animal(&"starter_chicken_01", "[i]Bessie[/i]"))
+	var menu := (load("res://game/core/animals/animal_management_menu.tscn") as PackedScene).instantiate()
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	menu.open(&"starter_town")
+	get_tree().paused = false
+	var details := menu.get_node("Panel/VBox/Details") as RichTextLabel
+	assert_true(details.text.contains("[lb]i]Bessie[lb]/i]"), details.text)
+	assert_true(details.get_parsed_text().contains("[i]Bessie[/i]"), details.get_parsed_text())

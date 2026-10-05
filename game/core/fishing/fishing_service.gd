@@ -36,7 +36,7 @@ func _process(delta: float) -> void:
 		GameEvents.toast(tr("BITE! Press %s") % prompt)
 		return
 	if cast_state == CastState.BITE:
-		_finish_session(false, "The fish got away")
+		_finish_session(false, tr("The fish got away"))
 
 func _unhandled_input(event: InputEvent) -> void:
 	if cast_state != CastState.BITE or not event.is_action_pressed("interact"):
@@ -105,7 +105,7 @@ func _start_cast_internal(location_id: StringName, energy_cost: int) -> bool:
 	_time_remaining = rng.randf_range(maxf(min_delay, 0.05), maxf(max_delay, 0.05)) * get_effective_wait_multiplier()
 	cast_state = CastState.WAITING
 	fishing_active_changed.emit(true)
-	cast_state_changed.emit(cast_state, "Waiting for a bite...")
+	cast_state_changed.emit(cast_state, tr("Waiting for a bite..."))
 	GameEvents.toast("Cast the line... wait for a bite")
 	return true
 
@@ -123,14 +123,14 @@ func _reel_in_internal() -> bool:
 	var fish := _pending_fish
 	var caught := _award_fish(fish)
 	var item := ContentDB.get_item(fish.item_id)
-	var caught_name := item.display_name if item != null else String(fish.id).capitalize()
-	_finish_session(caught, "Caught %s" % caught_name if caught else "The fish got away")
+	var caught_name := tr(item.display_name) if item != null else String(fish.id).capitalize()
+	_finish_session(caught, tr("Caught %s") % caught_name if caught else tr("The fish got away"))
 	return caught
 
-func cancel_cast(message: String = "Fishing cancelled") -> void:
+func cancel_cast(announce: bool = true) -> void:
 	if cast_state == CastState.IDLE:
 		return
-	_finish_session(false, message)
+	_finish_session(false, tr("Fishing cancelled") if announce else "")
 
 # Immediate deterministic path for tests/headless acceptance.
 func try_fish(location_id: StringName, energy_cost: int = 4) -> bool:

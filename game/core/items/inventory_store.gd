@@ -250,14 +250,14 @@ func get_slot_entries() -> Array[Dictionary]:
 func get_summary(max_entries: int = 4) -> String:
 	var entries := get_entries()
 	if entries.is_empty():
-		return "Inventory: empty (%d/%d slots)" % [get_used_slots(), max_slots]
+		return tr("Inventory: empty (%d/%d slots)") % [get_used_slots(), max_slots]
 	var parts: PackedStringArray = []
 	for index in range(mini(entries.size(), maxi(max_entries, 0))):
 		var entry: Dictionary = entries[index]
-		parts.append("%s x%d" % [entry["display_name"], entry["quantity"]])
+		parts.append("%s x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
 	if entries.size() > max_entries:
-		parts.append("+%d more" % (entries.size() - max_entries))
-	return "Inventory %d/%d: %s" % [get_used_slots(), max_slots, ", ".join(parts)]
+		parts.append(tr("+%d more") % (entries.size() - max_entries))
+	return tr("Inventory %d/%d: %s") % [get_used_slots(), max_slots, ", ".join(parts)]
 
 func clear() -> void:
 	if _items.is_empty():

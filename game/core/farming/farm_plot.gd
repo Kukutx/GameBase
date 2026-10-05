@@ -142,7 +142,7 @@ func _till(tool: ItemData, consume_energy: bool = true, show_message: bool = tru
 	tilled = true
 	last_processed_day = WorldClock.day
 	watered = _is_watered_by_environment(WorldClock.day)
-	_commit("Soil tilled", show_message)
+	_commit(tr("Soil tilled"), show_message)
 	return true
 
 func _water(tool: ItemData, consume_energy: bool = true, show_message: bool = true) -> bool:
@@ -160,7 +160,7 @@ func _water(tool: ItemData, consume_energy: bool = true, show_message: bool = tr
 			GameEvents.toast("Not enough energy")
 		return false
 	watered = true
-	_commit("Soil watered", show_message)
+	_commit(tr("Soil watered"), show_message)
 	return true
 
 func _plant(seed: ItemData) -> bool:
@@ -185,7 +185,7 @@ func _plant(seed: ItemData) -> bool:
 	InventoryState.remove_item(seed.id, 1)
 	crop_id = crop.id
 	growth_days = 0
-	_commit("Planted %s" % crop.display_name)
+	_commit(tr("Planted %s") % tr(crop.display_name))
 	return true
 
 func _harvest() -> void:
@@ -207,7 +207,7 @@ func _harvest() -> void:
 	else:
 		crop_id = &""
 		growth_days = 0
-	_commit("Harvested %s" % crop.display_name)
+	_commit(tr("Harvested %s") % tr(crop.display_name))
 
 func _on_day_changed(day: int) -> void:
 	_advance_to_day(day)

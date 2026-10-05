@@ -199,13 +199,13 @@ func claim_reward(project_id: StringName) -> bool:
 func get_project_summary(project_id: StringName) -> String:
 	var project := get_project(project_id)
 	if project == null:
-		return "Unknown project"
+		return tr("Unknown project")
 	if not is_available(project_id):
-		return "%s · Locked" % project.display_name
+		return tr("%s · Locked") % tr(project.display_name)
 	if is_claimed(project_id):
-		return "%s · Complete" % project.display_name
+		return tr("%s · Complete") % tr(project.display_name)
 	if is_completed(project_id):
-		return "%s · Reward ready" % project.display_name
+		return tr("%s · Reward ready") % tr(project.display_name)
 	var done := 0
 	var total := 0
 	for raw_id: Variant in project.requirements.keys():
@@ -213,7 +213,7 @@ func get_project_summary(project_id: StringName) -> String:
 		var required := project.get_required_quantity(item_id)
 		total += required
 		done += mini(get_progress(project_id, item_id), required)
-	return "%s · %d/%d donated" % [project.display_name, done, total]
+	return tr("%s · %d/%d donated") % [tr(project.display_name), done, total]
 
 func get_location_summary(location_id: StringName) -> String:
 	var parts := PackedStringArray()

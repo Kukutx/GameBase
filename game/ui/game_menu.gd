@@ -121,7 +121,7 @@ func _quest_text() -> String:
 		lines.append(tr(String(entry["description"])))
 		lines.append("")
 	lines.append("[b]%s[/b]" % tr("Town Contract"))
-	lines.append(tr(DailyContractState.get_summary()))
+	lines.append(DailyContractState.get_summary())
 	return "\n".join(lines)
 
 func _social_text() -> String:
@@ -136,7 +136,7 @@ func _skills_text() -> String:
 	var lines := PackedStringArray(["[font_size=18][b]%s[/b][/font_size]" % tr("Skills"), ""])
 	for skill: StringName in [SkillManager.FARMING, SkillManager.FORAGING, SkillManager.FISHING, SkillManager.MINING, SkillManager.COMBAT, SkillManager.SOCIAL]:
 		lines.append(tr("[b]%s[/b]  Lv.%d   %d XP") % [tr(String(skill).capitalize()), Skills.get_level(skill), Skills.get_xp(skill)])
-		lines.append("  %s" % tr(Skills.get_perk_summary(skill)))
+		lines.append("  %s" % Skills.get_perk_summary(skill))
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Active Buffs"))
 	var buffs := BuffState.get_active_entries()
@@ -190,7 +190,7 @@ func _world_text() -> String:
 	var lines := PackedStringArray(["[font_size=18][b]%s[/b][/font_size]" % tr("World"), ""])
 	for location: WorldLocationData in ContentDB.get_all_locations():
 		var marker := "→" if current != null and current.id == location.id else "•"
-		lines.append("%s [b]%s[/b] — %s" % [marker, tr(location.display_name), tr(_location_type_name(location.type))])
+		lines.append("%s [b]%s[/b] — %s" % [marker, tr(location.display_name), _location_type_name(location.type)])
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Residents"))
 	for profile: NpcProfileData in ContentDB.get_all_npcs():
@@ -200,17 +200,17 @@ func _world_text() -> String:
 	lines.append("[b]%s[/b]" % tr("Town Projects"))
 	for project: TownProjectData in ContentDB.get_all_town_projects():
 		var location := ContentDB.get_location(project.location_id)
-		lines.append("• %s — %s" % [tr(location.display_name) if location != null else tr("Unknown"), tr(TownProjects.get_project_summary(project.id))])
+		lines.append("• %s — %s" % [tr(location.display_name) if location != null else tr("Unknown"), TownProjects.get_project_summary(project.id)])
 	return "\n".join(lines)
 
 func _collections_text() -> String:
-	var lines := PackedStringArray(["[font_size=18][b]%s[/b][/font_size]" % tr("Collections"), "", tr(CollectionState.get_summary()), "", "[b]%s[/b]" % tr("Archive Milestones")])
+	var lines := PackedStringArray(["[font_size=18][b]%s[/b][/font_size]" % tr("Collections"), "", CollectionState.get_summary(), "", "[b]%s[/b]" % tr("Archive Milestones")])
 	for milestone: CollectionMilestoneData in CollectionMilestones.get_all_milestones():
-		lines.append("• %s" % tr(CollectionMilestones.get_summary(milestone)))
+		lines.append("• %s" % CollectionMilestones.get_summary(milestone))
 	lines.append("")
 	for category: StringName in CollectionService.CATEGORIES:
 		var entries := CollectionState.get_category_entries(category)
-		lines.append("[b]%s — %d/%d[/b]" % [tr(CollectionState.get_category_name(category)), CollectionState.get_discovered_count(category), entries.size()])
+		lines.append("[b]%s — %d/%d[/b]" % [CollectionState.get_category_name(category), CollectionState.get_discovered_count(category), entries.size()])
 		for entry: Dictionary in entries:
 			if bool(entry["discovered"]):
 				lines.append("  • %s  x%d" % [tr(String(entry["display_name"])), entry["count"]])
@@ -273,10 +273,10 @@ func _next_event_day(event: CalendarEventData, from_day: int) -> int:
 
 func _location_type_name(location_type: WorldLocationData.LocationType) -> String:
 	match location_type:
-		WorldLocationData.LocationType.INTERIOR: return "Interior"
-		WorldLocationData.LocationType.WILDERNESS: return "Wilderness"
-		WorldLocationData.LocationType.DUNGEON: return "Dungeon"
-		_: return "Town"
+		WorldLocationData.LocationType.INTERIOR: return tr("Interior")
+		WorldLocationData.LocationType.WILDERNESS: return tr("Wilderness")
+		WorldLocationData.LocationType.DUNGEON: return tr("Dungeon")
+		_: return tr("Town")
 
 func _tab_buttons() -> Array[Button]:
 	return [inventory_button, quests_button, social_button, skills_button, calendar_button, world_button, collections_button]

@@ -10,6 +10,9 @@ func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
+	# The checks compare text with the English source strings.
+	root.get_node("GameSettings").set("locale", "en")
+	TranslationServer.set_locale("en")
 	var inventory := root.get_node("InventoryState")
 	var world_state := root.get_node("WorldState")
 	var world_clock := root.get_node("WorldClock")
@@ -396,7 +399,7 @@ func _run() -> void:
 	_check(fishing_state.start_cast(&"riverside_town", 0), "Could not start save-guard fishing probe")
 	_check(save_manager.get_save_block_reason() == "Finish fishing before saving", "Active fishing did not block saving")
 	_check(not save_manager.save_game(), "Save succeeded while fishing was active")
-	fishing_state.cancel_cast("")
+	fishing_state.cancel_cast(false)
 	await process_frame
 	_check(save_manager.get_save_block_reason().is_empty(), "Save remained blocked after fishing ended")
 	var river_fish_before: int = int(inventory.get_quantity(&"river_trout")) + int(inventory.get_quantity(&"river_carp"))

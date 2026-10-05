@@ -49,7 +49,7 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("debug_advance_time"):
 		WorldClock.advance_minutes(60)
-		_show_status("Advanced time by 1 hour")
+		_show_status(tr("Advanced time by 1 hour"))
 		get_viewport().set_input_as_handled()
 
 func _refresh_all() -> void:
@@ -94,10 +94,10 @@ func _on_fishing_state_changed(_state: FishingService.CastState, _message: Strin
 	_refresh_fishing()
 
 func _on_save_completed(success: bool, message: String) -> void:
-	_show_status(message if success else tr("Save failed: %s") % tr(message))
+	_show_status(message if success else tr("Save failed: %s") % message)
 
 func _on_load_completed(success: bool, message: String) -> void:
-	_show_status(message if success else tr("Load failed: %s") % tr(message))
+	_show_status(message if success else tr("Load failed: %s") % message)
 	if success:
 		_refresh_all()
 		_refresh_fishing()
@@ -118,7 +118,7 @@ func _refresh_clock() -> void:
 	var calendar_text := tr("%s %d  %02d:%02d") % [tr(WorldClock.get_season_name()), WorldClock.get_day_of_season(), WorldClock.get_hour(), WorldClock.get_minute()]
 	clock_label.text = "%s · %s" % [calendar_text, tr(WeatherState.get_weather_name())]
 	if not event_summary.is_empty():
-		clock_label.text += " · " + tr(event_summary)
+		clock_label.text += " · " + event_summary
 
 func _refresh_stats() -> void:
 	stats_label.text = tr("HP %d/%d   ·   Energy %d/%d   ·   %dg") % [PlayerState.health, PlayerState.max_health, PlayerState.energy, PlayerState.max_energy, PlayerState.money]

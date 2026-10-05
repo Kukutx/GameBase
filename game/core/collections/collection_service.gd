@@ -118,13 +118,13 @@ func get_summary() -> String:
 
 func get_category_name(category: StringName) -> String:
 	match category:
-		CROPS: return "Crops"
-		FISH: return "Fish"
-		MINERALS: return "Mining"
-		ANIMAL_PRODUCTS: return "Animals"
-		PROCESSED: return "Processed"
-		FORAGE: return "Forage"
-		SHIPPED: return "Shipped"
+		CROPS: return tr("Crops")
+		FISH: return tr("Fish")
+		MINERALS: return tr("Mining")
+		ANIMAL_PRODUCTS: return tr("Animals")
+		PROCESSED: return tr("Processed")
+		FORAGE: return tr("Forage")
+		SHIPPED: return tr("Shipped")
 		_: return String(category).capitalize()
 
 func clear() -> void:

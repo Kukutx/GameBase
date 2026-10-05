@@ -89,11 +89,12 @@ func get_summary(milestone: CollectionMilestoneData) -> String:
 	if milestone == null:
 		return ""
 	if is_claimed(milestone.id):
-		return "%s — Claimed" % milestone.display_name
+		return tr("%s — Claimed") % tr(milestone.display_name)
 	var progress := get_progress(milestone)
 	var required := get_required(milestone)
-	var state := "Ready" if is_ready(milestone.id) else "%d/%d" % [progress, required]
-	return "%s — %s" % [milestone.display_name, state]
+	if is_ready(milestone.id):
+		return tr("%s — Ready") % tr(milestone.display_name)
+	return "%s — %d/%d" % [tr(milestone.display_name), progress, required]
 
 func get_ready_count() -> int:
 	var count := 0

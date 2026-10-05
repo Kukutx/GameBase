@@ -101,8 +101,10 @@ func _use_multi_plot_tool_internal(tool: ItemData, target: FarmPlot) -> bool:
 		if energy_cost > 0:
 			PlayerState.restore_energy(energy_cost)
 		return false
-	var verb := "Tilled" if tool.tool_action == &"hoe" else "Watered"
-	GameEvents.toastf("%s %d plots", [verb, affected])
+	if tool.tool_action == &"hoe":
+		GameEvents.toastf("Tilled %d plots", [affected])
+	else:
+		GameEvents.toastf("Watered %d plots", [affected])
 	return true
 
 func _consume_food(item: ItemData) -> void:

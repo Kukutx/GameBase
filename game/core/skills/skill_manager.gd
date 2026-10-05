@@ -108,25 +108,26 @@ func get_forage_quantity_bonus() -> int:
 func get_perk_summary(skill: StringName) -> String:
 	var tier := get_perk_tier(skill)
 	if tier <= 0:
-		return "Next passive at Lv5"
+		return tr("Next passive at Lv5")
+	var rank := "II" if tier >= 2 else "I"
 	match skill:
 		FARMING:
-			return "Field Efficiency %s · tool energy -%d%%" % ["II" if tier >= 2 else "I", tier * 10]
+			return tr("Field Efficiency %s · tool energy -%d%%") % [rank, tier * 10]
 		FORAGING:
-			return "Gatherer %s · +%d forage quantity" % ["II" if tier >= 2 else "I", tier]
+			return tr("Gatherer %s · +%d forage quantity") % [rank, tier]
 		FISHING:
-			return "Angler %s · bite wait -%d%% · reel window +%d%%" % ["II" if tier >= 2 else "I", tier * 10, tier * 15]
+			return tr("Angler %s · bite wait -%d%% · reel window +%d%%") % [rank, tier * 10, tier * 15]
 		MINING:
-			return "Miner %s · mining energy -%d%%" % ["II" if tier >= 2 else "I", tier * 10]
+			return tr("Miner %s · mining energy -%d%%") % [rank, tier * 10]
 		COMBAT:
-			return "Fighter %s · attack +%d%% · attack energy -%d%%" % ["II" if tier >= 2 else "I", 25 if tier >= 2 else 10, tier * 10]
+			return tr("Fighter %s · attack +%d%% · attack energy -%d%%") % [rank, 25 if tier >= 2 else 10, tier * 10]
 		SOCIAL:
-			return "Neighbor %s · positive gift friendship +%d%%" % ["II" if tier >= 2 else "I", tier * 10]
+			return tr("Neighbor %s · positive gift friendship +%d%%") % [rank, tier * 10]
 		_:
-			return "Passive tier %d" % tier
+			return tr("Passive tier %d") % tier
 
 func get_summary() -> String:
-	return "Farm %d · Forage %d · Fish %d · Mine %d · Combat %d · Social %d" % [get_level(FARMING), get_level(FORAGING), get_level(FISHING), get_level(MINING), get_level(COMBAT), get_level(SOCIAL)]
+	return tr("Farm %d · Forage %d · Fish %d · Mine %d · Combat %d · Social %d") % [get_level(FARMING), get_level(FORAGING), get_level(FISHING), get_level(MINING), get_level(COMBAT), get_level(SOCIAL)]
 
 func reset_new_game() -> void:
 	_xp = {"farming": 0, "foraging": 0, "social": 0, "fishing": 0, "mining": 0, "combat": 0}
