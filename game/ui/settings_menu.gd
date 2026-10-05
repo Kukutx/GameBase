@@ -18,6 +18,8 @@ signal closed
 @onready var accessibility_page: VBoxContainer = $Dim/Panel/Layout/AccessibilityPage
 @onready var weather_effects_check: CheckButton = $Dim/Panel/Layout/AccessibilityPage/WeatherEffects
 @onready var reduced_motion_check: CheckButton = $Dim/Panel/Layout/AccessibilityPage/ReducedMotion
+@onready var support_export: Button = $Dim/Panel/Layout/AccessibilityPage/ExportSupportBundle
+@onready var support_open: Button = $Dim/Panel/Layout/AccessibilityPage/OpenSupportFolder
 @onready var accessibility_back: Button = $Dim/Panel/Layout/AccessibilityPage/Back
 @onready var controls_button: Button = $Dim/Panel/Layout/ControlsButton
 @onready var controls_page: VBoxContainer = $Dim/Panel/Layout/ControlsPage
@@ -42,6 +44,11 @@ func _ready() -> void:
 	autosave_check.toggled.connect(_on_autosave_toggled)
 	weather_effects_check.toggled.connect(_on_weather_effects_toggled)
 	reduced_motion_check.toggled.connect(_on_reduced_motion_toggled)
+	support_export.pressed.connect(_export_support_bundle)
+	support_open.pressed.connect(_open_support_folder)
+	var support_available := SupportBundle.is_supported()
+	support_export.disabled = not support_available
+	support_open.visible = support_available
 	accessibility_button.pressed.connect(_show_accessibility.bind(true))
 	accessibility_back.pressed.connect(_show_accessibility.bind(false))
 	_build_language_selector()
@@ -232,3 +239,17 @@ func _on_weather_effects_toggled(value: bool) -> void:
 func _on_reduced_motion_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_reduced_motion(value)
+
+func _export_support_bundle() -> void:
+	var path := SupportBundle.create_bundle()
+	if path.is_empty():
+		GameEvents.toast("Support bundle could not be created")
+	else:
+		GameEvents.toastf("Support bundle created: %s", [path.get_file()])
+	support_export.grab_focus()
+
+func _open_support_folder() -> void:
+	var absolute := SupportBundle.get_output_directory_absolute()
+	if not absolute.is_empty():
+		OS.shell_open(absolute)
+	support_open.grab_focus()

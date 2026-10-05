@@ -3104,3 +3104,21 @@ msgstr "奈莉"
 
 msgid "Rowan"
 msgstr "罗文"
+
+msgid "Support"
+msgstr "支持"
+
+msgid "Support bundles contain technical logs and save summaries, never raw saves."
+msgstr "支持诊断包包含技术日志和存档摘要，不包含原始存档。"
+
+msgid "Export Support Bundle"
+msgstr "导出支持诊断包"
+
+msgid "Open Support Folder"
+msgstr "打开支持文件夹"
+
+msgid "Support bundle could not be created"
+msgstr "无法创建支持诊断包"
+
+msgid "Support bundle created: %s"
+msgstr "已创建支持诊断包：%s"

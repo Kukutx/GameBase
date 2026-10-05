@@ -67,6 +67,7 @@ SaveManager="*res://game/core/save/game_save_manager.gd"
 AutoSave="*res://game/core/save/auto_save_service.gd"
 GameSession="*res://game/core/session/game_session.gd"
 GameDiagnostics="*res://game/core/diagnostics/game_diagnostics.gd"
+SupportBundle="*res://game/core/diagnostics/support_bundle_service.gd"
 
 [debug]
 

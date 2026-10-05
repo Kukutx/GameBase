@@ -132,6 +132,24 @@ layout_mode = 2
 autowrap_mode = 2
 text = "Reduce Motion removes scene fades and animated rain/lightning while preserving weather gameplay."
 
+[node name="SupportTitle" type="Label" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+text = "Support"
+horizontal_alignment = 1
+
+[node name="SupportDescription" type="Label" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+autowrap_mode = 2
+text = "Support bundles contain technical logs and save summaries, never raw saves."
+
+[node name="ExportSupportBundle" type="Button" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+text = "Export Support Bundle"
+
+[node name="OpenSupportFolder" type="Button" parent="Dim/Panel/Layout/AccessibilityPage"]
+layout_mode = 2
+text = "Open Support Folder"
+
 [node name="Back" type="Button" parent="Dim/Panel/Layout/AccessibilityPage"]
 layout_mode = 2
 text = "Back"

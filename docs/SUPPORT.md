@@ -34,13 +34,26 @@ The diagnostic payload contains only technical game context:
 
 It intentionally does not record user account data, personal files, precise device identifiers, or absolute filesystem paths.
 
+## Player-created support bundle
+
+Desktop builds expose **Settings → Accessibility → Export Support Bundle**. The game writes a ZIP under `user://support/` and the adjacent **Open Support Folder** button opens that directory.
+
+The bundle is opt-in and contains:
+
+- a whitelisted runtime/settings summary;
+- summaries for all three save slots, without raw save payloads;
+- up to five recent GameBase logs, capped at 2 MiB each;
+- a README describing the bundle contents.
+
+Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw `savegame*.json/.tmp/.bak`, `settings.cfg`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
+
 ## When investigating a report
 
 Ask for:
 
-1. the newest `gamebase.log`;
+1. the player-created support bundle when available, or the newest `gamebase.log` otherwise;
 2. the adjacent release `BUILD_INFO.json` when available;
-3. the affected save slot files when the problem is save-specific;
+3. the affected raw save slot files only when the problem is specifically save-related and the player chooses to share them;
 4. the exact action that triggered the issue.
 
 `BUILD_INFO.json` identifies the GameBase version, exact Git commit, actual Godot engine used for the export, whether the source tree was dirty, and the target platform.

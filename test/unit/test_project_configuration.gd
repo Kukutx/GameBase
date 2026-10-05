@@ -36,6 +36,7 @@ func test_input_audio_and_autosave_services_are_registered() -> void:
 	assert_true(project.contains('InputPrompts="*res://game/core/input/input_prompt_service.gd"'))
 	assert_true(project.contains('GameAudio="*res://game/core/audio/game_audio_service.gd"'))
 	assert_true(project.contains('AutoSave="*res://game/core/save/auto_save_service.gd"'))
+	assert_true(project.contains('SupportBundle="*res://game/core/diagnostics/support_bundle_service.gd"'))
 
 func test_game_version_is_semver_and_matches_project_and_diagnostics() -> void:
 	var version := _read_text("res://.game-version").strip_edges()

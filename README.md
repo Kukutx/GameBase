@@ -61,6 +61,7 @@ LIFE_SIMULATION_SMOKE_OK
 - Sleep, defeat/collapse recovery and late-night exhaustion handling
 - Rebindable keyboard controls, D-Pad/analog movement, LT/RT hotbar cycling, device-aware interaction prompts and default gamepad bindings for all core actions
 - Safe periodic/travel autosave using the same atomic backup path as manual saves; autosave can be disabled in Settings
+- Opt-in desktop support bundles with sanitized logs, runtime/settings metadata and save-slot summaries; raw saves and absolute user paths are excluded by default
 - Persistent English / Simplified Chinese UI locale selection, with dialogue localization kept behind Dialogue Manager
 - Data-driven `GameAudio` layer with separate Music/Sounds buses, stable gameplay cue IDs and per-location music slots; production audio streams are intentionally still pending rather than filled with placeholder tracks
 
