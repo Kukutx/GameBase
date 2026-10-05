@@ -48,6 +48,12 @@ func request_autosave(reason: String = "interval") -> bool:
 	autosave_completed.emit(success, reason)
 	return success
 
+func _notification(what: int) -> void:
+	# The window is closing: the handlers run before the tree quits, so the last
+	# minutes of play are written when autosave is on and the game can be saved.
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		request_autosave("quit")
+
 func _on_timer_timeout() -> void:
 	request_autosave("interval")
 
