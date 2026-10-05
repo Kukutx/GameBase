@@ -29,44 +29,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Fails unless .game-version is a semantic version, matches project.godot
+      # and, on a tag build, equals the tag without its leading "v".
       - name: Resolve GameBase version
         id: game
-        shell: bash
-        run: |
-          set -euo pipefail
-          version="$(tr -d '\r\n ' < .game-version)"
-          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
-            echo "Invalid .game-version: $version" >&2
-            exit 1
-          fi
-          if ! grep -Fxq "config/version=\"$version\"" project.godot; then
-            echo "project.godot version does not match .game-version ($version)" >&2
-            exit 1
-          fi
-          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$version" ]]; then
-            echo "Release tag $GITHUB_REF_NAME must exactly match v$version" >&2
-            exit 1
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Using GameBase $version"
+        run: node tools/ci.js game-version
 
       - name: Resolve Godot version
         id: engine
-        shell: bash
         env:
           INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
-        run: |
-          version="$INPUT_ENGINE_VERSION"
-          if [ -z "$version" ]; then
-            version="$(tr -d '\r\n ' < .godot-version)"
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Using Godot $version"
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+        run: node tools/ci.js engine-version
 
       - name: Setup Godot
         uses: chickensoft-games/setup-godot@v2
@@ -76,8 +54,7 @@ jobs:
           include-templates: false
 
       - name: Validate project
-        shell: pwsh
-        run: ./tools/validate.ps1 -GodotBin godot -CleanImport
+        run: node tools/validate.js --godot-bin godot --clean-import
 
   build:
     name: Build ${{ matrix.name }}
@@ -101,10 +78,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.12"
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tools/web_smoke/package-lock.json
 
       - name: Setup Godot with export templates
         uses: chickensoft-games/setup-godot@v2
@@ -114,35 +93,14 @@ jobs:
           include-templates: true
 
       - name: Import project
-        run: godot --headless --path . --editor --quit
+        run: godot --headless --path . --import
 
       - name: Export
-        shell: pwsh
-        env:
-          INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:INPUT_ENGINE_VERSION)) {
-            ./tools/export.ps1 -GodotBin godot -Preset '${{ matrix.preset }}' -SkipValidation
-          }
-          else {
-            ./tools/export.ps1 -GodotBin godot -Preset '${{ matrix.preset }}' -SkipValidation -AllowEngineDrift
-          }
+        run: node tools/export.js --godot-bin godot --preset "${{ matrix.preset }}" --skip-validation ${{ inputs.engine_version && '--allow-engine-drift' || '' }}
 
       - name: Verify Web payload
         if: matrix.name == 'Web'
-        shell: bash
-        run: |
-          test -n "$(find build/web -maxdepth 1 -name '*.wasm' -print -quit)"
-          test -n "$(find build/web -maxdepth 1 -name '*.pck' -print -quit)"
-          test -n "$(find build/web -maxdepth 1 -name '*.js' -print -quit)"
-
-      - name: Setup Node
-        if: matrix.name == 'Web'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: tools/web_smoke/package-lock.json
+        run: node tools/smoke_export.js --target Web
 
       - name: Install Web smoke dependencies
         if: matrix.name == 'Web'
@@ -166,8 +124,7 @@ jobs:
           retention-days: 30
 
       - name: Package deterministically
-        shell: bash
-        run: python tools/package_release.py --target "${{ matrix.name }}"
+        run: node tools/package_release.js --target "${{ matrix.name }}"
 
       - name: Upload packaged build
         uses: actions/upload-artifact@v4
@@ -192,42 +149,22 @@ jobs:
             artifact: release-Linux
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Download packaged build
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact }}
           path: dist
 
-      - name: Smoke Windows package
-        if: matrix.name == 'Windows'
-        shell: pwsh
-        run: |
-          Expand-Archive -Path .\dist\GameBase-windows-x86_64.zip -DestinationPath .\smoke
-          $stdout = Join-Path $env:RUNNER_TEMP "gamebase.stdout.log"
-          $stderr = Join-Path $env:RUNNER_TEMP "gamebase.stderr.log"
-          $process = Start-Process -FilePath ".\smoke\GameBase.exe" -ArgumentList @("--headless", "--quit-after", "120") -RedirectStandardOutput $stdout -RedirectStandardError $stderr -Wait -PassThru
-          Get-Content $stdout, $stderr -ErrorAction SilentlyContinue
-          if ($process.ExitCode -ne 0) {
-            throw "Windows release package exited with code $($process.ExitCode)"
-          }
-          $errors = @(Select-String -Path $stdout, $stderr -Pattern '^(?:ERROR|SCRIPT ERROR):' -CaseSensitive:$false -ErrorAction SilentlyContinue)
-          if ($errors.Count -gt 0) {
-            throw "Windows release package emitted $($errors.Count) Godot runtime error(s)"
-          }
-
-      - name: Smoke Linux package
-        if: matrix.name == 'Linux'
-        shell: bash
-        run: |
-          mkdir -p smoke
-          tar -xzf dist/GameBase-linux-x86_64.tar.gz -C smoke
-          chmod +x smoke/GameBase.x86_64
-          set -o pipefail
-          smoke/GameBase.x86_64 --headless --quit-after 120 2>&1 | tee "$RUNNER_TEMP/gamebase.log"
-          if grep -E '^(ERROR|SCRIPT ERROR):' "$RUNNER_TEMP/gamebase.log"; then
-            echo "Linux release package emitted Godot runtime errors" >&2
-            exit 1
-          fi
+      - name: Smoke packaged build
+        run: node tools/smoke_export.js --target ${{ matrix.name }} --from-package
 
   publish:
     name: Publish GitHub Release
@@ -240,10 +177,10 @@ jobs:
       - name: Checkout release source
         uses: actions/checkout@v5
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.12"
+          node-version: 24
 
       - name: Download packaged builds
         uses: actions/download-artifact@v4
@@ -253,29 +190,12 @@ jobs:
           merge-multiple: true
 
       - name: Validate release tag
-        shell: bash
-        run: |
-          expected="v${{ needs.validate.outputs.game_version }}"
-          if [[ "$GITHUB_REF_NAME" != "$expected" ]]; then
-            echo "Release tag $GITHUB_REF_NAME must exactly match $expected" >&2
-            exit 1
-          fi
+        run: node tools/ci.js verify-tag --expected "${{ needs.validate.outputs.game_version }}"
 
       - name: Validate packages and generate release manifest
-        shell: bash
-        run: |
-          set -euo pipefail
-          python tools/generate_release_manifest.py \
-            --dist dist \
-            --game-version "${{ needs.validate.outputs.game_version }}" \
-            --engine-version "${{ needs.validate.outputs.engine_version }}" \
-            --git-commit "$GITHUB_SHA" \
-            --tag "$GITHUB_REF_NAME"
-          cat dist/SHA256SUMS.txt
+        run: node tools/generate_release_manifest.js --dist dist --game-version "${{ needs.validate.outputs.game_version }}" --engine-version "${{ needs.validate.outputs.engine_version }}" --git-commit "${{ github.sha }}" --tag "${{ github.ref_name }}"
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --generate-notes --verify-tag
+        run: node tools/ci.js publish-release

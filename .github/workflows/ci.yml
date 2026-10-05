@@ -27,23 +27,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Resolve Godot version
         id: engine
-        shell: bash
         env:
           INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
-        run: |
-          version="$INPUT_ENGINE_VERSION"
-          if [ -z "$version" ]; then
-            version="$(tr -d '\r\n ' < .godot-version)"
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Using Godot $version"
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+        run: node tools/ci.js engine-version
 
       - name: Setup Godot
         uses: chickensoft-games/setup-godot@v2
@@ -53,8 +46,7 @@ jobs:
           include-templates: true
 
       - name: Validate project
-        shell: pwsh
-        run: ./tools/validate.ps1 -GodotBin godot -CleanImport
+        run: node tools/validate.js --godot-bin godot --clean-import
 
   export:
     name: Export ${{ matrix.name }}
@@ -66,17 +58,14 @@ jobs:
         include:
           - name: Windows
             preset: Windows Desktop
-            output: build/windows/GameBase.exe
             artifact: gamebase-windows
             path: build/windows
           - name: Linux
             preset: Linux
-            output: build/linux/GameBase.x86_64
             artifact: gamebase-linux
             path: build/linux
           - name: Web
             preset: Web
-            output: build/web/index.html
             artifact: gamebase-web
             path: build/web
 
@@ -84,17 +73,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tools/web_smoke/package-lock.json
+
       - name: Resolve Godot version
         id: engine
-        shell: bash
         env:
           INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
-        run: |
-          version="$INPUT_ENGINE_VERSION"
-          if [ -z "$version" ]; then
-            version="$(tr -d '\r\n ' < .godot-version)"
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+        run: node tools/ci.js engine-version
 
       - name: Setup Godot with export templates
         uses: chickensoft-games/setup-godot@v2
@@ -104,35 +94,14 @@ jobs:
           include-templates: true
 
       - name: Import project
-        run: godot --headless --path . --editor --quit
+        run: godot --headless --path . --import
 
       - name: Export
-        shell: pwsh
-        env:
-          INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:INPUT_ENGINE_VERSION)) {
-            ./tools/export.ps1 -GodotBin godot -Preset '${{ matrix.preset }}' -SkipValidation
-          }
-          else {
-            ./tools/export.ps1 -GodotBin godot -Preset '${{ matrix.preset }}' -SkipValidation -AllowEngineDrift
-          }
+        run: node tools/export.js --godot-bin godot --preset "${{ matrix.preset }}" --skip-validation ${{ inputs.engine_version && '--allow-engine-drift' || '' }}
 
       - name: Verify Web payload
         if: matrix.name == 'Web'
-        shell: bash
-        run: |
-          test -n "$(find build/web -maxdepth 1 -name '*.wasm' -print -quit)"
-          test -n "$(find build/web -maxdepth 1 -name '*.pck' -print -quit)"
-          test -n "$(find build/web -maxdepth 1 -name '*.js' -print -quit)"
-
-      - name: Setup Node
-        if: matrix.name == 'Web'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: tools/web_smoke/package-lock.json
+        run: node tools/smoke_export.js --target Web
 
       - name: Install Web smoke dependencies
         if: matrix.name == 'Web'
@@ -180,36 +149,19 @@ jobs:
             path: build/linux
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Download exported game
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.path }}
 
-      - name: Launch Windows export
-        if: matrix.name == 'Windows'
-        shell: pwsh
-        run: |
-          $stdout = Join-Path $env:RUNNER_TEMP "gamebase.stdout.log"
-          $stderr = Join-Path $env:RUNNER_TEMP "gamebase.stderr.log"
-          $process = Start-Process -FilePath ".\build\windows\GameBase.exe" -ArgumentList @("--headless", "--quit-after", "120") -RedirectStandardOutput $stdout -RedirectStandardError $stderr -Wait -PassThru
-          Get-Content $stdout, $stderr -ErrorAction SilentlyContinue
-          if ($process.ExitCode -ne 0) {
-            throw "Windows export exited with code $($process.ExitCode)"
-          }
-          $errors = @(Select-String -Path $stdout, $stderr -Pattern '^(?:ERROR|SCRIPT ERROR):' -CaseSensitive:$false -ErrorAction SilentlyContinue)
-          if ($errors.Count -gt 0) {
-            throw "Windows export emitted $($errors.Count) Godot runtime error(s)"
-          }
-
-      - name: Launch Linux export
-        if: matrix.name == 'Linux'
-        shell: bash
-        run: |
-          set -o pipefail
-          chmod +x build/linux/GameBase.x86_64
-          ./build/linux/GameBase.x86_64 --headless --quit-after 120 2>&1 | tee "$RUNNER_TEMP/gamebase.log"
-          if grep -E '^(ERROR|SCRIPT ERROR):' "$RUNNER_TEMP/gamebase.log"; then
-            echo "Linux export emitted Godot runtime errors" >&2
-            exit 1
-          fi
+      - name: Launch exported build
+        run: node tools/smoke_export.js --target ${{ matrix.name }}

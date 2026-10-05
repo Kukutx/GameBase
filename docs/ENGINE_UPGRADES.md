@@ -10,7 +10,7 @@ GameBase follows stable Godot 4.x releases without permanently locking the repos
 - Local development may use a newer stable Godot 4.x release before the shared CI baseline is advanced.
 - Development, beta and release-candidate engine builds are not shared baselines unless explicitly requested.
 
-This keeps builds reproducible while allowing regular engine upgrades. `.github/workflows/engine-compat.yml` also runs weekly against the newest stable Godot 4.x release and verifies both the test suite and all release exports without automatically changing the shared baseline. Compatibility exports use `-AllowEngineDrift`; the export tool downloads a temporary official legal bundle for the actual tested stable engine and records that version in `BUILD_INFO.json`. These are compatibility artifacts, not release candidates.
+This keeps builds reproducible while allowing regular engine upgrades. `.github/workflows/engine-compat.yml` also runs weekly against the newest stable Godot 4.x release and verifies both the test suite and all release exports without automatically changing the shared baseline. Compatibility exports use `--allow-engine-drift`; the export tool downloads a temporary official legal bundle for the actual tested stable engine and records that version in `BUILD_INFO.json`. These are compatibility artifacts, not release candidates.
 
 ## Upgrade procedure
 
@@ -19,8 +19,8 @@ This keeps builds reproducible while allowing regular engine upgrades. `.github/
 3. Install the new stable Godot release.
 4. Update the CI baseline through the repository tool:
 
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File tools/update_engine_baseline.ps1 -Version <major.minor.patch>
+   ```text
+   node tools/update_engine_baseline.js --version <major.minor.patch>
    ```
 
    The tool first downloads and validates the official `<version>-stable` `LICENSE.txt` and `COPYRIGHT.txt`. Only after both succeed does it update `.godot-version`, `licenses/GODOT_VERSION.txt`, `licenses/GODOT_LICENSE.txt`, and `licenses/GODOT_COPYRIGHT.txt` together.
@@ -29,9 +29,9 @@ This keeps builds reproducible while allowing regular engine upgrades. `.github/
 6. Review any automatic `project.godot`, scene or resource-format changes.
 7. Run:
 
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File tools/validate.ps1
-   powershell -ExecutionPolicy Bypass -File tools/export.ps1
+   ```text
+   node tools/validate.js
+   node tools/export.js
    ```
 
 8. Verify save migration/recovery tests and a real save/load cycle.
@@ -45,6 +45,6 @@ The current shared validation baseline is Godot 4.7.2. The project feature marke
 
 Do not upgrade a dependency only because a newer major version exists. Prefer the newest compatible patch/minor release that does not force unrelated gameplay migrations. Major addon upgrades should be isolated, migration-tested and reversible.
 
-Run `python tools/check_addon_updates.py` to compare vendored versions against upstream stable tags. `.github/workflows/addon-freshness.yml` runs the same check weekly and maintains a single upgrade-reminder issue when an update is available; it intentionally never mutates addon source automatically.
+Run `node tools/check_addon_updates.js` to compare vendored versions against upstream stable tags. `.github/workflows/addon-freshness.yml` runs the same check weekly and maintains a single upgrade-reminder issue when an update is available; it intentionally never mutates addon source automatically.
 
 Dialogue Manager is on v4.1.0. The v3→v4 migration has been completed: GameBase uses `DialogueResource.cues`/`first_cue`, authored line/response translations use `msgctxt "dialogue"`, and the release PCK verifier preserves the v4 runtime `nodes/` dependencies while excluding editor/debugger tooling. GUT is on the 9.7 line to match Godot 4.7.

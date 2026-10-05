@@ -25,41 +25,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Without an override this resolves the newest stable release of
+      # godotengine/godot; the shared baseline in .godot-version is not moved.
       - name: Resolve target Godot version
         id: engine
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
-        run: |
-          set -euo pipefail
-          version="$INPUT_ENGINE_VERSION"
-          if [ -z "$version" ]; then
-            tag="$(curl -fsSL \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              https://api.github.com/repos/godotengine/godot/releases/latest | jq -r '.tag_name')"
-            if [[ ! "$tag" =~ ^4\.[0-9]+\.[0-9]+-stable$ ]]; then
-              echo "Latest Godot release is not a stable 4.x tag: $tag" >&2
-              exit 1
-            fi
-            version="${tag%-stable}"
-          fi
-          if [[ ! "$version" =~ ^4\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Expected a stable Godot 4.x semantic version; got: $version" >&2
-            exit 1
-          fi
-          baseline="$(tr -d '\r\n ' < .godot-version)"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "baseline=$baseline" >> "$GITHUB_OUTPUT"
-          echo "Target Godot: $version"
-          echo "Shared baseline: $baseline"
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+        run: node tools/ci.js engine-version --latest
 
       - name: Setup target Godot
         uses: chickensoft-games/setup-godot@v2
@@ -69,25 +47,11 @@ jobs:
           include-templates: true
 
       - name: Validate against target engine
-        shell: pwsh
-        run: ./tools/validate.ps1 -GodotBin godot -CleanImport
+        run: node tools/validate.js --godot-bin godot --clean-import
 
       - name: Verify all release exports
-        shell: pwsh
-        run: ./tools/export.ps1 -GodotBin godot -SkipValidation -AllowEngineDrift
+        run: node tools/export.js --godot-bin godot --skip-validation --allow-engine-drift
 
       - name: Compatibility summary
         if: always()
-        shell: bash
-        run: |
-          {
-            echo "## Godot compatibility probe"
-            echo
-            echo "- Shared baseline: `${{ steps.engine.outputs.baseline }}`"
-            echo "- Tested stable version: `${{ steps.engine.outputs.version }}`"
-            if [ "${{ steps.engine.outputs.baseline }}" != "${{ steps.engine.outputs.version }}" ]; then
-              echo "- A newer stable engine is available. Review this run before moving `.godot-version`."
-            else
-              echo "- The shared baseline is already the latest tested stable version."
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: node tools/ci.js compat-summary --baseline "${{ steps.engine.outputs.baseline }}" --version "${{ steps.engine.outputs.version }}"

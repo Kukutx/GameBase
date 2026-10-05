@@ -24,11 +24,11 @@ res://game/ui/title_screen.tscn
 
 Full local validation:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/validate.ps1
+```text
+node tools/validate.js
 ```
 
-The script uses `GODOT_BIN` when set, otherwise `godot` from `PATH`. It accepts newer stable Godot 4.x versions and warns when the local engine differs from the shared CI baseline.
+The tooling needs Node.js 24 or newer and has no other dependency. The script uses `--godot-bin <path>` when given, else `GODOT_BIN` when set, otherwise `godot` from `PATH`. It accepts newer stable Godot 4.x versions and warns when the local engine differs from the shared CI baseline.
 
 A successful runtime integration check ends with:
 
@@ -76,8 +76,10 @@ game/player/    Player scene/controller
 game/ui/        Title, pause, settings and game menus
 test/unit/      Focused GUT regression tests
 test/runtime/   End-to-end life-simulation smoke test
-tools/          Local project utilities
-docs/           Project-specific documentation (release, localization, audio, support, engine upgrades)
+tools/          Node tooling: validation, export, packaging, release checks
+docs/           Project-specific documentation (release, localization, audio, support, engine upgrades, automation policy, official documentation index)
+AGENTS.md       Entry point of the agent instructions
+.agents/        Agent rules, skills, workflows, standards and templates
 ```
 
 New reusable content should normally be added to `game/data/content_manifest.tres` and accessed through `ContentDB` rather than hard-coded lookup tables.
@@ -86,14 +88,14 @@ New reusable content should normally be added to `game/data/content_manifest.tre
 
 The repository tracks `export_presets.cfg` for Windows, Linux and Web. Local exports:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/export.ps1
+```text
+node tools/export.js
 ```
 
 Preferred full pre-release verification:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/release_readiness.ps1
+```text
+node tools/release_readiness.js
 ```
 
 That command performs a clean import, the full test suite, all three exports, native exported-build smoke where supported, and a real Chromium smoke of the Web build.
@@ -108,14 +110,14 @@ GitHub Actions provides:
 
 The game version and engine baseline are intentionally separate. Bump the application version with:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/update_game_version.ps1 -Version <next-semver>
+```text
+node tools/update_game_version.js --version <next-semver>
 ```
 
 The engine version used by CI is read from `.godot-version`. To move the shared validation baseline to a newer stable Godot 4.x release, use the repository tool; it also downloads and validates the matching official Godot LICENSE/COPYRIGHT bundle before moving the baseline:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/update_engine_baseline.ps1 -Version <next-stable-4.x-version>
+```text
+node tools/update_engine_baseline.js --version <next-stable-4.x-version>
 ```
 
 Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md`, `docs/RELEASE.md`, `docs/LOCALIZATION.md`, `docs/AUDIO.md`, and `docs/SUPPORT.md`.
@@ -130,15 +132,15 @@ game/art/licensed/
 
 On the owner's workstation, restore the selected runtime assets with:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/sync_licensed_assets.ps1
+```text
+node tools/sync_licensed_assets.js
 ```
 
 See `docs/LICENSED_ASSETS.md` for the packs currently used and redistribution constraints. Gameplay scenes must remain runnable when those local files are absent; fallback visuals are part of the project design.
 
 ## Development rules
 
-`AGENTS.md` is the source of truth for project constraints. In particular:
+`AGENTS.md` is the entry point of the project constraints; it routes to the rules, skills and workflows under `.agents/`. `node tools/validate_rules.js --strict` checks that tree and runs as part of `node tools/validate.js`. In particular:
 
 - keep the project on stable Godot 4.x and treat `.godot-version` as an updateable CI validation baseline rather than a permanent patch-version lock;
 - prefer built-in Godot features and established, maintained addons;

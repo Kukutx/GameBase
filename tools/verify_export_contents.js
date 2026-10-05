@@ -1,43 +1,18 @@
-[CmdletBinding()]
-param(
-    [Parameter(Mandatory = $true)]
-    [string]$PckPath,
-    [string]$GodotBin = $env:GODOT_BIN
-)
+const fs = require("node:fs");
+const path = require("node:path");
+const { parseArgs } = require("node:util");
+const { fail, main, removeRecursive, resolveGodotBin, rootPath, run } = require("./lib/common");
 
-$ErrorActionPreference = "Stop"
-
-if ([string]::IsNullOrWhiteSpace($GodotBin)) {
-    $GodotBin = "godot"
-}
-
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$ResolvedPck = if ([System.IO.Path]::IsPathRooted($PckPath)) {
-    (Resolve-Path $PckPath).Path
-} else {
-    (Resolve-Path (Join-Path $Root $PckPath)).Path
-}
-
-$GodotCommand = $GodotBin
-if (Test-Path $GodotBin) {
-    $GodotCommand = (Resolve-Path $GodotBin).Path
-}
-
-$ProbeRoot = Join-Path (Join-Path $Root ".dev") ("export-pack-probe-" + $PID)
-New-Item -ItemType Directory -Force -Path $ProbeRoot | Out-Null
-
-$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-$ProjectText = @"
-[application]
+const PROBE_PROJECT = `[application]
 config/name="GameBase Export Pack Probe"
 
 [rendering]
 renderer/rendering_method="gl_compatibility"
-"@
-[System.IO.File]::WriteAllText((Join-Path $ProbeRoot "project.godot"), $ProjectText, $Utf8NoBom)
+`;
 
-$ProbeScript = @'
-extends SceneTree
+// Runs inside an empty project that mounts the exported PCK, so what it sees
+// under res:// is exactly what the package contains.
+const PROBE_SCRIPT = `extends SceneTree
 
 func _initialize() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -91,7 +66,6 @@ func _initialize() -> void:
 		"res://addons/dialogue_manager/export_plugin.gd",
 		"res://addons/dialogue_manager/editor_translation_parser_plugin.gd",
 		"res://addons/dialogue_manager/DialogueManager.cs",
-		"res://addons/dialogue_manager/DialogueManager.cs",
 		"res://addons/dialogue_manager/example_balloon/ExampleBalloon.cs",
 		"res://addons/dialogue_manager/example_balloon/ExampleBalloon.tscn",
 		"res://addons/dialogue_manager/example_balloon/SmallExampleBalloon.tscn",
@@ -111,6 +85,7 @@ func _initialize() -> void:
 		"res://game/art/licensed",
 		"res://tools",
 		"res://docs",
+		"res://.agents",
 		"res://.github",
 		"res://.devmate",
 		"res://build",
@@ -129,29 +104,43 @@ func _initialize() -> void:
 
 	print("EXPORT_CONTENTS_OK")
 	quit(0)
-'@
+`;
 
-$ProbeScriptPath = Join-Path $ProbeRoot "probe.gd"
-[System.IO.File]::WriteAllText($ProbeScriptPath, $ProbeScript, $Utf8NoBom)
-
-$LogPath = Join-Path ([System.IO.Path]::GetTempPath()) ("gamebase-export-pack-probe-" + $PID + ".log")
-Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
-
-try {
-    & $GodotCommand --headless --path $ProbeRoot -s $ProbeScriptPath -- $ResolvedPck 2>&1 | Tee-Object -FilePath $LogPath
-    $ExitCode = $LASTEXITCODE
-    $Output = Get-Content $LogPath -Raw
-
-    if ($ExitCode -ne 0) {
-        throw "Export content verification failed for '$PckPath' with exit code $ExitCode."
+async function verifyExportContents({ pckPath, godotBin }) {
+  const godot = resolveGodotBin(godotBin);
+  const resolvedPck = path.isAbsolute(pckPath) ? pckPath : rootPath(pckPath);
+  if (!fs.existsSync(resolvedPck)) {
+    fail(`Resource pack not found: ${pckPath}`);
+  }
+  const probeRoot = rootPath(".dev", `export-pack-probe-${process.pid}`);
+  fs.mkdirSync(probeRoot, { recursive: true });
+  fs.writeFileSync(path.join(probeRoot, "project.godot"), PROBE_PROJECT, "utf8");
+  const probeScript = path.join(probeRoot, "probe.gd");
+  fs.writeFileSync(probeScript, PROBE_SCRIPT, "utf8");
+  try {
+    const result = await run(godot, ["--headless", "--path", probeRoot, "-s", probeScript, "--", resolvedPck]);
+    if (result.code !== 0) {
+      fail(`Export content verification failed for '${pckPath}' with exit code ${result.code}.`);
     }
-    if ($Output -notmatch "EXPORT_CONTENTS_OK") {
-        throw "Export content verification did not report success for '$PckPath'."
+    if (!result.output.includes("EXPORT_CONTENTS_OK")) {
+      fail(`Export content verification did not report success for '${pckPath}'.`);
     }
-
-    Write-Host "Export content verification passed: $PckPath"
+    console.log(`Export content verification passed: ${pckPath}`);
+  } finally {
+    removeRecursive(probeRoot);
+  }
 }
-finally {
-    Remove-Item $LogPath -Force -ErrorAction SilentlyContinue
-    Remove-Item $ProbeRoot -Recurse -Force -ErrorAction SilentlyContinue
+
+module.exports = { verifyExportContents };
+
+if (require.main === module) {
+  main(async () => {
+    const { values } = parseArgs({
+      options: { pck: { type: "string" }, "godot-bin": { type: "string" } },
+    });
+    if (!values.pck) {
+      fail("Usage: node tools/verify_export_contents.js --pck <path> [--godot-bin <godot>]");
+    }
+    await verifyExportContents({ pckPath: values.pck, godotBin: values["godot-bin"] });
+  });
 }

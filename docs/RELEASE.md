@@ -7,41 +7,42 @@ GameBase has reproducible Windows, Linux and Web exports, strict source validati
 - A valid application SemVer in `.game-version`, matching `project.godot` `application/config/version`.
 - A compatible stable Godot 4.x build. Normal release exports must match the shared `.godot-version` baseline; `licenses/GODOT_VERSION.txt` and the official Godot legal bundle must match that same baseline.
 - Matching Godot export templates.
-- Python 3.12+ for localization coverage validation.
-- Node.js 24+ for the Playwright Web-export smoke test.
+- Node.js 24+ for the repository tooling and the Playwright Web-export smoke test.
 
 Install the export templates for the current shared baseline with:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/install_export_templates.ps1
+```text
+node tools/install_export_templates.js
 ```
 
 ## One-command local release check
 
 The preferred pre-release command is:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/release_readiness.ps1
+```text
+node tools/release_readiness.js
 ```
 
 It performs:
 
 1. repository/instruction/licensed-asset safety checks;
-2. a clean Godot import from a regenerated `.godot/` cache;
-3. GUT unit tests;
-4. runtime integration smoke;
-5. a three-year long-horizon soak (336 day transitions, 12 real disk Save/Load round-trips, and the Year 4 boundary);
-6. main-scene boot smoke;
-7. Windows, Linux and Web release exports;
-8. resource-pack content verification: runtime resources must be present while tests, GUT, local licensed raw art, tools/docs/CI metadata and repository-only files must be absent;
-9. distribution license/notices copied beside each platform payload;
-10. deterministic archive packaging through `tools/package_release.py`, with sorted paths, commit-derived timestamps and canonical permissions/ownership metadata;
-11. Windows exported-build smoke on Windows hosts;
-12. Web payload validation;
-13. deterministic npm install and Chromium setup;
-14. a Playwright browser launch of the Web export with console, page and network error checks, plus live resize checks at 1280×720, 1024×768, 2560×1080 and 800×600; the Godot canvas must remain visible and fully contained in each viewport.
+2. the agent rules and routing check (`tools/validate_rules.js --strict`) and the tool tests (`node --test "tools/*.test.js"`);
+3. a clean Godot import from a regenerated `.godot/` cache;
+4. Simplified Chinese localization coverage and the deterministic packaging self-test;
+5. GUT unit tests, which also load every script and scene under `game/`;
+6. runtime integration smoke;
+7. a three-year long-horizon soak (336 day transitions, 12 real disk Save/Load round-trips, and the Year 4 boundary);
+8. main-scene boot smoke;
+9. Windows, Linux and Web release exports;
+10. resource-pack content verification: runtime resources must be present while tests, GUT, local licensed raw art, tools/docs/CI metadata, the agent instruction tree and repository-only files must be absent;
+11. distribution license/notices copied beside each platform payload;
+12. deterministic archive packaging through `tools/package_release.js`, with sorted paths, commit-derived timestamps and canonical permissions/ownership metadata;
+13. Windows exported-build smoke on Windows hosts;
+14. Web payload validation;
+15. deterministic npm install and Chromium setup;
+16. a Playwright browser launch of the Web export with console, page and network error checks, plus live resize checks at 1280×720, 1024×768, 2560×1080 and 800×600; the Godot canvas must remain visible and fully contained in each viewport.
 
-Use `-SkipBrowserSmoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/release_readiness.ps1` also requires a clean Git working tree so packaged `BUILD_INFO.json` can point to one exact commit with `dirty=false`. `tools/validate.ps1 -SkipSoak` exists only for fast local iteration; CI and release candidates run the soak by default.
+Use `--skip-browser-smoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/release_readiness.js` also requires a clean Git working tree so packaged `BUILD_INFO.json` can point to one exact commit with `dirty=false`. `tools/validate.js` runs steps 2 to 8 and is the single local validation entry point; `tools/validate.js --skip-soak` exists only for fast local iteration, and CI and release candidates run the soak by default. A Godot step fails on a non-zero exit code or on any `ERROR:` or `SCRIPT ERROR:` output line.
 
 Expected outputs:
 
@@ -72,8 +73,8 @@ A change should not be merged while any of these checks fail.
 
 First bump and commit the application version, then tag that exact version:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/update_game_version.ps1 -Version 0.1.0
+```text
+node tools/update_game_version.js --version 0.1.0
 git add .game-version project.godot
 git commit -m "chore: release 0.1.0"
 git tag v0.1.0
@@ -92,9 +93,9 @@ Published assets include:
 - `RELEASE_MANIFEST.json`
 - `SHA256SUMS.txt`
 
-Before publishing, `tools/generate_release_manifest.py` opens every ZIP/TAR package and verifies its internal `BUILD_INFO.json`, GameBase/Godot versions, exact Git commit, clean-source flag, target name, Godot legal marker, third-party notices and required license files. Only then does it emit the external manifest and checksums. `RELEASE_MANIFEST.json` records the game version, Godot/legal-bundle version, vendored Dialogue Manager/GUT versions and the SHA-256/size of all three platform packages.
+Before publishing, `tools/generate_release_manifest.js` opens every ZIP/TAR package and verifies its internal `BUILD_INFO.json`, GameBase/Godot versions, exact Git commit, clean-source flag, target name, Godot legal marker, third-party notices and required license files. Only then does it emit the external manifest and checksums. `RELEASE_MANIFEST.json` records the game version, Godot/legal-bundle version, vendored Dialogue Manager/GUT versions and the SHA-256/size of all three platform packages.
 
-The workflow can also be started manually to test packaging and smoke checks without publishing a GitHub Release. A manual `engine_version` override is treated as a compatibility build: exports explicitly use `-AllowEngineDrift`, synchronize a temporary Godot legal bundle to that actual stable engine, and are not publishable release candidates. Tag-triggered releases use the committed `.godot-version` baseline.
+The workflow can also be started manually to test packaging and smoke checks without publishing a GitHub Release. A manual `engine_version` override is treated as a compatibility build: exports explicitly use `--allow-engine-drift`, synchronize a temporary Godot legal bundle to that actual stable engine, and are not publishable release candidates. Tag-triggered releases use the committed `.godot-version` baseline.
 
 ## Secrets and signing
 

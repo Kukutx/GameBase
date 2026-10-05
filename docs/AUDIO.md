@@ -49,7 +49,7 @@ This is deliberate. Do not add generated beeps, temporary music, or unlicensed t
 3. Assign the imported `AudioStream` to the matching `game/data/audio/*.tres` cue.
 4. Reuse an existing stable cue ID whenever the gameplay meaning is unchanged.
 5. Add a new cue resource and register it in `ContentManifest` only when a genuinely new semantic sound event is needed.
-6. Run `tools/validate.ps1` and release export verification.
+6. Run `tools/validate.js` and release export verification.
 
 Do not put audio file paths in farming, fishing, combat, NPC, shop, quest, or UI gameplay code. Those systems should emit game events or call `GameAudio.play_cue(<stable_id>)`.
 
