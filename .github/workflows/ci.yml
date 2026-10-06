@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload Web smoke diagnostics
         if: matrix.name == 'Web' && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gamebase-web-smoke
           path: artifacts/web-smoke
@@ -125,7 +125,7 @@ jobs:
           retention-days: 7
 
       - name: Upload build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.path }}
