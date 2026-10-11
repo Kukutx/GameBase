@@ -11,6 +11,15 @@ const FISHING := &"fishing"
 const MINING := &"mining"
 const COMBAT := &"combat"
 const SKILL_IDS: Array[StringName] = [FARMING, FORAGING, FISHING, MINING, COMBAT, SOCIAL]
+## The name a skill is shown by, before translation.
+const SKILL_NAMES := {
+	FARMING: "Farming",
+	FORAGING: "Foraging",
+	FISHING: "Fishing",
+	MINING: "Mining",
+	COMBAT: "Combat",
+	SOCIAL: "Social",
+}
 const LEVEL_THRESHOLDS := [0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200]
 const LEVEL_ENTITLEMENT_PREFIX := "__level:"
 
@@ -59,9 +68,13 @@ func add_xp(skill: StringName, amount: int) -> int:
 	skill_xp_changed.emit(skill, next, level)
 	if level > old_level:
 		skill_leveled_up.emit(skill, level)
-		if _events != null and _events.has_method("toast"):
-			_events.call("toast", "%s reached level %d" % [key.capitalize(), level])
+		if _events != null:
+			_events.call("toastf", "%s reached level %d", [SKILL_NAMES[skill], level])
 	return next
+
+## The skill's translated name.
+func get_skill_name(skill: StringName) -> String:
+	return tr(String(SKILL_NAMES.get(skill, skill)))
 
 func get_xp(skill: StringName) -> int:
 	return maxi(int(_xp.get(String(skill), 0)), 0)

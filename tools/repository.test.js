@@ -87,6 +87,24 @@ test("a new game is complete and translated as it is created", () => {
   }
 });
 
+test("a catalog entry translates text of its own layer, and the core's text in the core", () => {
+  const out = tempFile("gamebase-catalog-test");
+  const log = console.log;
+  const lines = [];
+  try {
+    const game = createGame({ id: "probe", name: "Probe Game", out });
+    const catalog = gamePath(game, "game", "i18n", "ui.zh_CN.po");
+    fs.appendFileSync(catalog, '\nmsgid "Spring"\nmsgstr "春"\n\nmsgid "Nobody says this"\nmsgstr "没人说"\n', "utf8");
+    console.log = (line) => lines.push(String(line));
+    assert.equal(checkLocalization(game), 1);
+  } finally {
+    console.log = log;
+    removeRecursive(out);
+  }
+  assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Spring" of gamebase/core: move it to that layer\'s catalog'));
+  assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Nobody says this", which no text of games/probe holds'));
+});
+
 test("GAMEBASE_GAME picks one game but never narrows a repository-wide step", () => {
   const saved = process.env.GAMEBASE_GAME;
   process.env.GAMEBASE_GAME = listGameIds()[0];

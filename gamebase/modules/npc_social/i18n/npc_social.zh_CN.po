@@ -32,3 +32,6 @@ msgstr "%d 颗心"
 
 msgid "Villager"
 msgstr "村民"
+
+msgid " · Birthday!"
+msgstr " · 生日！"

@@ -78,56 +78,17 @@ msgstr "按键绑定"
 msgid "Reset Defaults"
 msgstr "恢复默认"
 
-msgid "Back"
-msgstr "返回"
-
 msgid "Settings are saved automatically."
 msgstr "设置会自动保存。"
 
 msgid "Press a key..."
 msgstr "请按一个按键..."
 
-msgid "Move Up"
-msgstr "向上移动"
-
-msgid "Move Down"
-msgstr "向下移动"
-
-msgid "Move Left"
-msgstr "向左移动"
-
-msgid "Move Right"
-msgstr "向右移动"
-
-msgid "Interact / Reel"
-msgstr "互动 / 收线"
-
-msgid "Use Tool / Item"
-msgstr "使用工具 / 物品"
-
-msgid "Give Gift"
-msgstr "赠送礼物"
-
-msgid "Pack Building"
-msgstr "收起建筑"
-
-msgid "Open Menu"
-msgstr "打开菜单"
-
-msgid "Quick Save"
-msgstr "快速保存"
-
-msgid "Quick Load"
-msgstr "快速读取"
-
 msgid "Items"
 msgstr "物品"
 
 msgid "Quests"
 msgstr "任务"
-
-msgid "Social"
-msgstr "社交"
 
 msgid "Skills"
 msgstr "技能"
@@ -188,9 +149,6 @@ msgstr "保存失败：%s"
 
 msgid "Load failed: %s"
 msgstr "读取失败：%s"
-
-msgid "%s %d  %02d:%02d"
-msgstr "%s %d日  %02d:%02d"
 
 msgid "HP %d/%d   ·   Energy %d/%d   ·   %dg"
 msgstr "生命 %d/%d   ·   体力 %d/%d   ·   %dg"
@@ -270,9 +228,6 @@ msgstr "未来 28 天没有生日。"
 msgid "Residents"
 msgstr "居民"
 
-msgid "Unknown"
-msgstr "未知"
-
 msgid "Collections"
 msgstr "收藏"
 
@@ -287,27 +242,6 @@ msgstr "野外"
 
 msgid "Dungeon"
 msgstr "地下区域"
-
-msgid "Spring"
-msgstr "春季"
-
-msgid "Summer"
-msgstr "夏季"
-
-msgid "Autumn"
-msgstr "秋季"
-
-msgid "Winter"
-msgstr "冬季"
-
-msgid "Clear"
-msgstr "晴朗"
-
-msgid "Rain"
-msgstr "下雨"
-
-msgid "Storm"
-msgstr "暴风雨"
 
 msgid "Starter Town"
 msgstr "起始镇"
@@ -534,18 +468,6 @@ msgstr "港口鱼商"
 msgid "Riverside carpenter"
 msgstr "河畔木匠"
 
-msgid "Farming"
-msgstr "耕作"
-
-msgid "Foraging"
-msgstr "采集"
-
-msgid "Fishing"
-msgstr "钓鱼"
-
-msgid "Combat"
-msgstr "战斗"
-
 msgid "Coop"
 msgstr "鸡舍"
 
@@ -645,12 +567,6 @@ msgstr "村庄集市"
 msgid "Talk"
 msgstr "交谈"
 
-msgid "product"
-msgstr "产物"
-
-msgid "Feed"
-msgstr "饲料"
-
 msgid "Nothing to use %s on"
 msgstr "没有可使用%s的目标"
 
@@ -695,9 +611,6 @@ msgstr "已收起%s"
 
 msgid "structure"
 msgstr "建筑"
-
-msgid "feed"
-msgstr "饲料"
 
 msgid "Fresh Catch"
 msgstr "新鲜渔获"
@@ -866,9 +779,6 @@ msgstr "+%d 生命"
 
 msgid "Ate %s%s"
 msgstr "吃了%s%s"
-
-msgid " · Birthday!"
-msgstr " · 生日！"
 
 msgid "food"
 msgstr "食物"
@@ -2192,21 +2102,6 @@ msgstr "已创建支持诊断包：%s"
 
 msgid "Finish fishing before saving"
 msgstr "请先结束钓鱼再保存"
-
-msgid "Could not update compatible backup (%d)"
-msgstr "无法更新兼容备份（%d）"
-
-msgid "Game saved to compatible backup · newer primary preserved"
-msgstr "已保存到兼容备份 · 较新的主存档已保留"
-
-msgid "Save file is from a newer game version"
-msgstr "该存档来自更新的游戏版本"
-
-msgid "Loaded Slot %d from compatible temporary save · newer primary preserved"
-msgstr "已从兼容的临时存档读取存档位 %d · 较新的主存档已保留"
-
-msgid "Loaded Slot %d from compatible backup · newer primary preserved"
-msgstr "已从兼容备份读取存档位 %d · 较新的主存档已保留"
 
 msgid "Advanced time by 1 hour"
 msgstr "时间已推进 1 小时"

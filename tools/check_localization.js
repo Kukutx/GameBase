@@ -8,7 +8,10 @@ const { gamePath, projectSetting, readFoundation, resolveGames } = require("./li
 // each module ship their own catalogs under <layer>/i18n/<name>.<locale>.po,
 // and a game translates only its own text. A game registers the catalogs of
 // every layer it uses in locale/translations, and a layer's text may be
-// translated only by its own catalogs or those of the layers below it.
+// translated only by its own catalogs or those of the layers below it. An
+// entry translates text its own layer holds, and text the core holds is
+// translated by the core, and text a module holds by a module, so every game
+// that uses that layer gets the translation.
 function textLayers(game) {
   const foundation = readFoundation();
   const core = { name: "gamebase/core", root: rootPath("gamebase", "core"), res: "res://gamebase/core/", below: [] };
@@ -53,8 +56,9 @@ function registeredCatalogs(game, layers) {
   return catalogs;
 }
 
-// Calls whose first argument is player-visible source text.
-const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(/g;
+// Calls whose first argument is player-visible source text, including a toast
+// sent through a reference to GameEvents (`events.call("toastf", "...", args)`).
+const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\s*/g;
 
 // Player-facing fields of data resources.
 const DATA_RE = /^(?:display_name|title|description|subject|body|role|activity) = "((?:[^"\\]|\\.)*)"$/gm;
@@ -170,6 +174,46 @@ function collectDialogueKeys(layer) {
   return keys;
 }
 
+// Every string a layer holds, wherever it sits: the literals of its scripts
+// (not StringNames, node paths or comments), the property values of its scenes
+// and resources (not resource paths), and its dialogue lines. Text that travels
+// as data, such as a season name or a fallback label, is found here although the
+// translation calls never name it.
+function layerLiterals(layer) {
+  const literals = new Set(collectDialogueKeys(layer));
+  const add = (raw) => {
+    const value = decodeString(raw);
+    if (value && !/^(?:res|uid|user):\/\//.test(value)) literals.add(value);
+  };
+  for (const file of walk(layer.root, ".gd")) {
+    for (const line of readText(file).split(/\r?\n/)) {
+      let index = 0;
+      while (index < line.length && line[index] !== "#") {
+        if (line[index] !== '"') {
+          index += 1;
+          continue;
+        }
+        let end = index + 1;
+        while (end < line.length && line[end] !== '"') end += line[end] === "\\" ? 2 : 1;
+        if (index === 0 || (line[index - 1] !== "&" && line[index - 1] !== "^")) add(line.slice(index + 1, end));
+        index = end + 1;
+      }
+    }
+  }
+  for (const file of [...walk(layer.root, ".tscn"), ...walk(layer.root, ".tres")]) {
+    for (const [, value] of readText(file).matchAll(/^[\w/]+ = (.+)$/gm)) {
+      for (const [, raw] of value.matchAll(/(?<![&^])"((?:[^"\\]|\\.)*)"/g)) add(raw);
+    }
+  }
+  return literals;
+}
+
+// Text the core holds is translated by the core, text a module holds by a
+// module, and only the rest by the game.
+function tier(layer) {
+  return layer.game ? 2 : layer.name === "gamebase/core" ? 0 : 1;
+}
+
 // A game's data resources are under game/data; the foundation ships none.
 function collectNonDialogueKeys(layer) {
   const keys = new Set();
@@ -256,14 +300,23 @@ function checkLocalization(game, { reportOnly = false } = {}) {
     }
   }
 
+  const literals = new Map(layers.map((layer) => [layer.name, layerLiterals(layer)]));
   for (const locale of locales) {
     const inLocale = catalogs.filter((catalog) => catalog.locale === locale);
     const owners = new Map();
     for (const catalog of inLocale) {
+      const layer = layers.find((candidate) => candidate.name === catalog.layer);
       for (const key of entries.get(catalog).keys()) {
         if (key === "\u0000") continue; // the header
-        if (owners.has(key)) problems.push(`${catalog.res} repeats "${key.replace("\u0000", " ")}", which ${owners.get(key)} already translates`);
+        const text = key.slice(key.indexOf("\u0000") + 1);
+        if (owners.has(key)) problems.push(`${catalog.res} repeats "${text}", which ${owners.get(key)} already translates`);
         else owners.set(key, catalog.res);
+        const holders = layer.below
+          .map((name) => layers.find((candidate) => candidate.name === name))
+          .filter((candidate) => tier(candidate) < tier(layer) && literals.get(candidate.name).has(text));
+        const lowest = holders.filter((candidate) => tier(candidate) === Math.min(...holders.map(tier)));
+        if (lowest.length > 0) problems.push(`${catalog.res} translates "${text}" of ${lowest.map((candidate) => candidate.name).join(" or ")}: move it to that layer's catalog`);
+        else if (!literals.get(layer.name).has(text)) problems.push(`${catalog.res} translates "${text}", which no text of ${layer.name} holds`);
       }
     }
     let total = 0;
@@ -287,7 +340,7 @@ function checkLocalization(game, { reportOnly = false } = {}) {
   return problems.length > 0 && !reportOnly ? 1 : 0;
 }
 
-module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPoEntries, textLayers };
+module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPoEntries, layerLiterals, textLayers };
 
 if (require.main === module) {
   main(() => {

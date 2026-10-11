@@ -41,6 +41,13 @@ func test_hud_summaries_are_translated() -> void:
 	assert_true(BuffState.apply_buff(&"hearty_worker"))
 	_assert_translated(BuffState.get_summary(), "buff summary")
 
+func test_foundation_names_are_translated_by_the_foundation() -> void:
+	_assert_translated(WorldClock.get_calendar_text(), "calendar text")
+	_assert_translated(tr(WeatherState.get_weather_name(GameWeatherSystem.Weather.STORM)), "weather name")
+	_assert_translated(GameSettings.get_control_label(&"give_gift"), "control label")
+	for skill: StringName in SkillManager.SKILL_IDS:
+		_assert_translated(Skills.get_skill_name(skill), "skill %s" % skill)
+
 func test_skill_passives_are_translated_at_every_tier() -> void:
 	for skill: StringName in SkillManager.SKILL_IDS:
 		_assert_translated(Skills.get_perk_summary(skill), "%s passive before Lv5" % skill)

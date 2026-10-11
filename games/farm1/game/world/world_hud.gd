@@ -115,8 +115,7 @@ func _refresh_clock() -> void:
 	var location := ContentDB.get_current_location(get_tree())
 	var location_id := location.id if location != null else &""
 	var event_summary := EventState.get_summary(location_id)
-	var calendar_text := tr("%s %d  %02d:%02d") % [tr(WorldClock.get_season_name()), WorldClock.get_day_of_season(), WorldClock.get_hour(), WorldClock.get_minute()]
-	clock_label.text = "%s · %s" % [calendar_text, tr(WeatherState.get_weather_name())]
+	clock_label.text = "%s · %s" % [WorldClock.get_calendar_text(), tr(WeatherState.get_weather_name())]
 	if not event_summary.is_empty():
 		clock_label.text += " · " + event_summary
 
