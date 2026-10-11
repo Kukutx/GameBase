@@ -11,4 +11,4 @@ func test_mira_birthday_is_spring_fourteen() -> void:
 	assert_true(profile.is_birthday(14))
 	assert_false(profile.is_birthday(13))
 	assert_false(profile.is_birthday(15))
-	assert_false(profile.is_birthday(14 + GameClock.DAYS_PER_SEASON), "Summer 14 is not her birthday")
+	assert_false(profile.is_birthday(14 + GameCalendar.current().days_per_season), "Summer 14 is not her birthday")

@@ -105,7 +105,7 @@ func continue_game() -> bool:
 	return success
 
 func _on_minute_changed(day: int, minute_of_day: int) -> void:
-	if minute_of_day != 2 * 60 or _handling_late_night or _handling_defeat:
+	if minute_of_day != GameCalendar.current().collapse_minute or _handling_late_night or _handling_defeat:
 		return
 	if get_tree().get_first_node_in_group("player") == null:
 		return
@@ -115,12 +115,13 @@ func _handle_late_night(day: int) -> void:
 	var definition := GameDefinition.current()
 	if _handling_late_night or _handling_defeat:
 		return
-	if WorldClock.day != day or WorldClock.minute_of_day != 2 * 60:
+	var calendar := GameCalendar.current()
+	if WorldClock.day != day or WorldClock.minute_of_day != calendar.collapse_minute:
 		return
 	if get_tree().get_first_node_in_group("player") == null:
 		return
 	_handling_late_night = true
-	WorldClock.set_time(day, 6 * 60)
+	WorldClock.set_time(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
 	PlayerState.set_energy(maxi(PlayerState.max_energy / 2, 1))
 	PlayerState.restore_full_health()
 	var current_location := WorldLocationData.find_current(get_tree())
@@ -151,7 +152,8 @@ func _handle_player_defeat() -> void:
 	var loss := 0
 	if PlayerState.money > 0:
 		loss = PlayerState.lose_money(maxi(int(ceil(float(PlayerState.money) * 0.10)), 1))
-	WorldClock.set_time(WorldClock.day + 1, 6 * 60)
+	var calendar := GameCalendar.current()
+	WorldClock.set_time(calendar.get_wake_day(WorldClock.day, WorldClock.minute_of_day), calendar.wake_minute)
 	PlayerState.restore_full_energy()
 	PlayerState.restore_full_health()
 	var current_location := WorldLocationData.find_current(get_tree())

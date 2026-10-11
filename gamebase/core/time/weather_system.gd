@@ -49,7 +49,7 @@ static func find_odds_problems(odds: Array[WeatherOdds]) -> PackedStringArray:
 		if entry == null:
 			problems.append("the game lists empty weather odds")
 			continue
-		if not GameClock.SEASON_NAMES.has(entry.season):
+		if not GameCalendar.current().has_season(entry.season):
 			problems.append("weather odds name unknown season '%s'" % entry.season)
 		elif seen.has(entry.season):
 			problems.append("weather odds list season '%s' twice" % entry.season)
@@ -59,7 +59,7 @@ static func find_odds_problems(odds: Array[WeatherOdds]) -> PackedStringArray:
 	return problems
 
 func _roll(day: int) -> Weather:
-	var season := GameClock.get_season_name_for_day(day)
+	var season := GameCalendar.current().get_season_name(day)
 	for odds: WeatherOdds in GameDefinition.current().weather_odds:
 		if odds != null and odds.season == season:
 			var roll := GameRandom.stream("weather:%d" % day).randf()

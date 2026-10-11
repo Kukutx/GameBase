@@ -31,7 +31,7 @@ func matches(target_npc_id: StringName, hearts: int, target_location_id: StringN
 		return false
 	if location_id != &"" and target_location_id != location_id:
 		return false
-	if not seasons.is_empty() and not seasons.has(GameClock.get_season_name_for_day(day)):
+	if not seasons.is_empty() and not seasons.has(GameCalendar.current().get_season_name(day)):
 		return false
 	if minute_of_day < start_minute or minute_of_day >= end_minute:
 		return false
@@ -50,6 +50,6 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	if end_minute <= start_minute:
 		problems.append("has an invalid time window")
 	for season: String in seasons:
-		if not GameClock.SEASON_NAMES.has(season):
+		if not GameCalendar.current().has_season(season):
 			problems.append("has unknown season '%s'" % season)
 	return problems

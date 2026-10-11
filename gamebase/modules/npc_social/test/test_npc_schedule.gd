@@ -1,5 +1,7 @@
 extends GutTest
 
+const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+
 func test_schedule_selects_latest_entry_before_time() -> void:
 	var schedule := NpcSchedule.new()
 	add_child_autofree(schedule)
@@ -60,6 +62,17 @@ func test_schedule_filters_by_season_and_weekday() -> void:
 	assert_eq(schedule.get_entry_for_minute(8 * 60 + 30, 1), spring_monday)
 	assert_eq(schedule.get_entry_for_minute(8 * 60 + 30, 2), fallback)
 	assert_eq(schedule.get_entry_for_minute(8 * 60 + 30, 29), fallback)
+
+func test_schedule_weekdays_follow_the_game_s_week() -> void:
+	var calendar := GameCalendar.new()
+	calendar.days_per_week = 5
+	var definition := GameDefinition.new()
+	definition.calendar = calendar
+	var market := NpcScheduleEntry.new()
+	market.days_of_week = PackedInt32Array([4])
+	var days: Array = ContentFixture.with_definition(definition, func() -> Array:
+		return range(1, 12).filter(func(day: int) -> bool: return market.matches(day, market.minute_of_day)))
+	assert_eq(days, [5, 10], "weekday 4 of a five-day week")
 
 func test_schedule_entries_follow_their_condition() -> void:
 	var previous := WorldState.to_save_data()

@@ -14,12 +14,12 @@ func after_each() -> void:
 	GameRandom.set_seed(_seed)
 
 func test_seasons_roll_every_28_days() -> void:
-	assert_eq(GameClock.get_season_name_for_day(1), "Spring")
-	assert_eq(GameClock.get_season_name_for_day(28), "Spring")
-	assert_eq(GameClock.get_season_name_for_day(29), "Summer")
-	assert_eq(GameClock.get_season_name_for_day(57), "Autumn")
-	assert_eq(GameClock.get_season_name_for_day(85), "Winter")
-	assert_eq(GameClock.get_season_name_for_day(113), "Spring")
+	assert_eq(GameCalendar.current().get_season_name(1), "Spring")
+	assert_eq(GameCalendar.current().get_season_name(28), "Spring")
+	assert_eq(GameCalendar.current().get_season_name(29), "Summer")
+	assert_eq(GameCalendar.current().get_season_name(57), "Autumn")
+	assert_eq(GameCalendar.current().get_season_name(85), "Winter")
+	assert_eq(GameCalendar.current().get_season_name(113), "Spring")
 
 func test_weather_follows_the_games_odds_for_each_season() -> void:
 	var definition := _definition([_odds("Spring", 0.0, 1.0), _odds("Summer", 1.0, 0.0)])
@@ -50,7 +50,7 @@ func test_odds_problems_name_the_season() -> void:
 
 func _spring(weather: GameWeatherSystem) -> Array:
 	var result: Array = []
-	for day: int in range(1, GameClock.DAYS_PER_SEASON + 1):
+	for day: int in range(1, GameCalendar.current().days_per_season + 1):
 		result.append(weather.get_weather_for_day(day))
 	return result
 

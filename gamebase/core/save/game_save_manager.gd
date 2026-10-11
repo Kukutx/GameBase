@@ -156,8 +156,8 @@ func get_slot_summary(slot: int) -> Dictionary:
 		"saved_at_unix": _snapshot_timestamp(data) / 1000,
 		"location_id": String(data.get("location_id", "")),
 		"day": day,
-		"season": GameClock.get_season_name_for_day(day),
-		"day_of_season": posmod(day - 1, GameClock.DAYS_PER_SEASON) + 1,
+		"season": GameCalendar.current().get_season_name(day),
+		"day_of_season": GameCalendar.current().get_day_of_season(day),
 		"minute_of_day": clampi(_safe_int(clock.get("minute_of_day", 0), 0), 0, GameClock.MINUTES_PER_DAY - 1),
 		"money": maxi(_safe_int(player_state.get("money", 0), 0), 0),
 	}

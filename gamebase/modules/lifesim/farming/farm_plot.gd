@@ -242,10 +242,10 @@ func _advance_to_day(target_day: int) -> void:
 func _process_day_transition(day: int) -> void:
 	var crop := CropData.find(crop_id)
 	if crop != null:
-		var previous_season := GameClock.get_season_name_for_day(maxi(day - 1, 1))
+		var previous_season := GameCalendar.current().get_season_name(maxi(day - 1, 1))
 		if watered and crop.can_grow_in(previous_season):
 			growth_days = mini(growth_days + 1, crop.days_to_mature)
-		var next_season := GameClock.get_season_name_for_day(day)
+		var next_season := GameCalendar.current().get_season_name(day)
 		if not crop.can_grow_in(next_season):
 			# Immature crops fail immediately on the season boundary. A crop that
 			# finishes maturing from the previous valid day gets one grace day to be

@@ -919,9 +919,10 @@ func _clear_current_mine_floor(mine: Node) -> void:
 ## any are given, or -1.
 func _find_weather_day_after(weather_name: String, start_day: int, seasons := PackedStringArray()) -> int:
 	var weather := root.get_node("WeatherState")
-	var clock := root.get_node("WorldClock")
+	# Loaded rather than named: this script compiles before the autoloads exist.
+	var calendar: Resource = load("res://gamebase/core/time/game_calendar.gd").call("current")
 	for day in range(maxi(start_day, 1), maxi(start_day, 1) + 730):
-		if not seasons.is_empty() and not seasons.has(clock.get_season_name_for_day(day)):
+		if not seasons.is_empty() and not seasons.has(calendar.call("get_season_name", day)):
 			continue
 		if weather.get_weather_name(weather.get_weather_for_day(day)) == weather_name:
 			return day

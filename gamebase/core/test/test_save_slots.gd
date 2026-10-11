@@ -86,7 +86,7 @@ func test_slot_summary_describes_the_save() -> void:
 	assert_eq(int(summary["version"]), GameSaveManager.SAVE_VERSION)
 	assert_eq(String(summary["location_id"]), String(LOCATION))
 	assert_eq(int(summary["day"]), 68)
-	assert_eq(String(summary["season"]), GameClock.get_season_name_for_day(68))
+	assert_eq(String(summary["season"]), GameCalendar.current().get_season_name(68))
 	assert_eq(int(summary["minute_of_day"]), 600)
 	assert_eq(int(summary["money"]), 4321)
 	assert_false(bool(_manager.get_slot_summary(3)["exists"]))

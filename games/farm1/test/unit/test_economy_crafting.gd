@@ -88,7 +88,7 @@ func test_general_store_has_no_buy_sell_arbitrage() -> void:
 	assert_not_null(shop)
 	if shop == null:
 		return
-	for season: String in GameClock.SEASON_NAMES:
+	for season: String in GameCalendar.current().season_names:
 		var stock := shop.get_stock(season)
 		for raw_id: Variant in stock.keys():
 			var item := ItemData.find(StringName(String(raw_id)))

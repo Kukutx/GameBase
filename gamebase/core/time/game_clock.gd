@@ -5,11 +5,11 @@ signal minute_changed(day: int, minute_of_day: int)
 signal hour_changed(day: int, hour: int)
 signal day_changed(day: int)
 
-const MINUTES_PER_DAY := 24 * 60
-const DAYS_PER_SEASON := 28
-const SEASON_NAMES := ["Spring", "Summer", "Autumn", "Winter"]
+## The world's clock: the day and the minute of the day, run by real time
+## while not paused. How the days group into seasons and weeks, how fast
+## minutes pass and when night falls is the game's `GameCalendar`.
 
-@export_range(0.05, 10.0, 0.05) var real_seconds_per_game_minute := 0.7
+const MINUTES_PER_DAY := 24 * 60
 
 var day := 1
 var minute_of_day := 8 * 60
@@ -17,16 +17,42 @@ var paused := false
 var _elapsed := 0.0
 
 func _process(delta: float) -> void:
-	if paused or real_seconds_per_game_minute <= 0.0:
+	var minute_length := GameCalendar.current().real_seconds_per_game_minute
+	if paused or minute_length <= 0.0:
 		return
 	_elapsed += delta
-	while _elapsed >= real_seconds_per_game_minute:
-		_elapsed -= real_seconds_per_game_minute
+	while _elapsed >= minute_length:
+		_elapsed -= minute_length
 		_advance_one_minute()
 
+## Runs the clock `amount` minutes on, each minute as if it passed.
 func advance_minutes(amount: int) -> void:
 	for _index in range(maxi(amount, 0)):
 		_advance_one_minute()
+
+## Runs the clock on, each minute as if it passed, until `condition` (a
+## `GameRules` query, asked about the clock's day and minute) holds, for at
+## most `limit` minutes: waiting for the evening, the next market day or a
+## festival. Returns how many minutes passed, or -1 when the condition did not
+## hold within the limit (the clock then stands `limit` minutes on). While the
+## player is up, the wait also ends at the calendar's collapse minute, where
+## they collapse, with -1. A condition that is not a valid query moves nothing.
+func advance_until(condition: String, limit: int) -> int:
+	var problems := GameRules.validate_query(condition)
+	if not GameRulesService.find_event_arg_uses(PackedStringArray([condition])).is_empty():
+		problems.append("only a trigger's conditions name event arguments ($name)")
+	if not problems.is_empty():
+		push_warning("GameClock: cannot wait until '%s': %s" % [condition, "; ".join(problems)])
+		return -1
+	var collapse_minute := GameCalendar.current().collapse_minute
+	for passed: int in range(maxi(limit, 0) + 1):
+		if GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day}):
+			return passed
+		if passed > 0 and minute_of_day == collapse_minute and get_tree().get_first_node_in_group(&"player") != null:
+			return -1
+		if passed < limit:
+			_advance_one_minute()
+	return -1
 
 func set_time(new_day: int, new_minute_of_day: int) -> void:
 	var normalized_day := maxi(new_day, 1)
@@ -55,25 +81,25 @@ func get_calendar_text() -> String:
 	return tr("%s %d  %02d:%02d") % [tr(get_season_name()), get_day_of_season(), get_hour(), get_minute()]
 
 func get_season_index() -> int:
-	return get_season_index_for_day(day)
+	return GameCalendar.current().get_season_index(day)
 
 func get_season_name() -> String:
-	return get_season_name_for_day(day)
+	return GameCalendar.current().get_season_name(day)
 
 func get_day_of_season() -> int:
-	return posmod(day - 1, DAYS_PER_SEASON) + 1
+	return GameCalendar.current().get_day_of_season(day)
 
-static func get_season_index_for_day(target_day: int) -> int:
-	return posmod((maxi(target_day, 1) - 1) / DAYS_PER_SEASON, SEASON_NAMES.size())
+func get_year() -> int:
+	return GameCalendar.current().get_year(day)
 
-static func get_season_name_for_day(target_day: int) -> String:
-	return String(SEASON_NAMES[get_season_index_for_day(target_day)])
+func get_weekday() -> int:
+	return GameCalendar.current().get_weekday(day)
 
 func get_day_progress() -> float:
 	return float(minute_of_day) / float(MINUTES_PER_DAY)
 
 func is_night() -> bool:
-	return minute_of_day < 6 * 60 or minute_of_day >= 20 * 60
+	return GameCalendar.current().is_night(minute_of_day)
 
 func to_save_data() -> Dictionary:
 	return {
@@ -83,9 +109,9 @@ func to_save_data() -> Dictionary:
 
 func load_save_data(data: Dictionary) -> void:
 	var raw_day: Variant = data.get("day", 1)
-	var raw_minute: Variant = data.get("minute_of_day", 8 * 60)
+	var raw_minute: Variant = data.get("minute_of_day", GameDefinition.current().start_minute_of_day)
 	var loaded_day := int(raw_day) if typeof(raw_day) == TYPE_INT or typeof(raw_day) == TYPE_FLOAT else 1
-	var loaded_minute := int(raw_minute) if typeof(raw_minute) == TYPE_INT or typeof(raw_minute) == TYPE_FLOAT else 8 * 60
+	var loaded_minute := int(raw_minute) if typeof(raw_minute) == TYPE_INT or typeof(raw_minute) == TYPE_FLOAT else GameDefinition.current().start_minute_of_day
 	set_time(loaded_day, loaded_minute)
 
 func _advance_one_minute() -> void:

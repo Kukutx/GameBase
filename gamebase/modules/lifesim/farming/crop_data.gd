@@ -8,7 +8,8 @@ const KIND := &"crop"
 @export_range(0, 60, 1) var regrow_days := 0
 @export var harvest_item_id: StringName
 @export_range(1, 99, 1) var harvest_quantity := 1
-@export var allowed_seasons: PackedStringArray = ["Spring", "Summer", "Autumn", "Winter"]
+## Seasons of the game's calendar it grows in; empty: every season.
+@export var allowed_seasons: PackedStringArray = PackedStringArray()
 @export var sprout_color := Color(0.36, 0.68, 0.28, 1.0)
 @export var mature_color := Color(0.52, 0.78, 0.32, 1.0)
 
@@ -33,7 +34,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	elif harvest.kind != ItemData.Kind.CROP:
 		problems.append("harvest item '%s' is not a CROP item" % harvest_item_id)
 	for season: String in allowed_seasons:
-		if not GameClock.SEASON_NAMES.has(season):
+		if not GameCalendar.current().has_season(season):
 			problems.append("has unknown season '%s'" % season)
 	return problems
 

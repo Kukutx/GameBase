@@ -89,7 +89,7 @@ func test_storm_eel_contracts_are_offered_only_while_a_storm_window_remains() ->
 	for seed in range(1, 500):
 		GameRandom.set_seed(seed)
 		for day in range(1, 83):
-			if GameClock.get_season_name_for_day(day) == "Winter":
+			if GameCalendar.current().get_season_name(day) == "Winter":
 				continue
 			if WeatherState.get_weather_name(WeatherState.get_weather_for_day(day)) != "Storm":
 				continue

@@ -54,7 +54,7 @@ func test_all_playable_towns_expose_all_core_npc_instances_for_schedule_presence
 func _first_day_on(event: CalendarEventData, minute_of_day: int) -> int:
 	if event == null:
 		return 0
-	for day: int in range(1, GameClock.DAYS_PER_SEASON * GameClock.SEASON_NAMES.size() + 1):
+	for day: int in range(1, GameCalendar.current().get_days_per_year() + 1):
 		if event.is_active(day, minute_of_day):
 			return day
 	return 0

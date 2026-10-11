@@ -25,7 +25,7 @@ static func find_all() -> Array[FishData]:
 func is_available(location_id: StringName, day: int, minute_of_day: int, weather_name: String) -> bool:
 	if not locations.is_empty() and not locations.has(location_id):
 		return false
-	var season := GameClock.get_season_name_for_day(day)
+	var season := GameCalendar.current().get_season_name(day)
 	if not seasons.is_empty() and not seasons.has(season):
 		return false
 	if not allowed_weather.is_empty() and not allowed_weather.has(weather_name):
@@ -48,7 +48,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		if not registry.has_entry(WorldLocationData.KIND, location_id):
 			problems.append("references unknown location '%s'" % location_id)
 	for season: String in seasons:
-		if not GameClock.SEASON_NAMES.has(season):
+		if not GameCalendar.current().has_season(season):
 			problems.append("has unknown season '%s'" % season)
 	for weather_name: String in allowed_weather:
 		if not GameWeatherSystem.WEATHER_NAMES.has(weather_name):

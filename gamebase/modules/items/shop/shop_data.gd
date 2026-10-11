@@ -47,7 +47,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	for raw_season: Variant in seasonal_stock:
 		var season := String(raw_season)
 		var seasonal: Variant = seasonal_stock[raw_season]
-		if not GameClock.SEASON_NAMES.has(season):
+		if not GameCalendar.current().has_season(season):
 			problems.append("has unknown season '%s'" % season)
 		elif not seasonal is Dictionary:
 			problems.append("seasonal stock '%s' is not a Dictionary" % season)

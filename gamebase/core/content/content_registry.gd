@@ -123,6 +123,7 @@ func index() -> PackedStringArray:
 func find_problems() -> PackedStringArray:
 	var problems := GameSettingsService.find_control_problems(GameSettingsService.game_controls())
 	problems.append_array(GameWeatherSystem.find_odds_problems(GameDefinition.current().weather_odds))
+	problems.append_array(GameCalendar.current().find_problems())
 	for kind: StringName in get_kinds():
 		for entry: ContentEntry in get_entries(kind):
 			problems.append_array(find_entry_problems(entry))

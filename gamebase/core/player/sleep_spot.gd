@@ -12,8 +12,8 @@ func _on_interacted(_actor: Node) -> void:
 	if _sleeping:
 		return
 	_sleeping = true
-	var next_day := WorldClock.day + 1
-	WorldClock.set_time(next_day, 6 * 60)
+	var calendar := GameCalendar.current()
+	WorldClock.set_time(calendar.get_wake_day(WorldClock.day, WorldClock.minute_of_day), calendar.wake_minute)
 	PlayerState.restore_full_energy()
 	PlayerState.restore_full_health()
 	SaveManager.save_game()

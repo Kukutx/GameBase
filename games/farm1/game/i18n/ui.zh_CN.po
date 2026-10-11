@@ -213,8 +213,8 @@ msgstr " · 今年已参加"
 msgid "• %s%s — %s %d, %02d:%02d @ %s"
 msgstr "• %s%s — %s %d日，%02d:%02d @ %s"
 
-msgid "No events in the next 28 days."
-msgstr "未来 28 天没有活动。"
+msgid "No events in the next %d days."
+msgstr "未来 %d 天没有活动。"
 
 msgid "Upcoming birthdays"
 msgstr "近期生日"
@@ -222,8 +222,8 @@ msgstr "近期生日"
 msgid "• %s — %s %d"
 msgstr "• %s — %s %d日"
 
-msgid "No birthdays in the next 28 days."
-msgstr "未来 28 天没有生日。"
+msgid "No birthdays in the next %d days."
+msgstr "未来 %d 天没有生日。"
 
 msgid "Residents"
 msgstr "居民"

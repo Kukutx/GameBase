@@ -21,10 +21,11 @@ func _run() -> void:
 	var player_state := root.get_node("PlayerState")
 	var world_state := root.get_node("WorldState")
 	var npc_memory := root.get_node("NpcMemory")
-	var clock_constants: Dictionary = (world_clock.get_script() as Script).get_script_constant_map()
-	var days_per_season := int(clock_constants.get("DAYS_PER_SEASON", 28))
-	var season_names: Array = clock_constants.get("SEASON_NAMES", ["Spring", "Summer", "Autumn", "Winter"])
-	var seasons_per_year := season_names.size()
+	# The game's calendar, loaded rather than named: this script compiles before
+	# the autoloads exist. The checks below count its days independently.
+	var calendar: Resource = load("res://gamebase/core/time/game_calendar.gd").call("current")
+	var days_per_season := int(calendar.get("days_per_season"))
+	var seasons_per_year := (calendar.get("season_names") as PackedStringArray).size()
 	var total_days := YEARS_TO_SOAK * days_per_season * seasons_per_year
 	var save_constants: Dictionary = (save_manager.get_script() as Script).get_script_constant_map()
 	var current_save_version := int(save_constants.get("SAVE_VERSION", 0))

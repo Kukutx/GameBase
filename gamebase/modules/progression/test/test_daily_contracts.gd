@@ -106,7 +106,7 @@ func test_weather_locked_fish_contracts_require_a_remaining_window_inside_deadli
 	for seed in range(1, 500):
 		GameRandom.set_seed(seed)
 		for day in range(1, 83):
-			if GameClock.get_season_name_for_day(day) == "Winter":
+			if GameCalendar.current().get_season_name(day) == "Winter":
 				continue
 			if WeatherState.get_weather_name(WeatherState.get_weather_for_day(day)) != "Storm":
 				continue
