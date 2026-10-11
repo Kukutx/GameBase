@@ -6,7 +6,7 @@ func test_registered_sections_restore_in_the_documented_order() -> void:
 	# Shipping before the clock (no double payout), the clock before the world
 	# (saved day markers), quests after the world they read.
 	assert_eq(SaveManager.get_section_ids(), PackedStringArray([
-		"weather", "shipping", "clock", "buffs", "inventory", "player_state", "hotbar", "world",
+		"random", "shipping", "clock", "buffs", "inventory", "player_state", "hotbar", "world",
 		"relationships", "npc_memory", "quests", "skills", "fishing_state",
 	]))
 

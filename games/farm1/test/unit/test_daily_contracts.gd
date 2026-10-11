@@ -8,14 +8,14 @@ var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _clock_snapshot: Dictionary
-var _weather_snapshot: Dictionary
+var _random_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
-	_weather_snapshot = WeatherState.to_save_data()
+	_random_snapshot = GameRandom.to_save_data()
 	WorldState.clear()
 	PlayerState.reset_new_game()
 	WorldClock.set_time(1, 8 * 60)
@@ -24,7 +24,7 @@ func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
-	WeatherState.load_save_data(_weather_snapshot)
+	GameRandom.load_save_data(_random_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
 
 func test_mining_nodes_unlock_at_the_mine_depth_of_their_tier() -> void:
@@ -87,7 +87,7 @@ func test_berry_contracts_stop_before_winter_while_wood_contracts_continue() -> 
 func test_storm_eel_contracts_are_offered_only_while_a_storm_window_remains() -> void:
 	var storm_day := 0
 	for seed in range(1, 500):
-		WeatherState.world_seed = seed
+		GameRandom.set_seed(seed)
 		for day in range(1, 83):
 			if GameClock.get_season_name_for_day(day) == "Winter":
 				continue

@@ -29,8 +29,7 @@ func generate_contract_for_day(day: int) -> Dictionary:
 	var candidates := _build_candidates(maxi(day, 1))
 	if candidates.is_empty():
 		return {}
-	var rng := RandomNumberGenerator.new()
-	rng.seed = absi(hash("daily_contract:%d:%d" % [WeatherState.world_seed, maxi(day, 1)])) + 1
+	var rng := GameRandom.stream("daily_contract:%d" % maxi(day, 1))
 	var base: Dictionary = candidates[rng.randi_range(0, candidates.size() - 1)].duplicate(true)
 	base["generated_day"] = maxi(day, 1)
 	var duration_days := maxi(int(base.get("duration_days", 2)), 1)

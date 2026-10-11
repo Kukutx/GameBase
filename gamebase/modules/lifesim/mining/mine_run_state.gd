@@ -55,13 +55,9 @@ func get_deepest_checkpoint() -> int:
 	var deepest := get_deepest_floor()
 	return int(deepest / CHECKPOINT_STEP) * CHECKPOINT_STEP if deepest >= CHECKPOINT_STEP else 1
 
-func get_floor_seed(floor: int) -> int:
-	return absi(hash("mine-floor:%d:%d" % [WeatherState.world_seed, clampi(floor, 1, MAX_FLOOR)])) + 1
-
 func generate_floor_layout(floor: int) -> Dictionary:
 	var resolved := clampi(floor, 2, MAX_FLOOR)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = get_floor_seed(resolved)
+	var rng := GameRandom.stream("mine_floor:%d" % resolved)
 	var rocks: Array[Dictionary] = []
 	var enemies: Array[Dictionary] = []
 	var occupied: Array[Vector2] = []

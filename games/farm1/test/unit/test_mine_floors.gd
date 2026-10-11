@@ -9,17 +9,17 @@ func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_clock_day = WorldClock.day
 	_clock_minute = WorldClock.minute_of_day
-	_seed = WeatherState.world_seed
+	_seed = GameRandom.world_seed
 	WorldState.clear()
 	WorldState.set_value(GameSession.NEW_GAME_FLAG, true)
 	WorldClock.set_time(1, 8 * 60)
-	WeatherState.world_seed = 93017
+	GameRandom.set_seed(93017)
 	MineState.enter_from_surface()
 
 func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	WorldClock.set_time(_clock_day, _clock_minute)
-	WeatherState.world_seed = _seed
+	GameRandom.set_seed(_seed)
 
 func test_the_game_mine_floor_table_names_real_content() -> void:
 	assert_not_null(MineState.floor_table)

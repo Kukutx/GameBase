@@ -22,6 +22,7 @@ Each statement below was confirmed either by running Godot 4.7.2 headless or by 
 
 ## P1
 
+- **Gameplay randomness comes from `GameRandom`**: a roll that decides what the player gets or meets (weather, a catch, a drop, a layout) takes a stream keyed by what it rolls, `GameRandom.stream("forage:%d:%s" % [day, spawner])`, never `randf()`, `randi()` or a `RandomNumberGenerator` seeded by `hash()`, so a load replays it and a test pins it by the seed. The global generator is only for cosmetic jitter such as a sound's pitch.
 - **Nothing required goes behind `await tween.finished`**: code after it never runs when the node the tween is bound to is freed first. Do not put a required cleanup, state reset or signal emission behind such an `await`.
 - **Re-check state after every `await`**: state can change while a coroutine is suspended, and the same function can be entered again before the first call resumes. `GameSession` (`_handling_defeat`, `_handling_late_night`) and `GameSceneTransition` (`_busy`) show the guard this project uses.
 - **A new tween does not stop the earlier one**: `create_tween()` leaves an earlier tween running, and two tweens on the same property fight over the value. Keep the reference and `kill()` it before starting another, or serialise the calls with a guard.

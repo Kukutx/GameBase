@@ -37,8 +37,12 @@ static func current() -> GameDefinition:
 ## Clock at the start of a new game.
 @export_range(1, 100000) var start_day := 1
 @export_range(0, 1439) var start_minute_of_day := 8 * 60
-## Seed of the deterministic weather and other world randomness of a new game.
+## Seed of a new game's world randomness (`GameRandom`): the weather, catches,
+## mine floors and more. 0 gives each new game a fresh seed.
 @export var world_seed := 0
+## The odds of rain and storms in each season (`GameWeatherSystem`); a season
+## missing here is always clear.
+@export var weather_odds: Array[WeatherOdds] = []
 ## Items granted at the start of a new game, as item id → amount.
 @export var start_items: Dictionary[StringName, int] = {}
 ## Audio cue played for an event, as `<Autoload>.<signal>`

@@ -4,6 +4,7 @@ extends Node
 const NEW_GAME_FLAG := &"system:new_game_initialized"
 ## Orders of the new-game steps the session runs itself. A game registers its own
 ## steps between them with `register_new_game_step()`.
+const NEW_GAME_ORDER_RANDOM := 100
 const NEW_GAME_ORDER_WORLD := 200
 const NEW_GAME_ORDER_PLAYER := 400
 const NEW_GAME_ORDER_CLOCK := 1200
@@ -19,9 +20,10 @@ var _handling_late_night := false
 var _new_game_steps: Array[Dictionary] = []
 
 func _ready() -> void:
+	register_new_game_step(&"random", NEW_GAME_ORDER_RANDOM, GameRandom.reset_new_game)
 	register_new_game_step(&"world", NEW_GAME_ORDER_WORLD, WorldState.clear)
 	register_new_game_step(&"player", NEW_GAME_ORDER_PLAYER, PlayerState.reset_new_game)
-	register_new_game_step(&"clock", NEW_GAME_ORDER_CLOCK, _reset_clock_and_weather)
+	register_new_game_step(&"clock", NEW_GAME_ORDER_CLOCK, _reset_clock)
 	register_new_game_step(&"finish", NEW_GAME_ORDER_FINISH, WorldState.set_value.bind(NEW_GAME_FLAG, true))
 	PlayerState.health_changed.connect(_on_health_changed)
 	WorldClock.minute_changed.connect(_on_minute_changed)
@@ -39,12 +41,9 @@ func initialize_new_game_state() -> void:
 	for step: Dictionary in _new_game_steps:
 		(step["step"] as Callable).call()
 
-func _reset_clock_and_weather() -> void:
+func _reset_clock() -> void:
 	var definition := GameDefinition.current()
 	WorldClock.set_time(definition.start_day, definition.start_minute_of_day)
-	# Reset through the weather save API so current_weather is recalculated for
-	# the first day even when the previous session was already on it with another seed.
-	WeatherState.load_save_data({"world_seed": definition.world_seed})
 
 
 func start_new_game() -> bool:

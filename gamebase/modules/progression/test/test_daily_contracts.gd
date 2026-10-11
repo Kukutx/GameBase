@@ -6,14 +6,14 @@ var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _clock_snapshot: Dictionary
-var _weather_snapshot: Dictionary
+var _random_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
-	_weather_snapshot = WeatherState.to_save_data()
+	_random_snapshot = GameRandom.to_save_data()
 	ContentFixture.use(self, _content())
 	WorldState.clear()
 	PlayerState.reset_new_game()
@@ -25,11 +25,11 @@ func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
-	WeatherState.load_save_data(_weather_snapshot)
+	GameRandom.load_save_data(_random_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
 
 func test_contract_generation_is_deterministic_and_covers_all_objective_types() -> void:
-	WeatherState.world_seed = 4242
+	GameRandom.set_seed(4242)
 	var first := DailyContractState.generate_contract_for_day(12)
 	var second := DailyContractState.generate_contract_for_day(12)
 	assert_eq(first, second)
@@ -104,7 +104,7 @@ func test_seasonal_forage_contracts_do_not_cross_into_an_unavailable_season() ->
 func test_weather_locked_fish_contracts_require_a_remaining_window_inside_deadline() -> void:
 	var storm_day := 0
 	for seed in range(1, 500):
-		WeatherState.world_seed = seed
+		GameRandom.set_seed(seed)
 		for day in range(1, 83):
 			if GameClock.get_season_name_for_day(day) == "Winter":
 				continue
