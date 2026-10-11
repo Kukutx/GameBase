@@ -1,8 +1,10 @@
 extends GutTest
 
+## Farm1's quest chain and its rewards. How quests start, progress, save and
+## pay out is tested with the progression module.
+
 var _quest_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
-var _inventory_max_slots: int
 var _player_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
@@ -10,7 +12,6 @@ var _world_snapshot: Dictionary
 func before_each() -> void:
 	_quest_snapshot = QuestState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_inventory_max_slots = InventoryState.max_slots
 	_player_snapshot = PlayerState.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
@@ -22,31 +23,9 @@ func before_each() -> void:
 func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	QuestState.load_save_data(_quest_snapshot)
-	InventoryState.max_slots = _inventory_max_slots
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
-
-func test_load_normalizes_progress_and_drops_unknown_quests_and_statuses() -> void:
-	QuestState.load_save_data({
-		"smelt_iron": {"status": QuestManager.Status.COMPLETED, "progress": 999},
-		"mine_gold": {"status": 999, "progress": 2},
-		"removed_quest": {"status": QuestManager.Status.ACTIVE, "progress": 1},
-	})
-	assert_true(QuestState.is_completed(&"smelt_iron"))
-	assert_eq(int(QuestState.get_state(&"smelt_iron").get("progress", 0)), QuestData.find(&"smelt_iron").required_amount)
-	assert_false(QuestState.is_active(&"mine_gold"))
-	var saved := QuestState.to_save_data()
-	assert_false(saved.has("mine_gold"))
-	assert_false(saved.has("removed_quest"))
-
-func test_new_game_auto_starts_only_data_declared_entry_quests() -> void:
-	for quest: QuestData in QuestData.find_all():
-		if quest.auto_start:
-			assert_true(quest.entry_point, "Auto-start quest %s is not an entry point" % quest.id)
-			assert_true(QuestState.is_active(quest.id), "Auto-start quest %s did not start" % quest.id)
-		else:
-			assert_false(QuestState.is_active(quest.id), "Non-auto quest %s started unexpectedly" % quest.id)
 
 func test_talking_to_mira_completes_intro_quest() -> void:
 	NpcSocialEvents.npc_talked.emit(&"mira")
@@ -57,48 +36,6 @@ func test_collecting_berries_unlocks_first_harvest() -> void:
 	InventoryState.add_item_by_id(&"berry", 3)
 	assert_true(QuestState.is_completed(&"gather_berries"))
 	assert_true(QuestState.is_active(&"first_harvest"))
-
-func test_item_reward_quest_waits_for_inventory_space_then_completes_atomically() -> void:
-	QuestState.load_save_data({})
-	InventoryState.clear()
-	InventoryState.max_slots = 1
-	assert_eq(InventoryState.add_item_by_id(&"fishing_rod", 1), 0)
-	assert_true(QuestState.start_quest(&"defeat_green_slime"))
-	var money_before := PlayerState.money
-
-	CombatEvents.enemy_defeated.emit(&"green_slime", 20)
-	var blocked_state := QuestState.get_state(&"defeat_green_slime")
-	assert_true(QuestState.is_active(&"defeat_green_slime"))
-	assert_eq(int(blocked_state["progress"]), 1)
-	assert_true(blocked_state.get("reward_snapshot", {}) is Dictionary)
-	assert_false((blocked_state.get("reward_snapshot", {}) as Dictionary).is_empty())
-	assert_eq(PlayerState.money, money_before)
-	assert_eq(InventoryState.get_quantity(&"field_snack"), 0)
-	assert_false(QuestState.is_active(&"smelt_copper"))
-
-	assert_true(InventoryState.remove_item(&"fishing_rod", 1))
-	await get_tree().process_frame
-	assert_true(QuestState.is_completed(&"defeat_green_slime"))
-	assert_eq(PlayerState.money, money_before + 200)
-	assert_eq(InventoryState.get_quantity(&"field_snack"), 1)
-	assert_true(QuestState.is_active(&"smelt_copper"))
-
-func test_loaded_quest_waiting_for_inventory_space_completes_with_its_promised_reward() -> void:
-	QuestState.load_save_data({
-		"defeat_green_slime": {
-			"status": QuestManager.Status.ACTIVE,
-			"progress": 1,
-			"reward_snapshot": {"items": {"wood": 5}, "money": 654},
-		},
-	})
-	InventoryState.clear()
-	var money_before := PlayerState.money
-	QuestState.complete_ready_quests()
-	assert_true(QuestState.is_completed(&"defeat_green_slime"))
-	assert_true(QuestState.is_active(&"smelt_copper"))
-	assert_eq(PlayerState.money, money_before + 654)
-	assert_eq(InventoryState.get_quantity(&"wood"), 5)
-	assert_eq(InventoryState.get_quantity(&"field_snack"), 0)
 
 func test_exploration_chain_progresses_from_fishing_to_mining_to_combat() -> void:
 	QuestState.load_save_data({})

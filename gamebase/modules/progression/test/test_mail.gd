@@ -1,0 +1,188 @@
+extends GutTest
+
+const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+
+const WELCOME := &"fixture_welcome"
+const GARDEN_FLAG := &"project:fixture_garden:complete"
+
+var _world_snapshot: Dictionary
+var _inventory_snapshot: Dictionary
+var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
+var _quest_snapshot: Dictionary
+var _relationship_snapshot: Dictionary
+var _clock_snapshot: Dictionary
+
+func before_each() -> void:
+	_world_snapshot = WorldState.to_save_data()
+	_inventory_snapshot = InventoryState.to_save_data()
+	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
+	_quest_snapshot = QuestState.to_save_data()
+	_relationship_snapshot = RelationshipState.to_save_data()
+	_clock_snapshot = WorldClock.to_save_data()
+	ContentFixture.use(self, _content())
+	WorldState.clear()
+	InventoryState.clear()
+	PlayerState.reset_new_game()
+	QuestState.load_save_data({})
+	RelationshipState.clear()
+	WorldClock.set_time(1, 8 * 60)
+
+func after_each() -> void:
+	# The game's content is active again before the stores load their state.
+	ContentRegistry.active = ContentDB
+	WorldState.load_save_data(_world_snapshot)
+	InventoryState.load_save_data(_inventory_snapshot)
+	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
+	QuestState.load_save_data(_quest_snapshot)
+	RelationshipState.load_save_data(_relationship_snapshot)
+	WorldClock.load_save_data(_clock_snapshot)
+
+func test_dated_mail_delivers_on_its_day_and_rewards_once() -> void:
+	assert_false(MailState.is_received(WELCOME))
+	assert_true(MailState.refresh_deliveries().is_empty())
+	WorldClock.set_time(2, 8 * 60)
+	MailState.refresh_deliveries()
+	assert_true(MailState.is_received(WELCOME))
+	assert_false(MailState.is_read(WELCOME))
+	assert_eq(MailState.get_unread_mail().size(), 1)
+	var seeds_before := InventoryState.get_quantity(&"fixture_seeds")
+	assert_true(MailState.claim_rewards(WELCOME))
+	assert_true(MailState.is_read(WELCOME))
+	assert_true(MailState.is_claimed(WELCOME))
+	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), seeds_before + 3)
+	assert_false(MailState.claim_rewards(WELCOME))
+	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), seeds_before + 3)
+
+func test_mail_claim_blocks_item_added_reentrancy() -> void:
+	WorldClock.set_time(2, 8 * 60)
+	MailState.refresh_deliveries()
+	assert_true(MailState.is_received(WELCOME))
+	var seeds_before := InventoryState.get_quantity(&"fixture_seeds")
+	var observed := {"entered": false, "inner_result": true}
+	var listener := func(item_id: StringName, _quantity: int) -> void:
+		if item_id != &"fixture_seeds" or bool(observed["entered"]):
+			return
+		observed["entered"] = true
+		observed["inner_result"] = MailState.claim_rewards(WELCOME)
+	InventoryState.item_added.connect(listener)
+	assert_true(MailState.claim_rewards(WELCOME))
+	if InventoryState.item_added.is_connected(listener):
+		InventoryState.item_added.disconnect(listener)
+	assert_true(bool(observed["entered"]))
+	assert_false(bool(observed["inner_result"]))
+	assert_true(MailState.is_claimed(WELCOME))
+	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), seeds_before + 3)
+
+func test_received_mail_grants_the_reward_promised_at_delivery() -> void:
+	WorldState.set_value(&"mail:fixture_welcome:received", true)
+	WorldState.set_value(&"mail:fixture_welcome:reward_snapshot", {
+		"items": {"fixture_twig": 4, "removed_item": 1},
+		"money": 777,
+	})
+	var money_before := PlayerState.money
+	assert_true(MailState.claim_rewards(WELCOME))
+	assert_true(MailState.is_claimed(WELCOME))
+	assert_true(MailState.is_read(WELCOME))
+	assert_eq(PlayerState.money, money_before + 777)
+	assert_eq(InventoryState.get_quantity(&"fixture_twig"), 4)
+	assert_eq(InventoryState.get_quantity(&"removed_item"), 0)
+	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 0)
+
+func test_quest_mail_unlocks_from_completed_quest_conditions() -> void:
+	assert_false(MailState.is_received(&"fixture_after_slime"))
+	assert_false(MailState.is_received(&"fixture_after_catch"))
+	QuestState.load_save_data({
+		"fixture_slime_quest": {"status": QuestManager.Status.COMPLETED, "progress": 1},
+		"fixture_catch_quest": {"status": QuestManager.Status.COMPLETED, "progress": 1},
+	})
+	var delivered := MailState.refresh_deliveries()
+	assert_true(delivered.has(&"fixture_after_slime"))
+	assert_true(delivered.has(&"fixture_after_catch"))
+	assert_true(MailState.is_received(&"fixture_after_slime"))
+	assert_true(MailState.is_received(&"fixture_after_catch"))
+
+func test_mail_flags_round_trip_through_world_state() -> void:
+	WorldClock.set_time(2, 8 * 60)
+	MailState.refresh_deliveries()
+	assert_true(MailState.mark_read(WELCOME))
+	assert_true(MailState.claim_rewards(WELCOME))
+	var saved := WorldState.to_save_data()
+	WorldState.clear()
+	assert_false(MailState.is_received(WELCOME))
+	WorldState.load_save_data(saved)
+	assert_true(MailState.is_received(WELCOME))
+	assert_true(MailState.is_read(WELCOME))
+	assert_true(MailState.is_claimed(WELCOME))
+
+func test_world_flag_mail_delivers_immediately_without_waiting_for_next_day() -> void:
+	assert_false(MailState.is_received(&"fixture_garden_restored"))
+	WorldState.set_value(GARDEN_FLAG, true)
+	assert_true(MailState.is_received(&"fixture_garden_restored"))
+	assert_true(MailState.get_unread_mail().any(func(mail: MailData) -> bool: return mail.id == &"fixture_garden_restored"))
+
+func test_mail_delivers_from_live_quest_completion() -> void:
+	assert_false(MailState.is_received(&"fixture_after_dive"))
+	assert_true(QuestState.start_quest(&"fixture_dive_quest"))
+	MineState.set_floor(3)
+	assert_true(QuestState.is_completed(&"fixture_dive_quest"))
+	assert_true(MailState.is_received(&"fixture_after_dive"))
+
+func test_mail_condition_gates_delivery() -> void:
+	var mail := MailData.new()
+	mail.id = &"rules_test_mail"
+	mail.condition = "WORLD_FLAG test:rules_flag"
+	assert_false(mail.is_available(1))
+	WorldState.set_value(&"test:rules_flag", true)
+	assert_true(mail.is_available(1))
+
+## Letters from `fixture_npc`: one dated on day 2 with seeds in it, one for
+## each of three quests, and one for a world flag.
+func _content() -> Array:
+	var npc := NpcProfileData.new()
+	npc.id = &"fixture_npc"
+	npc.display_name = "Fixture"
+	var welcome := _mail(WELCOME)
+	welcome.available_from_day = 2
+	welcome.reward_items = {"fixture_seeds": 3}
+	var after_slime := _mail(&"fixture_after_slime")
+	after_slime.required_completed_quest_id = &"fixture_slime_quest"
+	var after_catch := _mail(&"fixture_after_catch")
+	after_catch.required_completed_quest_id = &"fixture_catch_quest"
+	var after_dive := _mail(&"fixture_after_dive")
+	after_dive.required_completed_quest_id = &"fixture_dive_quest"
+	var garden := _mail(&"fixture_garden_restored")
+	garden.required_world_flag = GARDEN_FLAG
+	var dive := _quest(&"fixture_dive_quest", QuestData.ObjectiveType.REACH_MINE_FLOOR)
+	dive.required_amount = 3
+	return [
+		npc, welcome, after_slime, after_catch, after_dive, garden,
+		_quest(&"fixture_slime_quest", QuestData.ObjectiveType.DEFEAT),
+		_quest(&"fixture_catch_quest", QuestData.ObjectiveType.FISH),
+		dive,
+		_item(&"fixture_seeds"),
+		_item(&"fixture_twig"),
+	]
+
+func _mail(id: StringName) -> MailData:
+	var mail := MailData.new()
+	mail.id = id
+	mail.sender_npc_id = &"fixture_npc"
+	mail.subject = String(id).capitalize()
+	mail.body = "A letter."
+	return mail
+
+func _quest(id: StringName, objective_type: QuestData.ObjectiveType) -> QuestData:
+	var quest := QuestData.new()
+	quest.id = id
+	quest.title = String(id).capitalize()
+	quest.objective_type = objective_type
+	return quest
+
+func _item(id: StringName) -> ItemData:
+	var item := ItemData.new()
+	item.id = id
+	item.display_name = String(id).capitalize()
+	return item

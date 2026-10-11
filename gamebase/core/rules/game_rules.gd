@@ -19,7 +19,8 @@ extends Node
 ## menu can say what a locked entry needs.
 
 ## Argument checks for `register_condition`/`register_action` `arg_kinds`: a
-## content kind (checked against `ContentDB`), a kind a module registers with
+## content kind (checked against the running game's content,
+## `ContentRegistry.active`), a kind a module registers with
 ## `register_arg_kind()`, or one of these value kinds.
 const ARG_INT := &"int"
 const ARG_NUMBER := &"number"
@@ -195,7 +196,7 @@ func _check_arg(value: String, kind: StringName) -> String:
 			return ""
 	if _arg_kinds.has(kind):
 		return String((_arg_kinds[kind] as Callable).call(value))
-	return "" if ContentDB.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
+	return "" if ContentRegistry.active.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
 
 func _evaluate_clause(clause: Dictionary, context: Dictionary) -> bool:
 	var key: StringName = clause["key"]
