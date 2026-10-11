@@ -20,7 +20,7 @@ func generate() -> void:
 		push_warning("FarmField requires a stable field_id for persistence")
 	var resolved_location := location_id
 	if resolved_location == &"":
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		if location != null:
 			resolved_location = location.id
 	var center_offset := Vector2((columns - 1) * cell_spacing.x, (rows - 1) * cell_spacing.y) * 0.5

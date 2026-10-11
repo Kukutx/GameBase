@@ -14,7 +14,7 @@ var _active_day := 0
 func _ready() -> void:
 	WorldClock.day_changed.connect(_on_day_changed)
 	if location_id == &"":
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		if location != null:
 			location_id = location.id
 	_rebuild(WorldClock.day)

@@ -4,7 +4,7 @@ extends Node
 signal heart_event_triggered(event_id: StringName, npc_id: StringName)
 
 func get_pending_event(npc_id: StringName) -> HeartEventData:
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	var location_id := location.id if location != null else &""
 	var hearts := RelationshipState.get_hearts(npc_id)
 	var candidates: Array[HeartEventData] = []

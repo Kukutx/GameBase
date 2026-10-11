@@ -10,17 +10,12 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 class _FixtureEventSource extends Node:
 	signal fixture_happened(subject: StringName, amount: int)
 
-var _definition: GameDefinition
 ## Buses a test added because the game's bus layout lacks them.
 var _added_buses: Array[StringName] = []
-
-func before_each() -> void:
-	_definition = GameSession.definition
 
 func after_each() -> void:
 	# GUT frees the fixture after this; restore against the game's content.
 	ContentRegistry.active = ContentDB
-	GameSession.definition = _definition
 	GameAudio.stop_music()
 	GameAudio.stop_all_sfx()
 	for bus: StringName in _added_buses:
@@ -84,10 +79,11 @@ func test_an_event_cue_plays_whenever_its_signal_fires() -> void:
 	definition.event_cues = {&"FixtureEventSource.fixture_happened": &"fixture_chime"}
 	# A service wires the event cues of the running game's definition when it
 	# starts; start one on the fixture definition.
-	GameSession.definition = definition
-	var service := GameAudioService.new()
-	add_child_autofree(service)
-	GameSession.definition = _definition
+	var service: GameAudioService = ContentFixture.with_definition(definition, func() -> GameAudioService:
+		var started := GameAudioService.new()
+		add_child_autofree(started)
+		return started
+	)
 	var requested: Array[StringName] = []
 	service.cue_requested.connect(func(cue_id: StringName) -> void:
 		requested.append(cue_id)

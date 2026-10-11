@@ -21,5 +21,6 @@ func install() -> void:
 
 ## The game's `GameDefinition.start_items`, once the inventory is empty.
 func _grant_start_items() -> void:
-	for item_id: StringName in GameSession.definition.start_items:
-		InventoryState.add_item_by_id(item_id, GameSession.definition.start_items[item_id])
+	var start_items := GameDefinition.current().start_items
+	for item_id: StringName in start_items:
+		InventoryState.add_item_by_id(item_id, start_items[item_id])

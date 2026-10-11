@@ -123,5 +123,5 @@ func _prune_all() -> void:
 		_history[key] = messages
 
 func _current_location_id() -> StringName:
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	return location.id if location != null else &""

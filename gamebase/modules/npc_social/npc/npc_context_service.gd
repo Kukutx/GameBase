@@ -20,7 +20,7 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 	var profile := NpcProfileData.find(npc_id)
 	if profile == null:
 		return {}
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	var location_id := location.id if location != null else &""
 	var active_events: Array[Dictionary] = []
 	for event: CalendarEventData in EventState.get_active_events(location_id):

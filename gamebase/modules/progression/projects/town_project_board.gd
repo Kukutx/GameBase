@@ -8,7 +8,7 @@ extends Node2D
 
 func _ready() -> void:
 	if location_id == &"":
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		if location != null:
 			location_id = location.id
 	interactable.interacted.connect(_on_interacted)

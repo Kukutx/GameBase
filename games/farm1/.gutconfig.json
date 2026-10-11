@@ -2,6 +2,12 @@
   "include_subdirs": true,
   "dirs": [
     "res://gamebase/core/test/",
+    "res://gamebase/modules/items/test/",
+    "res://gamebase/modules/combat/test/",
+    "res://gamebase/modules/skills/test/",
+    "res://gamebase/modules/lifesim/test/",
+    "res://gamebase/modules/npc_social/test/",
+    "res://gamebase/modules/progression/test/",
     "res://test/unit/"
   ],
   "pre_run_script": "res://test/gut_pre_run.gd",

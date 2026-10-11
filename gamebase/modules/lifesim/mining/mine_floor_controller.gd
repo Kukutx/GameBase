@@ -60,7 +60,7 @@ func _ready() -> void:
 ## Brings the player to `floor` of this mine. Returns false when the travel
 ## could not start.
 func travel_to_floor(floor: int) -> bool:
-	var location := ContentDB.get_location_for_scene(scene_file_path)
+	var location := WorldLocationData.find_for_scene(scene_file_path)
 	if location == null or floor_spawn_id == &"" or not WorldTravel.travel_to(location.id, floor_spawn_id):
 		return false
 	MineState.set_floor(floor)
@@ -152,7 +152,7 @@ func _on_locale_changed(_locale: String) -> void:
 
 func _refresh_label() -> void:
 	if mine_label != null:
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		var mine_name := tr(location.display_name) if location != null else ""
 		mine_label.text = tr("%s · Floor %d · Deepest %d") % [mine_name, current_floor, MineState.get_deepest_floor()]
 

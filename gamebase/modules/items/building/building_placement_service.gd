@@ -224,7 +224,7 @@ func _get_or_create_container() -> Node2D:
 	return container
 
 func _current_location_id() -> StringName:
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	return location.id if location != null else &""
 
 func _is_inside_build_zone(placeable_id: StringName, point: Vector2) -> bool:

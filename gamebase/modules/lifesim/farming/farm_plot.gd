@@ -261,7 +261,7 @@ func _is_watered_by_environment(day: int) -> bool:
 		return true
 	var resolved_location := location_id
 	if resolved_location == &"":
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		if location != null:
 			resolved_location = location.id
 	if resolved_location == &"":

@@ -309,7 +309,7 @@ func _weather(args: PackedStringArray, context: Dictionary) -> bool:
 func _location(args: PackedStringArray, context: Dictionary) -> bool:
 	var location_id := String(context.get("location_id", ""))
 	if location_id.is_empty():
-		var current := ContentDB.get_current_location(get_tree())
+		var current := WorldLocationData.find_current(get_tree())
 		location_id = String(current.id) if current != null else ""
 	return args.has(location_id)
 

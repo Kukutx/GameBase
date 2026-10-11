@@ -88,7 +88,7 @@ func _buy_offer(offer: ShopOffer) -> void:
 	_rebuild()
 
 func _offer_context() -> Dictionary:
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	return {"location_id": location.id if location != null else &""}
 
 func _sell_selected() -> void:

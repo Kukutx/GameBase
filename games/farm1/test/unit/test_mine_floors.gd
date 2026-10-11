@@ -105,7 +105,7 @@ func test_mine_scene_routes_its_ladder_and_elevator_through_its_own_location() -
 	assert_eq(mine.entrance_spawn_ids, [&"from_riverside"] as Array[StringName])
 	assert_eq(mine.floor_spawn_id, &"floor_entry")
 	assert_true(ContentDB.has_location_spawn(&"old_mine", mine.floor_spawn_id))
-	assert_eq(ContentDB.get_location_for_scene(mine.scene_file_path).id, &"old_mine")
+	assert_eq(WorldLocationData.find_for_scene(mine.scene_file_path).id, &"old_mine")
 	assert_eq((mine.get_node("DeepLadder") as MineLadder).mine, mine)
 	assert_eq((mine.get_node("MineElevator") as MineElevator).mine, mine)
 

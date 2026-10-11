@@ -10,7 +10,7 @@ func _ready() -> void:
 func get_runtime_context() -> Dictionary:
 	var location_id := ""
 	if is_instance_valid(ContentDB) and get_tree() != null:
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		if location != null:
 			location_id = String(location.id)
 	return {

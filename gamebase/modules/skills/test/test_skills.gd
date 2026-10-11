@@ -4,8 +4,6 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 ## A stat registered for the test, so a perk may change it.
 const STAT := &"fixture_stamina"
 
-var _registered_stat := false
-
 func before_each() -> void:
 	ContentFixture.use(self, [
 		_skill(&"fixture_tilling", "Tilling", [100, 250, 450]),
@@ -15,10 +13,6 @@ func before_each() -> void:
 func after_each() -> void:
 	# GUT frees the fixture content only after this hook.
 	ContentRegistry.active = ContentDB
-	if _registered_stat:
-		# GameStats has no way to forget a stat; the test registered this one.
-		(GameStats.get("_stats") as Dictionary).erase(STAT)
-		_registered_stat = false
 
 func test_skill_levels_follow_thresholds() -> void:
 	var skills := SkillManager.new()
@@ -57,8 +51,7 @@ func test_skill_load_drops_skills_the_game_does_not_have() -> void:
 	assert_eq(skills.add_xp(&"alchemy", 10), 0, "experience of an unknown skill is ignored")
 
 func test_skill_data_reports_broken_levels_and_perks() -> void:
-	_registered_stat = not GameStats.has_stat(STAT)
-	GameStats.register_stat(STAT)
+	ContentFixture.add_stat(self, STAT)
 	var skill := SkillData.new()
 	skill.id = &"broken"
 	skill.level_xp = PackedInt32Array([100, 100])

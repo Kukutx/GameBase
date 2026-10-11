@@ -1,5 +1,6 @@
 extends GutTest
 
+const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 const TEST_PATH := "user://game_settings_test.cfg"
 
 ## Input actions the fixture controls of a test added, erased after it.
@@ -176,12 +177,9 @@ func test_control_problems_name_the_control() -> void:
 ## the core's own: the service reads the game's controls from its
 ## `GameDefinition` once, when it is created.
 func _settings_with_controls(controls: Array[ControlAction]) -> GameSettingsService:
-	var game_definition := GameDefinition.current()
 	var fixture := GameDefinition.new()
 	fixture.controls.assign(controls)
-	GameDefinition._current = fixture
-	var settings := GameSettingsService.new()
-	GameDefinition._current = game_definition
+	var settings: GameSettingsService = ContentFixture.with_definition(fixture, GameSettingsService.new)
 	settings.settings_path = TEST_PATH
 	for control: ControlAction in controls:
 		_fixture_actions.append(control.action)

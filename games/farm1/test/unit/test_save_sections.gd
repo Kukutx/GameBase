@@ -27,7 +27,7 @@ func test_snapshot_writes_every_registered_section_and_nothing_else() -> void:
 		assert_true(snapshot.get(id) is Dictionary, "section %s is written" % id)
 
 func test_game_definition_supplies_the_games_facts() -> void:
-	var definition := GameSession.definition
+	var definition := GameDefinition.current()
 	assert_not_null(definition)
 	assert_ne(definition.start_location_id, &"")
 	assert_not_null(WorldLocationData.find(definition.start_location_id))

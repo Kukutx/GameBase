@@ -5,16 +5,9 @@ extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 
-var _stats: Dictionary[StringName, bool]
-
-func before_each() -> void:
-	# GameStats keeps no save data: put back the registered stats a test adds to.
-	_stats = GameStats._stats.duplicate()
-
 func after_each() -> void:
 	# GUT frees the fixture after this; restore against the game's content.
 	ContentRegistry.active = ContentDB
-	GameStats._stats = _stats
 
 func test_the_items_module_registers_its_kinds_of_content() -> void:
 	for kind: StringName in [ItemData.KIND, FoodBuffData.KIND, PlaceableData.KIND, RecipeData.KIND, ShopData.KIND]:
@@ -40,7 +33,7 @@ func test_items_report_unhandled_tool_actions_stacked_tools_and_stray_crops() ->
 	assert_string_contains(joined, "item 'fixture_bad_material' is not a seed but names crop 'fixture_crop'")
 
 func test_food_buffs_report_unread_stats_and_non_positive_multipliers() -> void:
-	GameStats.register_stat(&"fixture_speed")
+	ContentFixture.add_stat(self, &"fixture_speed")
 	var bad_buff := FoodBuffData.new()
 	bad_buff.id = &"fixture_bad_buff"
 	bad_buff.multipliers = {&"fixture_typo_speed": 1.2, &"fixture_speed": 0.0}

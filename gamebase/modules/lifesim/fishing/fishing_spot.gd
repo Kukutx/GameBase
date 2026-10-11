@@ -10,7 +10,7 @@ func _ready() -> void:
 
 func interact(actor: Node) -> void:
 	if location_id == &"":
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		if location != null:
 			location_id = location.id
 	if not InventoryState.has_tool(ItemData.ACTION_FISH):
