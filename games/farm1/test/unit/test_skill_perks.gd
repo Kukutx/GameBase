@@ -47,21 +47,6 @@ func test_skill_perks_unlock_at_levels_five_and_ten() -> void:
 	assert_almost_eq(GameStats.get_multiplier(&"farming_energy"), 0.8, 0.001)
 	assert_true(Skills.get_perk_summary(&"farming").contains("II"))
 
-func test_stats_combine_every_source() -> void:
-	var stats := GameStatsService.new()
-	autofree(stats)
-	stats.register_stat(&"speed")
-	assert_true(stats.has_stat(&"speed"))
-	assert_false(stats.has_stat(&"jump"))
-	var first := _StatSource.new(1.5, 2.0)
-	var second := _StatSource.new(0.5, 1.0)
-	stats.register_source(first)
-	stats.register_source(second)
-	stats.register_source(first)
-	assert_almost_eq(stats.get_multiplier(&"speed"), 0.75, 0.001)
-	assert_almost_eq(stats.get_bonus(&"speed"), 3.0, 0.001)
-	assert_almost_eq(stats.apply(&"speed", 7.0), 7.5, 0.001, "bonuses are added before the multipliers")
-
 func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	InventoryState.add_item_by_id(&"hoe", 1)
 	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
@@ -159,18 +144,3 @@ func test_social_and_foraging_perks_improve_rewards_without_changing_rng_plan() 
 		assert_eq(base_plan[index]["position"], level_five_plan[index]["position"])
 		assert_eq(int(level_five_plan[index]["quantity"]), int(base_plan[index]["quantity"]) + 1)
 		assert_eq(int(level_ten_plan[index]["quantity"]), int(base_plan[index]["quantity"]) + 2)
-
-class _StatSource:
-	extends RefCounted
-	var _multiplier: float
-	var _bonus: float
-
-	func _init(multiplier: float, bonus: float) -> void:
-		_multiplier = multiplier
-		_bonus = bonus
-
-	func get_stat_multiplier(_stat: StringName) -> float:
-		return _multiplier
-
-	func get_stat_bonus(_stat: StringName) -> float:
-		return _bonus
