@@ -16,9 +16,93 @@ var save_path := DEFAULT_SAVE_PATH
 var temp_path := DEFAULT_TEMP_PATH
 var backup_path := DEFAULT_BACKUP_PATH
 var _preserve_newer_primary := false
+# Registered by the game (see `register_section`); sections and load steps are
+# kept sorted by order. They are static so that every save manager instance,
+# including the ones tests create, reads and writes the same set of sections.
+static var _sections: Array[SaveSection] = []
+static var _load_steps: Array[Dictionary] = []
+static var _save_blockers: Array[Callable] = []
+# Sections found in the last loaded save that no registered service owns, for
+# example the data of a module this build does not enable. They are written back
+# unchanged so that turning a module off never deletes the player's progress.
+var _carried_sections: Dictionary = {}
+
+# Keys of the save dictionary that belong to the save manager itself, not to a section.
+const HEADER_KEYS: Array[String] = [
+	"version", "game_version", "engine_version", "slot", "saved_at_unix",
+	"saved_at_unix_msec", "scene", "location_id", "player",
+]
+
+## Restore orders of the sections the foundation owns. A game places its own
+## sections between them (see `.agents/rules/save.md`).
+const SECTION_ORDER_WEATHER := 100
+const SECTION_ORDER_CLOCK := 300
+const SECTION_ORDER_PLAYER_STATE := 600
+const SECTION_ORDER_WORLD := 700
 
 func _ready() -> void:
+	_register_core_sections()
 	select_slot(active_slot)
+
+func _exit_tree() -> void:
+	# The registrations hold callables of other autoloads. Release them while
+	# those still exist when the autoload itself leaves, instead of when the
+	# script's static variables are torn down at engine shutdown.
+	if get_parent() == get_tree().root:
+		_sections.clear()
+		_load_steps.clear()
+		_save_blockers.clear()
+
+func _register_core_sections() -> void:
+	register_section(SaveSection.new(&"weather", SECTION_ORDER_WEATHER, 2,
+		WeatherState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: WeatherState.load_save_data(section)))
+	register_section(SaveSection.new(&"clock", SECTION_ORDER_CLOCK, 1,
+		WorldClock.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: WorldClock.load_save_data(section)))
+	register_section(SaveSection.new(&"player_state", SECTION_ORDER_PLAYER_STATE, 2,
+		PlayerState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: PlayerState.load_save_data(section), true))
+	register_section(SaveSection.new(&"world", SECTION_ORDER_WORLD, 1,
+		WorldState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: WorldState.load_save_data(section)))
+
+## Registers the service that owns one section of the save. Registering the same
+## id again replaces the earlier registration.
+func register_section(section: SaveSection) -> void:
+	if section == null or section.id == &"" or HEADER_KEYS.has(String(section.id)):
+		push_error("SaveManager: invalid save section id '%s'" % (String(section.id) if section != null else ""))
+		return
+	unregister_section(section.id)
+	_sections.append(section)
+	_sections.sort_custom(func(a: SaveSection, b: SaveSection) -> bool: return a.order < b.order)
+
+func unregister_section(id: StringName) -> void:
+	for index: int in range(_sections.size() - 1, -1, -1):
+		if _sections[index].id == id:
+			_sections.remove_at(index)
+
+func get_section_ids() -> PackedStringArray:
+	var ids := PackedStringArray()
+	for section: SaveSection in _sections:
+		ids.append(String(section.id))
+	return ids
+
+## Registers a step that runs after every section has been restored, before the
+## saved scene is opened: derived state that depends on several sections (quest
+## chains, unlock flags, mail delivery) is repaired here. Lower `order` runs first.
+func register_load_step(id: StringName, order: int, step: Callable) -> void:
+	for index: int in range(_load_steps.size() - 1, -1, -1):
+		if _load_steps[index]["id"] == id:
+			_load_steps.remove_at(index)
+	_load_steps.append({"id": id, "order": order, "step": step})
+	_load_steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["order"]) < int(b["order"]))
+
+## Registers `func() -> String` returning a translated reason why the game cannot
+## be saved right now, or an empty string.
+func register_save_blocker(blocker: Callable) -> void:
+	if not _save_blockers.has(blocker):
+		_save_blockers.append(blocker)
+
+## Forgets sections carried over from a loaded save; called when a new game starts.
+func clear_carried_sections() -> void:
+	_carried_sections.clear()
 
 func select_slot(slot: int) -> void:
 	var resolved := clampi(slot, 1, SLOT_COUNT)
@@ -125,8 +209,10 @@ func get_save_block_reason() -> String:
 		return tr("Save from a playable location")
 	if get_tree().get_first_node_in_group("player") == null:
 		return tr("Cannot save without the player")
-	if FishingState.is_active():
-		return tr("Finish fishing before saving")
+	for blocker: Callable in _save_blockers:
+		var reason := String(blocker.call())
+		if not reason.is_empty():
+			return reason
 	return ""
 
 func save_game(allow_unregistered_scene: bool = false) -> bool:
@@ -279,7 +365,7 @@ func build_snapshot() -> Dictionary:
 			"x": player.global_position.x,
 			"y": player.global_position.y,
 		}
-	return {
+	var snapshot := {
 		"version": SAVE_VERSION,
 		"game_version": String(ProjectSettings.get_setting("application/config/version", "unknown")),
 		"engine_version": String(Engine.get_version_info().get("string", "unknown")),
@@ -288,20 +374,16 @@ func build_snapshot() -> Dictionary:
 		"saved_at_unix_msec": int(round(saved_at * 1000.0)),
 		"scene": scene_path,
 		"location_id": location_id,
-		"clock": WorldClock.to_save_data(),
-		"weather": WeatherState.to_save_data(),
-		"inventory": InventoryState.to_save_data(),
-		"player_state": PlayerState.to_save_data(),
-		"world": WorldState.to_save_data(),
-		"relationships": RelationshipState.to_save_data(),
-		"npc_memory": NpcMemory.to_save_data(),
-		"quests": QuestState.to_save_data(),
-		"skills": Skills.to_save_data(),
-		"buffs": BuffState.to_save_data(),
-		"shipping": ShippingState.to_save_data(),
-		"fishing": FishingState.to_save_data(),
 		"player": player_data,
 	}
+	for id: String in _carried_sections:
+		snapshot[id] = _carried_sections[id]
+	_write_sections(snapshot)
+	return snapshot
+
+func _write_sections(snapshot: Dictionary) -> void:
+	for section: SaveSection in _sections:
+		snapshot[String(section.id)] = section.write.call()
 
 func apply_snapshot(data: Dictionary) -> bool:
 	# Resolve and preload the destination before mutating any global service. A
@@ -320,73 +402,23 @@ func apply_snapshot(data: Dictionary) -> bool:
 	# Restore global truth before instantiating the saved scene. Persistent scene
 	# components read these services in _ready(), so this ordering prevents stale
 	# farm plots, pickups, NPC labels, HUD values, and new-game initialization.
-	var weather_data: Variant = data.get("weather", {})
-	if weather_data is Dictionary:
-		WeatherState.load_save_data(weather_data)
-	# Shipping must restore its saved day marker before WorldClock emits a
-	# day_changed signal, otherwise loading an older/newer save could pay twice.
-	var shipping_data: Variant = data.get("shipping", {})
-	if shipping_data is Dictionary:
-		ShippingState.load_save_data(shipping_data)
-	var clock_data: Variant = data.get("clock", {})
-	if clock_data is Dictionary:
-		ShippingState.reconcile_loaded_day(_safe_int(clock_data.get("day", 1), 1))
-		WorldClock.load_save_data(clock_data)
-	var buff_data: Variant = data.get("buffs", {})
-	if buff_data is Dictionary:
-		BuffState.load_save_data(buff_data)
-	var inventory_data: Variant = data.get("inventory", {})
-	if inventory_data is Dictionary:
-		InventoryState.load_save_data(inventory_data)
-	var player_state_data: Variant = data.get("player_state", {})
-	PlayerState.load_save_data(player_state_data if player_state_data is Dictionary else {})
-	var world_data: Variant = data.get("world", {})
-	if world_data is Dictionary:
-		WorldState.load_save_data(world_data)
-	var relationship_data: Variant = data.get("relationships", {})
-	if relationship_data is Dictionary:
-		RelationshipState.load_save_data(relationship_data)
-	var npc_memory_data: Variant = data.get("npc_memory", {})
-	if npc_memory_data is Dictionary:
-		NpcMemory.load_save_data(npc_memory_data)
-	var quest_data: Variant = data.get("quests", {})
-	if quest_data is Dictionary and not quest_data.is_empty():
-		QuestState.load_save_data(quest_data)
-	else:
-		# Saves from before the quest system (or repaired saves missing the section)
-		# must not inherit the currently running session or load into a questless
-		# dead-end. Rebuild only the data-declared automatic entry quests.
-		QuestState.reset_new_game()
-	var skill_data: Variant = data.get("skills", {})
-	Skills.load_save_data(skill_data if skill_data is Dictionary else {})
-	var fishing_data: Variant = data.get("fishing", {})
-	if fishing_data is Dictionary:
-		FishingState.load_save_data(fishing_data)
-	QuestState.reconcile_loaded_progress()
-	# Town-project completion is derived from contributed materials and can become
-	# newly satisfiable after a content update changes requirements. Repair that
-	# derived state only after the whole save snapshot is restored, then reapply
-	# current unlock flags before mail/event backfill runs.
-	TownProjects.reconcile_loaded_progress()
-	# Preserve paid housing capacity independently from expansion resource IDs so
-	# future content renames/removals cannot shrink an old save's coop/barn.
-	FarmExpansionState.reconcile_loaded_state()
-	# Collection readiness is also derived from WorldState. Re-evaluate it after
-	# loading so newly-ready or legacy-ready milestones freeze their promised
-	# rewards before the player can claim them.
-	CollectionMilestones.reconcile_loaded_state()
-
-	# WorldClock is restored before WorldState so services can preserve their
-	# saved day markers, but calendar flags live inside WorldState. Rebuild them
-	# once the world snapshot is in place so an old save loaded during a festival
-	# cannot keep EventState active while losing event:<id>:active flags.
-	EventState.refresh(WorldClock.day, WorldClock.minute_of_day, true)
-
-	# Content updates can introduce new letters whose requirements were already
-	# satisfied in an older save. Refresh only after every prerequisite service
-	# has been restored so those letters arrive immediately on load instead of
-	# waiting for the next day or another unrelated state change.
-	MailState.refresh_deliveries()
+	# Sections restore in their registered order; the game's registration explains
+	# the dependencies between them.
+	_carried_sections.clear()
+	for key: String in data:
+		if not HEADER_KEYS.has(key) and not _has_section(StringName(key)):
+			_carried_sections[key] = data[key]
+	for section: SaveSection in _sections:
+		# A missing section restores as empty (the service resets to defaults); a
+		# malformed one is skipped unless the section asks to reset anyway.
+		var section_data: Variant = data.get(String(section.id), {})
+		if section_data is Dictionary:
+			section.read.call(section_data, data)
+		elif section.read_when_missing:
+			section.read.call({}, data)
+	# Derived state is repaired only after the whole snapshot is restored.
+	for step: Dictionary in _load_steps:
+		(step["step"] as Callable).call()
 
 	# Always reload the prevalidated playable scene, even when it is already open.
 	# Save v8 stores a stable Location ID so scene-file renames do not invalidate
@@ -452,7 +484,7 @@ func _resolve_snapshot_destination(data: Dictionary) -> Dictionary:
 	# v8 first, so real loads still receive a playable fallback location.
 	if _snapshot_version(data) < 8 and saved_scene.is_empty() and not data.has("location_id"):
 		return {"scene_path": "", "use_saved_position": true}
-	var fallback := ContentDB.get_location(&"starter_town")
+	var fallback := ContentDB.get_location(GameSession.definition.start_location_id)
 	if fallback != null and not fallback.scene_path.is_empty() and ResourceLoader.exists(fallback.scene_path):
 		return {
 			"scene_path": fallback.scene_path,
@@ -480,18 +512,13 @@ func _sync_snapshot_runtime_sections(data: Dictionary) -> void:
 	# entitlements, milestone qualification/rewards and newly delivered mail. Keep
 	# those repairs in the candidate dictionary so promoting a backup/temp writes
 	# the normalized live state, not the stale pre-repair payload.
-	data["clock"] = WorldClock.to_save_data()
-	data["weather"] = WeatherState.to_save_data()
-	data["inventory"] = InventoryState.to_save_data()
-	data["player_state"] = PlayerState.to_save_data()
-	data["world"] = WorldState.to_save_data()
-	data["relationships"] = RelationshipState.to_save_data()
-	data["npc_memory"] = NpcMemory.to_save_data()
-	data["quests"] = QuestState.to_save_data()
-	data["skills"] = Skills.to_save_data()
-	data["buffs"] = BuffState.to_save_data()
-	data["shipping"] = ShippingState.to_save_data()
-	data["fishing"] = FishingState.to_save_data()
+	_write_sections(data)
+
+func _has_section(id: StringName) -> bool:
+	for section: SaveSection in _sections:
+		if section.id == id:
+			return true
+	return false
 
 func _read_best_snapshot(primary: String, backup: String) -> Dictionary:
 	var data := _read_dictionary(primary)
@@ -636,17 +663,10 @@ func _is_snapshot_usable(data: Dictionary) -> bool:
 	return true
 
 func _required_dictionary_sections(version: int) -> Array[String]:
-	var sections: Array[String] = ["clock", "inventory", "world"]
-	if version >= 2:
-		sections.append_array(["weather", "player_state", "relationships", "quests", "skills"])
-	if version >= 3:
-		sections.append("npc_memory")
-	if version >= 4:
-		sections.append("fishing")
-	if version >= 6:
-		sections.append("shipping")
-	if version >= 7:
-		sections.append("buffs")
+	var sections: Array[String] = []
+	for section: SaveSection in _sections:
+		if version >= section.since_version:
+			sections.append(String(section.id))
 	return sections
 
 func _write_dictionary(path: String, data: Dictionary) -> bool:

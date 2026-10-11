@@ -11,9 +11,9 @@ path: "gamebase/core/save/**"
 - **Published saves keep loading**: that is a domain invariant of this base (`.agents/rules/project-domain.md`). A change to what a save contains or means goes through `SaveMigration`; a save from a newer build is never overwritten, rotated or repaired by an older one.
 - **A new section changes the schema and is one change**: it needs all of the following together.
   1. Raise `GameSaveManager.SAVE_VERSION` and add the matching step to `SaveMigration.migrate`, which gives older saves a default for the section.
-  2. Add the section to `_required_dictionary_sections()` for the new version.
-  3. Write it in `build_snapshot()`, restore it in `apply_snapshot()`, and refresh it in `_sync_snapshot_runtime_sections()`. `apply_snapshot()` restores global state before the saved scene is instantiated, and the order between services matters; read its comments before choosing where the new call goes.
-  4. Reset it in `GameSession.initialize_new_game_state()`, otherwise a new game inherits the previous session's state.
+  2. Register a `SaveSection` for it: the foundation's own sections in `GameSaveManager._register_core_sections()`, a module's in the game's composition autoload (`game/game_setup.gd`). `since_version` is the new version, which makes saves of that version and later require the section. `order` is the restore order: `apply_snapshot()` restores global state before the saved scene is instantiated, and the order between services matters, so read the comments on the existing registrations before choosing it.
+  3. Register a new-game step for it (`GameSession.register_new_game_step()`), otherwise a new game inherits the previous session's state.
+  4. Derived state that depends on several sections is repaired by a load step (`SaveManager.register_load_step()`), which runs after every section is restored.
   5. Cover the migration in `test/unit/test_save_migration.gd`.
 - **A new `WorldState` key needs a default on every read**: it does not change the schema, but saves written before it existed do not contain it.
 - **Store stable ids only**: a node path, a scene file path or a list index is not a durable identity; scene renames are handled through Location and Spawn ids.
@@ -21,7 +21,9 @@ path: "gamebase/core/save/**"
 
 ## P1
 
-- **Where persistent state lives**: twelve services own a section of the save through `to_save_data()` and `load_save_data()`: `clock`, `weather`, `inventory`, `player_state`, `world`, `relationships`, `npc_memory`, `quests`, `skills`, `buffs`, `shipping`, `fishing`. Everything else that persists (animals, buildings, storage, mail, town projects, contracts, collections, farm plots, mine state and more) keeps its values in `WorldState` under its own keys, and `WorldState` is the `world` section.
+- **Core never names a module or a content id**: `GameSaveManager` and `GameSession` only iterate what was registered with them and read the game's facts (start location, home, starting clock and items) from the `GameDefinition` named by the `gamebase/game_definition` project setting. A module service is wired in by `game/game_setup.gd`, never called from `gamebase/core`.
+- **A section no registered service owns is kept**: data of a module this build does not enable is written back unchanged on the next save, and dropped only when a new game starts.
+- **Where persistent state lives**: twelve services own a section of the save through `to_save_data()` and `load_save_data()`: `clock`, `weather`, `player_state` and `world` (core), and `inventory`, `relationships`, `npc_memory`, `quests`, `skills`, `buffs`, `shipping`, `fishing` (modules). Everything else that persists (animals, buildings, storage, mail, town projects, contracts, collections, farm plots, mine state and more) keeps its values in `WorldState` under its own keys, and `WorldState` is the `world` section.
 - **A value that has been saved and loaded is not the value that was stored**, because of what JSON does to it:
   - Every number comes back as a `float`. `3.0 == 3` is true, but `match value:` with a `3` branch does not match `3.0`, and `{3: x}.has(3.0)` is false. Convert with `int()` (or the `_safe_int` helpers) before a `match`, a dictionary lookup, an array index or a comparison against an enum.
   - A `StringName` comes back as a `String`. Ids read from a save are converted with `StringName(String(value))` before they are used as ids.

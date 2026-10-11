@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="GameDefinition" format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/session/game_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+start_location_id = &"starter_town"
+home_location_id = &"player_home"
+home_spawn_id = &"from_town"
+start_day = 1
+start_minute_of_day = 480
+world_seed = 93017
+start_items = Dictionary[StringName, int]({
+&"hoe": 1,
+&"watering_can": 1,
+&"pickaxe": 1,
+&"rusty_sword": 1,
+&"fishing_rod": 1,
+&"turnip_seeds": 10,
+&"hay": 20
+})
