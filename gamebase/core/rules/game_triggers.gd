@@ -19,9 +19,12 @@ var _arg_names: Dictionary = {}
 # event -> the callable connected to its signal
 var _connections: Dictionary = {}
 var _depth := 0
+# Once triggers whose actions are running, so they do not set themselves off.
+var _running: Dictionary = {}
 
 func _ready() -> void:
 	connect_triggers()
+	WorldState.changed.connect(_on_world_state_changed)
 
 func _exit_tree() -> void:
 	_disconnect_all()
@@ -54,17 +57,24 @@ func fire(event: StringName, args: Dictionary) -> void:
 	_depth += 1
 	var context := {"event": args}
 	for trigger: TriggerData in _by_event.get(event, []):
-		if trigger.once and has_fired(trigger.id):
+		if trigger.once and (has_fired(trigger.id) or _running.has(trigger.id)):
 			continue
-		if not GameRules.check(trigger.condition, context):
+		var times := 1 if trigger.repeat_per == &"" else int(args.get(String(trigger.repeat_per), 0))
+		if times <= 0 or not GameRules.check(trigger.condition, context):
 			continue
-		if trigger.once:
-			WorldState.set_value(_fired_key(trigger.id), true)
-		var times := 1 if trigger.repeat_per == &"" else maxi(int(args.get(String(trigger.repeat_per), 0)), 0)
+		_running[trigger.id] = true
+		var completed := true
 		for _time: int in times:
 			if not GameRules.run_actions(trigger.actions, context):
+				completed = false
 				break
-		trigger_fired.emit(trigger.id)
+		_running.erase(trigger.id)
+		# An action that failed (a full inventory) leaves a once trigger to fire
+		# again; only one whose actions all ran counts as fired.
+		if completed:
+			if trigger.once:
+				WorldState.set_value(_fired_key(trigger.id), true)
+			trigger_fired.emit(trigger.id)
 	_depth -= 1
 
 func _on_event(...values: Array) -> void:
@@ -86,6 +96,17 @@ func _disconnect_all() -> void:
 	_connections.clear()
 	_by_event.clear()
 	_arg_names.clear()
+
+# A cleared or loaded world keeps only what current once triggers fired: a
+# save names current content only.
+func _on_world_state_changed(key: StringName, _value: Variant) -> void:
+	if key != &"":
+		return
+	for world_key: String in WorldState.to_save_data():
+		if world_key.begins_with("trigger:") and world_key.ends_with(":fired"):
+			var trigger := TriggerData.find(StringName(world_key.trim_prefix("trigger:").trim_suffix(":fired")))
+			if trigger == null or not trigger.once:
+				WorldState.erase(StringName(world_key))
 
 func _fired_key(trigger_id: StringName) -> StringName:
 	return StringName("trigger:%s:fired" % trigger_id)

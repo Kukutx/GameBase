@@ -142,12 +142,12 @@ func _validate_resource(resource: Resource, context: String, problems: PackedStr
 		if (name == "condition" or name.ends_with("_condition")) and value is String:
 			for problem: String in validate_query(value):
 				problems.append("%s %s: %s" % [context, name, problem])
-			if not resource is TriggerData and not find_event_args(PackedStringArray([value])).is_empty():
+			if not resource is TriggerData and not find_event_arg_uses(PackedStringArray([value])).is_empty():
 				problems.append("%s %s: only a trigger's conditions and actions name event arguments ($name)" % [context, name])
 		elif (name == "actions" or name.ends_with("_actions")) and (value is PackedStringArray or value is Array):
 			for problem: String in validate_actions(PackedStringArray(value)):
 				problems.append("%s %s: %s" % [context, name, problem])
-			if not resource is TriggerData and not find_event_args(PackedStringArray(value)).is_empty():
+			if not resource is TriggerData and not find_event_arg_uses(PackedStringArray(value)).is_empty():
 				problems.append("%s %s: only a trigger's conditions and actions name event arguments ($name)" % [context, name])
 		elif value is Array:
 			for item: Variant in value:
@@ -251,16 +251,47 @@ func _sorted_keys(source: Dictionary) -> PackedStringArray:
 	keys.sort()
 	return keys
 
-## The event arguments (`$name`, without the `$`) that `texts`, conditions
-## or actions, name.
-static func find_event_args(texts: PackedStringArray) -> PackedStringArray:
-	var names := PackedStringArray()
+## Each place `texts`, conditions or actions, read an argument of the event
+## that set off a trigger, as {"name", "key", "index"}: `index` is where the
+## `$name` stands among the key's arguments, or -1 for the name `EVENT_ARG` and
+## `EVENT_ARG_AT_LEAST` read. The clauses inside `ANY` count too.
+static func find_event_arg_uses(texts: PackedStringArray) -> Array[Dictionary]:
+	var uses: Array[Dictionary] = []
 	for text: String in texts:
 		for clause: Dictionary in GameQuery.parse(text)["clauses"]:
-			for arg: String in clause["args"]:
-				if arg.begins_with("$") and not names.has(arg.substr(1)):
-					names.append(arg.substr(1))
-	return names
+			var key := StringName(String(clause["key"]).to_upper())
+			var args: PackedStringArray = clause["args"]
+			if key == &"ANY":
+				uses.append_array(find_event_arg_uses(args))
+				continue
+			if (key == &"EVENT_ARG" or key == &"EVENT_ARG_AT_LEAST") and not args.is_empty():
+				uses.append({"name": args[0], "key": key, "index": -1})
+			for index: int in args.size():
+				if args[index].begins_with("$"):
+					uses.append({"name": args[index].substr(1), "key": key, "index": index})
+	return uses
+
+## The kind of argument `key` takes at `index` (see `register_condition`), or
+## &"" when nothing checks it.
+func get_arg_kind(key: StringName, index: int) -> StringName:
+	var entry: Dictionary = _conditions.get(_normalize(key), _actions.get(_normalize(key), {}))
+	var kinds: Array = entry.get("kinds", [])
+	return &"" if kinds.is_empty() else StringName(kinds[mini(index, kinds.size() - 1)])
+
+## Whether an event argument of the Variant `type` can stand for an argument
+## of `kind`: a number for a number, text or an id for text or an id. An
+## untyped event argument can stand for any.
+static func takes_type(kind: StringName, type: int) -> bool:
+	if type == TYPE_NIL or kind == &"" or kind == ARG_TEXT:
+		return true
+	match kind:
+		ARG_INT:
+			return type == TYPE_INT
+		ARG_NUMBER:
+			return type == TYPE_INT or type == TYPE_FLOAT
+		ARG_BOOL:
+			return type == TYPE_BOOL
+	return type == TYPE_STRING_NAME or type == TYPE_STRING
 
 static func _names_event_arg(args: PackedStringArray) -> bool:
 	for arg: String in args:

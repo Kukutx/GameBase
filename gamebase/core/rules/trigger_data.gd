@@ -16,12 +16,14 @@ const KIND := &"trigger"
 ## name (`EVENT_ARG_AT_LEAST quantity 3`), and here and in `actions` an
 ## argument written `$name` is the event's argument (`ADD_MONEY $price`).
 @export var condition: String = ""
-## What the trigger does, in order (`GameRules.run_actions()`).
+## What the trigger does, in order (`GameRules.run_actions()`); an action
+## that fails stops the ones after it.
 @export var actions: PackedStringArray = PackedStringArray()
 ## An integer argument of the event to run the actions once per unit of
 ## (`quantity`: once per crop harvested); empty runs them once.
 @export var repeat_per: StringName
-## Whether the trigger fires only once in a world.
+## Whether the trigger fires only once in a world: once all its actions ran.
+## An action that failed (a full inventory) leaves it to fire again.
 @export var once := false
 
 ## The trigger with `entry_id` in the running game's content, or null.
@@ -67,15 +69,19 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 	var args := get_event_args()
 	if repeat_per != &"" and int(args.get(String(repeat_per), TYPE_NIL)) != TYPE_INT:
 		problems.append("repeats per '%s', which is no integer argument of '%s'" % [repeat_per, event])
-	var named := GameRulesService.find_event_args(actions)
-	for name: String in GameRulesService.find_event_args(PackedStringArray([condition])):
-		if not named.has(name):
-			named.append(name)
-	for clause: Dictionary in GameQuery.parse(condition)["clauses"]:
-		var clause_args: PackedStringArray = clause["args"]
-		if [&"EVENT_ARG", &"EVENT_ARG_AT_LEAST"].has(clause["key"]) and not clause_args.is_empty() and not named.has(clause_args[0]):
-			named.append(clause_args[0])
-	for name: String in named:
+	var texts := actions.duplicate()
+	texts.append(condition)
+	for use: Dictionary in GameRulesService.find_event_arg_uses(texts):
+		var name: String = use["name"]
+		var problem := ""
 		if not args.has(name):
-			problems.append("reads argument '%s', which '%s' does not have" % [name, event])
+			problem = "reads argument '%s', which '%s' does not have" % [name, event]
+		else:
+			# The name EVENT_ARG_AT_LEAST reads compares as a number.
+			var kind := GameRules.get_arg_kind(use["key"], use["index"]) if int(use["index"]) >= 0 \
+				else (GameRulesService.ARG_NUMBER if use["key"] == &"EVENT_ARG_AT_LEAST" else GameRulesService.ARG_TEXT)
+			if not GameRulesService.takes_type(kind, args[name]):
+				problem = "passes argument '%s' (%s) to %s, which takes %s" % [name, type_string(args[name]), use["key"], kind]
+		if not problem.is_empty() and not problems.has(problem):
+			problems.append(problem)
 	return problems
