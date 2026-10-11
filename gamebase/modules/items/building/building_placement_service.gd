@@ -32,7 +32,7 @@ func get_placements(location_id: StringName) -> Array[Dictionary]:
 			# they cannot become invisible blockers or break placement maths.
 			if placement_id == &"" or seen_ids.has(String(placement_id)):
 				continue
-			if placeable_id == &"" or ContentDB.get_placeable(placeable_id) == null:
+			if placeable_id == &"" or PlaceableData.find(placeable_id) == null:
 				continue
 			if record_location != &"" and record_location != location_id:
 				continue
@@ -48,8 +48,8 @@ func get_placements(location_id: StringName) -> Array[Dictionary]:
 	return result
 
 func can_place(placeable_id: StringName, location_id: StringName, position: Vector2) -> bool:
-	var data := ContentDB.get_placeable(placeable_id)
-	var location := ContentDB.get_location(location_id)
+	var data := PlaceableData.find(placeable_id)
+	var location := WorldLocationData.find(location_id)
 	if data == null or location == null or not data.is_allowed_in(location):
 		return false
 	if data.scene_path.is_empty() or not ResourceLoader.exists(data.scene_path):
@@ -58,7 +58,7 @@ func can_place(placeable_id: StringName, location_id: StringName, position: Vect
 	if _current_location_id() == location_id and not _is_inside_build_zone(placeable_id, snapped):
 		return false
 	for record: Dictionary in get_placements(location_id):
-		var other_data := ContentDB.get_placeable(StringName(String(record.get("placeable_id", ""))))
+		var other_data := PlaceableData.find(StringName(String(record.get("placeable_id", ""))))
 		var other_position := Vector2(float(record.get("x", 0.0)), float(record.get("y", 0.0)))
 		var required_spacing := data.minimum_spacing
 		if other_data != null:
@@ -76,7 +76,7 @@ func place_from_inventory(placeable_id: StringName, location_id: StringName, pos
 	return result
 
 func _place_from_inventory_internal(placeable_id: StringName, location_id: StringName, position: Vector2) -> Dictionary:
-	var data := ContentDB.get_placeable(placeable_id)
+	var data := PlaceableData.find(placeable_id)
 	if data == null or data.item_id == &"" or not InventoryState.has_item(data.item_id, 1):
 		return {}
 	var record := place(placeable_id, location_id, position)
@@ -88,7 +88,7 @@ func _place_from_inventory_internal(placeable_id: StringName, location_id: Strin
 	return record
 
 func place(placeable_id: StringName, location_id: StringName, position: Vector2) -> Dictionary:
-	var data := ContentDB.get_placeable(placeable_id)
+	var data := PlaceableData.find(placeable_id)
 	if data == null or not can_place(placeable_id, location_id, position):
 		return {}
 	var serial := _next_unique_serial()
@@ -128,7 +128,7 @@ func remove_placement(location_id: StringName, placement_id: StringName, refund_
 		return false
 	var refund_data: PlaceableData = null
 	if refund_item:
-		refund_data = ContentDB.get_placeable(StringName(String(removed.get("placeable_id", ""))))
+		refund_data = PlaceableData.find(StringName(String(removed.get("placeable_id", ""))))
 		if refund_data != null and refund_data.item_id != &"" and not _refund_fits(refund_data.item_id):
 			GameEvents.toast("Make room before packing up this structure")
 			return false
@@ -150,7 +150,7 @@ func remove_placement(location_id: StringName, placement_id: StringName, refund_
 func get_daily_effect_positions(location_id: StringName, effect: StringName) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for record: Dictionary in get_placements(location_id):
-		var data := ContentDB.get_placeable(StringName(String(record.get("placeable_id", ""))))
+		var data := PlaceableData.find(StringName(String(record.get("placeable_id", ""))))
 		if data == null or data.daily_effect != effect:
 			continue
 		result.append({
@@ -188,7 +188,7 @@ func snap_position(position: Vector2, snap_size: int) -> Vector2:
 	return Vector2(round(position.x / size) * size, round(position.y / size) * size)
 
 func _spawn_record(record: Dictionary, explicit_parent: Node2D = null) -> Node2D:
-	var data := ContentDB.get_placeable(StringName(String(record.get("placeable_id", ""))))
+	var data := PlaceableData.find(StringName(String(record.get("placeable_id", ""))))
 	if data == null or data.scene_path.is_empty() or not ResourceLoader.exists(data.scene_path):
 		return null
 	var packed := load(data.scene_path) as PackedScene
@@ -258,7 +258,7 @@ func _next_unique_serial() -> int:
 	return serial
 
 func _refund_fits(item_id: StringName) -> bool:
-	return InventoryState.can_add_item(ContentDB.get_item(item_id), 1)
+	return InventoryState.can_add_item(ItemData.find(item_id), 1)
 
 func _is_numeric(value: Variant) -> bool:
 	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT

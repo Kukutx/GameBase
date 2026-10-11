@@ -21,7 +21,7 @@ func after_each() -> void:
 	WorldClock.load_save_data(_clock_snapshot)
 
 func test_placeable_chests_use_independent_container_ids_and_require_empty_packup() -> void:
-	assert_not_null(ContentDB.get_placeable(&"storage_chest"))
+	assert_not_null(PlaceableData.find(&"storage_chest"))
 	assert_not_null(CraftingState.get_recipe(&"storage_chest"))
 	var packed := load("res://gamebase/modules/items/storage/storage_chest.tscn") as PackedScene
 	var first := packed.instantiate() as StorageChest
@@ -87,7 +87,7 @@ func test_packup_refund_blocks_item_added_reentrancy() -> void:
 	assert_eq(BuildingState.get_placements(&"starter_town").size(), 0)
 
 func test_placeable_furnace_keeps_unique_job_state_and_blocks_packup_until_collected() -> void:
-	assert_not_null(ContentDB.get_placeable(&"copper_furnace"))
+	assert_not_null(PlaceableData.find(&"copper_furnace"))
 	assert_not_null(CraftingState.get_recipe(&"copper_furnace"))
 	InventoryState.add_item_by_id(&"copper_ore", 2)
 	InventoryState.add_item_by_id(&"wood", 1)

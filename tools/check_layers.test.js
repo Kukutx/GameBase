@@ -18,7 +18,7 @@ const FOUNDATION = { addons: ["gut"], modules: { items: { requires: [] }, fishin
 const PROJECT = [
   "[autoload]",
   "",
-  'ContentDB="*res://game/content/db.gd"',
+  'ContentDB="*res://gamebase/core/content/content_registry.gd"',
   'Inventory="*res://gamebase/modules/items/inventory.gd"',
   "",
 ].join("\n");
@@ -51,19 +51,14 @@ test("core using a module, a game path or a content id is reported", () => {
     "gamebase/gamebase.json": FOUNDATION,
     "games/one/game.json": { id: "one", modules: ["items"] },
     "games/one/project.godot": PROJECT,
-    "gamebase/core/content/registry.gd": "class_name Registry\nextends Node\nfunc get_entry() -> void:\n\tpass\n",
-    "games/one/game/content/db.gd": "extends Registry\nfunc get_item() -> void:\n\tpass\n",
     "gamebase/modules/items/inventory.gd": "extends Node\n",
     "games/one/game/data/berry.tres": '[resource]\nid = &"berry"\n',
-    "gamebase/core/a.gd": 'extends Node\nfunc f() -> void:\n\tInventory.clear()\n\tContentDB.get_entry()\n\tload("res://game/x.tres")\n\tprint(&"berry")\n',
-    "gamebase/modules/items/b.gd": "extends Node\nfunc f() -> void:\n\tContentDB.get_item()\n\tContentDB.missing()\n",
+    "gamebase/core/a.gd": 'extends Node\nfunc f() -> void:\n\tInventory.clear()\n\tload("res://game/x.tres")\n\tprint(&"berry")\n',
   });
   const problems = checkLayers(root);
   assert.ok(problems.includes("gamebase/core/a.gd (core) must not use Inventory"));
   assert.ok(problems.includes("gamebase/core/a.gd (core) must not use path:game/x.tres"));
   assert.ok(problems.includes("gamebase/core/a.gd (core) must not use literal:berry"));
-  assert.ok(problems.some((p) => p.includes("calls ContentDB.missing()")));
-  assert.ok(!problems.some((p) => p.includes("ContentDB.get_item") || p.includes("use ContentDB")));
 });
 
 test("a module naming an id a game defines in its scenes is reported", () => {

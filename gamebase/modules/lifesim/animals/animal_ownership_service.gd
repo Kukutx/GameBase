@@ -24,7 +24,7 @@ func reset_new_game() -> void:
 ## has lived on the farm (its product is ready). Returns false when `animal_id` is not content or `instance_id` is
 ## already owned.
 func grant_animal(instance_id: StringName, animal_id: StringName, location_id: StringName, housing_id: StringName, slot_index: int) -> bool:
-	var data := ContentDB.get_farm_animal(animal_id)
+	var data := FarmAnimalData.find(animal_id)
 	if data == null or instance_id == &"" or location_id == &"" or housing_id == &"" or not get_record(instance_id).is_empty():
 		return false
 	_add_record(instance_id, animal_id, location_id, housing_id, slot_index, data.display_name.validate_node_name())
@@ -65,7 +65,7 @@ func get_feed_item_ids(location_id: StringName) -> Array[StringName]:
 	for housing_id: StringName in get_housing_ids(location_id):
 		housing_types[String(_housing[String(housing_id)]["housing_type"])] = true
 	var result: Array[StringName] = []
-	for data: FarmAnimalData in ContentDB.get_all_farm_animals():
+	for data: FarmAnimalData in FarmAnimalData.find_all():
 		if housing_types.has(String(data.housing_type)) and data.feed_item_id != &"" and not result.has(data.feed_item_id):
 			result.append(data.feed_item_id)
 	return result
@@ -117,7 +117,7 @@ func sell_animal(instance_id: StringName) -> int:
 		var record: Dictionary = records[index]
 		if StringName(String(record["instance_id"])) != instance_id:
 			continue
-		var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+		var data := FarmAnimalData.find(StringName(String(record.get("animal_id", ""))))
 		if data == null:
 			return 0
 		var refund := maxi(int(round(float(data.purchase_price) * 0.5)), 0)
@@ -172,7 +172,7 @@ func get_feed_needs(housing_id: StringName) -> Dictionary[StringName, int]:
 	var needs: Dictionary[StringName, int] = {}
 	for record: Dictionary in get_owned(&"", housing_id):
 		var instance_id := StringName(String(record.get("instance_id", "")))
-		var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+		var data := FarmAnimalData.find(StringName(String(record.get("animal_id", ""))))
 		if instance_id == &"" or data == null or data.feed_item_id == &"":
 			continue
 		if int(_get_animal_state(instance_id).get("last_fed_day", WorldClock.day)) < WorldClock.day:
@@ -197,7 +197,7 @@ func _feed_housing_internal(housing_id: StringName) -> int:
 	for record: Dictionary in get_owned(&"", housing_id):
 		var instance_id := StringName(String(record.get("instance_id", "")))
 		var animal_id := StringName(String(record.get("animal_id", "")))
-		var data := ContentDB.get_farm_animal(animal_id)
+		var data := FarmAnimalData.find(animal_id)
 		if instance_id == &"" or data == null or data.feed_item_id == &"":
 			continue
 		var state := _get_animal_state(instance_id)
@@ -216,7 +216,7 @@ func _feed_housing_internal(housing_id: StringName) -> int:
 	return fed
 
 func can_purchase(animal_id: StringName, location_id: StringName) -> bool:
-	var data := ContentDB.get_farm_animal(animal_id)
+	var data := FarmAnimalData.find(animal_id)
 	if data == null or data.purchase_price <= 0:
 		return false
 	if PlayerState.money < data.purchase_price:
@@ -232,7 +232,7 @@ func purchase(animal_id: StringName, location_id: StringName) -> StringName:
 	return result
 
 func _purchase_internal(animal_id: StringName, location_id: StringName) -> StringName:
-	var data := ContentDB.get_farm_animal(animal_id)
+	var data := FarmAnimalData.find(animal_id)
 	if data == null:
 		return &""
 	var housing_id := _find_housing_with_space(location_id, data.housing_type)
@@ -339,7 +339,7 @@ func _get_records() -> Array[Dictionary]:
 		var instance_id: String = record["instance_id"]
 		if instance_id.is_empty() or seen.has(instance_id) or String(record["location_id"]).is_empty() or String(record["housing_id"]).is_empty():
 			continue
-		if ContentDB.get_farm_animal(StringName(String(record["animal_id"]))) == null:
+		if FarmAnimalData.find(StringName(String(record["animal_id"]))) == null:
 			continue
 		seen[instance_id] = true
 		records.append(record)

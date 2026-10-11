@@ -10,7 +10,7 @@ func get_key() -> String:
 	return "animal:%s" % animal_id
 
 func get_label(context: Dictionary) -> String:
-	var animal := ContentDB.get_farm_animal(animal_id)
+	var animal := FarmAnimalData.find(animal_id)
 	if animal == null:
 		return String(animal_id)
 	var location_id: StringName = context.get("location_id", &"")
@@ -26,6 +26,6 @@ func buy(context: Dictionary) -> bool:
 	return location_id != &"" and AnimalState.purchase(animal_id, location_id) != &""
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
-	if not registry.has_entry(&"farm_animal", animal_id):
+	if not registry.has_entry(FarmAnimalData.KIND, animal_id):
 		return PackedStringArray(["sells unknown animal '%s'" % animal_id])
 	return PackedStringArray()

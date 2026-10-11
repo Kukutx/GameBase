@@ -35,7 +35,7 @@ func get_active_id() -> StringName:
 ## Starts the minigame `minigame_id` and waits for it to end. Returns a lost
 ## result at once when the minigame is unknown or another one is running.
 func run(minigame_id: StringName, context: Dictionary = {}) -> MiniGameResult:
-	var definition := ContentDB.get_entry(ContentRegistry.KIND_MINIGAME, minigame_id) as MiniGameDefinition
+	var definition := MiniGameDefinition.find(minigame_id)
 	if definition == null or definition.scene == null:
 		push_error("MiniGameHost: unknown minigame '%s'" % minigame_id)
 		return MiniGameResult.lost()

@@ -47,7 +47,7 @@ func give_gift(profile: NpcProfileData, item_id: StringName) -> int:
 	if int(_last_gift_day.get(key, 0)) == WorldClock.day:
 		GameEvents.toastf("You already gave %s a gift today", [profile.display_name])
 		return 0
-	var item := ItemCatalog.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null or item.kind == ItemData.Kind.TOOL or item.kind == ItemData.Kind.SEED:
 		GameEvents.toast("That is not a suitable gift")
 		return 0

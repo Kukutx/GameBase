@@ -45,3 +45,11 @@ func _refresh() -> void:
 		label.text = "%s\n%s" % [tr(display), tr("Joined") if EventState.has_claimed_participation(event_id) else tr("Join for festival reward")]
 	if interactable != null:
 		interactable.set_prompt("Visit %s", [display])
+
+func find_scene_problems(registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	var event := registry.get_entry(CalendarEventData.KIND, event_id) as CalendarEventData
+	if event == null:
+		return PackedStringArray(["event booth '%s' references unknown event '%s'" % [name, event_id]])
+	if location != null and event.location_id != &"" and event.location_id != location.id:
+		return PackedStringArray(["event booth '%s' references event '%s' from location '%s'" % [name, event_id, event.location_id]])
+	return PackedStringArray()

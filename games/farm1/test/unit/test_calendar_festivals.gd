@@ -38,9 +38,9 @@ func test_four_seasonal_festivals_are_registered_on_stable_dates() -> void:
 		&"fall_harbor_derby": ["Autumn", 14, &"harbor_town"],
 		&"winter_lantern_night": ["Winter", 21, &"starter_town"],
 	}
-	assert_eq(ContentDB.get_all_calendar_events().size(), 5)
+	assert_eq(CalendarEventData.find_all().size(), 5)
 	for event_id: StringName in expected.keys():
-		var event := ContentDB.get_calendar_event(event_id)
+		var event := CalendarEventData.find(event_id)
 		assert_not_null(event)
 		if event == null:
 			continue

@@ -85,7 +85,7 @@ func _collect_output_internal() -> bool:
 	_update_job()
 	if not output_ready or active_recipe_id == &"":
 		return false
-	var item := ContentDB.get_item(pending_output_item_id)
+	var item := ItemData.find(pending_output_item_id)
 	if item == null:
 		return false
 	if not InventoryState.can_add_item(item, pending_output_quantity):
@@ -125,7 +125,7 @@ func load_state_data(data: Dictionary, persist := true) -> void:
 	output_ready = raw_ready is bool and bool(raw_ready)
 	pending_output_item_id = _safe_string_name(data.get("output_item_id", ""))
 	pending_output_quantity = _safe_nonnegative_int(data.get("output_quantity", 0))
-	var valid := active_recipe_id != &"" and pending_output_quantity > 0 and ContentDB.get_item(pending_output_item_id) != null
+	var valid := active_recipe_id != &"" and pending_output_quantity > 0 and ItemData.find(pending_output_item_id) != null
 	if not valid:
 		var had_job := active_recipe_id != &""
 		active_recipe_id = &""
@@ -174,7 +174,7 @@ func _update_job() -> void:
 func _get_recipe(recipe_id: StringName) -> ProcessingRecipeData:
 	if not recipe_ids.has(recipe_id):
 		return null
-	return ContentDB.get_processing_recipe(recipe_id)
+	return ProcessingRecipeData.find(recipe_id)
 
 func _clear_job() -> void:
 	active_recipe_id = &""
@@ -234,3 +234,25 @@ func _safe_string_name(value: Variant) -> StringName:
 
 func _absolute_minute(day: int, minute_of_day: int) -> int:
 	return (maxi(day, 1) - 1) * 1440 + clampi(minute_of_day, 0, 1439)
+
+## The world state the station saves, for `ContentRegistry`'s check that no two
+## nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray([String(_state_key())]) if station_id != &"" else PackedStringArray()
+
+## A station built into a location needs its station id; a placed one gets it
+## from its record. Either way it offers recipes that exist, once each.
+func find_scene_problems(registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if location != null and station_id == &"":
+		problems.append("processing station '%s' has no station id" % name)
+	if recipe_ids.is_empty():
+		problems.append("processing station '%s' exposes no recipes" % name)
+	var seen: Dictionary = {}
+	for recipe_id: StringName in recipe_ids:
+		if not registry.has_entry(ProcessingRecipeData.KIND, recipe_id):
+			problems.append("processing station '%s' references unknown recipe '%s'" % [name, recipe_id])
+		elif seen.has(recipe_id):
+			problems.append("processing station '%s' repeats recipe '%s'" % [name, recipe_id])
+		seen[recipe_id] = true
+	return problems

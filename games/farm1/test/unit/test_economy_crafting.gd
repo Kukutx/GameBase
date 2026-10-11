@@ -41,7 +41,7 @@ func test_shop_buys_and_sells_using_shared_item_prices() -> void:
 	assert_eq(PlayerState.money, 60)
 
 func test_shop_buy_blocks_money_callback_reentrancy() -> void:
-	var shop := ContentDB.get_shop(&"general_store")
+	var shop := ShopData.find(&"general_store")
 	assert_not_null(shop)
 	if shop == null:
 		return
@@ -90,7 +90,7 @@ func test_shop_sell_blocks_inventory_and_money_callback_reentrancy() -> void:
 	assert_eq(PlayerState.money, 120)
 
 func test_shop_purchase_refunds_money_if_inventory_changes_after_payment() -> void:
-	var shop := ContentDB.get_shop(&"general_store")
+	var shop := ShopData.find(&"general_store")
 	assert_not_null(shop)
 	if shop == null:
 		return
@@ -157,7 +157,7 @@ func test_crafting_reuses_consumed_ingredient_slot_when_inventory_is_full() -> v
 	assert_eq(InventoryState.get_used_slots(), 1)
 
 func test_general_store_seasonal_seed_stock_changes_with_calendar() -> void:
-	var shop := ContentDB.get_shop(&"general_store")
+	var shop := ShopData.find(&"general_store")
 	assert_not_null(shop)
 	var spring := shop.get_stock("Spring")
 	var summer := shop.get_stock("Summer")
@@ -180,31 +180,31 @@ func test_general_store_seasonal_seed_stock_changes_with_calendar() -> void:
 
 func test_metal_processing_never_reduces_shipping_value() -> void:
 	for recipe_id: StringName in [&"smelt_copper_bar", &"smelt_iron_bar", &"smelt_gold_bar", &"smelt_iridium_bar"]:
-		var recipe := ContentDB.get_processing_recipe(recipe_id)
+		var recipe := ProcessingRecipeData.find(recipe_id)
 		assert_not_null(recipe)
 		if recipe == null:
 			continue
 		var input_value := 0
 		for raw_id: Variant in recipe.inputs.keys():
-			var item := ContentDB.get_item(StringName(String(raw_id)))
+			var item := ItemData.find(StringName(String(raw_id)))
 			assert_not_null(item)
 			if item != null:
 				input_value += item.sell_price * int(recipe.inputs[raw_id])
-		var output := ContentDB.get_item(recipe.output_item_id)
+		var output := ItemData.find(recipe.output_item_id)
 		assert_not_null(output)
 		if output != null:
 			assert_gte(output.sell_price * recipe.output_quantity, input_value, "%s should not destroy shipping value" % recipe_id)
-	assert_eq(ContentDB.get_item(&"iridium_bar").sell_price, 850)
+	assert_eq(ItemData.find(&"iridium_bar").sell_price, 850)
 
 func test_general_store_has_no_buy_sell_arbitrage() -> void:
-	var shop := ContentDB.get_shop(&"general_store")
+	var shop := ShopData.find(&"general_store")
 	assert_not_null(shop)
 	if shop == null:
 		return
 	for season: String in GameClock.SEASON_NAMES:
 		var stock := shop.get_stock(season)
 		for raw_id: Variant in stock.keys():
-			var item := ContentDB.get_item(StringName(String(raw_id)))
+			var item := ItemData.find(StringName(String(raw_id)))
 			assert_not_null(item)
 			if item != null and item.sell_price > 0:
 				assert_gte(int(stock[raw_id]), item.sell_price, "%s can be bought below its resale value in %s" % [raw_id, season])

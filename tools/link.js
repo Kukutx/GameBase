@@ -13,12 +13,12 @@
 // of the game's project.godot that follow from the manifests: the autoloads of
 // the core and of the game's modules, the translation catalogs and the addon
 // plugins (tools/lib/project.js). Without --game every registered game is
-// linked.
+// linked, and the new-game template's project.godot is brought in step too.
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { fail, main, rootPath } = require("./lib/common");
-const { gamePath, resolveGames } = require("./lib/games");
+const { gamePath, resolveGames, templateGame } = require("./lib/games");
 const { syncProject } = require("./lib/project");
 
 function isLink(file) {
@@ -91,5 +91,6 @@ if (require.main === module) {
       const changed = linkGame(game);
       console.log(`${game.id}: foundation core, ${game.modules.length} module(s) and ${game.addons.length} addon(s) linked${changed ? ` (${changed} updated)` : ""}.`);
     }
+    if (!values.game && syncProject(templateGame())) console.log("gamebase/templates/new_game/project.godot updated.");
   });
 }

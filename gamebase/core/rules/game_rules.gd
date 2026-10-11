@@ -247,7 +247,7 @@ func _register_core_rules() -> void:
 	register_condition(&"WEEKDAY", _weekday, 1, -1, [ARG_INT])
 	register_condition(&"TIME_BETWEEN", _time_between, 2, 2, [ARG_INT])
 	register_condition(&"WEATHER", _weather, 1, -1, [ARG_TEXT])
-	register_condition(&"LOCATION", _location, 1, -1, [ContentRegistry.KIND_LOCATION])
+	register_condition(&"LOCATION", _location, 1, -1, [WorldLocationData.KIND])
 	register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [ARG_INT])
 	register_action(&"SET_FLAG", _set_flag, 1, 2, [ARG_TEXT])
 	register_action(&"CLEAR_FLAG", _clear_flag, 1, 1, [ARG_TEXT])

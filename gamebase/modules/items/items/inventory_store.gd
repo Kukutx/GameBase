@@ -31,7 +31,7 @@ func add_item(item: ItemData, quantity: int = 1) -> int:
 	return quantity - accepted
 
 func add_item_by_id(item_id: StringName, quantity: int = 1) -> int:
-	var item := ItemCatalog.get_item(item_id)
+	var item := ItemData.find(item_id)
 	return add_item(item, quantity) if item != null else quantity
 
 func get_add_capacity(item: ItemData) -> int:
@@ -164,7 +164,7 @@ func load_save_data(data: Dictionary) -> void:
 		var raw_quantity: Variant = data[raw_key]
 		if typeof(raw_quantity) != TYPE_INT and typeof(raw_quantity) != TYPE_FLOAT:
 			continue
-		var item := ItemCatalog.get_item(StringName(String(raw_key)))
+		var item := ItemData.find(StringName(String(raw_key)))
 		var quantity := int(raw_quantity)
 		if item != null and quantity > 0:
 			_put(_items, _definitions, item, quantity)
@@ -193,7 +193,7 @@ func _plan_transaction(removals: Dictionary, additions: Dictionary) -> Dictionar
 			return {}
 		if quantity == 0:
 			continue
-		var item := ItemCatalog.get_item(StringName(String(raw_id)))
+		var item := ItemData.find(StringName(String(raw_id)))
 		if item == null or _capacity_for(items, definitions, item) < quantity:
 			return {}
 		_put(items, definitions, item, quantity)

@@ -27,7 +27,7 @@ func get_pending_spawn_id() -> StringName:
 func can_travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 	if _traveling:
 		return false
-	var location := LocationCatalog.get_location(location_id)
+	var location := WorldLocationData.find(location_id)
 	if location == null or location.scene_path.is_empty() or not ResourceLoader.exists(location.scene_path):
 		return false
 	var target_spawn := spawn_id if spawn_id != &"" else location.default_spawn_id
@@ -44,7 +44,7 @@ func can_travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 func travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 	if _traveling:
 		return false
-	var location := LocationCatalog.get_location(location_id)
+	var location := WorldLocationData.find(location_id)
 	if location == null:
 		travel_failed.emit("", spawn_id, "Unknown location: %s" % String(location_id))
 		GameEvents.toastf("Unknown location: %s", [String(location_id)])

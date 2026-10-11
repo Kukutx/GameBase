@@ -42,7 +42,7 @@ func use_item(item_id: StringName, consume_energy: bool = true, show_message: bo
 	return result
 
 func _use_item_internal(item_id: StringName, consume_energy: bool, show_message: bool) -> bool:
-	var item := ItemCatalog.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null:
 		if show_message:
 			GameEvents.toast("Nothing selected")
@@ -90,11 +90,11 @@ func interact(actor: Node) -> void:
 	super.interact(actor)
 
 func can_harvest() -> bool:
-	var crop := CropCatalog.get_crop(crop_id)
+	var crop := CropData.find(crop_id)
 	return crop != null and growth_days >= crop.days_to_mature
 
 func get_growth_progress() -> float:
-	var crop := CropCatalog.get_crop(crop_id)
+	var crop := CropData.find(crop_id)
 	if crop == null:
 		return 0.0
 	return clampf(float(growth_days) / float(maxi(crop.days_to_mature, 1)), 0.0, 1.0)
@@ -117,7 +117,7 @@ func load_state_data(data: Dictionary, persist := true) -> void:
 	growth_days = maxi(_safe_int(data.get("growth_days", 0), 0), 0)
 	last_processed_day = clampi(_safe_int(data.get("last_processed_day", WorldClock.day), WorldClock.day), 1, maxi(WorldClock.day, 1))
 	# A crop that is not content is dropped.
-	var crop := CropCatalog.get_crop(crop_id)
+	var crop := CropData.find(crop_id)
 	if crop == null:
 		persist = persist or crop_id != &""
 		crop_id = &""
@@ -169,7 +169,7 @@ func _plant(seed: ItemData) -> bool:
 	if crop_id != &"":
 		GameEvents.toast("Something is already growing here")
 		return false
-	var crop := CropCatalog.get_crop(seed.crop_id)
+	var crop := CropData.find(seed.crop_id)
 	if crop == null:
 		return false
 	if not crop.can_grow_in(WorldClock.get_season_name()):
@@ -188,10 +188,10 @@ func _plant(seed: ItemData) -> bool:
 	return true
 
 func _harvest() -> void:
-	var crop := CropCatalog.get_crop(crop_id)
+	var crop := CropData.find(crop_id)
 	if crop == null:
 		return
-	var item := ItemCatalog.get_item(crop.harvest_item_id)
+	var item := ItemData.find(crop.harvest_item_id)
 	if item == null:
 		return
 	if not InventoryState.can_add_item(item, crop.harvest_quantity):
@@ -240,7 +240,7 @@ func _advance_to_day(target_day: int) -> void:
 	farm_state_changed.emit()
 
 func _process_day_transition(day: int) -> void:
-	var crop := CropCatalog.get_crop(crop_id)
+	var crop := CropData.find(crop_id)
 	if crop != null:
 		var previous_season := GameClock.get_season_name_for_day(maxi(day - 1, 1))
 		if watered and crop.can_grow_in(previous_season):
@@ -305,7 +305,7 @@ func _refresh_visual() -> void:
 		soil_visual.color = Color(0.20, 0.19, 0.16, 1)
 	else:
 		soil_visual.color = Color(0.42, 0.30, 0.19, 1)
-	var crop := CropCatalog.get_crop(crop_id)
+	var crop := CropData.find(crop_id)
 	crop_visual.visible = crop != null
 	if crop != null:
 		var progress := get_growth_progress()
@@ -333,3 +333,8 @@ func _safe_int(value: Variant, fallback: int) -> int:
 	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
 		return int(value)
 	return fallback
+
+## The world state the node saves, for `ContentRegistry`'s check that no two
+## nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray([String(_state_key())]) if persistent_id != &"" else PackedStringArray()

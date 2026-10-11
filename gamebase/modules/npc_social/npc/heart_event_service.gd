@@ -8,7 +8,7 @@ func get_pending_event(npc_id: StringName) -> HeartEventData:
 	var location_id := location.id if location != null else &""
 	var hearts := RelationshipState.get_hearts(npc_id)
 	var candidates: Array[HeartEventData] = []
-	for event: HeartEventData in ContentDB.get_all_heart_events():
+	for event: HeartEventData in HeartEventData.find_all():
 		if event == null or is_seen(event.id):
 			continue
 		if event.matches(npc_id, hearts, location_id, WorldClock.day, WorldClock.minute_of_day):
@@ -39,7 +39,7 @@ func is_seen(event_id: StringName) -> bool:
 
 func get_seen_event_ids(npc_id: StringName = &"") -> Array[StringName]:
 	var result: Array[StringName] = []
-	for event: HeartEventData in ContentDB.get_all_heart_events():
+	for event: HeartEventData in HeartEventData.find_all():
 		if event == null or not is_seen(event.id):
 			continue
 		if npc_id == &"" or event.npc_id == npc_id:

@@ -64,3 +64,8 @@ func _refresh_label() -> void:
 
 func _collected_key() -> StringName:
 	return StringName("pickup:%s" % String(persistent_id))
+
+## The world state the node saves, for `ContentRegistry`'s check that no two
+## nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray([String(_collected_key())]) if persistent_id != &"" else PackedStringArray()

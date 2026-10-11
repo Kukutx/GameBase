@@ -36,8 +36,8 @@ func test_atomic_transaction_emits_no_failed_side_effects_and_exposes_final_stat
 	var inventory := InventoryStore.new()
 	inventory.max_slots = 1
 	add_child_autofree(inventory)
-	var stone := ContentDB.get_item(&"stone")
-	var chest := ContentDB.get_item(&"storage_chest")
+	var stone := ItemData.find(&"stone")
+	var chest := ItemData.find(&"storage_chest")
 	assert_not_null(stone)
 	assert_not_null(chest)
 	if stone == null or chest == null:

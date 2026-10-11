@@ -47,3 +47,8 @@ func _refresh() -> void:
 	else:
 		label.text = tr("Town Projects\nNeeds help")
 	interactable.prompt_text = "Review town projects"
+
+func find_scene_problems(_registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	if location != null and location_id != &"" and location_id != location.id:
+		return PackedStringArray(["town project board '%s' references different location '%s'" % [name, location_id]])
+	return PackedStringArray()

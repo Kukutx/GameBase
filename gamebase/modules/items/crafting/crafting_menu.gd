@@ -57,7 +57,7 @@ func _rebuild() -> void:
 func _recipe_text(recipe: RecipeData) -> String:
 	var parts: PackedStringArray = []
 	for raw_id: Variant in recipe.ingredients.keys():
-		var item := ItemCatalog.get_item(StringName(String(raw_id)))
+		var item := ItemData.find(StringName(String(raw_id)))
 		var label := tr(item.display_name) if item != null else String(raw_id)
 		parts.append("%s x%d" % [label, int(recipe.ingredients[raw_id])])
 	return "%s  (%s)" % [tr(recipe.display_name), ", ".join(parts)]

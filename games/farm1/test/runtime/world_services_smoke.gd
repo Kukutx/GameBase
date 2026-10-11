@@ -96,11 +96,11 @@ func _run() -> void:
 	# Animal ownership uses Coop/Barn slots and the normal shop path. Fund the
 	# purchase by exactly its price so downstream economy assertions stay stable.
 	_check(animal_state.get_owned(&"starter_town").size() == 2, "Starter animal ownership migration incorrect")
-	var chicken_price: int = int(content_db.get_farm_animal(&"chicken").purchase_price)
+	var chicken_price: int = int(content_db.get_entry(&"farm_animal", &"chicken").purchase_price)
 	var money_before_animal_purchase: int = int(player_state.money)
 	player_state.add_money(chicken_price)
 	# Untyped: naming a module class here compiles it before the autoloads exist.
-	var general_store: Resource = content_db.get_shop(&"general_store")
+	var general_store: Resource = content_db.get_entry(&"shop", &"general_store")
 	var chicken_offer: Resource = general_store.offers[0]
 	var coop_before: Array[StringName] = []
 	for record: Dictionary in animal_state.get_owned(&"starter_town", &"starter_coop"):
@@ -245,7 +245,7 @@ func _run() -> void:
 	player_state.energy = 40
 	player_state.health = 60
 	var food_controller := player.get_node("FarmToolController")
-	food_controller.call("_consume_food", content_db.call("get_item", &"vegetable_stew"))
+	food_controller.call("_consume_food", content_db.get_entry(&"item", &"vegetable_stew"))
 	_check(inventory.get_quantity(&"vegetable_stew") == 0, "Cooked meal was not consumed")
 	_check(player_state.energy == 85 and player_state.health == 80, "Cooked meal did not restore player stats")
 	_check(buff_state.call("has_buff", &"hearty_worker"), "Cooked meal did not apply Hearty Worker buff")

@@ -1,12 +1,15 @@
 class_name GameModulesService
 extends Node
 
-## Installs every `GameModule` the game links, then checks the conditions and
-## actions content names now that every module registered its rule keys.
+## Installs every `GameModule` the game links, then has `ContentDB` index and
+## check the game's content and `GameRules` check the conditions and actions it
+## names, now that every module registered its kinds and rule keys.
 ##
 ## A game links only the modules its `game.json` lists (`tools/link.js`), so the
-## global classes extending `GameModule` are exactly the game's modules. They
-## install in class-name order; what they register carries its own order.
+## global classes extending `GameModule` are exactly the game's modules and the
+## game's own. They install in class-name order; what they register carries
+## its own order. The autoload comes right after `ContentDB`, before every
+## module service, so content is indexed before any service reads it.
 
 var _modules: Array[GameModule] = []
 
@@ -15,8 +18,7 @@ func _ready() -> void:
 		var module := script.new() as GameModule
 		module.install()
 		_modules.append(module)
-	# Content is indexed before the modules register their rule keys, so the
-	# conditions and actions it names are checked here, once every key exists.
+	ContentDB.rebuild()
 	for problem: String in GameRules.validate_content(ContentDB):
 		push_error("GameRules: " + problem)
 

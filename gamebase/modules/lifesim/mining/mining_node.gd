@@ -39,7 +39,7 @@ func _use_item_internal(item_id: StringName) -> bool:
 	if data == null or is_depleted:
 		GameEvents.toast("Nothing left to mine here")
 		return false
-	var item := ContentDB.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null or not item.is_tool() or item.tool_action != ItemData.ACTION_MINE:
 		GameEvents.toastf("Use a pickaxe on %s", [data.display_name])
 		return false
@@ -90,7 +90,7 @@ func load_state_data(state: Dictionary, persist := true) -> void:
 	_refresh_visual()
 
 func _break_node() -> void:
-	var item := ContentDB.get_item(data.drop_item_id)
+	var item := ItemData.find(data.drop_item_id)
 	if item == null:
 		return
 	var remaining := InventoryState.add_item(item, data.drop_quantity)
@@ -141,7 +141,7 @@ func _on_pending_drop_collected(_item_id: StringName, _collected: int, remaining
 func _restore_pending_drop() -> void:
 	if pending_drop_quantity <= 0 or data == null:
 		return
-	var item := ContentDB.get_item(data.drop_item_id)
+	var item := ItemData.find(data.drop_item_id)
 	if item != null:
 		_spawn_drop(item, pending_drop_quantity)
 
@@ -197,3 +197,8 @@ func _safe_int(value: Variant, fallback: int) -> int:
 	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
 		return int(value)
 	return fallback
+
+## The world state the node saves, for `ContentRegistry`'s check that no two
+## nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray([String(_state_key())]) if persistent_id != &"" else PackedStringArray()

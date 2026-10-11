@@ -16,7 +16,7 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 
 func test_storage_respects_stack_based_slot_capacity_and_transfers_both_ways() -> void:
-	var snack := ContentDB.get_item(&"field_snack")
+	var snack := ItemData.find(&"field_snack")
 	assert_not_null(snack)
 	assert_eq(snack.max_stack, 20)
 	assert_eq(InventoryState.add_item(snack, 45), 0)
@@ -84,7 +84,7 @@ func test_storage_sanitizes_malformed_quantities_without_dropping_legacy_numeric
 	assert_false(normalized_raw.has("stone"))
 
 func test_storage_persists_through_world_state_snapshot() -> void:
-	var wood := ContentDB.get_item(&"wood")
+	var wood := ItemData.find(&"wood")
 	InventoryState.add_item(wood, 12)
 	assert_eq(StorageState.store_item(CONTAINER, &"wood", 8, 24), 8)
 	var snapshot := WorldState.to_save_data()

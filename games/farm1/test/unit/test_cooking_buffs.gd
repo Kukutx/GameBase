@@ -54,7 +54,7 @@ func test_vegetable_stew_crafts_restores_stats_and_applies_work_buff() -> void:
 	PlayerState.health = 50
 	var controller := FarmToolController.new()
 	add_child_autofree(controller)
-	controller._consume_food(ContentDB.get_item(&"vegetable_stew"))
+	controller._consume_food(ItemData.find(&"vegetable_stew"))
 
 	assert_eq(InventoryState.get_quantity(&"vegetable_stew"), 0)
 	assert_eq(PlayerState.energy, 85)
@@ -74,9 +74,9 @@ func test_food_use_blocks_item_removed_reentrancy() -> void:
 		if item_id != &"vegetable_stew" or bool(observed["entered"]):
 			return
 		observed["entered"] = true
-		controller._consume_food(ContentDB.get_item(&"vegetable_stew"))
+		controller._consume_food(ItemData.find(&"vegetable_stew"))
 	InventoryState.item_removed.connect(listener)
-	controller._consume_food(ContentDB.get_item(&"vegetable_stew"))
+	controller._consume_food(ItemData.find(&"vegetable_stew"))
 	if InventoryState.item_removed.is_connected(listener):
 		InventoryState.item_removed.disconnect(listener)
 	assert_true(bool(observed["entered"]))

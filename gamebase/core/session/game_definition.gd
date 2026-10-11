@@ -25,6 +25,9 @@ static func current() -> GameDefinition:
 			_current = GameDefinition.new()
 	return _current
 
+## The game's content: every entry of these packs, indexed by `ContentDB`
+## under the kind its class is registered as.
+@export var content: Array[ContentPack] = []
 ## Location a new game starts in, and the fallback when a save's location is gone.
 @export var start_location_id: StringName = &""
 ## Location the player is brought back to after collapsing or staying up too late.

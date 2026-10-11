@@ -12,4 +12,4 @@ func configure_from_record(record: Dictionary) -> void:
 	global_position = Vector2(float(record.get("x", 0.0)), float(record.get("y", 0.0)))
 
 func get_placeable_data() -> PlaceableData:
-	return ContentDB.get_placeable(placeable_id)
+	return PlaceableData.find(placeable_id)

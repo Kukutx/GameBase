@@ -151,7 +151,7 @@ func _die() -> void:
 func _drop_loot() -> void:
 	if data.drop_item_id == &"" or data.drop_quantity <= 0:
 		return
-	var item := ContentDB.get_item(data.drop_item_id)
+	var item := ItemData.find(data.drop_item_id)
 	if item == null:
 		return
 	var remaining := InventoryState.add_item(item, data.drop_quantity)
@@ -196,7 +196,7 @@ func _on_pending_drop_collected(_item_id: StringName, _collected: int, remaining
 func _restore_pending_drop() -> void:
 	if pending_drop_quantity <= 0 or data == null:
 		return
-	var item := ContentDB.get_item(data.drop_item_id)
+	var item := ItemData.find(data.drop_item_id)
 	if item != null:
 		_spawn_drop(item, pending_drop_quantity)
 
@@ -309,3 +309,8 @@ func _safe_int(value: Variant, fallback: int) -> int:
 	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
 		return int(value)
 	return fallback
+
+## The world state the node saves, for `ContentRegistry`'s check that no two
+## nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray([String(_state_key())]) if persistent_id != &"" else PackedStringArray()

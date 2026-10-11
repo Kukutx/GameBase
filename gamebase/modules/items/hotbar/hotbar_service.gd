@@ -70,7 +70,7 @@ func get_selected_item_id() -> StringName:
 	return slots[selected_slot]
 
 func get_selected_item() -> ItemData:
-	return ItemCatalog.get_item(get_selected_item_id())
+	return ItemData.find(get_selected_item_id())
 
 func get_text() -> String:
 	var parts: PackedStringArray = []
@@ -78,7 +78,7 @@ func get_text() -> String:
 		var item_id := slots[index]
 		if item_id == &"":
 			continue
-		var item := ItemCatalog.get_item(item_id)
+		var item := ItemData.find(item_id)
 		var label := tr(item.display_name) if item != null else String(item_id)
 		var quantity := InventoryState.get_quantity(item_id)
 		if item != null and item.kind != ItemData.Kind.TOOL:
@@ -106,7 +106,7 @@ func load_save_data(data: Dictionary) -> void:
 			var item_id := StringName(String(raw))
 			# A binding to an item that is not current content would leave the slot
 			# silently unusable.
-			if item_id != &"" and ItemCatalog.get_item(item_id) == null:
+			if item_id != &"" and ItemData.find(item_id) == null:
 				item_id = &""
 			slots.append(item_id)
 	if slots.is_empty():

@@ -57,7 +57,7 @@ func _spawn_animal(record: Dictionary) -> void:
 	if animal_scene == null or get_parent() == null:
 		return
 	var animal_id := StringName(String(record.get("animal_id", "")))
-	var data := ContentDB.get_farm_animal(animal_id)
+	var data := FarmAnimalData.find(animal_id)
 	if data == null:
 		return
 	var animal := animal_scene.instantiate() as FarmAnimal
@@ -81,3 +81,18 @@ func _position_for_slot(slot_index: int) -> Vector2:
 	var x := slot_index % columns
 	var y := slot_index / columns
 	return Vector2((x - (columns - 1) * 0.5) * 30.0, y * 28.0)
+
+## The housing the node shows, for `ContentRegistry`'s check that no two nodes
+## share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray(["housing:%s" % String(housing_id)]) if housing_id != &"" else PackedStringArray()
+
+func find_scene_problems(_registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if housing_id == &"":
+		problems.append("animal housing '%s' has no housing id" % name)
+	if location != null and location_id != location.id:
+		problems.append("housing '%s' has mismatched location id '%s'" % [housing_id, location_id])
+	if display_name.is_empty() or housing_type == &"":
+		problems.append("housing '%s' needs a display name and a housing type" % housing_id)
+	return problems

@@ -1,6 +1,8 @@
 class_name EnemyData
 extends ContentEntry
 
+const KIND := &"enemy"
+
 @export var display_name: String = "Enemy"
 @export var sprite_path: String
 @export var frame_size := Vector2i(32, 32)
@@ -25,5 +27,23 @@ extends ContentEntry
 @export_range(1, 28, 1) var respawn_days := 1
 @export_range(0, 9999, 1) var combat_xp := 20
 
+## The enemy with `entry_id` in the running game's content, or null.
+static func find(entry_id: StringName) -> EnemyData:
+	return ContentRegistry.active.get_entry(KIND, entry_id) as EnemyData
+
+## The running game's enemies, sorted by id.
+static func find_all() -> Array[EnemyData]:
+	var result: Array[EnemyData] = []
+	result.assign(ContentRegistry.active.get_entries(KIND))
+	return result
+
 func has_valid_animation_ranges() -> bool:
 	return idle_from <= idle_to and move_from <= move_to and death_from <= death_to
+
+func find_problems(registry: ContentRegistry) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if not has_valid_animation_ranges():
+		problems.append("has invalid animation ranges")
+	if drop_item_id != &"" and not registry.has_entry(ItemData.KIND, drop_item_id):
+		problems.append("references unknown drop '%s'" % drop_item_id)
+	return problems

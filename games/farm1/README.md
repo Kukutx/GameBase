@@ -15,20 +15,19 @@ The main scene is `res://game/ui/title_screen.tscn`. `node tools/validate.js --g
 ## Layout
 
 ```text
-game/content/      The content database and manifest schema behind the ContentDB autoload
-game/data/         Data resources indexed through ContentDB (content_manifest.tres)
+game/data/         Data resources, listed in the content pack content.tres
 game/dialogue/     Dialogue Manager scripts
 game/world/        Playable locations and the shared world HUD
 game/npc/          NPC scenes and presentation
 game/player/       Player scene and controller
 game/ui/           Title, pause, settings and game menus
 game/i18n/         English and Simplified Chinese UI catalogs
-game/game_setup.gd Registers the foundation modules with the core
+game/game_setup.gd The game's own module: what only Farm1 adds to the foundation
 test/unit/         Focused GUT regression tests
 test/runtime/      End-to-end life-simulation smoke and soak scripts
 ```
 
-New content normally goes into `game/data/content_manifest.tres` and is read through `ContentDB` rather than hard-coded lookup tables.
+New content goes into the content pack `game/data/content.tres` and is read through its class's `find()` (`ItemData.find(&"berry")`) rather than hard-coded lookup tables.
 
 ## Gameplay
 

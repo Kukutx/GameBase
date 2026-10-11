@@ -228,7 +228,7 @@ func _handle_interaction(_actor: Node) -> void:
 	GameEvents.toastf("%s looks content", [get_display_name()])
 
 func _collect_product() -> void:
-	var product := ContentDB.get_item(data.get_product_item_id(happiness))
+	var product := ItemData.find(data.get_product_item_id(happiness))
 	if product == null:
 		return
 	if not InventoryState.can_add_item(product, data.product_quantity):
@@ -282,7 +282,7 @@ func _refresh_prompt() -> void:
 	if not is_fed_today():
 		interactable.set_prompt("%s needs feed", [get_display_name()])
 	elif is_product_ready():
-		var product := ContentDB.get_item(data.get_product_item_id(happiness))
+		var product := ItemData.find(data.get_product_item_id(happiness))
 		interactable.set_prompt("Collect %s", [product.display_name if product != null else "product"])
 	elif can_pet_today():
 		interactable.set_prompt("Pet %s", [get_display_name()])
@@ -313,3 +313,8 @@ func _safe_int(value: Variant, fallback: int) -> int:
 	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
 		return int(value)
 	return fallback
+
+## The world state the node saves, for `ContentRegistry`'s check that no two
+## nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray([String(_state_key())]) if persistent_id != &"" else PackedStringArray()

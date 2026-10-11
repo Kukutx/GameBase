@@ -44,7 +44,7 @@ func test_mining_contract_targets_follow_actual_mine_depth_progression() -> void
 		&"iridium_rock": 60,
 	}
 	for raw_id: Variant in expected_floors.keys():
-		var node := ContentDB.get_mining_node(StringName(String(raw_id)))
+		var node := MiningNodeData.find(StringName(String(raw_id)))
 		assert_not_null(node)
 		if node != null:
 			assert_eq(node.minimum_mine_floor, int(expected_floors[raw_id]))

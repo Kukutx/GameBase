@@ -30,9 +30,9 @@ func test_game_definition_supplies_the_games_facts() -> void:
 	var definition := GameSession.definition
 	assert_not_null(definition)
 	assert_ne(definition.start_location_id, &"")
-	assert_not_null(ContentDB.get_location(definition.start_location_id))
+	assert_not_null(WorldLocationData.find(definition.start_location_id))
 	assert_eq(definition.home_location_id, PLAYER_HOME)
-	assert_not_null(ContentDB.get_location(definition.home_location_id))
+	assert_not_null(WorldLocationData.find(definition.home_location_id))
 	for item_id: StringName in definition.start_items:
-		assert_not_null(ItemCatalog.get_item(item_id), "start item %s exists" % item_id)
+		assert_not_null(ItemData.find(item_id), "start item %s exists" % item_id)
 		assert_gt(definition.start_items[item_id], 0)

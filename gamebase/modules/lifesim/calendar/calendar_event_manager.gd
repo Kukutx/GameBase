@@ -16,7 +16,7 @@ func _ready() -> void:
 
 func refresh(day: int, minute_of_day: int) -> void:
 	var next_active: Dictionary = {}
-	for event: CalendarEventData in ContentDB.get_all_calendar_events():
+	for event: CalendarEventData in CalendarEventData.find_all():
 		if event.is_active(day, minute_of_day):
 			next_active[String(event.id)] = event
 	for key: String in _active.keys():
@@ -56,7 +56,7 @@ func get_summary(location_id: StringName = &"") -> String:
 	return ", ".join(names)
 
 func get_event(event_id: StringName) -> CalendarEventData:
-	return ContentDB.get_calendar_event(event_id)
+	return CalendarEventData.find(event_id)
 
 func get_year(day: int = -1) -> int:
 	var resolved_day := WorldClock.day if day < 1 else day

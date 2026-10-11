@@ -62,7 +62,7 @@ func test_full_turnip_growth_cycle() -> void:
 
 func test_loaded_farm_state_clamps_future_day_and_excess_growth() -> void:
 	WorldClock.set_time(10, 8 * 60)
-	var crop := ContentDB.get_crop(&"turnip")
+	var crop := CropData.find(&"turnip")
 	assert_not_null(crop)
 	if crop == null:
 		return
@@ -148,7 +148,7 @@ func test_plot_blocks_energy_changed_reentrancy_while_planting() -> void:
 	assert_eq(plot.crop_id, &"turnip")
 
 func test_harvest_blocks_item_added_reentrancy() -> void:
-	var crop := ContentDB.get_crop(&"turnip")
+	var crop := CropData.find(&"turnip")
 	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
@@ -172,7 +172,7 @@ func test_harvest_blocks_item_added_reentrancy() -> void:
 	assert_eq(plot.crop_id, &"")
 
 func test_multi_yield_harvest_waits_until_the_full_crop_fits() -> void:
-	var crop := ContentDB.get_crop(&"turnip")
+	var crop := CropData.find(&"turnip")
 	assert_not_null(crop)
 	if crop == null:
 		return
@@ -219,7 +219,7 @@ func test_copper_farm_tools_affect_two_adjacent_plots_for_one_energy_charge() ->
 	add_child_autofree(controller)
 	var target := field.get_plot(Vector2i(0, 0))
 	PlayerState.energy = 100
-	var copper_hoe := ContentDB.get_item(&"copper_hoe")
+	var copper_hoe := ItemData.find(&"copper_hoe")
 	assert_true(controller.call("_use_multi_plot_tool", copper_hoe, target))
 	var tilled_count := 0
 	for plot: FarmPlot in plots:
@@ -229,7 +229,7 @@ func test_copper_farm_tools_affect_two_adjacent_plots_for_one_energy_charge() ->
 	assert_eq(tilled_count, 2)
 	assert_eq(PlayerState.energy, 98)
 
-	var copper_water := ContentDB.get_item(&"copper_watering_can")
+	var copper_water := ItemData.find(&"copper_watering_can")
 	assert_true(controller.call("_use_multi_plot_tool", copper_water, target))
 	var watered_count := 0
 	for plot: FarmPlot in plots:
@@ -253,7 +253,7 @@ func test_multi_plot_tool_blocks_energy_changed_reentrancy() -> void:
 	var controller := FarmToolController.new()
 	add_child_autofree(controller)
 	var target := field.get_plot(Vector2i(0, 0))
-	var tool := ContentDB.get_item(&"copper_hoe")
+	var tool := ItemData.find(&"copper_hoe")
 	PlayerState.energy = 100
 	var energy_cost := target.get_tool_energy_cost(tool)
 	var observed := {"entered": false, "inner_result": true}
@@ -276,7 +276,7 @@ func test_multi_plot_tool_blocks_energy_changed_reentrancy() -> void:
 	assert_eq(tilled_count, 2)
 
 func test_mature_crop_gets_only_one_out_of_season_grace_day() -> void:
-	var tomato := ContentDB.get_crop(&"tomato")
+	var tomato := CropData.find(&"tomato")
 	assert_not_null(tomato)
 	if tomato == null:
 		return

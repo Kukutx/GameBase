@@ -1,6 +1,8 @@
 class_name NpcProfileData
 extends ContentEntry
 
+const KIND := &"npc"
+
 @export var display_name: String
 @export var role: String = "Villager"
 @export_multiline var background: String
@@ -31,6 +33,16 @@ extends ContentEntry
 @export var disliked_items: Array[StringName] = []
 @export var loved_tags: PackedStringArray = PackedStringArray()
 @export var liked_tags: PackedStringArray = PackedStringArray()
+
+## The NPC with `entry_id` in the running game's content, or null.
+static func find(entry_id: StringName) -> NpcProfileData:
+	return ContentRegistry.active.get_entry(KIND, entry_id) as NpcProfileData
+
+## The running game's NPCs, sorted by id.
+static func find_all() -> Array[NpcProfileData]:
+	var result: Array[NpcProfileData] = []
+	result.assign(ContentRegistry.active.get_entries(KIND))
+	return result
 
 func is_birthday(target_day: int = -1) -> bool:
 	var resolved_day := WorldClock.day if target_day < 1 else target_day
@@ -72,3 +84,42 @@ func friendship_for_gift(item: ItemData) -> int:
 		if item.has_tag(tag):
 			return 45
 	return 15
+
+func find_problems(registry: ContentRegistry) -> PackedStringArray:
+	var problems := PackedStringArray()
+	for list_name: String in ["loved_items", "liked_items", "disliked_items"]:
+		for item_id: StringName in get(list_name):
+			if not registry.has_entry(ItemData.KIND, item_id):
+				problems.append("%s references unknown item '%s'" % [list_name, item_id])
+	for raw_threshold: Variant in dialogue_titles_by_hearts:
+		if typeof(raw_threshold) != TYPE_INT:
+			problems.append("dialogue threshold '%s' is not an integer" % raw_threshold)
+			continue
+		var threshold := int(raw_threshold)
+		if threshold < 0 or threshold > RelationshipManager.MAX_HEARTS:
+			problems.append("dialogue threshold %d is outside heart range" % threshold)
+		var title: Variant = dialogue_titles_by_hearts[raw_threshold]
+		if (not title is String and not title is StringName) or String(title).is_empty():
+			problems.append("dialogue threshold %d has an invalid title" % threshold)
+	if not GameClock.SEASON_NAMES.has(birthday_season):
+		problems.append("has unknown birthday season '%s'" % birthday_season)
+	if birthday_day < 1 or birthday_day > GameClock.DAYS_PER_SEASON:
+		problems.append("has invalid birthday day %d" % birthday_day)
+	for location_id: StringName in [home_location_id, default_location_id]:
+		if location_id != &"" and not registry.has_entry(WorldLocationData.KIND, location_id):
+			problems.append("references unknown location '%s'" % location_id)
+	for entry: NpcScheduleEntry in schedule_entries:
+		if entry == null:
+			continue
+		if entry.location_id != &"" and not registry.has_entry(WorldLocationData.KIND, entry.location_id):
+			problems.append("schedule references unknown location '%s'" % entry.location_id)
+		for weekday: int in entry.days_of_week:
+			if weekday < 0 or weekday > 6:
+				problems.append("schedule has invalid weekday %d" % weekday)
+		for season: String in entry.seasons:
+			if not GameClock.SEASON_NAMES.has(season):
+				problems.append("schedule has unknown season '%s'" % season)
+		for weather_name: String in entry.allowed_weather:
+			if not GameWeatherSystem.WEATHER_NAMES.has(weather_name):
+				problems.append("schedule has unknown weather '%s'" % weather_name)
+	return problems

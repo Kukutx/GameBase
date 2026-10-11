@@ -27,7 +27,7 @@ func after_each() -> void:
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_shipping_removes_item_and_pays_on_next_day() -> void:
-	var turnip := ContentDB.get_item(&"turnip")
+	var turnip := ItemData.find(&"turnip")
 	assert_not_null(turnip)
 	InventoryState.add_item(turnip, 2)
 	assert_true(ShippingState.ship_item(&"turnip", 1))
@@ -100,7 +100,7 @@ func test_shipping_load_drops_invalid_pending_values() -> void:
 	assert_eq(int((pending["turnip"] as Dictionary).get("value", 0)), 180)
 
 func test_shipping_state_round_trips_without_early_payout() -> void:
-	var carrot := ContentDB.get_item(&"carrot")
+	var carrot := ItemData.find(&"carrot")
 	InventoryState.add_item(carrot, 1)
 	assert_true(ShippingState.ship_item(&"carrot", 1))
 	var saved := ShippingState.to_save_data()

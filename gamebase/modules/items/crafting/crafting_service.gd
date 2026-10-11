@@ -6,13 +6,13 @@ signal crafted(recipe_id: StringName, output_item_id: StringName, quantity: int)
 var _craft_busy := false
 
 func get_recipe(recipe_id: StringName) -> RecipeData:
-	return ContentDB.get_recipe(recipe_id)
+	return RecipeData.find(recipe_id)
 
 func get_all_recipes() -> Array[RecipeData]:
-	return ContentDB.get_all_recipes()
+	return RecipeData.find_all()
 
 func can_craft(recipe: RecipeData) -> bool:
-	if recipe == null or ItemCatalog.get_item(recipe.output_item_id) == null:
+	if recipe == null or ItemData.find(recipe.output_item_id) == null:
 		return false
 	if not GameRules.check(recipe.condition):
 		return false
@@ -33,7 +33,7 @@ func _craft_internal(recipe_id: StringName) -> bool:
 	if recipe == null or not can_craft(recipe):
 		GameEvents.toast("Missing materials or requirements")
 		return false
-	var output := ItemCatalog.get_item(recipe.output_item_id)
+	var output := ItemData.find(recipe.output_item_id)
 	if output == null:
 		return false
 

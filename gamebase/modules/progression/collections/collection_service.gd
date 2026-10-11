@@ -58,19 +58,19 @@ func get_total_ids(category: StringName) -> Array[StringName]:
 	var ids: Dictionary = {}
 	match category:
 		CROPS:
-			for crop: CropData in ContentDB.get_all_crops():
+			for crop: CropData in CropData.find_all():
 				if crop != null and crop.harvest_item_id != &"":
 					ids[String(crop.harvest_item_id)] = true
 		FISH:
-			for fish: FishData in ContentDB.get_all_fish():
+			for fish: FishData in FishData.find_all():
 				if fish != null and fish.item_id != &"":
 					ids[String(fish.item_id)] = true
 		MINERALS:
-			for node: MiningNodeData in ContentDB.get_all_mining_nodes():
+			for node: MiningNodeData in MiningNodeData.find_all():
 				if node != null and node.drop_item_id != &"":
 					ids[String(node.drop_item_id)] = true
 		ANIMAL_PRODUCTS:
-			for animal: FarmAnimalData in ContentDB.get_all_farm_animals():
+			for animal: FarmAnimalData in FarmAnimalData.find_all():
 				if animal == null:
 					continue
 				if animal.product_item_id != &"":
@@ -78,15 +78,15 @@ func get_total_ids(category: StringName) -> Array[StringName]:
 				if animal.premium_product_item_id != &"":
 					ids[String(animal.premium_product_item_id)] = true
 		PROCESSED:
-			for recipe: ProcessingRecipeData in ContentDB.get_all_processing_recipes():
+			for recipe: ProcessingRecipeData in ProcessingRecipeData.find_all():
 				if recipe != null and recipe.output_item_id != &"":
 					ids[String(recipe.output_item_id)] = true
 		FORAGE:
-			for forage: ForageEntryData in ContentDB.get_all_forage_entries():
+			for forage: ForageEntryData in ForageEntryData.find_all():
 				if forage != null and forage.item_id != &"":
 					ids[String(forage.item_id)] = true
 		SHIPPED:
-			for item: ItemData in ContentDB.get_all_items():
+			for item: ItemData in ItemData.find_all():
 				if item != null and item.sell_price > 0 and item.kind != ItemData.Kind.TOOL and item.kind != ItemData.Kind.QUEST:
 					ids[String(item.id)] = true
 	var result: Array[StringName] = []
@@ -101,7 +101,7 @@ func get_total_ids(category: StringName) -> Array[StringName]:
 func get_category_entries(category: StringName) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for item_id: StringName in get_total_ids(category):
-		var item := ContentDB.get_item(item_id)
+		var item := ItemData.find(item_id)
 		result.append({
 			"id": String(item_id),
 			"display_name": item.display_name if item != null else String(item_id).capitalize(),

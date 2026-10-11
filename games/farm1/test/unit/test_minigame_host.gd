@@ -10,7 +10,7 @@ func _active_reel() -> FishingReelMiniGame:
 	return MiniGameHost.get("_active") as FishingReelMiniGame
 
 func test_the_reel_minigame_is_registered_content() -> void:
-	var definition := ContentDB.get_minigame(REEL)
+	var definition := MiniGameDefinition.find(REEL)
 	assert_not_null(definition)
 	var root := definition.scene.instantiate()
 	assert_true(root is MiniGame, "the scene root extends MiniGame")

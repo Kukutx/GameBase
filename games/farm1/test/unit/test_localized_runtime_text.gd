@@ -76,7 +76,7 @@ func test_daily_contract_text_is_translated_in_every_state() -> void:
 	_assert_translated(DailyContractState.get_summary(), "claimed contract")
 
 func test_project_and_milestone_summaries_are_translated() -> void:
-	for project: TownProjectData in ContentDB.get_all_town_projects():
+	for project: TownProjectData in TownProjectData.find_all():
 		_assert_translated(TownProjects.get_project_summary(project.id), "project %s" % project.id)
 	_assert_translated(TownProjects.get_project_summary(&"missing_project"), "unknown project")
 	for milestone: CollectionMilestoneData in CollectionMilestones.get_all_milestones():
@@ -103,7 +103,7 @@ func test_save_and_load_results_are_translated() -> void:
 
 func test_npc_schedule_activities_are_translated() -> void:
 	var checked := 0
-	for profile: NpcProfileData in ContentDB.get_all_npcs():
+	for profile: NpcProfileData in NpcProfileData.find_all():
 		for entry: NpcScheduleEntry in profile.schedule_entries:
 			_assert_translated(tr(entry.activity), "activity of %s" % profile.id)
 			checked += 1

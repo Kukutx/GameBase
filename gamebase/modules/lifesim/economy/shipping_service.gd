@@ -24,7 +24,7 @@ func ship_item(item_id: StringName, quantity: int = 1) -> bool:
 func _ship_item_internal(item_id: StringName, quantity: int) -> bool:
 	if item_id == &"" or quantity <= 0:
 		return false
-	var item := ContentDB.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null or item.sell_price <= 0 or item.kind == ItemData.Kind.TOOL or item.kind == ItemData.Kind.QUEST:
 		GameEvents.toast("That item cannot be shipped")
 		return false

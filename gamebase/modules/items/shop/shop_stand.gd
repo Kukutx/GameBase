@@ -20,3 +20,8 @@ func _on_interacted(_actor: Node) -> void:
 		GameEvents.toast("Shop UI is unavailable")
 		return
 	menu.open(shop)
+
+func find_scene_problems(registry: ContentRegistry, _location: WorldLocationData) -> PackedStringArray:
+	if shop == null or shop.id == &"" or registry.get_entry(ShopData.KIND, shop.id) != shop:
+		return PackedStringArray(["shop stand '%s' references an unregistered shop" % name])
+	return PackedStringArray()

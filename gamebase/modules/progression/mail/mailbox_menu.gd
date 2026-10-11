@@ -70,7 +70,7 @@ func _show_current() -> void:
 func _reward_text(mail: MailData) -> String:
 	var parts: PackedStringArray = []
 	for raw_id: Variant in mail.reward_items.keys():
-		var item := ContentDB.get_item(StringName(String(raw_id)))
+		var item := ItemData.find(StringName(String(raw_id)))
 		parts.append("%s x%d" % [tr(item.display_name) if item != null else String(raw_id), int(mail.reward_items[raw_id])])
 	if mail.reward_money > 0:
 		parts.append("%dg" % mail.reward_money)

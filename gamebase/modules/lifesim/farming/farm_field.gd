@@ -50,3 +50,20 @@ func get_all_plots() -> Array[FarmPlot]:
 
 func get_plot_count() -> int:
 	return _plots.size()
+
+## The world state of the plots the field generates, for `ContentRegistry`'s
+## check that no two nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	var keys := PackedStringArray()
+	if field_id != &"":
+		for index: int in range(1, columns * rows + 1):
+			keys.append("farm:%s_%02d" % [String(field_id), index])
+	return keys
+
+func find_scene_problems(_registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if field_id == &"":
+		problems.append("farm field '%s' has no field id" % name)
+	if location != null and location_id != &"" and location_id != location.id:
+		problems.append("farm field '%s' references different location '%s'" % [name, location_id])
+	return problems

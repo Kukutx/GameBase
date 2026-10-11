@@ -109,7 +109,7 @@ func test_purchase_uses_correct_housing_and_money_and_respects_capacity() -> voi
 	var money_before := PlayerState.money
 	var chicken_id := AnimalState.purchase(&"chicken", &"starter_town")
 	assert_ne(chicken_id, &"")
-	assert_eq(PlayerState.money, money_before - ContentDB.get_farm_animal(&"chicken").purchase_price)
+	assert_eq(PlayerState.money, money_before - FarmAnimalData.find(&"chicken").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_coop"), 2)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 1)
 
@@ -140,7 +140,7 @@ func test_animal_purchase_blocks_money_callback_reentrancy() -> void:
 	AnimalState.unregister_housing(&"race_coop")
 
 func test_general_store_sells_animals_as_shop_offers() -> void:
-	var shop := ContentDB.get_shop(&"general_store")
+	var shop := ShopData.find(&"general_store")
 	assert_not_null(shop)
 	var offers: Dictionary = {}
 	for offer: ShopOffer in shop.offers:
@@ -149,11 +149,11 @@ func test_general_store_sells_animals_as_shop_offers() -> void:
 	var context := {"location_id": &"starter_town"}
 	var money_before := PlayerState.money
 	assert_true(ShopState.buy_offer(shop, offers["animal:cow"], context))
-	assert_eq(PlayerState.money, money_before - ContentDB.get_farm_animal(&"cow").purchase_price)
+	assert_eq(PlayerState.money, money_before - FarmAnimalData.find(&"cow").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 2)
 	money_before = PlayerState.money
 	assert_true(ShopState.buy_offer(shop, offers["animal:pig"], context))
-	assert_eq(PlayerState.money, money_before - ContentDB.get_farm_animal(&"pig").purchase_price)
+	assert_eq(PlayerState.money, money_before - FarmAnimalData.find(&"pig").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 3)
 	var elsewhere := AnimalOffer.new()
 	elsewhere.animal_id = &"cow"
@@ -177,7 +177,7 @@ func test_owned_animal_state_is_applied_to_scene_animals() -> void:
 
 func test_loaded_animal_state_clamps_future_daily_markers() -> void:
 	WorldClock.set_time(10, 8 * 60)
-	var data := ContentDB.get_farm_animal(&"chicken")
+	var data := FarmAnimalData.find(&"chicken")
 	assert_not_null(data)
 	if data == null:
 		return
@@ -201,7 +201,7 @@ func test_loaded_animal_state_clamps_future_daily_markers() -> void:
 	assert_true(chicken.is_fed_today())
 
 func test_pig_uses_real_sheet_layout_and_truffle_interval() -> void:
-	var pig_data := ContentDB.get_farm_animal(&"pig")
+	var pig_data := FarmAnimalData.find(&"pig")
 	assert_not_null(pig_data)
 	assert_eq(pig_data.frame_size, Vector2i(80, 48))
 	assert_eq(pig_data.idle_from, 0)
@@ -234,7 +234,7 @@ func test_pig_uses_real_sheet_layout_and_truffle_interval() -> void:
 	assert_true(pig.is_product_ready())
 
 func test_multi_product_collection_waits_until_the_full_output_fits() -> void:
-	var chicken_data := ContentDB.get_farm_animal(&"chicken")
+	var chicken_data := FarmAnimalData.find(&"chicken")
 	assert_not_null(chicken_data)
 	if chicken_data == null:
 		return
@@ -280,7 +280,7 @@ func test_product_collection_blocks_item_added_reentrancy() -> void:
 	})
 	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
-	chicken.data = ContentDB.get_farm_animal(&"chicken")
+	chicken.data = FarmAnimalData.find(&"chicken")
 	chicken.persistent_id = &"test_product_reentrancy"
 	add_child_autofree(chicken)
 	await get_tree().process_frame
@@ -363,7 +363,7 @@ func test_animal_offline_catchup_penalizes_missed_feed_and_feeding_restores_prod
 	WorldClock.set_time(4, 8 * 60)
 	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
-	chicken.data = ContentDB.get_farm_animal(&"chicken")
+	chicken.data = FarmAnimalData.find(&"chicken")
 	chicken.persistent_id = &"starter_chicken_01"
 	add_child_autofree(chicken)
 	await get_tree().process_frame
@@ -380,7 +380,7 @@ func test_animal_offline_catchup_penalizes_missed_feed_and_feeding_restores_prod
 func test_animal_catchup_handles_extreme_day_jump_without_per_day_iteration() -> void:
 	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
-	chicken.data = ContentDB.get_farm_animal(&"chicken")
+	chicken.data = FarmAnimalData.find(&"chicken")
 	chicken.persistent_id = &""
 	add_child_autofree(chicken)
 	await get_tree().process_frame
@@ -402,7 +402,7 @@ func test_animal_catchup_commits_processed_day_before_happiness_signal_reentranc
 	})
 	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
-	chicken.data = ContentDB.get_farm_animal(&"chicken")
+	chicken.data = FarmAnimalData.find(&"chicken")
 	chicken.persistent_id = &"test_catchup_reentrancy"
 	add_child_autofree(chicken)
 	await get_tree().process_frame
@@ -429,7 +429,7 @@ func test_animals_can_be_renamed_and_sold_with_half_price_refund() -> void:
 	var record := AnimalState.get_record(instance_id)
 	assert_eq(String(record.get("custom_name", "")), "Pip")
 	var money_before_sale := PlayerState.money
-	var expected_refund := int(round(float(ContentDB.get_farm_animal(&"chicken").purchase_price) * 0.5))
+	var expected_refund := int(round(float(FarmAnimalData.find(&"chicken").purchase_price) * 0.5))
 	var refund := AnimalState.sell_animal(instance_id)
 	assert_eq(refund, expected_refund)
 	assert_eq(PlayerState.money, money_before_sale + expected_refund)
@@ -462,17 +462,17 @@ func test_live_housing_updates_custom_name_and_removes_sold_animal() -> void:
 	assert_null(world.get_node_or_null("Chicken"))
 
 func test_high_happiness_unlocks_premium_animal_products() -> void:
-	var chicken_data := ContentDB.get_farm_animal(&"chicken")
-	var cow_data := ContentDB.get_farm_animal(&"cow")
-	var pig_data := ContentDB.get_farm_animal(&"pig")
+	var chicken_data := FarmAnimalData.find(&"chicken")
+	var cow_data := FarmAnimalData.find(&"cow")
+	var pig_data := FarmAnimalData.find(&"pig")
 	assert_eq(chicken_data.get_product_item_id(79), &"egg")
 	assert_eq(chicken_data.get_product_item_id(80), &"large_egg")
 	assert_eq(cow_data.get_product_item_id(80), &"large_milk")
 	assert_eq(pig_data.get_product_item_id(84), &"truffle")
 	assert_eq(pig_data.get_product_item_id(85), &"prime_truffle")
-	assert_gt(ContentDB.get_item(&"large_egg").sell_price, ContentDB.get_item(&"egg").sell_price)
-	assert_gt(ContentDB.get_item(&"large_milk").sell_price, ContentDB.get_item(&"milk").sell_price)
-	assert_gt(ContentDB.get_item(&"prime_truffle").sell_price, ContentDB.get_item(&"truffle").sell_price)
+	assert_gt(ItemData.find(&"large_egg").sell_price, ItemData.find(&"egg").sell_price)
+	assert_gt(ItemData.find(&"large_milk").sell_price, ItemData.find(&"milk").sell_price)
+	assert_gt(ItemData.find(&"prime_truffle").sell_price, ItemData.find(&"truffle").sell_price)
 
 	WorldState.set_value(&"animal:test_happy_chicken", {
 		"happiness": 85,

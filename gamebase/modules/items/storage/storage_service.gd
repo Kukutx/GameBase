@@ -11,7 +11,7 @@ func store_item(container_id: StringName, item_id: StringName, quantity: int = 1
 	var container_key := String(container_id)
 	if _mutating_containers.has(container_key):
 		return 0
-	var item := ContentDB.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null:
 		return 0
 	var available := mini(quantity, InventoryState.get_quantity(item_id))
@@ -44,7 +44,7 @@ func take_item(container_id: StringName, item_id: StringName, quantity: int = 1)
 	var container_key := String(container_id)
 	if _mutating_containers.has(container_key):
 		return 0
-	var item := ContentDB.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null:
 		return 0
 	var data := _get_container_data(container_id)
@@ -78,7 +78,7 @@ func get_entries(container_id: StringName) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for raw_key: Variant in data.keys():
 		var item_id := StringName(String(raw_key))
-		var item := ContentDB.get_item(item_id)
+		var item := ItemData.find(item_id)
 		var quantity := maxi(int(data[raw_key]), 0)
 		if item == null or quantity <= 0:
 			continue
@@ -121,7 +121,7 @@ func _set_container_data(container_id: StringName, data: Dictionary) -> void:
 func _used_slots(data: Dictionary) -> int:
 	var total := 0
 	for raw_key: Variant in data.keys():
-		var item := ContentDB.get_item(StringName(String(raw_key)))
+		var item := ItemData.find(StringName(String(raw_key)))
 		if item == null:
 			continue
 		total += _stack_count(maxi(int(data[raw_key]), 0), item.max_stack)

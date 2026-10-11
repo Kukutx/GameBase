@@ -34,14 +34,14 @@ func test_load_normalizes_progress_and_drops_unknown_quests_and_statuses() -> vo
 		"removed_quest": {"status": QuestManager.Status.ACTIVE, "progress": 1},
 	})
 	assert_true(QuestState.is_completed(&"smelt_iron"))
-	assert_eq(int(QuestState.get_state(&"smelt_iron").get("progress", 0)), ContentDB.get_quest(&"smelt_iron").required_amount)
+	assert_eq(int(QuestState.get_state(&"smelt_iron").get("progress", 0)), QuestData.find(&"smelt_iron").required_amount)
 	assert_false(QuestState.is_active(&"mine_gold"))
 	var saved := QuestState.to_save_data()
 	assert_false(saved.has("mine_gold"))
 	assert_false(saved.has("removed_quest"))
 
 func test_new_game_auto_starts_only_data_declared_entry_quests() -> void:
-	for quest: QuestData in ContentDB.get_all_quests():
+	for quest: QuestData in QuestData.find_all():
 		if quest.auto_start:
 			assert_true(quest.entry_point, "Auto-start quest %s is not an entry point" % quest.id)
 			assert_true(QuestState.is_active(quest.id), "Auto-start quest %s did not start" % quest.id)

@@ -263,7 +263,7 @@ func _write_sections(snapshot: Dictionary) -> void:
 func apply_snapshot(data: Dictionary) -> bool:
 	# Resolve and load the destination before changing any service, so a save
 	# whose location cannot open leaves the running session untouched.
-	var location := ContentDB.get_location(StringName(String(data.get("location_id", ""))))
+	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
 	if location == null or not ResourceLoader.exists(location.scene_path):
 		return false
 	var packed := ResourceLoader.load(location.scene_path) as PackedScene
@@ -332,7 +332,7 @@ func _is_snapshot_usable(data: Dictionary) -> bool:
 	var clock: Dictionary = data.get("clock", {}) if data.get("clock") is Dictionary else {}
 	if not clock.has("day") or not clock.has("minute_of_day"):
 		return false
-	var location := ContentDB.get_location(StringName(String(data.get("location_id", ""))))
+	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
 	return location != null and ResourceLoader.exists(location.scene_path)
 
 func _safe_int(value: Variant, fallback: int = 0) -> int:

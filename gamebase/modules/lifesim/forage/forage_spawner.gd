@@ -23,7 +23,7 @@ func generate_plan(day: int, target_location_id: StringName = &"") -> Array[Dict
 	var resolved_location := target_location_id if target_location_id != &"" else location_id
 	var season := GameClock.get_season_name_for_day(day)
 	var eligible: Array[ForageEntryData] = []
-	for entry: ForageEntryData in ContentDB.get_all_forage_entries():
+	for entry: ForageEntryData in ForageEntryData.find_all():
 		if entry != null and entry.is_available(resolved_location, season):
 			eligible.append(entry)
 	if eligible.is_empty() or spawn_count <= 0 or spawner_id == &"":
@@ -68,7 +68,7 @@ func _rebuild(day: int) -> void:
 		var index := int(spawn["index"])
 		if collected.has(index):
 			continue
-		var item := ContentDB.get_item(StringName(String(spawn["item_id"])))
+		var item := ItemData.find(StringName(String(spawn["item_id"])))
 		if item == null:
 			continue
 		var pickup := PICKUP_SCENE.instantiate() as WorldItemPickup
@@ -130,3 +130,16 @@ func _set_state(state: Dictionary) -> void:
 
 func _state_key() -> StringName:
 	return StringName("forage:%s" % String(spawner_id))
+
+## The world state the spawner saves, for `ContentRegistry`'s check that no two
+## nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray([String(_state_key())]) if spawner_id != &"" else PackedStringArray()
+
+func find_scene_problems(_registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if spawner_id == &"":
+		problems.append("forage spawner '%s' has no spawner id" % name)
+	if location != null and location_id != &"" and location_id != location.id:
+		problems.append("forage spawner '%s' references different location '%s'" % [name, location_id])
+	return problems

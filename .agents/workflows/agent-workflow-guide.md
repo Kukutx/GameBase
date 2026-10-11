@@ -22,7 +22,7 @@ Check these questions only when the task adds, removes or materially changes a p
 - Does the owning service already provide the conclusion (whether an action is available, the current state, what to display)? If so, the UI does not derive it again.
 - Are "visible", "available", "unlocked", "in progress" and "completed" wrongly pressed into one state?
 - Are different facts being mixed: locale, a stable id, a display name, a location, in-game time and real time?
-- Does "the code exists" really mean the feature is open in a release? Where needed, check the content registration in the game's content manifest (`games/farm1/game/data/content_manifest.tres` for Farm1), the scene that reaches it, the settings, and what the export includes.
+- Does "the code exists" really mean the feature is open in a release? Where needed, check the content registration in the game's content pack (`games/farm1/game/data/content.tres` for Farm1), the scene that reaches it, the settings, and what the export includes.
 - After something ends or is cancelled (a quest, an event, a day, a conversation), which abilities are still legitimate? Do not close every later behaviour at once with a single terminal flag.
 
 Skip this group of checks for a pure pixel or style fix that does not change structure, state or behaviour.
@@ -50,7 +50,7 @@ Skip this group of checks for a pure pixel or style fix that does not change str
 | UI analysis, screen iteration, reference reproduction of a screen, experimental prototype | `.agents/skills/ui-design/SKILL.md` |
 | Comparing with, or migrating from, a reference project supplied by the user or the session | `.agents/skills/reference-projects/SKILL.md` |
 | Reproducing a reference with exact verification | `.agents/skills/replication/SKILL.md` |
-| A change that must synchronize two or more of: data resources and the content manifest, save data, scenes, translation entries, tests | `.agents/skills/content-authoring/SKILL.md` |
+| A change that must synchronize two or more of: data resources and the content pack, save data, scenes, translation entries, tests | `.agents/skills/content-authoring/SKILL.md` |
 | Runtime state, logs, operating the game, or a difference between a local run and an exported build | `.agents/skills/game-qa/SKILL.md` |
 | A scoped or whole-repository evidence-backed audit, or "audit, then fix the clear problems directly" | `.agents/skills/project-audit/SKILL.md` |
 | A product-level quality loop that crosses several entry points and states and really has multi-agent or independent re-verification value | `.agents/workflows/product-assurance.md` |

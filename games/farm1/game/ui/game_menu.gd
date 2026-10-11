@@ -125,7 +125,7 @@ func _quest_text() -> String:
 
 func _social_text() -> String:
 	var lines := PackedStringArray(["[font_size=18][b]%s[/b][/font_size]" % tr("Relationships"), ""])
-	for profile: NpcProfileData in NpcCatalog.get_all_profiles():
+	for profile: NpcProfileData in NpcProfileData.find_all():
 		var points := RelationshipState.get_points(profile.id)
 		var hearts := RelationshipState.get_hearts(profile.id)
 		lines.append(tr("[b]%s[/b] — %s   %d ♥   (%d pts)") % [tr(profile.display_name), tr(profile.role), hearts, points])
@@ -157,12 +157,12 @@ func _calendar_text() -> String:
 		"[b]%s[/b]" % tr("Upcoming events"),
 	])
 	var any_event := false
-	for event: CalendarEventData in ContentDB.get_all_calendar_events():
+	for event: CalendarEventData in CalendarEventData.find_all():
 		var event_day := _next_event_day(event, WorldClock.day)
 		if event_day < 0:
 			continue
 		any_event = true
-		var location := ContentDB.get_location(event.location_id)
+		var location := WorldLocationData.find(event.location_id)
 		var location_name := tr(location.display_name) if location != null else tr("World")
 		var participation := tr(" · joined this year") if event.has_participation_reward() and EventState.has_claimed_participation(event.id) else ""
 		lines.append(tr("• %s%s — %s %d, %02d:%02d @ %s") % [tr(event.display_name), participation, tr(GameClock.get_season_name_for_day(event_day)), posmod(event_day - 1, GameClock.DAYS_PER_SEASON) + 1, event.start_minute / 60, event.start_minute % 60, location_name])
@@ -171,7 +171,7 @@ func _calendar_text() -> String:
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Upcoming birthdays"))
 	var birthdays: Array[Dictionary] = []
-	for profile: NpcProfileData in ContentDB.get_all_npcs():
+	for profile: NpcProfileData in NpcProfileData.find_all():
 		var birthday_day := _next_birthday_day(profile, WorldClock.day)
 		if birthday_day >= 0:
 			birthdays.append({"day": birthday_day, "profile": profile})
@@ -187,18 +187,18 @@ func _calendar_text() -> String:
 func _world_text() -> String:
 	var current := ContentDB.get_current_location(get_tree())
 	var lines := PackedStringArray(["[font_size=18][b]%s[/b][/font_size]" % tr("World"), ""])
-	for location: WorldLocationData in ContentDB.get_all_locations():
+	for location: WorldLocationData in WorldLocationData.find_all():
 		var marker := "→" if current != null and current.id == location.id else "•"
 		lines.append("%s [b]%s[/b] — %s" % [marker, tr(location.display_name), _location_type_name(location.type)])
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Residents"))
-	for profile: NpcProfileData in ContentDB.get_all_npcs():
-		var home := ContentDB.get_location(profile.home_location_id)
+	for profile: NpcProfileData in NpcProfileData.find_all():
+		var home := WorldLocationData.find(profile.home_location_id)
 		lines.append("• %s — %s" % [tr(profile.display_name), tr(home.display_name) if home != null else tr("Unknown")])
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Town Projects"))
-	for project: TownProjectData in ContentDB.get_all_town_projects():
-		var location := ContentDB.get_location(project.location_id)
+	for project: TownProjectData in TownProjectData.find_all():
+		var location := WorldLocationData.find(project.location_id)
 		lines.append("• %s — %s" % [tr(location.display_name) if location != null else tr("Unknown"), TownProjects.get_project_summary(project.id)])
 	return "\n".join(lines)
 
@@ -227,7 +227,7 @@ func _rebuild_hotbar_editor() -> void:
 	slot_select.clear()
 	for index in Hotbar.slots.size():
 		var existing_id := Hotbar.slots[index]
-		var existing := ItemCatalog.get_item(existing_id)
+		var existing := ItemData.find(existing_id)
 		var existing_name := tr(existing.display_name) if existing != null else (String(existing_id) if existing_id != &"" else tr("Empty"))
 		slot_select.add_item("%d: %s" % [index + 1, existing_name])
 	slot_select.select(clampi(Hotbar.selected_slot, 0, maxi(slot_select.item_count - 1, 0)))

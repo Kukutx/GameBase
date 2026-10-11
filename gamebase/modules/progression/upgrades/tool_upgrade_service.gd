@@ -6,16 +6,16 @@ signal tool_upgraded(upgrade_id: StringName, source_item_id: StringName, result_
 var _upgrade_busy := false
 
 func get_upgrade(upgrade_id: StringName) -> ToolUpgradeData:
-	return ContentDB.get_tool_upgrade(upgrade_id)
+	return ToolUpgradeData.find(upgrade_id)
 
 func get_all_upgrades() -> Array[ToolUpgradeData]:
-	return ContentDB.get_all_tool_upgrades()
+	return ToolUpgradeData.find_all()
 
 func can_upgrade(upgrade: ToolUpgradeData) -> bool:
 	if upgrade == null or not upgrade.meets_requirements():
 		return false
-	var source := ContentDB.get_item(upgrade.source_item_id)
-	var result := ContentDB.get_item(upgrade.result_item_id)
+	var source := ItemData.find(upgrade.source_item_id)
+	var result := ItemData.find(upgrade.result_item_id)
 	return source != null and source.is_tool() and result != null and result.is_tool()
 
 func upgrade(upgrade_id: StringName) -> bool:
@@ -31,8 +31,8 @@ func _upgrade_internal(upgrade_id: StringName) -> bool:
 	if not can_upgrade(upgrade_data):
 		GameEvents.toast("Missing tool, materials, money, or requirements")
 		return false
-	var source := ContentDB.get_item(upgrade_data.source_item_id)
-	var result := ContentDB.get_item(upgrade_data.result_item_id)
+	var source := ItemData.find(upgrade_data.source_item_id)
+	var result := ItemData.find(upgrade_data.result_item_id)
 	if source == null or result == null:
 		return false
 
@@ -64,7 +64,7 @@ func get_requirement_text(upgrade: ToolUpgradeData) -> String:
 		material_ids.append(String(raw_id))
 	material_ids.sort()
 	for raw_id: String in material_ids:
-		var item := ContentDB.get_item(StringName(raw_id))
+		var item := ItemData.find(StringName(raw_id))
 		var name_text := tr(item.display_name) if item != null else raw_id
 		parts.append("%s x%d" % [name_text, int(upgrade.materials[raw_id])])
 	if upgrade.money_cost > 0:
