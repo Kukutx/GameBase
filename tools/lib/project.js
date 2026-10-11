@@ -12,7 +12,7 @@
 // Everything else in project.godot belongs to the game.
 const fs = require("node:fs");
 const path = require("node:path");
-const { rootPath } = require("./common");
+const { fail, rootPath } = require("./common");
 const { gamePath, readFoundation } = require("./games");
 
 // The game's modules, each after the modules it requires, otherwise by name.
@@ -21,7 +21,7 @@ function moduleOrder(foundation, modules) {
   const pending = [...modules].sort();
   while (pending.length > 0) {
     const index = pending.findIndex((module) => (foundation.modules[module].requires || []).every((required) => order.includes(required)));
-    if (index < 0) return order.concat(pending); // a cycle, which check_layers reports
+    if (index < 0) fail(`gamebase.json: modules ${pending.join(", ")} cannot be ordered because their requires form a cycle; move the shared part down or invert the dependency.`);
     order.push(pending.splice(index, 1)[0]);
   }
   return order;
