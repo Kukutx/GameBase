@@ -20,6 +20,7 @@ var _selected_instance_id: StringName
 
 func _ready() -> void:
 	add_to_group("animal_management_menu")
+	($Panel as Control).theme = GameDefinition.current().ui_theme
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	animal_select.item_selected.connect(_on_animal_selected)

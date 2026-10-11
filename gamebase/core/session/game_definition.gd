@@ -45,3 +45,5 @@ static func current() -> GameDefinition:
 @export var start_hotbar: Array[StringName] = []
 ## Script extending `SaveMigrationSteps` that upgrades this game's older saves.
 @export var save_migrations: Script
+## The game's UI theme; module menus apply it to their panels (none: Godot's default).
+@export var ui_theme: Theme

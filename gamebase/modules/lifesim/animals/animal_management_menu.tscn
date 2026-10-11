@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://gamebase/modules/lifesim/animals/animal_management_menu.gd" id="1_menu"]
-[ext_resource type="Theme" path="res://game/ui/game_theme.tres" id="2_theme"]
 
 [node name="AnimalManagementMenu" type="CanvasLayer"]
 layer = 80
@@ -12,7 +11,6 @@ offset_left = 70.0
 offset_top = 24.0
 offset_right = 410.0
 offset_bottom = 254.0
-theme = ExtResource("2_theme")
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 2

@@ -1,43 +1,4 @@
 {
   "//": "Known layer violations that predate tools/check_layers.js. Only remove entries; never add one.",
-  "entries": {
-    "gamebase/modules/items/shop/shop_stand.tscn": {
-      "reason": "The reusable shop stand scene ships with this game's general store as its default shop.",
-      "uses": [
-        "path:game/data/shops/general_store.tres"
-      ]
-    },
-    "gamebase/modules/lifesim/animals/animal_management_menu.tscn": {
-      "reason": "The menu scene uses this game's UI theme; a module theme slot replaces it.",
-      "uses": [
-        "path:game/ui/game_theme.tres"
-      ]
-    },
-    "gamebase/modules/lifesim/mining/mine_floor_controller.gd": {
-      "reason": "Mine floor rock and enemy tables are code; they become a data resource the game provides.",
-      "uses": [
-        "path:game/data/enemies/ancient_slime.tres",
-        "path:game/data/enemies/blue_slime.tres",
-        "path:game/data/enemies/cave_slime.tres",
-        "path:game/data/enemies/green_slime.tres",
-        "path:game/data/enemies/red_slime.tres",
-        "path:game/data/enemies/shadow_slime.tres",
-        "path:game/data/enemies/void_slime.tres",
-        "path:game/data/mining/copper_rock.tres",
-        "path:game/data/mining/gold_rock.tres",
-        "path:game/data/mining/iridium_rock.tres",
-        "path:game/data/mining/iron_rock.tres",
-        "path:game/data/mining/stone_rock.tres"
-      ]
-    },
-    "gamebase/modules/lifesim/mining/mine_run_state.gd": {
-      "reason": "Mine floor rock tables are code; they become a data resource the game provides.",
-      "uses": [
-        "path:game/data/mining/copper_rock.tres",
-        "path:game/data/mining/gold_rock.tres",
-        "path:game/data/mining/iridium_rock.tres",
-        "path:game/data/mining/iron_rock.tres"
-      ]
-    }
-  }
+  "entries": {}
 }

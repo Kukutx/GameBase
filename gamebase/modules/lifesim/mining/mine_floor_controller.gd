@@ -3,18 +3,6 @@ extends Node2D
 
 const MINING_SCENE := preload("res://gamebase/modules/lifesim/mining/mining_node.tscn")
 const ENEMY_SCENE := preload("res://gamebase/modules/combat/combat/hostile_creature.tscn")
-const STONE_DATA := preload("res://game/data/mining/stone_rock.tres")
-const COPPER_DATA := preload("res://game/data/mining/copper_rock.tres")
-const IRON_DATA := preload("res://game/data/mining/iron_rock.tres")
-const GOLD_DATA := preload("res://game/data/mining/gold_rock.tres")
-const IRIDIUM_DATA := preload("res://game/data/mining/iridium_rock.tres")
-const SLIME_DATA := preload("res://game/data/enemies/green_slime.tres")
-const CAVE_SLIME_DATA := preload("res://game/data/enemies/cave_slime.tres")
-const BLUE_SLIME_DATA := preload("res://game/data/enemies/blue_slime.tres")
-const RED_SLIME_DATA := preload("res://game/data/enemies/red_slime.tres")
-const SHADOW_SLIME_DATA := preload("res://game/data/enemies/shadow_slime.tres")
-const VOID_SLIME_DATA := preload("res://game/data/enemies/void_slime.tres")
-const ANCIENT_SLIME_DATA := preload("res://game/data/enemies/ancient_slime.tres")
 const FLOOR_ONE_NODE_NAMES := [&"StoneRockA", &"StoneRockB", &"CopperRock", &"GreenSlime"]
 
 @onready var mine_label: Label = $MineLabel
@@ -76,15 +64,13 @@ func _spawn_dynamic_floor(floor: int) -> void:
 		if not raw is Dictionary:
 			continue
 		var entry: Dictionary = raw
+		var rock_data := ContentDB.get_mining_node(StringName(String(entry.get("kind", ""))))
+		if rock_data == null:
+			continue
 		var rock := MINING_SCENE.instantiate() as MiningNode
 		rock_index += 1
 		rock.name = "GeneratedRock%02d" % rock_index
-		match String(entry.get("kind", "stone")):
-			"iridium": rock.data = IRIDIUM_DATA
-			"gold": rock.data = GOLD_DATA
-			"iron": rock.data = IRON_DATA
-			"copper": rock.data = COPPER_DATA
-			_: rock.data = STONE_DATA
+		rock.data = rock_data
 		rock.persistent_id = StringName(String(entry.get("persistent_id", "")))
 		add_child(rock)
 		rock.position = entry.get("position", Vector2.ZERO)
@@ -96,17 +82,13 @@ func _spawn_dynamic_floor(floor: int) -> void:
 		if not raw is Dictionary:
 			continue
 		var entry: Dictionary = raw
+		var enemy_data := ContentDB.get_enemy(StringName(String(entry.get("kind", ""))))
+		if enemy_data == null:
+			continue
 		var enemy := ENEMY_SCENE.instantiate() as HostileCreature
 		enemy_index += 1
 		enemy.name = "GeneratedEnemy%02d" % enemy_index
-		match String(entry.get("kind", "green_slime")):
-			"ancient_slime": enemy.data = ANCIENT_SLIME_DATA
-			"void_slime": enemy.data = VOID_SLIME_DATA
-			"shadow_slime": enemy.data = SHADOW_SLIME_DATA
-			"red_slime": enemy.data = RED_SLIME_DATA
-			"blue_slime": enemy.data = BLUE_SLIME_DATA
-			"cave_slime": enemy.data = CAVE_SLIME_DATA
-			_: enemy.data = SLIME_DATA
+		enemy.data = enemy_data
 		enemy.persistent_id = StringName(String(entry.get("persistent_id", "")))
 		add_child(enemy)
 		enemy.position = entry.get("position", Vector2.ZERO)
