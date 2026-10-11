@@ -1,0 +1,22 @@
+class_name ItemsModule
+extends GameModule
+
+## Wires the items module into the core (see `GameModule`).
+
+func install() -> void:
+	ItemsRules.register(GameRules)
+	SaveManager.register_section(SaveSection.new(&"buffs", 400,
+		BuffState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: BuffState.load_save_data(section)))
+	SaveManager.register_section(SaveSection.new(&"inventory", 500,
+		InventoryState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: InventoryState.load_save_data(section)))
+	SaveManager.register_section(SaveSection.new(&"hotbar", 650,
+		Hotbar.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: Hotbar.load_save_data(section)))
+	GameSession.register_new_game_step(&"inventory", 100, InventoryState.clear)
+	GameSession.register_new_game_step(&"hotbar", 450, Hotbar.reset_new_game)
+	GameSession.register_new_game_step(&"buffs", 900, BuffState.clear)
+	GameSession.register_new_game_step(&"start_items", 1300, _grant_start_items)
+
+## The game's `GameDefinition.start_items`, once the inventory is empty.
+func _grant_start_items() -> void:
+	for item_id: StringName in GameSession.definition.start_items:
+		InventoryState.add_item_by_id(item_id, GameSession.definition.start_items[item_id])

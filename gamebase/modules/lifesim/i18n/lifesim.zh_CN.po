@@ -461,3 +461,6 @@ msgstr "产物"
 
 msgid "Buy %s — %dg  ·  %s slots %d"
 msgstr "购买 %s — %dg  ·  %s 空位 %d"
+
+msgid "Finish fishing before saving"
+msgstr "请先结束钓鱼再保存"
