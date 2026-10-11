@@ -1,7 +1,6 @@
 class_name MailData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var sender_npc_id: StringName
 @export var sender_name: String
 @export var subject: String

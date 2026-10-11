@@ -1,5 +1,30 @@
 class_name GameContentDatabase
-extends Node
+extends ContentRegistry
+
+## This game's content: every kind its modules define, indexed from the
+## `ContentManifest`, with typed accessors and the checks between kinds.
+
+const KIND_ITEM := &"item"
+const KIND_CROP := &"crop"
+const KIND_NPC := &"npc"
+const KIND_HEART_EVENT := &"heart_event"
+const KIND_MAIL := &"mail"
+const KIND_TOWN_PROJECT := &"town_project"
+const KIND_FARM_EXPANSION := &"farm_expansion"
+const KIND_COLLECTION_MILESTONE := &"collection_milestone"
+const KIND_FARM_ANIMAL := &"farm_animal"
+const KIND_FISH := &"fish"
+const KIND_FORAGE_ENTRY := &"forage_entry"
+const KIND_FOOD_BUFF := &"food_buff"
+const KIND_PROCESSING_RECIPE := &"processing_recipe"
+const KIND_TOOL_UPGRADE := &"tool_upgrade"
+const KIND_PLACEABLE := &"placeable"
+const KIND_MINING_NODE := &"mining_node"
+const KIND_ENEMY := &"enemy"
+const KIND_QUEST := &"quest"
+const KIND_SHOP := &"shop"
+const KIND_RECIPE := &"recipe"
+const KIND_CALENDAR_EVENT := &"calendar_event"
 
 const DEFAULT_MANIFEST := preload("res://game/data/content_manifest.tres")
 
@@ -25,162 +50,110 @@ var _quests: Dictionary = {}
 var _shops: Dictionary = {}
 var _recipes: Dictionary = {}
 var _locations: Dictionary = {}
-var _location_spawn_ids: Dictionary = {}
 var _calendar_events: Dictionary = {}
 var _audio_cues: Dictionary = {}
+# Persistent state keys seen while validating location scenes in this rebuild.
+var _persistent_state_keys: Dictionary = {}
 
-func _ready() -> void:
-	rebuild()
-
-func rebuild() -> PackedStringArray:
-	_items.clear()
-	_crops.clear()
-	_npcs.clear()
-	_heart_events.clear()
-	_mail.clear()
-	_town_projects.clear()
-	_farm_expansions.clear()
-	_collection_milestones.clear()
-	_animals.clear()
-	_fish.clear()
-	_forage_entries.clear()
-	_food_buffs.clear()
-	_processing_recipes.clear()
-	_tool_upgrades.clear()
-	_placeables.clear()
-	_mining_nodes.clear()
-	_enemies.clear()
-	_quests.clear()
-	_shops.clear()
-	_recipes.clear()
-	_locations.clear()
-	_location_spawn_ids.clear()
-	_calendar_events.clear()
-	_audio_cues.clear()
-	var errors := PackedStringArray()
+func _index_content(errors: PackedStringArray) -> bool:
+	_persistent_state_keys.clear()
+	var source := manifest if manifest != null else ContentManifest.new()
+	_items = register_entries(KIND_ITEM, source.items, "item", errors)
+	_crops = register_entries(KIND_CROP, source.crops, "crop", errors)
+	_npcs = register_entries(KIND_NPC, source.npc_profiles, "npc", errors)
+	_heart_events = register_entries(KIND_HEART_EVENT, source.heart_events, "heart event", errors)
+	_mail = register_entries(KIND_MAIL, source.mail, "mail", errors)
+	_town_projects = register_entries(KIND_TOWN_PROJECT, source.town_projects, "town project", errors)
+	_farm_expansions = register_entries(KIND_FARM_EXPANSION, source.farm_expansions, "farm expansion", errors)
+	_collection_milestones = register_entries(KIND_COLLECTION_MILESTONE, source.collection_milestones, "collection milestone", errors)
+	_animals = register_entries(KIND_FARM_ANIMAL, source.farm_animals, "farm animal", errors)
+	_fish = register_entries(KIND_FISH, source.fish, "fish", errors)
+	_forage_entries = register_entries(KIND_FORAGE_ENTRY, source.forage_entries, "forage entry", errors)
+	_food_buffs = register_entries(KIND_FOOD_BUFF, source.food_buffs, "food buff", errors)
+	_processing_recipes = register_entries(KIND_PROCESSING_RECIPE, source.processing_recipes, "processing recipe", errors)
+	_tool_upgrades = register_entries(KIND_TOOL_UPGRADE, source.tool_upgrades, "tool upgrade", errors)
+	_placeables = register_entries(KIND_PLACEABLE, source.placeables, "placeable", errors)
+	_mining_nodes = register_entries(KIND_MINING_NODE, source.mining_nodes, "mining node", errors)
+	_enemies = register_entries(KIND_ENEMY, source.enemies, "enemy", errors)
+	_quests = register_entries(KIND_QUEST, source.quests, "quest", errors)
+	_shops = register_entries(KIND_SHOP, source.shops, "shop", errors)
+	_recipes = register_entries(KIND_RECIPE, source.recipes, "recipe", errors)
+	_locations = register_entries(KIND_LOCATION, source.locations, "location", errors)
+	_calendar_events = register_entries(KIND_CALENDAR_EVENT, source.calendar_events, "calendar event", errors)
+	_audio_cues = register_entries(KIND_AUDIO_CUE, source.audio_cues, "audio cue", errors)
 	if manifest == null:
 		errors.append("Content manifest is missing")
-		return errors
-	_index_resources(manifest.items, _items, "item", errors)
-	_index_resources(manifest.crops, _crops, "crop", errors)
-	_index_resources(manifest.npc_profiles, _npcs, "npc", errors)
-	_index_resources(manifest.heart_events, _heart_events, "heart event", errors)
-	_index_resources(manifest.mail, _mail, "mail", errors)
-	_index_resources(manifest.town_projects, _town_projects, "town project", errors)
-	_index_resources(manifest.farm_expansions, _farm_expansions, "farm expansion", errors)
-	_index_resources(manifest.collection_milestones, _collection_milestones, "collection milestone", errors)
-	_index_resources(manifest.farm_animals, _animals, "farm animal", errors)
-	_index_resources(manifest.fish, _fish, "fish", errors)
-	_index_resources(manifest.forage_entries, _forage_entries, "forage entry", errors)
-	_index_resources(manifest.food_buffs, _food_buffs, "food buff", errors)
-	_index_resources(manifest.processing_recipes, _processing_recipes, "processing recipe", errors)
-	_index_resources(manifest.tool_upgrades, _tool_upgrades, "tool upgrade", errors)
-	_index_resources(manifest.placeables, _placeables, "placeable", errors)
-	_index_resources(manifest.mining_nodes, _mining_nodes, "mining node", errors)
-	_index_resources(manifest.enemies, _enemies, "enemy", errors)
-	_index_resources(manifest.quests, _quests, "quest", errors)
-	_index_resources(manifest.shops, _shops, "shop", errors)
-	_index_resources(manifest.recipes, _recipes, "recipe", errors)
-	_index_resources(manifest.locations, _locations, "location", errors)
-	_index_resources(manifest.calendar_events, _calendar_events, "calendar event", errors)
-	_index_resources(manifest.audio_cues, _audio_cues, "audio cue", errors)
+		return false
+	return true
+
+func _validate_content(errors: PackedStringArray) -> void:
 	_validate_references(errors)
-	for message: String in errors:
-		push_error("ContentDatabase: " + message)
-	return errors
 
 func get_item(id: StringName) -> ItemData:
-	return _items.get(String(id)) as ItemData
+	return get_entry(KIND_ITEM, id) as ItemData
 
 func get_crop(id: StringName) -> CropData:
-	return _crops.get(String(id)) as CropData
+	return get_entry(KIND_CROP, id) as CropData
 
 func get_npc(id: StringName) -> NpcProfileData:
-	return _npcs.get(String(id)) as NpcProfileData
+	return get_entry(KIND_NPC, id) as NpcProfileData
 
 func get_heart_event(id: StringName) -> HeartEventData:
-	return _heart_events.get(String(id)) as HeartEventData
+	return get_entry(KIND_HEART_EVENT, id) as HeartEventData
 
 func get_mail(id: StringName) -> MailData:
-	return _mail.get(String(id)) as MailData
+	return get_entry(KIND_MAIL, id) as MailData
 
 func get_town_project(id: StringName) -> TownProjectData:
-	return _town_projects.get(String(id)) as TownProjectData
+	return get_entry(KIND_TOWN_PROJECT, id) as TownProjectData
 
 func get_farm_expansion(id: StringName) -> FarmExpansionData:
-	return _farm_expansions.get(String(id)) as FarmExpansionData
+	return get_entry(KIND_FARM_EXPANSION, id) as FarmExpansionData
 
 func get_collection_milestone(id: StringName) -> CollectionMilestoneData:
-	return _collection_milestones.get(String(id)) as CollectionMilestoneData
+	return get_entry(KIND_COLLECTION_MILESTONE, id) as CollectionMilestoneData
 
 func get_farm_animal(id: StringName) -> FarmAnimalData:
-	return _animals.get(String(id)) as FarmAnimalData
+	return get_entry(KIND_FARM_ANIMAL, id) as FarmAnimalData
 
 func get_fish(id: StringName) -> FishData:
-	return _fish.get(String(id)) as FishData
+	return get_entry(KIND_FISH, id) as FishData
 
 func get_forage_entry(id: StringName) -> ForageEntryData:
-	return _forage_entries.get(String(id)) as ForageEntryData
+	return get_entry(KIND_FORAGE_ENTRY, id) as ForageEntryData
 
 func get_food_buff(id: StringName) -> FoodBuffData:
-	return _food_buffs.get(String(id)) as FoodBuffData
+	return get_entry(KIND_FOOD_BUFF, id) as FoodBuffData
 
 func get_processing_recipe(id: StringName) -> ProcessingRecipeData:
-	return _processing_recipes.get(String(id)) as ProcessingRecipeData
+	return get_entry(KIND_PROCESSING_RECIPE, id) as ProcessingRecipeData
 
 func get_tool_upgrade(id: StringName) -> ToolUpgradeData:
-	return _tool_upgrades.get(String(id)) as ToolUpgradeData
+	return get_entry(KIND_TOOL_UPGRADE, id) as ToolUpgradeData
 
 func get_placeable(id: StringName) -> PlaceableData:
-	return _placeables.get(String(id)) as PlaceableData
+	return get_entry(KIND_PLACEABLE, id) as PlaceableData
 
 func get_mining_node(id: StringName) -> MiningNodeData:
-	return _mining_nodes.get(String(id)) as MiningNodeData
+	return get_entry(KIND_MINING_NODE, id) as MiningNodeData
 
 func get_enemy(id: StringName) -> EnemyData:
-	return _enemies.get(String(id)) as EnemyData
+	return get_entry(KIND_ENEMY, id) as EnemyData
 
 func get_quest(id: StringName) -> QuestData:
-	return _quests.get(String(id)) as QuestData
+	return get_entry(KIND_QUEST, id) as QuestData
 
 func get_shop(id: StringName) -> ShopData:
-	return _shops.get(String(id)) as ShopData
+	return get_entry(KIND_SHOP, id) as ShopData
 
 func get_recipe(id: StringName) -> RecipeData:
-	return _recipes.get(String(id)) as RecipeData
-
-func get_location(id: StringName) -> WorldLocationData:
-	return _locations.get(String(id)) as WorldLocationData
-
-func get_location_for_scene(scene_path: String) -> WorldLocationData:
-	if scene_path.is_empty():
-		return null
-	for location: WorldLocationData in get_all_locations():
-		if location != null and location.scene_path == scene_path:
-			return location
-	return null
-
-func get_current_location(tree: SceneTree) -> WorldLocationData:
-	if tree == null or tree.current_scene == null:
-		return null
-	return get_location_for_scene(tree.current_scene.scene_file_path)
-
-func has_location_spawn(location_id: StringName, spawn_id: StringName) -> bool:
-	if location_id == &"" or spawn_id == &"":
-		return false
-	var raw_counts: Variant = _location_spawn_ids.get(String(location_id), {})
-	if not raw_counts is Dictionary:
-		return false
-	return int((raw_counts as Dictionary).get(String(spawn_id), 0)) == 1
+	return get_entry(KIND_RECIPE, id) as RecipeData
 
 func get_calendar_event(id: StringName) -> CalendarEventData:
-	return _calendar_events.get(String(id)) as CalendarEventData
-
-func get_audio_cue(id: StringName) -> AudioCueData:
-	return _audio_cues.get(String(id)) as AudioCueData
+	return get_entry(KIND_CALENDAR_EVENT, id) as CalendarEventData
 
 func has_item(id: StringName) -> bool:
-	return _items.has(String(id))
+	return has_entry(KIND_ITEM, id)
 
 func get_all_items() -> Array[ItemData]:
 	var result: Array[ItemData] = []
@@ -296,38 +269,11 @@ func get_all_recipes() -> Array[RecipeData]:
 		result.append(value as RecipeData)
 	return result
 
-func get_all_locations() -> Array[WorldLocationData]:
-	var result: Array[WorldLocationData] = []
-	for value: Variant in _sorted_values(_locations):
-		result.append(value as WorldLocationData)
-	return result
-
 func get_all_calendar_events() -> Array[CalendarEventData]:
 	var result: Array[CalendarEventData] = []
 	for value: Variant in _sorted_values(_calendar_events):
 		result.append(value as CalendarEventData)
 	return result
-
-func get_all_audio_cues() -> Array[AudioCueData]:
-	var result: Array[AudioCueData] = []
-	for value: Variant in _sorted_values(_audio_cues):
-		result.append(value as AudioCueData)
-	return result
-
-func _index_resources(resources: Array, target: Dictionary, kind: String, errors: PackedStringArray) -> void:
-	for resource: Resource in resources:
-		if resource == null:
-			continue
-		var raw_id: Variant = resource.get("id")
-		var id := StringName(String(raw_id))
-		if id == &"":
-			errors.append("%s resource has an empty id: %s" % [kind, resource.resource_path])
-			continue
-		var key := String(id)
-		if target.has(key):
-			errors.append("duplicate %s id '%s'" % [kind, key])
-			continue
-		target[key] = resource
 
 func _is_numeric_value(value: Variant) -> bool:
 	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
@@ -817,72 +763,6 @@ func _validate_references(errors: PackedStringArray) -> void:
 		if recipe.required_level < 1 or recipe.required_level > SkillManager.LEVEL_THRESHOLDS.size():
 			errors.append("recipe '%s' has invalid required level %d" % [recipe.id, recipe.required_level])
 
-	for raw: Variant in _audio_cues.values():
-		var cue := raw as AudioCueData
-		if cue == null:
-			continue
-		if not [AudioCueData.CueType.SFX, AudioCueData.CueType.MUSIC].has(cue.cue_type):
-			errors.append("audio cue '%s' has invalid cue type %d" % [cue.id, cue.cue_type])
-		if cue.pitch_min <= 0.0 or cue.pitch_max <= 0.0:
-			errors.append("audio cue '%s' has non-positive pitch range" % cue.id)
-		if cue.pitch_min > cue.pitch_max:
-			errors.append("audio cue '%s' has inverted pitch range" % cue.id)
-
-	var scene_paths: Dictionary = {}
-	var persistent_state_keys: Dictionary = {}
-	for raw: Variant in _locations.values():
-		var location := raw as WorldLocationData
-		if location == null:
-			continue
-		if location.scene_path.is_empty() or not ResourceLoader.exists(location.scene_path):
-			errors.append("location '%s' references missing scene '%s'" % [location.id, location.scene_path])
-			continue
-		var packed := load(location.scene_path) as PackedScene
-		if packed == null:
-			errors.append("location '%s' scene '%s' is not a PackedScene" % [location.id, location.scene_path])
-			continue
-		if scene_paths.has(location.scene_path):
-			errors.append("locations '%s' and '%s' share scene path '%s'" % [scene_paths[location.scene_path], location.id, location.scene_path])
-		else:
-			scene_paths[location.scene_path] = String(location.id)
-		var spawn_counts := _get_scene_spawn_counts(packed)
-		_location_spawn_ids[String(location.id)] = spawn_counts.duplicate(true)
-		var player_count := _get_scene_group_count(packed, &"player")
-		if player_count != 1:
-			errors.append("location '%s' scene must contain exactly one player node, found %d" % [location.id, player_count])
-		for record: Dictionary in _get_scene_persistent_state_records(packed):
-			var state_key := String(record.get("key", ""))
-			var node_name := String(record.get("node_name", "Node"))
-			var required := bool(record.get("required", false))
-			if state_key.is_empty():
-				if required:
-					errors.append("location '%s' persistent node '%s' is missing its stable id" % [location.id, node_name])
-				continue
-			if persistent_state_keys.has(state_key):
-				var previous: Dictionary = persistent_state_keys[state_key]
-				errors.append("persistent state key '%s' is shared by location '%s' node '%s' and location '%s' node '%s'" % [state_key, previous.get("location_id", ""), previous.get("node_name", ""), location.id, node_name])
-			else:
-				persistent_state_keys[state_key] = {"location_id": String(location.id), "node_name": node_name}
-		_validate_location_scene_references(location, packed, errors)
-		for raw_spawn_id: Variant in spawn_counts.keys():
-			var spawn_id := String(raw_spawn_id)
-			if spawn_id.is_empty():
-				errors.append("location '%s' scene has a spawn point with an empty id" % location.id)
-			elif int(spawn_counts[raw_spawn_id]) > 1:
-				errors.append("location '%s' scene has duplicate spawn id '%s'" % [location.id, spawn_id])
-		if location.default_spawn_id == &"":
-			errors.append("location '%s' has an empty default spawn id" % location.id)
-		elif not spawn_counts.has(String(location.default_spawn_id)):
-			errors.append("location '%s' default spawn '%s' is missing from scene '%s'" % [location.id, location.default_spawn_id, location.scene_path])
-		if location.music_cue_id != &"":
-			var music_cue := get_audio_cue(location.music_cue_id)
-			if music_cue == null:
-				errors.append("location '%s' references unknown music cue '%s'" % [location.id, location.music_cue_id])
-			elif not music_cue.is_music():
-				errors.append("location '%s' music cue '%s' is not MUSIC" % [location.id, location.music_cue_id])
-		for portal: Dictionary in _get_scene_portal_records(packed):
-			_validate_portal_record(location, portal, errors)
-
 	for raw: Variant in _calendar_events.values():
 		var event := raw as CalendarEventData
 		if event == null:
@@ -1030,58 +910,8 @@ func _collect_expansion_progression_errors(expansions: Dictionary) -> Array[Stri
 	return messages
 
 func _append_dependency_cycle_errors(graph: Dictionary, kind: String, errors: PackedStringArray) -> void:
-	for message: String in _collect_dependency_cycle_errors(graph, kind):
+	for message: String in collect_dependency_cycle_errors(graph, kind):
 		errors.append(message)
-
-func _collect_dependency_cycle_errors(graph: Dictionary, kind: String) -> Array[String]:
-	var messages: Array[String] = []
-	var state: Dictionary = {}
-	var stack: Array[String] = []
-	var reported: Dictionary = {}
-	var nodes: Array[String] = []
-	for raw_node: Variant in graph.keys():
-		nodes.append(String(raw_node))
-	nodes.sort()
-	for node: String in nodes:
-		if int(state.get(node, 0)) == 0:
-			_visit_dependency_node(node, graph, state, stack, reported, kind, messages)
-	return messages
-
-func _visit_dependency_node(node: String, graph: Dictionary, state: Dictionary, stack: Array[String], reported: Dictionary, kind: String, messages: Array[String]) -> void:
-	state[node] = 1
-	stack.append(node)
-	var neighbors: Array[String] = []
-	var raw_neighbors: Variant = graph.get(node, [])
-	if raw_neighbors is Array:
-		for raw_neighbor: Variant in raw_neighbors:
-			neighbors.append(String(raw_neighbor))
-	neighbors.sort()
-	for neighbor: String in neighbors:
-		# Missing references are reported separately by the normal reference
-		# validator; they cannot participate in a cycle inside this graph.
-		if not graph.has(neighbor):
-			continue
-		var neighbor_state := int(state.get(neighbor, 0))
-		if neighbor_state == 0:
-			_visit_dependency_node(neighbor, graph, state, stack, reported, kind, messages)
-		elif neighbor_state == 1:
-			var start_index := stack.find(neighbor)
-			if start_index < 0:
-				continue
-			var cycle_nodes: Array[String] = []
-			for index in range(start_index, stack.size()):
-				cycle_nodes.append(stack[index])
-			var signature_nodes := cycle_nodes.duplicate()
-			signature_nodes.sort()
-			var signature := "|".join(PackedStringArray(signature_nodes))
-			if reported.has(signature):
-				continue
-			reported[signature] = true
-			var cycle_path := cycle_nodes.duplicate()
-			cycle_path.append(neighbor)
-			messages.append("%s dependency cycle: %s" % [kind, " -> ".join(PackedStringArray(cycle_path))])
-	stack.pop_back()
-	state[node] = 2
 
 func _validate_item_list(item_ids: Array[StringName], context: String, errors: PackedStringArray) -> void:
 	for item_id: StringName in item_ids:
@@ -1102,16 +932,25 @@ func _validate_processing_station_recipe_ids(station: ProcessingStation, context
 		else:
 			seen_recipes[String(recipe_id)] = true
 
-func _validate_location_scene_references(location: WorldLocationData, packed: PackedScene, errors: PackedStringArray) -> void:
-	if location == null or packed == null:
-		return
-	var root := packed.instantiate()
-	if root == null:
-		return
+func _validate_location_scene(location: WorldLocationData, root: Node, errors: PackedStringArray) -> void:
+	var records: Array[Dictionary] = []
+	_collect_persistent_state_records(root, records)
+	for record: Dictionary in records:
+		var state_key := String(record.get("key", ""))
+		var node_name := String(record.get("node_name", "Node"))
+		var required := bool(record.get("required", false))
+		if state_key.is_empty():
+			if required:
+				errors.append("location '%s' persistent node '%s' is missing its stable id" % [location.id, node_name])
+			continue
+		if _persistent_state_keys.has(state_key):
+			var previous: Dictionary = _persistent_state_keys[state_key]
+			errors.append("persistent state key '%s' is shared by location '%s' node '%s' and location '%s' node '%s'" % [state_key, previous.get("location_id", ""), previous.get("node_name", ""), location.id, node_name])
+		else:
+			_persistent_state_keys[state_key] = {"location_id": String(location.id), "node_name": node_name}
 	var housing_ids: Dictionary = {}
 	_collect_scene_housing_ids(root, housing_ids)
 	_validate_location_node_references(root, location, housing_ids, errors)
-	root.free()
 
 func _collect_scene_housing_ids(node: Node, housing_ids: Dictionary) -> void:
 	if node is AnimalHousing:
@@ -1172,17 +1011,6 @@ func _validate_location_node_references(node: Node, location: WorldLocationData,
 	for child: Node in node.get_children():
 		_validate_location_node_references(child, location, housing_ids, errors)
 
-func _get_scene_persistent_state_records(packed: PackedScene) -> Array[Dictionary]:
-	var records: Array[Dictionary] = []
-	if packed == null:
-		return records
-	var root := packed.instantiate()
-	if root == null:
-		return records
-	_collect_persistent_state_records(root, records)
-	root.free()
-	return records
-
 func _collect_persistent_state_records(node: Node, records: Array[Dictionary]) -> void:
 	if node is FarmField:
 		var field := node as FarmField
@@ -1226,94 +1054,3 @@ func _collect_persistent_state_records(node: Node, records: Array[Dictionary]) -
 		records.append({"key": "housing:%s" % String(housing.housing_id) if housing.housing_id != &"" else "", "node_name": String(node.name), "required": true})
 	for child: Node in node.get_children():
 		_collect_persistent_state_records(child, records)
-
-func _get_scene_group_count(packed: PackedScene, group: StringName) -> int:
-	if packed == null or group == &"":
-		return 0
-	var root := packed.instantiate()
-	if root == null:
-		return 0
-	var count := _count_group_nodes(root, group)
-	root.free()
-	return count
-
-func _count_group_nodes(node: Node, group: StringName) -> int:
-	var count := 1 if node.is_in_group(group) else 0
-	for child: Node in node.get_children():
-		count += _count_group_nodes(child, group)
-	return count
-
-func _get_scene_spawn_counts(packed: PackedScene) -> Dictionary:
-	var counts: Dictionary = {}
-	if packed == null:
-		return counts
-	var root := packed.instantiate()
-	if root == null:
-		return counts
-	_collect_spawn_counts(root, counts)
-	root.free()
-	return counts
-
-func _collect_spawn_counts(node: Node, counts: Dictionary) -> void:
-	if node is WorldSpawnPoint:
-		var spawn := node as WorldSpawnPoint
-		var key := String(spawn.spawn_id)
-		counts[key] = int(counts.get(key, 0)) + 1
-	for child: Node in node.get_children():
-		_collect_spawn_counts(child, counts)
-
-func _get_scene_portal_records(packed: PackedScene) -> Array[Dictionary]:
-	var records: Array[Dictionary] = []
-	if packed == null:
-		return records
-	var root := packed.instantiate()
-	if root == null:
-		return records
-	_collect_portal_records(root, records)
-	root.free()
-	return records
-
-func _collect_portal_records(node: Node, records: Array[Dictionary]) -> void:
-	if node is ScenePortal:
-		var portal := node as ScenePortal
-		records.append({
-			"node_name": String(portal.name),
-			"target_location_id": String(portal.target_location_id),
-			"target_scene": portal.target_scene,
-			"target_spawn_id": String(portal.target_spawn_id),
-		})
-	for child: Node in node.get_children():
-		_collect_portal_records(child, records)
-
-func _validate_portal_record(source_location: WorldLocationData, portal: Dictionary, errors: PackedStringArray) -> void:
-	var portal_name := String(portal.get("node_name", "Portal"))
-	var target_location_id := StringName(String(portal.get("target_location_id", "")))
-	var legacy_target_scene := String(portal.get("target_scene", ""))
-	var target_spawn_id := StringName(String(portal.get("target_spawn_id", "")))
-	if not legacy_target_scene.is_empty():
-		errors.append("location '%s' portal '%s' still configures legacy target_scene '%s'" % [source_location.id, portal_name, legacy_target_scene])
-	if target_location_id == &"":
-		errors.append("location '%s' portal '%s' must use a stable target location id" % [source_location.id, portal_name])
-		return
-	var target_location := get_location(target_location_id)
-	if target_location == null:
-		errors.append("location '%s' portal '%s' references unknown target location '%s'" % [source_location.id, portal_name, target_location_id])
-		return
-	var target_packed := load(target_location.scene_path) as PackedScene
-	if target_packed == null:
-		errors.append("location '%s' portal '%s' target location '%s' has no valid PackedScene" % [source_location.id, portal_name, target_location_id])
-		return
-	var resolved_spawn := target_spawn_id if target_spawn_id != &"" else target_location.default_spawn_id
-	var target_spawns := _get_scene_spawn_counts(target_packed)
-	if resolved_spawn == &"" or not target_spawns.has(String(resolved_spawn)):
-		errors.append("location '%s' portal '%s' target spawn '%s' is missing from location '%s'" % [source_location.id, portal_name, resolved_spawn, target_location_id])
-
-func _sorted_values(source: Dictionary) -> Array:
-	var keys: Array[String] = []
-	for raw_key: Variant in source.keys():
-		keys.append(String(raw_key))
-	keys.sort()
-	var result: Array = []
-	for key: String in keys:
-		result.append(source[key])
-	return result

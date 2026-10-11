@@ -1,7 +1,6 @@
 class_name ShopData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String = "Shop"
 @export var stock: Dictionary = {}
 @export var seasonal_stock: Dictionary = {}

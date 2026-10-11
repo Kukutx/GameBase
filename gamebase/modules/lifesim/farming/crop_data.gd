@@ -1,7 +1,6 @@
 class_name CropData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String
 @export_range(1, 60, 1) var days_to_mature := 4
 @export_range(0, 60, 1) var regrow_days := 0

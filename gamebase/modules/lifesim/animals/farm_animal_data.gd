@@ -1,7 +1,6 @@
 class_name FarmAnimalData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String = "Animal"
 @export var sprite_path: String
 @export var frame_size := Vector2i(32, 32)

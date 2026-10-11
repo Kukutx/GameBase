@@ -1,12 +1,11 @@
 class_name RecipeData
-extends Resource
+extends ContentEntry
 
 enum Category {
 	CRAFTING,
 	COOKING,
 }
 
-@export var id: StringName
 @export var display_name: String
 @export var category: Category = Category.CRAFTING
 @export var ingredients: Dictionary = {}

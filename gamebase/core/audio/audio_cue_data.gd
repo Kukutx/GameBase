@@ -1,12 +1,11 @@
 class_name AudioCueData
-extends Resource
+extends ContentEntry
 
 enum CueType {
 	SFX,
 	MUSIC,
 }
 
-@export var id: StringName
 @export var cue_type: CueType = CueType.SFX
 @export var stream: AudioStream
 @export_range(-60.0, 12.0, 0.1) var volume_db := 0.0

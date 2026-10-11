@@ -1,7 +1,6 @@
 class_name PlaceableData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String
 @export var item_id: StringName
 @export_file("*.tscn") var scene_path: String

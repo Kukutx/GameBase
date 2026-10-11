@@ -1,7 +1,6 @@
 class_name FarmExpansionData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String = "Farm Expansion"
 @export_multiline var description: String
 @export var housing_id: StringName

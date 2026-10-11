@@ -1,7 +1,6 @@
 class_name ProcessingRecipeData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String
 @export var inputs: Dictionary = {}
 @export var output_item_id: StringName
