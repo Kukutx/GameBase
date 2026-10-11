@@ -583,10 +583,6 @@ func _validate_references(errors: PackedStringArray) -> void:
 				errors.append("processing recipe '%s' requires unknown item '%s'" % [processing.id, raw_item_id])
 			elif not _is_positive_int_value(processing.inputs[raw_item_id]):
 				errors.append("processing recipe '%s' has invalid input quantity for '%s'" % [processing.id, raw_item_id])
-		if processing.required_skill != &"" and not valid_skills.has(processing.required_skill):
-			errors.append("processing recipe '%s' references unknown required skill '%s'" % [processing.id, processing.required_skill])
-		if processing.required_level < 1 or processing.required_level > SkillManager.LEVEL_THRESHOLDS.size():
-			errors.append("processing recipe '%s' has invalid required level %d" % [processing.id, processing.required_level])
 
 	for raw: Variant in _tool_upgrades.values():
 		var upgrade := raw as ToolUpgradeData
@@ -613,10 +609,6 @@ func _validate_references(errors: PackedStringArray) -> void:
 				errors.append("tool upgrade '%s' requires unknown item '%s'" % [upgrade.id, raw_item_id])
 			elif not _is_positive_int_value(upgrade.materials[raw_item_id]):
 				errors.append("tool upgrade '%s' has invalid material quantity for '%s'" % [upgrade.id, raw_item_id])
-		if upgrade.required_skill != &"" and not valid_skills.has(upgrade.required_skill):
-			errors.append("tool upgrade '%s' references unknown required skill '%s'" % [upgrade.id, upgrade.required_skill])
-		if upgrade.required_level < 1 or upgrade.required_level > SkillManager.LEVEL_THRESHOLDS.size():
-			errors.append("tool upgrade '%s' has invalid required level %d" % [upgrade.id, upgrade.required_level])
 
 	for raw: Variant in _placeables.values():
 		var placeable := raw as PlaceableData
@@ -735,14 +727,16 @@ func _validate_references(errors: PackedStringArray) -> void:
 					errors.append("shop '%s' stocks unknown seasonal item '%s'" % [shop.id, raw_item_id])
 				elif not _is_positive_int_value((seasonal as Dictionary)[raw_item_id]):
 					errors.append("shop '%s' has invalid seasonal price for '%s'" % [shop.id, raw_item_id])
-		var seen_animals: Dictionary = {}
-		for animal_id: StringName in shop.animal_stock:
-			if not _animals.has(String(animal_id)):
-				errors.append("shop '%s' stocks unknown animal '%s'" % [shop.id, animal_id])
-			elif seen_animals.has(String(animal_id)):
-				errors.append("shop '%s' repeats animal '%s'" % [shop.id, animal_id])
-			else:
-				seen_animals[String(animal_id)] = true
+		var offer_keys: Dictionary = {}
+		for offer: ShopOffer in shop.offers:
+			if offer == null:
+				errors.append("shop '%s' has an empty offer" % shop.id)
+				continue
+			for problem: String in offer.find_problems(self):
+				errors.append("shop '%s' %s" % [shop.id, problem])
+			if offer_keys.has(offer.get_key()):
+				errors.append("shop '%s' repeats offer '%s'" % [shop.id, offer.get_key()])
+			offer_keys[offer.get_key()] = true
 
 	for raw: Variant in _recipes.values():
 		var recipe := raw as RecipeData
@@ -763,10 +757,6 @@ func _validate_references(errors: PackedStringArray) -> void:
 				errors.append("recipe '%s' requires unknown item '%s'" % [recipe.id, raw_item_id])
 			elif not _is_positive_int_value(recipe.ingredients[raw_item_id]):
 				errors.append("recipe '%s' has invalid ingredient quantity for '%s'" % [recipe.id, raw_item_id])
-		if recipe.required_skill != &"" and not valid_skills.has(recipe.required_skill):
-			errors.append("recipe '%s' references unknown required skill '%s'" % [recipe.id, recipe.required_skill])
-		if recipe.required_level < 1 or recipe.required_level > SkillManager.LEVEL_THRESHOLDS.size():
-			errors.append("recipe '%s' has invalid required level %d" % [recipe.id, recipe.required_level])
 
 	for raw: Variant in _calendar_events.values():
 		var event := raw as CalendarEventData

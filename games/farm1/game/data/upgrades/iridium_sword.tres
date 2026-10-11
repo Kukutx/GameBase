@@ -10,5 +10,4 @@ source_item_id = &"gold_sword"
 result_item_id = &"iridium_sword"
 materials = {"iridium_bar": 6}
 money_cost = 10000
-required_skill = &"combat"
-required_level = 7
+condition = "SKILL_LEVEL combat 7"

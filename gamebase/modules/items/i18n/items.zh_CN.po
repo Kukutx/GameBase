@@ -24,9 +24,6 @@ msgstr "金钱：%dg"
 msgid "Buy %s — %dg"
 msgstr "购买 %s — %dg"
 
-msgid "Buy %s — %dg  ·  %s slots %d"
-msgstr "购买 %s — %dg  ·  %s 空位 %d"
-
 msgid "Sell selected: %s — %dg"
 msgstr "出售当前物品：%s — %dg"
 
@@ -93,8 +90,8 @@ msgstr "增益：%s（%d 分钟）"
 msgid "Crafting UI is unavailable"
 msgstr "制作界面不可用"
 
-msgid "Missing materials or skill level"
-msgstr "材料不足或技能等级不够"
+msgid "Missing materials or requirements"
+msgstr "材料不足或未满足条件"
 
 msgid "Inventory is full or materials changed"
 msgstr "背包已满或材料发生了变化"
@@ -140,3 +137,9 @@ msgstr "另有 %d 种"
 
 msgid "%s %dm"
 msgstr "%s %d分钟"
+
+msgid "Make room before packing up this structure"
+msgstr "收起该建筑前请先腾出背包空间"
+
+msgid "Inventory changed before the structure could be packed up"
+msgstr "收起建筑前背包内容发生了变化"

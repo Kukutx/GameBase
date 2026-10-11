@@ -10,5 +10,4 @@ source_item_id = &"copper_hoe"
 result_item_id = &"iron_hoe"
 materials = {"iron_bar": 3}
 money_cost = 1200
-required_skill = &"farming"
-required_level = 3
+condition = "SKILL_LEVEL farming 3"

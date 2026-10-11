@@ -63,17 +63,12 @@ func _rebuild() -> void:
 		items_container.add_child(button)
 		if first_button == null:
 			first_button = button
-	var location := ContentDB.get_current_location(get_tree())
-	var location_id := location.id if location != null else &""
-	for animal_id: StringName in _shop.animal_stock:
-		var animal := ContentDB.get_farm_animal(animal_id)
-		if animal == null:
-			continue
+	var context := _offer_context()
+	for offer: ShopOffer in _shop.offers:
 		var button := Button.new()
-		var slots := AnimalState.get_available_slots(location_id, animal.housing_type) if location_id != &"" else 0
-		button.text = tr("Buy %s — %dg  ·  %s slots %d") % [tr(animal.display_name), animal.purchase_price, tr(String(animal.housing_type).capitalize()), slots]
-		button.disabled = location_id == &"" or not AnimalState.can_purchase(animal_id, location_id)
-		button.pressed.connect(_buy_animal.bind(animal_id))
+		button.text = offer.get_label(context)
+		button.disabled = not offer.can_buy(context)
+		button.pressed.connect(_buy_offer.bind(offer))
 		items_container.add_child(button)
 		if first_button == null and not button.disabled:
 			first_button = button
@@ -88,12 +83,13 @@ func _buy(item_id: StringName) -> void:
 	money_label.text = tr("Money: %dg") % PlayerState.money
 	_refresh_sell_button()
 
-func _buy_animal(animal_id: StringName) -> void:
-	var location := ContentDB.get_current_location(get_tree())
-	if location == null:
-		return
-	ShopState.buy_animal(_shop, animal_id, location.id)
+func _buy_offer(offer: ShopOffer) -> void:
+	ShopState.buy_offer(_shop, offer, _offer_context())
 	_rebuild()
+
+func _offer_context() -> Dictionary:
+	var location := ContentDB.get_current_location(get_tree())
+	return {"location_id": location.id if location != null else &""}
 
 func _sell_selected() -> void:
 	var item_id := Hotbar.get_selected_item_id()

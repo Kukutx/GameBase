@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://gamebase/modules/lifesim/building/placeable_data.gd" id="1_placeable"]
+[ext_resource type="Script" path="res://gamebase/modules/items/building/placeable_data.gd" id="1_placeable"]
 
 [resource]
 script = ExtResource("1_placeable")
 id = &"basic_sprinkler"
 display_name = "Basic Sprinkler"
 item_id = &"basic_sprinkler"
-scene_path = "res://gamebase/modules/lifesim/building/basic_sprinkler.tscn"
+scene_path = "res://gamebase/modules/lifesim/farming/basic_sprinkler.tscn"
 grid_size = Vector2i(1, 1)
 snap_size = 16
 minimum_spacing = 24.0

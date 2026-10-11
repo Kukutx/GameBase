@@ -61,3 +61,5 @@ func test_npc_context_contains_stable_world_and_profile_data() -> void:
 	assert_true(context["world"].has("active_events"))
 	assert_true(context["player"].has("inventory"))
 	assert_true(context.has("memory"))
+	assert_true(context["quests"] is Array, "the progression module adds the quest journal")
+	assert_true(context["town_projects"] is Array, "the progression module adds town projects")

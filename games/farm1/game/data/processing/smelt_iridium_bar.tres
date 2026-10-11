@@ -10,5 +10,4 @@ inputs = {"iridium_ore": 4, "wood": 1}
 output_item_id = &"iridium_bar"
 output_quantity = 1
 process_minutes = 180
-required_skill = &"mining"
-required_level = 7
+condition = "SKILL_LEVEL mining 7"

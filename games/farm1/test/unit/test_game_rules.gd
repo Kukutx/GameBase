@@ -68,6 +68,18 @@ func test_module_keys_are_registered_and_checked_against_content() -> void:
 	assert_string_contains(problems, "takes 1-2 arguments, got 0")
 	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["!ADD_MONEY 3"]))), "cannot be negated")
 
+func test_module_argument_kinds_check_skills_and_levels() -> void:
+	assert_eq(GameRules.validate_query("SKILL_LEVEL farming 10"), PackedStringArray())
+	var problems := "\n".join(GameRules.validate_query("SKILL_LEVEL farming 11, SKILL_LEVEL cooking 2"))
+	assert_string_contains(problems, "'11' is not a skill level (1-10)")
+	assert_string_contains(problems, "unknown skill 'cooking'")
+	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["ADD_SKILL_XP sewing 5"]))), "unknown skill 'sewing'")
+
+func test_describe_lists_what_a_condition_requires() -> void:
+	assert_eq(GameRules.describe("SKILL_LEVEL mining 3, WORLD_FLAG %s, !SKILL_LEVEL farming 2" % FLAG), PackedStringArray(["Mining Lv3"]))
+	assert_eq(GameRules.describe(""), PackedStringArray())
+	assert_eq(GameRules.describe("NO_SUCH_KEY"), PackedStringArray())
+
 func test_all_shipped_content_uses_registered_keys() -> void:
 	assert_eq(GameRules.validate_content(ContentDB), PackedStringArray())
 

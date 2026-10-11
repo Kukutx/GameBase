@@ -99,6 +99,22 @@ test("a module using a module or addon it does not declare is reported", () => {
   assert.ok(problems.includes("gamebase/gamebase.json lists module ghost, which does not exist"));
 });
 
+test("modules that require each other in a cycle are reported", () => {
+  const root = fixture({
+    "gamebase/gamebase.json": { modules: { items: { requires: ["shop"] }, shop: { requires: ["town"] }, town: { requires: ["items"] }, base: { requires: [] } } },
+    "games/one/game.json": { id: "one", modules: [] },
+    "games/one/project.godot": PROJECT,
+    "gamebase/modules/items/a.gd": "extends Node\n",
+    "gamebase/modules/shop/a.gd": "extends Node\n",
+    "gamebase/modules/town/a.gd": "extends Node\n",
+    "gamebase/modules/base/a.gd": "extends Node\n",
+  });
+  const problems = checkLayers(root).filter((p) => p.includes("cycle"));
+  assert.deepEqual(problems, [
+    "gamebase/gamebase.json: modules require each other in a cycle (items -> shop -> town -> items); move the shared part down or invert the dependency",
+  ]);
+});
+
 test("a game uses only the modules and addons its game.json lists", () => {
   const root = fixture({
     "gamebase/gamebase.json": FOUNDATION,

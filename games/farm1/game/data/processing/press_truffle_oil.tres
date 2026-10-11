@@ -10,5 +10,4 @@ inputs = {"truffle": 1}
 output_item_id = &"truffle_oil"
 output_quantity = 1
 process_minutes = 180
-required_skill = &"farming"
-required_level = 2
+condition = "SKILL_LEVEL farming 2"

@@ -2,7 +2,7 @@ class_name GameShopService
 extends Node
 
 signal purchase_completed(shop_id: StringName, item_id: StringName, quantity: int, total: int)
-signal animal_purchase_completed(shop_id: StringName, instance_id: StringName, animal_id: StringName, total: int)
+signal offer_purchased(shop_id: StringName, offer: ShopOffer)
 signal sale_completed(item_id: StringName, quantity: int, total: int)
 
 var _buy_busy := false
@@ -44,17 +44,12 @@ func _buy_internal(shop: ShopData, item_id: StringName, quantity: int = 1) -> in
 	GameEvents.toastf("Bought %s x%d for %dg", [item.display_name, bought, total])
 	return bought
 
-func buy_animal(shop: ShopData, animal_id: StringName, location_id: StringName) -> StringName:
-	if shop == null or animal_id == &"" or location_id == &"" or not shop.has_animal(animal_id):
-		return &""
-	var data := ContentDB.get_farm_animal(animal_id)
-	if data == null:
-		return &""
-	var instance_id := AnimalState.purchase(animal_id, location_id)
-	if instance_id == &"":
-		return &""
-	animal_purchase_completed.emit(shop.id, instance_id, animal_id, data.purchase_price)
-	return instance_id
+## Buys one of the shop's `offers`; `context` as `ShopOffer` describes.
+func buy_offer(shop: ShopData, offer: ShopOffer, context: Dictionary) -> bool:
+	if shop == null or offer == null or not shop.offers.has(offer) or not offer.buy(context):
+		return false
+	offer_purchased.emit(shop.id, offer)
+	return true
 
 func sell(item_id: StringName, quantity: int = 1) -> int:
 	if _sell_busy:

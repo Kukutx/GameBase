@@ -8,18 +8,28 @@ const { gamePath, projectSetting, readFoundation, resolveGames } = require("./li
 // each module ship their own catalogs under <layer>/i18n/<name>.<locale>.po,
 // and a game translates only its own text. A game registers the catalogs of
 // every layer it uses in locale/translations, and a layer's text may be
-// translated only by its own catalogs or those of the layers below it. An
-// entry translates text its own layer holds, and text the core holds is
-// translated by the core, and text a module holds by a module, so every game
-// that uses that layer gets the translation.
+// translated only by its own catalogs or those of the layers below it (the
+// core, and the modules a module requires, directly or not). An entry
+// translates text its own layer holds, and text that a layer below holds is
+// translated by the lowest such layer, so every game that uses that layer gets
+// the translation.
 function textLayers(game) {
   const foundation = readFoundation();
   const core = { name: "gamebase/core", root: rootPath("gamebase", "core"), res: "res://gamebase/core/", below: [] };
+  const required = (module, seen = new Set()) => {
+    for (const name of foundation.modules[module]?.requires || []) {
+      if (!seen.has(name)) {
+        seen.add(name);
+        required(name, seen);
+      }
+    }
+    return seen;
+  };
   const modules = game.modules.map((module) => ({
     name: `gamebase/modules/${module}`,
     root: rootPath("gamebase", "modules", module),
     res: `res://gamebase/modules/${module}/`,
-    below: [core.name, ...(foundation.modules[module]?.requires || []).map((required) => `gamebase/modules/${required}`)],
+    below: [core.name, ...[...required(module)].sort().map((name) => `gamebase/modules/${name}`)],
   }));
   const own = { name: `games/${game.id}`, root: gamePath(game, "game"), res: "res://game/", below: [core.name, ...modules.map((layer) => layer.name)], game: true };
   return [core, ...modules, own];
@@ -210,10 +220,6 @@ function layerLiterals(layer) {
 
 // Text the core holds is translated by the core, text a module holds by a
 // module, and only the rest by the game.
-function tier(layer) {
-  return layer.game ? 2 : layer.name === "gamebase/core" ? 0 : 1;
-}
-
 // The source text a layer shows: translation calls, exported defaults, scene
 // text and the player-facing fields of its resources, such as a location's or
 // a control's name.
@@ -315,8 +321,8 @@ function checkLocalization(game, { reportOnly = false } = {}) {
         else owners.set(key, catalog.res);
         const holders = layer.below
           .map((name) => layers.find((candidate) => candidate.name === name))
-          .filter((candidate) => tier(candidate) < tier(layer) && literals.get(candidate.name).has(text));
-        const lowest = holders.filter((candidate) => tier(candidate) === Math.min(...holders.map(tier)));
+          .filter((candidate) => candidate && literals.get(candidate.name).has(text));
+        const lowest = holders.filter((candidate) => !holders.some((other) => candidate.below.includes(other.name)));
         if (lowest.length > 0) problems.push(`${catalog.res} translates "${text}" of ${lowest.map((candidate) => candidate.name).join(" or ")}: move it to that layer's catalog`);
         else if (!literals.get(layer.name).has(text)) problems.push(`${catalog.res} translates "${text}", which no text of ${layer.name} holds`);
       }

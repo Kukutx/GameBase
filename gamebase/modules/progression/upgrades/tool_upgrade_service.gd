@@ -29,7 +29,7 @@ func upgrade(upgrade_id: StringName) -> bool:
 func _upgrade_internal(upgrade_id: StringName) -> bool:
 	var upgrade_data := get_upgrade(upgrade_id)
 	if not can_upgrade(upgrade_data):
-		GameEvents.toast("Missing tool, materials, money, or skill level")
+		GameEvents.toast("Missing tool, materials, money, or requirements")
 		return false
 	var source := ContentDB.get_item(upgrade_data.source_item_id)
 	var result := ContentDB.get_item(upgrade_data.result_item_id)
@@ -69,6 +69,5 @@ func get_requirement_text(upgrade: ToolUpgradeData) -> String:
 		parts.append("%s x%d" % [name_text, int(upgrade.materials[raw_id])])
 	if upgrade.money_cost > 0:
 		parts.append("%dg" % upgrade.money_cost)
-	if upgrade.required_skill != &"":
-		parts.append("%s Lv%d" % [tr(String(upgrade.required_skill).capitalize()), upgrade.required_level])
+	parts.append_array(GameRules.describe(upgrade.condition))
 	return " · ".join(parts)

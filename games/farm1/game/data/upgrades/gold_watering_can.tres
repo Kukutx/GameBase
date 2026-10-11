@@ -10,5 +10,4 @@ source_item_id = &"iron_watering_can"
 result_item_id = &"gold_watering_can"
 materials = {"gold_bar": 5}
 money_cost = 3500
-required_skill = &"farming"
-required_level = 5
+condition = "SKILL_LEVEL farming 5"

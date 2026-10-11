@@ -4,8 +4,9 @@ extends Node
 ##
 ## `gamebase/core` does not know which modules a game enables. This autoload runs
 ## after every service and tells the core services about the enabled modules:
-## which save sections they own, what to rebuild after loading, what blocks saving
-## how to reset them for a new game, and which condition and action keys exist. Orders interleave with the core's own
+## which save sections they own, what to rebuild after loading, what blocks saving,
+## how to reset them for a new game, which condition and action keys exist, and
+## what NPCs know about them. Orders interleave with the core's own
 ## (`GameSaveManager.SECTION_ORDER_*`, `GameSessionService.NEW_GAME_ORDER_*`).
 
 const MINE_FLOOR_TABLE := preload("res://game/data/mining/mine_floor_table.tres")
@@ -17,6 +18,7 @@ const START_ANIMALS := [
 
 func _ready() -> void:
 	ItemsRules.register(GameRules)
+	SkillsRules.register(GameRules)
 	ProgressionRules.register(GameRules)
 	NpcSocialRules.register(GameRules)
 	# Content is indexed before the modules register their rule keys, so the
@@ -26,6 +28,7 @@ func _ready() -> void:
 	_register_save_sections()
 	_register_load_steps()
 	_register_new_game_steps()
+	_register_npc_context()
 	SaveManager.register_save_blocker(_fishing_save_block_reason)
 	FishingState.reel_minigame_id = &"fishing_reel"
 	MineState.floor_table = MINE_FLOOR_TABLE
@@ -76,6 +79,10 @@ func _register_new_game_steps() -> void:
 	GameSession.register_new_game_step(&"fishing", 1100, FishingState.reset_new_game)
 	GameSession.register_new_game_step(&"start_items", 1300, _grant_start_items)
 	GameSession.register_new_game_step(&"quests_start", 1400, QuestState.reset_new_game)
+
+func _register_npc_context() -> void:
+	NpcContext.register_section(&"quests", func(_npc_id: StringName) -> Variant: return QuestState.get_journal_entries())
+	NpcContext.register_section(&"town_projects", func(_npc_id: StringName) -> Variant: return TownProjects.get_context_entries())
 
 func _grant_start_items() -> void:
 	for item_id: StringName in GameSession.definition.start_items:

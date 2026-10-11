@@ -9,5 +9,4 @@ display_name = "Copper Furnace"
 ingredients = {"copper_bar": 1, "stone": 8}
 output_item_id = &"copper_furnace"
 output_quantity = 1
-required_skill = &"mining"
-required_level = 1
+condition = "SKILL_LEVEL mining 1"

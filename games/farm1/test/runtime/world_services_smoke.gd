@@ -99,16 +99,27 @@ func _run() -> void:
 	var chicken_price: int = int(content_db.get_farm_animal(&"chicken").purchase_price)
 	var money_before_animal_purchase: int = int(player_state.money)
 	player_state.add_money(chicken_price)
-	var purchased_chicken_id: StringName = shop_state.buy_animal(content_db.get_shop(&"general_store"), &"chicken", &"starter_town")
+	# Untyped: naming a module class here compiles it before the autoloads exist.
+	var general_store: Resource = content_db.get_shop(&"general_store")
+	var chicken_offer: Resource = general_store.offers[0]
+	var coop_before: Array[StringName] = []
+	for record: Dictionary in animal_state.get_owned(&"starter_town", &"starter_coop"):
+		coop_before.append(StringName(String(record.get("instance_id", ""))))
+	var purchased_chicken: bool = shop_state.buy_offer(general_store, chicken_offer, {"location_id": &"starter_town"})
 	await process_frame
-	_check(purchased_chicken_id != &"", "Animal shop purchase failed")
+	_check(purchased_chicken, "Animal shop purchase failed")
+	var purchased_chicken_id := &""
+	for record: Dictionary in animal_state.get_owned(&"starter_town", &"starter_coop"):
+		if not coop_before.has(StringName(String(record.get("instance_id", "")))):
+			purchased_chicken_id = StringName(String(record.get("instance_id", "")))
+	_check(purchased_chicken_id != &"", "Purchased chicken has no instance id")
 	_check(player_state.money == money_before_animal_purchase, "Animal purchase did not charge the correct price")
 	_check(animal_state.get_owned(&"starter_town", &"starter_coop").size() == 2, "Purchased chicken was not assigned to Coop")
 	_check(current_scene.get_node("CoopHousing").get_spawned_animals().size() == 2, "Purchased chicken did not spawn into the live scene")
 
 	# Talk/social path without opening the dialogue balloon in headless mode.
 	relationship_state.record_talk(&"mira")
-	quest_state.notify_npc_talk(&"mira")
+	root.get_node("GameEvents").npc_talked.emit(&"mira")
 	_check(quest_state.is_completed(&"meet_mira"), "Meet Mira quest did not complete")
 	_check(relationship_state.get_points(&"mira") == 10, "Daily talk friendship missing")
 	npc_memory.append_message(&"mira", &"player", "How is the garden today?")
@@ -618,7 +629,7 @@ func _run() -> void:
 	_check(player_state.money == starter_project_money_before + 600, "Starter project money reward incorrect")
 	var project_context: Dictionary = npc_context.build_context(&"mira", player)
 	var starter_project_seen := false
-	for project_entry: Variant in project_context["world"]["town_projects"]:
+	for project_entry: Variant in project_context["town_projects"]:
 		if project_entry is Dictionary and String(project_entry.get("id", "")) == "starter_garden_restoration":
 			starter_project_seen = bool(project_entry.get("completed", false))
 			break
