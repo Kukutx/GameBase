@@ -17,6 +17,10 @@ extends Node
 ## A condition may also register a `describer`, `func(args: PackedStringArray) -> String`:
 ## the requirement in words a player reads, which `describe()` collects so a
 ## menu can say what a locked entry needs.
+##
+## In a trigger's condition and actions an argument written `$name` is the
+## argument `name` of the event that set the trigger off (the context's
+## "event"; see `TriggerData`): `ADD_SKILL_XP combat $combat_xp`.
 
 ## Argument checks for `register_condition`/`register_action` `arg_kinds`: a
 ## content kind (checked against the running game's content,
@@ -103,7 +107,7 @@ func run_actions(actions: PackedStringArray, context: Dictionary = {}) -> bool:
 			if entry.is_empty():
 				push_error("GameRules: unknown action '%s'" % clause["key"])
 				return false
-			if not bool((entry["call"] as Callable).call(clause["args"], context)):
+			if not bool((entry["call"] as Callable).call(_resolve_args(clause["args"], context), context)):
 				return false
 	return true
 
@@ -138,9 +142,13 @@ func _validate_resource(resource: Resource, context: String, problems: PackedStr
 		if (name == "condition" or name.ends_with("_condition")) and value is String:
 			for problem: String in validate_query(value):
 				problems.append("%s %s: %s" % [context, name, problem])
+			if not resource is TriggerData and not find_event_args(PackedStringArray([value])).is_empty():
+				problems.append("%s %s: only a trigger's conditions and actions name event arguments ($name)" % [context, name])
 		elif (name == "actions" or name.ends_with("_actions")) and (value is PackedStringArray or value is Array):
 			for problem: String in validate_actions(PackedStringArray(value)):
 				problems.append("%s %s: %s" % [context, name, problem])
+			if not resource is TriggerData and not find_event_args(PackedStringArray(value)).is_empty():
+				problems.append("%s %s: only a trigger's conditions and actions name event arguments ($name)" % [context, name])
 		elif value is Array:
 			for item: Variant in value:
 				if item is Resource and not (item as Resource).resource_path.ends_with(".tres"):
@@ -178,13 +186,16 @@ func _validate(text: String, registry: Dictionary, label: String, allow_negate: 
 			if not problem.is_empty():
 				problems.append("%s '%s' argument %d: %s" % [label, key, index + 1, problem])
 		var args_check: Callable = entry["args_check"]
-		if problems.size() == found and args_check.is_valid():
+		# An event argument has no value yet to check together with the others.
+		if problems.size() == found and args_check.is_valid() and not _names_event_arg(args):
 			var problem := String(args_check.call(args))
 			if not problem.is_empty():
 				problems.append("%s '%s': %s" % [label, key, problem])
 	return problems
 
 func _check_arg(value: String, kind: StringName) -> String:
+	if value.begins_with("$"):
+		return "" if value.substr(1).is_valid_ascii_identifier() else "'%s' is not an event argument ($name)" % value
 	match kind:
 		ARG_INT:
 			return "" if value.is_valid_int() else "'%s' is not an integer" % value
@@ -209,7 +220,7 @@ func _evaluate_clause(clause: Dictionary, context: Dictionary) -> bool:
 	var entry: Dictionary = _conditions.get(key, {})
 	if entry.is_empty():
 		return false
-	return bool((entry["call"] as Callable).call(args, context))
+	return bool((entry["call"] as Callable).call(_resolve_args(args, context), context))
 
 func _parse(text: String) -> Dictionary:
 	if not _parsed.has(text):
@@ -240,6 +251,34 @@ func _sorted_keys(source: Dictionary) -> PackedStringArray:
 	keys.sort()
 	return keys
 
+## The event arguments (`$name`, without the `$`) that `texts`, conditions
+## or actions, name.
+static func find_event_args(texts: PackedStringArray) -> PackedStringArray:
+	var names := PackedStringArray()
+	for text: String in texts:
+		for clause: Dictionary in GameQuery.parse(text)["clauses"]:
+			for arg: String in clause["args"]:
+				if arg.begins_with("$") and not names.has(arg.substr(1)):
+					names.append(arg.substr(1))
+	return names
+
+static func _names_event_arg(args: PackedStringArray) -> bool:
+	for arg: String in args:
+		if arg.begins_with("$"):
+			return true
+	return false
+
+# `args` with each `$name` replaced by that argument of the context's event.
+static func _resolve_args(args: PackedStringArray, context: Dictionary) -> PackedStringArray:
+	var event: Dictionary = context.get("event", {})
+	if event.is_empty():
+		return args
+	var resolved := args.duplicate()
+	for index: int in resolved.size():
+		if resolved[index].begins_with("$") and event.has(resolved[index].substr(1)):
+			resolved[index] = str(event[resolved[index].substr(1)])
+	return resolved
+
 ## The day a condition is asked about: the context's "day", or today.
 static func context_day(context: Dictionary) -> int:
 	return int(context.get("day", WorldClock.day))
@@ -266,6 +305,8 @@ func _register_core_rules() -> void:
 	register_condition(&"WEATHER", _weather, 1, -1, [ARG_TEXT])
 	register_condition(&"LOCATION", _location, 1, -1, [WorldLocationData.KIND])
 	register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [ARG_INT])
+	register_condition(&"EVENT_ARG", _event_arg, 2, -1, [ARG_TEXT])
+	register_condition(&"EVENT_ARG_AT_LEAST", _event_arg_at_least, 2, 2, [ARG_TEXT, ARG_NUMBER])
 	register_action(&"SET_FLAG", _set_flag, 1, 2, [ARG_TEXT])
 	register_action(&"CLEAR_FLAG", _clear_flag, 1, 1, [ARG_TEXT])
 	register_action(&"ADD_FLAG", _add_flag, 1, 2, [ARG_TEXT, ARG_INT])
@@ -322,6 +363,17 @@ func _location(args: PackedStringArray, context: Dictionary) -> bool:
 ## MONEY_AT_LEAST <n>
 func _money_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
 	return PlayerState.money >= int(args[0])
+
+## EVENT_ARG <name> <value>...: the argument of the event that set off the
+## trigger is one of the values (see `TriggerData`).
+func _event_arg(args: PackedStringArray, context: Dictionary) -> bool:
+	var event: Dictionary = context.get("event", {})
+	return event.has(args[0]) and args.slice(1).has(str(event[args[0]]))
+
+## EVENT_ARG_AT_LEAST <name> <n>: that argument is a number of at least n.
+func _event_arg_at_least(args: PackedStringArray, context: Dictionary) -> bool:
+	var value: Variant = (context.get("event", {}) as Dictionary).get(args[0])
+	return (value is int or value is float) and float(value) >= float(args[1])
 
 ## SET_FLAG <key> [value]: value is true, false or an integer (default true).
 func _set_flag(args: PackedStringArray, _context: Dictionary) -> bool:
