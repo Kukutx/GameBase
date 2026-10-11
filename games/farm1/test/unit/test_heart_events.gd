@@ -111,6 +111,17 @@ func test_authored_daily_and_heart_event_titles_exist_in_dialogue_resources() ->
 		if dialogue != null:
 			assert_true(dialogue.cues.has(event.dialogue_title), "%s heart-event cue '%s' is missing" % [String(event.id), event.dialogue_title])
 
+func test_mira_two_hearts_plays_in_starter_town_during_the_day_at_two_hearts() -> void:
+	var event := HeartEventData.find(&"mira_two_hearts")
+	assert_not_null(event)
+	if event == null:
+		return
+	assert_true(event.matches(&"mira", 2, &"starter_town", 1, 10 * 60))
+	assert_false(event.matches(&"mira", 1, &"starter_town", 1, 10 * 60))
+	assert_false(event.matches(&"rowan", 2, &"starter_town", 1, 10 * 60))
+	assert_false(event.matches(&"mira", 2, &"riverside_town", 1, 10 * 60))
+	assert_false(event.matches(&"mira", 2, &"starter_town", 1, 19 * 60))
+
 func test_manifest_contains_five_heart_events_for_each_core_npc() -> void:
 	var by_npc: Dictionary = {}
 	for event: HeartEventData in HeartEventData.find_all():

@@ -32,6 +32,15 @@ func test_archive_milestones_are_registered_and_visible_in_game_menu() -> void:
 	autofree(menu)
 	assert_not_null(menu.get_node_or_null("Panel/Layout/CollectionClaim"))
 
+func test_completing_the_crop_archive_pays_500g_and_six_tomato_seeds() -> void:
+	for item_id: StringName in CollectionState.get_total_ids(CollectionService.CROPS):
+		CollectionState.record(CollectionService.CROPS, item_id, 1)
+	assert_true(CollectionMilestones.is_ready(&"crop_archive"))
+	var money_before := PlayerState.money
+	assert_true(CollectionMilestones.claim(&"crop_archive"))
+	assert_eq(PlayerState.money, money_before + 500)
+	assert_eq(InventoryState.get_quantity(&"tomato_seeds"), 6)
+
 func test_mineral_archive_tracks_all_metal_tiers_through_iridium() -> void:
 	var mineral_ids := CollectionState.get_total_ids(CollectionService.MINERALS)
 	assert_true(mineral_ids.has(&"stone"))

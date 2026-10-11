@@ -1,5 +1,39 @@
 extends GutTest
 
+## Farm1's festivals: when and where they are held and what they reward. How
+## festivals become active and are claimed is tested with the lifesim module.
+
+var _clock_snapshot: Dictionary
+var _world_snapshot: Dictionary
+var _inventory_snapshot: Dictionary
+var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
+var _skill_snapshot: Dictionary
+
+func before_each() -> void:
+	_clock_snapshot = WorldClock.to_save_data()
+	_world_snapshot = WorldState.to_save_data()
+	_inventory_snapshot = InventoryState.to_save_data()
+	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
+	_skill_snapshot = Skills.to_save_data()
+	WorldState.clear()
+	InventoryState.clear()
+	PlayerState.reset_new_game()
+	PlayerState.money = 0
+	Skills.reset_new_game()
+	WorldClock.set_time(1, 8 * 60)
+	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)
+
+func after_each() -> void:
+	WorldState.load_save_data(_world_snapshot)
+	InventoryState.load_save_data(_inventory_snapshot)
+	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
+	Skills.load_save_data(_skill_snapshot)
+	WorldClock.load_save_data(_clock_snapshot)
+	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)
+
 func test_four_seasonal_festivals_are_registered_on_stable_dates() -> void:
 	var expected := {
 		&"spring_seed_fair": ["Spring", 9, &"starter_town"],
@@ -31,3 +65,14 @@ func test_all_festival_booths_are_exposed_in_playable_town_scenes() -> void:
 	assert_not_null(riverside.get_node_or_null("SummerRiverFairBooth"))
 	assert_not_null(harbor.get_node_or_null("FallHarborDerbyBooth"))
 	assert_true(ResourceLoader.exists("res://gamebase/modules/lifesim/calendar/calendar_event_booth.tscn"))
+
+func test_spring_seed_fair_pays_150g_five_carrot_seeds_and_75_farming_xp_once() -> void:
+	WorldClock.set_time(9, 10 * 60)
+	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)
+	assert_true(EventState.is_active(&"spring_seed_fair"))
+	assert_true(EventState.claim_participation(&"spring_seed_fair"))
+	assert_eq(PlayerState.money, 150)
+	assert_eq(InventoryState.get_quantity(&"carrot_seeds"), 5)
+	assert_eq(Skills.get_xp(&"farming"), 75)
+	assert_false(EventState.claim_participation(&"spring_seed_fair"))
+	assert_eq(PlayerState.money, 150)

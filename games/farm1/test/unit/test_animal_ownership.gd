@@ -38,6 +38,20 @@ func after_each() -> void:
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldClock.set_time(_clock_day, _clock_minute)
 
+func test_a_bought_chicken_moves_into_the_coop() -> void:
+	assert_ne(AnimalState.purchase(&"chicken", &"starter_town"), &"")
+	assert_eq(AnimalState.get_housing_occupancy(&"starter_coop"), 2)
+	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 1)
+
+func test_starter_animals_eat_one_hay_each() -> void:
+	assert_eq(AnimalState.get_feed_item_ids(&"starter_town"), [&"hay"] as Array[StringName])
+	WorldState.set_value(&"animal:starter_chicken_01", {"happiness": 50, "last_product_day": 1, "last_pet_day": 1, "last_fed_day": 1, "last_processed_day": 1})
+	WorldClock.set_time(2, 8 * 60)
+	assert_eq(AnimalState.get_feed_needs(&"starter_coop"), {&"hay": 1} as Dictionary[StringName, int])
+	InventoryState.add_item_by_id(&"hay", 2)
+	assert_eq(AnimalState.feed_housing(&"starter_coop"), 1)
+	assert_eq(InventoryState.get_quantity(&"hay"), 1)
+
 func test_general_store_sells_animals_as_shop_offers() -> void:
 	var shop := ShopData.find(&"general_store")
 	assert_not_null(shop)
