@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="MailData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://game/core/mail/mail_data.gd" id="1_mail"]
+[ext_resource type="Script" path="res://gamebase/modules/progression/mail/mail_data.gd" id="1_mail"]
 
 [resource]
 script = ExtResource("1_mail")

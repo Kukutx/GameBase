@@ -23,7 +23,7 @@ func after_each() -> void:
 func test_placeable_chests_use_independent_container_ids_and_require_empty_packup() -> void:
 	assert_not_null(ContentDB.get_placeable(&"storage_chest"))
 	assert_not_null(CraftingState.get_recipe(&"storage_chest"))
-	var packed := load("res://game/core/storage/storage_chest.tscn") as PackedScene
+	var packed := load("res://gamebase/modules/items/storage/storage_chest.tscn") as PackedScene
 	var first := packed.instantiate() as StorageChest
 	var second := packed.instantiate() as StorageChest
 	first.configure_from_record({"id":"placed_chest_a", "placeable_id":"storage_chest", "location_id":"starter_town", "x":0, "y":0})
@@ -91,7 +91,7 @@ func test_placeable_furnace_keeps_unique_job_state_and_blocks_packup_until_colle
 	assert_not_null(CraftingState.get_recipe(&"copper_furnace"))
 	InventoryState.add_item_by_id(&"copper_ore", 2)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var packed := load("res://game/core/processing/copper_furnace_placeable.tscn") as PackedScene
+	var packed := load("res://gamebase/modules/lifesim/processing/copper_furnace_placeable.tscn") as PackedScene
 	var furnace := packed.instantiate() as ProcessingStation
 	furnace.configure_from_record({"id":"placed_furnace_a", "placeable_id":"copper_furnace", "location_id":"starter_town", "x":0, "y":0})
 	add_child_autofree(furnace)

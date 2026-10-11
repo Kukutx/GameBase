@@ -25,13 +25,13 @@ Work outward from the data resource and its class, then the manifest, then the c
 - **Location**: the scene, a `WorldLocationData` resource whose `scene_path` is a `res://` path, at least one `WorldSpawnPoint` in the scene for the default spawn id, and a music cue id. `ContentDB` validates that the scene and its spawn points exist. Travel to it goes through `WorldTravel` with Location and Spawn ids.
 - **Audio cue**: an `AudioCueData` resource with a stable cue id; its stream may stay empty while production audio is pending. Gameplay code requests the cue id through `GameAudio` (`docs/AUDIO.md`).
 - **Dialogue**: a `.dialogue` file under `game/dialogue/` listed in `locale/translations_pot_files` in `project.godot`; every authored line and response needs an entry with the `dialogue` context. Dialogue title ids that heart events or NPC progression refer to do not change.
-- **Rebindable action**: the constants in `game/core/settings/game_settings.gd`, not the `[input]` section of `project.godot` (`.agents/rules/gdscript.md`).
+- **Rebindable action**: the constants in `gamebase/core/settings/game_settings.gd`, not the `[input]` section of `project.godot` (`.agents/rules/gdscript.md`).
 
 ## Adding a new content type
 
 1. A `Resource` class with `class_name`, an exported `id: StringName` and typed fields.
-2. An exported typed array in `game/core/content/content_manifest.gd`.
-3. In `game/core/content/content_database.gd`: the dictionary, clearing and indexing in `rebuild()`, the typed `get_*` and `get_all_*` accessors, and reference checks in `_validate_references()`. Write a check as a function that appends its messages to the `errors` array so a test can assert on them.
+2. An exported typed array in `gamebase/core/content/content_manifest.gd`.
+3. In `gamebase/core/content/content_database.gd`: the dictionary, clearing and indexing in `rebuild()`, the typed `get_*` and `get_all_*` accessors, and reference checks in `_validate_references()`. Write a check as a function that appends its messages to the `errors` array so a test can assert on them.
 4. A test in `test/unit/test_content_database.gd` for the index and for each new reference check, including one broken fixture that the check must reject.
 5. When a save can refer to the new type, the save and new-game checklist in `.agents/rules/save.md`.
 

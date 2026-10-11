@@ -84,7 +84,7 @@ func test_food_use_blocks_item_removed_reentrancy() -> void:
 
 func test_hearty_worker_reduces_real_hoe_energy_cost() -> void:
 	InventoryState.add_item_by_id(&"hoe", 1)
-	var plot_scene := load("res://game/core/farming/farm_plot.tscn") as PackedScene
+	var plot_scene := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn") as PackedScene
 	var plot := plot_scene.instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)

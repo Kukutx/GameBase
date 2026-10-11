@@ -142,8 +142,8 @@ func test_dynamic_mine_floor_spawns_and_unlocks_ladder_only_after_clear() -> voi
 	assert_true(ladder.unlocked)
 
 func test_internal_mine_travel_uses_stable_location_id() -> void:
-	var ladder_source := FileAccess.get_file_as_string("res://game/core/mining/mine_ladder.gd")
-	var elevator_source := FileAccess.get_file_as_string("res://game/core/mining/mine_elevator.gd")
+	var ladder_source := FileAccess.get_file_as_string("res://gamebase/modules/lifesim/mining/mine_ladder.gd")
+	var elevator_source := FileAccess.get_file_as_string("res://gamebase/modules/lifesim/mining/mine_elevator.gd")
 	for source: String in [ladder_source, elevator_source]:
 		assert_string_contains(source, "WorldTravel.travel_to(&\"old_mine\", &\"floor_entry\")")
 		assert_false("WorldTravel.travel(\"res://game/world/old_mine.tscn\"" in source)
@@ -154,14 +154,14 @@ func test_failed_mine_travel_does_not_commit_floor_change() -> void:
 	var previous_traveling := WorldTravel.is_traveling()
 	WorldTravel.set("_traveling", true)
 
-	var ladder := load("res://game/core/mining/mine_ladder.tscn").instantiate() as MineLadder
+	var ladder := load("res://gamebase/modules/lifesim/mining/mine_ladder.tscn").instantiate() as MineLadder
 	add_child_autofree(ladder)
 	ladder.set_unlocked(true)
 	ladder.call("_on_interacted", null)
 	var floor_after_ladder := MineState.get_current_floor()
 	var deepest_after_ladder := MineState.get_deepest_floor()
 
-	var elevator := load("res://game/core/mining/mine_elevator.tscn").instantiate() as MineElevator
+	var elevator := load("res://gamebase/modules/lifesim/mining/mine_elevator.tscn").instantiate() as MineElevator
 	add_child_autofree(elevator)
 	elevator.call("_on_interacted", null)
 	var floor_after_elevator := MineState.get_current_floor()

@@ -2,15 +2,15 @@
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
-[ext_resource type="PackedScene" path="res://game/core/world/scene_portal.tscn" id="3_portal"]
-[ext_resource type="Script" path="res://game/core/world/world_spawn_point.gd" id="4_spawn"]
-[ext_resource type="PackedScene" path="res://game/core/player/sleep_spot.tscn" id="5_sleep"]
-[ext_resource type="PackedScene" path="res://game/core/crafting/crafting_station.tscn" id="6_crafting"]
-[ext_resource type="PackedScene" path="res://game/core/crafting/crafting_menu.tscn" id="7_crafting_menu"]
+[ext_resource type="PackedScene" path="res://gamebase/core/world/scene_portal.tscn" id="3_portal"]
+[ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="4_spawn"]
+[ext_resource type="PackedScene" path="res://gamebase/core/player/sleep_spot.tscn" id="5_sleep"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/items/crafting/crafting_station.tscn" id="6_crafting"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/items/crafting/crafting_menu.tscn" id="7_crafting_menu"]
 [ext_resource type="Script" path="res://game/art/licensed_terrain_layer.gd" id="8_terrain"]
-[ext_resource type="PackedScene" path="res://game/core/storage/storage_chest.tscn" id="9_chest"]
-[ext_resource type="Script" path="res://game/core/building/build_zone.gd" id="10_build_zone"]
-[ext_resource type="Script" path="res://game/core/world/simple_navigation_region.gd" id="11_nav"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/items/storage/storage_chest.tscn" id="9_chest"]
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/building/build_zone.gd" id="10_build_zone"]
+[ext_resource type="Script" path="res://gamebase/core/world/simple_navigation_region.gd" id="11_nav"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(360, 16)

@@ -1,6 +1,6 @@
 extends GutTest
 
-const FARM_PLOT_SCENE := preload("res://game/core/farming/farm_plot.tscn")
+const FARM_PLOT_SCENE := preload("res://gamebase/modules/lifesim/farming/farm_plot.tscn")
 
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary

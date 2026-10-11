@@ -28,7 +28,7 @@ func after_each() -> void:
 
 func test_loaded_mining_and_enemy_state_clamps_future_respawn_markers() -> void:
 	WorldClock.set_time(10, 8 * 60)
-	var mining_scene := load("res://game/core/mining/mining_node.tscn") as PackedScene
+	var mining_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node := mining_scene.instantiate() as MiningNode
 	node.data = ContentDB.get_mining_node(&"stone_rock")
 	node.persistent_id = &""
@@ -51,7 +51,7 @@ func test_loaded_mining_and_enemy_state_clamps_future_respawn_markers() -> void:
 	assert_eq(node.durability_left, node.data.durability)
 	assert_eq(node.pending_drop_quantity, 0)
 
-	var enemy_scene := load("res://game/core/combat/hostile_creature.tscn") as PackedScene
+	var enemy_scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var enemy := enemy_scene.instantiate() as HostileCreature
 	enemy.data = ContentDB.get_enemy(&"green_slime")
 	enemy.persistent_id = &""
@@ -68,7 +68,7 @@ func test_loaded_mining_and_enemy_state_clamps_future_respawn_markers() -> void:
 	assert_eq(enemy.pending_drop_quantity, 0)
 
 func test_pickaxe_breaks_stone_and_awards_mining_xp() -> void:
-	var scene := load("res://game/core/mining/mining_node.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node = scene.instantiate()
 	node.data = ContentDB.get_mining_node(&"stone_rock")
 	node.persistent_id = &""
@@ -82,7 +82,7 @@ func test_pickaxe_breaks_stone_and_awards_mining_xp() -> void:
 	assert_eq(Skills.get_xp(&"mining"), 24)
 
 func test_mining_node_blocks_energy_and_drop_signal_reentrancy() -> void:
-	var scene := load("res://game/core/mining/mining_node.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node := scene.instantiate() as MiningNode
 	node.data = ContentDB.get_mining_node(&"stone_rock")
 	node.persistent_id = &""
@@ -121,7 +121,7 @@ func test_mining_node_blocks_energy_and_drop_signal_reentrancy() -> void:
 
 func test_mining_and_enemy_ground_drops_do_not_count_as_forage() -> void:
 	InventoryState.clear()
-	var mining_scene := load("res://game/core/mining/mining_node.tscn") as PackedScene
+	var mining_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node = mining_scene.instantiate()
 	node.data = ContentDB.get_mining_node(&"stone_rock")
 	node.persistent_id = &""
@@ -140,7 +140,7 @@ func test_mining_and_enemy_ground_drops_do_not_count_as_forage() -> void:
 		assert_eq(Skills.get_xp(SkillManager.FORAGING), forage_xp_before)
 
 	InventoryState.clear()
-	var creature_scene := load("res://game/core/combat/hostile_creature.tscn") as PackedScene
+	var creature_scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var slime = creature_scene.instantiate()
 	slime.data = ContentDB.get_enemy(&"green_slime")
 	slime.persistent_id = &""
@@ -160,7 +160,7 @@ func test_pending_ground_loot_survives_partial_collection_and_source_reload() ->
 	if stone == null:
 		return
 	InventoryState.add_item(stone, stone.max_stack - 1)
-	var mining_scene := load("res://game/core/mining/mining_node.tscn") as PackedScene
+	var mining_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node = mining_scene.instantiate() as MiningNode
 	node.data = ContentDB.get_mining_node(&"stone_rock")
 	node.persistent_id = &"pending_mining_test"
@@ -194,7 +194,7 @@ func test_pending_ground_loot_survives_partial_collection_and_source_reload() ->
 	await get_tree().process_frame
 	assert_eq(restored.pending_drop_quantity, 1)
 
-	var enemy_scene := load("res://game/core/combat/hostile_creature.tscn") as PackedScene
+	var enemy_scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var enemy = enemy_scene.instantiate() as HostileCreature
 	enemy.data = ContentDB.get_enemy(&"green_slime")
 	enemy.persistent_id = &"pending_enemy_test"
@@ -232,7 +232,7 @@ func test_melee_attack_blocks_energy_changed_reentrancy() -> void:
 	assert_eq(PlayerState.energy, 100 - expected_cost)
 
 func test_slime_takes_melee_damage_drops_loot_and_awards_combat_xp() -> void:
-	var scene := load("res://game/core/combat/hostile_creature.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var slime = scene.instantiate()
 	slime.data = ContentDB.get_enemy(&"green_slime")
 	slime.persistent_id = &""

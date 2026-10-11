@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/world/scene_portal.gd" id="1_portal"]
+
+[sub_resource type="RectangleShape2D" id="Rect_portal"]
+size = Vector2(44, 20)
+
+[node name="ScenePortal" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_portal")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-22, -10, 22, -10, 22, 10, -22, 10)
+color = Color(0.72, 0.62, 0.35, 0.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Rect_portal")

@@ -68,18 +68,19 @@ LIFE_SIMULATION_SMOKE_OK
 ## Project structure
 
 ```text
-game/core/      Reusable gameplay services and components
-game/data/      Data resources indexed through ContentDB
-game/world/     Playable locations and shared world HUD
-game/npc/       NPC scenes and presentation
-game/player/    Player scene/controller
-game/ui/        Title, pause, settings and game menus
-test/unit/      Focused GUT regression tests
-test/runtime/   End-to-end life-simulation smoke test
-tools/          Node tooling: validation, export, packaging, release checks
-docs/           Project-specific documentation (release, localization, audio, support, engine upgrades, automation policy, official documentation index)
-AGENTS.md       Entry point of the agent instructions
-.agents/        Agent rules, skills, workflows, standards and templates
+gamebase/core/     Genre-agnostic foundation services (save, content, settings, input, audio, world travel, time, diagnostics)
+gamebase/modules/  Optional gameplay modules: items, npc_social, progression, lifesim, combat
+game/data/         Data resources indexed through ContentDB
+game/world/        Playable locations and shared world HUD
+game/npc/          NPC scenes and presentation
+game/player/       Player scene/controller
+game/ui/           Title, pause, settings and game menus
+test/unit/         Focused GUT regression tests
+test/runtime/      End-to-end life-simulation smoke test
+tools/             Node tooling: validation, export, packaging, release checks
+docs/              Project-specific documentation (release, localization, audio, support, engine upgrades, automation policy, official documentation index)
+AGENTS.md          Entry point of the agent instructions
+.agents/           Agent rules, skills, workflows, standards and templates
 ```
 
 New reusable content should normally be added to `game/data/content_manifest.tres` and accessed through `ContentDB` rather than hard-coded lookup tables.

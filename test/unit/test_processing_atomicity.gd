@@ -37,7 +37,7 @@ func test_multi_output_collection_waits_until_the_full_result_fits_without_item_
 	recipe.output_quantity = 2
 	InventoryState.add_item_by_id(&"copper_ore", 2)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_multi_output_furnace"
 	furnace.recipe_ids = [&"smelt_copper_bar"]
@@ -75,7 +75,7 @@ func test_started_job_keeps_promised_output_when_recipe_balance_changes() -> voi
 		return
 	for raw_id: Variant in recipe.inputs.keys():
 		InventoryState.add_item_by_id(StringName(String(raw_id)), int(recipe.inputs[raw_id]))
-	var scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_snapshotted_output_furnace"
 	furnace.recipe_ids = [&"smelt_copper_bar"]
@@ -99,7 +99,7 @@ func test_processing_load_sanitizes_malformed_job_fields_and_rebuilds_refund_fro
 	assert_not_null(recipe)
 	if recipe == null:
 		return
-	var scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var station := scene.instantiate() as ProcessingStation
 	station.station_id = &"test_malformed_processing_state"
 	station.recipe_ids = [&"smelt_copper_bar"]
@@ -123,7 +123,7 @@ func test_processing_load_sanitizes_malformed_job_fields_and_rebuilds_refund_fro
 		assert_eq(int(refund_entry.get("quantity", 0)), int(recipe.inputs[raw_id]))
 
 func test_removed_output_refunds_snapshotted_inputs_before_unlocking_station() -> void:
-	var scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var station := scene.instantiate() as ProcessingStation
 	station.station_id = &"test_removed_output_refund_station"
 	station.recipe_ids = []
@@ -182,7 +182,7 @@ func test_removed_output_refunds_snapshotted_inputs_before_unlocking_station() -
 	assert_eq(String((saved_inventory["removed_input_item"] as Dictionary).get("display_name", "")), "Retired Material")
 
 func test_removed_recipe_job_uses_saved_output_snapshot_and_legacy_orphan_unlocks() -> void:
-	var scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var station := scene.instantiate() as ProcessingStation
 	station.station_id = &"test_removed_recipe_station"
 	station.recipe_ids = []
@@ -223,7 +223,7 @@ func test_processing_blocks_inventory_signal_reentrancy_for_start_and_collect() 
 		return
 	for raw_id: Variant in recipe.inputs.keys():
 		InventoryState.add_item_by_id(StringName(String(raw_id)), int(recipe.inputs[raw_id]) * 2)
-	var scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_reentrant_furnace"
 	furnace.recipe_ids = [&"smelt_copper_bar"]

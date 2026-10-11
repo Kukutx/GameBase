@@ -4,11 +4,11 @@
 [ext_resource type="PackedScene" path="res://game/ui/game_menu.tscn" id="2_menu"]
 [ext_resource type="PackedScene" path="res://game/ui/pause_menu.tscn" id="3_pause"]
 [ext_resource type="Script" path="res://game/world/weather_overlay.gd" id="4_weather"]
-[ext_resource type="PackedScene" path="res://game/core/storage/storage_menu.tscn" id="5_storage_menu"]
-[ext_resource type="PackedScene" path="res://game/core/mail/mailbox_menu.tscn" id="6_mailbox_menu"]
-[ext_resource type="PackedScene" path="res://game/core/contracts/daily_contract_menu.tscn" id="7_contract_menu"]
-[ext_resource type="PackedScene" path="res://game/core/animals/animal_management_menu.tscn" id="8_animal_menu"]
-[ext_resource type="PackedScene" path="res://game/core/projects/town_project_menu.tscn" id="9_project_menu"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/items/storage/storage_menu.tscn" id="5_storage_menu"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/progression/mail/mailbox_menu.tscn" id="6_mailbox_menu"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/progression/contracts/daily_contract_menu.tscn" id="7_contract_menu"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/lifesim/animals/animal_management_menu.tscn" id="8_animal_menu"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/progression/projects/town_project_menu.tscn" id="9_project_menu"]
 
 [node name="WorldHud" type="CanvasLayer"]
 layer = 5

@@ -1,0 +1,38 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/processing/processing_station.gd" id="1_station"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="2_interactable"]
+
+[sub_resource type="RectangleShape2D" id="Rect_interact"]
+size = Vector2(36, 32)
+
+[node name="ProcessingStation" type="Node2D"]
+script = ExtResource("1_station")
+
+[node name="Body" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-13, -13, 13, -13, 15, 12, -15, 12)
+color = Color(0.28, 0.24, 0.21, 1)
+
+[node name="Mouth" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-7, -4, 7, -4, 6, 6, -6, 6)
+color = Color(0.55, 0.22, 0.09, 1)
+
+[node name="StateLabel" type="Label" parent="."]
+offset_left = -60.0
+offset_top = 16.0
+offset_right = 60.0
+offset_bottom = 34.0
+theme_override_font_sizes/font_size = 9
+text = "Furnace"
+horizontal_alignment = 1
+
+[node name="Interactable" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("2_interactable")
+prompt_text = "Use Furnace"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("Rect_interact")

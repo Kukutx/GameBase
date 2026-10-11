@@ -935,7 +935,7 @@ Expected:
 ## G13: path rules are found without the Profile
 
 Input:
-> Fix this local condition under `game/core/save/**` and run the related tests.
+> Fix this local condition under `gamebase/core/save/**` and run the related tests.
 
 Expected:
 - Locates `.agents/rules/save.md` directly from the root `AGENTS.md`, then reads the target implementation and the related tests.

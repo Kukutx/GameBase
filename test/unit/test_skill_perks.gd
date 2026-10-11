@@ -46,7 +46,7 @@ func test_skill_perks_unlock_at_levels_five_and_ten() -> void:
 
 func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	InventoryState.add_item_by_id(&"hoe", 1)
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	plot.hoe_energy_cost = 10
 	add_child_autofree(plot)
@@ -60,7 +60,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	Skills.reset_new_game()
 	InventoryState.add_item_by_id(&"gold_pickaxe", 1)
 	PlayerState.energy = 100
-	var scene := load("res://game/core/mining/mining_node.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var rock1 := scene.instantiate() as MiningNode
 	rock1.data = ContentDB.get_mining_node(&"iridium_rock")
 	rock1.persistent_id = &""

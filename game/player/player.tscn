@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
-[ext_resource type="Script" path="res://game/core/interactions/interaction_controller.gd" id="2_interaction"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
 [ext_resource type="Script" path="res://game/player/farm_tool_controller.gd" id="3_farm_tool"]
 [ext_resource type="Script" path="res://game/player/melee_controller.gd" id="4_melee"]
-[ext_resource type="Script" path="res://game/core/visual/directional_actor_visual.gd" id="5_visual"]
+[ext_resource type="Script" path="res://gamebase/core/visual/directional_actor_visual.gd" id="5_visual"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 6.0

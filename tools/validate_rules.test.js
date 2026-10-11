@@ -384,10 +384,13 @@ test("supporting material must be reachable from its entry, by repository path o
 test("the required path routes cover every path rule owner", () => {
   assert.deepEqual(REQUIRED_AGENT_PATH_ROUTES, [
     ["`game/**/*.gd`", "`.agents/rules/gdscript.md`"],
+    ["`gamebase/**/*.gd`", "`.agents/rules/gdscript.md`"],
     ["`test/**/*.gd`", "`.agents/rules/gdscript.md`"],
     ["`game/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
     ["`game/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
-    ["`game/core/save/**`", "`.agents/rules/save.md`"],
+    ["`gamebase/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
+    ["`gamebase/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
+    ["`gamebase/core/save/**`", "`.agents/rules/save.md`"],
     ["`game/i18n/**`", "`.agents/rules/localization.md`"],
     ["`test/**`", "`.agents/rules/testing.md`"],
     ["`tools/**`", "`.agents/rules/tools.md`"],

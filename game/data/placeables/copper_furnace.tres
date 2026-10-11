@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="PlaceableData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://game/core/building/placeable_data.gd" id="1_placeable"]
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/building/placeable_data.gd" id="1_placeable"]
 
 [resource]
 script = ExtResource("1_placeable")
 id = &"copper_furnace"
 display_name = "Copper Furnace"
 item_id = &"copper_furnace"
-scene_path = "res://game/core/processing/copper_furnace_placeable.tscn"
+scene_path = "res://gamebase/modules/lifesim/processing/copper_furnace_placeable.tscn"
 grid_size = Vector2i(1, 1)
 snap_size = 16
 minimum_spacing = 30.0

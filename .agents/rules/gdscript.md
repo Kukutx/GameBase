@@ -1,8 +1,8 @@
 ---
-path: "game/**/*.gd, test/**/*.gd"
+path: "game/**/*.gd, gamebase/**/*.gd, test/**/*.gd"
 ---
 
-# GDScript (`game/**/*.gd`, `test/**/*.gd`)
+# GDScript (`game/**/*.gd`, `gamebase/**/*.gd`, `test/**/*.gd`)
 
 Each statement below was confirmed either by running Godot 4.7.2 headless or by reading this repository's code. Tutorials and third-party agent skills still mix Godot 3 and early Godot 4 APIs, and several of them describe features that do not exist; when one disagrees with the class reference of the engine version in `.godot-version`, the class reference wins. Re-check this rule when the shared baseline moves.
 
@@ -16,7 +16,7 @@ Each statement below was confirmed either by running Godot 4.7.2 headless or by 
   - `JSON.parse_string()` on invalid text returns `null` and prints `ERROR: Parse JSON failed`. For text that may be invalid use `JSON.new().parse()`, which returns an error code and prints nothing, as `GameSaveManager._read_dictionary` does.
   - Connecting a callable to a signal it is already connected to returns an error code and prints `ERROR: Signal ... is already connected`.
   - A `push_error()` reached during a test or smoke run fails that step even when every assertion passes.
-- **Rebindable actions are defined in `GameSettings`**: the key, D-pad, stick and button events of the rebindable actions are rebuilt at startup by `GameSettings._apply_input_bindings()`, which erases whatever the action had. Editing those actions' events in the `[input]` section of `project.godot` therefore has no effect in the running game. Add or change a rebindable action in `game/core/settings/game_settings.gd` (`CONTROL_ACTIONS`, `DEFAULT_CONTROL_KEYS`, `SECONDARY_CONTROL_KEYS`, `DEFAULT_GAMEPAD_BUTTONS`, `CONTROL_LABELS`).
+- **Rebindable actions are defined in `GameSettings`**: the key, D-pad, stick and button events of the rebindable actions are rebuilt at startup by `GameSettings._apply_input_bindings()`, which erases whatever the action had. Editing those actions' events in the `[input]` section of `project.godot` therefore has no effect in the running game. Add or change a rebindable action in `gamebase/core/settings/game_settings.gd` (`CONTROL_ACTIONS`, `DEFAULT_CONTROL_KEYS`, `SECONDARY_CONTROL_KEYS`, `DEFAULT_GAMEPAD_BUTTONS`, `CONTROL_LABELS`).
 - **The motion mode of an actor is a gameplay decision**: the player, NPCs, animals and enemies are `CharacterBody2D` nodes left on the default grounded motion mode. Switching one to `MOTION_MODE_FLOATING`, which generic top-down advice recommends, changes how it slides along walls: with a velocity of (100, 100) pushed against a wall for 40 physics frames, the grounded body travelled 65–67 px along the wall and the floating body 88 px. Treat that switch as a gameplay change that needs a decision, not as a cleanup.
 
 ## P1

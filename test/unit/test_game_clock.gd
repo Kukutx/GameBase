@@ -30,7 +30,7 @@ func test_sleep_spot_blocks_day_changed_reentrancy() -> void:
 	WorldClock.set_time(10, 22 * 60)
 	PlayerState.energy = 1
 	PlayerState.health = 1
-	var scene := load("res://game/core/player/sleep_spot.tscn") as PackedScene
+	var scene := load("res://gamebase/core/player/sleep_spot.tscn") as PackedScene
 	var sleep_spot := scene.instantiate() as SleepSpot
 	add_child_autofree(sleep_spot)
 	await get_tree().process_frame

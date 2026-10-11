@@ -1,10 +1,10 @@
 ---
-path: "game/core/save/**"
+path: "gamebase/core/save/**"
 ---
 
-# Save data (`game/core/save/**`)
+# Save data (`gamebase/core/save/**`)
 
-`GameSaveManager` (`game/core/save/`) writes each slot as JSON: a temp file is promoted to the primary and the previous primary is kept as a backup. `SAVE_VERSION` is the schema version and `SaveMigration` upgrades older saves one version at a time. The engine behaviour described here was confirmed on Godot 4.7.2.
+`GameSaveManager` (`gamebase/core/save/`) writes each slot as JSON: a temp file is promoted to the primary and the previous primary is kept as a backup. `SAVE_VERSION` is the schema version and `SaveMigration` upgrades older saves one version at a time. The engine behaviour described here was confirmed on Godot 4.7.2.
 
 ## P0
 
