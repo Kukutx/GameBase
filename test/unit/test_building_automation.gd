@@ -7,6 +7,7 @@ var _inventory_snapshot: Dictionary
 var _clock_snapshot: Dictionary
 var _skills_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
@@ -14,6 +15,7 @@ func before_each() -> void:
 	_clock_snapshot = WorldClock.to_save_data()
 	_skills_snapshot = Skills.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
 	Skills.reset_new_game()
@@ -25,6 +27,7 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	Skills.load_save_data(_skills_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
 
 func test_sprinkler_is_craftable_placeable_and_refundable() -> void:
@@ -34,7 +37,7 @@ func test_sprinkler_is_craftable_placeable_and_refundable() -> void:
 	InventoryState.add_item_by_id(&"wood", 2)
 	assert_true(CraftingState.craft(&"basic_sprinkler"))
 	assert_eq(InventoryState.get_quantity(&"basic_sprinkler"), 1)
-	assert_true(PlayerState.hotbar.has(&"basic_sprinkler"))
+	assert_true(Hotbar.slots.has(&"basic_sprinkler"))
 
 	var record := BuildingState.place_from_inventory(&"basic_sprinkler", &"starter_town", Vector2(0, 0))
 	assert_false(record.is_empty())

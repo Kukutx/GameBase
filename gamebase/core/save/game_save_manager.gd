@@ -5,7 +5,7 @@ signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 8
+const SAVE_VERSION := 9
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_PATH := "user://savegame.json"
 const DEFAULT_TEMP_PATH := "user://savegame.tmp"

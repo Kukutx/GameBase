@@ -22,8 +22,8 @@ func _ready() -> void:
 	PlayerState.energy_changed.connect(_on_energy_changed)
 	PlayerState.health_changed.connect(_on_health_changed)
 	PlayerState.money_changed.connect(_on_money_changed)
-	PlayerState.selected_slot_changed.connect(_on_selected_changed)
-	PlayerState.hotbar_changed.connect(_refresh_hotbar)
+	Hotbar.selected_slot_changed.connect(_on_selected_changed)
+	Hotbar.changed.connect(_refresh_hotbar)
 	QuestState.quest_started.connect(_on_quest_event)
 	QuestState.quest_progressed.connect(_on_quest_progress)
 	QuestState.quest_completed.connect(_on_quest_event)
@@ -130,7 +130,7 @@ func _refresh_skills() -> void:
 	skills_label.text = Skills.get_summary()
 
 func _refresh_hotbar() -> void:
-	hotbar_label.text = PlayerState.get_hotbar_text()
+	hotbar_label.text = Hotbar.get_text()
 
 func _refresh_inventory() -> void:
 	inventory_label.text = InventoryState.get_summary(6)

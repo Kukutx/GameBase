@@ -5,14 +5,17 @@ const COUNTER := &"test:rules_counter"
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 
 func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_query_syntax_parses_negation_quotes_and_any() -> void:
 	var parsed := GameQuery.parse('WORLD_flag a:b, !SEASON Spring Summer, ANY "DAY_AT_LEAST 3, TRUE" "FALSE"')

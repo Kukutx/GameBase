@@ -4,10 +4,6 @@ extends Node
 signal energy_changed(current: int, maximum: int)
 signal health_changed(current: int, maximum: int)
 signal money_changed(amount: int)
-signal selected_slot_changed(index: int, item_id: StringName)
-signal hotbar_changed
-
-const HOTBAR_SIZE := 9
 
 @export_range(1, 999, 1) var max_energy := 100
 @export_range(1, 999, 1) var max_health := 100
@@ -15,15 +11,6 @@ const HOTBAR_SIZE := 9
 var energy := 100
 var health := 100
 var money := GameDefinition.current().start_money
-var selected_slot := 0
-var hotbar: Array[StringName] = default_hotbar()
-
-## The game's starting hotbar (`GameDefinition.start_hotbar`), padded to
-## `HOTBAR_SIZE` slots.
-static func default_hotbar() -> Array[StringName]:
-	var result: Array[StringName] = GameDefinition.current().start_hotbar.duplicate()
-	result.resize(HOTBAR_SIZE)
-	return result
 
 func consume_energy(amount: int) -> bool:
 	if amount <= 0:
@@ -97,96 +84,21 @@ func lose_money(amount: int) -> int:
 	money_changed.emit(money)
 	return lost
 
-func select_slot(index: int) -> void:
-	if hotbar.is_empty():
-		selected_slot = 0
-		return
-	var next := clampi(index, 0, hotbar.size() - 1)
-	if next == selected_slot:
-		return
-	selected_slot = next
-	selected_slot_changed.emit(selected_slot, get_selected_item_id())
-
-func cycle_slot(direction: int) -> void:
-	if hotbar.is_empty() or direction == 0:
-		return
-	selected_slot = posmod(selected_slot + direction, hotbar.size())
-	selected_slot_changed.emit(selected_slot, get_selected_item_id())
-
-func set_hotbar_item(index: int, item_id: StringName) -> bool:
-	if index < 0 or index >= hotbar.size():
-		return false
-	if hotbar[index] == item_id:
-		return true
-	hotbar[index] = item_id
-	hotbar_changed.emit()
-	if index == selected_slot:
-		selected_slot_changed.emit(selected_slot, get_selected_item_id())
-	return true
-
-func ensure_hotbar_item(item_id: StringName, select := false) -> int:
-	if item_id == &"":
-		return -1
-	var existing := hotbar.find(item_id)
-	if existing >= 0:
-		if select:
-			select_slot(existing)
-		return existing
-	var empty := hotbar.find(&"")
-	if empty < 0:
-		return -1
-	set_hotbar_item(empty, item_id)
-	if select:
-		select_slot(empty)
-	return empty
-
-func get_selected_item_id() -> StringName:
-	if selected_slot < 0 or selected_slot >= hotbar.size():
-		return &""
-	return hotbar[selected_slot]
-
-func get_selected_item() -> ItemData:
-	return ItemCatalog.get_item(get_selected_item_id())
-
-func get_hotbar_text() -> String:
-	var parts: PackedStringArray = []
-	for index in hotbar.size():
-		var item_id := hotbar[index]
-		if item_id == &"":
-			continue
-		var item := ItemCatalog.get_item(item_id)
-		var label := tr(item.display_name) if item != null else String(item_id)
-		var quantity := InventoryState.get_quantity(item_id)
-		if item != null and item.kind != ItemData.Kind.TOOL:
-			label += " x%d" % quantity
-		var prefix := ">" if index == selected_slot else " "
-		parts.append("%s%d:%s" % [prefix, index + 1, label])
-	return "  ".join(parts)
-
 func reset_new_game() -> void:
 	energy = max_energy
 	health = max_health
 	money = GameDefinition.current().start_money
-	selected_slot = 0
-	hotbar = default_hotbar()
 	energy_changed.emit(energy, max_energy)
 	health_changed.emit(health, max_health)
 	money_changed.emit(money)
-	hotbar_changed.emit()
-	selected_slot_changed.emit(selected_slot, get_selected_item_id())
 
 func to_save_data() -> Dictionary:
-	var hotbar_strings: Array[String] = []
-	for item_id: StringName in hotbar:
-		hotbar_strings.append(String(item_id))
 	return {
 		"max_energy": max_energy,
 		"energy": energy,
 		"max_health": max_health,
 		"health": health,
 		"money": money,
-		"selected_slot": selected_slot,
-		"hotbar": hotbar_strings,
 	}
 
 func load_save_data(data: Dictionary) -> void:
@@ -196,27 +108,9 @@ func load_save_data(data: Dictionary) -> void:
 	health = clampi(_safe_int(data.get("health", max_health), max_health), 0, max_health)
 	var start_money := GameDefinition.current().start_money
 	money = maxi(_safe_int(data.get("money", start_money), start_money), 0)
-	var loaded_hotbar: Variant = data.get("hotbar", default_hotbar())
-	hotbar.clear()
-	if loaded_hotbar is Array:
-		for raw: Variant in loaded_hotbar:
-			var item_id := StringName(String(raw))
-			# Content updates may retire an item while its old inventory payload is
-			# intentionally preserved as legacy data. Do not keep a dead hotbar binding
-			# that makes the selected slot silently unusable.
-			if item_id != &"" and ItemCatalog.get_item(item_id) == null:
-				item_id = &""
-			hotbar.append(item_id)
-	if hotbar.is_empty():
-		hotbar = default_hotbar()
-	while hotbar.size() < HOTBAR_SIZE:
-		hotbar.append(&"")
-	selected_slot = clampi(_safe_int(data.get("selected_slot", 0), 0), 0, maxi(hotbar.size() - 1, 0))
 	energy_changed.emit(energy, max_energy)
 	health_changed.emit(health, max_health)
 	money_changed.emit(money)
-	hotbar_changed.emit()
-	selected_slot_changed.emit(selected_slot, get_selected_item_id())
 
 func _safe_int(value: Variant, fallback: int) -> int:
 	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:

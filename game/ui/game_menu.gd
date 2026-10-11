@@ -32,8 +32,8 @@ func _ready() -> void:
 	collection_claim_button.pressed.connect(_claim_first_collection_milestone)
 	close_button.pressed.connect(close)
 	InventoryState.changed.connect(_refresh_if_open)
-	PlayerState.selected_slot_changed.connect(_on_selected_changed)
-	PlayerState.hotbar_changed.connect(_refresh_if_open)
+	Hotbar.selected_slot_changed.connect(_on_selected_changed)
+	Hotbar.changed.connect(_refresh_if_open)
 	QuestState.quest_started.connect(_on_quest_changed)
 	QuestState.quest_progressed.connect(_on_quest_progress)
 	QuestState.quest_completed.connect(_on_quest_changed)
@@ -97,7 +97,7 @@ func _inventory_text() -> String:
 	if entries.is_empty():
 		lines.append(tr("Empty"))
 	else:
-		var selected := PlayerState.get_selected_item_id()
+		var selected := Hotbar.get_selected_item_id()
 		for entry: Dictionary in entries:
 			var item_id := StringName(String(entry["id"]))
 			var marker := "→ " if item_id == selected else "  "
@@ -228,12 +228,12 @@ func _rebuild_hotbar_editor() -> void:
 		item_select.add_item("%s x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
 		item_select.set_item_metadata(item_select.item_count - 1, String(item_id))
 	slot_select.clear()
-	for index in PlayerState.hotbar.size():
-		var existing_id := PlayerState.hotbar[index]
+	for index in Hotbar.slots.size():
+		var existing_id := Hotbar.slots[index]
 		var existing := ItemCatalog.get_item(existing_id)
 		var existing_name := tr(existing.display_name) if existing != null else (String(existing_id) if existing_id != &"" else tr("Empty"))
 		slot_select.add_item("%d: %s" % [index + 1, existing_name])
-	slot_select.select(clampi(PlayerState.selected_slot, 0, maxi(slot_select.item_count - 1, 0)))
+	slot_select.select(clampi(Hotbar.selected_slot, 0, maxi(slot_select.item_count - 1, 0)))
 	assign_button.disabled = item_select.item_count == 0 or slot_select.item_count == 0
 
 func _claim_first_collection_milestone() -> void:
@@ -249,8 +249,8 @@ func _assign_hotbar() -> void:
 	var item_id := StringName(String(item_select.get_item_metadata(item_select.selected)))
 	if item_id == &"" or not InventoryState.has_item(item_id, 1):
 		return
-	PlayerState.set_hotbar_item(slot_select.selected, item_id)
-	PlayerState.select_slot(slot_select.selected)
+	Hotbar.set_slot_item(slot_select.selected, item_id)
+	Hotbar.select_slot(slot_select.selected)
 	_show_tab("inventory")
 
 func _next_birthday_day(profile: NpcProfileData, from_day: int) -> int:

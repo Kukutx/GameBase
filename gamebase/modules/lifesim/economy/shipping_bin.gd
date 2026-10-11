@@ -11,7 +11,7 @@ func _ready() -> void:
 	_refresh()
 
 func _on_interacted(_actor: Node) -> void:
-	var item_id := PlayerState.get_selected_item_id()
+	var item_id := Hotbar.get_selected_item_id()
 	if item_id == &"":
 		GameEvents.toast("Select an item to ship")
 		return

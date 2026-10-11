@@ -2,12 +2,14 @@ extends GutTest
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _clock_snapshot: Dictionary
 var _weather_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	_weather_snapshot = WeatherState.to_save_data()
 	WorldState.clear()
@@ -17,6 +19,7 @@ func before_each() -> void:
 func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	WeatherState.load_save_data(_weather_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
 

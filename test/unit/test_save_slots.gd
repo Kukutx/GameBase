@@ -5,17 +5,20 @@ const TEST_TEMP := "user://slot_test.tmp"
 const TEST_BACKUP := "user://slot_test.bak"
 
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _clock_day: int
 var _clock_minute: int
 
 func before_each() -> void:
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_clock_day = WorldClock.day
 	_clock_minute = WorldClock.minute_of_day
 	_cleanup_files()
 
 func after_each() -> void:
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldClock.set_time(_clock_day, _clock_minute)
 	_cleanup_files()
 

@@ -184,7 +184,7 @@ func claim_reward(project_id: StringName) -> bool:
 			var item_id := StringName(String(raw_id))
 			var item := ContentDB.get_item(item_id)
 			if item != null and item.is_placeable():
-				PlayerState.ensure_hotbar_item(item_id)
+				Hotbar.ensure_item(item_id)
 	var reward_money := DeferredRewardSnapshot.get_money(reward)
 	if reward_money > 0:
 		PlayerState.add_money(reward_money)

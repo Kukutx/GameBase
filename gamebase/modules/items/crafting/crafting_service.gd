@@ -45,7 +45,7 @@ func _craft_internal(recipe_id: StringName) -> bool:
 		GameEvents.toast("Inventory is full or materials changed")
 		return false
 	if output.is_placeable():
-		PlayerState.ensure_hotbar_item(output.id)
+		Hotbar.ensure_item(output.id)
 	crafted.emit(recipe.id, recipe.output_item_id, recipe.output_quantity)
 	GameEvents.toastf("Crafted %s", [recipe.display_name])
 	return true

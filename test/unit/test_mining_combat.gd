@@ -2,6 +2,7 @@ extends GutTest
 
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _skill_snapshot: Dictionary
 var _inventory_slots: int
@@ -9,6 +10,7 @@ var _inventory_slots: int
 func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_skill_snapshot = Skills.to_save_data()
 	_inventory_slots = InventoryState.max_slots
@@ -22,6 +24,7 @@ func before_each() -> void:
 func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	Skills.load_save_data(_skill_snapshot)
 	InventoryState.max_slots = _inventory_slots
@@ -211,8 +214,8 @@ func test_pending_ground_loot_survives_partial_collection_and_source_reload() ->
 	assert_eq(int(enemy_saved.get("pending_drop_quantity", 0)), 3)
 
 func test_melee_attack_blocks_energy_changed_reentrancy() -> void:
-	PlayerState.set_hotbar_item(0, &"rusty_sword")
-	PlayerState.select_slot(0)
+	Hotbar.set_slot_item(0, &"rusty_sword")
+	Hotbar.select_slot(0)
 	PlayerState.energy = 100
 	var controller := MeleeController.new()
 	add_child_autofree(controller)

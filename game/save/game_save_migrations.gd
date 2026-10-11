@@ -29,6 +29,8 @@ func upgrade(from_version: int, data: Dictionary) -> void:
 			_migrate_v6_to_v7(data)
 		7:
 			_migrate_v7_to_v8(data)
+		8:
+			_migrate_v8_to_v9(data)
 
 func finish_legacy_upgrade(data: Dictionary, target_version: int) -> void:
 	if String(data.get("scene", "")).is_empty():
@@ -100,6 +102,23 @@ func _migrate_v7_to_v8(data: Dictionary) -> void:
 		return
 	var scene := String(data.get("scene", ""))
 	data["location_id"] = String(LEGACY_SCENE_LOCATION_IDS.get(scene, LEGACY_DEFAULT_LOCATION_ID if scene.is_empty() else ""))
+
+# The hotbar moved from the player_state section into its own section owned by
+# the items module.
+func _migrate_v8_to_v9(data: Dictionary) -> void:
+	if data.has("hotbar"):
+		return
+	var player_state: Dictionary = data.get("player_state", {}) if data.get("player_state", {}) is Dictionary else {}
+	var hotbar := {}
+	if player_state.has("hotbar"):
+		hotbar["slots"] = player_state["hotbar"]
+	if player_state.has("selected_slot"):
+		hotbar["selected_slot"] = player_state["selected_slot"]
+	player_state.erase("hotbar")
+	player_state.erase("selected_slot")
+	if data.has("player_state"):
+		data["player_state"] = player_state
+	data["hotbar"] = hotbar
 
 func _safe_int(value: Variant, fallback: int = 0) -> int:
 	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
