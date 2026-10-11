@@ -85,6 +85,26 @@ async function runGodotStep(godotBin, name, args, options = {}) {
   return result;
 }
 
+// The first editor launch on a machine writes the editor settings file, and
+// editor settings registered late in that launch read back as null until then.
+// Vendored editor plugins that read them while the project's first import
+// initialises them (Dialogue Manager's theme values) then fail with a script
+// error. Launching the editor once on an empty throwaway project writes the
+// settings before the real import, without touching the repository.
+async function prepareEditorSettings(godotBin) {
+  const project = tempFile("gamebase-editor-settings");
+  fs.mkdirSync(project, { recursive: true });
+  try {
+    fs.writeFileSync(path.join(project, "project.godot"), "config_version=5\n", "utf8");
+    const result = await run(godotBin, ["--headless", "--editor", "--quit", "--path", project], { quiet: true });
+    if (result.code !== 0) {
+      fail(`Preparing the Godot editor settings failed with exit code ${result.code}.`);
+    }
+  } finally {
+    removeRecursive(project);
+  }
+}
+
 function godotVersion(godotBin) {
   const result = spawnSync(godotBin, ["--version"], { encoding: "utf8", windowsHide: true });
   if (result.error || result.status !== 0) {
@@ -169,6 +189,7 @@ module.exports = {
   engineErrorLines,
   run,
   runGodotStep,
+  prepareEditorSettings,
   godotVersion,
   git,
   npmCommand,

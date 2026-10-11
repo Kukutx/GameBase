@@ -10,6 +10,7 @@ const {
   fail,
   godotVersion,
   main,
+  prepareEditorSettings,
   readTrimmed,
   removeRecursive,
   resolveGodotBin,
@@ -80,6 +81,10 @@ async function validate({ godotBin, skipImport = false, skipSoak = false, cleanI
   }
 
   if (!skipImport) {
+    if (!fs.existsSync(rootPath(".godot"))) {
+      // A first import also initialises the editor plugins; see prepareEditorSettings.
+      await prepareEditorSettings(godot);
+    }
     // The dedicated import mode waits for importer and editor-plugin work to
     // settle before exiting, which launching the editor and quitting does not.
     await runGodotStep(godot, "Headless import", ["--headless", "--path", ROOT, "--import"]);
