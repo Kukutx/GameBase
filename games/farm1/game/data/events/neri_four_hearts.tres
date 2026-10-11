@@ -11,4 +11,4 @@ dialogue_title = "heart_4"
 location_id = &"harbor_town"
 start_minute = 600
 end_minute = 1140
-required_world_flag = &"project:riverside_workshop:complete"
+condition = "PROJECT_COMPLETED riverside_workshop_fund"

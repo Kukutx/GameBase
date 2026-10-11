@@ -11,4 +11,3 @@ location_id = &"starter_town"
 requirements = {"turnip": 3, "carrot": 3, "potato": 3, "wood": 10}
 reward_money = 600
 reward_items = {"tomato_seeds": 6}
-unlock_flags = Array[StringName]([&"project:starter_garden:complete"])

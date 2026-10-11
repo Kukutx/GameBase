@@ -8,5 +8,5 @@ id = &"neri_first_catch"
 sender_npc_id = &"neri"
 subject = "Not bad for a first catch"
 body = "Word travels fast along the water. Your first proper catch was not embarrassing, so I am sending you some seaweed. It is useful in the kitchen, and no, that does not make it glamorous. — Neri"
-required_completed_quest_id = &"catch_first_fish"
+condition = "QUEST_COMPLETED catch_first_fish"
 reward_items = {"seaweed": 2}

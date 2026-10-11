@@ -240,8 +240,14 @@ func _sorted_keys(source: Dictionary) -> PackedStringArray:
 	keys.sort()
 	return keys
 
+## The day a condition is asked about: the context's "day", or today.
 static func context_day(context: Dictionary) -> int:
 	return int(context.get("day", WorldClock.day))
+
+## The minute of the day a condition is asked about: the context's
+## "minute_of_day", or now.
+static func context_minute(context: Dictionary) -> int:
+	return int(context.get("minute_of_day", WorldClock.minute_of_day))
 
 static func to_bool(value: String) -> bool:
 	return value.to_lower() == "true"
@@ -298,7 +304,7 @@ func _weekday(args: PackedStringArray, context: Dictionary) -> bool:
 
 ## TIME_BETWEEN <from> <to>: the minute of the day is in [from, to).
 func _time_between(args: PackedStringArray, context: Dictionary) -> bool:
-	var minute := int(context.get("minute_of_day", WorldClock.minute_of_day))
+	var minute := context_minute(context)
 	return minute >= int(args[0]) and minute < int(args[1])
 
 ## WEATHER <name>...: the day's weather is one of the names (Clear, Rain, Storm).

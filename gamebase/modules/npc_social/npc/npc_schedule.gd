@@ -59,7 +59,7 @@ func get_entry_for_minute(minute_of_day: int, target_day: int = -1) -> NpcSchedu
 	var selected_priority := -100000
 	var selected_minute := -1
 	for entry: NpcScheduleEntry in entries:
-		if entry == null or not entry.matches_day(resolved_day):
+		if entry == null or not entry.matches(resolved_day, minute_of_day):
 			continue
 		if entry.minute_of_day <= minute_of_day and _is_better(entry.priority, entry.minute_of_day, selected_priority, selected_minute):
 			selected = entry
@@ -77,7 +77,7 @@ func get_entry_for_minute(minute_of_day: int, target_day: int = -1) -> NpcSchedu
 	var fallback_priority := -100000
 	var fallback_minute := -1
 	for entry: NpcScheduleEntry in entries:
-		if entry == null or not entry.matches_day(previous_day):
+		if entry == null or not entry.matches(previous_day, minute_of_day):
 			continue
 		if _is_better(entry.priority, entry.minute_of_day, fallback_priority, fallback_minute):
 			fallback = entry

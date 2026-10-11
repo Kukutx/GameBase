@@ -8,5 +8,5 @@ id = &"rowan_mine_bottom"
 sender_npc_id = &"rowan"
 subject = "So there really is a bottom"
 body = "I heard you reached the bottom of the Old Mine. Most stories about that place get taller every time they cross the bridge, but this one I believe. I had one Iridium Bar set aside for a repair I never found a good reason to attempt. You have a better reason now. — Rowan"
-required_completed_quest_id = &"reach_mine_bottom"
+condition = "QUEST_COMPLETED reach_mine_bottom"
 reward_items = {"iridium_bar": 1}

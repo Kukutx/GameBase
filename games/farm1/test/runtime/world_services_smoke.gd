@@ -36,6 +36,7 @@ func _run() -> void:
 	var town_projects := root.get_node("TownProjects")
 	var mine_state := root.get_node("MineState")
 	var content_db := root.get_node("ContentDB")
+	var game_rules := root.get_node("GameRules")
 
 	save_manager.save_directory = SMOKE_SAVE_DIRECTORY
 	save_manager.select_slot(1)
@@ -359,11 +360,11 @@ func _run() -> void:
 	_check(inventory.get_quantity(&"hay") == 5, "Day-six feeding consumed the wrong amount of Hay")
 	_check(chicken.is_product_ready() and cow.is_product_ready(), "Fed animals did not restore daily production")
 
-	# Calendar events drive world flags, HUD and high-priority NPC schedules.
+	# Calendar events drive conditions, the HUD and high-priority NPC schedules.
 	world_clock.set_time(6, 10 * 60)
 	await process_frame
 	_check(event_state.is_active(&"village_market"), "Village Market event did not activate")
-	_check(world_state.get_bool(&"event:village_market:active"), "Event world flag did not activate")
+	_check(game_rules.check("EVENT_ACTIVE village_market"), "EVENT_ACTIVE did not see the Village Market")
 	var market_mira := current_scene.get_node("Mira")
 	_check(market_mira.get_node("Schedule").current_activity == "Browse Village Market", "Event NPC schedule did not override normal route")
 	_check("Village Market" in String(current_scene.get_node("WorldHud/Clock").text), "HUD did not show active event")
@@ -622,7 +623,7 @@ func _run() -> void:
 	var starter_project_money_before: int = player_state.money
 	_check(town_projects.contribute_all_available(&"starter_garden_restoration") > 0, "Starter garden project accepted no materials")
 	_check(town_projects.is_completed(&"starter_garden_restoration"), "Starter garden project did not complete")
-	_check(world_state.get_bool(&"project:starter_garden:complete"), "Starter project world flag missing")
+	_check(game_rules.check("PROJECT_COMPLETED starter_garden_restoration"), "PROJECT_COMPLETED did not see the Starter project")
 	_check(mail_state.is_received(&"mira_garden_restored"), "Starter project completion mail did not arrive immediately")
 	_check(town_projects.claim_reward(&"starter_garden_restoration"), "Starter project reward could not be claimed")
 	_check(inventory.get_quantity(&"tomato_seeds") == starter_tomato_seeds_before + 6, "Starter project seed reward incorrect")
@@ -646,7 +647,7 @@ func _run() -> void:
 	_check(town_projects.is_available(&"riverside_workshop_fund"), "Riverside project did not unlock")
 	_check(town_projects.contribute_all_available(&"riverside_workshop_fund") > 0, "Riverside project accepted no materials")
 	_check(town_projects.is_completed(&"riverside_workshop_fund"), "Riverside project did not complete")
-	_check(world_state.get_bool(&"project:riverside_workshop:complete"), "Riverside project world flag missing")
+	_check(game_rules.check("PROJECT_COMPLETED riverside_workshop_fund"), "PROJECT_COMPLETED did not see the Riverside project")
 	_check(mail_state.is_received(&"rowan_workshop_expanded"), "Riverside project completion mail did not arrive immediately")
 	_check(town_projects.claim_reward(&"riverside_workshop_fund"), "Riverside project reward could not be claimed")
 	_check(inventory.get_quantity(&"oil_maker") == oil_maker_before + 1, "Riverside Oil Maker reward incorrect")
@@ -663,7 +664,7 @@ func _run() -> void:
 	_check(town_projects.is_available(&"harbor_supply_drive"), "Harbor project did not unlock")
 	_check(town_projects.contribute_all_available(&"harbor_supply_drive") > 0, "Harbor project accepted no materials")
 	_check(town_projects.is_completed(&"harbor_supply_drive"), "Harbor project did not complete")
-	_check(world_state.get_bool(&"project:harbor_supply:complete"), "Harbor project world flag missing")
+	_check(game_rules.check("PROJECT_COMPLETED harbor_supply_drive"), "PROJECT_COMPLETED did not see the Harbor project")
 	_check(mail_state.is_received(&"neri_harbor_restocked"), "Harbor project completion mail did not arrive immediately")
 	_check(town_projects.claim_reward(&"harbor_supply_drive"), "Harbor project reward could not be claimed")
 	_check(inventory.get_quantity(&"fish_soup") == fish_soup_before + 2, "Harbor project Fish Soup reward incorrect")

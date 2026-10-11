@@ -9,13 +9,12 @@ extends Resource
 @export var days_of_week: PackedInt32Array = PackedInt32Array()
 @export var seasons: PackedStringArray = PackedStringArray()
 @export var allowed_weather: PackedStringArray = PackedStringArray()
-@export var required_world_flag: StringName
-@export var required_flag_value := true
-## Extra availability check in the `GameQuery` syntax, e.g. `HAS_ITEM berry 3`;
-## empty means no extra check.
+## What else must hold for the NPC to follow this entry, in the `GameQuery`
+## syntax (`EVENT_ACTIVE harvest_fair`); empty means nothing else.
 @export var condition: String = ""
 
-func matches_day(day: int) -> bool:
+## Whether the NPC may follow this entry on `day` at `minute_of_day`.
+func matches(day: int, minute_of_day: int) -> bool:
 	if not days_of_week.is_empty() and not days_of_week.has(posmod(maxi(day, 1) - 1, 7)):
 		return false
 	if not seasons.is_empty() and not seasons.has(GameClock.get_season_name_for_day(day)):
@@ -24,8 +23,4 @@ func matches_day(day: int) -> bool:
 		var weather_name := WeatherState.get_weather_name(WeatherState.get_weather_for_day(day))
 		if not allowed_weather.has(weather_name):
 			return false
-	if required_world_flag != &"" and WorldState.get_bool(required_world_flag) != required_flag_value:
-		return false
-	if not condition.is_empty() and not GameRules.check(condition, {"day": day}):
-		return false
-	return true
+	return GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day})

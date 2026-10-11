@@ -84,7 +84,7 @@ func test_heart_event_seen_commits_on_dialogue_end_not_interrupted_balloon_exit(
 	assert_true(HeartEvents.is_seen(event.id))
 	assert_true(bool(NpcMemory.get_facts(&"fixture_npc").get("heart_event:fixture_npc_two_hearts", false)))
 
-func test_heart_events_match_only_their_npc_location_time_hearts_and_flag() -> void:
+func test_heart_events_match_only_their_npc_location_time_hearts_and_condition() -> void:
 	var event := _two_hearts_event()
 	assert_true(event.matches(&"fixture_npc", 2, &"fixture_square", 1, 10 * 60))
 	assert_false(event.matches(&"fixture_npc", 1, &"fixture_square", 1, 10 * 60))
@@ -92,10 +92,13 @@ func test_heart_events_match_only_their_npc_location_time_hearts_and_flag() -> v
 	assert_false(event.matches(&"fixture_npc", 2, &"fixture_harbor", 1, 10 * 60))
 	assert_false(event.matches(&"fixture_npc", 2, &"fixture_square", 1, 19 * 60))
 
-	event.required_world_flag = &"project:fixture_garden:complete"
+	event.condition = "WORLD_FLAG fixture_garden_restored"
 	assert_false(event.matches(&"fixture_npc", 2, &"fixture_square", 1, 10 * 60))
-	WorldState.set_value(&"project:fixture_garden:complete", true)
+	WorldState.set_value(&"fixture_garden_restored", true)
 	assert_true(event.matches(&"fixture_npc", 2, &"fixture_square", 1, 10 * 60))
+	event.condition = "WEEKDAY 1"
+	assert_false(event.matches(&"fixture_npc", 2, &"fixture_square", 1, 10 * 60), "the condition is asked about the event's day")
+	assert_true(event.matches(&"fixture_npc", 2, &"fixture_square", 2, 10 * 60))
 
 func test_heart_event_seen_state_uses_world_state_and_npc_memory() -> void:
 	var event := _two_hearts_event()

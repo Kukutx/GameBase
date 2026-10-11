@@ -4,12 +4,11 @@ extends GutTest
 ## entry is tested with the NPC social module.
 
 func test_core_npcs_have_real_cross_town_routes_for_every_seasonal_festival() -> void:
-	var world_snapshot := WorldState.to_save_data()
 	var expected := {
-		&"event:spring_seed_fair:active": &"starter_town",
-		&"event:summer_river_fair:active": &"riverside_town",
-		&"event:fall_harbor_derby:active": &"harbor_town",
-		&"event:winter_lantern_night:active": &"starter_town",
+		&"spring_seed_fair": &"starter_town",
+		&"summer_river_fair": &"riverside_town",
+		&"fall_harbor_derby": &"harbor_town",
+		&"winter_lantern_night": &"starter_town",
 	}
 	for npc_id: StringName in [&"mira", &"rowan", &"neri"]:
 		var profile := NpcProfileData.find(npc_id)
@@ -18,25 +17,26 @@ func test_core_npcs_have_real_cross_town_routes_for_every_seasonal_festival() ->
 			continue
 		var routes: Dictionary = {}
 		for entry: NpcScheduleEntry in profile.schedule_entries:
-			if entry != null and expected.has(entry.required_world_flag):
-				routes[entry.required_world_flag] = entry
+			for raw_event_id: Variant in expected.keys():
+				if entry != null and entry.condition == "EVENT_ACTIVE %s" % raw_event_id:
+					routes[raw_event_id] = entry
 		assert_eq(routes.size(), 4, "%s is missing festival routes" % npc_id)
-		for raw_flag: Variant in expected.keys():
-			var flag := StringName(String(raw_flag))
-			assert_true(routes.has(flag), "%s has no route for %s" % [npc_id, flag])
-			if not routes.has(flag):
+		for raw_event_id: Variant in expected.keys():
+			var event_id := StringName(String(raw_event_id))
+			assert_true(routes.has(event_id), "%s has no route for %s" % [npc_id, event_id])
+			if not routes.has(event_id):
 				continue
-			var route: NpcScheduleEntry = routes[flag]
-			assert_eq(route.location_id, expected[flag])
+			var route: NpcScheduleEntry = routes[event_id]
+			assert_eq(route.location_id, expected[event_id])
 			assert_gte(route.priority, 30)
-			WorldState.clear()
-			WorldState.set_value(flag, true)
+			var minute := route.minute_of_day + 30
+			var day := _first_day_on(CalendarEventData.find(event_id), minute)
+			assert_gt(day, 0, "%s is never on when %s's route starts" % [event_id, npc_id])
 			var schedule := NpcSchedule.new()
 			add_child_autofree(schedule)
 			schedule.entries = profile.schedule_entries
-			var selected := schedule.get_entry_for_minute(route.minute_of_day + 30, 1)
+			var selected := schedule.get_entry_for_minute(minute, day)
 			assert_eq(selected, route, "%s festival route did not override normal schedule" % npc_id)
-	WorldState.load_save_data(world_snapshot)
 
 func test_all_playable_towns_expose_all_core_npc_instances_for_schedule_presence() -> void:
 	for scene_path: String in ["res://game/world/dev_world.tscn", "res://game/world/riverside_town.tscn", "res://game/world/harbor_town.tscn"]:
@@ -49,3 +49,12 @@ func test_all_playable_towns_expose_all_core_npc_instances_for_schedule_presence
 		await get_tree().process_frame
 		for npc_name: String in ["Mira", "Rowan", "Neri"]:
 			assert_not_null(scene.get_node_or_null(npc_name), "%s is missing %s" % [scene_path, npc_name])
+
+## The first day of the year `event` is on at `minute_of_day`, or 0.
+func _first_day_on(event: CalendarEventData, minute_of_day: int) -> int:
+	if event == null:
+		return 0
+	for day: int in range(1, GameClock.DAYS_PER_SEASON * GameClock.SEASON_NAMES.size() + 1):
+		if event.is_active(day, minute_of_day):
+			return day
+	return 0

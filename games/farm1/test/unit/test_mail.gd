@@ -76,7 +76,7 @@ func test_rowan_and_neri_write_after_the_slime_and_first_fish_quests() -> void:
 
 func test_mira_garden_restored_arrives_when_the_starter_garden_project_completes() -> void:
 	assert_false(MailState.is_received(&"mira_garden_restored"))
-	WorldState.set_value(&"project:starter_garden:complete", true)
+	WorldState.set_value(TownProjectService.STATE_KEY, {"starter_garden_restoration": {"completed": true}})
 	assert_true(MailState.is_received(&"mira_garden_restored"))
 
 func test_reaching_the_mine_bottom_delivers_rowan_mine_bottom() -> void:

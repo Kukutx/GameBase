@@ -10,4 +10,3 @@ description = "Harvest every crop recorded by the valley archive."
 category = &"crops"
 reward_money = 500
 reward_items = {"tomato_seeds": 6}
-unlock_flags = Array[StringName]([&"collection:crop_archive"])

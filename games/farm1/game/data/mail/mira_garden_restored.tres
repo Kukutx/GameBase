@@ -8,5 +8,5 @@ id = &"mira_garden_restored"
 sender_npc_id = &"mira"
 subject = "The garden is growing again"
 body = "I walked past the community garden this morning. It looks cared for again instead of abandoned. That changes how a town feels more than people admit. I left you a stew for one of the long work days ahead. — Mira"
-required_world_flag = &"project:starter_garden:complete"
+condition = "PROJECT_COMPLETED starter_garden_restoration"
 reward_items = {"vegetable_stew": 1}

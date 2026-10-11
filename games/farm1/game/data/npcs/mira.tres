@@ -17,8 +17,7 @@ priority = 10
 location_id = &"starter_town"
 target_position = Vector2(0, 56)
 activity = "Browse Village Market"
-required_world_flag = &"event:village_market:active"
-required_flag_value = true
+condition = "EVENT_ACTIVE village_market"
 
 [sub_resource type="Resource" id="Schedule_midday"]
 script = ExtResource("2_entry")
@@ -59,8 +58,7 @@ priority = 40
 location_id = &"starter_town"
 target_position = Vector2(-270, 90)
 activity = "Visit the Spring Seed Fair"
-required_world_flag = &"event:spring_seed_fair:active"
-required_flag_value = true
+condition = "EVENT_ACTIVE spring_seed_fair"
 
 [sub_resource type="Resource" id="Schedule_festival_summer_river_fair"]
 script = ExtResource("2_entry")
@@ -69,8 +67,7 @@ priority = 40
 location_id = &"riverside_town"
 target_position = Vector2(80, -108)
 activity = "Join the Summer River Fair"
-required_world_flag = &"event:summer_river_fair:active"
-required_flag_value = true
+condition = "EVENT_ACTIVE summer_river_fair"
 
 [sub_resource type="Resource" id="Schedule_festival_fall_harbor_derby"]
 script = ExtResource("2_entry")
@@ -79,8 +76,7 @@ priority = 40
 location_id = &"harbor_town"
 target_position = Vector2(105, 8)
 activity = "Watch the Harbor Derby"
-required_world_flag = &"event:fall_harbor_derby:active"
-required_flag_value = true
+condition = "EVENT_ACTIVE fall_harbor_derby"
 
 [sub_resource type="Resource" id="Schedule_festival_winter_lantern_night"]
 script = ExtResource("2_entry")
@@ -89,8 +85,7 @@ priority = 40
 location_id = &"starter_town"
 target_position = Vector2(145, 132)
 activity = "Attend Lantern Night"
-required_world_flag = &"event:winter_lantern_night:active"
-required_flag_value = true
+condition = "EVENT_ACTIVE winter_lantern_night"
 
 [resource]
 script = ExtResource("1_profile")
@@ -105,7 +100,6 @@ default_location_id = &"starter_town"
 birthday_season = "Spring"
 birthday_day = 14
 ai_enabled = true
-context_world_keys = Array[StringName]([&"event:village_market:active"])
 dialogue_titles_by_hearts = {0: "start", 2: "friend_2", 4: "friend_4", 6: "friend_6", 8: "friend_8", 10: "friend_10"}
 visual_strip_root = "res://game/art/licensed/craftpix_roguelike/character2"
 schedule_entries = Array[ExtResource("2_entry")]([SubResource("Schedule_morning"), SubResource("Schedule_market"), SubResource("Schedule_midday"), SubResource("Schedule_evening"), SubResource("Schedule_sunday_riverside"), SubResource("Schedule_storm"), SubResource("Schedule_festival_spring_seed_fair"), SubResource("Schedule_festival_summer_river_fair"), SubResource("Schedule_festival_fall_harbor_derby"), SubResource("Schedule_festival_winter_lantern_night")])

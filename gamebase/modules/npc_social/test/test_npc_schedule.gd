@@ -61,22 +61,35 @@ func test_schedule_filters_by_season_and_weekday() -> void:
 	assert_eq(schedule.get_entry_for_minute(8 * 60 + 30, 2), fallback)
 	assert_eq(schedule.get_entry_for_minute(8 * 60 + 30, 29), fallback)
 
-func test_schedule_can_depend_on_world_flag() -> void:
+func test_schedule_entries_follow_their_condition() -> void:
 	var previous := WorldState.to_save_data()
 	var schedule := NpcSchedule.new()
 	add_child_autofree(schedule)
 	var special := NpcScheduleEntry.new()
 	special.minute_of_day = 8 * 60
-	special.required_world_flag = &"event:market_open"
+	special.condition = "WORLD_FLAG fixture_market_open"
 	var fallback := NpcScheduleEntry.new()
 	fallback.minute_of_day = 9 * 60
 	schedule.entries = [special, fallback]
 
-	WorldState.erase(&"event:market_open")
+	WorldState.erase(&"fixture_market_open")
 	assert_eq(schedule.get_entry_for_minute(8 * 60 + 30, 1), fallback)
-	WorldState.set_value(&"event:market_open", true)
+	WorldState.set_value(&"fixture_market_open", true)
 	assert_eq(schedule.get_entry_for_minute(8 * 60 + 30, 1), special)
 	WorldState.load_save_data(previous)
+
+func test_schedule_conditions_are_asked_about_the_minute_looked_up() -> void:
+	var schedule := NpcSchedule.new()
+	add_child_autofree(schedule)
+	var morning_errand := NpcScheduleEntry.new()
+	morning_errand.minute_of_day = 8 * 60
+	morning_errand.priority = 10
+	morning_errand.condition = "TIME_BETWEEN 480 600"
+	var day_route := NpcScheduleEntry.new()
+	day_route.minute_of_day = 7 * 60
+	schedule.entries = [morning_errand, day_route]
+	assert_eq(schedule.get_entry_for_minute(9 * 60, 1), morning_errand)
+	assert_eq(schedule.get_entry_for_minute(11 * 60, 1), day_route, "the errand's condition no longer holds at 11:00")
 
 func test_schedule_entry_can_target_a_different_location() -> void:
 	var schedule := NpcSchedule.new()

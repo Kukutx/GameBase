@@ -137,7 +137,7 @@ location_id = &"starter_town"
 [node name="CommunityGardenProgress" type="Node2D" parent="."]
 position = Vector2(270, -88)
 script = ExtResource("31_project_visual")
-completion_flag = &"project:starter_garden:complete"
+project_id = &"starter_garden_restoration"
 pending_text = "Community Garden · overgrown"
 completed_text = "Community Garden · restored"
 

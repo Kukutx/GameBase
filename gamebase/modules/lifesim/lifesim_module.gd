@@ -10,6 +10,7 @@ func install() -> void:
 	ContentDB.register_check(CropData.find_seed_problems)
 	ContentDB.register_check(FarmExpansionData.find_cycle_problems)
 	ContentDB.register_check(_find_slot_problems)
+	LifesimRules.register(GameRules)
 	for action: StringName in [ItemData.ACTION_TILL, ItemData.ACTION_WATER, ItemData.ACTION_MINE, ItemData.ACTION_FISH]:
 		ItemData.register_tool_action(action)
 	for stat: StringName in [&"tool_energy", &"farming_energy", &"mining_energy", &"fishing_wait", &"fishing_window",
@@ -22,7 +23,7 @@ func install() -> void:
 	SaveManager.register_section(SaveSection.new(&"fishing_state", 1200,
 		FishingState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: FishingState.load_save_data(section)))
 	# EventState keeps which festival is running only at runtime; rebuild it
-	# from the restored clock and world flags.
+	# from the restored clock.
 	SaveManager.register_load_step(&"calendar_events", 200,
 		func() -> void: EventState.refresh(WorldClock.day, WorldClock.minute_of_day))
 	SaveManager.register_save_blocker(_fishing_save_block_reason)

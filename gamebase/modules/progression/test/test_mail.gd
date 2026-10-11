@@ -3,7 +3,7 @@ extends GutTest
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 
 const WELCOME := &"fixture_welcome"
-const GARDEN_FLAG := &"project:fixture_garden:complete"
+const GARDEN_FLAG := &"fixture_garden_restored"
 
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
@@ -123,6 +123,26 @@ func test_world_flag_mail_delivers_immediately_without_waiting_for_next_day() ->
 	assert_true(MailState.is_received(&"fixture_garden_restored"))
 	assert_true(MailState.get_unread_mail().any(func(mail: MailData) -> bool: return mail.id == &"fixture_garden_restored"))
 
+func test_world_writes_are_checked_once_by_the_next_frame() -> void:
+	var received_key := &"mail:fixture_garden_restored:received"
+	WorldState.set_value(GARDEN_FLAG, true)
+	WorldState.set_value(&"fixture_unrelated", 1)
+	assert_false(WorldState.get_bool(received_key), "a burst of writes waits for one check")
+	await get_tree().process_frame
+	assert_true(WorldState.get_bool(received_key))
+
+func test_a_load_drops_the_check_that_writes_before_it_waited_for() -> void:
+	WorldState.set_value(&"fixture_unrelated", 1)
+	WorldState.load_save_data({String(GARDEN_FLAG): true})
+	await get_tree().process_frame
+	assert_false(MailState.is_received(&"fixture_garden_restored"), "a loaded world already holds which letters arrived")
+
+func test_mail_delivers_once_the_friendship_reaches_its_hearts() -> void:
+	RelationshipState.add_friendship(&"fixture_npc", RelationshipManager.POINTS_PER_HEART)
+	assert_false(MailState.is_received(&"fixture_friend"))
+	RelationshipState.add_friendship(&"fixture_npc", RelationshipManager.POINTS_PER_HEART)
+	assert_true(MailState.is_received(&"fixture_friend"))
+
 func test_mail_delivers_from_live_quest_completion() -> void:
 	assert_false(MailState.is_received(&"fixture_after_dive"))
 	assert_true(QuestState.start_quest(&"fixture_dive_quest"))
@@ -139,26 +159,28 @@ func test_mail_condition_gates_delivery() -> void:
 	assert_true(mail.is_available(1))
 
 ## Letters from `fixture_npc`: one dated on day 2 with seeds in it, one for
-## each of three quests, and one for a world flag.
+## each of three quests, one for a world flag and one for two hearts.
 func _content() -> Array:
 	var npc := NpcProfileData.new()
 	npc.id = &"fixture_npc"
 	npc.display_name = "Fixture"
 	var welcome := _mail(WELCOME)
-	welcome.available_from_day = 2
+	welcome.condition = "DAY_AT_LEAST 2"
 	welcome.reward_items = {"fixture_seeds": 3}
 	var after_slime := _mail(&"fixture_after_slime")
-	after_slime.required_completed_quest_id = &"fixture_slime_quest"
+	after_slime.condition = "QUEST_COMPLETED fixture_slime_quest"
 	var after_catch := _mail(&"fixture_after_catch")
-	after_catch.required_completed_quest_id = &"fixture_catch_quest"
+	after_catch.condition = "QUEST_COMPLETED fixture_catch_quest"
 	var after_dive := _mail(&"fixture_after_dive")
-	after_dive.required_completed_quest_id = &"fixture_dive_quest"
+	after_dive.condition = "QUEST_COMPLETED fixture_dive_quest"
 	var garden := _mail(&"fixture_garden_restored")
-	garden.required_world_flag = GARDEN_FLAG
+	garden.condition = "WORLD_FLAG %s" % GARDEN_FLAG
+	var friend := _mail(&"fixture_friend")
+	friend.condition = "HEARTS fixture_npc 2"
 	var dive := _quest(&"fixture_dive_quest", QuestData.ObjectiveType.REACH_MINE_FLOOR)
 	dive.required_amount = 3
 	return [
-		npc, welcome, after_slime, after_catch, after_dive, garden,
+		npc, welcome, after_slime, after_catch, after_dive, garden, friend,
 		_quest(&"fixture_slime_quest", QuestData.ObjectiveType.DEFEAT),
 		_quest(&"fixture_catch_quest", QuestData.ObjectiveType.FISH),
 		dive,

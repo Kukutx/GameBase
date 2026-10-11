@@ -8,5 +8,5 @@ id = &"mira_welcome"
 sender_npc_id = &"mira"
 subject = "A few extra seeds"
 body = "You made it through your first day. I left a few extra turnip seeds with this note. Keep them dry until you are ready to plant. — Mira"
-available_from_day = 2
+condition = "DAY_AT_LEAST 2"
 reward_items = {"turnip_seeds": 3}

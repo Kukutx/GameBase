@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## A query is a comma-separated list of clauses that must all be true:
 ##
-##     WORLD_FLAG project:starter_garden:complete, !QUEST_COMPLETED first_harvest
+##     WORLD_FLAG gate:open, !DAY_AT_LEAST 10, MONEY_AT_LEAST 500
 ##
 ## A clause is a key followed by space-separated arguments; `!` before the key
 ## negates it, and an argument containing spaces or commas is written in double

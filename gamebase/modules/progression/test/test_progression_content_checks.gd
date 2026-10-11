@@ -16,7 +16,6 @@ func test_entries_report_invalid_rewards_and_tool_changes() -> void:
 	bad_mail.id = &"fixture_bad_mail"
 	bad_mail.subject = "Bad"
 	bad_mail.body = "Bad"
-	bad_mail.required_hearts = 2
 	bad_mail.reward_items = {"fixture_berry": 0}
 	var bad_project := TownProjectData.new()
 	bad_project.id = &"fixture_bad_project"
@@ -33,7 +32,6 @@ func test_entries_report_invalid_rewards_and_tool_changes() -> void:
 	bad_upgrade.result_item_id = &"fixture_result_tool"
 	var entries: Array = [meadow, berry, source_tool, result_tool, bad_mail, bad_project, bad_milestone, bad_upgrade]
 	var joined := _problems_of(ContentFixture.use(self, entries), entries)
-	assert_string_contains(joined, "mail 'fixture_bad_mail' requires hearts but has no sender npc")
 	assert_string_contains(joined, "mail 'fixture_bad_mail' has invalid reward quantity for 'fixture_berry'")
 	assert_string_contains(joined, "town project 'fixture_bad_project' has invalid reward quantity for 'fixture_berry'")
 	assert_string_contains(joined, "collection milestone 'fixture_bad_milestone' references unknown category 'fixture_retired_category'")
@@ -89,6 +87,22 @@ func test_a_town_project_board_reports_another_location() -> void:
 	bad_board.location_id = &"fixture_harbor"
 	root.add_child(bad_board)
 	assert_eq(registry.find_scene_problems(root, meadow), PackedStringArray(["town project board 'BadBoard' references different location 'fixture_harbor'"]))
+
+func test_a_project_completion_visual_reports_an_unknown_project() -> void:
+	var garden := TownProjectData.new()
+	garden.id = &"fixture_garden"
+	var registry := ContentFixture.use(self, [garden])
+	var root := Node2D.new()
+	autofree(root)
+	var visual := ProjectCompletionVisual.new()
+	visual.name = "Garden"
+	visual.project_id = &"fixture_garden"
+	root.add_child(visual)
+	var bad_visual := ProjectCompletionVisual.new()
+	bad_visual.name = "Ruin"
+	bad_visual.project_id = &"fixture_ruin"
+	root.add_child(bad_visual)
+	assert_eq(registry.find_scene_problems(root, null), PackedStringArray(["project completion visual 'Ruin' references unknown town project 'fixture_ruin'"]))
 
 func _item(id: StringName) -> ItemData:
 	var item := ItemData.new()

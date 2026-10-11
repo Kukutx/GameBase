@@ -23,7 +23,7 @@ func after_each() -> void:
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
-func test_project_chain_donates_materials_unlocks_flags_and_rewards_once() -> void:
+func test_project_chain_donates_materials_unlocks_the_next_and_rewards_once() -> void:
 	assert_false(TownProjects.is_available(&"riverside_workshop_fund"))
 	assert_false(TownProjects.is_available(&"harbor_supply_drive"))
 
@@ -32,7 +32,6 @@ func test_project_chain_donates_materials_unlocks_flags_and_rewards_once() -> vo
 	InventoryState.add_item_by_id(&"wood", 10)
 	assert_eq(TownProjects.contribute_all_available(&"starter_garden_restoration"), 19)
 	assert_true(TownProjects.is_completed(&"starter_garden_restoration"))
-	assert_true(WorldState.get_bool(&"project:starter_garden:complete"))
 	assert_true(TownProjects.is_available(&"riverside_workshop_fund"))
 	var money_before := PlayerState.money
 	assert_true(TownProjects.claim_reward(&"starter_garden_restoration"))
@@ -45,7 +44,6 @@ func test_project_chain_donates_materials_unlocks_flags_and_rewards_once() -> vo
 	InventoryState.add_item_by_id(&"wood", 15)
 	assert_eq(TownProjects.contribute_all_available(&"riverside_workshop_fund"), 30)
 	assert_true(TownProjects.is_completed(&"riverside_workshop_fund"))
-	assert_true(WorldState.get_bool(&"project:riverside_workshop:complete"))
 	assert_true(TownProjects.is_available(&"harbor_supply_drive"))
 	assert_true(TownProjects.claim_reward(&"riverside_workshop_fund"))
 	assert_eq(InventoryState.get_quantity(&"oil_maker"), 1)
@@ -56,7 +54,6 @@ func test_project_chain_donates_materials_unlocks_flags_and_rewards_once() -> vo
 	InventoryState.add_item_by_id(&"milk", 2)
 	assert_eq(TownProjects.contribute_all_available(&"harbor_supply_drive"), 10)
 	assert_true(TownProjects.is_completed(&"harbor_supply_drive"))
-	assert_true(WorldState.get_bool(&"project:harbor_supply:complete"))
 	assert_true(TownProjects.claim_reward(&"harbor_supply_drive"))
 	assert_eq(InventoryState.get_quantity(&"fish_soup"), 2)
 

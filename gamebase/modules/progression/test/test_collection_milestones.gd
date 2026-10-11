@@ -23,7 +23,6 @@ func before_each() -> void:
 	archive.category = CollectionService.CROPS
 	archive.reward_money = 500
 	archive.reward_items = {"fixture_seeds": 6}
-	archive.unlock_flags = [&"collection:fixture_crop_archive"]
 	ContentFixture.use(self, [
 		archive,
 		_crop(&"fixture_radish"),
@@ -42,13 +41,14 @@ func after_each() -> void:
 
 func test_archive_becomes_ready_claims_once_and_persists() -> void:
 	assert_false(CollectionMilestones.is_ready(ARCHIVE))
+	assert_false(GameRules.check("MILESTONE_CLAIMED %s" % ARCHIVE))
 	_discover_every_crop()
 	assert_true(CollectionMilestones.is_ready(ARCHIVE))
 	assert_eq(CollectionMilestones.get_ready_count(), 1)
 	var money_before := PlayerState.money
 	assert_true(CollectionMilestones.claim(ARCHIVE))
 	assert_true(CollectionMilestones.is_claimed(ARCHIVE))
-	assert_true(WorldState.get_bool(&"collection:fixture_crop_archive"))
+	assert_true(GameRules.check("MILESTONE_CLAIMED %s" % ARCHIVE))
 	assert_eq(PlayerState.money, money_before + 500)
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 6)
 	assert_false(CollectionMilestones.claim(ARCHIVE))

@@ -17,7 +17,7 @@ func is_available(expansion_id: StringName) -> bool:
 	var data := get_expansion(expansion_id)
 	if data == null or is_completed(expansion_id):
 		return false
-	if data.required_world_flag != &"" and not WorldState.get_bool(data.required_world_flag):
+	if not GameRules.check(data.condition):
 		return false
 	for prerequisite: StringName in data.prerequisites:
 		if not is_completed(prerequisite):

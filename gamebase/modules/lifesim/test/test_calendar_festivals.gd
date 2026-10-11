@@ -114,12 +114,12 @@ func test_festival_claim_state_round_trips_with_world_state() -> void:
 	WorldState.load_save_data(snapshot)
 	assert_true(EventState.has_claimed_participation(&"fixture_summer_fair"))
 
-func test_refresh_after_loading_restores_the_active_event_flag() -> void:
+func test_refresh_after_loading_restores_the_active_event() -> void:
 	WorldClock.set_time(9, 10 * 60)
 	WorldState.load_save_data({})
 	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)
 	assert_true(EventState.is_active(&"fixture_spring_fair"))
-	assert_true(WorldState.get_bool(&"event:fixture_spring_fair:active"))
+	assert_eq(EventState.get_summary(), "Spring Fair")
 
 # A spring fair on day 9 that rewards money, items and skill experience, and a
 # summer fair on day 14 that rewards money.

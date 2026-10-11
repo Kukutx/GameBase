@@ -28,7 +28,7 @@ func after_each() -> void:
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
-func test_project_chain_donates_materials_unlocks_flags_and_rewards_once() -> void:
+func test_project_chain_donates_materials_unlocks_the_next_and_rewards_once() -> void:
 	assert_true(TownProjects.is_available(GARDEN))
 	assert_false(TownProjects.is_available(WORKSHOP))
 	assert_eq(TownProjects.contribute_all_available(WORKSHOP), 0, "a locked project takes no donations")
@@ -38,7 +38,7 @@ func test_project_chain_donates_materials_unlocks_flags_and_rewards_once() -> vo
 	assert_eq(TownProjects.contribute_all_available(GARDEN), 13)
 	assert_eq(InventoryState.get_quantity(&"fixture_twig"), 2, "only what the project still needs is donated")
 	assert_true(TownProjects.is_completed(GARDEN))
-	assert_true(WorldState.get_bool(&"project:fixture_garden:complete"))
+	assert_true(GameRules.check("PROJECT_COMPLETED %s" % GARDEN))
 	assert_true(TownProjects.is_available(WORKSHOP))
 	var money_before := PlayerState.money
 	assert_true(TownProjects.claim_reward(GARDEN))
@@ -51,7 +51,7 @@ func test_project_chain_donates_materials_unlocks_flags_and_rewards_once() -> vo
 	InventoryState.add_item_by_id(&"fixture_twig", 3)
 	assert_eq(TownProjects.contribute_all_available(WORKSHOP), 8)
 	assert_true(TownProjects.is_completed(WORKSHOP))
-	assert_true(WorldState.get_bool(&"project:fixture_workshop:complete"))
+	assert_true(GameRules.check("PROJECT_COMPLETED %s" % WORKSHOP))
 	assert_true(TownProjects.claim_reward(WORKSHOP))
 	assert_eq(InventoryState.get_quantity(&"fixture_kit"), 1)
 
@@ -158,9 +158,9 @@ func test_town_project_state_round_trips_with_world_state() -> void:
 	WorldState.load_save_data(snapshot)
 	assert_eq(TownProjects.get_progress(GARDEN, &"fixture_radish"), 2)
 
-func test_project_completion_visual_reacts_to_world_flag() -> void:
+func test_project_completion_visual_follows_its_project() -> void:
 	var host := ProjectCompletionVisual.new()
-	host.completion_flag = &"project:test_visual"
+	host.project_id = GARDEN
 	host.pending_text = "Pending"
 	host.completed_text = "Complete"
 	var visual := Polygon2D.new()
@@ -173,9 +173,13 @@ func test_project_completion_visual_reacts_to_world_flag() -> void:
 	await get_tree().process_frame
 	assert_eq(label.text, "Pending")
 	assert_eq(visual.color, host.pending_color)
-	WorldState.set_value(&"project:test_visual", true)
+	InventoryState.add_item_by_id(&"fixture_radish", 3)
+	InventoryState.add_item_by_id(&"fixture_twig", 10)
+	TownProjects.contribute_all_available(GARDEN)
 	assert_eq(label.text, "Complete")
 	assert_eq(visual.color, host.completed_color)
+	WorldState.clear()
+	assert_eq(label.text, "Pending", "a new game or a load replaces the projects' state")
 
 ## A garden, then a workshop that needs the garden done first.
 func _content() -> Array:
@@ -185,14 +189,12 @@ func _content() -> Array:
 	garden.requirements = {"fixture_radish": 3, "fixture_twig": 10}
 	garden.reward_money = 600
 	garden.reward_items = {"fixture_seeds": 6}
-	garden.unlock_flags = [&"project:fixture_garden:complete"]
 	var workshop := TownProjectData.new()
 	workshop.id = WORKSHOP
 	workshop.display_name = "Fixture Workshop"
 	workshop.prerequisites = [GARDEN]
 	workshop.requirements = {"fixture_bar": 3, "fixture_twig": 5}
 	workshop.reward_items = {"fixture_kit": 1}
-	workshop.unlock_flags = [&"project:fixture_workshop:complete"]
 	var content: Array = [garden, workshop]
 	for item_id: StringName in [&"fixture_radish", &"fixture_twig", &"fixture_bar", &"fixture_seeds", &"fixture_kit"]:
 		var item := ItemData.new()

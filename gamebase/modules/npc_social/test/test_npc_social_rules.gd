@@ -16,6 +16,7 @@ func test_npc_keys_are_registered_and_checked_against_content() -> void:
 	assert_true(GameRules.has_action(&"ADD_FRIENDSHIP"))
 	assert_eq(GameRules.validate_query("HEARTS fixture_npc 2"), PackedStringArray())
 	assert_eq(GameRules.validate_actions(PackedStringArray(["ADD_FRIENDSHIP fixture_npc 10"])), PackedStringArray())
-	var problems := "\n".join(GameRules.validate_query("HEARTS fixture_npc lots, HEARTS no_such_npc 2"))
+	var problems := "\n".join(GameRules.validate_query("HEARTS fixture_npc lots, HEARTS no_such_npc 2, HEARTS fixture_npc 11"))
 	assert_string_contains(problems, "'lots' is not an integer")
 	assert_string_contains(problems, "unknown npc 'no_such_npc'")
+	assert_string_contains(problems, "11 is not a number of hearts (0-%d)" % RelationshipManager.MAX_HEARTS)
