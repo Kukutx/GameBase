@@ -1,9 +1,11 @@
 const fs = require("node:fs");
+const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { checkLocalization } = require("./check_localization");
 const { runSelfTest } = require("./package_release");
 const { runCli: runRulesCheck } = require("./validate_rules");
 const { runCli: runLayerCheck } = require("./check_layers");
+const { createGame } = require("./new_game");
 const {
   ENGINE_VERSION_RE,
   GAME_VERSION_RE,
@@ -18,7 +20,23 @@ const {
   rootPath,
   run,
   runGodotStep,
+  tempFile,
 } = require("./lib/common");
+
+// Creates a game with tools/new_game.js (the core and no module), then boots it
+// and runs a new game through save and load: the core must work on its own.
+async function validateNewGame(godot) {
+  const project = tempFile("gamebase-new-game");
+  try {
+    createGame({ out: project, name: "GameBase New Game Check", from: ROOT });
+    fs.mkdirSync(path.join(project, "test"), { recursive: true });
+    fs.copyFileSync(rootPath("test", "runtime", "new_game_smoke.gd"), path.join(project, "test", "new_game_smoke.gd"));
+    await runGodotStep(godot, "New game scaffold import", ["--headless", "--path", project, "--import"]);
+    await runGodotStep(godot, "New game scaffold smoke (core only)", ["--headless", "--path", project, "-s", "test/new_game_smoke.gd"]);
+  } finally {
+    removeRecursive(project);
+  }
+}
 
 function checkVersions(version) {
   const gameVersion = readTrimmed(".game-version");
@@ -132,6 +150,7 @@ async function validate({ godotBin, skipImport = false, skipSoak = false, cleanI
     ]);
   }
   await runGodotStep(godot, "Main scene boot smoke", ["--headless", "--path", ROOT, "--quit-after", "120"]);
+  await validateNewGame(godot);
 
   console.log("");
   console.log("GameBase validation passed.");

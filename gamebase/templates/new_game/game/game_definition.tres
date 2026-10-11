@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GameDefinition" format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/session/game_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+start_location_id = &"start"
+home_location_id = &"start"
+home_spawn_id = &"start"
+start_day = 1
+start_minute_of_day = 480
+world_seed = 1
+start_money = 0

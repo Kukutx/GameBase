@@ -51,7 +51,10 @@ function decodeString(raw) {
   }
 }
 
+// Skips directories with a .gdignore, which Godot does not import either
+// (gamebase/templates holds files for other projects).
 function walk(directory, extension, files = []) {
+  if (fs.existsSync(path.join(directory, ".gdignore"))) return files;
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) {

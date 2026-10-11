@@ -70,3 +70,17 @@ test("baseline entries silence known violations and must not go stale", () => {
     "tools/layer_baseline.json lists gamebase/core/gone.gd -> X, which no longer occurs; remove it",
   ]);
 });
+
+test("a module using a module it does not declare as required is reported", () => {
+  const root = fixture({
+    "project.godot": PROJECT,
+    "gamebase/gamebase.json": JSON.stringify({ modules: { items: {}, fishing: { requires: [] }, ghost: {} } }),
+    "gamebase/modules/items/inventory.gd": "extends Node\n",
+    "gamebase/modules/fishing/rod.gd": "extends Node\nfunc f() -> void:\n\tInventory.clear()\n",
+    "gamebase/modules/combat/sword.gd": "extends Node\n",
+  });
+  const problems = checkLayers(root, path.join(root, "baseline.json"));
+  assert.ok(problems.some((p) => p.startsWith("gamebase/modules/fishing uses module items")));
+  assert.ok(problems.includes('gamebase/modules/combat is not listed under "modules" in gamebase/gamebase.json'));
+  assert.ok(problems.includes("gamebase/gamebase.json lists module ghost, which does not exist"));
+});

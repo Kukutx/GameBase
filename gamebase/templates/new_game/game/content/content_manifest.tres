@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ContentManifest" format=3]
+
+[ext_resource type="Script" path="res://game/content/content_manifest.gd" id="1_manifest"]
+[ext_resource type="Resource" path="res://game/data/start_location.tres" id="2_start"]
+
+[resource]
+script = ExtResource("1_manifest")
+locations = [ExtResource("2_start")]
