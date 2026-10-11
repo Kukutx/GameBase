@@ -47,7 +47,7 @@ function assertCompleteGame(game) {
   for (const name of ["Windows Desktop", "Linux", "Web"]) assert.ok(presets.includes(`name="${name}"`), `${id} preset ${name}`);
   for (const filter of presets.matchAll(/^exclude_filter="([^"]*)"$/gm)) {
     const excluded = filter[1].split(",");
-    for (const required of ["test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
+    for (const required of ["test/*", "gamebase/core/test/*", "gamebase/modules/*/test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
       assert.ok(excluded.includes(required), `${id} export excludes ${required}`);
     }
   }
