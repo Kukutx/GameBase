@@ -96,9 +96,11 @@ function resolveGame(explicit) {
   return fail(`Several games are registered (${ids.join(", ")}). Choose one with --game <id> or GAMEBASE_GAME.`);
 }
 
-// The games a repository-wide step covers: the requested ones, else all.
+// The games a repository-wide step covers: the requested ones, else all of
+// them. GAMEBASE_GAME picks the game of a single-game tool and never narrows a
+// repository-wide step.
 function resolveGames(explicit = []) {
-  const requested = explicit.length > 0 ? explicit : process.env.GAMEBASE_GAME ? [process.env.GAMEBASE_GAME] : listGameIds();
+  const requested = explicit.length > 0 ? explicit : listGameIds();
   if (requested.length === 0) fail("No game is registered under games/<id>/game.json.");
   return requested.map((id) => loadGame(String(id).trim()));
 }

@@ -1,0 +1,142 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase modules/items\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Inventory"
+msgstr "背包"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "General Store"
+msgstr "杂货店"
+
+msgid "Storage Chest"
+msgstr "储物箱"
+
+msgid "Money: %dg"
+msgstr "金钱：%dg"
+
+msgid "Buy %s — %dg"
+msgstr "购买 %s — %dg"
+
+msgid "Buy %s — %dg  ·  %s slots %d"
+msgstr "购买 %s — %dg  ·  %s 空位 %d"
+
+msgid "Sell selected: %s — %dg"
+msgstr "出售当前物品：%s — %dg"
+
+msgid "Sell selected"
+msgstr "出售当前物品"
+
+msgid "%s\n%d/%d slots"
+msgstr "%s\n%d/%d 格"
+
+msgid "Open %s"
+msgstr "打开 %s"
+
+msgid "Item"
+msgstr "物品"
+
+msgid "Storage slots: %d/%d"
+msgstr "储物格：%d/%d"
+
+msgid "Craft"
+msgstr "制作"
+
+msgid "Pick up"
+msgstr "拾取"
+
+msgid "Shop"
+msgstr "商店"
+
+msgid "Use %s"
+msgstr "使用%s"
+
+msgid "Pick up %s"
+msgstr "拾取%s"
+
+msgid "Shop: %s"
+msgstr "商店：%s"
+
+msgid "Shop UI is unavailable"
+msgstr "商店界面不可用"
+
+msgid "Not enough money"
+msgstr "金钱不足"
+
+msgid "Inventory is full"
+msgstr "背包已满"
+
+msgid "Inventory changed before the purchase completed"
+msgstr "购买完成前背包内容发生了变化"
+
+msgid "Bought %s x%d for %dg"
+msgstr "以 %dg 购买了%s x%d"
+
+msgid "That item cannot be sold"
+msgstr "该物品不能出售"
+
+msgid "You do not have that item"
+msgstr "你没有该物品"
+
+msgid "Sold %s x%d for %dg"
+msgstr "以 %dg 出售了%s x%d"
+
+msgid "Buff: %s (%d min)"
+msgstr "增益：%s（%d 分钟）"
+
+msgid "Crafting UI is unavailable"
+msgstr "制作界面不可用"
+
+msgid "Missing materials or skill level"
+msgstr "材料不足或技能等级不够"
+
+msgid "Inventory is full or materials changed"
+msgstr "背包已满或材料发生了变化"
+
+msgid "Crafted %s"
+msgstr "已制作%s"
+
+msgid "Empty this chest before packing it up"
+msgstr "收起储物箱前请先清空它"
+
+msgid "Storage menu is unavailable"
+msgstr "储物界面不可用"
+
+msgid "Storage is full"
+msgstr "储物箱已满"
+
+msgid "Crafting"
+msgstr "制作"
+
+msgid "Open Storage Chest"
+msgstr "打开储物箱"
+
+msgid "Store 1 →"
+msgstr "存入 1 个 →"
+
+msgid "Stored"
+msgstr "已储存"
+
+msgid "Workbench"
+msgstr "工作台"
+
+msgid "← Take 1"
+msgstr "← 取出 1 个"
+
+msgid "Inventory: empty (%d/%d slots)"
+msgstr "背包：空（%d/%d 格）"
+
+msgid "Inventory %d/%d: %s"
+msgstr "背包 %d/%d：%s"
+
+msgid "+%d more"
+msgstr "另有 %d 种"
+
+msgid "%s %dm"
+msgstr "%s %d分钟"

@@ -4,9 +4,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
-const { ENGINE_VERSION_RE, rootPath } = require("./lib/common");
-const { gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, readFoundation, releaseTag } = require("./lib/games");
+const { checkLocalization } = require("./check_localization");
+const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
+const { gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, readFoundation, releaseTag, resolveGames } = require("./lib/games");
 const { desiredLinks } = require("./link");
+const { createGame } = require("./new_game");
 
 const read = (...parts) => fs.readFileSync(rootPath(...parts), "utf8");
 const pluginVersion = (addon) => (/^version="([^"]+)"$/m.exec(read("addons", addon, "plugin.cfg")) || [])[1];
@@ -33,23 +35,66 @@ test("shared addons carry stable versions that support the engine baseline", () 
   assert.ok(maxMajor > major || (maxMajor === major && maxMinor >= minor), `GUT supports Godot up to ${gut.godot_max}`);
 });
 
+// What CI and the release tools need from every game.
+function assertCompleteGame(game) {
+  const id = game.id;
+  assert.match(gameVersion(game), /^\d+\.\d+\.\d+/);
+  for (const file of ["project.godot", "export_presets.cfg", ".gutconfig.json", "test/unit"]) {
+    assert.ok(fs.existsSync(gamePath(game, file)), `games/${id}/${file}`);
+  }
+  const presets = fs.readFileSync(gamePath(game, "export_presets.cfg"), "utf8");
+  for (const name of ["Windows Desktop", "Linux", "Web"]) assert.ok(presets.includes(`name="${name}"`), `${id} preset ${name}`);
+  for (const filter of presets.matchAll(/^exclude_filter="([^"]*)"$/gm)) {
+    const excluded = filter[1].split(",");
+    for (const required of ["test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
+      assert.ok(excluded.includes(required), `${id} export excludes ${required}`);
+    }
+  }
+}
+
+// Runs a check that reports on the console without printing its report.
+function quietly(check) {
+  const log = console.log;
+  console.log = () => {};
+  try {
+    return check();
+  } finally {
+    console.log = log;
+  }
+}
+
 test("every registered game is a complete game project", () => {
   const ids = listGameIds();
   assert.ok(ids.length > 0, "at least one game is registered");
-  for (const id of ids) {
-    const game = loadGame(id);
-    assert.match(gameVersion(game), /^\d+\.\d+\.\d+/);
-    for (const file of ["project.godot", "export_presets.cfg", ".gutconfig.json"]) {
-      assert.ok(fs.existsSync(gamePath(game, file)), `games/${id}/${file}`);
-    }
+  for (const id of ids) assertCompleteGame(loadGame(id));
+});
+
+test("a new game is complete and translated as it is created", () => {
+  const out = tempFile("gamebase-new-game-test");
+  try {
+    const game = createGame({ id: "probe", name: "Probe Game", out });
+    assertCompleteGame(game);
     const presets = fs.readFileSync(gamePath(game, "export_presets.cfg"), "utf8");
-    for (const name of ["Windows Desktop", "Linux", "Web"]) assert.ok(presets.includes(`name="${name}"`), `${id} preset ${name}`);
-    for (const filter of presets.matchAll(/^exclude_filter="([^"]*)"$/gm)) {
-      const excluded = filter[1].split(",");
-      for (const required of ["test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
-        assert.ok(excluded.includes(required), `${id} export excludes ${required}`);
-      }
-    }
+    assert.ok(presets.includes('export_path="' + path.relative(out, rootPath("build", "probe", "linux", "ProbeGame.x86_64")).split(path.sep).join("/") + '"'));
+    assert.equal(quietly(() => checkLocalization(game)), 0);
+
+    // The core's catalog has to be registered: a game does not translate the core again.
+    const project = gamePath(game, "project.godot");
+    fs.writeFileSync(project, fs.readFileSync(project, "utf8").replace('"res://gamebase/core/i18n/core.zh_CN.po", ', ""), "utf8");
+    assert.equal(quietly(() => checkLocalization(game)), 1);
+  } finally {
+    removeRecursive(out);
+  }
+});
+
+test("GAMEBASE_GAME picks one game but never narrows a repository-wide step", () => {
+  const saved = process.env.GAMEBASE_GAME;
+  process.env.GAMEBASE_GAME = listGameIds()[0];
+  try {
+    assert.deepEqual(resolveGames().map((game) => game.id), listGameIds());
+  } finally {
+    if (saved === undefined) delete process.env.GAMEBASE_GAME;
+    else process.env.GAMEBASE_GAME = saved;
   }
 });
 

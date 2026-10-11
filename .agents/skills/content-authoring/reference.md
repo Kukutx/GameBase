@@ -18,7 +18,7 @@ Read this only when a task crosses systems and the owner, the consumers or the v
 | Content of a type (item, crop, NPC, quest, mail, location, audio cue) | the resource class under `gamebase/core/` or `gamebase/modules/`, the resource under `games/<id>/game/data/`, the game's content manifest (`games/farm1/game/data/content_manifest.tres` for Farm1), `ContentDB` |
 | Runtime state of a system | the autoload service that owns it; a scene only presents it |
 | What a save contains | `GameSaveManager` and the `to_save_data()` / `load_save_data()` pair of the owning service |
-| Player-visible text | the string literal at its call site or in the scene or resource, `games/farm1/game/i18n/ui.zh_CN.po`, `tools/check_localization.js` |
+| Player-visible text | the string literal at its call site or in the scene or resource, the catalog of the owning layer (`gamebase/core/i18n/`, `gamebase/modules/<module>/i18n/` or the game's `game/i18n/`), `tools/check_localization.js` |
 | Input actions | `gamebase/core/settings/game_settings.gd` for rebindable actions, the `[input]` section of `games/<id>/project.godot` for the rest |
 | Travel between locations | `WorldTravel`, the `WorldLocationData` resources and the `WorldSpawnPoint` nodes |
 | Audio | `GameAudio`, the `AudioCueData` resources, `docs/AUDIO.md` |

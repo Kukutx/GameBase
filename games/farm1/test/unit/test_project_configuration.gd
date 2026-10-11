@@ -14,10 +14,19 @@ func test_project_config_has_no_local_development_references() -> void:
 	assert_false(project.contains("res://.dev/"), "project.godot must never reference local .dev content")
 	assert_true(project.contains('Transition="*res://gamebase/core/world/scene_transition.gd"'))
 
-func test_localization_resources_are_registered() -> void:
-	var project := _read_text("res://project.godot")
-	assert_true(project.contains('locale/translations=PackedStringArray("res://game/i18n/ui.zh_CN.po")'))
-	assert_true(FileAccess.file_exists("res://game/i18n/ui.zh_CN.po"))
+# The core, each module and the game translate their own text; the game
+# registers all of their catalogs and the strings of every layer translate.
+func test_layer_catalogs_are_registered_and_translate() -> void:
+	var catalogs: PackedStringArray = ProjectSettings.get_setting("internationalization/locale/translations", PackedStringArray())
+	for path: String in ["res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/lifesim/i18n/lifesim.zh_CN.po", "res://game/i18n/ui.zh_CN.po"]:
+		assert_true(catalogs.has(path), "%s is registered" % path)
+		assert_true(ResourceLoader.exists(path), "%s exists" % path)
+	var previous := TranslationServer.get_locale()
+	TranslationServer.set_locale("zh_CN")
+	assert_eq(tr("Unbound"), "未绑定", "core text")
+	assert_eq(tr("Animal Ledger"), "动物管理", "module text")
+	assert_eq(tr("Continue"), "继续游戏", "game text")
+	TranslationServer.set_locale(previous)
 
 func test_input_audio_and_autosave_services_are_registered() -> void:
 	var project := _read_text("res://project.godot")

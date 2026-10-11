@@ -1,0 +1,475 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase modules/lifesim\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Animal Ledger"
+msgstr "动物管理"
+
+msgid "BITE! Press %s to reel in"
+msgstr "上钩了！按 %s 收线"
+
+msgid "BITE! Press %s"
+msgstr "上钩了！按 %s"
+
+msgid "Fishing · Waiting..."
+msgstr "钓鱼 · 等待鱼咬钩..."
+
+msgid "Fishing · BITE!  Press %s"
+msgstr "钓鱼 · 上钩！按 %s"
+
+msgid "None"
+msgstr "无"
+
+msgid "Copper Furnace"
+msgstr "铜制熔炉"
+
+msgid "Oil Maker"
+msgstr "榨油机"
+
+msgid "Sprinkler"
+msgstr "洒水器"
+
+msgid "Shipping\n%dg pending"
+msgstr "出货箱\n待结算 %dg"
+
+msgid "Shipping\nEmpty"
+msgstr "出货箱\n空"
+
+msgid "Joined"
+msgstr "已参加"
+
+msgid "Join for festival reward"
+msgstr "参加并领取节日奖励"
+
+msgid "%s · Floor %d · Deepest %d"
+msgstr "%s · 第 %d 层 · 最深 %d 层"
+
+msgid "Elevator to Floor 1"
+msgstr "前往矿井第 1 层"
+
+msgid "Elevator ↑ F1"
+msgstr "电梯 ↑ 第1层"
+
+msgid "Elevator to Floor %d"
+msgstr "前往矿井第 %d 层"
+
+msgid "Elevator checkpoint locked"
+msgstr "电梯检查点尚未解锁"
+
+msgid "Elevator → F%d"
+msgstr "电梯 → 第%d层"
+
+msgid "Elevator locked"
+msgstr "电梯未解锁"
+
+msgid "Descend to Floor %d"
+msgstr "下到第 %d 层"
+
+msgid "Deepest floor reached"
+msgstr "已到达最深层"
+
+msgid "Clear the floor first"
+msgstr "先清理本层"
+
+msgid "Ladder ↓ F%d"
+msgstr "梯子 ↓ 第%d层"
+
+msgid "Ladder · bottom"
+msgstr "梯子 · 已到底"
+
+msgid "Ladder locked"
+msgstr "梯子未解锁"
+
+msgid "Tilled"
+msgstr "已耕地"
+
+msgid "Soil"
+msgstr "土地"
+
+msgid "Harvest %s"
+msgstr "收获 %s"
+
+msgid "Farm plot"
+msgstr "农田"
+
+msgid "%s · Ready"
+msgstr "%s · 已完成"
+
+msgid "%s · %d min"
+msgstr "%s · 剩余 %d 分钟"
+
+msgid "Coop %d/%d · Barn %d/%d · Hay %d"
+msgstr "鸡舍 %d/%d · 畜棚 %d/%d · 干草 %d"
+
+msgid "Feed Coop (%d)"
+msgstr "喂鸡舍（%d）"
+
+msgid "Feed Barn (%d)"
+msgstr "喂畜棚（%d）"
+
+msgid "No animals owned here."
+msgstr "这里还没有饲养动物。"
+
+msgid "[b]%s[/b]\nSpecies: %s\nHousing: %s\nHappiness: %d/100\nFed today: %s\nProduct: %s%s"
+msgstr "[b]%s[/b]\n种类：%s\n住所：%s\n幸福度：%d/100\n今日已喂食：%s\n产物：%s%s"
+
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"
+
+msgid " · ready"
+msgstr " · 可收取"
+
+msgid "Sell %s · %dg"
+msgstr "出售 %s · %dg"
+
+msgid "Animal name must be 1–20 characters"
+msgstr "动物名称必须为 1–20 个字符"
+
+msgid "Sell %s for %dg? This cannot be undone."
+msgstr "以 %dg 出售 %s？此操作无法撤销。"
+
+msgid "Fed %d animals"
+msgstr "已喂食 %d 只动物"
+
+msgid "No animals were fed"
+msgstr "没有动物需要喂食"
+
+msgid "%s Maxed"
+msgstr "%s已满级"
+
+msgid "Maximum housing capacity reached"
+msgstr "已达到最大饲养容量"
+
+msgid "Ship selected item"
+msgstr "出货当前物品"
+
+msgid "Check Sprinkler"
+msgstr "查看洒水器"
+
+msgid "Feed animals"
+msgstr "喂养动物"
+
+msgid "Fish"
+msgstr "钓鱼"
+
+msgid "Manage animals"
+msgstr "管理动物"
+
+msgid "Visit festival booth"
+msgstr "参观节日摊位"
+
+msgid "Use elevator"
+msgstr "使用电梯"
+
+msgid "Use Furnace"
+msgstr "使用熔炉"
+
+msgid "Mine rock"
+msgstr "采矿"
+
+msgid "Rock"
+msgstr "岩石"
+
+msgid "Collect output"
+msgstr "收取产物"
+
+msgid "%s fed"
+msgstr "%s已喂食"
+
+msgid "Feed %s x%d"
+msgstr "喂养%s x%d"
+
+msgid "%s needs feed"
+msgstr "%s需要喂食"
+
+msgid "Collect %s"
+msgstr "收取%s"
+
+msgid "Pet %s"
+msgstr "抚摸%s"
+
+msgid "%s"
+msgstr "%s"
+
+msgid "Visit %s"
+msgstr "前往%s"
+
+msgid "Check %s"
+msgstr "查看%s"
+
+msgid "Mine %s"
+msgstr "开采%s"
+
+msgid "%s\nFed today"
+msgstr "%s\n今日已喂食"
+
+msgid "%s\n%d need %s"
+msgstr "%s\n%d 只需要%s"
+
+msgid "Animal Trough"
+msgstr "动物食槽"
+
+msgid "You do not have %s"
+msgstr "你没有%s"
+
+msgid "Not enough energy"
+msgstr "体力不足"
+
+msgid "No %s available"
+msgstr "没有可用的%s"
+
+msgid "Missing money or materials for %s"
+msgstr "购买%s所需的金钱或材料不足"
+
+msgid "Materials changed before %s could be purchased"
+msgstr "购买%s前材料发生了变化"
+
+msgid "Money changed before %s could be purchased"
+msgstr "购买%s前金钱发生了变化"
+
+msgid "Expansion complete: %s"
+msgstr "扩建完成：%s"
+
+msgid "That item cannot be shipped"
+msgstr "该物品不能出货"
+
+msgid "You do not have enough %s"
+msgstr "你的%s数量不足"
+
+msgid "Shipped %s x%d"
+msgstr "已出货%s x%d"
+
+msgid "Overnight shipping earned %dg"
+msgstr "昨夜出货收入 %dg"
+
+msgid "Select an item to ship"
+msgstr "请选择要出货的物品"
+
+msgid "Joined %s"
+msgstr "已参加%s"
+
+msgid "This festival booth is closed"
+msgstr "节日摊位目前未开放"
+
+msgid "You already joined %s this year"
+msgstr "你今年已经参加过%s"
+
+msgid "Could not claim the festival reward"
+msgstr "无法领取节日奖励"
+
+msgid "No mine elevator checkpoint unlocked yet"
+msgstr "尚未解锁矿井电梯检查点"
+
+msgid "Mine elevator is unavailable right now"
+msgstr "矿井电梯目前不可用"
+
+msgid "Mine elevator → Floor %d"
+msgstr "矿井电梯 → 第 %d 层"
+
+msgid "Nothing left to mine here"
+msgstr "这里已经没有可开采的资源"
+
+msgid "Use a pickaxe on %s"
+msgstr "请用镐开采%s"
+
+msgid "This pickaxe is not strong enough"
+msgstr "这把镐的强度不够"
+
+msgid "%s · %d hits left"
+msgstr "%s · 还需 %d 次"
+
+msgid "Mined %s x%d"
+msgstr "开采获得%s x%d"
+
+msgid "Could not descend right now"
+msgstr "现在无法继续下层"
+
+msgid "Descending to Mine Floor %d"
+msgstr "正在前往矿井第 %d 层"
+
+msgid "Make room before packing up this structure"
+msgstr "收起该建筑前请先腾出背包空间"
+
+msgid "Inventory changed before the structure could be packed up"
+msgstr "收起建筑前背包内容发生了变化"
+
+msgid "Basic Sprinkler · waters nearby plots every morning (%.0f px)"
+msgstr "基础洒水器 · 每天早晨自动浇灌附近农田（%.0f px）"
+
+msgid "You are already fishing"
+msgstr "你已经在钓鱼"
+
+msgid "Nothing is biting right now"
+msgstr "现在没有鱼咬钩"
+
+msgid "Not enough energy to fish"
+msgstr "体力不足，无法钓鱼"
+
+msgid "Cast the line... wait for a bite"
+msgstr "已抛竿……等待鱼咬钩"
+
+msgid "Caught %s"
+msgstr "钓到了%s"
+
+msgid "You need a fishing rod"
+msgstr "你需要一根钓鱼竿"
+
+msgid "This fishing spot has no location data"
+msgstr "该钓鱼点缺少地点数据"
+
+msgid "Collect or finish the current job before packing this station"
+msgstr "收起机器前请先完成或领取当前加工任务"
+
+msgid "Started %s"
+msgstr "已开始%s"
+
+msgid "Make room for the full output"
+msgstr "请为全部产物腾出空间"
+
+msgid "Collected %s x%d"
+msgstr "已收取%s x%d"
+
+msgid "%s · %d min remaining"
+msgstr "%s · 剩余 %d 分钟"
+
+msgid "No processable materials"
+msgstr "没有可加工的材料"
+
+msgid "%s finished %s"
+msgstr "%s完成了%s"
+
+msgid "Animal ledger UI is unavailable"
+msgstr "动物管理界面不可用"
+
+msgid "Renamed animal to %s"
+msgstr "动物已重命名为%s"
+
+msgid "Sold %s for %dg"
+msgstr "以 %dg 出售了%s"
+
+msgid "No free %s slots"
+msgstr "%s没有空余位置"
+
+msgid "Housing changed before the purchase completed"
+msgstr "购买完成前饲养设施发生了变化"
+
+msgid "Bought %s for %dg"
+msgstr "以 %dg 购买了%s"
+
+msgid "Petted %s · Happiness %d"
+msgstr "抚摸了%s · 幸福度 %d"
+
+msgid "%s looks content"
+msgstr "%s看起来很满足"
+
+msgid "Make room for the full animal product"
+msgstr "请为全部动物产物腾出空间"
+
+msgid "Nothing selected"
+msgstr "没有选择物品"
+
+msgid "%s cannot be used on soil"
+msgstr "%s不能用于土地"
+
+msgid "This soil is already tilled"
+msgstr "这块土地已经耕过"
+
+msgid "Till the soil first"
+msgstr "请先耕地"
+
+msgid "The soil is already watered"
+msgstr "这块土地已经浇过水"
+
+msgid "Till the soil before planting"
+msgstr "播种前请先耕地"
+
+msgid "Something is already growing here"
+msgstr "这里已经有作物在生长"
+
+msgid "%s cannot grow in %s"
+msgstr "%s不能在%s生长"
+
+msgid "No %s left"
+msgstr "%s已经用完"
+
+msgid "Make room for the full harvest"
+msgstr "请为全部收获物腾出背包空间"
+
+msgid "%s animals are fed for today"
+msgstr "%s的动物今天已经喂过了"
+
+msgid "Fed %d %s animals"
+msgstr "已喂食 %d 只%s动物"
+
+msgid "Processing Station"
+msgstr "加工设备"
+
+msgid "Animal"
+msgstr "动物"
+
+msgid "Animal name"
+msgstr "动物名称"
+
+msgid "Festival Booth"
+msgstr "节日摊位"
+
+msgid "Fishing Spot"
+msgstr "钓鱼点"
+
+msgid "Furnace"
+msgstr "熔炉"
+
+msgid "Mine Elevator"
+msgstr "矿井电梯"
+
+msgid "Pet animal"
+msgstr "抚摸动物"
+
+msgid "Rename"
+msgstr "重命名"
+
+msgid "Sell"
+msgstr "出售"
+
+msgid "Sell Animal"
+msgstr "出售动物"
+
+msgid "Sell this animal?"
+msgstr "出售这只动物？"
+
+msgid "Soil tilled"
+msgstr "已翻土"
+
+msgid "Soil watered"
+msgstr "已浇水"
+
+msgid "Planted %s"
+msgstr "已种下%s"
+
+msgid "Harvested %s"
+msgstr "已收获%s"
+
+msgid "The fish got away"
+msgstr "鱼跑掉了"
+
+msgid "Waiting for a bite..."
+msgstr "等待鱼咬钩……"
+
+msgid "Fishing cancelled"
+msgstr "已取消钓鱼"
+
+msgid "Farm Expansion"
+msgstr "农场扩建"
+
+msgid "Reel it in!"
+msgstr "收线！"
+
+msgid "Press %s in the green zone · tries left: %d"
+msgstr "在绿色区域内按 %s · 剩余次数：%d"

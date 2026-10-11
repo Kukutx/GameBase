@@ -23,7 +23,7 @@ This file is the smallest routing layer every task in this repository sees. It h
 | `gamebase/**/*.gd`, `games/*/game/**/*.gd`, `games/*/test/**/*.gd` | `.agents/rules/gdscript.md` |
 | `gamebase/**/*.tscn`, `gamebase/**/*.tres`, `games/*/game/**/*.tscn`, `games/*/game/**/*.tres` | `.agents/rules/scenes-resources.md` |
 | `gamebase/core/save/**` | `.agents/rules/save.md` |
-| `games/*/game/i18n/**` | `.agents/rules/localization.md` |
+| `gamebase/core/i18n/**`, `gamebase/modules/*/i18n/**`, `games/*/game/i18n/**` | `.agents/rules/localization.md` |
 | `games/*/test/**` | `.agents/rules/testing.md` |
 | `tools/**` | `.agents/rules/tools.md` |
 | `.github/workflows/**` | `.agents/rules/ci-performance.md` |

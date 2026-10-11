@@ -87,9 +87,6 @@ msgstr "设置会自动保存。"
 msgid "Press a key..."
 msgstr "请按一个按键..."
 
-msgid "Unbound"
-msgstr "未绑定"
-
 msgid "Move Up"
 msgstr "向上移动"
 
@@ -144,38 +141,11 @@ msgstr "世界"
 msgid "Log"
 msgstr "日志"
 
-msgid "Inventory"
-msgstr "背包"
-
 msgid "Assign"
 msgstr "分配"
 
 msgid "Claim Archive Reward"
 msgstr "领取收藏奖励"
-
-msgid "Close"
-msgstr "关闭"
-
-msgid "General Store"
-msgstr "杂货店"
-
-msgid "Animal Ledger"
-msgstr "动物管理"
-
-msgid "Town Notice Board"
-msgstr "城镇公告板"
-
-msgid "Town Projects"
-msgstr "城镇建设"
-
-msgid "Mailbox"
-msgstr "邮箱"
-
-msgid "Forge"
-msgstr "锻造台"
-
-msgid "Storage Chest"
-msgstr "储物箱"
 
 msgid "Autosave"
 msgstr "自动保存"
@@ -194,9 +164,6 @@ msgstr "%s %d日 · 第%d天 · %02d:%02d · %dg%s"
 
 msgid "Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?"
 msgstr "存档位 %d 已有游戏。开始新游戏会覆盖该存档，是否继续？"
-
-msgid "Could not open the starting location"
-msgstr "无法打开初始地点"
 
 msgid "Loading Slot %d..."
 msgstr "正在读取存档位 %d..."
@@ -222,33 +189,6 @@ msgstr "保存失败：%s"
 msgid "Load failed: %s"
 msgstr "读取失败：%s"
 
-msgid "LT/RT"
-msgstr "LT/RT"
-
-msgid "1–9"
-msgstr "1–9"
-
-msgid "Left Stick / D-Pad"
-msgstr "左摇杆 / 十字键"
-
-msgid "WASD / Arrows"
-msgstr "WASD / 方向键"
-
-msgid "%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load"
-msgstr "%s 移动 · %s 互动/收线 · %s 工具/物品 · %s 送礼 · %s 收起建筑 · %s 菜单 · %s 热栏 · %s/%s 保存/读取"
-
-msgid "BITE! Press %s to reel in"
-msgstr "上钩了！按 %s 收线"
-
-msgid "BITE! Press %s"
-msgstr "上钩了！按 %s"
-
-msgid "Fishing · Waiting..."
-msgstr "钓鱼 · 等待鱼咬钩..."
-
-msgid "Fishing · BITE!  Press %s"
-msgstr "钓鱼 · 上钩！按 %s"
-
 msgid "%s %d  %02d:%02d"
 msgstr "%s %d日  %02d:%02d"
 
@@ -266,9 +206,6 @@ msgstr "领取收藏奖励（%d）"
 
 msgid "Empty"
 msgstr "空"
-
-msgid "Money: %dg"
-msgstr "金钱：%dg"
 
 msgid "HP: %d/%d    Energy: %d/%d"
 msgstr "生命：%d/%d    体力：%d/%d"
@@ -299,9 +236,6 @@ msgstr "[b]%s[/b]  Lv.%d   %d XP"
 
 msgid "Active Buffs"
 msgstr "当前增益"
-
-msgid "None"
-msgstr "无"
 
 msgid "• %s — %d min"
 msgstr "• %s — %d 分钟"
@@ -354,9 +288,6 @@ msgstr "野外"
 msgid "Dungeon"
 msgstr "地下区域"
 
-msgid "Town"
-msgstr "城镇"
-
 msgid "Spring"
 msgstr "春季"
 
@@ -377,63 +308,6 @@ msgstr "下雨"
 
 msgid "Storm"
 msgstr "暴风雨"
-
-msgid "No notice available today."
-msgstr "今天没有新的公告。"
-
-msgid "Unavailable"
-msgstr "不可用"
-
-msgid "[b]%s[/b]\n\n%s\n\nProgress: %d/%d\nReward: %dg\nDeadline: Day %d"
-msgstr "[b]%s[/b]\n\n%s\n\n进度：%d/%d\n奖励：%dg\n截止：第 %d 天"
-
-msgid "Accepted"
-msgstr "已接受"
-
-msgid "Available"
-msgstr "可接受"
-
-msgid "Claimed"
-msgstr "已领取"
-
-msgid "Claim Reward"
-msgstr "领取奖励"
-
-msgid "In Progress"
-msgstr "进行中"
-
-msgid "Accept Contract"
-msgstr "接受委托"
-
-msgid "Buy %s — %dg"
-msgstr "购买 %s — %dg"
-
-msgid "Buy %s — %dg  ·  %s slots %d"
-msgstr "购买 %s — %dg  ·  %s 空位 %d"
-
-msgid "Sell selected: %s — %dg"
-msgstr "出售当前物品：%s — %dg"
-
-msgid "Sell selected"
-msgstr "出售当前物品"
-
-msgid "The mailbox is empty"
-msgstr "邮箱是空的"
-
-msgid "From: %s   ·   %d/%d"
-msgstr "来自：%s   ·   %d/%d"
-
-msgid "Claim rewards"
-msgstr "领取附件"
-
-msgid "Attachments: %s"
-msgstr "附件：%s"
-
-msgid "No attachments"
-msgstr "无附件"
-
-msgid "Claimed attachments from %s"
-msgstr "已领取 %s 的附件"
 
 msgid "Starter Town"
 msgstr "起始镇"
@@ -603,12 +477,6 @@ msgstr "蔬菜炖汤"
 msgid "Basic Sprinkler"
 msgstr "基础洒水器"
 
-msgid "Copper Furnace"
-msgstr "铜制熔炉"
-
-msgid "Oil Maker"
-msgstr "榨油机"
-
 msgid "Copper Hoe"
 msgstr "铜锄头"
 
@@ -675,149 +543,8 @@ msgstr "采集"
 msgid "Fishing"
 msgstr "钓鱼"
 
-msgid "Mining"
-msgstr "采矿"
-
 msgid "Combat"
 msgstr "战斗"
-
-msgid "Sprinkler"
-msgstr "洒水器"
-
-msgid "Shipping\n%dg pending"
-msgstr "出货箱\n待结算 %dg"
-
-msgid "Shipping\nEmpty"
-msgstr "出货箱\n空"
-
-msgid "Joined"
-msgstr "已参加"
-
-msgid "Join for festival reward"
-msgstr "参加并领取节日奖励"
-
-msgid "%s · Floor %d · Deepest %d"
-msgstr "%s · 第 %d 层 · 最深 %d 层"
-
-msgid "Elevator to Floor 1"
-msgstr "前往矿井第 1 层"
-
-msgid "Elevator ↑ F1"
-msgstr "电梯 ↑ 第1层"
-
-msgid "Elevator to Floor %d"
-msgstr "前往矿井第 %d 层"
-
-msgid "Elevator checkpoint locked"
-msgstr "电梯检查点尚未解锁"
-
-msgid "Elevator → F%d"
-msgstr "电梯 → 第%d层"
-
-msgid "Elevator locked"
-msgstr "电梯未解锁"
-
-msgid "Descend to Floor %d"
-msgstr "下到第 %d 层"
-
-msgid "Deepest floor reached"
-msgstr "已到达最深层"
-
-msgid "Clear the floor first"
-msgstr "先清理本层"
-
-msgid "Ladder ↓ F%d"
-msgstr "梯子 ↓ 第%d层"
-
-msgid "Ladder · bottom"
-msgstr "梯子 · 已到底"
-
-msgid "Ladder locked"
-msgstr "梯子未解锁"
-
-msgid "Tilled"
-msgstr "已耕地"
-
-msgid "Soil"
-msgstr "土地"
-
-msgid "Harvest %s"
-msgstr "收获 %s"
-
-msgid "Farm plot"
-msgstr "农田"
-
-msgid "%s\n%d/%d slots"
-msgstr "%s\n%d/%d 格"
-
-msgid "Open %s"
-msgstr "打开 %s"
-
-msgid "Item"
-msgstr "物品"
-
-msgid "%s · Ready"
-msgstr "%s · 已完成"
-
-msgid "%s · %d min"
-msgstr "%s · 剩余 %d 分钟"
-
-msgid "Town Projects\nReward ready"
-msgstr "城镇建设\n奖励可领取"
-
-msgid "Town Projects\nRestored"
-msgstr "城镇建设\n已修复"
-
-msgid "Town Projects\nNeeds help"
-msgstr "城镇建设\n需要帮助"
-
-msgid "Storage slots: %d/%d"
-msgstr "储物格：%d/%d"
-
-msgid "Coop %d/%d · Barn %d/%d · Hay %d"
-msgstr "鸡舍 %d/%d · 畜棚 %d/%d · 干草 %d"
-
-msgid "Feed Coop (%d)"
-msgstr "喂鸡舍（%d）"
-
-msgid "Feed Barn (%d)"
-msgstr "喂畜棚（%d）"
-
-msgid "No animals owned here."
-msgstr "这里还没有饲养动物。"
-
-msgid "[b]%s[/b]\nSpecies: %s\nHousing: %s\nHappiness: %d/100\nFed today: %s\nProduct: %s%s"
-msgstr "[b]%s[/b]\n种类：%s\n住所：%s\n幸福度：%d/100\n今日已喂食：%s\n产物：%s%s"
-
-msgid "Yes"
-msgstr "是"
-
-msgid "No"
-msgstr "否"
-
-msgid " · ready"
-msgstr " · 可收取"
-
-msgid "Sell %s · %dg"
-msgstr "出售 %s · %dg"
-
-msgid "Animal name must be 1–20 characters"
-msgstr "动物名称必须为 1–20 个字符"
-
-msgid "Sell %s for %dg? This cannot be undone."
-msgstr "以 %dg 出售 %s？此操作无法撤销。"
-
-msgid "Fed %d animals"
-msgstr "已喂食 %d 只动物"
-
-msgid "No animals were fed"
-msgstr "没有动物需要喂食"
-
-msgid "%s Maxed"
-msgstr "%s已满级"
-
-msgid "Maximum housing capacity reached"
-msgstr "已达到最大饲养容量"
 
 msgid "Coop"
 msgstr "鸡舍"
@@ -915,185 +642,17 @@ msgstr "冬季灯笼夜"
 msgid "Village Market"
 msgstr "村庄集市"
 
-msgid "Interact"
-msgstr "互动"
-
-msgid "Ship selected item"
-msgstr "出货当前物品"
-
-msgid "Check Sprinkler"
-msgstr "查看洒水器"
-
-msgid "Feed animals"
-msgstr "喂养动物"
-
-msgid "Fish"
-msgstr "钓鱼"
-
-msgid "Read notice board"
-msgstr "查看公告板"
-
-msgid "Check notice board"
-msgstr "查看公告板"
-
-msgid "Craft"
-msgstr "制作"
-
-msgid "Manage animals"
-msgstr "管理动物"
-
-msgid "Use Forge"
-msgstr "使用锻造台"
-
-msgid "Visit festival booth"
-msgstr "参观节日摊位"
-
-msgid "Check Mailbox"
-msgstr "查看邮箱"
-
-msgid "Pick up"
-msgstr "拾取"
-
-msgid "Use elevator"
-msgstr "使用电梯"
-
-msgid "Review town projects"
-msgstr "查看城镇建设"
-
-msgid "Check town projects"
-msgstr "查看城镇建设"
-
-msgid "Use Furnace"
-msgstr "使用熔炉"
-
-msgid "Sleep until tomorrow"
-msgstr "睡到明天"
-
-msgid "Shop"
-msgstr "商店"
-
 msgid "Talk"
 msgstr "交谈"
-
-msgid "Mine rock"
-msgstr "采矿"
-
-msgid "Rock"
-msgstr "岩石"
-
-msgid "Collect output"
-msgstr "收取产物"
-
-msgid "%s fed"
-msgstr "%s已喂食"
-
-msgid "Feed %s x%d"
-msgstr "喂养%s x%d"
-
-msgid "%s needs feed"
-msgstr "%s需要喂食"
-
-msgid "Collect %s"
-msgstr "收取%s"
-
-msgid "Pet %s"
-msgstr "抚摸%s"
-
-msgid "%s"
-msgstr "%s"
-
-msgid "Use %s"
-msgstr "使用%s"
-
-msgid "Visit %s"
-msgstr "前往%s"
-
-msgid "Read Mail (%d new)"
-msgstr "阅读邮件（%d 封新邮件）"
-
-msgid "Pick up %s"
-msgstr "拾取%s"
-
-msgid "Check %s"
-msgstr "查看%s"
-
-msgid "Shop: %s"
-msgstr "商店：%s"
-
-msgid "Mine %s"
-msgstr "开采%s"
 
 msgid "product"
 msgstr "产物"
 
-msgid "%s Projects"
-msgstr "%s建设"
-
-msgid "No restoration projects are registered here yet."
-msgstr "这里还没有登记修复项目。"
-
-msgid "Materials"
-msgstr "材料"
-
-msgid "• %s  %d/%d  (carrying %d)"
-msgstr "• %s  %d/%d  （携带 %d）"
-
-msgid "Reward"
-msgstr "奖励"
-
-msgid "Complete the earlier town project first."
-msgstr "请先完成前置城镇建设项目。"
-
-msgid "Locked"
-msgstr "未解锁"
-
-msgid "Completed"
-msgstr "已完成"
-
-msgid "Donate Available Materials"
-msgstr "捐赠可用材料"
-
-msgid "You are not carrying any needed materials"
-msgstr "你没有携带当前需要的材料"
-
-msgid "Notice Board"
-msgstr "公告板"
-
-msgid "Notice Board\nDone today"
-msgstr "公告板\n今日已完成"
-
-msgid "Notice Board\nReward ready"
-msgstr "公告板\n奖励可领取"
-
-msgid "Notice Board\n%d/%d"
-msgstr "公告板\n%d/%d"
-
-msgid "Notice Board\nNew request"
-msgstr "公告板\n有新委托"
-
-msgid "%s\nFed today"
-msgstr "%s\n今日已喂食"
-
-msgid "%s\n%d need %s"
-msgstr "%s\n%d 只需要%s"
-
-msgid "Animal Trough"
-msgstr "动物食槽"
-
 msgid "Feed"
 msgstr "饲料"
 
-msgid "You do not have %s"
-msgstr "你没有%s"
-
 msgid "Nothing to use %s on"
 msgstr "没有可使用%s的目标"
-
-msgid "Not enough energy"
-msgstr "体力不足"
-
-msgid "No %s available"
-msgstr "没有可用的%s"
 
 msgid "You do not need that right now"
 msgstr "现在不需要使用它"
@@ -1137,368 +696,8 @@ msgstr "已收起%s"
 msgid "structure"
 msgstr "建筑"
 
-msgid "Missing money or materials for %s"
-msgstr "购买%s所需的金钱或材料不足"
-
-msgid "Materials changed before %s could be purchased"
-msgstr "购买%s前材料发生了变化"
-
-msgid "Money changed before %s could be purchased"
-msgstr "购买%s前金钱发生了变化"
-
-msgid "Expansion complete: %s"
-msgstr "扩建完成：%s"
-
-msgid "That item cannot be shipped"
-msgstr "该物品不能出货"
-
-msgid "You do not have enough %s"
-msgstr "你的%s数量不足"
-
-msgid "Shipped %s x%d"
-msgstr "已出货%s x%d"
-
-msgid "Overnight shipping earned %dg"
-msgstr "昨夜出货收入 %dg"
-
-msgid "Select an item to ship"
-msgstr "请选择要出货的物品"
-
-msgid "Shop UI is unavailable"
-msgstr "商店界面不可用"
-
-msgid "Not enough money"
-msgstr "金钱不足"
-
-msgid "Inventory is full"
-msgstr "背包已满"
-
-msgid "Inventory changed before the purchase completed"
-msgstr "购买完成前背包内容发生了变化"
-
-msgid "Bought %s x%d for %dg"
-msgstr "以 %dg 购买了%s x%d"
-
-msgid "That item cannot be sold"
-msgstr "该物品不能出售"
-
-msgid "You do not have that item"
-msgstr "你没有该物品"
-
-msgid "Sold %s x%d for %dg"
-msgstr "以 %dg 出售了%s x%d"
-
-msgid "%s has nothing to say yet"
-msgstr "%s现在没有更多话可说"
-
-msgid "This heart event dialogue is unavailable"
-msgstr "该好感事件对话不可用"
-
-msgid "Finish the current conversation first"
-msgstr "请先结束当前对话"
-
-msgid "Joined %s"
-msgstr "已参加%s"
-
-msgid "Archive reward: %s"
-msgstr "收藏奖励：%s"
-
-msgid "Archive milestone ready: %s"
-msgstr "收藏里程碑可领取：%s"
-
-msgid "This festival booth is closed"
-msgstr "节日摊位目前未开放"
-
-msgid "You already joined %s this year"
-msgstr "你今年已经参加过%s"
-
-msgid "Could not claim the festival reward"
-msgstr "无法领取节日奖励"
-
-msgid "No mine elevator checkpoint unlocked yet"
-msgstr "尚未解锁矿井电梯检查点"
-
-msgid "Mine elevator is unavailable right now"
-msgstr "矿井电梯目前不可用"
-
-msgid "Mine elevator → Floor %d"
-msgstr "矿井电梯 → 第 %d 层"
-
-msgid "Nothing left to mine here"
-msgstr "这里已经没有可开采的资源"
-
-msgid "Use a pickaxe on %s"
-msgstr "请用镐开采%s"
-
-msgid "This pickaxe is not strong enough"
-msgstr "这把镐的强度不够"
-
-msgid "%s · %d hits left"
-msgstr "%s · 还需 %d 次"
-
-msgid "Mined %s x%d"
-msgstr "开采获得%s x%d"
-
-msgid "Unknown location: %s"
-msgstr "未知地点：%s"
-
-msgid "Travel spawn is unavailable"
-msgstr "目的地出生点不可用"
-
-msgid "Travel failed"
-msgstr "旅行失败"
-
-msgid "Could not descend right now"
-msgstr "现在无法继续下层"
-
-msgid "Descending to Mine Floor %d"
-msgstr "正在前往矿井第 %d 层"
-
-msgid "Could not replace the selected save slot"
-msgstr "无法替换当前存档位"
-
-msgid "Could not start the new game location"
-msgstr "无法启动新游戏地点"
-
-msgid "Could not return home after staying up late"
-msgstr "熬夜后无法返回家中"
-
-msgid "You stayed up too late and woke at home with reduced energy"
-msgstr "你熬得太晚，在家醒来时体力有所减少"
-
-msgid "You stayed up too late and recovered with reduced energy"
-msgstr "你熬得太晚，恢复后体力有所减少"
-
-msgid "Could not return home after collapse"
-msgstr "倒下后无法返回家中"
-
-msgid "You collapsed and lost %dg"
-msgstr "你倒下了，损失了 %dg"
-
-msgid "You collapsed and woke up at home"
-msgstr "你倒下了，随后在家中醒来"
-
-msgid "You collapsed, lost %dg, and recovered where you fell"
-msgstr "你倒下了，损失了 %dg，并在原地恢复"
-
-msgid "You collapsed and recovered where you fell"
-msgstr "你倒下了，并在原地恢复"
-
-msgid "Portal target is unavailable"
-msgstr "传送目标不可用"
-
-msgid "Buff: %s (%d min)"
-msgstr "增益：%s（%d 分钟）"
-
-msgid "Crafting UI is unavailable"
-msgstr "制作界面不可用"
-
-msgid "Missing materials or skill level"
-msgstr "材料不足或技能等级不够"
-
-msgid "Inventory is full or materials changed"
-msgstr "背包已满或材料发生了变化"
-
-msgid "Crafted %s"
-msgstr "已制作%s"
-
-msgid "New mail: %s"
-msgstr "新邮件：%s"
-
-msgid "Make room in your inventory before claiming this letter"
-msgstr "领取邮件附件前请先清理背包空间"
-
-msgid "Make room before packing up this structure"
-msgstr "收起该建筑前请先腾出背包空间"
-
-msgid "Inventory changed before the structure could be packed up"
-msgstr "收起建筑前背包内容发生了变化"
-
-msgid "Mailbox UI is unavailable"
-msgstr "邮箱界面不可用"
-
-msgid "Basic Sprinkler · waters nearby plots every morning (%.0f px)"
-msgstr "基础洒水器 · 每天早晨自动浇灌附近农田（%.0f px）"
-
-msgid "Accepted: %s"
-msgstr "已接受：%s"
-
-msgid "Contract complete · +%dg"
-msgstr "委托完成 · +%dg"
-
-msgid "Daily contract expired"
-msgstr "每日委托已过期"
-
-msgid "Daily contract complete — return to the notice board"
-msgstr "每日委托已完成——返回公告板领取奖励"
-
-msgid "Notice board UI is unavailable"
-msgstr "公告板界面不可用"
-
-msgid "Forge menu is unavailable"
-msgstr "锻造界面不可用"
-
-msgid "Missing tool, materials, money, or skill level"
-msgstr "缺少工具、材料、金钱或技能等级"
-
-msgid "Inventory or materials changed before the upgrade completed"
-msgstr "升级完成前背包或材料发生了变化"
-
-msgid "Upgraded to %s"
-msgstr "已升级为%s"
-
-msgid "You are already fishing"
-msgstr "你已经在钓鱼"
-
-msgid "Nothing is biting right now"
-msgstr "现在没有鱼咬钩"
-
-msgid "Not enough energy to fish"
-msgstr "体力不足，无法钓鱼"
-
-msgid "Cast the line... wait for a bite"
-msgstr "已抛竿……等待鱼咬钩"
-
-msgid "Caught %s"
-msgstr "钓到了%s"
-
-msgid "You need a fishing rod"
-msgstr "你需要一根钓鱼竿"
-
-msgid "This fishing spot has no location data"
-msgstr "该钓鱼点缺少地点数据"
-
-msgid "Quest started: %s"
-msgstr "任务开始：%s"
-
-msgid "Quest complete — make room for the promised reward"
-msgstr "任务已完成——请为奖励腾出背包空间"
-
-msgid "Quest complete: %s"
-msgstr "任务完成：%s"
-
-msgid "Collect or finish the current job before packing this station"
-msgstr "收起机器前请先完成或领取当前加工任务"
-
-msgid "Started %s"
-msgstr "已开始%s"
-
-msgid "Make room for the full output"
-msgstr "请为全部产物腾出空间"
-
-msgid "Collected %s x%d"
-msgstr "已收取%s x%d"
-
-msgid "%s · %d min remaining"
-msgstr "%s · 剩余 %d 分钟"
-
-msgid "No processable materials"
-msgstr "没有可加工的材料"
-
-msgid "%s finished %s"
-msgstr "%s完成了%s"
-
-msgid "Animal ledger UI is unavailable"
-msgstr "动物管理界面不可用"
-
-msgid "Renamed animal to %s"
-msgstr "动物已重命名为%s"
-
-msgid "Sold %s for %dg"
-msgstr "以 %dg 出售了%s"
-
-msgid "No free %s slots"
-msgstr "%s没有空余位置"
-
-msgid "Housing changed before the purchase completed"
-msgstr "购买完成前饲养设施发生了变化"
-
-msgid "Bought %s for %dg"
-msgstr "以 %dg 购买了%s"
-
-msgid "Petted %s · Happiness %d"
-msgstr "抚摸了%s · 幸福度 %d"
-
-msgid "%s looks content"
-msgstr "%s看起来很满足"
-
-msgid "Make room for the full animal product"
-msgstr "请为全部动物产物腾出空间"
-
-msgid "Slept until %s %d"
-msgstr "睡到了%s %d日"
-
-msgid "Town project UI is unavailable"
-msgstr "城镇建设界面不可用"
-
-msgid "Nothing selected"
-msgstr "没有选择物品"
-
-msgid "%s cannot be used on soil"
-msgstr "%s不能用于土地"
-
-msgid "This soil is already tilled"
-msgstr "这块土地已经耕过"
-
-msgid "Till the soil first"
-msgstr "请先耕地"
-
-msgid "The soil is already watered"
-msgstr "这块土地已经浇过水"
-
-msgid "Till the soil before planting"
-msgstr "播种前请先耕地"
-
-msgid "Something is already growing here"
-msgstr "这里已经有作物在生长"
-
-msgid "%s cannot grow in %s"
-msgstr "%s不能在%s生长"
-
-msgid "No %s left"
-msgstr "%s已经用完"
-
-msgid "Make room for the full harvest"
-msgstr "请为全部收获物腾出背包空间"
-
-msgid "%s animals are fed for today"
-msgstr "%s的动物今天已经喂过了"
-
 msgid "feed"
 msgstr "饲料"
-
-msgid "Fed %d %s animals"
-msgstr "已喂食 %d 只%s动物"
-
-msgid "Empty this chest before packing it up"
-msgstr "收起储物箱前请先清空它"
-
-msgid "Storage menu is unavailable"
-msgstr "储物界面不可用"
-
-msgid "Storage is full"
-msgstr "储物箱已满"
-
-msgid "Project complete: %s"
-msgstr "建设项目完成：%s"
-
-msgid "Donated %d %s"
-msgstr "已捐赠 %d 个%s"
-
-msgid "Make room in your inventory before claiming the project reward"
-msgstr "领取建设奖励前请先腾出背包空间"
-
-msgid "Project reward claimed: %s"
-msgstr "已领取建设奖励：%s"
-
-msgid "You already gave %s a gift today"
-msgstr "你今天已经给%s送过礼物"
-
-msgid "That is not a suitable gift"
-msgstr "这件物品不适合作为礼物"
-
-msgid "Gifted %s to %s (%+d friendship)%s"
-msgstr "将%s送给%s（好感 %+d）%s"
 
 msgid "Fresh Catch"
 msgstr "新鲜渔获"
@@ -1674,44 +873,14 @@ msgstr " · 生日！"
 msgid "food"
 msgstr "食物"
 
-msgid "Daily contract"
-msgstr "每日委托"
-
-msgid "Processing Station"
-msgstr "加工设备"
-
-msgid "Animal"
-msgstr "动物"
-
-msgid "Animal name"
-msgstr "动物名称"
-
-msgid "Bed"
-msgstr "床"
-
 msgid "Community Garden · overgrown"
 msgstr "社区花园 · 杂草丛生"
 
 msgid "Community Garden · restored"
 msgstr "社区花园 · 已修复"
 
-msgid "Crafting"
-msgstr "制作"
-
 msgid "Delete this save slot and its backup?"
 msgstr "删除这个存档位及其备份？"
-
-msgid "Festival Booth"
-msgstr "节日摊位"
-
-msgid "Fishing Spot"
-msgstr "钓鱼点"
-
-msgid "From:"
-msgstr "来自："
-
-msgid "Furnace"
-msgstr "熔炉"
 
 msgid "GAMEBASE"
 msgstr "GAMEBASE"
@@ -1725,83 +894,20 @@ msgstr "港口储备 · 已补充"
 msgid "Home Interior"
 msgstr "住宅内部"
 
-msgid "Idle"
-msgstr "空闲"
-
-msgid "Letter"
-msgstr "邮件"
-
-msgid "Mail body"
-msgstr "邮件正文"
-
-msgid "Mailbox · %d new"
-msgstr "邮箱 · %d 封新邮件"
-
-msgid "Mine Elevator"
-msgstr "矿井电梯"
-
 msgid "NPC"
 msgstr "NPC"
-
-msgid "Next"
-msgstr "下一封"
-
-msgid "Open Storage Chest"
-msgstr "打开储物箱"
-
-msgid "Pet animal"
-msgstr "抚摸动物"
-
-msgid "Previous"
-msgstr "上一封"
-
-msgid "Refined copper and skill unlock stronger tools."
-msgstr "精炼铜锭并提升技能可以解锁更强的工具。"
-
-msgid "Rename"
-msgstr "重命名"
-
-msgid "Rowan's Forge"
-msgstr "罗文的锻造台"
-
-msgid "Sell"
-msgstr "出售"
-
-msgid "Sell Animal"
-msgstr "出售动物"
-
-msgid "Sell this animal?"
-msgstr "出售这只动物？"
 
 msgid "Starter Farm"
 msgstr "起始农场"
 
-msgid "Store 1 →"
-msgstr "存入 1 个 →"
-
-msgid "Stored"
-msgstr "已储存"
-
 msgid "This save slot already contains a game. Starting a new game will replace it. Continue?"
 msgstr "这个存档位已经有游戏。开始新游戏会覆盖它，是否继续？"
-
-msgid "Workbench"
-msgstr "工作台"
 
 msgid "Workshop · cramped"
 msgstr "工坊 · 拥挤"
 
 msgid "Workshop · expanded"
 msgstr "工坊 · 已扩建"
-
-msgid "← Take 1"
-msgstr "← 取出 1 个"
-
-msgid "Needs restoration"
-msgstr "需要修复"
-
-msgid "Restored"
-msgstr "已修复"
 
 msgid "Welcome to Starter Town. It is good to see the old farm active again."
 msgstr "欢迎来到起始镇。看到那座老农场重新有了动静，真不错。"
@@ -3084,29 +2190,8 @@ msgstr "无法创建支持诊断包"
 msgid "Support bundle created: %s"
 msgstr "已创建支持诊断包：%s"
 
-msgid "Cannot save while traveling"
-msgstr "旅行途中无法保存"
-
-msgid "Save from a playable location"
-msgstr "请在可游玩的地点保存"
-
-msgid "Cannot save without the player"
-msgstr "找不到玩家角色，无法保存"
-
 msgid "Finish fishing before saving"
 msgstr "请先结束钓鱼再保存"
-
-msgid "Could not write temporary save file"
-msgstr "无法写入临时存档文件"
-
-msgid "Could not create save backup"
-msgstr "无法创建存档备份"
-
-msgid "Could not finalize save file (%d)"
-msgstr "无法完成存档写入（%d）"
-
-msgid "Game saved · Slot %d"
-msgstr "已保存 · 存档位 %d"
 
 msgid "Could not update compatible backup (%d)"
 msgstr "无法更新兼容备份（%d）"
@@ -3114,17 +2199,8 @@ msgstr "无法更新兼容备份（%d）"
 msgid "Game saved to compatible backup · newer primary preserved"
 msgstr "已保存到兼容备份 · 较新的主存档已保留"
 
-msgid "Cannot load while traveling"
-msgstr "旅行途中无法读取"
-
 msgid "Save file is from a newer game version"
 msgstr "该存档来自更新的游戏版本"
-
-msgid "No save file yet"
-msgstr "还没有存档"
-
-msgid "Save references an unavailable scene"
-msgstr "存档指向的场景不可用"
 
 msgid "Loaded Slot %d from compatible temporary save · newer primary preserved"
 msgstr "已从兼容的临时存档读取存档位 %d · 较新的主存档已保留"
@@ -3132,173 +2208,14 @@ msgstr "已从兼容的临时存档读取存档位 %d · 较新的主存档已�
 msgid "Loaded Slot %d from compatible backup · newer primary preserved"
 msgstr "已从兼容备份读取存档位 %d · 较新的主存档已保留"
 
-msgid "Recovered Slot %d from temporary save"
-msgstr "已从临时存档恢复存档位 %d"
-
-msgid "Recovered Slot %d from backup"
-msgstr "已从备份恢复存档位 %d"
-
-msgid "Game loaded · Slot %d"
-msgstr "已读取 · 存档位 %d"
-
 msgid "Advanced time by 1 hour"
 msgstr "时间已推进 1 小时"
-
-msgid "Farm %d · Forage %d · Fish %d · Mine %d · Combat %d · Social %d"
-msgstr "耕作 %d · 采集 %d · 钓鱼 %d · 采矿 %d · 战斗 %d · 社交 %d"
-
-msgid "Inventory: empty (%d/%d slots)"
-msgstr "背包：空（%d/%d 格）"
-
-msgid "Inventory %d/%d: %s"
-msgstr "背包 %d/%d：%s"
-
-msgid "+%d more"
-msgstr "另有 %d 种"
-
-msgid "No active quest"
-msgstr "没有进行中的任务"
-
-msgid "%s %dm"
-msgstr "%s %d分钟"
-
-msgid "%d hearts"
-msgstr "%d 颗心"
-
-msgid "Next passive at Lv5"
-msgstr "Lv5 解锁下一个被动效果"
-
-msgid "Field Efficiency %s · tool energy -%d%%"
-msgstr "田间效率 %s · 工具体力消耗 -%d%%"
-
-msgid "Gatherer %s · +%d forage quantity"
-msgstr "采集者 %s · 采集数量 +%d"
-
-msgid "Angler %s · bite wait -%d%% · reel window +%d%%"
-msgstr "钓手 %s · 咬钩等待 -%d%% · 收线时间 +%d%%"
-
-msgid "Miner %s · mining energy -%d%%"
-msgstr "矿工 %s · 采矿体力消耗 -%d%%"
-
-msgid "Fighter %s · attack +%d%% · attack energy -%d%%"
-msgstr "战士 %s · 攻击 +%d%% · 攻击体力消耗 -%d%%"
-
-msgid "Neighbor %s · positive gift friendship +%d%%"
-msgstr "好邻居 %s · 喜爱礼物的好感 +%d%%"
-
-msgid "Passive tier %d"
-msgstr "被动效果 %d 级"
-
-msgid "Crops"
-msgstr "作物"
-
-msgid "Animals"
-msgstr "畜产"
-
-msgid "Processed"
-msgstr "加工品"
-
-msgid "Forage"
-msgstr "采集物"
-
-msgid "Shipped"
-msgstr "已出货"
-
-msgid "%s — Claimed"
-msgstr "%s — 已领取"
-
-msgid "%s — Ready"
-msgstr "%s — 可领取"
-
-msgid "Unknown project"
-msgstr "未知建设项目"
-
-msgid "%s · Locked"
-msgstr "%s · 未解锁"
-
-msgid "%s · Complete"
-msgstr "%s · 已完成"
-
-msgid "%s · Reward ready"
-msgstr "%s · 奖励可领取"
-
-msgid "%s · %d/%d donated"
-msgstr "%s · 已捐赠 %d/%d"
-
-msgid "No notice available"
-msgstr "暂无公告"
-
-msgid "Daily contract claimed"
-msgstr "每日委托奖励已领取"
-
-msgid "Offer: %s"
-msgstr "新委托：%s"
-
-msgid "%s · Complete — claim at board · due Day %d"
-msgstr "%s · 已完成——到公告板领取 · 截止第 %d 天"
-
-msgid "%s · %d/%d · due Day %d"
-msgstr "%s · %d/%d · 截止第 %d 天"
-
-msgid "Forage %d %s"
-msgstr "采集 %d 个%s"
-
-msgid "Catch %d %s"
-msgstr "钓到 %d 条%s"
-
-msgid "Mine %d %s"
-msgstr "开采 %d 个%s"
-
-msgid "Ship %d %s"
-msgstr "出货 %d 个%s"
-
-msgid "Harvest %d %s"
-msgstr "收获 %d 个%s"
-
-msgid "Collect %d %s"
-msgstr "收集 %d 个%s"
-
-msgid "%s for the town request."
-msgstr "%s，完成城镇的委托。"
-
-msgid "Soil tilled"
-msgstr "已翻土"
-
-msgid "Soil watered"
-msgstr "已浇水"
-
-msgid "Planted %s"
-msgstr "已种下%s"
-
-msgid "Harvested %s"
-msgstr "已收获%s"
 
 msgid "Tilled %d plots"
 msgstr "已翻耕 %d 块农田"
 
 msgid "Watered %d plots"
 msgstr "已浇灌 %d 块农田"
-
-msgid "The fish got away"
-msgstr "鱼跑掉了"
-
-msgid "Waiting for a bite..."
-msgstr "等待鱼咬钩……"
-
-msgid "Fishing cancelled"
-msgstr "已取消钓鱼"
-
-msgid "Enemy"
-msgstr "敌人"
-
-msgid "Farm Expansion"
-msgstr "农场扩建"
-
-msgid "Town Project"
-msgstr "城镇建设项目"
-
-msgid "Villager"
-msgstr "村民"
 
 msgid "Home Chest"
 msgstr "家用储物箱"
@@ -3362,12 +2279,3 @@ msgstr "观看港口大赛"
 
 msgid "Attend Lantern Night"
 msgstr "参加灯笼夜"
-
-msgid "Finish the minigame before saving"
-msgstr "请先完成小游戏再保存"
-
-msgid "Reel it in!"
-msgstr "收线！"
-
-msgid "Press %s in the green zone · tries left: %d"
-msgstr "在绿色区域内按 %s · 剩余次数：%d"

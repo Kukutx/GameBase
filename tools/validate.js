@@ -94,13 +94,14 @@ async function validateProject(godot, game, { label, skipImport = false, skipSoa
 }
 
 // Creates a game from the new-game template (the core and no module) outside
-// games/ and runs its checks: the core must work on its own.
+// games/ and runs every game check on it: the core must work on its own, and a
+// new game must pass validation as it is created.
 async function validateScaffold(godot) {
   const out = tempFile("gamebase-new-game");
   try {
     const { createGame } = require("./new_game");
     const game = createGame({ id: "scaffold-check", name: "GameBase New Game Check", out });
-    await validateProject(godot, game, { label: "New game scaffold (core only)" });
+    await validateGame(godot, game, {});
   } finally {
     removeRecursive(out);
   }

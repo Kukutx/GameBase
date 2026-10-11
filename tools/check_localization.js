@@ -2,20 +2,55 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { fail, main, rootPath } = require("./lib/common");
-const { gamePath, projectSetting, resolveGames } = require("./lib/games");
+const { gamePath, projectSetting, readFoundation, resolveGames } = require("./lib/games");
 
-// Scripts and scenes with player-visible text: the game and the parts of the
-// foundation it links (the core and its modules).
-function sourceRoots(game) {
-  return [gamePath(game, "game"), rootPath("gamebase", "core"), ...game.modules.map((module) => rootPath("gamebase", "modules", module))];
+// Player-visible text is translated in the layer that owns it: the core and
+// each module ship their own catalogs under <layer>/i18n/<name>.<locale>.po,
+// and a game translates only its own text. A game registers the catalogs of
+// every layer it uses in locale/translations, and a layer's text may be
+// translated only by its own catalogs or those of the layers below it.
+function textLayers(game) {
+  const foundation = readFoundation();
+  const core = { name: "gamebase/core", root: rootPath("gamebase", "core"), res: "res://gamebase/core/", below: [] };
+  const modules = game.modules.map((module) => ({
+    name: `gamebase/modules/${module}`,
+    root: rootPath("gamebase", "modules", module),
+    res: `res://gamebase/modules/${module}/`,
+    below: [core.name, ...(foundation.modules[module]?.requires || []).map((required) => `gamebase/modules/${required}`)],
+  }));
+  const own = { name: `games/${game.id}`, root: gamePath(game, "game"), res: "res://game/", below: [core.name, ...modules.map((layer) => layer.name)], game: true };
+  return [core, ...modules, own];
+}
+
+const CATALOG_RE = /^[\w-]+\.([A-Za-z]{2,3}(?:_[A-Za-z0-9]+)?)\.po$/;
+
+// The catalogs a foundation layer ships, by locale.
+function shippedCatalogs(layer) {
+  const directory = path.join(layer.root, "i18n");
+  const catalogs = new Map();
+  if (!fs.existsSync(directory)) return catalogs;
+  for (const name of fs.readdirSync(directory).sort()) {
+    const match = CATALOG_RE.exec(name);
+    if (match) catalogs.set(match[1], `${layer.res}i18n/${name}`);
+  }
+  return catalogs;
 }
 
 // The translation catalogs the game registers in project.godot.
-function poFiles(game) {
+function registeredCatalogs(game, layers) {
   const raw = projectSetting(game, "internationalization", "locale/translations") || "";
-  const files = [...raw.matchAll(/"res:\/\/([^"]+\.po)"/g)].map((match) => gamePath(game, match[1]));
-  if (files.length === 0) fail(`games/${game.id}/project.godot registers no .po translation in locale/translations.`);
-  return files;
+  const catalogs = [];
+  for (const [, res] of raw.matchAll(/"(res:\/\/[^"]+\.po)"/g)) {
+    const layer = layers.find((candidate) => res.startsWith(candidate.res));
+    const match = CATALOG_RE.exec(path.posix.basename(res));
+    if (!layer) fail(`games/${game.id}/project.godot registers ${res}, which belongs to no layer the game uses.`);
+    if (!match) fail(`games/${game.id}/project.godot registers ${res}; a catalog is named <name>.<locale>.po.`);
+    const file = path.join(layer.root, ...res.slice(layer.res.length).split("/"));
+    if (!fs.existsSync(file)) fail(`games/${game.id}/project.godot registers ${res}, which does not exist.`);
+    catalogs.push({ res, file, layer: layer.name, locale: match[1] });
+  }
+  if (catalogs.length === 0) fail(`games/${game.id}/project.godot registers no .po translation in locale/translations.`);
+  return catalogs;
 }
 
 // Calls whose first argument is player-visible source text.
@@ -114,9 +149,9 @@ function firstArgumentLiterals(text, start) {
   return literals;
 }
 
-function collectDialogueKeys(game) {
+function collectDialogueKeys(layer) {
   const keys = new Set();
-  for (const file of walk(gamePath(game, "game"), ".dialogue")) {
+  for (const file of walk(layer.root, ".dialogue")) {
     for (const rawLine of readText(file).split(/\r?\n/)) {
       const line = rawLine.trim();
       if (!line || line.startsWith("~") || line.startsWith("=>") || line.startsWith("#")) {
@@ -135,8 +170,8 @@ function collectDialogueKeys(game) {
   return keys;
 }
 
-function collectNonDialogueKeys(game) {
-  const roots = sourceRoots(game);
+// A game's data resources are under game/data; the foundation ships none.
+function collectNonDialogueKeys(layer) {
   const keys = new Set();
   const add = (raw) => {
     const value = decodeString(raw);
@@ -144,7 +179,7 @@ function collectNonDialogueKeys(game) {
       keys.add(value);
     }
   };
-  for (const file of roots.flatMap((root) => walk(root, ".gd"))) {
+  for (const file of walk(layer.root, ".gd")) {
     const text = readText(file);
     for (const match of text.matchAll(CALL_RE)) {
       firstArgumentLiterals(text, match.index + match[0].length).forEach(add);
@@ -159,12 +194,12 @@ function collectNonDialogueKeys(game) {
       }
     }
   }
-  for (const file of roots.flatMap((root) => walk(root, ".tscn"))) {
+  for (const file of walk(layer.root, ".tscn")) {
     for (const match of readText(file).matchAll(SCENE_RE)) {
       add(match[1]);
     }
   }
-  for (const file of walk(gamePath(game, "game", "data"), ".tres")) {
+  for (const file of layer.game ? walk(path.join(layer.root, "data"), ".tres") : []) {
     for (const match of readText(file).matchAll(DATA_RE)) {
       add(match[1]);
     }
@@ -203,34 +238,56 @@ function collectPoEntries(po) {
   return entries;
 }
 
-// Every source key needs a non-empty entry in every catalog the game registers.
+// Every layer's text needs a non-empty entry, for every locale the game
+// registers, in a registered catalog of that layer or of a layer below it.
 function checkLocalization(game, { reportOnly = false } = {}) {
-  const dialogueKeys = collectDialogueKeys(game);
-  const nonDialogueKeys = collectNonDialogueKeys(game);
-  let missingCount = 0;
-  console.log(`LOCALIZATION_SOURCE_KEYS=${new Set([...nonDialogueKeys, ...dialogueKeys]).size}`);
-  console.log(`LOCALIZATION_DIALOGUE_KEYS=${dialogueKeys.size}`);
-  for (const po of poFiles(game)) {
-    const label = path.relative(rootPath(), po).split(path.sep).join("/");
-    if (!fs.existsSync(po)) fail(`games/${game.id}/project.godot registers ${label}, which does not exist.`);
-    const entries = collectPoEntries(po);
-    const missingGeneric = [...nonDialogueKeys].filter((key) => !entries.get(`\u0000${key}`)).sort();
-    const missingDialogue = [...dialogueKeys].filter((key) => !entries.get(`dialogue\u0000${key}`)).sort();
-    missingCount += missingGeneric.length + missingDialogue.length;
-    console.log(`${label}: LOCALIZATION_PO_ENTRIES=${entries.size}`);
-    console.log(`${label}: LOCALIZATION_MISSING=${missingGeneric.length + missingDialogue.length}`);
-    console.log(`${label}: LOCALIZATION_DIALOGUE_CONTEXT_MISSING=${missingDialogue.length}`);
-    for (const key of missingGeneric) {
-      console.log(`MISSING: ${key}`);
-    }
-    for (const key of missingDialogue) {
-      console.log(`MISSING_DIALOGUE_CONTEXT: ${key}`);
+  const layers = textLayers(game);
+  const catalogs = registeredCatalogs(game, layers);
+  const locales = [...new Set(catalogs.map((catalog) => catalog.locale))].sort();
+  const problems = [];
+  const entries = new Map(catalogs.map((catalog) => [catalog, collectPoEntries(catalog.file)]));
+
+  for (const layer of layers.filter((candidate) => !candidate.game)) {
+    const shipped = shippedCatalogs(layer);
+    for (const [locale, res] of shipped) {
+      if (locales.includes(locale) && !catalogs.some((catalog) => catalog.res === res)) {
+        problems.push(`games/${game.id}/project.godot must register ${res} in locale/translations`);
+      }
     }
   }
-  return missingCount > 0 && !reportOnly ? 1 : 0;
+
+  for (const locale of locales) {
+    const inLocale = catalogs.filter((catalog) => catalog.locale === locale);
+    const owners = new Map();
+    for (const catalog of inLocale) {
+      for (const key of entries.get(catalog).keys()) {
+        if (key === "\u0000") continue; // the header
+        if (owners.has(key)) problems.push(`${catalog.res} repeats "${key.replace("\u0000", " ")}", which ${owners.get(key)} already translates`);
+        else owners.set(key, catalog.res);
+      }
+    }
+    let total = 0;
+    for (const layer of layers) {
+      const visible = new Set([layer.name, ...layer.below]);
+      const available = inLocale.filter((catalog) => visible.has(catalog.layer)).map((catalog) => entries.get(catalog));
+      const translated = (key) => available.some((catalog) => catalog.get(key));
+      const keys = [
+        ...[...collectNonDialogueKeys(layer)].map((key) => [`\u0000${key}`, key]),
+        ...[...collectDialogueKeys(layer)].map((key) => [`dialogue\u0000${key}`, `[dialogue] ${key}`]),
+      ];
+      total += keys.length;
+      const missing = keys.filter(([key]) => !translated(key)).map(([, label]) => label).sort();
+      for (const label of missing) problems.push(`${layer.name} (${locale}): missing ${label}`);
+    }
+    console.log(`${game.id} ${locale}: LOCALIZATION_SOURCE_KEYS=${total} in ${layers.length} layers, ${inLocale.length} catalogs`);
+  }
+
+  for (const problem of problems) console.log(`LOCALIZATION_PROBLEM: ${problem}`);
+  console.log(`${game.id}: LOCALIZATION_PROBLEMS=${problems.length}`);
+  return problems.length > 0 && !reportOnly ? 1 : 0;
 }
 
-module.exports = { checkLocalization };
+module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPoEntries, textLayers };
 
 if (require.main === module) {
   main(() => {

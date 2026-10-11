@@ -153,6 +153,10 @@ open_menu={
 ]
 }
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
+
 [layer_names]
 
 2d_physics/layer_1="Environment"
