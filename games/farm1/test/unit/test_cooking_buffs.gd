@@ -1,5 +1,10 @@
 extends GutTest
 
+# Farm1's dishes, its buffs and how its player eats. How buffs change stats,
+# expire and are saved is tested on fixture content in
+# gamebase/modules/items/test/ and gamebase/modules/lifesim/test/
+# (test_cooking_buffs.gd).
+
 var _clock_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
@@ -85,48 +90,12 @@ func test_food_use_blocks_item_removed_reentrancy() -> void:
 	assert_eq(PlayerState.health, 70)
 	assert_true(BuffState.has_buff(&"hearty_worker"))
 
-func test_hearty_worker_reduces_real_hoe_energy_cost() -> void:
-	InventoryState.add_item_by_id(&"hoe", 1)
-	var plot_scene := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn") as PackedScene
-	var plot := plot_scene.instantiate() as FarmPlot
-	plot.persistent_id = &""
-	add_child_autofree(plot)
-	await get_tree().process_frame
-
-	PlayerState.energy = 100
-	assert_true(plot.use_item(&"hoe"))
-	assert_eq(PlayerState.energy, 96)
-
-	plot.load_state_data({"tilled": false, "watered": false, "crop_id": "", "growth_days": 0, "last_processed_day": 1}, false)
-	PlayerState.energy = 100
-	assert_true(BuffState.apply_buff(&"hearty_worker"))
-	assert_true(plot.use_item(&"hoe"))
-	assert_eq(PlayerState.energy, 97)
-
-func test_angler_focus_changes_fishing_timing_and_round_trips_save_data() -> void:
+func test_angler_focus_changes_fishing_timing_for_three_hours() -> void:
 	assert_true(BuffState.apply_buff(&"angler_focus"))
 	assert_almost_eq(BuffState.get_stat_multiplier(&"fishing_wait"), 0.7, 0.001)
 	assert_almost_eq(BuffState.get_stat_multiplier(&"fishing_window"), 1.35, 0.001)
-	var saved := BuffState.to_save_data()
-	assert_true(saved.has("angler_focus"))
-
-	BuffState.clear()
-	assert_false(BuffState.has_buff(&"angler_focus"))
-	BuffState.load_save_data(saved)
-	assert_true(BuffState.has_buff(&"angler_focus"))
 	assert_eq(BuffState.get_minutes_remaining(&"angler_focus"), 180)
 
-func test_buff_load_clamps_corrupt_far_future_expiry_to_one_game_day() -> void:
-	var now := BuffState.get_absolute_minute()
-	BuffState.load_save_data({"hearty_worker": now + 999999})
-	assert_true(BuffState.has_buff(&"hearty_worker"))
-	assert_eq(BuffState.get_minutes_remaining(&"hearty_worker"), GameClock.MINUTES_PER_DAY)
-
-func test_buffs_expire_by_game_time() -> void:
+func test_hearty_worker_lasts_four_hours() -> void:
 	assert_true(BuffState.apply_buff(&"hearty_worker"))
 	assert_eq(BuffState.get_minutes_remaining(&"hearty_worker"), 240)
-	WorldClock.set_time(1, 11 * 60 + 59)
-	assert_true(BuffState.has_buff(&"hearty_worker"))
-	assert_eq(BuffState.get_minutes_remaining(&"hearty_worker"), 1)
-	WorldClock.set_time(1, 12 * 60)
-	assert_false(BuffState.has_buff(&"hearty_worker"))
