@@ -39,8 +39,8 @@ func _collect_roots(extension: String) -> PackedStringArray:
 func _collect(directory: String, extension: String) -> PackedStringArray:
 	var result := PackedStringArray()
 	var dir := DirAccess.open(directory)
-	# Godot does not import a directory with a .gdignore (gamebase/templates
-	# holds files for other projects), so neither does this test.
+	# Godot does not import a directory with a .gdignore, so neither does
+	# this test.
 	if dir == null or dir.file_exists(".gdignore"):
 		return result
 	for name: String in dir.get_directories():

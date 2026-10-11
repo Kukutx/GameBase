@@ -35,13 +35,13 @@ Stable gameplay IDs, save keys, resource IDs, location IDs and internal enum/str
 
 ## What the coverage gate can and cannot see
 
-`tools/check_localization.js` finds a string only in these positions:
+`tools/check_localization.js` reads a game's own `games/<id>/game/`, `gamebase/core/` and the modules the game uses (`gamebase/modules/<module>/`), and finds a string only in these positions:
 
-- in `games/<id>/game/**/*.gd`: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional;
-- in `games/<id>/game/**/*.gd`: the default of an exported text property (`@export var display_name := "..."`) and a literal assigned to one from code (`interactable.prompt_text = "..."`);
-- in `games/<id>/game/**/*.tscn`: the properties `text`, `display_name`, `station_name`, `idle_text`, `dialog_text`, `prompt_text`, `title`, `ok_button_text`, `cancel_button_text`, `placeholder_text`, `tooltip_text`, `pending_text` and `completed_text`;
+- in `.gd` scripts: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional;
+- in `.gd` scripts: the default of an exported text property (`@export var display_name := "..."`) and a literal assigned to one from code (`interactable.prompt_text = "..."`);
+- in `.tscn` scenes: the properties `text`, `display_name`, `station_name`, `idle_text`, `dialog_text`, `prompt_text`, `title`, `ok_button_text`, `cancel_button_text`, `placeholder_text`, `tooltip_text`, `pending_text` and `completed_text`;
 - in `games/<id>/game/data/**/*.tres`: `display_name`, `title`, `description`, `subject`, `body`, `role` and `activity`;
-- authored lines and responses in `.dialogue` files.
+- authored lines and responses in the game's `.dialogue` files.
 
 A player-visible string anywhere else passes the gate without a translation. The usual ways to end up there:
 

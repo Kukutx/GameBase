@@ -4,7 +4,7 @@ GameBase has a data-driven audio routing layer, but the repository intentionally
 
 ## Runtime architecture
 
-- `GameAudio` is the game-owned audio service.
+- `GameAudio` is the foundation's audio service (`gamebase/core/audio/game_audio_service.gd`), an autoload every game registers.
 - `AudioCueData` resources are registered through `games/farm1/game/data/content_manifest.tres` and resolved through `ContentDB`.
 - Music routes to the `Music` bus.
 - Sound effects route to the `Sounds` bus.
