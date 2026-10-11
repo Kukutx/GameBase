@@ -45,3 +45,10 @@ static func current() -> GameDefinition:
 @export var start_hotbar: Array[StringName] = []
 ## The game's UI theme; module menus apply it to their panels (none: Godot's default).
 @export var ui_theme: Theme
+## The game's input controls, `ControlAction` resources in the order the
+## settings list them. The core's own controls (`GameSettingsService.CORE_CONTROLS`)
+## follow, except one whose action the game lists: the game's control replaces
+## it. Typed `Resource` rather than `ControlAction`: on Godot 4.7.2 the typed
+## array makes GDScript's shutdown skip scripts (a loop upstream has since
+## rewritten), so every test run ends with leak errors.
+@export var controls: Array[Resource] = []

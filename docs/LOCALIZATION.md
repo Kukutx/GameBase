@@ -4,7 +4,7 @@ GameBase separates interface localization from authored dialogue localization.
 
 ## Supported UI locales
 
-The current UI locale set is:
+Source text is English (`en`). A game supports English and every locale it registers a translation catalog for in `locale/translations`; `GameSettings.get_supported_locales()` reads them from `TranslationServer`, and the language picker names each one in its own language. Farm1 and a new game support:
 
 - `en` — English
 - `zh_CN` — Simplified Chinese
@@ -40,12 +40,12 @@ The check also keeps every entry in the right catalog. An entry has to translate
 - in `.gd` scripts: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional;
 - in `.gd` scripts: the default of an exported text property (`@export var display_name := "..."`) and a literal assigned to one from code (`interactable.prompt_text = "..."`);
 - in `.tscn` scenes: the properties `text`, `display_name`, `station_name`, `idle_text`, `dialog_text`, `prompt_text`, `title`, `ok_button_text`, `cancel_button_text`, `placeholder_text`, `tooltip_text`, `pending_text` and `completed_text`;
-- in `games/<id>/game/data/**/*.tres`: `display_name`, `title`, `description`, `subject`, `body`, `role` and `activity`;
+- in `.tres` resources, such as a game's data and the controls of its `game_definition.tres`: `display_name`, `title`, `description`, `subject`, `body`, `role` and `activity`;
 - authored lines and responses in the game's `.dialogue` files.
 
 A player-visible string anywhere else passes the gate without a translation. The usual ways to end up there:
 
-- the string is kept in a constant, a dictionary or a variable and translated later, such as `tr(message)` on a message that arrived through a signal or `tr(CONTROL_LABELS[...])`;
+- the string is kept in a constant, a dictionary or a variable and translated later, such as `tr(message)` on a message that arrived through a signal or `tr(SKILL_NAMES[skill])`;
 - a service returns finished English text and the caller translates the result;
 - the string is passed through a helper before it reaches a translation call, such as a private `_commit(message)` that ends in `GameEvents.toast(message)`.
 
@@ -76,9 +76,8 @@ Keep dialogue translation data separate from gameplay state. Translation changes
 
 ## Adding a locale
 
-1. Add the locale ID and display name to `GameSettingsService`.
-2. Add a `<name>.<locale>.po` catalog to the core, to every module and to each game, and register them in each game's `locale/translations`.
-3. Register the catalog in `games/<id>/project.godot`.
-4. Add/extend automated translation tests.
-5. Verify the locale through the settings menu and a real exported build.
-6. Verify fonts cover all glyphs required by the locale.
+1. Add a `<name>.<locale>.po` catalog to the core, to every module the game uses and to the game.
+2. Register them in the game's `locale/translations`; the locale then appears in the language picker. If `GameSettingsService.LOCALE_NAMES` lacks the language's own name, add it there.
+3. Add/extend automated translation tests.
+4. Verify the locale through the settings menu and a real exported build.
+5. Verify fonts cover all glyphs required by the locale.

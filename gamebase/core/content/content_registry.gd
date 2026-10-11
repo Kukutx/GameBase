@@ -8,7 +8,7 @@ extends Node
 ## `register_entries()` and checks its own references in `_validate_content()`.
 ## The registry itself owns the kinds the foundation needs (locations and audio
 ## cues, minigames) and validates location scenes: spawn points, portals and
-## the player.
+## the player. It also checks the controls of the game's `GameDefinition`.
 
 const KIND_LOCATION := &"location"
 const KIND_AUDIO_CUE := &"audio_cue"
@@ -31,6 +31,7 @@ func rebuild() -> PackedStringArray:
 	var errors := PackedStringArray()
 	if not _index_content(errors):
 		return errors
+	errors.append_array(GameSettingsService.find_control_problems(GameSettingsService.game_controls()))
 	_validate_audio_cues(errors)
 	_validate_minigames(errors)
 	_validate_locations(errors)

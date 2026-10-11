@@ -19,6 +19,14 @@ const GAMEPAD_BUTTON_LABELS := {
 	JOY_BUTTON_DPAD_LEFT: "D-Pad ←",
 	JOY_BUTTON_DPAD_RIGHT: "D-Pad →",
 }
+const GAMEPAD_AXIS_LABELS := {
+	JOY_AXIS_LEFT_X: "Left Stick",
+	JOY_AXIS_LEFT_Y: "Left Stick",
+	JOY_AXIS_RIGHT_X: "Right Stick",
+	JOY_AXIS_RIGHT_Y: "Right Stick",
+	JOY_AXIS_TRIGGER_LEFT: "LT",
+	JOY_AXIS_TRIGGER_RIGHT: "RT",
+}
 
 var using_gamepad := false
 
@@ -38,44 +46,16 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		_set_using_gamepad(false)
 
+## The key, button or axis that performs `action` on the device in use.
 func get_action_prompt(action: StringName) -> String:
-	if using_gamepad:
-		var button := GameSettings.get_gamepad_button(action)
-		if button >= 0:
-			return String(GAMEPAD_BUTTON_LABELS.get(button, "Pad"))
+	var control := GameSettings.get_control(action)
+	if using_gamepad and control != null:
+		if control.gamepad_button != JOY_BUTTON_INVALID:
+			return String(GAMEPAD_BUTTON_LABELS.get(control.gamepad_button, "Pad"))
+		if control.gamepad_axis != JOY_AXIS_INVALID:
+			return String(GAMEPAD_AXIS_LABELS.get(control.gamepad_axis, "Pad"))
 	var key := GameSettings.get_key_binding(action)
 	return OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound")
-
-func get_hotbar_prompt() -> String:
-	return tr("LT/RT") if using_gamepad else tr("1–9")
-
-func get_move_prompt() -> String:
-	return tr("Left Stick / D-Pad") if using_gamepad else tr("WASD / Arrows")
-
-func get_controls_summary() -> String:
-	if using_gamepad:
-		return tr("%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load") % [
-			get_move_prompt(),
-			get_action_prompt(&"interact"),
-			get_action_prompt(&"use_tool"),
-			get_action_prompt(&"give_gift"),
-			get_action_prompt(&"remove_building"),
-			get_action_prompt(&"open_menu"),
-			get_hotbar_prompt(),
-			get_action_prompt(&"quick_save"),
-			get_action_prompt(&"quick_load"),
-		]
-	return tr("%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load") % [
-		get_move_prompt(),
-		get_action_prompt(&"interact"),
-		get_action_prompt(&"use_tool"),
-		get_action_prompt(&"give_gift"),
-		get_action_prompt(&"remove_building"),
-		get_action_prompt(&"open_menu"),
-		get_hotbar_prompt(),
-		get_action_prompt(&"quick_save"),
-		get_action_prompt(&"quick_load"),
-	]
 
 func _set_using_gamepad(value: bool) -> void:
 	if using_gamepad == value:

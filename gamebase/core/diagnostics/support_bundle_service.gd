@@ -90,7 +90,7 @@ func create_bundle(custom_output_path: String = "") -> String:
 
 func build_summary() -> Dictionary:
 	var controls: Dictionary = {}
-	for action: StringName in GameSettings.get_control_actions():
+	for action: StringName in GameSettings.get_rebindable_actions():
 		controls[String(action)] = GameSettings.get_key_binding_text(action)
 
 	var slots: Array[Dictionary] = []

@@ -12,21 +12,6 @@ msgstr "未绑定"
 msgid "Could not open the starting location"
 msgstr "无法打开初始地点"
 
-msgid "LT/RT"
-msgstr "LT/RT"
-
-msgid "1–9"
-msgstr "1–9"
-
-msgid "Left Stick / D-Pad"
-msgstr "左摇杆 / 十字键"
-
-msgid "WASD / Arrows"
-msgstr "WASD / 方向键"
-
-msgid "%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load"
-msgstr "%s 移动 · %s 互动/收线 · %s 工具/物品 · %s 送礼 · %s 收起建筑 · %s 菜单 · %s 热栏 · %s/%s 保存/读取"
-
 msgid "Interact"
 msgstr "互动"
 
@@ -125,33 +110,6 @@ msgstr "请先完成小游戏再保存"
 
 msgid "Back"
 msgstr "返回"
-
-msgid "Move Up"
-msgstr "向上移动"
-
-msgid "Move Down"
-msgstr "向下移动"
-
-msgid "Move Left"
-msgstr "向左移动"
-
-msgid "Move Right"
-msgstr "向右移动"
-
-msgid "Interact / Reel"
-msgstr "互动 / 收线"
-
-msgid "Use Tool / Item"
-msgstr "使用工具 / 物品"
-
-msgid "Give Gift"
-msgstr "赠送礼物"
-
-msgid "Pack Building"
-msgstr "收起建筑"
-
-msgid "Open Menu"
-msgstr "打开菜单"
 
 msgid "Quick Save"
 msgstr "快速保存"

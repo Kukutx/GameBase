@@ -6,61 +6,32 @@ signal controls_changed
 signal locale_changed(locale: String)
 
 const DEFAULT_SETTINGS_PATH := "user://settings.cfg"
-const SUPPORTED_LOCALE_IDS := ["en", "zh_CN"]
-const LOCALE_DISPLAY_NAMES := {
+## Source text is English; the other locales are those the game registers
+## translations for.
+const SOURCE_LOCALE := "en"
+## Each language's name in that language, for the language picker.
+const LOCALE_NAMES := {
+	"de": "Deutsch",
 	"en": "English",
+	"es": "Español",
+	"fr": "Français",
+	"it": "Italiano",
+	"ja": "日本語",
+	"ko": "한국어",
+	"pl": "Polski",
+	"pt_BR": "Português (Brasil)",
+	"ru": "Русский",
+	"tr": "Türkçe",
 	"zh_CN": "简体中文",
+	"zh_TW": "繁體中文",
 }
-const CONTROL_ACTIONS = [
-	&"move_up", &"move_down", &"move_left", &"move_right",
-	&"interact", &"use_tool", &"give_gift", &"remove_building",
-	&"open_menu", &"quick_save", &"quick_load",
+## The controls the core's own systems read, as `ControlAction` paths. A game
+## lists them in `GameDefinition.controls` only to place or replace them.
+const CORE_CONTROLS: Array[String] = [
+	"res://gamebase/core/input/controls/interact.tres",
+	"res://gamebase/core/input/controls/quick_save.tres",
+	"res://gamebase/core/input/controls/quick_load.tres",
 ]
-const CONTROL_LABELS := {
-	"move_up": "Move Up",
-	"move_down": "Move Down",
-	"move_left": "Move Left",
-	"move_right": "Move Right",
-	"interact": "Interact / Reel",
-	"use_tool": "Use Tool / Item",
-	"give_gift": "Give Gift",
-	"remove_building": "Pack Building",
-	"open_menu": "Open Menu",
-	"quick_save": "Quick Save",
-	"quick_load": "Quick Load",
-}
-const DEFAULT_CONTROL_KEYS := {
-	"move_up": KEY_W,
-	"move_down": KEY_S,
-	"move_left": KEY_A,
-	"move_right": KEY_D,
-	"interact": KEY_E,
-	"use_tool": KEY_F,
-	"give_gift": KEY_G,
-	"remove_building": KEY_R,
-	"open_menu": KEY_I,
-	"quick_save": KEY_K,
-	"quick_load": KEY_L,
-}
-const SECONDARY_CONTROL_KEYS := {
-	"move_up": KEY_UP,
-	"move_down": KEY_DOWN,
-	"move_left": KEY_LEFT,
-	"move_right": KEY_RIGHT,
-}
-const DEFAULT_GAMEPAD_BUTTONS := {
-	"interact": JOY_BUTTON_A,
-	"use_tool": JOY_BUTTON_X,
-	"give_gift": JOY_BUTTON_Y,
-	"remove_building": JOY_BUTTON_RIGHT_SHOULDER,
-	"open_menu": JOY_BUTTON_START,
-	"quick_save": JOY_BUTTON_LEFT_STICK,
-	"quick_load": JOY_BUTTON_RIGHT_STICK,
-}
-const HOTBAR_GAMEPAD_AXES := {
-	"hotbar_prev": JOY_AXIS_TRIGGER_LEFT,
-	"hotbar_next": JOY_AXIS_TRIGGER_RIGHT,
-}
 
 var settings_path := DEFAULT_SETTINGS_PATH
 var master_volume := 1.0
@@ -71,8 +42,75 @@ var vsync := true
 var autosave := true
 var weather_effects := true
 var reduced_motion := false
-var locale := "en"
+var locale := SOURCE_LOCALE
+## Key of each rebindable action (String) the player chose or the default.
 var key_bindings: Dictionary = {}
+
+var _controls: Array[ControlAction] = []
+## action (String) -> ControlAction
+var _control_by_action: Dictionary = {}
+
+## The running game's `GameDefinition.controls`; an entry that is not a
+## `ControlAction` becomes null, which `find_control_problems()` reports.
+static func game_controls() -> Array[ControlAction]:
+	var result: Array[ControlAction] = []
+	for entry: Resource in GameDefinition.current().controls:
+		result.append(entry as ControlAction)
+	return result
+
+## The game's controls followed by the core's; a game control replaces the
+## core's control of the same action.
+static func resolve_controls(controls: Array[ControlAction]) -> Array[ControlAction]:
+	var result: Array[ControlAction] = []
+	var listed: Dictionary = {}
+	for control: ControlAction in controls:
+		if control != null:
+			result.append(control)
+			listed[control.action] = true
+	for path: String in CORE_CONTROLS:
+		var control := load(path) as ControlAction
+		if not listed.has(control.action):
+			result.append(control)
+	return result
+
+## What is wrong with a game's controls once the core's are added.
+static func find_control_problems(controls: Array[ControlAction]) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if controls.has(null):
+		problems.append("GameDefinition.controls has an entry that is not a ControlAction")
+	var actions: Dictionary = {}
+	var key_owners: Dictionary = {}
+	for control: ControlAction in resolve_controls(controls):
+		var action := String(control.action)
+		if action.is_empty():
+			problems.append("a control has no action")
+			continue
+		if actions.has(action):
+			problems.append("control '%s' is listed twice" % action)
+			continue
+		actions[action] = true
+		var bound := control.key != KEY_NONE or control.secondary_key != KEY_NONE
+		if not bound and control.gamepad_button == JOY_BUTTON_INVALID and control.gamepad_axis == JOY_AXIS_INVALID:
+			problems.append("control '%s' has no key, button or axis" % action)
+		for default_key: Key in [control.key, control.secondary_key]:
+			if default_key == KEY_NONE or key_owners.get(default_key, "") == action:
+				continue
+			if key_owners.has(default_key):
+				problems.append("controls '%s' and '%s' share the default key %s" % [key_owners[default_key], action, OS.get_keycode_string(default_key)])
+			else:
+				key_owners[default_key] = action
+		if not control.rebindable:
+			continue
+		if control.display_name.is_empty():
+			problems.append("rebindable control '%s' has no display name" % action)
+		if control.key == KEY_NONE:
+			problems.append("rebindable control '%s' has no default key" % action)
+	return problems
+
+func _init() -> void:
+	for control: ControlAction in resolve_controls(game_controls()):
+		_controls.append(control)
+		_control_by_action[String(control.action)] = control
 
 func _ready() -> void:
 	_reset_control_values()
@@ -119,44 +157,63 @@ func set_reduced_motion(value: bool) -> void:
 	_save_and_emit()
 
 func set_locale(value: String) -> void:
-	var resolved := value if SUPPORTED_LOCALE_IDS.has(value) else "en"
-	locale = resolved
+	locale = value if get_supported_locales().has(value) else SOURCE_LOCALE
 	TranslationServer.set_locale(locale)
 	save_settings()
 	locale_changed.emit(locale)
 	changed.emit()
 
+## The source locale followed by every locale the game registers a translation for.
 func get_supported_locales() -> PackedStringArray:
-	return PackedStringArray(SUPPORTED_LOCALE_IDS)
+	var result := PackedStringArray([SOURCE_LOCALE])
+	var loaded := TranslationServer.get_loaded_locales()
+	loaded.sort()
+	for loaded_locale: String in loaded:
+		if not result.has(loaded_locale):
+			result.append(loaded_locale)
+	return result
 
 func get_locale_display_name(value: String) -> String:
-	return String(LOCALE_DISPLAY_NAMES.get(value, value))
+	return String(LOCALE_NAMES.get(value, TranslationServer.get_locale_name(value)))
 
-func get_control_actions() -> Array[StringName]:
+## Every control of the running game, in settings order.
+func get_controls() -> Array[ControlAction]:
+	return _controls.duplicate()
+
+## The declared control of `action`, or null.
+func get_control(action: StringName) -> ControlAction:
+	return _control_by_action.get(String(action)) as ControlAction
+
+## The actions the player can rebind, in settings order.
+func get_rebindable_actions() -> Array[StringName]:
 	var result: Array[StringName] = []
-	for action: StringName in CONTROL_ACTIONS:
-		result.append(action)
+	for control: ControlAction in _controls:
+		if control.rebindable:
+			result.append(control.action)
 	return result
 
 func get_control_label(action: StringName) -> String:
-	return tr(String(CONTROL_LABELS.get(String(action), String(action).capitalize())))
-
-func get_gamepad_button(action: StringName) -> int:
-	return int(DEFAULT_GAMEPAD_BUTTONS.get(String(action), -1))
+	var control := get_control(action)
+	return tr(control.display_name) if control != null and not control.display_name.is_empty() else String(action)
 
 func get_key_binding(action: StringName) -> Key:
-	var raw := int(key_bindings.get(String(action), int(DEFAULT_CONTROL_KEYS.get(String(action), KEY_NONE))))
-	return raw as Key
+	var control := get_control(action)
+	if control == null:
+		return KEY_NONE
+	return int(key_bindings.get(String(action), int(control.key))) as Key
 
 func get_key_binding_text(action: StringName) -> String:
 	var key := get_key_binding(action)
 	return OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound")
 
+## Binds `key` to a rebindable action. The action that had the key takes the
+## old one; a key another control holds fixed cannot be taken.
 func set_key_binding(action: StringName, key: Key) -> bool:
-	if not CONTROL_ACTIONS.has(action) or key == KEY_NONE:
+	var control := get_control(action)
+	if control == null or not control.rebindable or key == KEY_NONE or _is_fixed_key(key, action):
 		return false
 	var old_key := get_key_binding(action)
-	for other: StringName in CONTROL_ACTIONS:
+	for other: StringName in get_rebindable_actions():
 		if other == action:
 			continue
 		if get_key_binding(other) == key:
@@ -197,7 +254,7 @@ func save_settings() -> void:
 	config.set_value("accessibility", "weather_effects", weather_effects)
 	config.set_value("accessibility", "reduced_motion", reduced_motion)
 	config.set_value("localization", "locale", locale)
-	for action: StringName in CONTROL_ACTIONS:
+	for action: StringName in get_rebindable_actions():
 		config.set_value("controls", String(action), int(get_key_binding(action)))
 	config.save(settings_path)
 
@@ -215,87 +272,34 @@ func load_settings() -> void:
 	autosave = bool(config.get_value("gameplay", "autosave", true))
 	weather_effects = bool(config.get_value("accessibility", "weather_effects", true))
 	reduced_motion = bool(config.get_value("accessibility", "reduced_motion", false))
-	var loaded_locale := String(config.get_value("localization", "locale", "en"))
-	locale = loaded_locale if SUPPORTED_LOCALE_IDS.has(loaded_locale) else "en"
-	for action: StringName in CONTROL_ACTIONS:
-		var fallback := int(DEFAULT_CONTROL_KEYS[String(action)])
+	var loaded_locale := String(config.get_value("localization", "locale", SOURCE_LOCALE))
+	locale = loaded_locale if get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
+	for action: StringName in get_rebindable_actions():
+		var fallback := int(get_control(action).key)
 		var value := int(config.get_value("controls", String(action), fallback))
-		key_bindings[String(action)] = value if value > 0 else fallback
+		key_bindings[String(action)] = value if value > 0 and not _is_fixed_key(value as Key, action) else fallback
+
+## Whether a control other than `action`'s holds `key` in a way the player
+## cannot swap: as its second key, or as the key of a control that is not
+## rebindable.
+func _is_fixed_key(key: Key, action: StringName) -> bool:
+	for other: ControlAction in _controls:
+		if other.action != action and (other.secondary_key == key or (not other.rebindable and other.key == key)):
+			return true
+	return false
 
 func _reset_control_values() -> void:
 	key_bindings.clear()
-	for action: StringName in CONTROL_ACTIONS:
-		key_bindings[String(action)] = int(DEFAULT_CONTROL_KEYS[String(action)])
+	for action: StringName in get_rebindable_actions():
+		key_bindings[String(action)] = int(get_control(action).key)
 
 func _apply_input_bindings() -> void:
-	for action: StringName in CONTROL_ACTIONS:
-		if not InputMap.has_action(action):
-			InputMap.add_action(action)
-		InputMap.action_erase_events(action)
-		_add_key_event(action, get_key_binding(action))
-		var secondary := int(SECONDARY_CONTROL_KEYS.get(String(action), KEY_NONE)) as Key
-		if secondary != KEY_NONE and secondary != get_key_binding(action):
-			_add_key_event(action, secondary)
-		_add_gamepad_movement_events(action)
-		_add_gamepad_action_event(action)
-	_apply_gamepad_hotbar_events()
-
-func _add_key_event(action: StringName, key: Key) -> void:
-	if key == KEY_NONE:
-		return
-	var event := InputEventKey.new()
-	event.physical_keycode = key
-	InputMap.action_add_event(action, event)
-
-func _apply_gamepad_hotbar_events() -> void:
-	for action_name: String in HOTBAR_GAMEPAD_AXES:
-		var action := StringName(action_name)
-		if not InputMap.has_action(action):
-			InputMap.add_action(action)
-		InputMap.action_erase_events(action)
-		var event := InputEventJoypadMotion.new()
-		event.axis = int(HOTBAR_GAMEPAD_AXES[action_name]) as JoyAxis
-		event.axis_value = 1.0
-		InputMap.action_add_event(action, event)
-
-func _add_gamepad_action_event(action: StringName) -> void:
-	var raw_button := int(DEFAULT_GAMEPAD_BUTTONS.get(String(action), -1))
-	if raw_button < 0:
-		return
-	var event := InputEventJoypadButton.new()
-	event.button_index = raw_button as JoyButton
-	InputMap.action_add_event(action, event)
-
-func _add_gamepad_movement_events(action: StringName) -> void:
-	var button_index := -1
-	var axis := -1
-	var axis_value := 0.0
-	match action:
-		&"move_left":
-			button_index = JOY_BUTTON_DPAD_LEFT
-			axis = JOY_AXIS_LEFT_X
-			axis_value = -1.0
-		&"move_right":
-			button_index = JOY_BUTTON_DPAD_RIGHT
-			axis = JOY_AXIS_LEFT_X
-			axis_value = 1.0
-		&"move_up":
-			button_index = JOY_BUTTON_DPAD_UP
-			axis = JOY_AXIS_LEFT_Y
-			axis_value = -1.0
-		&"move_down":
-			button_index = JOY_BUTTON_DPAD_DOWN
-			axis = JOY_AXIS_LEFT_Y
-			axis_value = 1.0
-		_:
-			return
-	var button := InputEventJoypadButton.new()
-	button.button_index = button_index
-	InputMap.action_add_event(action, button)
-	var motion := InputEventJoypadMotion.new()
-	motion.axis = axis
-	motion.axis_value = axis_value
-	InputMap.action_add_event(action, motion)
+	for control: ControlAction in _controls:
+		if not InputMap.has_action(control.action):
+			InputMap.add_action(control.action)
+		InputMap.action_erase_events(control.action)
+		for event: InputEvent in control.build_events(get_key_binding(control.action)):
+			InputMap.action_add_event(control.action, event)
 
 func _apply_bus(bus_name: StringName, linear: float) -> void:
 	var index := AudioServer.get_bus_index(bus_name)

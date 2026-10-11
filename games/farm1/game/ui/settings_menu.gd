@@ -177,7 +177,7 @@ func _show_accessibility(show: bool) -> void:
 func _rebuild_controls() -> void:
 	for child: Node in controls_list.get_children():
 		child.queue_free()
-	for action: StringName in GameSettings.get_control_actions():
+	for action: StringName in GameSettings.get_rebindable_actions():
 		var row := HBoxContainer.new()
 		var label := Label.new()
 		label.text = GameSettings.get_control_label(action)
