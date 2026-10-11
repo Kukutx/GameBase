@@ -36,7 +36,7 @@ jobs:
 
       # Fails unless .game-version is a semantic version, matches project.godot
       # and, on a tag build, equals the tag without its leading "v".
-      - name: Resolve GameBase version
+      - name: Resolve game version
         id: game
         run: node tools/ci.js game-version
 
@@ -66,13 +66,13 @@ jobs:
         include:
           - name: Windows
             preset: Windows Desktop
-            package: GameBase-windows-x86_64.zip
+            package: "*-windows-x86_64.zip"
           - name: Linux
             preset: Linux
-            package: GameBase-linux-x86_64.tar.gz
+            package: "*-linux-x86_64.tar.gz"
           - name: Web
             preset: Web
-            package: GameBase-web.zip
+            package: "*-web.zip"
 
     steps:
       - name: Checkout

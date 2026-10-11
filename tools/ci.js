@@ -3,7 +3,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
-const { ENGINE_VERSION_RE, GAME_VERSION_RE, fail, main, readTrimmed, rootPath, run } = require("./lib/common");
+const { ENGINE_VERSION_RE, GAME_VERSION_RE, fail, main, projectName, readTrimmed, rootPath, run } = require("./lib/common");
 
 const ADDON_ISSUE_TITLE = "Addon updates available";
 
@@ -64,7 +64,7 @@ function gameVersion() {
   }
   verifyTag(version);
   setOutput("version", version);
-  console.log(`Using GameBase ${version}`);
+  console.log(`Using ${projectName()} ${version}`);
 }
 
 // A release tag must be exactly "v" plus the committed game version.

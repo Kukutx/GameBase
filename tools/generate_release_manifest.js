@@ -3,12 +3,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { openZip, readTar } = require("./lib/archive");
-const { fail, git, main, readTrimmed, rootPath } = require("./lib/common");
+const { artifactName, fail, git, main, readTrimmed, rootPath } = require("./lib/common");
 
+const NAME = artifactName();
 const EXPECTED_PACKAGES = {
-  windows: "GameBase-windows-x86_64.zip",
-  linux: "GameBase-linux-x86_64.tar.gz",
-  web: "GameBase-web.zip",
+  windows: `${NAME}-windows-x86_64.zip`,
+  linux: `${NAME}-linux-x86_64.tar.gz`,
+  web: `${NAME}-web.zip`,
 };
 const REQUIRED_PACKAGE_FILES = [
   "BUILD_INFO.json",
@@ -20,8 +21,8 @@ const REQUIRED_PACKAGE_FILES = [
   "licenses/DIALOGUE_MANAGER_LICENSE.txt",
 ];
 const TARGET_REQUIRED_FILES = {
-  windows: ["GameBase.exe", "GameBase.pck"],
-  linux: ["GameBase.x86_64", "GameBase.pck"],
+  windows: [`${NAME}.exe`, `${NAME}.pck`],
+  linux: [`${NAME}.x86_64`, `${NAME}.pck`],
   web: ["index.html", "index.js", "index.wasm", "index.pck"],
 };
 const EXPECTED_TARGET = { windows: "Windows Desktop", linux: "Linux", web: "Web" };
@@ -96,8 +97,8 @@ function validatePackage(target, file, expected) {
   if (missing.length > 0) {
     fail(`${label} is missing distribution/runtime files: ${missing.join(", ")}`);
   }
-  if (target === "linux" && (modes.get("GameBase.x86_64") & 0o111) === 0) {
-    fail(`${label} GameBase.x86_64 is not executable (mode ${modes.get("GameBase.x86_64").toString(8)})`);
+  if (target === "linux" && (modes.get(`${NAME}.x86_64`) & 0o111) === 0) {
+    fail(`${label} ${NAME}.x86_64 is not executable (mode ${modes.get(`${NAME}.x86_64`).toString(8)})`);
   }
 
   let buildInfo;

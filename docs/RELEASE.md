@@ -44,10 +44,10 @@ It performs:
 
 Use `--skip-browser-smoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/release_readiness.js` also requires a clean Git working tree so packaged `BUILD_INFO.json` can point to one exact commit with `dirty=false`. `tools/validate.js` runs steps 2 to 8 and is the single local validation entry point; `tools/validate.js --skip-soak` exists only for fast local iteration, and CI and release candidates run the soak by default. A Godot step fails on a non-zero exit code or on any `ERROR:` or `SCRIPT ERROR:` output line.
 
-Expected outputs:
+Expected outputs, named after `config/name` in `project.godot` with anything but letters, digits, `_` and `-` removed (`<Name>` below; `GameBase` in this repository):
 
-- `build/windows/GameBase.exe`
-- `build/linux/GameBase.x86_64`
+- `build/windows/<Name>.exe`
+- `build/linux/<Name>.x86_64`
 - `build/web/index.html`
 
 Generated build, browser and diagnostic artifacts are intentionally ignored by Git. Dialogue Manager release packs retain the runtime/compiler/settings/balloon/l10n resources required by `DialogueManager`, while editor-only assets/components/views/plugin/import/export/inspector code are excluded and verified absent from the PCK. Every platform output also contains `BUILD_INFO.json`, `THIRD_PARTY_NOTICES.md`, and the `licenses/` directory. `BUILD_INFO.json` records the application version, actual Godot version, Git commit, dirty state, and target platform. These distribution metadata/legal files are written after PCK verification and are intentionally not part of `res://`.
@@ -87,9 +87,9 @@ The Release workflow rejects a tag unless it is exactly `v` plus the committed `
 
 Published assets include:
 
-- `GameBase-windows-x86_64.zip`
-- `GameBase-linux-x86_64.tar.gz`
-- `GameBase-web.zip`
+- `<Name>-windows-x86_64.zip`
+- `<Name>-linux-x86_64.tar.gz`
+- `<Name>-web.zip`
 - `RELEASE_MANIFEST.json`
 - `SHA256SUMS.txt`
 

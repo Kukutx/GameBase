@@ -87,7 +87,7 @@ function createGame({ out, name, from }) {
   const result = install({ from: source, project: target, modules: [] });
   copyTree(path.join(source, TEMPLATE), target);
   fs.writeFileSync(path.join(target, "project.godot"), projectSettings(source, name));
-  for (const file of [".godot-version", ".gutconfig.json", "default_bus_layout.tres"]) {
+  for (const file of [".gutconfig.json", "default_bus_layout.tres"]) {
     if (fs.existsSync(path.join(source, file))) fs.copyFileSync(path.join(source, file), path.join(target, file));
   }
   fs.writeFileSync(path.join(target, ".game-version"), "0.1.0\n");

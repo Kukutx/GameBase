@@ -2,11 +2,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { extractTar, extractZip } = require("./lib/archive");
-const { engineErrorLines, fail, main, removeRecursive, rootPath, run } = require("./lib/common");
+const { artifactName, engineErrorLines, fail, main, removeRecursive, rootPath, run } = require("./lib/common");
 
+const NAME = artifactName();
 const NATIVE = {
-  Windows: { executable: "GameBase.exe", build: ["build", "windows"], archive: ["dist", "GameBase-windows-x86_64.zip"] },
-  Linux: { executable: "GameBase.x86_64", build: ["build", "linux"], archive: ["dist", "GameBase-linux-x86_64.tar.gz"] },
+  Windows: { executable: `${NAME}.exe`, build: ["build", "windows"], archive: ["dist", `${NAME}-windows-x86_64.zip`] },
+  Linux: { executable: `${NAME}.x86_64`, build: ["build", "linux"], archive: ["dist", `${NAME}-linux-x86_64.tar.gz`] },
 };
 
 async function smokeNative(name, directory) {
