@@ -7,6 +7,24 @@ extends Resource
 ## particular game. A game provides one `GameDefinition` resource and points the
 ## `gamebase/game_definition` project setting at it; `GameSession` loads it.
 
+## Project setting naming the running game's definition resource.
+const SETTING := "gamebase/game_definition"
+
+static var _current: GameDefinition
+
+## The running game's definition, loaded once from the `gamebase/game_definition`
+## project setting. Usable from any autoload, whatever its order.
+static func current() -> GameDefinition:
+	if _current == null:
+		var path := String(ProjectSettings.get_setting(SETTING, ""))
+		var loaded: Resource = load(path) if not path.is_empty() and ResourceLoader.exists(path) else null
+		if loaded is GameDefinition:
+			_current = loaded
+		else:
+			push_error("GameDefinition: project setting '%s' must point to a GameDefinition resource (got '%s')" % [SETTING, path])
+			_current = GameDefinition.new()
+	return _current
+
 ## Location a new game starts in, and the fallback when a save's location is gone.
 @export var start_location_id: StringName = &""
 ## Location the player is brought back to after collapsing or staying up too late.
@@ -20,3 +38,10 @@ extends Resource
 @export var world_seed := 0
 ## Items granted at the start of a new game, as item id → amount.
 @export var start_items: Dictionary[StringName, int] = {}
+## Audio cue played for a `GameEvents` signal, as signal name → cue id.
+@export var event_cues: Dictionary[StringName, StringName] = {}
+## Starting money and hotbar of a new game (item ids; empty for a free slot).
+@export_range(0, 999999) var start_money := 500
+@export var start_hotbar: Array[StringName] = []
+## Script extending `SaveMigrationSteps` that upgrades this game's older saves.
+@export var save_migrations: Script

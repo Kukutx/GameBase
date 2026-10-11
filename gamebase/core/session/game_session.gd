@@ -2,8 +2,6 @@ class_name GameSessionService
 extends Node
 
 const NEW_GAME_FLAG := &"system:new_game_initialized"
-## Project setting naming the game's `GameDefinition` resource.
-const DEFINITION_SETTING := "gamebase/game_definition"
 ## Orders of the new-game steps the session runs itself. A game registers its own
 ## steps between them with `register_new_game_step()`.
 const NEW_GAME_ORDER_WORLD := 200
@@ -24,7 +22,7 @@ var _handling_late_night := false
 var _new_game_steps: Array[Dictionary] = []
 
 func _init() -> void:
-	definition = _load_definition()
+	definition = GameDefinition.current()
 
 func _ready() -> void:
 	register_new_game_step(&"world", NEW_GAME_ORDER_WORLD, WorldState.clear)
@@ -54,13 +52,6 @@ func _reset_clock_and_weather() -> void:
 	# the first day even when the previous session was already on it with another seed.
 	WeatherState.load_save_data({"world_seed": definition.world_seed})
 
-func _load_definition() -> GameDefinition:
-	var path := String(ProjectSettings.get_setting(DEFINITION_SETTING, ""))
-	var loaded: Resource = load(path) if not path.is_empty() and ResourceLoader.exists(path) else null
-	if loaded is GameDefinition:
-		return loaded
-	push_error("GameSession: project setting '%s' must point to a GameDefinition resource (got '%s')" % [DEFINITION_SETTING, path])
-	return GameDefinition.new()
 
 func start_new_game() -> bool:
 	# Validate the starting world before destroying the selected slot. A broken

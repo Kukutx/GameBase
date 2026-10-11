@@ -59,16 +59,18 @@ func _build_players() -> void:
 		add_child(player)
 		_sfx_players.append(player)
 
+## Plays the cue the game's `GameDefinition.event_cues` assigns to each
+## `GameEvents` signal, whatever arguments the signal carries.
 func _connect_gameplay_events() -> void:
-	GameEvents.item_foraged.connect(_on_item_foraged)
-	GameEvents.crop_harvested.connect(_on_crop_harvested)
-	GameEvents.gift_given.connect(_on_gift_given)
-	GameEvents.animal_product_collected.connect(_on_animal_product_collected)
-	GameEvents.fish_caught.connect(_on_fish_caught)
-	GameEvents.resource_mined.connect(_on_resource_mined)
-	GameEvents.enemy_defeated.connect(_on_enemy_defeated)
-	GameEvents.item_processed.connect(_on_item_processed)
-	GameEvents.tool_upgraded.connect(_on_tool_upgraded)
+	var argument_counts: Dictionary = {}
+	for info: Dictionary in GameEvents.get_signal_list():
+		argument_counts[StringName(info["name"])] = (info["args"] as Array).size()
+	for signal_name: StringName in GameSession.definition.event_cues:
+		if not argument_counts.has(signal_name):
+			push_error("GameAudio: GameDefinition.event_cues names unknown GameEvents signal '%s'" % signal_name)
+			continue
+		var cue_id: StringName = GameSession.definition.event_cues[signal_name]
+		GameEvents.connect(signal_name, play_cue.bind(cue_id).unbind(int(argument_counts[signal_name])))
 
 func _play_music(cue: AudioCueData) -> bool:
 	if _music_player == null:
@@ -114,30 +116,3 @@ func _sync_location_music() -> void:
 		stop_music()
 		return
 	play_cue(location.music_cue_id)
-
-func _on_item_foraged(_item_id: StringName, _quantity: int) -> void:
-	play_cue(&"sfx_pickup")
-
-func _on_crop_harvested(_crop_id: StringName, _item_id: StringName, _quantity: int) -> void:
-	play_cue(&"sfx_harvest")
-
-func _on_gift_given(_npc_id: StringName, _item_id: StringName, _friendship_delta: int) -> void:
-	play_cue(&"sfx_gift")
-
-func _on_animal_product_collected(_animal_id: StringName, _item_id: StringName, _quantity: int) -> void:
-	play_cue(&"sfx_pickup")
-
-func _on_fish_caught(_fish_id: StringName, _item_id: StringName) -> void:
-	play_cue(&"sfx_fish_caught")
-
-func _on_resource_mined(_node_id: StringName, _item_id: StringName, _quantity: int) -> void:
-	play_cue(&"sfx_resource_mined")
-
-func _on_enemy_defeated(_enemy_id: StringName, _combat_xp: int) -> void:
-	play_cue(&"sfx_enemy_defeated")
-
-func _on_item_processed(_recipe_id: StringName, _item_id: StringName, _quantity: int) -> void:
-	play_cue(&"sfx_processing_complete")
-
-func _on_tool_upgraded(_upgrade_id: StringName, _result_item_id: StringName) -> void:
-	play_cue(&"sfx_tool_upgraded")
