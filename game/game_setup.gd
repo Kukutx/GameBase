@@ -20,6 +20,7 @@ func _ready() -> void:
 	_register_load_steps()
 	_register_new_game_steps()
 	SaveManager.register_save_blocker(_fishing_save_block_reason)
+	FishingState.reel_minigame_id = &"fishing_reel"
 
 func _register_save_sections() -> void:
 	# Shipping restores its saved day marker before the clock (order 300) emits

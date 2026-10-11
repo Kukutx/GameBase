@@ -16,6 +16,9 @@ signal fishing_active_changed(active: bool)
 
 var cast_count := 0
 var cast_state: CastState = CastState.IDLE
+## Minigame (`MiniGameHost`) the player plays to land a biting fish; empty lands
+## it as soon as the player reels in.
+var reel_minigame_id: StringName = &""
 
 var _time_remaining := 0.0
 var _pending_fish: FishData
@@ -41,8 +44,30 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if cast_state != CastState.BITE or not event.is_action_pressed("interact"):
 		return
-	reel_in()
 	get_viewport().set_input_as_handled()
+	if reel_minigame_id == &"":
+		reel_in()
+	else:
+		reel_in_with_minigame()
+
+## Plays the reel minigame for the biting fish and lands it on a win. The world,
+## and with it the bite timer, is paused while the minigame runs.
+func reel_in_with_minigame() -> bool:
+	if cast_state != CastState.BITE or _pending_fish == null or MiniGameHost.is_running():
+		return false
+	var fish := _pending_fish
+	var result: MiniGameResult = await MiniGameHost.run(reel_minigame_id, {
+		"difficulty": fish.difficulty,
+		"zone_scale": get_effective_bite_window() / maxf(bite_window, 0.01),
+		"seed": "%d:%d" % [WorldClock.day, cast_count],
+	})
+	# A load or a new game during the minigame replaces the session.
+	if cast_state != CastState.BITE or _pending_fish != fish:
+		return false
+	if result.success:
+		return reel_in()
+	_finish_session(false, tr("Fishing cancelled") if result.cancelled else tr("The fish got away"))
+	return false
 
 func get_available_fish(location_id: StringName, day: int = -1, minute_of_day: int = -1) -> Array[FishData]:
 	var resolved_day := WorldClock.day if day < 1 else day

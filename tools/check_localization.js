@@ -4,6 +4,8 @@ const { parseArgs } = require("node:util");
 const { main, rootPath } = require("./lib/common");
 
 const GAME = rootPath("game");
+// Scripts and scenes with player-visible text: the game and the foundation it runs on.
+const SOURCE_ROOTS = [GAME, rootPath("gamebase")];
 const PO = rootPath("game", "i18n", "ui.zh_CN.po");
 
 // Calls whose first argument is player-visible source text.
@@ -129,7 +131,7 @@ function collectNonDialogueKeys() {
       keys.add(value);
     }
   };
-  for (const file of walk(GAME, ".gd")) {
+  for (const file of SOURCE_ROOTS.flatMap((root) => walk(root, ".gd"))) {
     const text = readText(file);
     for (const match of text.matchAll(CALL_RE)) {
       firstArgumentLiterals(text, match.index + match[0].length).forEach(add);
@@ -144,7 +146,7 @@ function collectNonDialogueKeys() {
       }
     }
   }
-  for (const file of walk(GAME, ".tscn")) {
+  for (const file of SOURCE_ROOTS.flatMap((root) => walk(root, ".tscn"))) {
     for (const match of readText(file).matchAll(SCENE_RE)) {
       add(match[1]);
     }
