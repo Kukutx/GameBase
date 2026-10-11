@@ -6,8 +6,9 @@ const path = require("node:path");
 const test = require("node:test");
 const { checkLocalization } = require("./check_localization");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
-const { gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, readFoundation, releaseTag, resolveGames } = require("./lib/games");
+const { checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, readFoundation, releaseTag, resolveGames } = require("./lib/games");
 const { desiredLinks } = require("./link");
+const { desiredAutoloads, moduleOrder, projectInSync, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
 
 const read = (...parts) => fs.readFileSync(rootPath(...parts), "utf8");
@@ -121,6 +122,35 @@ test("a resource's player-facing field needs a translation, such as a control's 
     removeRecursive(out);
   }
   assert.ok(lines.includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing Probe Jump"));
+});
+
+test("every game's project.godot holds the autoloads, catalogs and plugins of its manifests", () => {
+  for (const id of listGameIds()) assert.ok(projectInSync(loadGame(id)), `games/${id}/project.godot: run node tools/link.js`);
+});
+
+test("a module's autoloads follow the modules it requires, between the core's", () => {
+  const foundation = readFoundation();
+  assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "combat"]), ["items", "combat", "skills", "lifesim", "npc_social", "progression"]);
+  const game = { id: "probe", root: rootPath("games", "probe"), modules: ["skills", "items"], addons: ["gut"], manifest: { autoloads: { ProbeTools: "res://game/probe_tools.gd" } } };
+  const names = desiredAutoloads(game, foundation).map(([name]) => name);
+  assert.deepEqual(names.slice(names.indexOf("WorldState") + 1, names.indexOf("LocationCatalog")), [...Object.keys(foundation.modules.items.autoloads), "Skills"]);
+  assert.equal(names[0], "Transition");
+  assert.equal(names[names.length - 1], "ProbeTools");
+  const project = syncedProject('config_version=5\n\n[autoload]\n\nStale="*res://old.gd"\n\n[application]\n\nconfig/name="Probe"\n', game, foundation);
+  assert.ok(!project.includes("Stale="), "the autoloads are replaced, not merged");
+  assert.ok(project.includes('[application]\n\nconfig/name="Probe"\n'), "the game's own settings stay");
+  assert.ok(project.includes('[editor_plugins]\n\nenabled=PackedStringArray("res://addons/gut/plugin.cfg")'));
+});
+
+test("the manifests reject autoloads that would break a linked game", () => {
+  const core = { before_modules: { Events: "res://gamebase/core/events.gd" }, after_modules: {} };
+  const manifest = (modules, autoloads = core) => ({ autoloads, modules });
+  assert.throws(() => checkFoundation(manifest({}, [])), /gamebase\.json autoloads must be an object/);
+  assert.throws(() => checkFoundation(manifest({ a: { autoloads: { Probe: "res://gamebase/modules/b/probe.gd" } }, b: {} })), /modules\.a\.autoloads\.Probe must be a script under res:\/\/gamebase\/modules\/a\//);
+  const foundation = checkFoundation(manifest({ a: { addons: ["tool"], autoloads: { ToolService: "res://addons/tool/service.gd" } }, b: { requires: ["c"] }, c: { requires: ["b"] } }));
+  assert.throws(() => checkGameAutoloads({ Events: "res://game/events.gd" }, "game.json autoloads", ["gut"], foundation), /Events is already declared by gamebase\.json autoloads\.before_modules/);
+  assert.throws(() => checkGameAutoloads({ Probe: "res://gamebase/core/probe.gd" }, "game.json autoloads", ["gut"], foundation), /must be a script under res:\/\/game\/ or res:\/\/addons\/gut\//);
+  assert.throws(() => moduleOrder(foundation, ["a", "b", "c"]), /modules b, c cannot be ordered because their requires form a cycle/);
 });
 
 test("GAMEBASE_GAME picks one game but never narrows a repository-wide step", () => {

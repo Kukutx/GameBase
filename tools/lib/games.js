@@ -10,7 +10,7 @@ const { GAME_VERSION_RE, fail, rootPath } = require("./common");
 const GAMES_ROOT = rootPath("games");
 const FOUNDATION_MANIFEST = rootPath("gamebase", "gamebase.json");
 const GAME_ID_RE = /^[a-z][a-z0-9-]*$/;
-const GAME_KEYS = new Set(["id", "modules", "addons", "licensed_art"]);
+const GAME_KEYS = new Set(["id", "modules", "addons", "autoloads", "licensed_art"]);
 
 function readJson(file, label) {
   try {
@@ -18,6 +18,32 @@ function readJson(file, label) {
   } catch (error) {
     return fail(`Could not read ${label}: ${error.message}`);
   }
+}
+
+function isMap(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function assertMap(value, label) {
+  if (!isMap(value)) fail(`${label} must be an object.`);
+  return value;
+}
+
+// An autoload map: name -> res:// script path, in load order. Each script
+// lies under one of `roots`, the directories its owner may load from.
+function assertAutoloads(value, label, roots) {
+  if (!isMap(value)) fail(`${label} must map autoload names to res:// script paths.`);
+  for (const [name, script] of Object.entries(value)) {
+    if (!/^[A-Z][A-Za-z0-9]*$/.test(name) || typeof script !== "string" || !/^res:\/\/.+\.gd$/.test(script)) {
+      fail(`${label}.${name} must map a PascalCase name to a res:// script path.`);
+    }
+    if (!roots.some((root) => script.startsWith(root))) fail(`${label}.${name} must be a script under ${roots.join(" or ")}.`);
+  }
+  return value;
+}
+
+function addonRoots(addons) {
+  return [...addons].map((addon) => `res://addons/${addon}/`);
 }
 
 function assertStringList(value, label) {
@@ -29,19 +55,56 @@ function assertStringList(value, label) {
 }
 
 // gamebase/gamebase.json: the modules, the modules each one requires, the
-// shared addons each one uses, and the addons every game links (the test
-// framework).
+// shared addons and the autoloads each one uses, the core's autoloads before
+// and after the modules', and the addons every game links (the test
+// framework). tools/lib/project.js writes a game's autoloads from it.
 function readFoundation() {
-  const manifest = readJson(FOUNDATION_MANIFEST, "gamebase/gamebase.json");
-  const modules = manifest.modules || {};
+  return checkFoundation(readJson(FOUNDATION_MANIFEST, "gamebase/gamebase.json"));
+}
+
+// The foundation manifest, checked: `owners` maps each autoload name to the
+// part of the manifest that declares it. A module loads its autoloads from
+// its own directory or an addon it uses; the core's come from the core or
+// from the game (its content database and setup).
+function checkFoundation(manifest) {
+  assertMap(manifest, "gamebase/gamebase.json");
+  const modules = assertMap(manifest.modules ?? {}, "gamebase.json modules");
+  const autoloads = assertMap(manifest.autoloads ?? {}, "gamebase.json autoloads");
+  const owners = new Map();
+  const claim = (map, label, roots) => {
+    for (const name of Object.keys(assertAutoloads(map, label, roots))) {
+      if (owners.has(name)) fail(`${label}.${name} is also declared by ${owners.get(name)}.`);
+      owners.set(name, label);
+    }
+  };
+  const coreRoots = ["res://gamebase/core/", "res://game/"];
+  claim(autoloads.before_modules ?? {}, "gamebase.json autoloads.before_modules", coreRoots);
+  claim(autoloads.after_modules ?? {}, "gamebase.json autoloads.after_modules", coreRoots);
   for (const [name, module] of Object.entries(modules)) {
-    assertStringList(module.requires || [], `gamebase.json modules.${name}.requires`);
-    assertStringList(module.addons || [], `gamebase.json modules.${name}.addons`);
-    for (const required of module.requires || []) {
+    assertMap(module, `gamebase.json modules.${name}`);
+    assertStringList(module.requires ?? [], `gamebase.json modules.${name}.requires`);
+    const addons = assertStringList(module.addons ?? [], `gamebase.json modules.${name}.addons`);
+    claim(module.autoloads ?? {}, `gamebase.json modules.${name}.autoloads`, [`res://gamebase/modules/${name}/`, ...addonRoots(addons)]);
+    for (const required of module.requires ?? []) {
       if (!modules[required]) fail(`gamebase.json modules.${name} requires unknown module ${required}.`);
     }
   }
-  return { modules, addons: assertStringList(manifest.addons || [], "gamebase.json addons") };
+  return {
+    modules,
+    addons: assertStringList(manifest.addons ?? [], "gamebase.json addons"),
+    autoloads: { before_modules: autoloads.before_modules ?? {}, after_modules: autoloads.after_modules ?? {} },
+    owners,
+  };
+}
+
+// A game's own autoloads (game.json "autoloads"): scripts of the game or of
+// an addon it links, under names no part of the foundation declares.
+function checkGameAutoloads(value, label, addons, foundation) {
+  const autoloads = assertAutoloads(value, label, ["res://game/", ...addonRoots(addons)]);
+  for (const name of Object.keys(autoloads)) {
+    if (foundation.owners.has(name)) fail(`${label}.${name} is already declared by ${foundation.owners.get(name)}; choose another name.`);
+  }
+  return autoloads;
 }
 
 function listGameIds() {
@@ -82,6 +145,7 @@ function loadGame(id) {
   for (const addon of addons) {
     if (!fs.existsSync(rootPath("addons", addon, "plugin.cfg"))) fail(`${label} uses addon ${addon}, which addons/ does not hold.`);
   }
+  checkGameAutoloads(manifest.autoloads ?? {}, `${label} autoloads`, addons, foundation);
   return { id, root, modules, addons: [...addons].sort(), manifest };
 }
 
@@ -183,6 +247,8 @@ function releaseTag(game, version) {
 module.exports = {
   GAMES_ROOT,
   GAME_ID_RE,
+  checkFoundation,
+  checkGameAutoloads,
   readFoundation,
   listGameIds,
   loadGame,

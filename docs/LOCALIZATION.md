@@ -23,7 +23,7 @@ gamebase/modules/<module>/i18n/<module>.<locale>.po each module's text
 games/<id>/game/i18n/ui.<locale>.po                 the game's own text, data and dialogue
 ```
 
-A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own. Farm1 registers the core, all six module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
+A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own; `node tools/link.js` writes that list from the catalogs under `gamebase/core/i18n/`, each listed module's `i18n/` and the game's `game/i18n/`. Farm1 registers the core, all six module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
 
 Scene-authored Control text participates in Godot translation automatically. Runtime-created text must use `tr(...)` or `TranslationServer.translate(...)` for translatable labels.
 
@@ -77,7 +77,7 @@ Keep dialogue translation data separate from gameplay state. Translation changes
 ## Adding a locale
 
 1. Add a `<name>.<locale>.po` catalog to the core, to every module the game uses and to the game.
-2. Register them in the game's `locale/translations`; the locale then appears in the language picker. If `GameSettingsService.LOCALE_NAMES` lacks the language's own name, add it there.
+2. Run `node tools/link.js`, which registers them in the game's `locale/translations`; the locale then appears in the language picker. If `GameSettingsService.LOCALE_NAMES` lacks the language's own name, add it there.
 3. Add/extend automated translation tests.
 4. Verify the locale through the settings menu and a real exported build.
 5. Verify fonts cover all glyphs required by the locale.
