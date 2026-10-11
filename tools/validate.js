@@ -3,6 +3,7 @@ const { parseArgs } = require("node:util");
 const { checkLocalization } = require("./check_localization");
 const { runSelfTest } = require("./package_release");
 const { runCli: runRulesCheck } = require("./validate_rules");
+const { runCli: runLayerCheck } = require("./check_layers");
 const {
   ENGINE_VERSION_RE,
   GAME_VERSION_RE,
@@ -71,6 +72,12 @@ async function validate({ godotBin, skipImport = false, skipSoak = false, cleanI
   console.log("==> Agent rules and routing");
   if (runRulesCheck(["--strict"]) !== 0) {
     fail("Agent rules check failed.");
+  }
+
+  console.log("");
+  console.log("==> Layer dependencies");
+  if (runLayerCheck() !== 0) {
+    fail("Layer dependency check failed.");
   }
 
   console.log("");

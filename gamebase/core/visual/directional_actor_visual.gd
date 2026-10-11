@@ -113,12 +113,18 @@ func _update_visual(velocity: Vector2) -> void:
 func _apply_parent_profile_presentation() -> void:
 	if actor == null:
 		return
+	# Any actor whose `profile` resource carries `visual_strip_root` and
+	# `visual_modulate` (an NPC profile, for example) styles its visual.
 	var raw_profile: Variant = actor.get("profile")
-	if raw_profile is NpcProfileData:
-		var profile := raw_profile as NpcProfileData
-		if strip_root.is_empty() and not profile.visual_strip_root.is_empty():
-			strip_root = profile.visual_strip_root
-		sprite_modulate = profile.visual_modulate
+	if not raw_profile is Resource:
+		return
+	var profile := raw_profile as Resource
+	var profile_strip_root: Variant = profile.get("visual_strip_root")
+	if strip_root.is_empty() and profile_strip_root is String and not String(profile_strip_root).is_empty():
+		strip_root = profile_strip_root
+	var profile_modulate: Variant = profile.get("visual_modulate")
+	if profile_modulate is Color:
+		sprite_modulate = profile_modulate
 
 func _cardinal_direction(direction: Vector2) -> Vector2:
 	match direction_name(direction):

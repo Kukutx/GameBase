@@ -27,9 +27,9 @@ func test_v1_save_migrates_to_current_structure() -> void:
 	assert_true((migrated["shipping"]["pending"] as Dictionary).is_empty())
 	assert_true((migrated["buffs"] as Dictionary).is_empty())
 	assert_eq(int(migrated["clock"]["day"]), 3)
-	assert_eq(String(migrated.get("scene", "")), SaveMigration.LEGACY_DEFAULT_SCENE)
-	assert_eq(String(migrated.get("location_id", "")), SaveMigration.LEGACY_DEFAULT_LOCATION_ID)
-	assert_eq(String(GameSession.definition.start_location_id), SaveMigration.LEGACY_DEFAULT_LOCATION_ID)
+	assert_eq(String(migrated.get("scene", "")), GameSaveMigrations.LEGACY_DEFAULT_SCENE)
+	assert_eq(String(migrated.get("location_id", "")), GameSaveMigrations.LEGACY_DEFAULT_LOCATION_ID)
+	assert_eq(String(GameSession.definition.start_location_id), GameSaveMigrations.LEGACY_DEFAULT_LOCATION_ID)
 	var start_location := ContentDB.get_location(GameSession.definition.start_location_id)
 	assert_not_null(start_location)
 	if start_location != null:
@@ -48,7 +48,7 @@ func test_migration_sanitizes_malformed_legacy_numeric_fields() -> void:
 	assert_eq(int((migrated.get("player_state", {}) as Dictionary).get("max_health", 0)), 100)
 	assert_eq(int((migrated.get("player_state", {}) as Dictionary).get("health", 0)), 100)
 	assert_eq(int((migrated.get("shipping", {}) as Dictionary).get("last_day_seen", 0)), 1)
-	assert_eq(String(migrated.get("location_id", "")), SaveMigration.LEGACY_DEFAULT_LOCATION_ID)
+	assert_eq(String(migrated.get("location_id", "")), GameSaveMigrations.LEGACY_DEFAULT_LOCATION_ID)
 
 func test_v7_scene_paths_migrate_to_stable_location_ids() -> void:
 	var expected := {
@@ -79,7 +79,7 @@ func test_v7_scene_paths_migrate_to_stable_location_ids() -> void:
 		assert_eq(String(migrated.get("location_id", "")), String(expected[scene_path]))
 
 func test_current_save_migration_is_idempotent() -> void:
-	var current := {"version": GameSaveManager.SAVE_VERSION, "scene": SaveMigration.LEGACY_DEFAULT_SCENE, "location_id": "starter_town", "npc_memory": {"facts": {"mira": {"x": true}}}, "fishing": {"cast_count": 7}, "shipping": {"pending": {}, "last_day_seen": 5}, "buffs": {"hearty_worker": 9999}, "player_state": {"health": 90, "max_health": 100}}
+	var current := {"version": GameSaveManager.SAVE_VERSION, "scene": GameSaveMigrations.LEGACY_DEFAULT_SCENE, "location_id": "starter_town", "npc_memory": {"facts": {"mira": {"x": true}}}, "fishing": {"cast_count": 7}, "shipping": {"pending": {}, "last_day_seen": 5}, "buffs": {"hearty_worker": 9999}, "player_state": {"health": 90, "max_health": 100}}
 	var migrated := SaveMigration.migrate(current, GameSaveManager.SAVE_VERSION)
 
 	assert_eq(migrated, current)

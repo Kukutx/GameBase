@@ -7,26 +7,23 @@ signal money_changed(amount: int)
 signal selected_slot_changed(index: int, item_id: StringName)
 signal hotbar_changed
 
-const DEFAULT_HOTBAR: Array[StringName] = [
-	&"hoe",
-	&"watering_can",
-	&"pickaxe",
-	&"rusty_sword",
-	&"turnip_seeds",
-	&"fishing_rod",
-	&"berry",
-	&"",
-	&"",
-]
+const HOTBAR_SIZE := 9
 
 @export_range(1, 999, 1) var max_energy := 100
 @export_range(1, 999, 1) var max_health := 100
 
 var energy := 100
 var health := 100
-var money := 500
+var money := GameDefinition.current().start_money
 var selected_slot := 0
-var hotbar: Array[StringName] = DEFAULT_HOTBAR.duplicate()
+var hotbar: Array[StringName] = default_hotbar()
+
+## The game's starting hotbar (`GameDefinition.start_hotbar`), padded to
+## `HOTBAR_SIZE` slots.
+static func default_hotbar() -> Array[StringName]:
+	var result: Array[StringName] = GameDefinition.current().start_hotbar.duplicate()
+	result.resize(HOTBAR_SIZE)
+	return result
 
 func consume_energy(amount: int) -> bool:
 	if amount <= 0:
@@ -169,9 +166,9 @@ func get_hotbar_text() -> String:
 func reset_new_game() -> void:
 	energy = max_energy
 	health = max_health
-	money = 500
+	money = GameDefinition.current().start_money
 	selected_slot = 0
-	hotbar = DEFAULT_HOTBAR.duplicate()
+	hotbar = default_hotbar()
 	energy_changed.emit(energy, max_energy)
 	health_changed.emit(health, max_health)
 	money_changed.emit(money)
@@ -197,8 +194,9 @@ func load_save_data(data: Dictionary) -> void:
 	energy = clampi(_safe_int(data.get("energy", max_energy), max_energy), 0, max_energy)
 	max_health = maxi(_safe_int(data.get("max_health", 100), 100), 1)
 	health = clampi(_safe_int(data.get("health", max_health), max_health), 0, max_health)
-	money = maxi(_safe_int(data.get("money", 500), 500), 0)
-	var loaded_hotbar: Variant = data.get("hotbar", DEFAULT_HOTBAR)
+	var start_money := GameDefinition.current().start_money
+	money = maxi(_safe_int(data.get("money", start_money), start_money), 0)
+	var loaded_hotbar: Variant = data.get("hotbar", default_hotbar())
 	hotbar.clear()
 	if loaded_hotbar is Array:
 		for raw: Variant in loaded_hotbar:
@@ -210,8 +208,8 @@ func load_save_data(data: Dictionary) -> void:
 				item_id = &""
 			hotbar.append(item_id)
 	if hotbar.is_empty():
-		hotbar = DEFAULT_HOTBAR.duplicate()
-	while hotbar.size() < 9:
+		hotbar = default_hotbar()
+	while hotbar.size() < HOTBAR_SIZE:
 		hotbar.append(&"")
 	selected_slot = clampi(_safe_int(data.get("selected_slot", 0), 0), 0, maxi(hotbar.size() - 1, 0))
 	energy_changed.emit(energy, max_energy)
