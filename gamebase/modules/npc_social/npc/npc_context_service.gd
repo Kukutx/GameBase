@@ -1,8 +1,20 @@
 class_name NpcContextService
 extends Node
 
+## What an NPC knows when it talks: who it is, the relationship, the world, the
+## player and its memory. Other modules add what an NPC should know about their
+## own systems, such as quests, with `register_section()`.
+
 const CONTEXT_VERSION := 1
 const MEMORY_LIMIT := 12
+
+## section key (String) -> Callable(npc_id: StringName) -> Variant
+var _sections: Dictionary = {}
+
+## Adds `key` to every context, its value `provider.call(npc_id)`. The key must
+## not be one of the context's own (npc, relationship, world, player, ...).
+func register_section(key: StringName, provider: Callable) -> void:
+	_sections[String(key)] = provider
 
 func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 	var profile := ContentDB.get_npc(npc_id)
@@ -24,7 +36,7 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 	var seen_heart_events: Array[String] = []
 	for event_id: StringName in HeartEvents.get_seen_event_ids(npc_id):
 		seen_heart_events.append(String(event_id))
-	return {
+	var context := {
 		"version": CONTEXT_VERSION,
 		"npc": {
 			"id": String(profile.id),
@@ -56,7 +68,6 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 			"location_id": String(location_id),
 			"location_name": location.display_name if location != null else "",
 			"active_events": active_events,
-			"town_projects": _get_town_project_context(),
 			"facts": world_facts,
 		},
 		"player": {
@@ -68,13 +79,15 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 			"skills": Skills.to_save_data(),
 			"actor_name": actor.name if actor != null else "Player",
 		},
-		"quests": QuestState.get_journal_entries(),
 		"npc_state": _get_runtime_npc_state(npc_id),
 		"memory": {
 			"facts": NpcMemory.get_facts(npc_id),
 			"recent_messages": NpcMemory.get_recent_messages(npc_id, MEMORY_LIMIT),
 		},
 	}
+	for key: String in _sections:
+		context[key] = (_sections[key] as Callable).call(npc_id)
+	return context
 
 func build_context_json(npc_id: StringName, actor: Node = null) -> String:
 	return JSON.stringify(build_context(npc_id, actor), "\t")
@@ -94,26 +107,3 @@ func _get_runtime_npc_state(npc_id: StringName) -> Dictionary:
 		"activity": "",
 		"visible_in_current_location": false,
 	}
-
-func _get_town_project_context() -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
-	for project: TownProjectData in ContentDB.get_all_town_projects():
-		if project == null:
-			continue
-		var progress: Dictionary = {}
-		for raw_id: Variant in project.requirements.keys():
-			var item_id := StringName(String(raw_id))
-			progress[String(item_id)] = {
-				"donated": TownProjects.get_progress(project.id, item_id),
-				"required": project.get_required_quantity(item_id),
-			}
-		result.append({
-			"id": String(project.id),
-			"name": project.display_name,
-			"location_id": String(project.location_id),
-			"available": TownProjects.is_available(project.id),
-			"completed": TownProjects.is_completed(project.id),
-			"claimed": TownProjects.is_claimed(project.id),
-			"progress": progress,
-		})
-	return result

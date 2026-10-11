@@ -47,7 +47,7 @@ func get_relationship_text() -> String:
 func _on_interacted(actor: Node) -> void:
 	var npc_id := get_npc_id()
 	RelationshipState.record_talk(npc_id)
-	QuestState.notify_npc_talk(npc_id)
+	GameEvents.npc_talked.emit(npc_id)
 	ConversationService.start_conversation(self, actor, dialogue, dialogue_title)
 
 func _on_activity_changed(activity: String) -> void:

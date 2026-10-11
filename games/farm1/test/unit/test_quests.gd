@@ -49,7 +49,7 @@ func test_new_game_auto_starts_only_data_declared_entry_quests() -> void:
 			assert_false(QuestState.is_active(quest.id), "Non-auto quest %s started unexpectedly" % quest.id)
 
 func test_talking_to_mira_completes_intro_quest() -> void:
-	QuestState.notify_npc_talk(&"mira")
+	GameEvents.npc_talked.emit(&"mira")
 	assert_true(QuestState.is_completed(&"meet_mira"))
 	assert_eq(PlayerState.money, 550)
 

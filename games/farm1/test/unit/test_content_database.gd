@@ -303,8 +303,6 @@ func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule
 	recipe.ingredients = {"berry": {"bad": true}}
 	recipe.output_item_id = &"berry"
 	recipe.output_quantity = 0
-	recipe.required_skill = SkillManager.FARMING
-	recipe.required_level = 99
 	_register(db, GameContentDatabase.KIND_RECIPE, "_recipes", "recipe", [recipe])
 
 	var quest := QuestData.new()
@@ -343,7 +341,6 @@ func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule
 	assert_string_contains(joined, "shop 'bad_shop' has invalid seasonal price for 'berry'")
 	assert_string_contains(joined, "recipe 'bad_recipe' has invalid ingredient quantity for 'berry'")
 	assert_string_contains(joined, "recipe 'bad_recipe' has invalid output quantity 0")
-	assert_string_contains(joined, "recipe 'bad_recipe' has invalid required level 99")
 	assert_string_contains(joined, "quest 'bad_quest' has an empty title")
 	assert_string_contains(joined, "quest 'bad_quest' has invalid required amount 0")
 	assert_string_contains(joined, "quest 'bad_quest' has invalid reward quantity for 'berry'")

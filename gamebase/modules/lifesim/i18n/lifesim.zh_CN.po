@@ -282,12 +282,6 @@ msgstr "现在无法继续下层"
 msgid "Descending to Mine Floor %d"
 msgstr "正在前往矿井第 %d 层"
 
-msgid "Make room before packing up this structure"
-msgstr "收起该建筑前请先腾出背包空间"
-
-msgid "Inventory changed before the structure could be packed up"
-msgstr "收起建筑前背包内容发生了变化"
-
 msgid "Basic Sprinkler · waters nearby plots every morning (%.0f px)"
 msgstr "基础洒水器 · 每天早晨自动浇灌附近农田（%.0f px）"
 
@@ -464,3 +458,6 @@ msgstr "在绿色区域内按 %s · 剩余次数：%d"
 
 msgid "product"
 msgstr "产物"
+
+msgid "Buy %s — %dg  ·  %s slots %d"
+msgstr "购买 %s — %dg  ·  %s 空位 %d"

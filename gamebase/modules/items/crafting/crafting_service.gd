@@ -14,7 +14,7 @@ func get_all_recipes() -> Array[RecipeData]:
 func can_craft(recipe: RecipeData) -> bool:
 	if recipe == null or ItemCatalog.get_item(recipe.output_item_id) == null:
 		return false
-	if recipe.required_skill != &"" and Skills.get_level(recipe.required_skill) < recipe.required_level:
+	if not GameRules.check(recipe.condition):
 		return false
 	# InventoryStore owns strict transaction quantity validation. Malformed
 	# content must fail closed here rather than becoming a free craft.
@@ -31,7 +31,7 @@ func craft(recipe_id: StringName) -> bool:
 func _craft_internal(recipe_id: StringName) -> bool:
 	var recipe := get_recipe(recipe_id)
 	if recipe == null or not can_craft(recipe):
-		GameEvents.toast("Missing materials or skill level")
+		GameEvents.toast("Missing materials or requirements")
 		return false
 	var output := ItemCatalog.get_item(recipe.output_item_id)
 	if output == null:

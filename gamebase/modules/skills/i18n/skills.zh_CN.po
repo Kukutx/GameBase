@@ -1,0 +1,55 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase modules/skills\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Farm %d · Forage %d · Fish %d · Mine %d · Combat %d · Social %d"
+msgstr "耕作 %d · 采集 %d · 钓鱼 %d · 采矿 %d · 战斗 %d · 社交 %d"
+
+msgid "Next passive at Lv5"
+msgstr "Lv5 解锁下一个被动效果"
+
+msgid "Field Efficiency %s · tool energy -%d%%"
+msgstr "田间效率 %s · 工具体力消耗 -%d%%"
+
+msgid "Gatherer %s · +%d forage quantity"
+msgstr "采集者 %s · 采集数量 +%d"
+
+msgid "Angler %s · bite wait -%d%% · reel window +%d%%"
+msgstr "钓手 %s · 咬钩等待 -%d%% · 收线时间 +%d%%"
+
+msgid "Miner %s · mining energy -%d%%"
+msgstr "矿工 %s · 采矿体力消耗 -%d%%"
+
+msgid "Fighter %s · attack +%d%% · attack energy -%d%%"
+msgstr "战士 %s · 攻击 +%d%% · 攻击体力消耗 -%d%%"
+
+msgid "Neighbor %s · positive gift friendship +%d%%"
+msgstr "好邻居 %s · 喜爱礼物的好感 +%d%%"
+
+msgid "Passive tier %d"
+msgstr "被动效果 %d 级"
+
+msgid "Farming"
+msgstr "耕作"
+
+msgid "Foraging"
+msgstr "采集"
+
+msgid "Fishing"
+msgstr "钓鱼"
+
+msgid "Combat"
+msgstr "战斗"
+
+msgid "Social"
+msgstr "社交"
+
+msgid "%s reached level %d"
+msgstr "%s 提升到 %d 级"
+
+msgid "Mining"
+msgstr "采矿"

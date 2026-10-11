@@ -14,9 +14,13 @@ extends Node
 ## actions are `func(args: PackedStringArray, context: Dictionary) -> bool`
 ## returning whether they succeeded. `context` carries optional facts of the
 ## caller, such as "day" when a condition is asked about another day.
+## A condition may also register a `describer`, `func(args: PackedStringArray) -> String`:
+## the requirement in words a player reads, which `describe()` collects so a
+## menu can say what a locked entry needs.
 
 ## Argument checks for `register_condition`/`register_action` `arg_kinds`: a
-## content kind (checked against `ContentDB`), or one of these value kinds.
+## content kind (checked against `ContentDB`), a kind a module registers with
+## `register_arg_kind()`, or one of these value kinds.
 const ARG_INT := &"int"
 const ARG_NUMBER := &"number"
 const ARG_BOOL := &"bool"
@@ -24,6 +28,8 @@ const ARG_TEXT := &"text"
 
 var _conditions: Dictionary = {}
 var _actions: Dictionary = {}
+## kind -> Callable(value: String) -> String
+var _arg_kinds: Dictionary = {}
 var _parsed: Dictionary = {}
 
 func _ready() -> void:
@@ -31,11 +37,16 @@ func _ready() -> void:
 
 ## Registers a condition key. `min_args`/`max_args` bound the argument count
 ## (-1: unbounded); `arg_kinds[i]` checks argument i (the last kind repeats).
-func register_condition(key: StringName, evaluate: Callable, min_args := 0, max_args := -1, arg_kinds: Array[StringName] = []) -> void:
-	_conditions[_normalize(key)] = {"call": evaluate, "min": min_args, "max": max_args, "kinds": arg_kinds}
+func register_condition(key: StringName, evaluate: Callable, min_args := 0, max_args := -1, arg_kinds: Array[StringName] = [], describer := Callable()) -> void:
+	_conditions[_normalize(key)] = {"call": evaluate, "min": min_args, "max": max_args, "kinds": arg_kinds, "describer": describer}
 
 func register_action(key: StringName, run: Callable, min_args := 0, max_args := -1, arg_kinds: Array[StringName] = []) -> void:
 	_actions[_normalize(key)] = {"call": run, "min": min_args, "max": max_args, "kinds": arg_kinds}
+
+## Registers an argument kind for `arg_kinds`. `check` is
+## `func(value: String) -> String` returning what is wrong with `value`, or "".
+func register_arg_kind(kind: StringName, check: Callable) -> void:
+	_arg_kinds[kind] = check
 
 func has_condition(key: StringName) -> bool:
 	return _conditions.has(_normalize(key))
@@ -59,6 +70,20 @@ func check(query: String, context: Dictionary = {}) -> bool:
 		if _evaluate_clause(clause, context) == bool(clause["negate"]):
 			return false
 	return true
+
+## What `query` requires, in words a player reads: the description of each
+## clause whose condition registered one. Negated clauses and conditions
+## without a description are left out.
+func describe(query: String) -> PackedStringArray:
+	var result := PackedStringArray()
+	var parsed := _parse(query)
+	if not String(parsed["error"]).is_empty():
+		return result
+	for clause: Dictionary in parsed["clauses"]:
+		var describer: Callable = (_conditions.get(clause["key"], {}) as Dictionary).get("describer", Callable())
+		if not bool(clause["negate"]) and describer.is_valid():
+			result.append(String(describer.call(clause["args"])))
+	return result
 
 ## Runs each action in order and stops at the first one that fails. Returns
 ## whether all succeeded.
@@ -158,6 +183,8 @@ func _check_arg(value: String, kind: StringName) -> String:
 			return "" if ["true", "false"].has(value.to_lower()) else "'%s' is not true or false" % value
 		ARG_TEXT:
 			return ""
+	if _arg_kinds.has(kind):
+		return String((_arg_kinds[kind] as Callable).call(value))
 	return "" if ContentDB.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
 
 func _evaluate_clause(clause: Dictionary, context: Dictionary) -> bool:

@@ -2,7 +2,9 @@
 // Enforces the dependency direction of the monorepo:
 //   gamebase/core         may not use a module, an addon or a game;
 //   gamebase/modules/<m>  may not use a game, and may use only the modules and
-//                         addons gamebase/gamebase.json lists for it;
+//                         addons gamebase/gamebase.json lists for it, whose
+//                         requires form no cycle, so a game can take a module
+//                         with only the modules below it;
 //   games/<id>/           may use the core, and only the modules and addons its
 //                         game.json lists (the addons of gamebase.json and of
 //                         those modules come with them);
@@ -237,6 +239,34 @@ function checkFoundation(root, model, problems) {
       if (!fs.existsSync(path.join(root, "addons", addon))) problems.add(`gamebase/gamebase.json: module ${module} uses addon ${addon}, which addons/ does not hold`);
     }
   }
+  const cycle = findRequireCycle(model.foundation.modules);
+  if (cycle) problems.add(`gamebase/gamebase.json: modules require each other in a cycle (${cycle.join(" -> ")}); move the shared part down or invert the dependency`);
+}
+
+// The first cycle in the modules' requires, as the module names around it
+// (the first repeated at the end), or null.
+function findRequireCycle(modules) {
+  const state = new Map();
+  const stack = [];
+  const visit = (name) => {
+    if (state.get(name) === "done") return null;
+    if (state.get(name) === "open") return stack.slice(stack.indexOf(name)).concat(name);
+    state.set(name, "open");
+    stack.push(name);
+    for (const required of modules[name].requires || []) {
+      if (!modules[required]) continue;
+      const cycle = visit(required);
+      if (cycle) return cycle;
+    }
+    stack.pop();
+    state.set(name, "done");
+    return null;
+  };
+  for (const name of Object.keys(modules).sort()) {
+    const cycle = visit(name);
+    if (cycle) return cycle;
+  }
+  return null;
 }
 
 function checkGame(root, model, game, problems) {

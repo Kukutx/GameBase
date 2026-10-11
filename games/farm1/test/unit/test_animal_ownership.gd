@@ -139,22 +139,25 @@ func test_animal_purchase_blocks_money_callback_reentrancy() -> void:
 	assert_eq(PlayerState.money, 4200)
 	AnimalState.unregister_housing(&"race_coop")
 
-func test_general_store_reuses_shop_service_for_animals() -> void:
+func test_general_store_sells_animals_as_shop_offers() -> void:
 	var shop := ContentDB.get_shop(&"general_store")
 	assert_not_null(shop)
-	assert_true(shop.has_animal(&"chicken"))
-	assert_true(shop.has_animal(&"cow"))
-	assert_true(shop.has_animal(&"pig"))
+	var offers: Dictionary = {}
+	for offer: ShopOffer in shop.offers:
+		offers[offer.get_key()] = offer
+	assert_eq(offers.keys(), ["animal:chicken", "animal:cow", "animal:pig"])
+	var context := {"location_id": &"starter_town"}
 	var money_before := PlayerState.money
-	var instance_id := ShopState.buy_animal(shop, &"cow", &"starter_town")
-	assert_ne(instance_id, &"")
+	assert_true(ShopState.buy_offer(shop, offers["animal:cow"], context))
 	assert_eq(PlayerState.money, money_before - ContentDB.get_farm_animal(&"cow").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 2)
 	money_before = PlayerState.money
-	var pig_id := ShopState.buy_animal(shop, &"pig", &"starter_town")
-	assert_ne(pig_id, &"")
+	assert_true(ShopState.buy_offer(shop, offers["animal:pig"], context))
 	assert_eq(PlayerState.money, money_before - ContentDB.get_farm_animal(&"pig").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 3)
+	var elsewhere := AnimalOffer.new()
+	elsewhere.animal_id = &"cow"
+	assert_false(ShopState.buy_offer(shop, elsewhere, context), "an offer the shop does not list is not sold")
 
 func test_owned_animal_state_is_applied_to_scene_animals() -> void:
 	WorldState.set_value(GameSession.NEW_GAME_FLAG, true)

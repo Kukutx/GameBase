@@ -9,5 +9,4 @@ display_name = "Oil Maker"
 ingredients = {"copper_bar": 2, "wood": 12}
 output_item_id = &"oil_maker"
 output_quantity = 1
-required_skill = &"farming"
-required_level = 2
+condition = "SKILL_LEVEL farming 2"

@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" path="res://gamebase/modules/items/crafting/crafting_menu.tscn" id="7_crafting_menu"]
 [ext_resource type="Script" path="res://game/art/licensed_terrain_layer.gd" id="8_terrain"]
 [ext_resource type="PackedScene" path="res://gamebase/modules/items/storage/storage_chest.tscn" id="9_chest"]
-[ext_resource type="Script" path="res://gamebase/modules/lifesim/building/build_zone.gd" id="10_build_zone"]
+[ext_resource type="Script" path="res://gamebase/modules/items/building/build_zone.gd" id="10_build_zone"]
 [ext_resource type="Script" path="res://gamebase/core/world/simple_navigation_region.gd" id="11_nav"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]

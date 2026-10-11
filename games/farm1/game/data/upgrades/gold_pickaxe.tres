@@ -10,5 +10,4 @@ source_item_id = &"iron_pickaxe"
 result_item_id = &"gold_pickaxe"
 materials = {"gold_bar": 5}
 money_cost = 4000
-required_skill = &"mining"
-required_level = 5
+condition = "SKILL_LEVEL mining 5"

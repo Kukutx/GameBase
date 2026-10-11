@@ -175,6 +175,30 @@ func get_location_summary(location_id: StringName) -> String:
 		parts.append(get_project_summary(project.id))
 	return " · ".join(parts)
 
+## Every project's state as plain data, for an NPC's conversation context.
+func get_context_entries() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for project: TownProjectData in ContentDB.get_all_town_projects():
+		if project == null:
+			continue
+		var progress: Dictionary = {}
+		for raw_id: Variant in project.requirements.keys():
+			var item_id := StringName(String(raw_id))
+			progress[String(item_id)] = {
+				"donated": get_progress(project.id, item_id),
+				"required": project.get_required_quantity(item_id),
+			}
+		result.append({
+			"id": String(project.id),
+			"name": project.display_name,
+			"location_id": String(project.location_id),
+			"available": is_available(project.id),
+			"completed": is_completed(project.id),
+			"claimed": is_claimed(project.id),
+			"progress": progress,
+		})
+	return result
+
 func _ensure_state(project_id: StringName) -> Dictionary:
 	var state := get_state(project_id)
 	if state.is_empty():

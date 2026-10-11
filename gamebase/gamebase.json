@@ -5,17 +5,20 @@
       "requires": ["items"]
     },
     "items": {
-      "requires": ["lifesim", "progression"]
+      "requires": []
     },
     "lifesim": {
-      "requires": ["combat", "items", "progression"]
+      "requires": ["combat", "items", "skills"]
     },
     "npc_social": {
-      "requires": ["items", "lifesim", "progression"],
+      "requires": ["items", "lifesim", "skills"],
       "addons": ["dialogue_manager"]
     },
     "progression": {
-      "requires": ["items", "lifesim", "npc_social"]
+      "requires": ["items", "lifesim", "npc_social", "skills"]
+    },
+    "skills": {
+      "requires": []
     }
   }
 }

@@ -89,9 +89,6 @@ func get_journal_entries() -> Array[Dictionary]:
 		})
 	return result
 
-func notify_npc_talk(npc_id: StringName) -> void:
-	GameEvents.npc_talked.emit(npc_id)
-
 func to_save_data() -> Dictionary:
 	return _states.duplicate(true)
 

@@ -6,13 +6,13 @@ extends ContentEntry
 @export var output_item_id: StringName
 @export_range(1, 99, 1) var output_quantity := 1
 @export_range(1, 10080, 1) var process_minutes := 60
-@export var required_skill: StringName
-@export_range(1, 10, 1) var required_level := 1
+## When the recipe can start, as a `GameRules` query; empty: always.
+@export var condition := ""
 
 func can_start(inventory: InventoryStore = InventoryState) -> bool:
 	if inventory == null or output_item_id == &"" or output_quantity <= 0 or process_minutes <= 0:
 		return false
-	if required_skill != &"" and Skills.get_level(required_skill) < required_level:
+	if not GameRules.check(condition):
 		return false
 	# Strict transaction validation rejects malformed input quantities instead of
 	# coercing them into a free processing job.

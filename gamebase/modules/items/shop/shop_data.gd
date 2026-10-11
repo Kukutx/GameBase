@@ -4,7 +4,8 @@ extends ContentEntry
 @export var display_name: String = "Shop"
 @export var stock: Dictionary = {}
 @export var seasonal_stock: Dictionary = {}
-@export var animal_stock: Array[StringName] = []
+## What the shop sells besides items, after them (see `ShopOffer`).
+@export var offers: Array[ShopOffer] = []
 
 func get_stock(season_name: String = "") -> Dictionary:
 	var resolved_season := WorldClock.get_season_name() if season_name.is_empty() else season_name
@@ -25,6 +26,3 @@ func get_buy_price(item: ItemData) -> int:
 
 func has_item(item_id: StringName) -> bool:
 	return get_stock().has(String(item_id))
-
-func has_animal(animal_id: StringName) -> bool:
-	return animal_stock.has(animal_id)
