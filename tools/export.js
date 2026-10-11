@@ -10,6 +10,7 @@ const {
   fail,
   git,
   godotVersion,
+  importProject,
   main,
   readTrimmed,
   removeRecursive,
@@ -116,7 +117,7 @@ async function exportPresets({ game, presets = PRESET_NAMES, godotBin, skipValid
 
   try {
     // Exporting needs an imported project; the import is quick when nothing changed.
-    await runGodotStep(godot, `${game.id}: import`, ["--headless", "--path", game.root, "--import"]);
+    await importProject(godot, game.root, `${game.id}: import`);
     for (const name of presets) {
       const preset = outputs[name];
       const label = path.relative(rootPath(), preset.output).split(path.sep).join("/");

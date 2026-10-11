@@ -21,8 +21,8 @@ const {
   ENGINE_VERSION_RE,
   fail,
   godotVersion,
+  importProject,
   main,
-  prepareEditorSettings,
   readTrimmed,
   removeRecursive,
   resolveGodotBin,
@@ -72,13 +72,7 @@ async function validateProject(godot, game, { label, skipImport = false, skipSoa
     removeRecursive(path.join(project, ".godot"));
   }
   if (!skipImport) {
-    if (!fs.existsSync(path.join(project, ".godot"))) {
-      // A first import also initialises the editor plugins; see prepareEditorSettings.
-      await prepareEditorSettings(godot);
-    }
-    // The dedicated import mode waits for importer and editor-plugin work to
-    // settle before exiting, which launching the editor and quitting does not.
-    await runGodotStep(godot, `${label}: headless import`, ["--headless", "--path", project, "--import"]);
+    await importProject(godot, project, `${label}: headless import`);
   }
   if (fs.existsSync(path.join(project, ".gutconfig.json"))) {
     await runGodotStep(godot, `${label}: GUT unit tests`, [

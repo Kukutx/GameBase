@@ -105,6 +105,17 @@ async function prepareEditorSettings(godotBin) {
   }
 }
 
+// Imports a Godot project headless. A first import also initialises the editor
+// plugins, so it is preceded by prepareEditorSettings. The dedicated import mode
+// waits for importer and editor-plugin work to settle before exiting, which
+// launching the editor and quitting does not.
+async function importProject(godotBin, project, label) {
+  if (!fs.existsSync(path.join(project, ".godot"))) {
+    await prepareEditorSettings(godotBin);
+  }
+  await runGodotStep(godotBin, label, ["--headless", "--path", project, "--import"]);
+}
+
 function godotVersion(godotBin) {
   const result = spawnSync(godotBin, ["--version"], { encoding: "utf8", windowsHide: true });
   if (result.error || result.status !== 0) {
@@ -189,7 +200,7 @@ module.exports = {
   engineErrorLines,
   run,
   runGodotStep,
-  prepareEditorSettings,
+  importProject,
   godotVersion,
   git,
   npmCommand,
