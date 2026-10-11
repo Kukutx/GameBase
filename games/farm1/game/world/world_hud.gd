@@ -140,8 +140,26 @@ func _refresh_buffs() -> void:
 	buffs_label.visible = not buffs_label.text.is_empty()
 
 func _refresh_controls_hint() -> void:
-	if info_label != null:
-		info_label.text = InputPrompts.get_controls_summary()
+	if info_label == null:
+		return
+	var gamepad := InputPrompts.using_gamepad
+	info_label.text = tr("%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load") % [
+		tr("Left Stick / D-Pad") if gamepad else _prompts([&"move_up", &"move_left", &"move_down", &"move_right"]),
+		InputPrompts.get_action_prompt(&"interact"),
+		InputPrompts.get_action_prompt(&"use_tool"),
+		InputPrompts.get_action_prompt(&"give_gift"),
+		InputPrompts.get_action_prompt(&"remove_building"),
+		InputPrompts.get_action_prompt(&"open_menu"),
+		_prompts([&"hotbar_prev", &"hotbar_next"]) if gamepad else "1–9",
+		InputPrompts.get_action_prompt(&"quick_save"),
+		InputPrompts.get_action_prompt(&"quick_load"),
+	]
+
+func _prompts(actions: Array[StringName]) -> String:
+	var prompts := PackedStringArray()
+	for action: StringName in actions:
+		prompts.append(InputPrompts.get_action_prompt(action))
+	return "/".join(prompts)
 
 func _refresh_fishing() -> void:
 	fishing_label.text = FishingState.get_status_text()

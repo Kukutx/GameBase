@@ -19,7 +19,7 @@ The facts, the supported locales and the coverage gate are described in `docs/LO
 - Build a sentence from one template with placeholders, not by joining translated fragments.
 - Text assigned from code keeps the language it was assigned in. A node that assigns visible text from code connects `GameSettings.locale_changed` and runs its refresh again.
 - Text typed by the player is data: it is not passed to `tr()`, and `[` is replaced with `[lb]` before it goes into a `RichTextLabel` with BBCode enabled.
-- A new rebindable action needs an entry for its label in `CONTROL_LABELS` and the matching translation.
+- A new control's `display_name` is translated in the catalog of the layer that declares the control: the core's controls in the core's catalog, a game's in the game's.
 
 ## Verification
 

@@ -214,7 +214,9 @@ function tier(layer) {
   return layer.game ? 2 : layer.name === "gamebase/core" ? 0 : 1;
 }
 
-// A game's data resources are under game/data; the foundation ships none.
+// The source text a layer shows: translation calls, exported defaults, scene
+// text and the player-facing fields of its resources, such as a location's or
+// a control's name.
 function collectNonDialogueKeys(layer) {
   const keys = new Set();
   const add = (raw) => {
@@ -243,7 +245,7 @@ function collectNonDialogueKeys(layer) {
       add(match[1]);
     }
   }
-  for (const file of layer.game ? walk(path.join(layer.root, "data"), ".tres") : []) {
+  for (const file of walk(layer.root, ".tres")) {
     for (const match of readText(file).matchAll(DATA_RE)) {
       add(match[1]);
     }
