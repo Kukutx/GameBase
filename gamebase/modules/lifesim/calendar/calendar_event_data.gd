@@ -57,7 +57,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 			problems.append("has unknown season '%s'" % season)
 	problems.append_array(ItemData.find_amount_problems(reward_items, registry, "rewards", "reward quantity"))
 	if reward_skill != &"":
-		if not SkillManager.SKILL_IDS.has(reward_skill):
+		if not registry.has_entry(SkillData.KIND, reward_skill):
 			problems.append("references unknown reward skill '%s'" % reward_skill)
 		elif reward_skill_xp <= 0:
 			problems.append("has a reward skill without XP")

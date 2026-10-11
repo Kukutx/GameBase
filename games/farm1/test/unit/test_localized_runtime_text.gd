@@ -45,16 +45,18 @@ func test_foundation_names_are_translated_by_the_foundation() -> void:
 	_assert_translated(WorldClock.get_calendar_text(), "calendar text")
 	_assert_translated(tr(WeatherState.get_weather_name(GameWeatherSystem.Weather.STORM)), "weather name")
 	_assert_translated(GameSettings.get_control_label(&"give_gift"), "control label")
-	for skill: StringName in SkillManager.SKILL_IDS:
-		_assert_translated(Skills.get_skill_name(skill), "skill %s" % skill)
+	for skill: SkillData in SkillData.find_all():
+		_assert_translated(Skills.get_skill_name(skill.id), "skill %s" % skill.id)
 
-func test_skill_passives_are_translated_at_every_tier() -> void:
-	for skill: StringName in SkillManager.SKILL_IDS:
-		_assert_translated(Skills.get_perk_summary(skill), "%s passive before Lv5" % skill)
-	for skill: StringName in SkillManager.SKILL_IDS:
-		Skills.add_xp(skill, 1000000)
-		assert_eq(Skills.get_perk_tier(skill), 2)
-		_assert_translated(Skills.get_perk_summary(skill), "%s passive at tier 2" % skill)
+func test_skill_passives_are_translated_at_every_level() -> void:
+	Skills.reset_new_game()
+	for skill: SkillData in SkillData.find_all():
+		_assert_translated(Skills.get_perk_summary(skill.id), "%s passive before its first perk" % skill.id)
+	for skill: SkillData in SkillData.find_all():
+		for perk: SkillPerk in skill.perks:
+			Skills.add_xp(skill.id, skill.level_xp[perk.level - 2] - Skills.get_xp(skill.id))
+			assert_eq(Skills.get_active_perk(skill.id), perk)
+			_assert_translated(Skills.get_perk_summary(skill.id), "%s passive at level %d" % [skill.id, perk.level])
 
 func test_daily_contract_text_is_translated_in_every_state() -> void:
 	for objective: StringName in [DailyContractService.FORAGE, DailyContractService.FISH, DailyContractService.MINE, DailyContractService.SHIP, DailyContractService.HARVEST]:

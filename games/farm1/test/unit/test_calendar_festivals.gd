@@ -59,7 +59,7 @@ func test_spring_fair_claims_once_per_year_and_rewards_money_items_and_skill_xp(
 	assert_true(EventState.claim_participation(&"spring_seed_fair"))
 	assert_eq(PlayerState.money, 150)
 	assert_eq(InventoryState.get_quantity(&"carrot_seeds"), 5)
-	assert_eq(Skills.get_xp(SkillManager.FARMING), 75)
+	assert_eq(Skills.get_xp(&"farming"), 75)
 	assert_true(EventState.has_claimed_participation(&"spring_seed_fair"))
 	assert_false(EventState.claim_participation(&"spring_seed_fair"))
 	assert_eq(PlayerState.money, 150)
@@ -73,7 +73,7 @@ func test_spring_fair_claims_once_per_year_and_rewards_money_items_and_skill_xp(
 	assert_true(EventState.claim_participation(&"spring_seed_fair"))
 	assert_eq(PlayerState.money, 300)
 	assert_eq(InventoryState.get_quantity(&"carrot_seeds"), 10)
-	assert_eq(Skills.get_xp(SkillManager.FARMING), 150)
+	assert_eq(Skills.get_xp(&"farming"), 150)
 
 func test_festival_claim_blocks_item_added_reentrancy() -> void:
 	WorldClock.set_time(9, 10 * 60)
@@ -94,7 +94,7 @@ func test_festival_claim_blocks_item_added_reentrancy() -> void:
 	assert_true(EventState.has_claimed_participation(&"spring_seed_fair"))
 	assert_eq(PlayerState.money, 150)
 	assert_eq(InventoryState.get_quantity(&"carrot_seeds"), 5)
-	assert_eq(Skills.get_xp(SkillManager.FARMING), 75)
+	assert_eq(Skills.get_xp(&"farming"), 75)
 
 func test_festival_claim_stays_bound_to_year_when_reward_signal_advances_clock() -> void:
 	WorldClock.set_time(9, 10 * 60)

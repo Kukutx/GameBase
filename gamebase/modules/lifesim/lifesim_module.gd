@@ -12,13 +12,14 @@ func install() -> void:
 	ContentDB.register_check(_find_slot_problems)
 	for action: StringName in [ItemData.ACTION_TILL, ItemData.ACTION_WATER, ItemData.ACTION_MINE, ItemData.ACTION_FISH]:
 		ItemData.register_tool_action(action)
-	for stat: StringName in [&"tool_energy", &"fishing_wait", &"fishing_window"]:
-		FoodBuffData.register_stat(stat)
+	for stat: StringName in [&"tool_energy", &"farming_energy", &"mining_energy", &"fishing_wait", &"fishing_window",
+			&"forage_quantity"]:
+		GameStats.register_stat(stat)
 	# Shipping restores its saved day marker before the clock (order 300) emits
 	# day_changed, so loading never pays a day twice.
 	SaveManager.register_section(SaveSection.new(&"shipping", 200,
 		ShippingState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: ShippingState.load_save_data(section)))
-	SaveManager.register_section(SaveSection.new(&"fishing", 1200,
+	SaveManager.register_section(SaveSection.new(&"fishing_state", 1200,
 		FishingState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: FishingState.load_save_data(section)))
 	# EventState keeps which festival is running only at runtime; rebuild it
 	# from the restored clock and world flags.
@@ -27,7 +28,7 @@ func install() -> void:
 	SaveManager.register_save_blocker(_fishing_save_block_reason)
 	GameSession.register_new_game_step(&"animals", 300, AnimalState.reset_new_game)
 	GameSession.register_new_game_step(&"shipping", 1000, ShippingState.reset_new_game)
-	GameSession.register_new_game_step(&"fishing", 1100, FishingState.reset_new_game)
+	GameSession.register_new_game_step(&"fishing_state", 1100, FishingState.reset_new_game)
 
 ## The content the game puts in the module's slots must exist.
 func _find_slot_problems(registry: ContentRegistry) -> PackedStringArray:

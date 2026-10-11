@@ -16,7 +16,8 @@ const START_ANIMALS := [
 
 func install() -> void:
 	ItemData.register_tool_action(MeleeController.TOOL_ACTION)
-	FoodBuffData.register_stat(&"move_speed")
+	for stat: StringName in [&"move_speed", &"tool_energy", &"attack_energy", &"attack_damage"]:
+		GameStats.register_stat(stat)
 	# After the lifesim module empties the animals (order 300).
 	GameSession.register_new_game_step(&"start_animals", 310, _grant_start_animals)
 	FishingState.reel_minigame_id = &"fishing_reel"
@@ -34,23 +35,23 @@ func _grant_start_animals() -> void:
 		AnimalState.grant_animal(animal[0], animal[1], animal[2], animal[3], animal[4])
 
 func _on_crop_harvested(_crop_id: StringName, _item_id: StringName, quantity: int) -> void:
-	Skills.add_xp(SkillManager.FARMING, 25 * maxi(quantity, 1))
+	Skills.add_xp(&"farming", 25 * maxi(quantity, 1))
 
 func _on_item_foraged(_item_id: StringName, quantity: int) -> void:
-	Skills.add_xp(SkillManager.FORAGING, 10 * maxi(quantity, 1))
+	Skills.add_xp(&"foraging", 10 * maxi(quantity, 1))
 
 func _on_gift_given(_npc_id: StringName, _item_id: StringName, friendship_delta: int) -> void:
 	if friendship_delta > 0:
-		Skills.add_xp(SkillManager.SOCIAL, 15)
+		Skills.add_xp(&"social", 15)
 
 func _on_npc_talked(_npc_id: StringName) -> void:
-	Skills.add_xp(SkillManager.SOCIAL, 2)
+	Skills.add_xp(&"social", 2)
 
 func _on_fish_caught(_fish_id: StringName, _item_id: StringName) -> void:
-	Skills.add_xp(SkillManager.FISHING, 20)
+	Skills.add_xp(&"fishing", 20)
 
 func _on_resource_mined(_node_id: StringName, _item_id: StringName, quantity: int) -> void:
-	Skills.add_xp(SkillManager.MINING, 12 * maxi(quantity, 1))
+	Skills.add_xp(&"mining", 12 * maxi(quantity, 1))
 
 func _on_enemy_defeated(_enemy_id: StringName, combat_xp: int) -> void:
-	Skills.add_xp(SkillManager.COMBAT, maxi(combat_xp, 1))
+	Skills.add_xp(&"combat", maxi(combat_xp, 1))

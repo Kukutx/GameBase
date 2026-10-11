@@ -68,7 +68,7 @@ func give_gift(profile: NpcProfileData, item_id: StringName) -> int:
 	if birthday:
 		delta *= 2
 	if delta > 0:
-		delta = roundi(float(delta) * Skills.get_friendship_multiplier())
+		delta = roundi(GameStats.apply(&"gift_friendship", delta))
 	add_friendship(profile.id, delta)
 	NpcSocialEvents.gift_given.emit(profile.id, item_id, delta)
 	var occasion := " · Birthday!" if birthday else ""

@@ -7,7 +7,7 @@ func test_registered_sections_restore_in_the_documented_order() -> void:
 	# (saved day markers), quests after the world they read.
 	assert_eq(SaveManager.get_section_ids(), PackedStringArray([
 		"weather", "shipping", "clock", "buffs", "inventory", "player_state", "hotbar", "world",
-		"relationships", "npc_memory", "quests", "skills", "fishing",
+		"relationships", "npc_memory", "quests", "skills", "fishing_state",
 	]))
 
 func test_snapshot_writes_every_registered_section_and_nothing_else() -> void:

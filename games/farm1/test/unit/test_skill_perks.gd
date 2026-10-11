@@ -33,19 +33,34 @@ func after_each() -> void:
 	WorldClock.load_save_data(_clock_snapshot)
 
 func test_skill_perks_unlock_at_levels_five_and_ten() -> void:
-	var local := SkillManager.new()
-	add_child_autofree(local)
-	assert_eq(local.get_perk_tier(SkillManager.FARMING), 0)
-	assert_eq(local.get_energy_multiplier(SkillManager.FARMING), 1.0)
-	local.add_xp(SkillManager.FARMING, 700)
-	assert_eq(local.get_level(SkillManager.FARMING), 5)
-	assert_eq(local.get_perk_tier(SkillManager.FARMING), 1)
-	assert_almost_eq(local.get_energy_multiplier(SkillManager.FARMING), 0.9, 0.001)
-	local.add_xp(SkillManager.FARMING, 2500)
-	assert_eq(local.get_level(SkillManager.FARMING), 10)
-	assert_eq(local.get_perk_tier(SkillManager.FARMING), 2)
-	assert_almost_eq(local.get_energy_multiplier(SkillManager.FARMING), 0.8, 0.001)
-	assert_true(local.get_perk_summary(SkillManager.FARMING).contains("II"))
+	var farming := SkillData.find(&"farming")
+	assert_null(Skills.get_active_perk(&"farming"))
+	assert_eq(GameStats.get_multiplier(&"farming_energy"), 1.0)
+	assert_eq(Skills.get_perk_summary(&"farming"), "Next passive at Lv5")
+	Skills.add_xp(&"farming", 700)
+	assert_eq(Skills.get_level(&"farming"), 5)
+	assert_eq(Skills.get_active_perk(&"farming"), farming.perks[0])
+	assert_almost_eq(GameStats.get_multiplier(&"farming_energy"), 0.9, 0.001)
+	Skills.add_xp(&"farming", 2500)
+	assert_eq(Skills.get_level(&"farming"), 10)
+	assert_eq(Skills.get_active_perk(&"farming"), farming.perks[1])
+	assert_almost_eq(GameStats.get_multiplier(&"farming_energy"), 0.8, 0.001)
+	assert_true(Skills.get_perk_summary(&"farming").contains("II"))
+
+func test_stats_combine_every_source() -> void:
+	var stats := GameStatsService.new()
+	autofree(stats)
+	stats.register_stat(&"speed")
+	assert_true(stats.has_stat(&"speed"))
+	assert_false(stats.has_stat(&"jump"))
+	var first := _StatSource.new(1.5, 2.0)
+	var second := _StatSource.new(0.5, 1.0)
+	stats.register_source(first)
+	stats.register_source(second)
+	stats.register_source(first)
+	assert_almost_eq(stats.get_multiplier(&"speed"), 0.75, 0.001)
+	assert_almost_eq(stats.get_bonus(&"speed"), 3.0, 0.001)
+	assert_almost_eq(stats.apply(&"speed", 7.0), 7.5, 0.001, "bonuses are added before the multipliers")
 
 func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	InventoryState.add_item_by_id(&"hoe", 1)
@@ -55,9 +70,9 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	add_child_autofree(plot)
 	var hoe := ItemData.find(&"hoe")
 	assert_eq(plot.get_tool_energy_cost(hoe), 10)
-	Skills.add_xp(SkillManager.FARMING, 700)
+	Skills.add_xp(&"farming", 700)
 	assert_eq(plot.get_tool_energy_cost(hoe), 9)
-	Skills.add_xp(SkillManager.FARMING, 2500)
+	Skills.add_xp(&"farming", 2500)
 	assert_eq(plot.get_tool_energy_cost(hoe), 8)
 
 	Skills.reset_new_game()
@@ -71,7 +86,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	assert_true(rock1.use_item(&"gold_pickaxe"))
 	assert_eq(PlayerState.energy, 92)
 
-	Skills.add_xp(SkillManager.MINING, 700)
+	Skills.add_xp(&"mining", 700)
 	PlayerState.energy = 100
 	var rock5 := scene.instantiate() as MiningNode
 	rock5.data = MiningNodeData.find(&"iridium_rock")
@@ -80,7 +95,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	assert_true(rock5.use_item(&"gold_pickaxe"))
 	assert_eq(PlayerState.energy, 93)
 
-	Skills.add_xp(SkillManager.MINING, 2500)
+	Skills.add_xp(&"mining", 2500)
 	PlayerState.energy = 100
 	var rock10 := scene.instantiate() as MiningNode
 	rock10.data = MiningNodeData.find(&"iridium_rock")
@@ -94,9 +109,9 @@ func test_combat_and_fishing_perks_change_real_action_values() -> void:
 	add_child_autofree(melee)
 	var sword := ItemData.find(&"copper_sword")
 	assert_eq(melee.get_attack_damage(sword), 24)
-	Skills.add_xp(SkillManager.COMBAT, 700)
+	Skills.add_xp(&"combat", 700)
 	assert_eq(melee.get_attack_damage(sword), 26)
-	Skills.add_xp(SkillManager.COMBAT, 2500)
+	Skills.add_xp(&"combat", 2500)
 	assert_eq(melee.get_attack_damage(sword), 30)
 
 	Skills.reset_new_game()
@@ -105,10 +120,10 @@ func test_combat_and_fishing_perks_change_real_action_values() -> void:
 	add_child_autofree(fishing)
 	assert_almost_eq(fishing.get_effective_wait_multiplier(), 1.0, 0.001)
 	assert_almost_eq(fishing.get_effective_bite_window(), 1.0, 0.001)
-	Skills.add_xp(SkillManager.FISHING, 700)
+	Skills.add_xp(&"fishing", 700)
 	assert_almost_eq(fishing.get_effective_wait_multiplier(), 0.9, 0.001)
 	assert_almost_eq(fishing.get_effective_bite_window(), 1.15, 0.001)
-	Skills.add_xp(SkillManager.FISHING, 2500)
+	Skills.add_xp(&"fishing", 2500)
 	assert_almost_eq(fishing.get_effective_wait_multiplier(), 0.8, 0.001)
 	assert_almost_eq(fishing.get_effective_bite_window(), 1.3, 0.001)
 
@@ -120,10 +135,10 @@ func test_social_and_foraging_perks_improve_rewards_without_changing_rng_plan() 
 	InventoryState.add_item_by_id(&"berry", 3)
 	assert_eq(state.give_gift(profile, &"berry"), 80)
 	WorldClock.set_time(2, 8 * 60)
-	Skills.add_xp(SkillManager.SOCIAL, 700)
+	Skills.add_xp(&"social", 700)
 	assert_eq(state.give_gift(profile, &"berry"), 88)
 	WorldClock.set_time(3, 8 * 60)
-	Skills.add_xp(SkillManager.SOCIAL, 2500)
+	Skills.add_xp(&"social", 2500)
 	assert_eq(state.give_gift(profile, &"berry"), 96)
 
 	Skills.reset_new_game()
@@ -133,9 +148,9 @@ func test_social_and_foraging_perks_improve_rewards_without_changing_rng_plan() 
 	spawner.spawn_count = 4
 	add_child_autofree(spawner)
 	var base_plan := spawner.generate_plan(1)
-	Skills.add_xp(SkillManager.FORAGING, 700)
+	Skills.add_xp(&"foraging", 700)
 	var level_five_plan := spawner.generate_plan(1)
-	Skills.add_xp(SkillManager.FORAGING, 2500)
+	Skills.add_xp(&"foraging", 2500)
 	var level_ten_plan := spawner.generate_plan(1)
 	assert_eq(base_plan.size(), level_five_plan.size())
 	assert_eq(base_plan.size(), level_ten_plan.size())
@@ -144,3 +159,18 @@ func test_social_and_foraging_perks_improve_rewards_without_changing_rng_plan() 
 		assert_eq(base_plan[index]["position"], level_five_plan[index]["position"])
 		assert_eq(int(level_five_plan[index]["quantity"]), int(base_plan[index]["quantity"]) + 1)
 		assert_eq(int(level_ten_plan[index]["quantity"]), int(base_plan[index]["quantity"]) + 2)
+
+class _StatSource:
+	extends RefCounted
+	var _multiplier: float
+	var _bonus: float
+
+	func _init(multiplier: float, bonus: float) -> void:
+		_multiplier = multiplier
+		_bonus = bonus
+
+	func get_stat_multiplier(_stat: StringName) -> float:
+		return _multiplier
+
+	func get_stat_bonus(_stat: StringName) -> float:
+		return _bonus

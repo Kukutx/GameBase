@@ -4,6 +4,8 @@ extends GameModule
 ## Wires the skills module into the core (see `GameModule`).
 
 func install() -> void:
+	ContentDB.register_kind(SkillData.KIND, SkillData)
+	GameStats.register_source(Skills)
 	SkillsRules.register(GameRules)
 	SaveManager.register_section(SaveSection.new(&"skills", 1100,
 		Skills.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: Skills.load_save_data(section)))

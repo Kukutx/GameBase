@@ -10,4 +10,4 @@ description = "Rare ore found in the deeper mine from Floor 20 onward."
 max_stack = 99
 kind = 0
 sell_price = 90
-tags = PackedStringArray("ore", "mining", "gold", "valuable")
+tags = PackedStringArray("ore", "mined", "gold", "valuable")

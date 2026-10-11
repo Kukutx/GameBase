@@ -320,3 +320,6 @@ msgstr "城镇建设项目"
 
 msgid "Unknown"
 msgstr "未知"
+
+msgid "Mining"
+msgstr "采矿"

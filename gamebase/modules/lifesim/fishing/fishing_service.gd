@@ -186,10 +186,10 @@ func is_active() -> bool:
 	return cast_state != CastState.IDLE
 
 func get_effective_wait_multiplier() -> float:
-	return BuffState.get_multiplier(&"fishing_wait") * Skills.get_fishing_wait_multiplier()
+	return GameStats.get_multiplier(&"fishing_wait")
 
 func get_effective_bite_window() -> float:
-	return bite_window * BuffState.get_multiplier(&"fishing_window") * Skills.get_fishing_window_multiplier()
+	return GameStats.apply(&"fishing_window", bite_window)
 
 func get_status_text() -> String:
 	match cast_state:

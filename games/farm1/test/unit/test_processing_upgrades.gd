@@ -123,8 +123,8 @@ func test_copper_pickaxe_breaks_starter_stone_in_one_hit() -> void:
 	assert_true(rock.is_depleted)
 
 func test_iron_bar_smelt_and_pickaxe_upgrade_extend_mining_progression() -> void:
-	Skills.add_xp(SkillManager.MINING, 250)
-	assert_eq(Skills.get_level(SkillManager.MINING), 3)
+	Skills.add_xp(&"mining", 250)
+	assert_eq(Skills.get_level(&"mining"), 3)
 	InventoryState.add_item_by_id(&"iron_ore", 3)
 	InventoryState.add_item_by_id(&"wood", 1)
 	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
@@ -155,8 +155,8 @@ func test_iron_bar_smelt_and_pickaxe_upgrade_extend_mining_progression() -> void
 	assert_eq(ItemData.find(&"iron_pickaxe").tool_power, 3)
 
 func test_oil_maker_crafts_and_processes_truffle_into_artisan_oil() -> void:
-	Skills.add_xp(SkillManager.FARMING, 100)
-	assert_eq(Skills.get_level(SkillManager.FARMING), 2)
+	Skills.add_xp(&"farming", 100)
+	assert_eq(Skills.get_level(&"farming"), 2)
 	InventoryState.add_item_by_id(&"copper_bar", 2)
 	InventoryState.add_item_by_id(&"wood", 12)
 	assert_true(CraftingState.craft(&"oil_maker"))
@@ -183,8 +183,8 @@ func test_oil_maker_crafts_and_processes_truffle_into_artisan_oil() -> void:
 	assert_gt(ItemData.find(&"truffle_oil").sell_price, ItemData.find(&"truffle").sell_price)
 
 func test_gold_bar_smelt_and_pickaxe_upgrade_complete_deep_mining_chain() -> void:
-	Skills.add_xp(SkillManager.MINING, 700)
-	assert_eq(Skills.get_level(SkillManager.MINING), 5)
+	Skills.add_xp(&"mining", 700)
+	assert_eq(Skills.get_level(&"mining"), 5)
 	InventoryState.add_item_by_id(&"gold_ore", 3)
 	InventoryState.add_item_by_id(&"wood", 1)
 	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
@@ -252,8 +252,8 @@ func test_weapon_damage_increases_at_every_upgrade_tier() -> void:
 		assert_gt(int(damages[index]), int(damages[index - 1]))
 
 func test_iridium_bar_smelt_and_pickaxe_upgrade_complete_late_mining_chain() -> void:
-	Skills.add_xp(SkillManager.MINING, 1400)
-	assert_eq(Skills.get_level(SkillManager.MINING), 7)
+	Skills.add_xp(&"mining", 1400)
+	assert_eq(Skills.get_level(&"mining"), 7)
 	InventoryState.add_item_by_id(&"iridium_ore", 4)
 	InventoryState.add_item_by_id(&"wood", 1)
 	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/skills/skill_data.gd" id="1_skill"]
+[ext_resource type="Script" path="res://gamebase/modules/skills/skill_perk.gd" id="2_perk"]
+
+[sub_resource type="Resource" id="Resource_level5"]
+script = ExtResource("2_perk")
+level = 5
+description = "Miner I · mining energy -10%"
+multipliers = Dictionary[StringName, float]({&"mining_energy": 0.9})
+
+[sub_resource type="Resource" id="Resource_level10"]
+script = ExtResource("2_perk")
+level = 10
+description = "Miner II · mining energy -20%"
+multipliers = Dictionary[StringName, float]({&"mining_energy": 0.8})
+
+[resource]
+script = ExtResource("1_skill")
+id = &"mining"
+display_name = "Mining"
+short_name = "Mine"
+order = 3
+level_xp = PackedInt32Array(100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200)
+perks = [SubResource("Resource_level5"), SubResource("Resource_level10")]

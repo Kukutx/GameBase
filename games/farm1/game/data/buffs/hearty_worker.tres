@@ -8,4 +8,4 @@ id = &"hearty_worker"
 display_name = "Hearty Worker"
 description = "Warm food makes chores easier for a while."
 duration_minutes = 240
-modifiers = {"move_speed": 1.1, "tool_energy": 0.8}
+multipliers = Dictionary[StringName, float]({&"move_speed": 1.1, &"tool_energy": 0.8})

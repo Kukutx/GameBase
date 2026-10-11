@@ -11,4 +11,4 @@ max_stack = 99
 kind = 0
 buy_price = 80
 sell_price = 35
-tags = PackedStringArray("material", "mining", "ore")
+tags = PackedStringArray("material", "mined", "ore")

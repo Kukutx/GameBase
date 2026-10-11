@@ -29,13 +29,24 @@ func get_minutes_remaining(buff_id: StringName) -> int:
 	_prune_expired()
 	return maxi(int(_active.get(String(buff_id), 0)) - get_absolute_minute(), 0)
 
-func get_multiplier(stat: StringName) -> float:
+## `GameStats` source: the product of the active buffs' multipliers of `stat`.
+func get_stat_multiplier(stat: StringName) -> float:
 	_prune_expired()
 	var result := 1.0
 	for raw_id: Variant in _active.keys():
 		var data := FoodBuffData.find(StringName(String(raw_id)))
 		if data != null:
-			result *= data.get_multiplier(stat)
+			result *= data.multipliers.get(stat, 1.0)
+	return result
+
+## `GameStats` source: the sum of the active buffs' bonuses to `stat`.
+func get_stat_bonus(stat: StringName) -> float:
+	_prune_expired()
+	var result := 0.0
+	for raw_id: Variant in _active.keys():
+		var data := FoodBuffData.find(StringName(String(raw_id)))
+		if data != null:
+			result += data.bonuses.get(stat, 0.0)
 	return result
 
 func get_active_entries() -> Array[Dictionary]:

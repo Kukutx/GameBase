@@ -60,8 +60,8 @@ func test_vegetable_stew_crafts_restores_stats_and_applies_work_buff() -> void:
 	assert_eq(PlayerState.energy, 85)
 	assert_eq(PlayerState.health, 70)
 	assert_true(BuffState.has_buff(&"hearty_worker"))
-	assert_almost_eq(BuffState.get_multiplier(&"move_speed"), 1.1, 0.001)
-	assert_almost_eq(BuffState.get_multiplier(&"tool_energy"), 0.8, 0.001)
+	assert_almost_eq(BuffState.get_stat_multiplier(&"move_speed"), 1.1, 0.001)
+	assert_almost_eq(BuffState.get_stat_multiplier(&"tool_energy"), 0.8, 0.001)
 
 func test_food_use_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"vegetable_stew", 2)
@@ -105,8 +105,8 @@ func test_hearty_worker_reduces_real_hoe_energy_cost() -> void:
 
 func test_angler_focus_changes_fishing_timing_and_round_trips_save_data() -> void:
 	assert_true(BuffState.apply_buff(&"angler_focus"))
-	assert_almost_eq(BuffState.get_multiplier(&"fishing_wait"), 0.7, 0.001)
-	assert_almost_eq(BuffState.get_multiplier(&"fishing_window"), 1.35, 0.001)
+	assert_almost_eq(BuffState.get_stat_multiplier(&"fishing_wait"), 0.7, 0.001)
+	assert_almost_eq(BuffState.get_stat_multiplier(&"fishing_window"), 1.35, 0.001)
 	var saved := BuffState.to_save_data()
 	assert_true(saved.has("angler_focus"))
 

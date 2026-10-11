@@ -7,6 +7,7 @@ func install() -> void:
 	for kind_script: Script in [ItemData, FoodBuffData, PlaceableData, RecipeData, ShopData]:
 		ContentDB.register_kind(kind_script.KIND, kind_script)
 	ItemsRules.register(GameRules)
+	GameStats.register_source(BuffState)
 	SaveManager.register_section(SaveSection.new(&"buffs", 400,
 		BuffState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: BuffState.load_save_data(section)))
 	SaveManager.register_section(SaveSection.new(&"inventory", 500,

@@ -14,10 +14,12 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_action(&"ADD_SKILL_XP", _add_skill_xp, 2, 2, [ARG_SKILL, GameRulesService.ARG_INT])
 
 static func _check_skill(value: String) -> String:
-	return "" if SkillManager.SKILL_IDS.has(StringName(value)) else "unknown skill '%s'" % value
+	return "" if SkillData.find(StringName(value)) != null else "unknown skill '%s'" % value
 
 static func _check_level(value: String) -> String:
-	var max_level := SkillManager.LEVEL_THRESHOLDS.size()
+	var max_level := 1
+	for skill: SkillData in SkillData.find_all():
+		max_level = maxi(max_level, skill.get_max_level())
 	if value.is_valid_int() and int(value) >= 1 and int(value) <= max_level:
 		return ""
 	return "'%s' is not a skill level (1-%d)" % [value, max_level]
