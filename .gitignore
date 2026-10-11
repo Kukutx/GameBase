@@ -13,9 +13,9 @@ artifacts/*
 dist/*
 !dist/.gdignore
 
-# Imported/generated resources
+# Imported/generated resources. Godot 4 keeps importer settings and resource
+# UIDs in .import files, so they are committed; only the cache under .godot/ is local.
 *.translation
-*.import
 
 # Mono
 .mono/

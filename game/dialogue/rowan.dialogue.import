@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=18
+type="Resource"
+uid="uid://cb7o6aia46v6l"
+path="res://.godot/imported/rowan.dialogue-5ac86c590d4452e5230ff6484358ed25.tres"
+
+[deps]
+
+source_file="res://game/dialogue/rowan.dialogue"
+dest_files=["res://.godot/imported/rowan.dialogue-5ac86c590d4452e5230ff6484358ed25.tres"]
+
+[params]
+
+defaults=true
