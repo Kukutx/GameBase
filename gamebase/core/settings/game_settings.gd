@@ -92,16 +92,19 @@ static func find_control_problems(controls: Array[ControlAction]) -> PackedStrin
 		var bound := control.key != KEY_NONE or control.secondary_key != KEY_NONE
 		if not bound and control.gamepad_button == JOY_BUTTON_INVALID and control.gamepad_axis == JOY_AXIS_INVALID:
 			problems.append("control '%s' has no key, button or axis" % action)
+		for default_key: Key in [control.key, control.secondary_key]:
+			if default_key == KEY_NONE or key_owners.get(default_key, "") == action:
+				continue
+			if key_owners.has(default_key):
+				problems.append("controls '%s' and '%s' share the default key %s" % [key_owners[default_key], action, OS.get_keycode_string(default_key)])
+			else:
+				key_owners[default_key] = action
 		if not control.rebindable:
 			continue
 		if control.display_name.is_empty():
 			problems.append("rebindable control '%s' has no display name" % action)
 		if control.key == KEY_NONE:
 			problems.append("rebindable control '%s' has no default key" % action)
-		elif key_owners.has(control.key):
-			problems.append("controls '%s' and '%s' share the default key %s" % [key_owners[control.key], action, OS.get_keycode_string(control.key)])
-		else:
-			key_owners[control.key] = action
 	return problems
 
 func _init() -> void:
@@ -203,9 +206,11 @@ func get_key_binding_text(action: StringName) -> String:
 	var key := get_key_binding(action)
 	return OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound")
 
+## Binds `key` to a rebindable action. The action that had the key takes the
+## old one; a key another control holds fixed cannot be taken.
 func set_key_binding(action: StringName, key: Key) -> bool:
 	var control := get_control(action)
-	if control == null or not control.rebindable or key == KEY_NONE:
+	if control == null or not control.rebindable or key == KEY_NONE or _is_fixed_key(key, action):
 		return false
 	var old_key := get_key_binding(action)
 	for other: StringName in get_rebindable_actions():
@@ -272,7 +277,16 @@ func load_settings() -> void:
 	for action: StringName in get_rebindable_actions():
 		var fallback := int(get_control(action).key)
 		var value := int(config.get_value("controls", String(action), fallback))
-		key_bindings[String(action)] = value if value > 0 else fallback
+		key_bindings[String(action)] = value if value > 0 and not _is_fixed_key(value as Key, action) else fallback
+
+## Whether a control other than `action`'s holds `key` in a way the player
+## cannot swap: as its second key, or as the key of a control that is not
+## rebindable.
+func _is_fixed_key(key: Key, action: StringName) -> bool:
+	for other: ControlAction in _controls:
+		if other.action != action and (other.secondary_key == key or (not other.rebindable and other.key == key)):
+			return true
+	return false
 
 func _reset_control_values() -> void:
 	key_bindings.clear()

@@ -2184,6 +2184,9 @@ msgstr "榨油机"
 msgid "Left Stick / D-Pad"
 msgstr "左摇杆 / 十字键"
 
+msgid "1–9"
+msgstr "1–9"
+
 msgid "%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load"
 msgstr "%s 移动 · %s 互动/收线 · %s 工具/物品 · %s 送礼 · %s 收起建筑 · %s 菜单 · %s 热栏 · %s/%s 保存/读取"
 

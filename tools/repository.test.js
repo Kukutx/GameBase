@@ -105,6 +105,24 @@ test("a catalog entry translates text of its own layer, and the core's text in t
   assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Nobody says this", which no text of games/probe holds'));
 });
 
+test("a resource's player-facing field needs a translation, such as a control's name", () => {
+  const out = tempFile("gamebase-resource-text-test");
+  const log = console.log;
+  const lines = [];
+  try {
+    const game = createGame({ id: "probe", name: "Probe Game", out });
+    const control = gamePath(game, "game", "input", "jump.tres");
+    fs.mkdirSync(path.dirname(control), { recursive: true });
+    fs.writeFileSync(control, '[gd_resource type="Resource" format=3]\n\n[resource]\naction = &"jump"\ndisplay_name = "Probe Jump"\nkey = 32\n', "utf8");
+    console.log = (line) => lines.push(String(line));
+    assert.equal(checkLocalization(game), 1);
+  } finally {
+    console.log = log;
+    removeRecursive(out);
+  }
+  assert.ok(lines.includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing Probe Jump"));
+});
+
 test("GAMEBASE_GAME picks one game but never narrows a repository-wide step", () => {
   const saved = process.env.GAMEBASE_GAME;
   process.env.GAMEBASE_GAME = listGameIds()[0];

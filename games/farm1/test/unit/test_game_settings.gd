@@ -122,6 +122,16 @@ func test_duplicate_primary_key_swaps_existing_binding() -> void:
 	assert_eq(settings.get_key_binding(&"interact"), KEY_F)
 	assert_eq(settings.get_key_binding(&"use_tool"), KEY_E)
 
+func test_a_key_another_control_holds_fixed_cannot_be_bound() -> void:
+	var settings := GameSettingsService.new()
+	settings.settings_path = TEST_PATH
+	add_child_autofree(settings)
+	settings.reset_controls()
+	assert_eq(settings.get_control(&"move_up").secondary_key, KEY_UP)
+	assert_false(settings.set_key_binding(&"interact", KEY_UP), "the up arrow stays with moving up")
+	assert_eq(settings.get_key_binding(&"interact"), KEY_E)
+	assert_true(settings.set_key_binding(&"move_up", KEY_UP), "a control may take its own second key")
+
 func test_settings_controls_page_builds_all_rebindable_actions() -> void:
 	var scene := load("res://game/ui/settings_menu.tscn") as PackedScene
 	var menu := scene.instantiate() as SettingsMenu
@@ -210,7 +220,12 @@ func test_control_problems_name_the_control() -> void:
 	var unbound := ControlAction.new()
 	unbound.action = &"emote"
 	unbound.rebindable = false
-	var controls: Array[ControlAction] = [nameless, keyless, clash, unbound, clash, null]
+	var second := ControlAction.new()
+	second.action = &"dodge"
+	second.display_name = "Dodge"
+	second.key = KEY_Z
+	second.secondary_key = KEY_K
+	var controls: Array[ControlAction] = [nameless, keyless, clash, unbound, clash, second, null]
 	var problems := GameSettingsService.find_control_problems(controls)
 	for expected: String in [
 		"GameDefinition.controls has an entry that is not a ControlAction",
@@ -220,6 +235,7 @@ func test_control_problems_name_the_control() -> void:
 		"control 'emote' has no key, button or axis",
 		"control 'talk' is listed twice",
 		"controls 'talk' and 'interact' share the default key E",
+		"controls 'dodge' and 'quick_save' share the default key K",
 	]:
 		assert_has(problems, expected)
 
