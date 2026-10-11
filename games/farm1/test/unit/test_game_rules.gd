@@ -71,9 +71,21 @@ func test_module_keys_are_registered_and_checked_against_content() -> void:
 func test_module_argument_kinds_check_skills_and_levels() -> void:
 	assert_eq(GameRules.validate_query("SKILL_LEVEL farming 10"), PackedStringArray())
 	var problems := "\n".join(GameRules.validate_query("SKILL_LEVEL farming 11, SKILL_LEVEL cooking 2"))
-	assert_string_contains(problems, "'11' is not a skill level (1-10)")
+	assert_string_contains(problems, "condition 'SKILL_LEVEL': skill 'farming' has no level 11 (1-10)")
 	assert_string_contains(problems, "unknown skill 'cooking'")
 	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["ADD_SKILL_XP sewing 5"]))), "unknown skill 'sewing'")
+
+func test_a_condition_can_check_its_arguments_together() -> void:
+	var rules := GameRulesService.new()
+	autofree(rules)
+	var evaluate := func(_args: PackedStringArray, _context: Dictionary) -> bool: return true
+	var ordered := func(args: PackedStringArray) -> String:
+		return "" if int(args[0]) <= int(args[1]) else "%s is above %s" % [args[0], args[1]]
+	rules.register_condition(&"BETWEEN", evaluate, 2, 2, [GameRulesService.ARG_INT], Callable(), ordered)
+	assert_eq(rules.validate_query("BETWEEN 1 2"), PackedStringArray())
+	assert_eq(rules.validate_query("BETWEEN 3 2"), PackedStringArray(["condition 'BETWEEN': 3 is above 2"]))
+	assert_eq(rules.validate_query("BETWEEN x 2"), PackedStringArray(["condition 'BETWEEN' argument 1: 'x' is not an integer"]),
+		"the arguments are checked together only once each passed")
 
 func test_describe_lists_what_a_condition_requires() -> void:
 	assert_eq(GameRules.describe("SKILL_LEVEL mining 3, WORLD_FLAG %s, !SKILL_LEVEL farming 2" % FLAG), PackedStringArray(["Mining Lv3"]))

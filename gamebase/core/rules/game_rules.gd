@@ -37,11 +37,15 @@ func _ready() -> void:
 
 ## Registers a condition key. `min_args`/`max_args` bound the argument count
 ## (-1: unbounded); `arg_kinds[i]` checks argument i (the last kind repeats).
-func register_condition(key: StringName, evaluate: Callable, min_args := 0, max_args := -1, arg_kinds: Array[StringName] = [], describer := Callable()) -> void:
-	_conditions[_normalize(key)] = {"call": evaluate, "min": min_args, "max": max_args, "kinds": arg_kinds, "describer": describer}
+## `args_check`, `func(args: PackedStringArray) -> String`, returns what is
+## wrong with the arguments together (a level the named skill cannot reach),
+## or ""; validation calls it once the count and every argument passed.
+func register_condition(key: StringName, evaluate: Callable, min_args := 0, max_args := -1, arg_kinds: Array[StringName] = [], describer := Callable(), args_check := Callable()) -> void:
+	_conditions[_normalize(key)] = {"call": evaluate, "min": min_args, "max": max_args, "kinds": arg_kinds, "describer": describer, "args_check": args_check}
 
-func register_action(key: StringName, run: Callable, min_args := 0, max_args := -1, arg_kinds: Array[StringName] = []) -> void:
-	_actions[_normalize(key)] = {"call": run, "min": min_args, "max": max_args, "kinds": arg_kinds}
+## Registers an action key; the arguments are checked as a condition's are.
+func register_action(key: StringName, run: Callable, min_args := 0, max_args := -1, arg_kinds: Array[StringName] = [], args_check := Callable()) -> void:
+	_actions[_normalize(key)] = {"call": run, "min": min_args, "max": max_args, "kinds": arg_kinds, "args_check": args_check}
 
 ## Registers an argument kind for `arg_kinds`. `check` is
 ## `func(value: String) -> String` returning what is wrong with `value`, or "".
@@ -160,6 +164,7 @@ func _validate(text: String, registry: Dictionary, label: String, allow_negate: 
 		if entry.is_empty():
 			problems.append("unknown %s '%s'" % [label, key])
 			continue
+		var found := problems.size()
 		var min_args := int(entry["min"])
 		var max_args := int(entry["max"])
 		if args.size() < min_args or (max_args >= 0 and args.size() > max_args):
@@ -171,6 +176,11 @@ func _validate(text: String, registry: Dictionary, label: String, allow_negate: 
 			var problem := _check_arg(args[index], kinds[mini(index, kinds.size() - 1)])
 			if not problem.is_empty():
 				problems.append("%s '%s' argument %d: %s" % [label, key, index + 1, problem])
+		var args_check: Callable = entry["args_check"]
+		if problems.size() == found and args_check.is_valid():
+			var problem := String(args_check.call(args))
+			if not problem.is_empty():
+				problems.append("%s '%s': %s" % [label, key, problem])
 	return problems
 
 func _check_arg(value: String, kind: StringName) -> String:

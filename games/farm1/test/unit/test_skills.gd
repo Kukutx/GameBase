@@ -67,7 +67,11 @@ func test_skill_data_reports_broken_levels_and_perks() -> void:
 	var twin := SkillPerk.new()
 	twin.level = 2
 	twin.multipliers = {&"tool_energy": 0.0}
-	skill.perks = [unknown, high, twin, null]
+	var low := SkillPerk.new()
+	low.level = 1
+	low.description = "Too low"
+	low.bonuses = {&"forage_quantity": 1.0}
+	skill.perks = [unknown, high, twin, low, null]
 	var problems := "\n".join(skill.find_problems(ContentDB))
 	for expected: String in [
 		"has no display name",
@@ -78,6 +82,7 @@ func test_skill_data_reports_broken_levels_and_perks() -> void:
 		"has a level 2 perk without a description",
 		"non-positive multiplier of 'tool_energy'",
 		"has an empty perk",
+		"has a level 1 perk; a perk unlocks at level 2 or above",
 	]:
 		assert_string_contains(problems, expected)
 

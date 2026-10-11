@@ -17,6 +17,8 @@ extends Resource
 ## What is wrong with the perk, each problem a phrase.
 func find_problems() -> PackedStringArray:
 	var problems := PackedStringArray()
+	if level < 2:
+		problems.append("has a level %d perk; a perk unlocks at level 2 or above" % level)
 	if description.strip_edges().is_empty():
 		problems.append("has a level %d perk without a description" % level)
 	if multipliers.is_empty() and bonuses.is_empty():
