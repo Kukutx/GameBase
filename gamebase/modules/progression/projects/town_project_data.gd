@@ -1,7 +1,6 @@
 class_name TownProjectData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String = "Town Project"
 @export_multiline var description: String
 @export var location_id: StringName

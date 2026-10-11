@@ -1,7 +1,6 @@
 class_name CollectionMilestoneData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String
 @export_multiline var description: String
 @export var category: StringName

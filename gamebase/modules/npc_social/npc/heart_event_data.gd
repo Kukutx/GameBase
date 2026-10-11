@@ -1,7 +1,6 @@
 class_name HeartEventData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var npc_id: StringName
 @export_range(0, 10, 1) var required_hearts := 2
 @export var dialogue_title: String = "heart_event"

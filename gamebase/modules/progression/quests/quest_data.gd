@@ -1,5 +1,5 @@
 class_name QuestData
-extends Resource
+extends ContentEntry
 
 enum ObjectiveType {
 	COLLECT,
@@ -13,7 +13,6 @@ enum ObjectiveType {
 	REACH_MINE_FLOOR,
 }
 
-@export var id: StringName
 @export var title: String
 @export_multiline var description: String
 @export_group("Start")

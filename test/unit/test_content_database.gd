@@ -39,16 +39,21 @@ func test_locations_have_packed_scenes_and_unique_default_spawn_points() -> void
 		assert_not_null(packed, "%s does not resolve to a PackedScene" % location.id)
 		if packed == null:
 			continue
-		assert_eq(int(ContentDB.call("_get_scene_group_count", packed, &"player")), 1, "%s must contain exactly one player" % location.id)
-		var counts := ContentDB.call("_get_scene_spawn_counts", packed) as Dictionary
+		var root := packed.instantiate()
+		assert_eq(int(ContentDB.call("_count_group_nodes", root, &"player")), 1, "%s must contain exactly one player" % location.id)
+		var counts: Dictionary = {}
+		ContentDB.call("_collect_spawn_counts", root, counts)
 		assert_true(counts.has(String(location.default_spawn_id)), "%s is missing default spawn %s" % [location.id, location.default_spawn_id])
 		for raw_spawn_id: Variant in counts.keys():
 			var spawn_id := String(raw_spawn_id)
 			assert_false(spawn_id.is_empty(), "%s has an empty spawn id" % location.id)
 			assert_eq(int(counts[raw_spawn_id]), 1, "%s has duplicate spawn id %s" % [location.id, spawn_id])
-		for portal: Dictionary in ContentDB.call("_get_scene_portal_records", packed) as Array[Dictionary]:
-			assert_false(String(portal.get("target_location_id", "")).is_empty(), "%s has a portal without stable Location ID" % location.id)
-			assert_true(String(portal.get("target_scene", "")).is_empty(), "%s has a portal using a direct scene path" % location.id)
+		var portals: Array[ScenePortal] = []
+		ContentDB.call("_collect_portals", root, portals)
+		for portal: ScenePortal in portals:
+			assert_ne(portal.target_location_id, &"", "%s has a portal without stable Location ID" % location.id)
+			assert_true(portal.target_scene.is_empty(), "%s has a portal using a direct scene path" % location.id)
+		root.free()
 
 func test_location_persistent_state_keys_are_nonempty_when_required_and_globally_unique() -> void:
 	var seen: Dictionary = {}
@@ -57,7 +62,11 @@ func test_location_persistent_state_keys_are_nonempty_when_required_and_globally
 		assert_not_null(packed)
 		if packed == null:
 			continue
-		for record: Dictionary in ContentDB.call("_get_scene_persistent_state_records", packed) as Array[Dictionary]:
+		var root := packed.instantiate()
+		var records: Array[Dictionary] = []
+		ContentDB.call("_collect_persistent_state_records", root, records)
+		root.free()
+		for record: Dictionary in records:
 			var state_key := String(record.get("key", ""))
 			if bool(record.get("required", false)):
 				assert_false(state_key.is_empty(), "%s/%s is missing a required persistent id" % [location.id, record.get("node_name", "Node")])
@@ -155,11 +164,11 @@ func test_reference_validator_rejects_invalid_deferred_reward_and_condition_data
 	bad_material.id = &"bad_material"
 	bad_material.kind = ItemData.Kind.MATERIAL
 	bad_material.crop_id = &"bad_crop"
-	db.set("_items", {"berry": berry, "source_tool": source_tool, "result_tool": result_tool, "bad_tool": bad_tool, "bad_material": bad_material})
+	_register(db, GameContentDatabase.KIND_ITEM, "_items", "item", [berry, source_tool, result_tool, bad_tool, bad_material])
 	var locations: Dictionary = {}
 	for location: WorldLocationData in ContentDB.get_all_locations():
 		locations[String(location.id)] = location
-	db.set("_locations", locations)
+	_register(db, ContentRegistry.KIND_LOCATION, "_locations", "location", locations.values())
 
 	var bad_mail := MailData.new()
 	bad_mail.id = &"bad_mail"
@@ -167,54 +176,54 @@ func test_reference_validator_rejects_invalid_deferred_reward_and_condition_data
 	bad_mail.body = "Bad"
 	bad_mail.required_hearts = 2
 	bad_mail.reward_items = {"berry": 0}
-	db.set("_mail", {"bad_mail": bad_mail})
+	_register(db, GameContentDatabase.KIND_MAIL, "_mail", "mail", [bad_mail])
 
 	var bad_project := TownProjectData.new()
 	bad_project.id = &"bad_project"
 	bad_project.location_id = &"starter_town"
 	bad_project.requirements = {"berry": 1}
 	bad_project.reward_items = {"berry": -1}
-	db.set("_town_projects", {"bad_project": bad_project})
+	_register(db, GameContentDatabase.KIND_TOWN_PROJECT, "_town_projects", "town project", [bad_project])
 
 	var bad_milestone := CollectionMilestoneData.new()
 	bad_milestone.id = &"bad_milestone"
 	bad_milestone.category = &"retired_category"
 	bad_milestone.reward_items = {"berry": 0}
-	db.set("_collection_milestones", {"bad_milestone": bad_milestone})
+	_register(db, GameContentDatabase.KIND_COLLECTION_MILESTONE, "_collection_milestones", "collection milestone", [bad_milestone])
 
 	var bad_crop := CropData.new()
 	bad_crop.id = &"bad_crop"
 	bad_crop.harvest_item_id = &"berry"
-	db.set("_crops", {"bad_crop": bad_crop})
+	_register(db, GameContentDatabase.KIND_CROP, "_crops", "crop", [bad_crop])
 
 	var bad_buff := FoodBuffData.new()
 	bad_buff.id = &"bad_buff"
 	bad_buff.modifiers = {"typo_speed": 1.2, "tool_energy": 0.0}
-	db.set("_food_buffs", {"bad_buff": bad_buff})
+	_register(db, GameContentDatabase.KIND_FOOD_BUFF, "_food_buffs", "food buff", [bad_buff])
 
 	var bad_fish := FishData.new()
 	bad_fish.id = &"bad_fish"
 	bad_fish.item_id = &"berry"
 	bad_fish.start_minute = 360
 	bad_fish.end_minute = 360
-	db.set("_fish", {"bad_fish": bad_fish})
+	_register(db, GameContentDatabase.KIND_FISH, "_fish", "fish", [bad_fish])
 
 	var bad_animal := FarmAnimalData.new()
 	bad_animal.id = &"bad_animal"
 	bad_animal.feed_item_id = &""
 	bad_animal.product_item_id = &"berry"
-	db.set("_animals", {"bad_animal": bad_animal})
+	_register(db, GameContentDatabase.KIND_FARM_ANIMAL, "_animals", "farm animal", [bad_animal])
 
 	var bad_mining := MiningNodeData.new()
 	bad_mining.id = &"bad_mining"
 	bad_mining.drop_item_id = &"berry"
-	db.set("_mining_nodes", {"bad_mining": bad_mining})
+	_register(db, GameContentDatabase.KIND_MINING_NODE, "_mining_nodes", "mining node", [bad_mining])
 
 	var bad_upgrade := ToolUpgradeData.new()
 	bad_upgrade.id = &"bad_upgrade"
 	bad_upgrade.source_item_id = &"source_tool"
 	bad_upgrade.result_item_id = &"result_tool"
-	db.set("_tool_upgrades", {"bad_upgrade": bad_upgrade})
+	_register(db, GameContentDatabase.KIND_TOOL_UPGRADE, "_tool_upgrades", "tool upgrade", [bad_upgrade])
 
 	var errors := PackedStringArray()
 	db.call("_validate_references", errors)
@@ -244,11 +253,11 @@ func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule
 	assert_not_null(berry)
 	if berry == null:
 		return
-	db.set("_items", {"berry": berry})
+	_register(db, GameContentDatabase.KIND_ITEM, "_items", "item", [berry])
 	var locations: Dictionary = {}
 	for location: WorldLocationData in ContentDB.get_all_locations():
 		locations[String(location.id)] = location
-	db.set("_locations", locations)
+	_register(db, ContentRegistry.KIND_LOCATION, "_locations", "location", locations.values())
 
 	var schedule := NpcScheduleEntry.new()
 	schedule.location_id = &"starter_town"
@@ -261,7 +270,7 @@ func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule
 	npc.dialogue_titles_by_hearts = {"oops": "bad", 99: "too_high", 2: {"bad": true}}
 	npc.schedule_entries = [schedule]
 	assert_eq(npc.get_dialogue_title("fallback", 10), "fallback")
-	db.set("_npcs", {"bad_npc": npc})
+	_register(db, GameContentDatabase.KIND_NPC, "_npcs", "npc", [npc])
 
 	var heart := HeartEventData.new()
 	heart.id = &"bad_heart"
@@ -271,13 +280,13 @@ func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule
 	heart.required_hearts = 99
 	heart.start_minute = 600
 	heart.end_minute = 600
-	db.set("_heart_events", {"bad_heart": heart})
+	_register(db, GameContentDatabase.KIND_HEART_EVENT, "_heart_events", "heart event", [heart])
 
 	var shop := ShopData.new()
 	shop.id = &"bad_shop"
 	shop.stock = {"berry": "not-a-price"}
 	shop.seasonal_stock = {"Spring": {"berry": {"bad": true}}}
-	db.set("_shops", {"bad_shop": shop})
+	_register(db, GameContentDatabase.KIND_SHOP, "_shops", "shop", [shop])
 
 	var recipe := RecipeData.new()
 	recipe.id = &"bad_recipe"
@@ -287,7 +296,7 @@ func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule
 	recipe.output_quantity = 0
 	recipe.required_skill = SkillManager.FARMING
 	recipe.required_level = 99
-	db.set("_recipes", {"bad_recipe": recipe})
+	_register(db, GameContentDatabase.KIND_RECIPE, "_recipes", "recipe", [recipe])
 
 	var quest := QuestData.new()
 	quest.id = &"bad_quest"
@@ -298,7 +307,7 @@ func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule
 	quest.reward_money = -1
 	quest.reward_items = {"berry": {"bad": true}}
 	quest.entry_point = true
-	db.set("_quests", {"bad_quest": quest})
+	_register(db, GameContentDatabase.KIND_QUEST, "_quests", "quest", [quest])
 
 	var event := CalendarEventData.new()
 	event.id = &"bad_event"
@@ -309,7 +318,7 @@ func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule
 	event.end_minute = 600
 	event.reward_money = -1
 	event.reward_items = {"berry": {"bad": true}}
-	db.set("_calendar_events", {"bad_event": event})
+	_register(db, GameContentDatabase.KIND_CALENDAR_EVENT, "_calendar_events", "calendar event", [event])
 
 	var errors := PackedStringArray()
 	db.call("_validate_references", errors)
@@ -375,20 +384,20 @@ func test_dependency_cycle_detector_accepts_acyclic_graph_and_ignores_unknown_ed
 		"b": ["c"],
 		"c": ["missing_external_reference"],
 	}
-	var messages: Array = ContentDB.call("_collect_dependency_cycle_errors", graph, "test graph")
+	var messages: Array = ContentDB.collect_dependency_cycle_errors(graph, "test graph")
 	assert_eq(messages.size(), 0)
 
 func test_dependency_cycle_detector_reports_self_two_node_and_three_node_cycles() -> void:
-	var self_cycle: Array = ContentDB.call("_collect_dependency_cycle_errors", {"a": ["a"]}, "quest")
+	var self_cycle: Array = ContentDB.collect_dependency_cycle_errors({"a": ["a"]}, "quest")
 	assert_eq(self_cycle.size(), 1)
 	assert_string_contains(String(self_cycle[0]), "a -> a")
 
-	var two_cycle: Array = ContentDB.call("_collect_dependency_cycle_errors", {"a": ["b"], "b": ["a"]}, "town project")
+	var two_cycle: Array = ContentDB.collect_dependency_cycle_errors({"a": ["b"], "b": ["a"]}, "town project")
 	assert_eq(two_cycle.size(), 1)
 	assert_string_contains(String(two_cycle[0]), "town project dependency cycle")
 	assert_string_contains(String(two_cycle[0]), "a -> b -> a")
 
-	var three_cycle: Array = ContentDB.call("_collect_dependency_cycle_errors", {"a": ["b"], "b": ["c"], "c": ["a"]}, "farm expansion")
+	var three_cycle: Array = ContentDB.collect_dependency_cycle_errors({"a": ["b"], "b": ["c"], "c": ["a"]}, "farm expansion")
 	assert_eq(three_cycle.size(), 1)
 	assert_string_contains(String(three_cycle[0]), "farm expansion dependency cycle")
 	assert_string_contains(String(three_cycle[0]), "a -> b -> c -> a")
@@ -431,3 +440,33 @@ func test_expansion_progression_validator_rejects_duplicate_cross_housing_and_no
 	var backwards_messages: Array = ContentDB.call("_collect_expansion_progression_errors", {"big": big, "backwards": backwards})
 	assert_eq(backwards_messages.size(), 1)
 	assert_string_contains(String(backwards_messages[0]), "does not exceed prerequisite")
+
+func _register(db: GameContentDatabase, kind: StringName, field: String, label: String, entries: Array) -> void:
+	db.set(field, db.register_entries(kind, entries, label, PackedStringArray()))
+
+func test_former_ids_resolve_renamed_entries_and_reject_conflicts() -> void:
+	var db := GameContentDatabase.new()
+	autofree(db)
+	var renamed := ItemData.new()
+	renamed.id = &"golden_turnip"
+	renamed.former_ids = [&"gold_turnip"]
+	var other := ItemData.new()
+	other.id = &"berry_jam"
+	other.former_ids = [&"golden_turnip", &"gold_turnip"]
+	var errors := PackedStringArray()
+	db.register_entries(GameContentDatabase.KIND_ITEM, [renamed, other], "item", errors)
+	assert_eq(db.get_item(&"gold_turnip"), renamed)
+	assert_eq(db.resolve_id(GameContentDatabase.KIND_ITEM, &"gold_turnip"), &"golden_turnip")
+	assert_true(db.has_item(&"gold_turnip"))
+	assert_eq(db.resolve_id(GameContentDatabase.KIND_ITEM, &"missing"), &"")
+	var joined := "\n".join(errors)
+	assert_string_contains(joined, "item 'berry_jam' lists former id 'golden_turnip', which is still in use")
+	assert_string_contains(joined, "item former id 'gold_turnip' is claimed by both 'golden_turnip' and 'berry_jam'")
+
+func test_custom_fields_survive_a_json_round_trip() -> void:
+	var item := ItemData.new()
+	item.custom_fields = {"rarity": "rare"}
+	assert_eq(item.get_custom_field(&"rarity"), "rare")
+	assert_eq(item.get_custom_field(&"missing", 3), 3)
+	assert_true(ContentDB.get_kinds().has(ContentRegistry.KIND_LOCATION))
+	assert_true(ContentDB.get_kinds().has(GameContentDatabase.KIND_ITEM))

@@ -1,7 +1,6 @@
 class_name MiningNodeData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String = "Rock"
 @export_range(1, 999, 1) var durability := 3
 @export_range(1, 120, 1) var minimum_mine_floor := 1

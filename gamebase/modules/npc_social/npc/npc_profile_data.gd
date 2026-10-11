@@ -1,7 +1,6 @@
 class_name NpcProfileData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String
 @export var role: String = "Villager"
 @export_multiline var background: String

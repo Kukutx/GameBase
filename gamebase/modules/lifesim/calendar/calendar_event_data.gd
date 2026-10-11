@@ -1,7 +1,6 @@
 class_name CalendarEventData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String
 @export var location_id: StringName
 @export var seasons: PackedStringArray = PackedStringArray()

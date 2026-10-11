@@ -1,5 +1,5 @@
 class_name WorldLocationData
-extends Resource
+extends ContentEntry
 
 enum LocationType {
 	TOWN,
@@ -8,7 +8,6 @@ enum LocationType {
 	DUNGEON,
 }
 
-@export var id: StringName
 @export var display_name: String
 @export_file("*.tscn") var scene_path: String
 @export var type: LocationType = LocationType.TOWN

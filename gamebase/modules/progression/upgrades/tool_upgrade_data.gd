@@ -1,7 +1,6 @@
 class_name ToolUpgradeData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var display_name: String
 @export var source_item_id: StringName
 @export var result_item_id: StringName

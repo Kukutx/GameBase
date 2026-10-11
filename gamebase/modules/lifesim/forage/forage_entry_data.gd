@@ -1,7 +1,6 @@
 class_name ForageEntryData
-extends Resource
+extends ContentEntry
 
-@export var id: StringName
 @export var item_id: StringName
 @export var locations: Array[StringName] = []
 @export var seasons: PackedStringArray = PackedStringArray()
