@@ -1,0 +1,78 @@
+[gd_resource type="Resource" script_class="MineFloorTable" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_floor_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_rock_tier.gd" id="2_rock"]
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_enemy_tier.gd" id="3_enemy"]
+
+[sub_resource type="Resource" id="rock_iridium_rock"]
+script = ExtResource("2_rock")
+rock_id = &"iridium_rock"
+base_chance = 0.08
+chance_per_floor = 0.0015
+max_chance = 0.16
+growth_start_floor = -1
+
+[sub_resource type="Resource" id="rock_gold_rock"]
+script = ExtResource("2_rock")
+rock_id = &"gold_rock"
+base_chance = 0.1
+chance_per_floor = 0.0025
+max_chance = 0.22
+growth_start_floor = -1
+
+[sub_resource type="Resource" id="rock_iron_rock"]
+script = ExtResource("2_rock")
+rock_id = &"iron_rock"
+base_chance = 0.14
+chance_per_floor = 0.004
+max_chance = 0.26
+growth_start_floor = -1
+
+[sub_resource type="Resource" id="rock_copper_rock"]
+script = ExtResource("2_rock")
+rock_id = &"copper_rock"
+base_chance = 0.18
+chance_per_floor = 0.006
+max_chance = 0.25
+growth_start_floor = 0
+
+[sub_resource type="Resource" id="enemy_green_slime"]
+script = ExtResource("3_enemy")
+enemy_id = &"green_slime"
+minimum_floor = 1
+
+[sub_resource type="Resource" id="enemy_cave_slime"]
+script = ExtResource("3_enemy")
+enemy_id = &"cave_slime"
+minimum_floor = 10
+
+[sub_resource type="Resource" id="enemy_blue_slime"]
+script = ExtResource("3_enemy")
+enemy_id = &"blue_slime"
+minimum_floor = 20
+
+[sub_resource type="Resource" id="enemy_red_slime"]
+script = ExtResource("3_enemy")
+enemy_id = &"red_slime"
+minimum_floor = 40
+
+[sub_resource type="Resource" id="enemy_shadow_slime"]
+script = ExtResource("3_enemy")
+enemy_id = &"shadow_slime"
+minimum_floor = 60
+
+[sub_resource type="Resource" id="enemy_void_slime"]
+script = ExtResource("3_enemy")
+enemy_id = &"void_slime"
+minimum_floor = 90
+
+[sub_resource type="Resource" id="enemy_ancient_slime"]
+script = ExtResource("3_enemy")
+enemy_id = &"ancient_slime"
+minimum_floor = 120
+
+[resource]
+script = ExtResource("1_table")
+default_rock_id = &"stone_rock"
+rock_tiers = Array[ExtResource("2_rock")]([SubResource("rock_iridium_rock"), SubResource("rock_gold_rock"), SubResource("rock_iron_rock"), SubResource("rock_copper_rock")])
+enemy_tiers = Array[ExtResource("3_enemy")]([SubResource("enemy_green_slime"), SubResource("enemy_cave_slime"), SubResource("enemy_blue_slime"), SubResource("enemy_red_slime"), SubResource("enemy_shadow_slime"), SubResource("enemy_void_slime"), SubResource("enemy_ancient_slime")])

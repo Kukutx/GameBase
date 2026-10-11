@@ -41,6 +41,35 @@ func test_floor_layout_is_deterministic_unique_and_scales_with_depth() -> void:
 		assert_false(ids.has(id))
 		ids[id] = true
 
+func test_the_game_mine_floor_table_names_real_content() -> void:
+	assert_not_null(MineState.floor_table)
+	assert_eq(MineState.floor_table.validate(ContentDB), PackedStringArray())
+	assert_eq(MineState.floor_table.get_enemy_id(1), &"green_slime")
+	assert_eq(MineState.floor_table.get_enemy_id(59), &"red_slime")
+
+func test_a_floor_table_drives_rocks_and_enemies() -> void:
+	var previous := MineState.floor_table
+	var table := MineFloorTable.new()
+	table.default_rock_id = &"stone_rock"
+	var gold := MineRockTier.new()
+	gold.rock_id = &"gold_rock"
+	gold.base_chance = 1.0
+	gold.max_chance = 1.0
+	table.rock_tiers = [gold]
+	var tier := MineEnemyTier.new()
+	tier.enemy_id = &"void_slime"
+	table.enemy_tiers = [tier]
+	MineState.floor_table = table
+	var floor30 := MineState.generate_floor_layout(30)
+	var floor10 := MineState.generate_floor_layout(10)
+	MineState.floor_table = previous
+	for entry: Dictionary in floor30["rocks"]:
+		assert_eq(String(entry["kind"]), "gold_rock")
+	for entry: Dictionary in floor10["rocks"]:
+		assert_eq(String(entry["kind"]), "stone_rock", "gold is locked above its minimum floor")
+	for entry: Dictionary in floor30["enemies"]:
+		assert_eq(String(entry["kind"]), "void_slime")
+
 func test_malformed_mine_floor_state_falls_back_to_safe_bounds() -> void:
 	WorldState.set_value(MineRunState.CURRENT_FLOOR_KEY, {"bad": true})
 	WorldState.set_value(MineRunState.DEEPEST_FLOOR_KEY, [999])
@@ -59,11 +88,11 @@ func test_deep_floors_guarantee_iron_and_cave_slime_progression() -> void:
 	var floor5_kinds: Array[String] = []
 	for entry: Dictionary in floor5["rocks"]:
 		floor5_kinds.append(String(entry["kind"]))
-	assert_false(floor5_kinds.has("iron"))
+	assert_false(floor5_kinds.has("iron_rock"))
 	var floor6_kinds: Array[String] = []
 	for entry: Dictionary in floor6_a["rocks"]:
 		floor6_kinds.append(String(entry["kind"]))
-	assert_true(floor6_kinds.has("iron"))
+	assert_true(floor6_kinds.has("iron_rock"))
 	var floor10_enemies: Array[String] = []
 	for entry: Dictionary in floor10["enemies"]:
 		floor10_enemies.append(String(entry["kind"]))
@@ -195,11 +224,11 @@ func test_gold_and_deep_slime_tiers_unlock_at_defined_floors() -> void:
 	var floor19_rocks: Array[String] = []
 	for entry: Dictionary in floor19["rocks"]:
 		floor19_rocks.append(String(entry["kind"]))
-	assert_false(floor19_rocks.has("gold"))
+	assert_false(floor19_rocks.has("gold_rock"))
 	var floor20_rocks: Array[String] = []
 	for entry: Dictionary in floor20["rocks"]:
 		floor20_rocks.append(String(entry["kind"]))
-	assert_true(floor20_rocks.has("gold"))
+	assert_true(floor20_rocks.has("gold_rock"))
 	for entry: Dictionary in floor20["enemies"]:
 		assert_eq(String(entry["kind"]), "blue_slime")
 	for entry: Dictionary in floor40["enemies"]:
@@ -243,12 +272,12 @@ func test_iridium_and_endgame_enemy_tiers_unlock_at_floors_sixty_ninety_and_one_
 	var floor59_rocks: Array[String] = []
 	for entry: Dictionary in floor59["rocks"]:
 		floor59_rocks.append(String(entry["kind"]))
-	assert_false(floor59_rocks.has("iridium"))
+	assert_false(floor59_rocks.has("iridium_rock"))
 	var floor60_rocks: Array[String] = []
 	for entry: Dictionary in floor60["rocks"]:
 		floor60_rocks.append(String(entry["kind"]))
-	assert_true(floor60_rocks.has("iridium"))
-	assert_eq(String((floor60["rocks"] as Array)[0]["kind"]), "iridium")
+	assert_true(floor60_rocks.has("iridium_rock"))
+	assert_eq(String((floor60["rocks"] as Array)[0]["kind"]), "iridium_rock")
 	for entry: Dictionary in floor60["enemies"]:
 		assert_eq(String(entry["kind"]), "shadow_slime")
 	for entry: Dictionary in floor90["enemies"]:

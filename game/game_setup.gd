@@ -8,6 +8,8 @@ extends Node
 ## how to reset them for a new game, and which condition and action keys exist. Orders interleave with the core's own
 ## (`GameSaveManager.SECTION_ORDER_*`, `GameSessionService.NEW_GAME_ORDER_*`).
 
+const MINE_FLOOR_TABLE := preload("res://game/data/mining/mine_floor_table.tres")
+
 func _ready() -> void:
 	ItemsRules.register(GameRules)
 	ProgressionRules.register(GameRules)
@@ -21,6 +23,9 @@ func _ready() -> void:
 	_register_new_game_steps()
 	SaveManager.register_save_blocker(_fishing_save_block_reason)
 	FishingState.reel_minigame_id = &"fishing_reel"
+	MineState.floor_table = MINE_FLOOR_TABLE
+	for problem: String in MINE_FLOOR_TABLE.validate(ContentDB):
+		push_error("Mine: " + problem)
 
 func _register_save_sections() -> void:
 	# Shipping restores its saved day marker before the clock (order 300) emits

@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://game/npc/mira_npc.tscn" id="2_npc"]
@@ -30,6 +30,7 @@
 [ext_resource type="PackedScene" path="res://gamebase/modules/lifesim/calendar/calendar_event_booth.tscn" id="32_festival_booth"]
 [ext_resource type="PackedScene" path="res://game/npc/rowan_npc.tscn" id="33_rowan"]
 [ext_resource type="PackedScene" path="res://game/npc/neri_npc.tscn" id="34_neri"]
+[ext_resource type="Resource" path="res://game/data/shops/general_store.tres" id="35_general_store"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(800, 16)
@@ -180,6 +181,10 @@ asset_path = "res://game/art/licensed/gandalf_village/shop.png"
 
 [node name="GeneralStore" parent="." instance=ExtResource("13_shop")]
 position = Vector2(250, -54)
+shop = ExtResource("35_general_store")
+
+[node name="Label" parent="GeneralStore" index="1"]
+text = "General Store"
 
 [node name="VillageMarketVisual" type="Node2D" parent="."]
 position = Vector2(-180, 118)
