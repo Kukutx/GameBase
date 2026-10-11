@@ -4,14 +4,14 @@ This file holds the domain invariants of the game base. Generic engineering rule
 
 ## Base and derived games
 
-- GameBase is a base. Rules here protect what a derived game and its players rely on: stable ids, save compatibility, the service boundaries and the data-driven content pipeline. Content that ships with the base (towns, crops, NPCs, quests) is example content; changing it is allowed, breaking the mechanisms that carry it is not.
+- GameBase is a base. Rules here protect what a derived game and its players rely on: stable ids, the save format, the service boundaries and the data-driven content pipeline. Content that ships with the base (towns, crops, NPCs, quests) is example content; changing it is allowed, breaking the mechanisms that carry it is not.
 - A capability is part of the base only when it has a real consumer in the base. Do not add placeholder systems, compatibility shells or hooks for a hypothetical derived game.
 - Code or data that is explicitly registered as reserved for later (an empty audio cue stream, a location without music, the optional AI dialogue layer) is not dead code and is not removed in a cleanup.
 
 ## Content and ids
 
 - Production content is registered in `game/data/content_manifest.tres` and resolved through `ContentDB`. Do not add scattered hard-coded resource-path dictionaries.
-- Ids are `StringName` values that never change once content has shipped: item, crop, NPC, quest, location, spawn, audio cue and the others. A display name can change; an id cannot. Removing content must degrade safely for saves that still reference it instead of blocking play or silently deleting player value.
+- Ids are `StringName` values that never change once content has shipped: item, crop, NPC, quest, location, spawn, audio cue and the others. A display name can change; an id cannot. A save that references removed content loads without it.
 - Rewards that were promised (mail attachments, project completion, archive milestones, blocked quest completion) are snapshotted when promised, so a later rebalance cannot change what the player was promised.
 
 ## Services and addons
@@ -21,10 +21,10 @@ This file holds the domain invariants of the game base. Generic engineering rule
 - NPC authored dialogue and the later local-AI dialogue share `ConversationService`, `NpcContext` and `NpcMemory`. Model or provider code never owns gameplay state or save data.
 - Microverse is a design reference for AI and NPC behaviour. A behaviour-tree addon such as LimboAI is introduced only when NPC behaviour complexity justifies it, not in advance.
 
-## Save compatibility
+## Save format
 
-- Published saves keep loading. A change to the save schema goes through `SaveMigration`; details and the checklist are in `.agents/rules/save.md`.
-- A save from a newer build is never overwritten, rotated or "repaired" by an older build; deleting a slot is the only destructive path and it is explicit.
+- The project is experimental: there is one save format and no compatibility code. A change to what a save contains raises `SAVE_VERSION`, and saves of other versions no longer load; details and the checklist are in `.agents/rules/save.md`.
+- Deleting a slot is the only destructive path and it is explicit.
 
 ## Audio
 

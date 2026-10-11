@@ -4,9 +4,7 @@ extends SceneTree
 ## and no module: starts a new game, saves, changes state and loads it back.
 ## tools/validate.js copies this script into the scaffolded project to run it.
 
-const SAVE_PATH := "user://new_game_smoke.json"
-const TEMP_PATH := "user://new_game_smoke.tmp"
-const BACKUP_PATH := "user://new_game_smoke.bak"
+const SAVE_DIRECTORY := "user://new_game_smoke"
 const FLAG := &"smoke:new_game"
 
 var _failed := false
@@ -20,9 +18,8 @@ func _run() -> void:
 	var player_state := root.get_node("PlayerState")
 	var world_state := root.get_node("WorldState")
 	var rules := root.get_node("GameRules")
-	save_manager.save_path = SAVE_PATH
-	save_manager.temp_path = TEMP_PATH
-	save_manager.backup_path = BACKUP_PATH
+	save_manager.save_directory = SAVE_DIRECTORY
+	save_manager.select_slot(1)
 	_cleanup()
 
 	_check(rules.validate_content(root.get_node("ContentDB")).is_empty(), "Template content has rule problems")
@@ -58,6 +55,4 @@ func _check(condition: bool, message: String) -> void:
 		printerr("NEW GAME SMOKE FAILED: %s" % message)
 
 func _cleanup() -> void:
-	for path: String in [SAVE_PATH, TEMP_PATH, BACKUP_PATH]:
-		if FileAccess.file_exists(path):
-			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	root.get_node("SaveManager").delete_slot(1)

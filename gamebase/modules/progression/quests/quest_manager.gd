@@ -95,25 +95,19 @@ func notify_npc_talk(npc_id: StringName) -> void:
 func to_save_data() -> Dictionary:
 	return _states.duplicate(true)
 
+## Loads quest states. States of quests that are not content, or with an
+## unknown status, are dropped.
 func load_save_data(data: Dictionary) -> void:
 	_states.clear()
 	for raw_key: Variant in data.keys():
 		var key := String(raw_key)
 		var raw_state: Variant = data[raw_key]
-		if not raw_state is Dictionary:
+		var quest := get_quest(StringName(key))
+		if quest == null or not raw_state is Dictionary:
 			continue
 		var saved_state: Dictionary = raw_state
-		var quest := get_quest(StringName(key))
-		if quest == null:
-			# Stable IDs should normally keep this resolvable, but preserve an orphan
-			# state verbatim so restoring retired content can recover its history.
-			_states[key] = saved_state.duplicate(true)
-			continue
-		var raw_status := _safe_int(saved_state.get("status", Status.INACTIVE), Status.INACTIVE)
+		var status := _safe_int(saved_state.get("status", -1), -1)
 		var progress := maxi(_safe_int(saved_state.get("progress", 0), 0), 0)
-		var status := raw_status
-		if not [Status.INACTIVE, Status.ACTIVE, Status.COMPLETED].has(status):
-			status = Status.ACTIVE if progress > 0 else Status.INACTIVE
 		match status:
 			Status.INACTIVE:
 				progress = 0
@@ -121,43 +115,13 @@ func load_save_data(data: Dictionary) -> void:
 				progress = mini(progress, quest.required_amount)
 			Status.COMPLETED:
 				progress = quest.required_amount
+			_:
+				continue
 		var normalized := {"status": status, "progress": progress}
 		var raw_reward: Variant = saved_state.get("reward_snapshot", {})
 		if raw_reward is Dictionary and not (raw_reward as Dictionary).is_empty():
 			normalized["reward_snapshot"] = (raw_reward as Dictionary).duplicate(true)
 		_states[key] = normalized
-	_repair_completed_chains()
-
-func reconcile_loaded_progress() -> void:
-	# Called by SaveManager only after Inventory, Player, World and Mine state have
-	# all been restored. This lets newly appended reach-floor quests synchronize
-	# against historical depth without running reward transactions against stale
-	# state from the previously active save.
-	_retry_blocked_completions()
-	var active_ids: Array[String] = []
-	for key: String in _states.keys():
-		if int((_states[key] as Dictionary).get("status", Status.INACTIVE)) == Status.ACTIVE:
-			active_ids.append(key)
-	for key: String in active_ids:
-		var quest := get_quest(StringName(key))
-		if quest != null and quest.objective_type == QuestData.ObjectiveType.REACH_MINE_FLOOR:
-			_sync_mine_floor_progress(quest)
-
-func _repair_completed_chains() -> void:
-	var changed := true
-	while changed:
-		changed = false
-		for quest: QuestData in ContentDB.get_all_quests():
-			if quest == null or quest.next_quest_id == &"" or not is_completed(quest.id):
-				continue
-			var next_quest := get_quest(quest.next_quest_id)
-			if next_quest == null:
-				continue
-			var next_state := get_state(next_quest.id)
-			if int(next_state.get("status", Status.INACTIVE)) != Status.INACTIVE:
-				continue
-			_states[String(next_quest.id)] = {"status": Status.ACTIVE, "progress": 0}
-			changed = true
 
 func _on_item_added(item_id: StringName, quantity: int) -> void:
 	_progress_matching(QuestData.ObjectiveType.COLLECT, item_id, quantity)
@@ -259,9 +223,11 @@ func _on_inventory_item_removed(_item_id: StringName, _quantity: int) -> void:
 	# Inventory removals often happen inside larger transactions (crafting,
 	# upgrades, shipping). Retry blocked quest rewards on the next frame so a
 	# reward cannot consume a slot halfway through another atomic operation.
-	_retry_blocked_completions.call_deferred()
+	complete_ready_quests.call_deferred()
 
-func _retry_blocked_completions() -> void:
+## Completes the active quests whose objective is met but whose reward did not
+## fit the inventory yet.
+func complete_ready_quests() -> void:
 	var blocked_ids: Array[String] = []
 	for key: String in _states.keys():
 		var state: Dictionary = _states[key]

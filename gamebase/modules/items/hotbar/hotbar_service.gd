@@ -104,9 +104,8 @@ func load_save_data(data: Dictionary) -> void:
 	if loaded is Array:
 		for raw: Variant in loaded:
 			var item_id := StringName(String(raw))
-			# Content updates may retire an item while its old inventory payload is
-			# intentionally preserved as legacy data. Do not keep a dead binding
-			# that makes the selected slot silently unusable.
+			# A binding to an item that is not current content would leave the slot
+			# silently unusable.
 			if item_id != &"" and ItemCatalog.get_item(item_id) == null:
 				item_id = &""
 			slots.append(item_id)

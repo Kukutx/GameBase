@@ -2,7 +2,6 @@ class_name ScenePortal
 extends Area2D
 
 @export var target_location_id: StringName
-@export_file("*.tscn") var target_scene: String
 @export var target_spawn_id: StringName
 @export var enabled := true
 
@@ -22,8 +21,6 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _start_travel() -> void:
 	if target_location_id == &"":
-		# Keep target_scene as a legacy serialized field, but never use direct world
-		# scene paths for live travel. Stable Location/Spawn IDs survive file moves.
 		_travel_requested = false
 		enabled = true
 		GameEvents.toast("Portal target is unavailable")

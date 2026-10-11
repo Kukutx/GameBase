@@ -49,12 +49,6 @@ func test_crop_archive_becomes_ready_claims_once_and_persists() -> void:
 	assert_true(CollectionMilestones.is_claimed(&"crop_archive"))
 	assert_false(CollectionMilestones.is_ready(&"crop_archive"))
 
-func test_claimed_milestone_reapplies_current_unlock_flags_on_load() -> void:
-	WorldState.set_value(&"collection:milestone:crop_archive:claimed", true)
-	assert_false(WorldState.get_bool(&"collection:crop_archive"))
-	CollectionMilestones.reconcile_loaded_state()
-	assert_true(WorldState.get_bool(&"collection:crop_archive"))
-
 func test_archive_claim_blocks_item_added_reentrancy() -> void:
 	for item_id: StringName in CollectionState.get_total_ids(CollectionService.CROPS):
 		CollectionState.record(CollectionService.CROPS, item_id, 1)
@@ -76,38 +70,34 @@ func test_archive_claim_blocks_item_added_reentrancy() -> void:
 	assert_eq(PlayerState.money, money_before + 500)
 	assert_eq(InventoryState.get_quantity(&"tomato_seeds"), 6)
 
-func test_ready_archive_uses_promised_reward_snapshot_after_content_removal() -> void:
+func test_ready_archive_grants_the_reward_promised_when_it_became_ready() -> void:
 	for item_id: StringName in CollectionState.get_total_ids(CollectionService.CROPS):
 		CollectionState.record(CollectionService.CROPS, item_id, 1)
 	assert_true(CollectionMilestones.is_ready(&"crop_archive"))
 	assert_true(WorldState.get_value(&"collection:milestone:crop_archive:reward_snapshot", {}) is Dictionary)
 	WorldState.set_value(&"collection:milestone:crop_archive:reward_snapshot", {
-		"items": {
-			"retired_archive_token": {"quantity": 2, "display_name": "Retired Archive Token", "max_stack": 8},
-		},
+		"items": {"wood": 2, "removed_item": 5},
 		"money": 888,
 	})
 	var money_before := PlayerState.money
 	assert_true(CollectionMilestones.claim(&"crop_archive"))
 	assert_eq(PlayerState.money, money_before + 888)
-	assert_eq(InventoryState.get_quantity(&"retired_archive_token"), 2)
+	assert_eq(InventoryState.get_quantity(&"wood"), 2)
+	assert_eq(InventoryState.get_quantity(&"removed_item"), 0)
 	assert_eq(InventoryState.get_quantity(&"tomato_seeds"), 0)
-	assert_eq(InventoryState.get_used_slots(), 0)
 
-func test_legacy_ready_milestone_stays_claimable_after_catalog_growth() -> void:
+func test_qualified_milestone_stays_claimable_after_catalog_growth() -> void:
 	assert_eq(CollectionState.get_discovered_count(CollectionService.CROPS), 0)
-	WorldState.set_value(&"collection:milestone_ready:crop_archive", true)
+	WorldState.set_value(&"collection:milestone_qualified:crop_archive", true)
 	WorldState.set_value(&"collection:milestone:crop_archive:reward_snapshot", {
-		"items": {"retired_crop_archive_token": {"quantity": 1, "display_name": "Retired Crop Archive Token", "max_stack": 1}},
+		"items": {"wood": 1},
 		"money": 321,
 	})
 	assert_true(CollectionMilestones.is_ready(&"crop_archive"))
-	CollectionMilestones.reconcile_loaded_state()
-	assert_true(WorldState.get_bool(&"collection:milestone_qualified:crop_archive"))
 	var money_before := PlayerState.money
 	assert_true(CollectionMilestones.claim(&"crop_archive"))
 	assert_eq(PlayerState.money, money_before + 321)
-	assert_eq(InventoryState.get_quantity(&"retired_crop_archive_token"), 1)
+	assert_eq(InventoryState.get_quantity(&"wood"), 1)
 
 func test_mineral_archive_tracks_all_metal_tiers_through_iridium() -> void:
 	var mineral_ids := CollectionState.get_total_ids(CollectionService.MINERALS)

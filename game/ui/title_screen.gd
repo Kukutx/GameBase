@@ -43,40 +43,25 @@ func _on_slot_selected(index: int) -> void:
 
 func _refresh_slot_ui() -> void:
 	var summary := SaveManager.get_slot_summary(SaveManager.active_slot)
-	var exists := bool(summary.get("exists", false))
-	var loadable := bool(summary.get("loadable", exists))
-	continue_button.disabled = not loadable
+	var exists := bool(summary["exists"])
+	continue_button.disabled = not exists
 	delete_button.disabled = not exists
-	if not exists:
-		slot_info.text = tr("Empty slot")
-		return
-	slot_info.text = _format_slot_summary(summary, loadable)
+	slot_info.text = _format_slot_summary(summary) if exists else tr("Empty slot")
 
-func _format_slot_summary(summary: Dictionary, loadable: bool) -> String:
-	var saved_game_version := String(summary.get("game_version", ""))
-	var provenance := tr(" · GameBase v%s") % saved_game_version if not saved_game_version.is_empty() else ""
-	if bool(summary.get("future_version", false)) and not loadable:
-		var future_text := tr("Save schema v%d · requires a newer game version") % int(summary.get("version", 0))
-		return future_text + provenance
-	var minute := int(summary.get("minute_of_day", 8 * 60))
-	var recovery_source := String(summary.get("recovery_source", "primary"))
+func _format_slot_summary(summary: Dictionary) -> String:
+	var minute := int(summary["minute_of_day"])
 	var recovery := ""
-	if bool(summary.get("newer_primary_preserved", false)):
-		recovery = tr(" · compatible %s · newer save preserved") % (tr("temporary recovery") if recovery_source == "temp" else tr("backup"))
-	elif bool(summary.get("recoverable", false)):
-		recovery = tr(" · temporary save recovery") if recovery_source == "temp" else tr(" · backup available")
-	elif not loadable:
-		recovery = tr(" · unavailable")
-	var base_text := tr("%s %d · Day %d · %02d:%02d · %dg%s") % [
-		tr(String(summary.get("season", "Spring"))),
-		int(summary.get("day_of_season", 1)),
-		int(summary.get("day", 1)),
+	if bool(summary["recoverable"]):
+		recovery = tr(" · temporary save recovery") if String(summary["recovery_source"]) == "temp" else tr(" · backup available")
+	return tr("%s %d · Day %d · %02d:%02d · %dg%s") % [
+		tr(String(summary["season"])),
+		int(summary["day_of_season"]),
+		int(summary["day"]),
 		minute / 60,
 		minute % 60,
-		int(summary.get("money", 0)),
+		int(summary["money"]),
 		recovery,
 	]
-	return base_text + provenance
 
 func _new_game() -> void:
 	if SaveManager.has_save():

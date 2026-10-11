@@ -27,14 +27,16 @@ function foundation(version, extra = {}) {
   });
 }
 
-test("this repository ships the foundation, its addons and the game-side tools, but no game files", () => {
+test("this repository ships the foundation, its addons, the build pipeline and the engine baseline, but no game files", () => {
   const files = shippedFiles(ROOT, readManifest(ROOT));
   assert.ok(files.includes("gamebase/core/content/content_registry.gd"));
   assert.ok(files.includes("addons/gut/plugin.cfg"));
   assert.ok(files.includes("tools/gamebase_sync.js"));
   assert.ok(!files.some((file) => file.startsWith("game/") || file.startsWith("test/")));
-  assert.ok(files.includes("tools/check_layers.js"));
-  assert.ok(!files.includes("tools/layer_baseline.json") && !files.includes("tools/validate.js"));
+  assert.ok(files.includes("tools/check_layers.js") && files.includes("tools/validate.js"));
+  assert.ok(files.includes(".github/workflows/ci.yml") && files.includes("licenses/GODOT_LICENSE.txt"));
+  assert.ok(!files.includes("tools/layer_baseline.json") && !files.includes("tools/new_game.js"));
+  assert.ok(!files.some((file) => file.includes("node_modules/")));
   assert.ok(!files.some((file) => file.startsWith("gamebase/templates/")));
 });
 

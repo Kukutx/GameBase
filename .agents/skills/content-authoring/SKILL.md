@@ -13,7 +13,7 @@ Work outward from the data resource and its class, then the manifest, then the c
 
 ## Adding content of an existing type
 
-1. Create the resource under the matching directory of `game/data/` with its script class and a new, stable `id`. An id is never reused for something else. To rename a shipped entry, give it the new id and list the old one in its `former_ids`: `ContentDB` then resolves saves and data that still use the old id. Data a game or mod adds to an entry without changing its script goes in `custom_fields`.
+1. Create the resource under the matching directory of `game/data/` with its script class and a new, stable `id`. An id is never reused for something else; renaming an entry changes its id, and saves that used the old one load without it. Data a game or mod adds to an entry without changing its script goes in `custom_fields`.
 2. Register it in `game/data/content_manifest.tres`: one `ext_resource` line and one entry in the matching array.
 3. Fill every cross-reference by id (an item named by a recipe, a quest that unlocks another, a location's `music_cue_id`). `ContentDB.rebuild()` checks ids and references at startup and reports each problem with `push_error`, so a dangling reference fails every Godot step of validation.
 4. Give every player-facing field (`display_name`, `title`, `description`, `subject`, `body`, `role`, and the `activity` of an NPC schedule entry) a Simplified Chinese entry.
@@ -30,7 +30,7 @@ Work outward from the data resource and its class, then the manifest, then the c
 
 ## Adding a new content type
 
-1. A class that `extends ContentEntry` (`gamebase/core/content/content_entry.gd`, which provides `id`, `former_ids` and `custom_fields`) with `class_name` and typed fields, in the module that owns it.
+1. A class that `extends ContentEntry` (`gamebase/core/content/content_entry.gd`, which provides `id` and `custom_fields`) with `class_name` and typed fields, in the module that owns it.
 2. An exported typed array in `game/content/content_manifest.gd`.
 3. In `game/content/game_content_database.gd`: a `KIND_*` constant, a `register_entries()` call in `_index_content()`, the typed `get_*` (through `get_entry()`, so former ids resolve) and `get_all_*` accessors, and reference checks in `_validate_references()`. Write a check as a function that appends its messages to the `errors` array so a test can assert on them. `gamebase/core/content/content_registry.gd` stays generic: it owns only locations and audio cues.
 4. A test in `test/unit/test_content_database.gd` for the index and for each new reference check, including one broken fixture that the check must reject.

@@ -156,8 +156,7 @@ func load_save_data(data: Dictionary) -> void:
 		var skill := StringName(key)
 		if SKILL_IDS.has(skill):
 			_xp[key] = maxi(_safe_int(data[raw_key], 0), 0)
-	# Backfill pre-entitlement saves from the current XP-derived level and only
-	# ever increase the remembered entitlement when thresholds become easier.
+	# A level once earned stays earned; easier thresholds can only raise it.
 	for skill: StringName in SKILL_IDS:
 		var key := String(skill)
 		_earned_levels[key] = maxi(int(_earned_levels.get(key, 1)), _get_level_from_xp(get_xp(skill)))

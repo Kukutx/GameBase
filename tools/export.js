@@ -17,11 +17,13 @@ const {
   resolveGodotBin,
   rootPath,
   runGodotStep,
+  artifactName,
 } = require("./lib/common");
 
+const NAME = artifactName();
 const PRESETS = {
-  "Windows Desktop": { output: "build/windows/GameBase.exe", pack: "build/windows/GameBase.pck" },
-  Linux: { output: "build/linux/GameBase.x86_64", pack: "build/linux/GameBase.pck" },
+  "Windows Desktop": { output: `build/windows/${NAME}.exe`, pack: `build/windows/${NAME}.pck` },
+  Linux: { output: `build/linux/${NAME}.x86_64`, pack: `build/linux/${NAME}.pck` },
   Web: { output: "build/web/index.html", pack: "build/web/index.pck" },
 };
 const LICENSE_FILES = [

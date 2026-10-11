@@ -4,12 +4,13 @@ const os = require("node:os");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { buildZip, buildTar, gzipDeterministic, openZip, readTar } = require("./lib/archive");
-const { ROOT, fail, git, main, rootPath } = require("./lib/common");
+const { ROOT, artifactName, fail, git, main, rootPath } = require("./lib/common");
 
+const NAME = artifactName();
 const TARGETS = {
-  Windows: { source: rootPath("build", "windows"), output: rootPath("dist", "GameBase-windows-x86_64.zip"), format: "zip" },
-  Linux: { source: rootPath("build", "linux"), output: rootPath("dist", "GameBase-linux-x86_64.tar.gz"), format: "tar.gz" },
-  Web: { source: rootPath("build", "web"), output: rootPath("dist", "GameBase-web.zip"), format: "zip" },
+  Windows: { source: rootPath("build", "windows"), output: rootPath("dist", `${NAME}-windows-x86_64.zip`), format: "zip" },
+  Linux: { source: rootPath("build", "linux"), output: rootPath("dist", `${NAME}-linux-x86_64.tar.gz`), format: "tar.gz" },
+  Web: { source: rootPath("build", "web"), output: rootPath("dist", `${NAME}-web.zip`), format: "zip" },
 };
 
 function sourceDateEpoch() {
@@ -50,7 +51,7 @@ function sourceFiles(source) {
 }
 
 function canonicalMode(target, relative) {
-  return target === "Linux" && relative === "GameBase.x86_64" ? 0o755 : 0o644;
+  return target === "Linux" && relative === `${NAME}.x86_64` ? 0o755 : 0o644;
 }
 
 function packageTarget(target, source, output, epoch) {
@@ -82,8 +83,8 @@ function runSelfTest() {
   const epoch = 1_700_000_000;
   const fixtures = {
     Windows: {
-      "GameBase.exe": Buffer.from("windows-binary\0".repeat(100)),
-      "GameBase.pck": Buffer.from("pack-data".repeat(200)),
+      [`${NAME}.exe`]: Buffer.from("windows-binary\0".repeat(100)),
+      [`${NAME}.pck`]: Buffer.from("pack-data".repeat(200)),
       "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
     },
     Web: {
@@ -92,8 +93,8 @@ function runSelfTest() {
       "BUILD_INFO.json": Buffer.from('{"game_version":"0.1.0"}\n'),
     },
     Linux: {
-      "GameBase.x86_64": Buffer.from("linux-binary\0".repeat(100)),
-      "GameBase.pck": Buffer.from("pack-data".repeat(200)),
+      [`${NAME}.x86_64`]: Buffer.from("linux-binary\0".repeat(100)),
+      [`${NAME}.pck`]: Buffer.from("pack-data".repeat(200)),
       "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
     },
   };
@@ -123,7 +124,7 @@ function runSelfTest() {
         if (!isSorted(names) || names.join("\n") !== expected.join("\n")) {
           fail("Linux archive entries are missing or not sorted");
         }
-        const executable = members.find((member) => member.name === "GameBase.x86_64");
+        const executable = members.find((member) => member.name === `${NAME}.x86_64`);
         if (executable.mode !== 0o755) {
           fail(`Linux executable mode is ${executable.mode.toString(8)}, expected 755`);
         }

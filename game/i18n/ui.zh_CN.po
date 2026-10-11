@@ -183,26 +183,11 @@ msgstr "自动保存"
 msgid "Save Slot %d"
 msgstr "存档位 %d"
 
-msgid "Save v%d · requires a newer game version"
-msgstr "存档 v%d · 需要更新版本的游戏"
-
-msgid "temporary recovery"
-msgstr "临时恢复存档"
-
-msgid "backup"
-msgstr "备份"
-
-msgid " · compatible %s · newer save preserved"
-msgstr " · 兼容%s · 已保留新版存档"
-
 msgid " · temporary save recovery"
 msgstr " · 可从临时存档恢复"
 
 msgid " · backup available"
 msgstr " · 有可用备份"
-
-msgid " · unavailable"
-msgstr " · 不可用"
 
 msgid "%s %d · Day %d · %02d:%02d · %dg%s"
 msgstr "%s %d日 · 第%d天 · %02d:%02d · %dg%s"
@@ -281,9 +266,6 @@ msgstr "领取收藏奖励（%d）"
 
 msgid "Empty"
 msgstr "空"
-
-msgid "  [legacy content]"
-msgstr "  [旧版内容]"
 
 msgid "Money: %dg"
 msgstr "金钱：%dg"
@@ -714,8 +696,8 @@ msgstr "已参加"
 msgid "Join for festival reward"
 msgstr "参加并领取节日奖励"
 
-msgid "Old Mine · Floor %d · Deepest %d"
-msgstr "旧矿井 · 第 %d 层 · 最深 %d 层"
+msgid "%s · Floor %d · Deepest %d"
+msgstr "%s · 第 %d 层 · 最深 %d 层"
 
 msgid "Elevator to Floor 1"
 msgstr "前往矿井第 1 层"
@@ -1344,9 +1326,6 @@ msgstr "已接受：%s"
 msgid "Contract complete · +%dg"
 msgstr "委托完成 · +%dg"
 
-msgid "Daily contract was withdrawn after a content update"
-msgstr "内容更新后，该每日委托已撤回"
-
 msgid "Daily contract expired"
 msgstr "每日委托已过期"
 
@@ -1403,15 +1382,6 @@ msgstr "收起机器前请先完成或领取当前加工任务"
 
 msgid "Started %s"
 msgstr "已开始%s"
-
-msgid "Unavailable legacy processing job was cleared"
-msgstr "不可用的旧版加工任务已清除"
-
-msgid "Make room for the refunded processing materials"
-msgstr "请为退还的加工材料腾出空间"
-
-msgid "Processing content changed · materials refunded"
-msgstr "加工内容已更新 · 材料已退还"
 
 msgid "Make room for the full output"
 msgstr "请为全部产物腾出空间"
@@ -2507,12 +2477,6 @@ msgstr "为已耕土地浇水，让作物能在夜间生长。"
 
 msgid "Kitchen"
 msgstr "厨房"
-
-msgid "Save schema v%d · requires a newer game version"
-msgstr "存档结构 v%d · 需要更新版本的游戏"
-
-msgid " · GameBase v%s"
-msgstr " · GameBase v%s"
 
 msgid "Accessibility..."
 msgstr "无障碍设置..."

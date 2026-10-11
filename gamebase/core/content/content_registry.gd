@@ -17,8 +17,6 @@ const KIND_MINIGAME := &"minigame"
 ## kind -> {id -> ContentEntry}. Each inner dictionary is the one
 ## `register_entries()` returned, so a subclass may keep and read it directly.
 var _entries: Dictionary = {}
-## kind -> {former id -> current id}.
-var _former_ids: Dictionary = {}
 ## location id -> {spawn id -> number of spawn points with that id}.
 var _location_spawn_ids: Dictionary = {}
 
@@ -29,7 +27,6 @@ func _ready() -> void:
 ## are also reported with `push_error`.
 func rebuild() -> PackedStringArray:
 	_entries.clear()
-	_former_ids.clear()
 	_location_spawn_ids.clear()
 	var errors := PackedStringArray()
 	if not _index_content(errors):
@@ -46,9 +43,7 @@ func rebuild() -> PackedStringArray:
 ## `label` names the kind in error messages.
 func register_entries(kind: StringName, resources: Array, label: String, errors: PackedStringArray) -> Dictionary:
 	var target: Dictionary = {}
-	var former: Dictionary = {}
 	_entries[kind] = target
-	_former_ids[kind] = former
 	for resource: Resource in resources:
 		if resource == null:
 			continue
@@ -61,40 +56,14 @@ func register_entries(kind: StringName, resources: Array, label: String, errors:
 			errors.append("duplicate %s id '%s'" % [label, key])
 			continue
 		target[key] = resource
-	for key: String in target:
-		var entry := target[key] as ContentEntry
-		if entry == null:
-			continue
-		for raw_former: StringName in entry.former_ids:
-			var former_key := String(raw_former)
-			if former_key.is_empty() or former_key == key:
-				continue
-			if target.has(former_key):
-				errors.append("%s '%s' lists former id '%s', which is still in use" % [label, key, former_key])
-			elif former.has(former_key):
-				errors.append("%s former id '%s' is claimed by both '%s' and '%s'" % [label, former_key, former[former_key], key])
-			else:
-				former[former_key] = key
 	return target
 
-## The entry of `kind` with `id`, following renames recorded in `former_ids`.
+## The entry of `kind` with `id`, or null.
 func get_entry(kind: StringName, id: StringName) -> ContentEntry:
-	var target: Dictionary = _entries.get(kind, {})
-	var key := String(id)
-	if target.has(key):
-		return target[key] as ContentEntry
-	var former: Dictionary = _former_ids.get(kind, {})
-	if former.has(key):
-		return target.get(former[key]) as ContentEntry
-	return null
+	return (_entries.get(kind, {}) as Dictionary).get(String(id)) as ContentEntry
 
 func has_entry(kind: StringName, id: StringName) -> bool:
 	return get_entry(kind, id) != null
-
-## The current id of the entry `id` refers to, or `&""` when there is none.
-func resolve_id(kind: StringName, id: StringName) -> StringName:
-	var entry := get_entry(kind, id)
-	return entry.id if entry != null else &""
 
 ## Every entry of `kind`, sorted by id.
 func get_entries(kind: StringName) -> Array:
@@ -249,8 +218,6 @@ func _validate_locations(errors: PackedStringArray) -> void:
 
 func _validate_portal(source_location: WorldLocationData, portal: ScenePortal, errors: PackedStringArray) -> void:
 	var portal_name := String(portal.name)
-	if not portal.target_scene.is_empty():
-		errors.append("location '%s' portal '%s' still configures legacy target_scene '%s'" % [source_location.id, portal_name, portal.target_scene])
 	if portal.target_location_id == &"":
 		errors.append("location '%s' portal '%s' must use a stable target location id" % [source_location.id, portal_name])
 		return

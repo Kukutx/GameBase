@@ -101,9 +101,6 @@ func load_save_data(data: Dictionary) -> void:
 	_last_day_seen = maxi(_safe_int(data.get("last_day_seen", WorldClock.day), WorldClock.day), 1)
 	shipment_changed.emit()
 
-func reconcile_loaded_day(saved_day: int) -> void:
-	_last_day_seen = mini(_last_day_seen, maxi(saved_day, 1))
-
 func _on_day_changed(day: int) -> void:
 	if day <= _last_day_seen:
 		return

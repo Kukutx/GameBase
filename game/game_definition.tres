@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="GameDefinition" format=3]
 
 [ext_resource type="Script" path="res://gamebase/core/session/game_definition.gd" id="1_definition"]
-[ext_resource type="Script" path="res://game/save/game_save_migrations.gd" id="2_migrations"]
 [ext_resource type="Theme" path="res://game/ui/game_theme.tres" id="3_theme"]
 
 [resource]
@@ -34,5 +33,4 @@ event_cues = Dictionary[StringName, StringName]({
 })
 start_money = 500
 start_hotbar = Array[StringName]([&"hoe", &"watering_can", &"pickaxe", &"rusty_sword", &"turnip_seeds", &"fishing_rod", &"berry"])
-save_migrations = ExtResource("2_migrations")
 ui_theme = ExtResource("3_theme")

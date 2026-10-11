@@ -63,8 +63,6 @@ func _rebuild() -> void:
 		return
 	title_label.text = tr(_display_name)
 	for entry: Dictionary in InventoryState.get_entries():
-		if not bool(entry.get("known", true)):
-			continue
 		var index := inventory_list.add_item("%s  x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
 		inventory_list.set_item_metadata(index, StringName(String(entry["id"])))
 	for entry: Dictionary in StorageState.get_entries(_container_id):

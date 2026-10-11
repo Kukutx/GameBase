@@ -5,7 +5,6 @@ const { checkLocalization } = require("./check_localization");
 const { runSelfTest } = require("./package_release");
 const { runCli: runRulesCheck } = require("./validate_rules");
 const { runCli: runLayerCheck } = require("./check_layers");
-const { createGame } = require("./new_game");
 const {
   ENGINE_VERSION_RE,
   GAME_VERSION_RE,
@@ -21,14 +20,17 @@ const {
   run,
   runGodotStep,
   tempFile,
+  projectName,
 } = require("./lib/common");
+const { check: checkFoundation } = require("./gamebase_sync");
 
 // Creates a game with tools/new_game.js (the core and no module), then boots it
 // and runs a new game through save and load: the core must work on its own.
 async function validateNewGame(godot) {
   const project = tempFile("gamebase-new-game");
   try {
-    createGame({ out: project, name: "GameBase New Game Check", from: ROOT });
+    // new_game.js stays in GameBase (games do not ship it), so it is loaded only here.
+    require("./new_game").createGame({ out: project, name: "GameBase New Game Check", from: ROOT });
     fs.mkdirSync(path.join(project, "test"), { recursive: true });
     fs.copyFileSync(rootPath("test", "runtime", "new_game_smoke.gd"), path.join(project, "test", "new_game_smoke.gd"));
     await runGodotStep(godot, "New game scaffold import", ["--headless", "--path", project, "--import"]);
@@ -47,7 +49,7 @@ function checkVersions(version) {
   if (!projectLines.includes(`config/version="${gameVersion}"`)) {
     fail(`project.godot application version does not match .game-version (${gameVersion}). Run tools/update_game_version.js.`);
   }
-  console.log(`GameBase: ${gameVersion}`);
+  console.log(`${projectName()}: ${gameVersion}`);
 
   if (!version.startsWith("4.")) {
     fail(`GameBase requires Godot 4.x; detected '${version}'.`);
@@ -88,8 +90,21 @@ async function validate({ godotBin, skipImport = false, skipSoak = false, cleanI
 
   console.log("");
   console.log("==> Agent rules and routing");
-  if (runRulesCheck(["--strict"]) !== 0) {
+  if (!fs.existsSync(rootPath("AGENTS.md"))) {
+    console.log("No AGENTS.md; skipped.");
+  } else if (runRulesCheck(["--strict"]) !== 0) {
     fail("Agent rules check failed.");
+  }
+
+  // A game installed from GameBase must not edit the installed foundation.
+  if (fs.existsSync(rootPath("gamebase.lock.json"))) {
+    console.log("");
+    console.log("==> GameBase lock");
+    const foundation = checkFoundation({ project: ROOT });
+    if (foundation.modified.length > 0) {
+      fail(`GameBase ${foundation.version} files differ from gamebase.lock.json; change them in GameBase:\n  ${foundation.modified.join("\n  ")}`);
+    }
+    console.log(`GameBase ${foundation.version}: installed files match gamebase.lock.json.`);
   }
 
   console.log("");
@@ -133,14 +148,17 @@ async function validate({ godotBin, skipImport = false, skipSoak = false, cleanI
     "addons/gut/gut_cmdln.gd",
     "-gconfig=.gutconfig.json",
   ]);
-  await runGodotStep(godot, "Runtime integration smoke", [
-    "--headless",
-    "--path",
-    ROOT,
-    "-s",
-    "test/runtime/world_services_smoke.gd",
-  ]);
-  if (!skipSoak) {
+  // The game's own runtime checks, when it has them.
+  if (fs.existsSync(rootPath("test", "runtime", "world_services_smoke.gd"))) {
+    await runGodotStep(godot, "Runtime integration smoke", [
+      "--headless",
+      "--path",
+      ROOT,
+      "-s",
+      "test/runtime/world_services_smoke.gd",
+    ]);
+  }
+  if (!skipSoak && fs.existsSync(rootPath("test", "runtime", "long_horizon_soak.gd"))) {
     await runGodotStep(godot, "Three-year save/load soak", [
       "--headless",
       "--path",
@@ -150,10 +168,13 @@ async function validate({ godotBin, skipImport = false, skipSoak = false, cleanI
     ]);
   }
   await runGodotStep(godot, "Main scene boot smoke", ["--headless", "--path", ROOT, "--quit-after", "120"]);
-  await validateNewGame(godot);
+  // Only the GameBase repository carries the new-game template.
+  if (fs.existsSync(rootPath("gamebase", "templates", "new_game"))) {
+    await validateNewGame(godot);
+  }
 
   console.log("");
-  console.log("GameBase validation passed.");
+  console.log(`${projectName()} validation passed.`);
 }
 
 module.exports = { validate };

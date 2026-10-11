@@ -9,7 +9,15 @@ const MAX_LOG_FILES := 5
 const MAX_LOG_BYTES := 2 * 1024 * 1024
 
 var output_directory := "user://support"
-var logs_directory := "user://logs"
+## Where the game writes its logs and the file name they start with, both from
+## the project's `debug/file_logging/log_path`.
+var logs_directory := ""
+var log_prefix := ""
+
+func _init() -> void:
+	var log_path := String(ProjectSettings.get_setting("debug/file_logging/log_path", "user://logs/godot.log"))
+	logs_directory = log_path.get_base_dir()
+	log_prefix = log_path.get_file().get_basename().to_lower()
 
 func is_supported() -> bool:
 	return OS.get_name() != "Web"
@@ -24,7 +32,7 @@ func create_bundle(custom_output_path: String = "") -> String:
 		if not _ensure_directory(output_directory):
 			_fail("Could not create support directory.")
 			return ""
-		output_path = output_directory.path_join("GameBase-support-%s.zip" % _timestamp())
+		output_path = output_directory.path_join("%s-support-%s.zip" % [_file_safe_project_name(), _timestamp()])
 	else:
 		var parent := output_path.get_base_dir()
 		if not parent.is_empty() and not _ensure_directory(parent):
@@ -65,7 +73,7 @@ func create_bundle(custom_output_path: String = "") -> String:
 		var bytes := _read_log_tail(String(entry.get("path", "")))
 		if bytes.is_empty():
 			continue
-		if not _write_bytes(packer, "logs/%s" % String(entry.get("name", "gamebase.log")), bytes):
+		if not _write_bytes(packer, "logs/%s" % String(entry["name"]), bytes):
 			packer.close()
 			_remove_if_exists(output_path)
 			_fail("Could not add diagnostic log.")
@@ -123,7 +131,6 @@ func _sanitize_slot_summary(summary: Dictionary) -> Dictionary:
 	var result := {
 		"slot": int(summary.get("slot", 0)),
 		"exists": bool(summary.get("exists", false)),
-		"loadable": bool(summary.get("loadable", false)),
 		"recoverable": bool(summary.get("recoverable", false)),
 	}
 	if not result["exists"]:
@@ -132,10 +139,10 @@ func _sanitize_slot_summary(summary: Dictionary) -> Dictionary:
 	for key: String in [
 		"recovery_source",
 		"version",
-		"future_version",
 		"game_version",
 		"engine_version",
 		"saved_at_unix",
+		"location_id",
 		"day",
 		"season",
 		"day_of_season",
@@ -154,7 +161,7 @@ func _collect_logs() -> Array[Dictionary]:
 	directory.list_dir_begin()
 	var name := directory.get_next()
 	while not name.is_empty():
-		if not directory.current_is_dir() and name.to_lower().begins_with("gamebase") and name.to_lower().ends_with(".log"):
+		if not directory.current_is_dir() and name.to_lower().begins_with(log_prefix) and name.to_lower().ends_with(".log"):
 			var path := logs_directory.path_join(name)
 			result.append({
 				"name": name.get_file(),
@@ -268,3 +275,8 @@ func _remove_if_exists(path: String) -> void:
 func _fail(message: String) -> void:
 	push_warning(message)
 	bundle_failed.emit(message)
+
+func _file_safe_project_name() -> String:
+	var regex := RegEx.create_from_string("[^A-Za-z0-9_-]+")
+	var name := regex.sub(String(ProjectSettings.get_setting("application/config/name", "")), "", true)
+	return name if not name.is_empty() else "game"

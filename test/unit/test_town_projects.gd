@@ -84,7 +84,7 @@ func test_project_reward_claim_blocks_item_added_reentrancy() -> void:
 	assert_eq(InventoryState.get_quantity(&"tomato_seeds"), 6)
 	assert_eq(PlayerState.money, money_before + 600)
 
-func test_completed_project_uses_promised_reward_snapshot_after_content_removal() -> void:
+func test_completed_project_grants_the_reward_promised_at_completion() -> void:
 	WorldState.set_value(&"town_projects:state", {
 		"starter_garden_restoration": {
 			"progress": {},
@@ -92,20 +92,15 @@ func test_completed_project_uses_promised_reward_snapshot_after_content_removal(
 			"claimed": false,
 			"completed_day": WorldClock.day,
 			"claimed_day": 0,
-			"reward_snapshot": {
-				"items": {
-					"retired_project_token": {"quantity": 3, "display_name": "Retired Project Token", "max_stack": 9},
-				},
-				"money": 999,
-			},
+			"reward_snapshot": {"items": {"wood": 3, "removed_item": 2}, "money": 999},
 		},
 	})
 	var money_before := PlayerState.money
 	assert_true(TownProjects.claim_reward(&"starter_garden_restoration"))
 	assert_eq(PlayerState.money, money_before + 999)
-	assert_eq(InventoryState.get_quantity(&"retired_project_token"), 3)
+	assert_eq(InventoryState.get_quantity(&"wood"), 3)
+	assert_eq(InventoryState.get_quantity(&"removed_item"), 0)
 	assert_eq(InventoryState.get_quantity(&"tomato_seeds"), 0)
-	assert_eq(InventoryState.get_used_slots(), 0)
 
 func test_project_contribution_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"turnip", 2)
@@ -155,26 +150,6 @@ func test_project_state_sanitizes_malformed_nested_values_and_reward_snapshot() 
 	assert_true(TownProjects.claim_reward(&"starter_garden_restoration"))
 	assert_true(TownProjects.is_claimed(&"starter_garden_restoration"))
 	assert_eq(InventoryState.get_quantity(&"retired"), 0)
-
-func test_loaded_project_progress_reconciles_current_requirements_and_unlock_flags() -> void:
-	WorldState.set_value(&"town_projects:state", {
-		"starter_garden_restoration": {
-			"progress": {"turnip": 3, "carrot": 3, "potato": 3, "wood": 10},
-			"completed": false,
-			"claimed": false,
-			"completed_day": 0,
-			"claimed_day": 0,
-		},
-	})
-	assert_false(TownProjects.is_completed(&"starter_garden_restoration"))
-	assert_false(WorldState.get_bool(&"project:starter_garden:complete"))
-	assert_false(TownProjects.is_available(&"riverside_workshop_fund"))
-	var repaired := TownProjects.reconcile_loaded_progress()
-	assert_true(repaired.has(&"starter_garden_restoration"))
-	assert_true(TownProjects.is_completed(&"starter_garden_restoration"))
-	assert_true(WorldState.get_bool(&"project:starter_garden:complete"))
-	assert_true(TownProjects.is_available(&"riverside_workshop_fund"))
-	assert_eq(int(TownProjects.get_state(&"starter_garden_restoration").get("completed_day", 0)), WorldClock.day)
 
 func test_town_project_state_round_trips_with_world_state() -> void:
 	InventoryState.add_item_by_id(&"turnip", 2)

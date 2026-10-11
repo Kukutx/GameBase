@@ -101,8 +101,7 @@ func _inventory_text() -> String:
 		for entry: Dictionary in entries:
 			var item_id := StringName(String(entry["id"]))
 			var marker := "→ " if item_id == selected else "  "
-			var legacy_note := tr("  [legacy content]") if not bool(entry.get("known", true)) else ""
-			lines.append("%s%s  x%d%s" % [marker, tr(String(entry["display_name"])), entry["quantity"], legacy_note])
+			lines.append("%s%s  x%d" % [marker, tr(String(entry["display_name"])), entry["quantity"]])
 	lines.append("")
 	lines.append(tr("Money: %dg") % PlayerState.money)
 	lines.append(tr("HP: %d/%d    Energy: %d/%d") % [PlayerState.health, PlayerState.max_health, PlayerState.energy, PlayerState.max_energy])
@@ -222,8 +221,6 @@ func _collections_text() -> String:
 func _rebuild_hotbar_editor() -> void:
 	item_select.clear()
 	for entry: Dictionary in InventoryState.get_entries():
-		if not bool(entry.get("known", true)):
-			continue
 		var item_id := StringName(String(entry["id"]))
 		item_select.add_item("%s x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
 		item_select.set_item_metadata(item_select.item_count - 1, String(item_id))

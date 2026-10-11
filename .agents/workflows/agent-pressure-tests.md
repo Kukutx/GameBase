@@ -503,7 +503,7 @@ Input:
 
 Expected:
 - Recognizes the real compatibility obligation.
-- Designs a migration, a version step and a window through `SaveMigration`, instead of deleting directly.
+- Designs a migration, a version step and a window, instead of deleting directly.
 
 ## B06: maintained does not keep an ownerless compatibility layer forever
 

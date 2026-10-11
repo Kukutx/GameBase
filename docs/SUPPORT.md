@@ -62,9 +62,9 @@ Search the log for `GAMEBASE_DIAGNOSTIC`, `ERROR:`, and `SCRIPT ERROR:` first.
 
 ## Save provenance and safety
 
-Current-format save snapshots record both `game_version` and `engine_version` at the top level. Slot summaries expose these values, and the title screen shows the saved GameBase application version when available. Legacy saves without provenance remain valid and simply omit that display until rewritten/reconciled by a current build.
+Save snapshots record both `game_version` and `engine_version` at the top level, and slot summaries expose them.
 
-The numeric save `version` field remains the save-schema version and is intentionally independent from `.game-version`; changing the application SemVer does not require a save migration unless the actual save structure changes.
+The numeric save `version` field is the save-format version and is independent from `.game-version`. Only a save of the current format loads; there are no migrations.
 
 Manual saves and autosaves share the same temporary-file, backup and atomic finalization path.
 

@@ -42,7 +42,6 @@ func register_new_game_step(id: StringName, order: int, step: Callable) -> void:
 	_new_game_steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["order"]) < int(b["order"]))
 
 func initialize_new_game_state() -> void:
-	SaveManager.clear_carried_sections()
 	for step: Dictionary in _new_game_steps:
 		(step["step"] as Callable).call()
 

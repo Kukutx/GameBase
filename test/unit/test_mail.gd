@@ -68,12 +68,10 @@ func test_mail_claim_blocks_item_added_reentrancy() -> void:
 	assert_true(MailState.is_claimed(&"mira_welcome"))
 	assert_eq(InventoryState.get_quantity(&"turnip_seeds"), seeds_before + 3)
 
-func test_received_mail_uses_promised_reward_snapshot_after_content_removal() -> void:
+func test_received_mail_grants_the_reward_promised_at_delivery() -> void:
 	WorldState.set_value(&"mail:mira_welcome:received", true)
 	WorldState.set_value(&"mail:mira_welcome:reward_snapshot", {
-		"items": {
-			"retired_mail_token": {"quantity": 4, "display_name": "Retired Mail Token", "max_stack": 12},
-		},
+		"items": {"wood": 4, "removed_item": 1},
 		"money": 777,
 	})
 	var money_before := PlayerState.money
@@ -81,11 +79,9 @@ func test_received_mail_uses_promised_reward_snapshot_after_content_removal() ->
 	assert_true(MailState.is_claimed(&"mira_welcome"))
 	assert_true(MailState.is_read(&"mira_welcome"))
 	assert_eq(PlayerState.money, money_before + 777)
-	assert_eq(InventoryState.get_quantity(&"retired_mail_token"), 4)
+	assert_eq(InventoryState.get_quantity(&"wood"), 4)
+	assert_eq(InventoryState.get_quantity(&"removed_item"), 0)
 	assert_eq(InventoryState.get_quantity(&"turnip_seeds"), 0)
-	assert_eq(InventoryState.get_used_slots(), 0)
-	var saved_inventory := InventoryState.to_save_data()
-	assert_eq(String((saved_inventory["retired_mail_token"] as Dictionary).get("display_name", "")), "Retired Mail Token")
 
 func test_quest_mail_unlocks_from_completed_quest_conditions() -> void:
 	assert_false(MailState.is_received(&"rowan_after_slime"))
@@ -125,27 +121,6 @@ func test_mine_bottom_mail_delivers_from_live_quest_completion() -> void:
 	MineState.set_floor(120)
 	assert_true(QuestState.is_completed(&"reach_mine_bottom"))
 	assert_true(MailState.is_received(&"rowan_mine_bottom"))
-
-func test_loading_older_progress_immediately_backfills_new_world_flag_mail() -> void:
-	var snapshot := {
-		"weather": WeatherState.to_save_data(),
-		"shipping": ShippingState.to_save_data(),
-		"clock": WorldClock.to_save_data(),
-		"buffs": BuffState.to_save_data(),
-		"inventory": InventoryState.to_save_data(),
-		"player_state": PlayerState.to_save_data(),
-		"world": {"project:starter_garden:complete": true},
-		"relationships": RelationshipState.to_save_data(),
-		"npc_memory": NpcMemory.to_save_data(),
-		"quests": QuestState.to_save_data(),
-		"skills": Skills.to_save_data(),
-		"fishing": FishingState.to_save_data(),
-		"scene": "",
-	}
-	assert_false(MailState.is_received(&"mira_garden_restored"))
-	assert_true(await SaveManager.apply_snapshot(snapshot))
-	assert_true(WorldState.get_bool(&"project:starter_garden:complete"))
-	assert_true(MailState.is_received(&"mira_garden_restored"))
 
 func test_content_manifest_contains_progression_mail_entries() -> void:
 	var ids: Array[String] = []

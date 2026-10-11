@@ -52,7 +52,6 @@ func test_locations_have_packed_scenes_and_unique_default_spawn_points() -> void
 		ContentDB.call("_collect_portals", root, portals)
 		for portal: ScenePortal in portals:
 			assert_ne(portal.target_location_id, &"", "%s has a portal without stable Location ID" % location.id)
-			assert_true(portal.target_scene.is_empty(), "%s has a portal using a direct scene path" % location.id)
 		root.free()
 
 func test_location_persistent_state_keys_are_nonempty_when_required_and_globally_unique() -> void:
@@ -443,25 +442,6 @@ func test_expansion_progression_validator_rejects_duplicate_cross_housing_and_no
 
 func _register(db: GameContentDatabase, kind: StringName, field: String, label: String, entries: Array) -> void:
 	db.set(field, db.register_entries(kind, entries, label, PackedStringArray()))
-
-func test_former_ids_resolve_renamed_entries_and_reject_conflicts() -> void:
-	var db := GameContentDatabase.new()
-	autofree(db)
-	var renamed := ItemData.new()
-	renamed.id = &"golden_turnip"
-	renamed.former_ids = [&"gold_turnip"]
-	var other := ItemData.new()
-	other.id = &"berry_jam"
-	other.former_ids = [&"golden_turnip", &"gold_turnip"]
-	var errors := PackedStringArray()
-	db.register_entries(GameContentDatabase.KIND_ITEM, [renamed, other], "item", errors)
-	assert_eq(db.get_item(&"gold_turnip"), renamed)
-	assert_eq(db.resolve_id(GameContentDatabase.KIND_ITEM, &"gold_turnip"), &"golden_turnip")
-	assert_true(db.has_item(&"gold_turnip"))
-	assert_eq(db.resolve_id(GameContentDatabase.KIND_ITEM, &"missing"), &"")
-	var joined := "\n".join(errors)
-	assert_string_contains(joined, "item 'berry_jam' lists former id 'golden_turnip', which is still in use")
-	assert_string_contains(joined, "item former id 'gold_turnip' is claimed by both 'golden_turnip' and 'berry_jam'")
 
 func test_custom_fields_survive_a_json_round_trip() -> void:
 	var item := ItemData.new()

@@ -14,7 +14,7 @@ This file is the smallest routing layer every task in this repository sees. It h
 - When a repository rule, workflow or skill really blocks authorized work, name the file, the clause and why it applies. Do not present your own caution as a repository requirement.
 - Stop once the user's goal, the necessary synchronization and verification matched to the risk are done. Do not widen scanning, testing or refactoring to look more complete.
 - Delivery speed is part of quality: when writing builds, tests or CI, control waiting, repeated work and resource cost; "the checks pass" is not the only success criterion, and necessary verification or release safety is not weakened either. While an external task runs, continue the authorized work that does not depend on its result. Boundaries: `.agents/rules/ci-performance.md`.
-- **Do not switch off an existing capability to get around missing configuration or a release problem.** When something that is enabled, promised or explicitly required to stay (an export target, a locale, save compatibility, an addon integration, a gate) lacks templates, credentials, configuration or environment, complete the chain and keep it on. Do not flip it to `false`, remove the entry point or degrade it to a no-op so that a check passes. Change availability only when the user currently asks for it to be removed, or the platform objectively forbids it and no fix exists, and state the impact first.
+- **Do not switch off an existing capability to get around missing configuration or a release problem.** When something that is enabled, promised or explicitly required to stay (an export target, a locale, an addon integration, a gate) lacks templates, credentials, configuration or environment, complete the chain and keep it on. Do not flip it to `false`, remove the entry point or degrade it to a no-op so that a check passes. Change availability only when the user currently asks for it to be removed, or the platform objectively forbids it and no fix exists, and state the impact first.
 
 ## Path routing
 
@@ -39,10 +39,10 @@ A path that matches several rows needs each matching rule. For paths not listed,
 | Repository identity, engine and addon policy, versions, language, fact roots, tool entry points | `.agents/rules/project-profile.md` |
 | Adding or changing natural-language comments in project-owned code | `.agents/rules/project-profile.md#default-evolution-strategy-and-language`; generated files and vendored addon sources are not rewritten for this |
 | Authorization, high-risk actions, dependencies and versions, necessary-synchronization boundaries, evolution strategy or general engineering judgment | `.agents/rules/project.md` |
-| Player-visible structure, content ids, save compatibility, audio cues, world travel, dialogue, licensed art or other domain semantics | `.agents/rules/project-domain.md` |
+| Player-visible structure, content ids, the save format, audio cues, world travel, dialogue, licensed art or other domain semantics | `.agents/rules/project-domain.md` |
 | Adding or changing player-visible text | `.agents/rules/localization.md` |
 | Licences and third-party notices, redistribution of code or assets, what diagnostics record, store or platform policy, compliance wording or a compliance review | `.agents/prompts/agent-compliance-policy-assistant.md`; then the necessary facts about what the build really contains and the target platform |
-| Adding persistent state, or touching save, load or migration | `.agents/rules/save.md` |
+| Adding persistent state, or touching save or load | `.agents/rules/save.md` |
 | Writing or changing tests, or reporting a verification result | `.agents/rules/testing.md` |
 | Adding or adjusting CI/CD, the build and release chain, test strategy or automated gates, or reviewing their time and resource cost | `.agents/rules/ci-performance.md` |
 | GitHub Actions design, change or failure analysis, or review of the current diff or branch before a commit or push | `.agents/prompts/recipes/ci-and-review.md` |

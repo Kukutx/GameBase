@@ -1,8 +1,6 @@
 extends SceneTree
 
-const SMOKE_SAVE_PATH := "user://world_services_smoke.json"
-const SMOKE_TEMP_PATH := "user://world_services_smoke.tmp"
-const SMOKE_BACKUP_PATH := "user://world_services_smoke.bak"
+const SMOKE_SAVE_DIRECTORY := "user://world_services_smoke"
 
 var _failed := false
 
@@ -39,9 +37,8 @@ func _run() -> void:
 	var mine_state := root.get_node("MineState")
 	var content_db := root.get_node("ContentDB")
 
-	save_manager.save_path = SMOKE_SAVE_PATH
-	save_manager.temp_path = SMOKE_TEMP_PATH
-	save_manager.backup_path = SMOKE_BACKUP_PATH
+	save_manager.save_directory = SMOKE_SAVE_DIRECTORY
+	save_manager.select_slot(1)
 	_cleanup_smoke_files()
 
 	# New-game initialization must recompute Day 1 weather after resetting the
@@ -274,11 +271,9 @@ func _run() -> void:
 	_check(change_error == OK, "Could not return to title before Continue test")
 	await scene_changed
 	await process_frame
-	# Title selects the real active save slot on ready. Re-apply isolated smoke
-	# paths so this acceptance test never reads or writes the user's real saves.
-	save_manager.save_path = SMOKE_SAVE_PATH
-	save_manager.temp_path = SMOKE_TEMP_PATH
-	save_manager.backup_path = SMOKE_BACKUP_PATH
+	# The title screen selects a slot on ready; the slot stays inside the smoke
+	# save directory, so this test never reads or writes the user's real saves.
+	_check(save_manager.save_path.begins_with(SMOKE_SAVE_DIRECTORY), "Title screen left the smoke save directory")
 	var loaded: bool = await save_manager.load_game()
 	_check(loaded, "SaveManager.load_game failed")
 	player = get_first_node_in_group("player") as Node2D
@@ -873,7 +868,7 @@ func _run() -> void:
 	_check(player_state.energy == maxi(player_state.max_energy / 2, 1), "Late-night collapse did not apply 50% energy penalty")
 	_check(player_state.health == player_state.max_health, "Late-night collapse did not restore health")
 	_check(current_scene.scene_file_path == "res://game/world/home_interior.tscn", "Late-night collapse did not keep player at home")
-	_check(FileAccess.file_exists(SMOKE_SAVE_PATH), "Late-night collapse did not autosave")
+	_check(FileAccess.file_exists(root.get_node("SaveManager").save_path), "Late-night collapse did not autosave")
 
 	if _failed:
 		_cleanup_smoke_files()
@@ -922,6 +917,5 @@ func _fail(message: String) -> void:
 	push_error("LIFE_SIMULATION_SMOKE: " + message)
 
 func _cleanup_smoke_files() -> void:
-	for path in [SMOKE_SAVE_PATH, SMOKE_TEMP_PATH, SMOKE_BACKUP_PATH]:
-		if FileAccess.file_exists(path):
-			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	for slot in range(1, 4):
+		root.get_node("SaveManager").delete_slot(slot)

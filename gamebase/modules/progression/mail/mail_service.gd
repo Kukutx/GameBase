@@ -19,15 +19,10 @@ func refresh_deliveries() -> Array[StringName]:
 	for mail: MailData in ContentDB.get_all_mail():
 		if mail == null:
 			continue
-		if is_received(mail.id):
-			if not is_claimed(mail.id):
-				_get_reward_snapshot(mail)
-			continue
-		if not mail.is_available():
+		if is_received(mail.id) or not mail.is_available():
 			continue
 		# Freeze delayed rewards before publishing receipt. If content changes before
-		# the player opens this letter, claim still grants the value that was promised
-		# at delivery time, including legacy items that no longer exist in ContentDB.
+		# the player opens this letter, claim still grants what was promised at delivery.
 		_get_reward_snapshot(mail)
 		WorldState.set_value(_key(mail.id, "received"), true)
 		delivered.append(mail.id)

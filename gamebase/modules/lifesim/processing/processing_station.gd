@@ -18,7 +18,6 @@ var finish_at := 0
 var output_ready := false
 var pending_output_item_id: StringName
 var pending_output_quantity := 0
-var pending_input_refund: Dictionary = {}
 var _operation_busy := false
 
 func configure_from_record(record: Dictionary) -> void:
@@ -68,7 +67,6 @@ func _start_recipe_internal(recipe_id: StringName) -> bool:
 	output_ready = false
 	pending_output_item_id = recipe.output_item_id
 	pending_output_quantity = recipe.output_quantity
-	pending_input_refund = _build_input_refund_snapshot(recipe.inputs)
 	_persist()
 	_refresh()
 	job_started.emit(station_id, recipe.id, finish_at)
@@ -88,19 +86,7 @@ func _collect_output_internal() -> bool:
 	if not output_ready or active_recipe_id == &"":
 		return false
 	var item := ContentDB.get_item(pending_output_item_id)
-	if item == null or pending_output_quantity <= 0:
-		# The promised output vanished in a content update. Restore the snapshotted
-		# inputs atomically before unlocking the station. Unknown legacy inputs are
-		# preserved by InventoryStore as non-blocking legacy entries.
-		if pending_input_refund.is_empty():
-			_clear_job()
-			GameEvents.toast("Unavailable legacy processing job was cleared")
-			return false
-		if not InventoryState.apply_refund_snapshot_atomic(pending_input_refund):
-			GameEvents.toast("Make room for the refunded processing materials")
-			return false
-		_clear_job()
-		GameEvents.toast("Processing content changed · materials refunded")
+	if item == null:
 		return false
 	if not InventoryState.can_add_item(item, pending_output_quantity):
 		GameEvents.toast("Make room for the full output")
@@ -128,9 +114,10 @@ func get_state_data() -> Dictionary:
 		"output_ready": output_ready,
 		"output_item_id": String(pending_output_item_id),
 		"output_quantity": pending_output_quantity,
-		"input_refund": pending_input_refund.duplicate(true),
 	}
 
+## Loads a job. A job without a recipe, or whose promised output is not a
+## current item, is dropped and the station is left idle.
 func load_state_data(data: Dictionary, persist := true) -> void:
 	active_recipe_id = _safe_string_name(data.get("recipe_id", ""))
 	finish_at = _safe_nonnegative_int(data.get("finish_at", 0))
@@ -138,39 +125,16 @@ func load_state_data(data: Dictionary, persist := true) -> void:
 	output_ready = raw_ready is bool and bool(raw_ready)
 	pending_output_item_id = _safe_string_name(data.get("output_item_id", ""))
 	pending_output_quantity = _safe_nonnegative_int(data.get("output_quantity", 0))
-	var refund_raw: Variant = data.get("input_refund", {})
-	pending_input_refund = _sanitize_refund_snapshot(refund_raw)
-	var normalized := false
-	if active_recipe_id == &"":
+	var valid := active_recipe_id != &"" and pending_output_quantity > 0 and ContentDB.get_item(pending_output_item_id) != null
+	if not valid:
+		var had_job := active_recipe_id != &""
+		active_recipe_id = &""
 		finish_at = 0
 		output_ready = false
-		if pending_output_item_id != &"" or pending_output_quantity > 0 or not pending_input_refund.is_empty():
-			pending_output_item_id = &""
-			pending_output_quantity = 0
-			pending_input_refund.clear()
-			normalized = true
-	else:
-		var recipe := _get_recipe(active_recipe_id)
-		if (pending_output_item_id == &"" or pending_output_quantity <= 0) and recipe != null:
-			# Backfill promised output for pre-snapshot saves while the recipe still
-			# exists in this station's current recipe list.
-			pending_output_item_id = recipe.output_item_id
-			pending_output_quantity = recipe.output_quantity
-			normalized = true
-		if pending_input_refund.is_empty() and recipe != null:
-			pending_input_refund = _build_input_refund_snapshot(recipe.inputs)
-			normalized = true
-		if pending_output_item_id == &"" or pending_output_quantity <= 0:
-			# Ancient orphan: no recipe and no promised output can be inferred. There
-			# is no deterministic value to restore, so unlock instead of hard-locking.
-			active_recipe_id = &""
-			finish_at = 0
-			output_ready = false
-			pending_output_item_id = &""
-			pending_output_quantity = 0
-			pending_input_refund.clear()
-			normalized = true
-	if persist or normalized:
+		pending_output_item_id = &""
+		pending_output_quantity = 0
+		persist = persist or had_job
+	if persist:
 		_persist()
 	_update_job()
 	_refresh()
@@ -212,28 +176,12 @@ func _get_recipe(recipe_id: StringName) -> ProcessingRecipeData:
 		return null
 	return ContentDB.get_processing_recipe(recipe_id)
 
-func _build_input_refund_snapshot(inputs: Dictionary) -> Dictionary:
-	var snapshot: Dictionary = {}
-	for raw_id: Variant in inputs.keys():
-		var item_id := StringName(String(raw_id))
-		var quantity := maxi(int(inputs[raw_id]), 0)
-		if item_id == &"" or quantity <= 0:
-			continue
-		var item := ContentDB.get_item(item_id)
-		snapshot[String(item_id)] = {
-			"quantity": quantity,
-			"display_name": item.display_name if item != null else String(item_id),
-			"max_stack": item.max_stack if item != null else 99,
-		}
-	return snapshot
-
 func _clear_job() -> void:
 	active_recipe_id = &""
 	finish_at = 0
 	output_ready = false
 	pending_output_item_id = &""
 	pending_output_quantity = 0
-	pending_input_refund.clear()
 	_persist()
 	_refresh()
 
@@ -273,38 +221,6 @@ func _load_state() -> void:
 
 func _state_key() -> StringName:
 	return StringName("processing:%s" % String(station_id))
-
-func _sanitize_refund_snapshot(snapshot: Variant) -> Dictionary:
-	if not snapshot is Dictionary:
-		return {}
-	var normalized: Dictionary = {}
-	for raw_id: Variant in (snapshot as Dictionary).keys():
-		var item_id := StringName(String(raw_id))
-		if item_id == &"":
-			continue
-		var raw_entry: Variant = (snapshot as Dictionary)[raw_id]
-		var quantity := 0
-		var display_name := String(item_id)
-		var max_stack := 99
-		if raw_entry is Dictionary:
-			var entry: Dictionary = raw_entry
-			quantity = _safe_nonnegative_int(entry.get("quantity", 0))
-			var raw_name: Variant = entry.get("display_name", display_name)
-			if raw_name is String or raw_name is StringName:
-				display_name = String(raw_name)
-			var raw_stack: Variant = entry.get("max_stack", 99)
-			if typeof(raw_stack) == TYPE_INT or typeof(raw_stack) == TYPE_FLOAT:
-				max_stack = maxi(int(raw_stack), 1)
-		else:
-			quantity = _safe_nonnegative_int(raw_entry)
-		if quantity <= 0:
-			continue
-		normalized[String(item_id)] = {
-			"quantity": quantity,
-			"display_name": display_name,
-			"max_stack": max_stack,
-		}
-	return normalized
 
 func _safe_nonnegative_int(value: Variant) -> int:
 	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:

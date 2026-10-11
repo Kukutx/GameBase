@@ -27,16 +27,16 @@ jobs:
       game_version: ${{ steps.game.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
       # Fails unless .game-version is a semantic version, matches project.godot
       # and, on a tag build, equals the tag without its leading "v".
-      - name: Resolve GameBase version
+      - name: Resolve game version
         id: game
         run: node tools/ci.js game-version
 
@@ -66,20 +66,20 @@ jobs:
         include:
           - name: Windows
             preset: Windows Desktop
-            package: GameBase-windows-x86_64.zip
+            package: "*-windows-x86_64.zip"
           - name: Linux
             preset: Linux
-            package: GameBase-linux-x86_64.tar.gz
+            package: "*-linux-x86_64.tar.gz"
           - name: Web
             preset: Web
-            package: GameBase-web.zip
+            package: "*-web.zip"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -116,7 +116,7 @@ jobs:
 
       - name: Upload Web smoke diagnostics
         if: matrix.name == 'Web' && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qa-web-smoke-release
           path: artifacts/web-smoke
@@ -127,7 +127,7 @@ jobs:
         run: node tools/package_release.js --target "${{ matrix.name }}"
 
       - name: Upload packaged build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-${{ matrix.name }}
           path: dist/${{ matrix.package }}
@@ -150,15 +150,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
       - name: Download packaged build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.artifact }}
           path: dist
@@ -175,15 +175,15 @@ jobs:
       contents: write
     steps:
       - name: Checkout release source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
       - name: Download packaged builds
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: release-*
           path: dist

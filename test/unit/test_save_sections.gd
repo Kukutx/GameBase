@@ -10,30 +10,21 @@ func test_registered_sections_restore_in_the_documented_order() -> void:
 		"relationships", "npc_memory", "quests", "skills", "fishing",
 	]))
 
-func test_required_sections_follow_the_version_each_section_was_added_in() -> void:
-	var expected := {
-		1: ["clock", "inventory", "world"],
-		2: ["clock", "inventory", "world", "weather", "player_state", "relationships", "quests", "skills"],
-		5: ["clock", "inventory", "world", "weather", "player_state", "relationships", "quests", "skills", "npc_memory", "fishing"],
-		GameSaveManager.SAVE_VERSION: SaveManager.get_section_ids(),
-	}
-	for version: int in expected:
-		var required: Array[String] = SaveManager.call("_required_dictionary_sections", version)
-		var wanted: Array = Array(expected[version])
-		required.sort()
-		wanted.sort()
-		assert_eq(required, wanted, "required sections of version %d" % version)
-
-func test_sections_no_service_owns_survive_the_next_save() -> void:
+func test_snapshot_writes_every_registered_section_and_nothing_else() -> void:
 	var manager := GameSaveManager.new()
 	add_child_autofree(manager)
-	manager.set("_carried_sections", {"future_module": {"value": 3}})
 	var snapshot := manager.build_snapshot()
-	assert_eq(int((snapshot.get("future_module", {}) as Dictionary).get("value", 0)), 3)
+	var keys: Array[String] = []
+	for key: Variant in snapshot.keys():
+		keys.append(String(key))
+	keys.sort()
+	var expected: Array[String] = []
+	expected.append_array(GameSaveManager.HEADER_KEYS)
+	expected.append_array(Array(manager.get_section_ids()))
+	expected.sort()
+	assert_eq(keys, expected)
 	for id: String in manager.get_section_ids():
 		assert_true(snapshot.get(id) is Dictionary, "section %s is written" % id)
-	manager.clear_carried_sections()
-	assert_false(manager.build_snapshot().has("future_module"))
 
 func test_game_definition_supplies_the_games_facts() -> void:
 	var definition := GameSession.definition
