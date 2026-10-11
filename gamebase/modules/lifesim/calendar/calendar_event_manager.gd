@@ -21,10 +21,8 @@ func refresh(day: int, minute_of_day: int) -> void:
 			next_active[String(event.id)] = event
 	for key: String in _active.keys():
 		if not next_active.has(key):
-			WorldState.erase(StringName("event:%s:active" % key))
 			event_ended.emit(StringName(key))
 	for key: String in next_active.keys():
-		WorldState.set_value(StringName("event:%s:active" % key), true)
 		if not _active.has(key):
 			event_started.emit(StringName(key))
 	var changed := not _same_keys(_active, next_active)

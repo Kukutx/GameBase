@@ -10,7 +10,9 @@ const KIND := &"farm_expansion"
 @export_range(0, 999999, 1) var money_cost := 0
 @export var materials: Dictionary = {}
 @export var prerequisites: Array[StringName] = []
-@export var required_world_flag: StringName
+## When the expansion is offered once its prerequisites are built, in the
+## `GameQuery` syntax (`PROJECT_COMPLETED barn_fund`); empty means always.
+@export var condition: String = ""
 
 ## The farm expansion with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> FarmExpansionData:

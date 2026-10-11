@@ -150,13 +150,13 @@ func _fixture_content() -> Array:
 		_animal(&"fixture_hen", "Hen", &"fixture_poultry"),
 		_animal(&"fixture_cow", "Cow", &"fixture_livestock"),
 		_expansion(&"fixture_big_coop", &"fixture_coop", 8, 2000,
-			{"fixture_timber": 30, "fixture_rock_chunk": 10}, [], &"fixture_garden_restored"),
+			{"fixture_timber": 30, "fixture_rock_chunk": 10}, [], "WORLD_FLAG fixture_garden_restored"),
 		_expansion(&"fixture_deluxe_coop", &"fixture_coop", 12, 6000,
-			{"fixture_timber": 50, "fixture_metal_bar": 3}, [&"fixture_big_coop"], &"fixture_workshop_built"),
+			{"fixture_timber": 50, "fixture_metal_bar": 3}, [&"fixture_big_coop"], "WORLD_FLAG fixture_workshop_built"),
 		_expansion(&"fixture_big_barn", &"fixture_barn", 8, 3000,
-			{"fixture_timber": 40, "fixture_rock_chunk": 20}, [], &"fixture_garden_restored"),
+			{"fixture_timber": 40, "fixture_rock_chunk": 20}, [], "WORLD_FLAG fixture_garden_restored"),
 		_expansion(&"fixture_deluxe_barn", &"fixture_barn", 12, 8000,
-			{"fixture_timber": 60, "fixture_metal_bar": 4}, [&"fixture_big_barn"], &"fixture_workshop_built"),
+			{"fixture_timber": 60, "fixture_metal_bar": 4}, [&"fixture_big_barn"], "WORLD_FLAG fixture_workshop_built"),
 	]
 	return entries
 
@@ -175,7 +175,7 @@ func _animal(id: StringName, display_name: String, housing_type: StringName) -> 
 	return animal
 
 func _expansion(id: StringName, housing_id: StringName, capacity_after: int, money_cost: int,
-		materials: Dictionary, prerequisites: Array[StringName], required_world_flag: StringName) -> FarmExpansionData:
+		materials: Dictionary, prerequisites: Array[StringName], condition: String) -> FarmExpansionData:
 	var expansion := FarmExpansionData.new()
 	expansion.id = id
 	expansion.display_name = String(id).capitalize()
@@ -184,5 +184,5 @@ func _expansion(id: StringName, housing_id: StringName, capacity_after: int, mon
 	expansion.money_cost = money_cost
 	expansion.materials = materials
 	expansion.prerequisites = prerequisites
-	expansion.required_world_flag = required_world_flag
+	expansion.condition = condition
 	return expansion

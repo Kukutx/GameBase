@@ -12,4 +12,3 @@ prerequisites = Array[StringName]([&"starter_garden_restoration"])
 requirements = {"copper_bar": 3, "stone": 12, "wood": 15}
 reward_money = 800
 reward_items = {"oil_maker": 1}
-unlock_flags = Array[StringName]([&"project:riverside_workshop:complete"])

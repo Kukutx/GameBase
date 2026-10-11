@@ -10,4 +10,3 @@ description = "Collect every animal product recorded by the archive."
 category = &"animal_products"
 reward_money = 650
 reward_items = {"hay": 12}
-unlock_flags = Array[StringName]([&"collection:animal_archive"])

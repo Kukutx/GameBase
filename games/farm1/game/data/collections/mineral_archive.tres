@@ -10,4 +10,3 @@ description = "Mine every mineral type recorded by the archive."
 category = &"minerals"
 reward_money = 900
 reward_items = {"gold_bar": 1}
-unlock_flags = Array[StringName]([&"collection:mineral_archive"])

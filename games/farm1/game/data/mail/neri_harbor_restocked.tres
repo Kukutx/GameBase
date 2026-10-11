@@ -8,5 +8,5 @@ id = &"neri_harbor_restocked"
 sender_npc_id = &"neri"
 subject = "The shelves are full again"
 body = "Harbor stores finally look prepared instead of hopeful. That means fewer bad choices when the weather turns. I saved you a bowl from the first proper meal we cooked after restocking. — Neri"
-required_world_flag = &"project:harbor_supply:complete"
+condition = "PROJECT_COMPLETED harbor_supply_drive"
 reward_items = {"fish_soup": 1}

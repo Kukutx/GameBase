@@ -37,7 +37,7 @@ func test_expansion_catalog_is_registered() -> void:
 func test_coop_expands_from_four_to_eight_to_twelve_after_the_garden_and_workshop_projects() -> void:
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 4)
 	assert_false(FarmExpansionState.is_available(&"big_coop"))
-	WorldState.set_value(&"project:starter_garden:complete", true)
+	_set_completed_projects([&"starter_garden_restoration"])
 	InventoryState.add_item_by_id(&"wood", 30)
 	InventoryState.add_item_by_id(&"stone", 10)
 	var money_before := PlayerState.money
@@ -49,7 +49,7 @@ func test_coop_expands_from_four_to_eight_to_twelve_after_the_garden_and_worksho
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 8)
 
 	assert_false(FarmExpansionState.is_available(&"deluxe_coop"))
-	WorldState.set_value(&"project:riverside_workshop:complete", true)
+	_set_completed_projects([&"starter_garden_restoration", &"riverside_workshop_fund"])
 	InventoryState.add_item_by_id(&"wood", 50)
 	InventoryState.add_item_by_id(&"iron_bar", 3)
 	InventoryState.add_item_by_id(&"gold_bar", 1)
@@ -58,13 +58,20 @@ func test_coop_expands_from_four_to_eight_to_twelve_after_the_garden_and_worksho
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 12)
 
 func test_deluxe_barn_requires_the_big_barn_and_the_riverside_workshop() -> void:
-	WorldState.set_value(&"project:starter_garden:complete", true)
-	WorldState.set_value(&"project:riverside_workshop:complete", true)
+	_set_completed_projects([&"starter_garden_restoration", &"riverside_workshop_fund"])
 	assert_false(FarmExpansionState.is_available(&"deluxe_barn"))
 	InventoryState.add_item_by_id(&"wood", 40)
 	InventoryState.add_item_by_id(&"stone", 20)
 	assert_true(FarmExpansionState.purchase(&"big_barn"))
 	assert_eq(AnimalState.get_housing_capacity(&"starter_barn"), 8)
 	assert_true(FarmExpansionState.is_available(&"deluxe_barn"))
-	WorldState.set_value(&"project:riverside_workshop:complete", false)
+	_set_completed_projects([&"starter_garden_restoration"])
 	assert_false(FarmExpansionState.is_available(&"deluxe_barn"))
+
+## Leaves exactly Farm1's town projects `project_ids` completed, as donating
+## their materials would.
+func _set_completed_projects(project_ids: Array[StringName]) -> void:
+	var state: Dictionary = {}
+	for project_id: StringName in project_ids:
+		state[String(project_id)] = {"completed": true}
+	WorldState.set_value(TownProjectService.STATE_KEY, state)

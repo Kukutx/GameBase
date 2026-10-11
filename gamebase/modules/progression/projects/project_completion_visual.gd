@@ -1,7 +1,10 @@
 class_name ProjectCompletionVisual
 extends Node2D
 
-@export var completion_flag: StringName
+## Shows whether a town project is completed: its colour and label switch
+## when the town completes the project.
+
+@export var project_id: StringName
 @export var pending_text := "Needs restoration"
 @export var completed_text := "Restored"
 @export var pending_color := Color(0.38, 0.30, 0.22, 1)
@@ -15,15 +18,22 @@ func _ready() -> void:
 	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh()
 
+func find_scene_problems(registry: ContentRegistry, _location: WorldLocationData) -> PackedStringArray:
+	if not registry.has_entry(TownProjectData.KIND, project_id):
+		return PackedStringArray(["project completion visual '%s' references unknown town project '%s'" % [name, project_id]])
+	return PackedStringArray()
+
+# Town projects keep their state under one world key; an empty key means the
+# whole store was replaced, by a load or a new game.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
-	if key == &"" or key == completion_flag:
+	if key == TownProjectService.STATE_KEY or key == &"":
 		_refresh()
 
 func _on_locale_changed(_locale: String) -> void:
 	_refresh()
 
 func _refresh() -> void:
-	var completed := completion_flag != &"" and WorldState.get_bool(completion_flag)
+	var completed := TownProjects.is_completed(project_id)
 	if visual != null:
 		visual.color = completed_color if completed else pending_color
 	if label != null:

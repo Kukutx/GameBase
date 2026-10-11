@@ -8,5 +8,5 @@ id = &"rowan_after_slime"
 sender_npc_id = &"rowan"
 subject = "For the next repair"
 body = "Heard you handled the slime problem in the old mine. That place rewards preparation more than courage. Here is some copper ore from an old repair stock. Put it to better use than I was. — Rowan"
-required_completed_quest_id = &"defeat_green_slime"
+condition = "QUEST_COMPLETED defeat_green_slime"
 reward_items = {"copper_ore": 2}

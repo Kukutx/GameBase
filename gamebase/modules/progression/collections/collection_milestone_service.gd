@@ -74,9 +74,6 @@ func claim(id: StringName) -> bool:
 	var reward_money := DeferredRewardSnapshot.get_money(reward)
 	if reward_money > 0:
 		PlayerState.add_money(reward_money)
-	for flag: StringName in milestone.unlock_flags:
-		if flag != &"":
-			WorldState.set_value(flag, true)
 	WorldState.set_value(_claim_key(id), true)
 	milestone_claimed.emit(id)
 	_claiming.erase(claim_key)

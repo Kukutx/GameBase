@@ -10,7 +10,6 @@ const KIND := &"collection_milestone"
 @export var prerequisites: Array[StringName] = []
 @export_range(0, 999999, 1) var reward_money := 0
 @export var reward_items: Dictionary = {}
-@export var unlock_flags: Array[StringName] = []
 
 ## The collection milestone with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> CollectionMilestoneData:

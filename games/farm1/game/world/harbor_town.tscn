@@ -122,7 +122,7 @@ location_id = &"harbor_town"
 [node name="HarborSupplyProgress" type="Node2D" parent="."]
 position = Vector2(245, 92)
 script = ExtResource("13_project_visual")
-completion_flag = &"project:harbor_supply:complete"
+project_id = &"harbor_supply_drive"
 pending_text = "Harbor stores · depleted"
 completed_text = "Harbor stores · restocked"
 pending_color = Color(0.34, 0.26, 0.20, 1)

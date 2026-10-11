@@ -12,4 +12,4 @@ capacity_after = 12
 money_cost = 8000
 materials = {"wood": 60, "iron_bar": 4, "gold_bar": 2}
 prerequisites = Array[StringName]([&"big_barn"])
-required_world_flag = &"project:riverside_workshop:complete"
+condition = "PROJECT_COMPLETED riverside_workshop_fund"

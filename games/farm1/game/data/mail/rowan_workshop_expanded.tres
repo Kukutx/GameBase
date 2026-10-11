@@ -8,5 +8,5 @@ id = &"rowan_workshop_expanded"
 sender_npc_id = &"rowan"
 subject = "More room, fewer excuses"
 body = "The workshop finally has room to breathe. I can keep proper stock now instead of stacking repair lumber where people need to walk. You did your share, so take these for the next long repair day. — Rowan"
-required_world_flag = &"project:riverside_workshop:complete"
+condition = "PROJECT_COMPLETED riverside_workshop_fund"
 reward_items = {"field_snack": 2}

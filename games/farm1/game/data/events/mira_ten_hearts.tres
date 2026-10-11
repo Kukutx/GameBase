@@ -11,4 +11,4 @@ dialogue_title = "heart_10"
 location_id = &"starter_town"
 start_minute = 1080
 end_minute = 1380
-required_world_flag = &"project:harbor_supply:complete"
+condition = "PROJECT_COMPLETED harbor_supply_drive"

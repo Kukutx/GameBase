@@ -11,4 +11,4 @@ housing_id = &"starter_barn"
 capacity_after = 8
 money_cost = 3000
 materials = {"wood": 40, "stone": 20}
-required_world_flag = &"project:starter_garden:complete"
+condition = "PROJECT_COMPLETED starter_garden_restoration"

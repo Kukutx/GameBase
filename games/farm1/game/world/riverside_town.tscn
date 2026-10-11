@@ -172,7 +172,7 @@ location_id = &"riverside_town"
 [node name="WorkshopProgress" type="Node2D" parent="."]
 position = Vector2(-205, -116)
 script = ExtResource("17_project_visual")
-completion_flag = &"project:riverside_workshop:complete"
+project_id = &"riverside_workshop_fund"
 pending_text = "Workshop · cramped"
 completed_text = "Workshop · expanded"
 pending_color = Color(0.34, 0.28, 0.22, 1)

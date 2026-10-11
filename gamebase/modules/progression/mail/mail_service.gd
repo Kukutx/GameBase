@@ -6,6 +6,7 @@ signal mail_read(mail_id: StringName)
 signal mail_claimed(mail_id: StringName)
 
 var _claiming: Dictionary = {}
+var _refresh_pending := false
 
 func _ready() -> void:
 	WorldClock.day_changed.connect(_on_state_may_unlock_mail)
@@ -15,11 +16,12 @@ func _ready() -> void:
 	refresh_deliveries.call_deferred()
 
 func refresh_deliveries() -> Array[StringName]:
+	_refresh_pending = false
 	var delivered: Array[StringName] = []
 	for mail: MailData in MailData.find_all():
 		if mail == null:
 			continue
-		if is_received(mail.id) or not mail.is_available():
+		if WorldState.get_bool(_key(mail.id, "received")) or not mail.is_available():
 			continue
 		# Freeze delayed rewards before publishing receipt. If content changes before
 		# the player opens this letter, claim still grants what was promised at delivery.
@@ -86,6 +88,7 @@ func claim_rewards(mail_id: StringName) -> bool:
 	return true
 
 func is_received(mail_id: StringName) -> bool:
+	_refresh_if_pending()
 	return mail_id != &"" and WorldState.get_bool(_key(mail_id, "received"))
 
 func is_read(mail_id: StringName) -> bool:
@@ -120,10 +123,18 @@ func _on_quest_completed(_quest_id: StringName) -> void:
 func _on_friendship_changed(_npc_id: StringName, _points: int, _delta: int) -> void:
 	refresh_deliveries()
 
+# A letter's condition may read any of the world's state (a flag, a project).
+# Writes come in bursts (a new day saves every field and machine), so they are
+# checked once: before the next frame, or sooner when someone asks about the
+# mail. The service's own keys change nothing it waits on, and a cleared or
+# loaded world (an empty key) already holds which letters arrived in it.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
-	if key == &"" or String(key).begins_with("mail:"):
-		return
-	for mail: MailData in MailData.find_all():
-		if mail != null and not is_received(mail.id) and mail.required_world_flag == key:
-			refresh_deliveries()
-			return
+	if key == &"":
+		_refresh_pending = false
+	elif not _refresh_pending and not String(key).begins_with("mail:"):
+		_refresh_pending = true
+		_refresh_if_pending.call_deferred()
+
+func _refresh_if_pending() -> void:
+	if _refresh_pending:
+		refresh_deliveries()

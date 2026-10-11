@@ -145,12 +145,20 @@ func test_mid_and_capstone_heart_events_respect_town_progress_flags() -> void:
 	assert_not_null(neri_four)
 	assert_not_null(mira_ten)
 	assert_false(mira_four.matches(&"mira", 4, &"starter_town", 1, 10 * 60))
-	WorldState.set_value(&"project:starter_garden:complete", true)
+	_set_completed_projects([&"starter_garden_restoration"])
 	assert_true(mira_four.matches(&"mira", 4, &"starter_town", 1, 10 * 60))
 	assert_false(rowan_four.matches(&"rowan", 4, &"riverside_town", 1, 10 * 60))
-	WorldState.set_value(&"project:riverside_workshop:complete", true)
+	_set_completed_projects([&"starter_garden_restoration", &"riverside_workshop_fund"])
 	assert_true(rowan_four.matches(&"rowan", 4, &"riverside_town", 1, 10 * 60))
 	assert_true(neri_four.matches(&"neri", 4, &"harbor_town", 1, 10 * 60))
 	assert_false(mira_ten.matches(&"mira", 10, &"starter_town", 1, 19 * 60))
-	WorldState.set_value(&"project:harbor_supply:complete", true)
+	_set_completed_projects([&"starter_garden_restoration", &"riverside_workshop_fund", &"harbor_supply_drive"])
 	assert_true(mira_ten.matches(&"mira", 10, &"starter_town", 1, 19 * 60))
+
+## Leaves exactly Farm1's town projects `project_ids` completed, as donating
+## their materials would.
+func _set_completed_projects(project_ids: Array[StringName]) -> void:
+	var state: Dictionary = {}
+	for project_id: StringName in project_ids:
+		state[String(project_id)] = {"completed": true}
+	WorldState.set_value(TownProjectService.STATE_KEY, state)

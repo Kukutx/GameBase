@@ -4,9 +4,9 @@ extends RefCounted
 ## Condition and action keys of the items module (see `GameRulesService`).
 
 static func register(rules: GameRulesService) -> void:
-	rules.register_condition(&"HAS_ITEM", _has_item, 1, 2, [&"item", GameRulesService.ARG_INT])
-	rules.register_action(&"ADD_ITEM", _add_item, 1, 2, [&"item", GameRulesService.ARG_INT])
-	rules.register_action(&"REMOVE_ITEM", _remove_item, 1, 2, [&"item", GameRulesService.ARG_INT])
+	rules.register_condition(&"HAS_ITEM", _has_item, 1, 2, [ItemData.KIND, GameRulesService.ARG_INT])
+	rules.register_action(&"ADD_ITEM", _add_item, 1, 2, [ItemData.KIND, GameRulesService.ARG_INT])
+	rules.register_action(&"REMOVE_ITEM", _remove_item, 1, 2, [ItemData.KIND, GameRulesService.ARG_INT])
 
 ## HAS_ITEM <item> [count]: the inventory holds at least count (default 1).
 static func _has_item(args: PackedStringArray, _context: Dictionary) -> bool:

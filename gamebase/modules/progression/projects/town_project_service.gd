@@ -93,8 +93,6 @@ func contribute(project_id: StringName, item_id: StringName, quantity: int = 999
 		state["completed_day"] = WorldClock.day
 		state["reward_snapshot"] = DeferredRewardSnapshot.ensure(state.get("reward_snapshot", {}), project.reward_items, project.reward_money)
 	_set_state(project_id, state)
-	if bool(state.get("completed", false)):
-		_apply_unlock_flags(project)
 	_contributing_projects.erase(project_key)
 	if bool(state.get("completed", false)):
 		project_completed.emit(project_id)
@@ -217,13 +215,6 @@ func _requirements_complete(project: TownProjectData, progress: Dictionary) -> b
 		if required <= 0 or _safe_nonnegative_int(progress.get(String(raw_id), 0)) < required:
 			return false
 	return not project.requirements.is_empty()
-
-func _apply_unlock_flags(project: TownProjectData) -> void:
-	if project == null:
-		return
-	for flag: StringName in project.unlock_flags:
-		if flag != &"" and not WorldState.get_bool(flag):
-			WorldState.set_value(flag, true)
 
 func _safe_nonnegative_int(value: Variant) -> int:
 	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
