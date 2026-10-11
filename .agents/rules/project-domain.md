@@ -2,15 +2,15 @@
 
 This file holds the domain invariants of the game base. Generic engineering rules are in `.agents/rules/project.md`; repository layout and tool entry points are in `.agents/rules/project-profile.md`.
 
-## Base and derived games
+## Foundation and games
 
-- GameBase is a base. Rules here protect what a derived game and its players rely on: stable ids, the save format, the service boundaries and the data-driven content pipeline. Content that ships with the base (towns, crops, NPCs, quests) is example content; changing it is allowed, breaking the mechanisms that carry it is not.
-- A capability is part of the base only when it has a real consumer in the base. Do not add placeholder systems, compatibility shells or hooks for a hypothetical derived game.
+- `gamebase/` is the foundation every game in `games/` builds on. Rules here protect what the games and their players rely on: stable ids, the save format, the service boundaries and the data-driven content pipeline. A game's content (Farm1's towns, crops, NPCs and quests) belongs to that game; changing it is allowed, breaking the mechanisms that carry it is not.
+- A capability belongs in the foundation when it is not specific to one game and a registered game uses it; it then lives once in `gamebase/` and is never copied into a game. What only one game needs stays in that game's `game/`. Do not add placeholder systems, compatibility shells or hooks for a hypothetical future game.
 - Code or data that is explicitly registered as reserved for later (an empty audio cue stream, a location without music, the optional AI dialogue layer) is not dead code and is not removed in a cleanup.
 
 ## Content and ids
 
-- Production content is registered in `game/data/content_manifest.tres` and resolved through `ContentDB`. Do not add scattered hard-coded resource-path dictionaries.
+- A game's production content is registered in its `games/<id>/game/data/content_manifest.tres` and resolved through `ContentDB`. Do not add scattered hard-coded resource-path dictionaries.
 - Ids are `StringName` values that never change once content has shipped: item, crop, NPC, quest, location, spawn, audio cue and the others. A display name can change; an id cannot. A save that references removed content loads without it.
 - Rewards that were promised (mail attachments, project completion, archive milestones, blocked quest completion) are snapshotted when promised, so a later rebalance cannot change what the player was promised.
 
@@ -41,7 +41,7 @@ This file holds the domain invariants of the game base. Generic engineering rule
 
 ## Licensed art
 
-- Purchased raw art under `game/art/licensed/` is local-only and Git-ignored. Never commit or redistribute those source files; `node tools/sync_licensed_assets.js` restores them on the owner's machine.
+- Purchased raw art under a game's `game/art/licensed/` is local-only and Git-ignored. Never commit or redistribute those source files; `node tools/sync_licensed_assets.js --game <id>` restores the packs listed under `licensed_art` in that game's `game.json` on the owner's machine.
 - Every scene stays runnable without those files: `LicensedArtSprite` and `LicensedTerrainLayer` hide themselves and `DirectionalActorVisual` falls back to polygons. A change that makes a scene depend on a licensed file being present breaks the open-source build. Details: `docs/LICENSED_ASSETS.md`.
 
 ## Diagnostics and privacy

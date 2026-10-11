@@ -1,3 +1,14 @@
+// The single local validation entry point:
+//
+//   node tools/validate.js [--game <id>]... [--no-repository] [--no-games]
+//                          [--godot-bin <godot>] [--clean-import] [--skip-import] [--skip-soak]
+//
+// Repository steps run once: agent rules, tool tests, layer dependencies, the
+// engine baseline and its legal bundle, the release packaging self-test, and a
+// game freshly created from the new-game template (the core on its own). Game
+// steps run for each selected game, all registered games by default: links,
+// version, import, localization, GUT, every runtime script under test/runtime/
+// (the *_soak.gd ones are skipped by --skip-soak) and a boot of the main scene.
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
@@ -5,14 +16,13 @@ const { checkLocalization } = require("./check_localization");
 const { runSelfTest } = require("./package_release");
 const { runCli: runRulesCheck } = require("./validate_rules");
 const { runCli: runLayerCheck } = require("./check_layers");
+const { linkGame } = require("./link");
 const {
   ENGINE_VERSION_RE,
-  GAME_VERSION_RE,
-  ROOT,
   fail,
   godotVersion,
+  importProject,
   main,
-  prepareEditorSettings,
   readTrimmed,
   removeRecursive,
   resolveGodotBin,
@@ -20,37 +30,15 @@ const {
   run,
   runGodotStep,
   tempFile,
-  projectName,
 } = require("./lib/common");
-const { check: checkFoundation } = require("./gamebase_sync");
+const { gameName, gamePath, gameVersion, resolveGames } = require("./lib/games");
 
-// Creates a game with tools/new_game.js (the core and no module), then boots it
-// and runs a new game through save and load: the core must work on its own.
-async function validateNewGame(godot) {
-  const project = tempFile("gamebase-new-game");
-  try {
-    // new_game.js stays in GameBase (games do not ship it), so it is loaded only here.
-    require("./new_game").createGame({ out: project, name: "GameBase New Game Check", from: ROOT });
-    fs.mkdirSync(path.join(project, "test"), { recursive: true });
-    fs.copyFileSync(rootPath("test", "runtime", "new_game_smoke.gd"), path.join(project, "test", "new_game_smoke.gd"));
-    await runGodotStep(godot, "New game scaffold import", ["--headless", "--path", project, "--import"]);
-    await runGodotStep(godot, "New game scaffold smoke (core only)", ["--headless", "--path", project, "-s", "test/new_game_smoke.gd"]);
-  } finally {
-    removeRecursive(project);
-  }
+function step(title) {
+  console.log("");
+  console.log(`==> ${title}`);
 }
 
-function checkVersions(version) {
-  const gameVersion = readTrimmed(".game-version");
-  if (!GAME_VERSION_RE.test(gameVersion)) {
-    fail("Missing or invalid .game-version. Expected semantic version such as 0.1.0 or 1.0.0-rc.1.");
-  }
-  const projectLines = fs.readFileSync(rootPath("project.godot"), "utf8").split(/\r?\n/);
-  if (!projectLines.includes(`config/version="${gameVersion}"`)) {
-    fail(`project.godot application version does not match .game-version (${gameVersion}). Run tools/update_game_version.js.`);
-  }
-  console.log(`${projectName()}: ${gameVersion}`);
-
+function checkEngine(version) {
   if (!version.startsWith("4.")) {
     fail(`GameBase requires Godot 4.x; detected '${version}'.`);
   }
@@ -77,120 +65,127 @@ function checkVersions(version) {
   }
 }
 
-async function validate({ godotBin, skipImport = false, skipSoak = false, cleanImport = false } = {}) {
-  const godot = resolveGodotBin(godotBin);
-  if (cleanImport && fs.existsSync(rootPath(".godot"))) {
-    console.log("Removing generated .godot cache for a clean validation...");
-    removeRecursive(rootPath(".godot"));
+// The Godot steps of one game project, a registered game or the scaffold check.
+async function validateProject(godot, game, { label, skipImport = false, skipSoak = false, cleanImport = false }) {
+  const project = game.root;
+  if (cleanImport) {
+    removeRecursive(path.join(project, ".godot"));
   }
+  if (!skipImport) {
+    await importProject(godot, project, `${label}: headless import`);
+  }
+  if (fs.existsSync(path.join(project, ".gutconfig.json"))) {
+    await runGodotStep(godot, `${label}: GUT unit tests`, [
+      "--headless",
+      "--path",
+      project,
+      "-s",
+      "addons/gut/gut_cmdln.gd",
+      "-gconfig=.gutconfig.json",
+    ]);
+  }
+  const runtime = path.join(project, "test", "runtime");
+  const scripts = fs.existsSync(runtime) ? fs.readdirSync(runtime).filter((name) => name.endsWith(".gd")).sort() : [];
+  for (const script of scripts) {
+    if (skipSoak && script.endsWith("_soak.gd")) continue;
+    await runGodotStep(godot, `${label}: runtime ${script}`, ["--headless", "--path", project, "-s", `test/runtime/${script}`]);
+  }
+  await runGodotStep(godot, `${label}: main scene boot`, ["--headless", "--path", project, "--quit-after", "120"]);
+}
 
-  const version = godotVersion(godot);
-  console.log(`Godot: ${version}`);
-  checkVersions(version);
+// Creates a game from the new-game template (the core and no module) outside
+// games/ and runs every game check on it: the core must work on its own, and a
+// new game must pass validation as it is created.
+async function validateScaffold(godot) {
+  const out = tempFile("gamebase-new-game");
+  try {
+    const { createGame } = require("./new_game");
+    const game = createGame({ id: "scaffold-check", name: "GameBase New Game Check", out });
+    await validateGame(godot, game, {});
+  } finally {
+    removeRecursive(out);
+  }
+}
 
-  console.log("");
-  console.log("==> Agent rules and routing");
-  if (!fs.existsSync(rootPath("AGENTS.md"))) {
-    console.log("No AGENTS.md; skipped.");
-  } else if (runRulesCheck(["--strict"]) !== 0) {
+async function validateRepository(godot, version) {
+  checkEngine(version);
+
+  step("Agent rules and routing");
+  if (runRulesCheck(["--strict"]) !== 0) {
     fail("Agent rules check failed.");
   }
 
-  // A game installed from GameBase must not edit the installed foundation.
-  if (fs.existsSync(rootPath("gamebase.lock.json"))) {
-    console.log("");
-    console.log("==> GameBase lock");
-    const foundation = checkFoundation({ project: ROOT });
-    if (foundation.modified.length > 0) {
-      fail(`GameBase ${foundation.version} files differ from gamebase.lock.json; change them in GameBase:\n  ${foundation.modified.join("\n  ")}`);
-    }
-    console.log(`GameBase ${foundation.version}: installed files match gamebase.lock.json.`);
-  }
-
-  console.log("");
-  console.log("==> Layer dependencies");
+  step("Layer dependencies");
   if (runLayerCheck() !== 0) {
     fail("Layer dependency check failed.");
   }
 
-  console.log("");
-  console.log("==> Tool tests");
+  step("Tool tests");
   const toolTests = await run(process.execPath, ["--test", "tools/*.test.js"]);
   if (toolTests.code !== 0) {
     fail(`Tool tests failed with exit code ${toolTests.code}`);
   }
 
-  if (!skipImport) {
-    if (!fs.existsSync(rootPath(".godot"))) {
-      // A first import also initialises the editor plugins; see prepareEditorSettings.
-      await prepareEditorSettings(godot);
-    }
-    // The dedicated import mode waits for importer and editor-plugin work to
-    // settle before exiting, which launching the editor and quitting does not.
-    await runGodotStep(godot, "Headless import", ["--headless", "--path", ROOT, "--import"]);
-  }
-
-  console.log("");
-  console.log("==> Simplified Chinese localization coverage");
-  if (checkLocalization() !== 0) {
-    fail("Localization coverage validation failed.");
-  }
-
-  console.log("");
-  console.log("==> Deterministic release packaging self-test");
+  step("Deterministic release packaging self-test");
   runSelfTest();
 
-  await runGodotStep(godot, "GUT unit tests", [
-    "--headless",
-    "--path",
-    ROOT,
-    "-s",
-    "addons/gut/gut_cmdln.gd",
-    "-gconfig=.gutconfig.json",
-  ]);
-  // The game's own runtime checks, when it has them.
-  if (fs.existsSync(rootPath("test", "runtime", "world_services_smoke.gd"))) {
-    await runGodotStep(godot, "Runtime integration smoke", [
-      "--headless",
-      "--path",
-      ROOT,
-      "-s",
-      "test/runtime/world_services_smoke.gd",
-    ]);
+  await validateScaffold(godot);
+}
+
+async function validateGame(godot, game, options) {
+  step(`${game.id}: links and version`);
+  linkGame(game);
+  console.log(`${gameName(game)} ${gameVersion(game)} (games/${game.id})`);
+
+  step(`${game.id}: Simplified Chinese localization coverage`);
+  if (checkLocalization(game) !== 0) {
+    fail(`${game.id}: localization coverage validation failed.`);
   }
-  if (!skipSoak && fs.existsSync(rootPath("test", "runtime", "long_horizon_soak.gd"))) {
-    await runGodotStep(godot, "Three-year save/load soak", [
-      "--headless",
-      "--path",
-      ROOT,
-      "-s",
-      "test/runtime/long_horizon_soak.gd",
-    ]);
+
+  await validateProject(godot, game, { label: game.id, ...options });
+}
+
+async function validate({ godotBin, games = [], repository = true, gameSteps = true, skipImport = false, skipSoak = false, cleanImport = false } = {}) {
+  const godot = resolveGodotBin(godotBin);
+  const version = godotVersion(godot);
+  console.log(`Godot: ${version}`);
+  const selected = gameSteps ? resolveGames(games) : [];
+
+  if (repository) {
+    await validateRepository(godot, version);
   }
-  await runGodotStep(godot, "Main scene boot smoke", ["--headless", "--path", ROOT, "--quit-after", "120"]);
-  // Only the GameBase repository carries the new-game template.
-  if (fs.existsSync(rootPath("gamebase", "templates", "new_game"))) {
-    await validateNewGame(godot);
+  for (const game of selected) {
+    await validateGame(godot, game, { skipImport, skipSoak, cleanImport });
   }
 
   console.log("");
-  console.log(`${projectName()} validation passed.`);
+  const scope = [repository ? "repository" : null, ...selected.map((game) => game.id)].filter(Boolean);
+  console.log(`Validation passed: ${scope.join(", ")}.`);
 }
 
-module.exports = { validate };
+module.exports = { validate, validateProject };
 
 if (require.main === module) {
   main(async () => {
     const { values } = parseArgs({
       options: {
+        game: { type: "string", multiple: true },
+        "no-repository": { type: "boolean", default: false },
+        "no-games": { type: "boolean", default: false },
         "godot-bin": { type: "string" },
         "skip-import": { type: "boolean", default: false },
         "skip-soak": { type: "boolean", default: false },
         "clean-import": { type: "boolean", default: false },
       },
     });
+    if (values["no-repository"] && values["no-games"]) {
+      fail("--no-repository and --no-games together leave nothing to validate.");
+    }
     await validate({
       godotBin: values["godot-bin"],
+      games: values.game || [],
+      repository: !values["no-repository"],
+      gameSteps: !values["no-games"],
       skipImport: values["skip-import"],
       skipSoak: values["skip-soak"],
       cleanImport: values["clean-import"],

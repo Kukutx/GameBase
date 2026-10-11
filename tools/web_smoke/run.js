@@ -3,15 +3,18 @@ const http = require("node:http");
 const path = require("node:path");
 const { chromium } = require("playwright");
 
-const root = path.resolve(__dirname, "..", "..");
-const artifactDir = path.join(root, "artifacts", "web-smoke");
+const { artifactsPath, buildPath, resolveGame } = require("../lib/games");
+
+// The game comes from GAMEBASE_GAME, or is the only registered one.
+const game = resolveGame();
+const artifactDir = artifactsPath(game, "web-smoke");
 const viewportProfiles = [
   { name: "720p-16x9", width: 1280, height: 720 },
   { name: "xga-4x3", width: 1024, height: 768 },
   { name: "ultrawide-21x9", width: 2560, height: 1080 },
   { name: "small-desktop-4x3", width: 800, height: 600 },
 ];
-const webRoot = path.join(root, "build", "web");
+const webRoot = buildPath(game, "web");
 const host = "127.0.0.1";
 const port = Number(process.env.GAMEBASE_WEB_PORT || 8123);
 

@@ -20,8 +20,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Validate
+  # Picks the games this run covers: every game, except on a pull request that
+  # changes nothing but some games' own directories.
+  plan:
+    name: Plan games
+    runs-on: ubuntu-latest
+    outputs:
+      games: ${{ steps.games.outputs.games }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Select games
+        id: games
+        run: node tools/ci.js games ${{ github.event_name == 'pull_request' && '--changed-from HEAD^1' || '' }}
+
+  repository:
+    name: Repository checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -43,31 +65,65 @@ jobs:
         with:
           version: ${{ steps.engine.outputs.version }}
           use-dotnet: false
-          include-templates: true
+          include-templates: false
 
-      - name: Validate project
-        run: node tools/validate.js --godot-bin godot --clean-import
+      - name: Validate repository and the new-game scaffold
+        run: node tools/validate.js --no-games --godot-bin godot
 
-  export:
-    name: Export ${{ matrix.name }}
-    needs: validate
+  validate:
+    name: Validate ${{ matrix.game }}
+    needs: plan
+    if: needs.plan.outputs.games != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
+        game: ${{ fromJSON(needs.plan.outputs.games) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Resolve Godot version
+        id: engine
+        env:
+          INPUT_ENGINE_VERSION: ${{ inputs.engine_version }}
+        run: node tools/ci.js engine-version
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ steps.engine.outputs.version }}
+          use-dotnet: false
+          include-templates: false
+
+      - name: Validate game
+        run: node tools/validate.js --no-repository --game ${{ matrix.game }} --godot-bin godot --clean-import
+
+  export:
+    name: Export ${{ matrix.game }} ${{ matrix.target.name }}
+    needs: [plan, repository, validate]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        game: ${{ fromJSON(needs.plan.outputs.games) }}
+        target:
           - name: Windows
             preset: Windows Desktop
-            artifact: gamebase-windows
-            path: build/windows
+            dir: windows
           - name: Linux
             preset: Linux
-            artifact: gamebase-linux
-            path: build/linux
+            dir: linux
           - name: Web
             preset: Web
-            artifact: gamebase-web
-            path: build/web
+            dir: web
+    env:
+      GAMEBASE_GAME: ${{ matrix.game }}
 
     steps:
       - name: Checkout
@@ -93,61 +149,59 @@ jobs:
           use-dotnet: false
           include-templates: true
 
-      - name: Import project
-        run: godot --headless --path . --import
-
       - name: Export
-        run: node tools/export.js --godot-bin godot --preset "${{ matrix.preset }}" --skip-validation ${{ inputs.engine_version && '--allow-engine-drift' || '' }}
+        run: node tools/export.js --godot-bin godot --preset "${{ matrix.target.preset }}" --skip-validation ${{ inputs.engine_version && '--allow-engine-drift' || '' }}
 
       - name: Verify Web payload
-        if: matrix.name == 'Web'
+        if: matrix.target.name == 'Web'
         run: node tools/smoke_export.js --target Web
 
       - name: Install Web smoke dependencies
-        if: matrix.name == 'Web'
+        if: matrix.target.name == 'Web'
         run: npm ci --prefix tools/web_smoke
 
       - name: Install Chromium
-        if: matrix.name == 'Web'
+        if: matrix.target.name == 'Web'
         run: npm exec --prefix tools/web_smoke -- playwright install --with-deps chromium
 
       - name: Browser smoke Web export
-        if: matrix.name == 'Web'
+        if: matrix.target.name == 'Web'
         run: npm run --prefix tools/web_smoke smoke:web
 
       - name: Upload Web smoke diagnostics
-        if: matrix.name == 'Web' && always()
+        if: matrix.target.name == 'Web' && always()
         uses: actions/upload-artifact@v7
         with:
-          name: gamebase-web-smoke
-          path: artifacts/web-smoke
+          name: ${{ matrix.game }}-web-smoke
+          path: artifacts/${{ matrix.game }}/web-smoke
           if-no-files-found: ignore
           retention-days: 7
 
       - name: Upload build
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.path }}
+          name: ${{ matrix.game }}-${{ matrix.target.dir }}
+          path: build/${{ matrix.game }}/${{ matrix.target.dir }}
           if-no-files-found: error
           retention-days: 7
 
   native-smoke:
-    name: Native smoke ${{ matrix.name }}
-    needs: export
+    name: Native smoke ${{ matrix.game }} ${{ matrix.target.name }}
+    needs: [plan, export]
     strategy:
       fail-fast: false
       matrix:
-        include:
+        game: ${{ fromJSON(needs.plan.outputs.games) }}
+        target:
           - name: Windows
             os: windows-latest
-            artifact: gamebase-windows
-            path: build/windows
+            dir: windows
           - name: Linux
             os: ubuntu-latest
-            artifact: gamebase-linux
-            path: build/linux
-    runs-on: ${{ matrix.os }}
+            dir: linux
+    runs-on: ${{ matrix.target.os }}
+    env:
+      GAMEBASE_GAME: ${{ matrix.game }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -160,8 +214,8 @@ jobs:
       - name: Download exported game
         uses: actions/download-artifact@v8
         with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.path }}
+          name: ${{ matrix.game }}-${{ matrix.target.dir }}
+          path: build/${{ matrix.game }}/${{ matrix.target.dir }}
 
       - name: Launch exported build
-        run: node tools/smoke_export.js --target ${{ matrix.name }}
+        run: node tools/smoke_export.js --target ${{ matrix.target.name }}

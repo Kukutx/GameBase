@@ -1,57 +1,21 @@
 {
-  "name": "gamebase",
-  "version": "0.1.0",
-  "include": [
-    "gamebase/",
-    "addons/dialogue_manager/",
-    "addons/gut/",
-    "tools/",
-    ".github/workflows/",
-    ".godot-version",
-    "licenses/GODOT_LICENSE.txt",
-    "licenses/GODOT_COPYRIGHT.txt",
-    "licenses/GODOT_VERSION.txt",
-    "licenses/DIALOGUE_MANAGER_LICENSE.txt",
-    "licenses/GAMEBASE_LICENSE.txt"
-  ],
-  "exclude": [
-    "gamebase/templates/",
-    "tools/new_game.js",
-    "tools/layer_baseline.json"
-  ],
-  "modules_dir": "gamebase/modules/",
+  "addons": ["gut"],
   "modules": {
     "combat": {
-      "requires": [
-        "items"
-      ]
+      "requires": ["items"]
     },
     "items": {
-      "requires": [
-        "lifesim",
-        "progression"
-      ]
+      "requires": ["lifesim", "progression"]
     },
     "lifesim": {
-      "requires": [
-        "combat",
-        "items",
-        "progression"
-      ]
+      "requires": ["combat", "items", "progression"]
     },
     "npc_social": {
-      "requires": [
-        "items",
-        "lifesim",
-        "progression"
-      ]
+      "requires": ["items", "lifesim", "progression"],
+      "addons": ["dialogue_manager"]
     },
     "progression": {
-      "requires": [
-        "items",
-        "lifesim",
-        "npc_social"
-      ]
+      "requires": ["items", "lifesim", "npc_social"]
     }
   }
 }

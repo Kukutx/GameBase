@@ -296,7 +296,7 @@ Expected:
 
 ## A25: an implementation that exists is not a public product capability
 
-Context: the repository already has a complete system and a debug-only screen for it, but the entry cannot be reached in a release build and its content is not registered in `game/data/content_manifest.tres`.
+Context: the repository already has a complete system and a debug-only screen for it, but the entry cannot be reached in a release build and its content is not registered in `games/farm1/game/data/content_manifest.tres`.
 
 Input:
 > The system is all written. Add its entry to the game menu while you are at it.

@@ -4,14 +4,20 @@ const os = require("node:os");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { buildZip, buildTar, gzipDeterministic, openZip, readTar } = require("./lib/archive");
-const { ROOT, artifactName, fail, git, main, rootPath } = require("./lib/common");
+const { fail, git, main } = require("./lib/common");
+const { artifactName, buildPath, distPath, resolveGame } = require("./lib/games");
 
-const NAME = artifactName();
-const TARGETS = {
-  Windows: { source: rootPath("build", "windows"), output: rootPath("dist", `${NAME}-windows-x86_64.zip`), format: "zip" },
-  Linux: { source: rootPath("build", "linux"), output: rootPath("dist", `${NAME}-linux-x86_64.tar.gz`), format: "tar.gz" },
-  Web: { source: rootPath("build", "web"), output: rootPath("dist", `${NAME}-web.zip`), format: "zip" },
-};
+const FORMATS = { Windows: "zip", Linux: "tar.gz", Web: "zip" };
+
+// The packages of one game: build/<game>/<platform>/ -> dist/<game>/<Name>-<platform>.
+function targetsFor(game) {
+  const name = artifactName(game);
+  return {
+    Windows: { source: buildPath(game, "windows"), output: distPath(game, `${name}-windows-x86_64.zip`) },
+    Linux: { source: buildPath(game, "linux"), output: distPath(game, `${name}-linux-x86_64.tar.gz`) },
+    Web: { source: buildPath(game, "web"), output: distPath(game, `${name}-web.zip`) },
+  };
+}
 
 function sourceDateEpoch() {
   const value = (process.env.SOURCE_DATE_EPOCH || "").trim();
@@ -50,8 +56,9 @@ function sourceFiles(source) {
   return files.sort((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b)));
 }
 
+// The Linux executable sits at the top of its payload.
 function canonicalMode(target, relative) {
-  return target === "Linux" && relative === `${NAME}.x86_64` ? 0o755 : 0o644;
+  return target === "Linux" && !relative.includes("/") && relative.endsWith(".x86_64") ? 0o755 : 0o644;
 }
 
 function packageTarget(target, source, output, epoch) {
@@ -61,7 +68,7 @@ function packageTarget(target, source, output, epoch) {
     mode: canonicalMode(target, relative),
   }));
   const archive =
-    TARGETS[target].format === "zip" ? buildZip(entries, epoch) : gzipDeterministic(buildTar(entries, epoch), epoch);
+    FORMATS[target] === "zip" ? buildZip(entries, epoch) : gzipDeterministic(buildTar(entries, epoch), epoch);
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, archive);
   if (fs.statSync(output).size <= 0) {
@@ -81,10 +88,11 @@ function isSorted(names) {
 // Builds each archive format twice from fixtures and requires identical bytes.
 function runSelfTest() {
   const epoch = 1_700_000_000;
+  const name = "Game";
   const fixtures = {
     Windows: {
-      [`${NAME}.exe`]: Buffer.from("windows-binary\0".repeat(100)),
-      [`${NAME}.pck`]: Buffer.from("pack-data".repeat(200)),
+      [`${name}.exe`]: Buffer.from("windows-binary\0".repeat(100)),
+      [`${name}.pck`]: Buffer.from("pack-data".repeat(200)),
       "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
     },
     Web: {
@@ -93,8 +101,8 @@ function runSelfTest() {
       "BUILD_INFO.json": Buffer.from('{"game_version":"0.1.0"}\n'),
     },
     Linux: {
-      [`${NAME}.x86_64`]: Buffer.from("linux-binary\0".repeat(100)),
-      [`${NAME}.pck`]: Buffer.from("pack-data".repeat(200)),
+      [`${name}.x86_64`]: Buffer.from("linux-binary\0".repeat(100)),
+      [`${name}.pck`]: Buffer.from("pack-data".repeat(200)),
       "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
     },
   };
@@ -124,7 +132,7 @@ function runSelfTest() {
         if (!isSorted(names) || names.join("\n") !== expected.join("\n")) {
           fail("Linux archive entries are missing or not sorted");
         }
-        const executable = members.find((member) => member.name === `${NAME}.x86_64`);
+        const executable = members.find((member) => member.name === `${name}.x86_64`);
         if (executable.mode !== 0o755) {
           fail(`Linux executable mode is ${executable.mode.toString(8)}, expected 755`);
         }
@@ -161,6 +169,7 @@ function runSelfTest() {
 function cli() {
   const { values } = parseArgs({
     options: {
+      game: { type: "string" },
       target: { type: "string", default: "All" },
       source: { type: "string" },
       output: { type: "string" },
@@ -171,7 +180,7 @@ function cli() {
   if (values["self-test"]) {
     return runSelfTest();
   }
-  if (values.target !== "All" && !TARGETS[values.target]) {
+  if (values.target !== "All" && !FORMATS[values.target]) {
     fail(`Unknown --target '${values.target}'. Use Windows, Linux, Web or All.`);
   }
   if ((values.source === undefined) !== (values.output === undefined)) {
@@ -184,17 +193,18 @@ function cli() {
     fail("--epoch must be a non-negative integer");
   }
   const epoch = values.epoch !== undefined ? Number(values.epoch) : sourceDateEpoch();
-  const targets = values.target === "All" ? Object.keys(TARGETS) : [values.target];
+  const targets = values.target === "All" ? Object.keys(FORMATS) : [values.target];
+  const defaults = values.source === undefined ? targetsFor(resolveGame(values.game)) : null;
   for (const target of targets) {
-    const source = values.source !== undefined ? path.resolve(values.source) : TARGETS[target].source;
-    const output = values.output !== undefined ? path.resolve(values.output) : TARGETS[target].output;
+    const source = values.source !== undefined ? path.resolve(values.source) : defaults[target].source;
+    const output = values.output !== undefined ? path.resolve(values.output) : defaults[target].output;
     packageTarget(target, source, output, epoch);
   }
   console.log(`SOURCE_DATE_EPOCH=${epoch}`);
   return 0;
 }
 
-module.exports = { ROOT, TARGETS, runSelfTest, packageTarget };
+module.exports = { FORMATS, targetsFor, runSelfTest, packageTarget };
 
 if (require.main === module) {
   main(cli);

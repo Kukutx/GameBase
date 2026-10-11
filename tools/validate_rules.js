@@ -88,16 +88,16 @@ const REQUIRED_PRESSURE_TESTS = [
 ];
 
 const REQUIRED_AGENT_PATH_ROUTES = [
-  ["`game/**/*.gd`", "`.agents/rules/gdscript.md`"],
   ["`gamebase/**/*.gd`", "`.agents/rules/gdscript.md`"],
-  ["`test/**/*.gd`", "`.agents/rules/gdscript.md`"],
-  ["`game/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
-  ["`game/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
+  ["`games/*/game/**/*.gd`", "`.agents/rules/gdscript.md`"],
+  ["`games/*/test/**/*.gd`", "`.agents/rules/gdscript.md`"],
   ["`gamebase/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
   ["`gamebase/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
+  ["`games/*/game/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
+  ["`games/*/game/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
   ["`gamebase/core/save/**`", "`.agents/rules/save.md`"],
-  ["`game/i18n/**`", "`.agents/rules/localization.md`"],
-  ["`test/**`", "`.agents/rules/testing.md`"],
+  ["`games/*/game/i18n/**`", "`.agents/rules/localization.md`"],
+  ["`games/*/test/**`", "`.agents/rules/testing.md`"],
   ["`tools/**`", "`.agents/rules/tools.md`"],
   ["`.github/workflows/**`", "`.agents/rules/ci-performance.md`"],
   ["`docs/**`", "`.agents/rules/docs.md`"],
@@ -130,21 +130,16 @@ const REPOSITORY_BACKTICK_PREFIXES = [
   ".github/",
   "addons/",
   "docs/",
-  "game/",
   "gamebase/",
+  "games/",
   "licenses/",
-  "test/",
   "tools/",
 ];
 const REPOSITORY_ROOT_FILES = new Set([
   "AGENTS.md",
   "README.md",
   "THIRD_PARTY_NOTICES.md",
-  "project.godot",
-  "export_presets.cfg",
   ".godot-version",
-  ".game-version",
-  ".gutconfig.json",
 ]);
 // The repository is open source and its instruction tree is written in English.
 const NON_ENGLISH_SCRIPT_RE = /[぀-ヿ㐀-鿿가-힯＀-￯]/u;

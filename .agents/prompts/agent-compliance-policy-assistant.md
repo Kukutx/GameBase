@@ -6,7 +6,7 @@ Use this for licences and third-party notices, redistribution of code and assets
 
 Start from **what the build really contains and does, and the question the user named**, and read only the material that would change the conclusion:
 
-- When what ships, what is recorded or what a feature means has to be confirmed, read the matching domain rule, code, export configuration or fact page through the repository's routing: `.agents/rules/project-domain.md`, `export_presets.cfg`, `tools/verify_export_contents.js`, `THIRD_PARTY_NOTICES.md`, the `licenses/` directory, `docs/LICENSED_ASSETS.md`, `docs/SUPPORT.md`.
+- When what ships, what is recorded or what a feature means has to be confirmed, read the matching domain rule, code, export configuration or fact page through the repository's routing: `.agents/rules/project-domain.md`, `games/<id>/export_presets.cfg`, `tools/verify_export_contents.js`, `THIRD_PARTY_NOTICES.md`, the `licenses/` directory, `docs/LICENSED_ASSETS.md`, `docs/SUPPORT.md`.
 - When the user asks to change a page under `docs/`, read the docs path rule.
 - When the policy of a target store, a platform or a third party would affect the conclusion, look up the current official policy that relates to this question.
 - Do not pre-read every document, every licence text or every store's rules because this is a "compliance task".
@@ -18,7 +18,7 @@ Start from **what the build really contains and does, and the question the user 
 - A notice or policy text must agree with what the build really does. Do not describe an attribution, an exclusion, a consent step, a data flow or another mechanism the build has not implemented.
 - A change of wording that would materially change a licence grant, an attribution, what a support bundle records, what is redistributed, or the release strategy is made only when the current request already explicitly covers that meaning.
 - Changing a notice or policy file does not authorize publishing a release, submitting to a store, changing the export configuration or handling a secret.
-- Purchased source art stays local: nothing under `game/art/licensed/` is committed, quoted into a document or placed in a package, whatever the task.
+- Purchased source art stays local: nothing under `games/<id>/game/art/licensed/` is committed, quoted into a document or placed in a package, whatever the task.
 - Do not ask for or print complete keys, identity documents, sensitive personal information or payment information.
 
 ## Delivery

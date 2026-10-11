@@ -1,30 +1,29 @@
 #!/usr/bin/env node
-// Enforces the dependency direction of the foundation:
-//   gamebase/core      may not use a module or the game,
-//   gamebase/modules/* may not use the game,
-// and gamebase/core may not name a content id of the game. A script "uses" a
+// Enforces the dependency direction of the monorepo:
+//   gamebase/core         may not use a module, an addon or a game;
+//   gamebase/modules/<m>  may not use a game, and may use only the modules and
+//                         addons gamebase/gamebase.json lists for it;
+//   games/<id>/           may use the core, and only the modules and addons its
+//                         game.json lists (the addons of gamebase.json and of
+//                         those modules come with them);
+// and gamebase/core may not name a content id of any game. A script "uses" a
 // layer when it names one of its autoloads or class_names, or a res:// path in
-// it. An autoload whose script extends a core class (ContentDB extends
-// ContentRegistry) is that core contract, implemented by the game; every method
-// called on it must exist in its implementation.
-//
-// A module may only use the modules gamebase/gamebase.json says it requires,
-// so a game that installs a module also gets everything that module uses.
-//
-// Known violations that predate this check live in tools/layer_baseline.json
-// with the reason they remain. A new violation fails; so does a baseline entry
-// that no longer occurs, so the baseline only ever shrinks.
+// it; a game's project.godot uses the scripts and plugins it registers. An
+// autoload whose script lives in a game but extends a core class (ContentDB
+// extends ContentRegistry) is that core contract, implemented by the game:
+// every method the foundation or the game calls on it must exist there.
 
 const fs = require("node:fs");
 const path = require("node:path");
 
 const ROOT = path.resolve(__dirname, "..");
-const BASELINE = path.join(__dirname, "layer_baseline.json");
 
 function walk(dir, extensions, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
+    // The links tools/link.js creates inside a game point back at the shared copy.
+    if (entry.isSymbolicLink()) continue;
     if (entry.isDirectory()) walk(full, extensions, out);
     else if (extensions.some((ext) => entry.name.endsWith(ext))) out.push(full);
   }
@@ -35,18 +34,39 @@ function rel(root, file) {
   return path.relative(root, file).split(path.sep).join("/");
 }
 
+function readJson(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+// The layer of a repository file.
 function layerOf(file) {
   if (file.startsWith("gamebase/core/")) return "core";
   if (file.startsWith("gamebase/modules/")) return `module:${file.split("/")[2]}`;
-  if (file.startsWith("game/")) return "game";
+  if (file.startsWith("games/")) return `game:${file.split("/")[1]}`;
   return "other";
 }
 
-// Whether code in layer `from` may depend on layer `to`.
+// The layer of a res:// path seen from a project file; `game` is the id of the
+// game the file belongs to, or null for the foundation.
+function resLayer(resPath, game) {
+  if (resPath.startsWith("gamebase/core/")) return "core";
+  if (resPath.startsWith("gamebase/modules/")) return `module:${resPath.split("/")[2]}`;
+  if (resPath.startsWith("addons/")) return `addon:${resPath.split("/")[1]}`;
+  if (resPath.startsWith("game/") || resPath.startsWith("test/")) return game ? `game:${game}` : "game";
+  return "other";
+}
+
+// Whether code in layer `from` may depend on layer `to`. Which modules and
+// addons are declared is checked separately.
 function allowed(from, to) {
   if (to === "other" || from === to) return true;
   if (from === "core") return to === "core";
-  if (from.startsWith("module:")) return to === "core" || to.startsWith("module:");
+  if (from.startsWith("module:")) return to === "core" || to.startsWith("module:") || to.startsWith("addon:");
+  if (from.startsWith("game:")) return to === "core" || to.startsWith("module:") || to.startsWith("addon:");
   return true;
 }
 
@@ -68,156 +88,227 @@ function stripComments(source) {
     .join("\n");
 }
 
-function collectSymbols(root) {
-  const symbols = new Map(); // name -> { file, layer }
-  const classFiles = new Map(); // class_name -> file
-  for (const file of walk(path.join(root, "gamebase"), [".gd"]).concat(walk(path.join(root, "game"), [".gd"]))) {
-    const match = fs.readFileSync(file, "utf8").match(/^class_name\s+(\w+)/m);
-    if (match) {
-      const relative = rel(root, file);
-      classFiles.set(match[1], relative);
-      symbols.set(match[1], { file: relative, layer: layerOf(relative) });
-    }
-  }
-  const contracts = new Map(); // autoload -> { impl, base }
-  const project = fs.readFileSync(path.join(root, "project.godot"), "utf8");
-  for (const match of project.matchAll(/^(\w+)="\*res:\/\/([^"]+\.gd)"$/gm)) {
-    const [, name, file] = match;
-    let layer = layerOf(file);
-    const source = fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file), "utf8") : "";
-    const base = (source.match(/^extends\s+(\w+)/m) || [])[1];
-    if (layer !== "core" && base && classFiles.has(base) && layerOf(classFiles.get(base)) === "core") {
-      contracts.set(name, { impl: file, base: classFiles.get(base) });
-      layer = "core";
-    }
-    symbols.set(name, { file, layer });
-  }
-  return { symbols, contracts };
+function classNameOf(file) {
+  const match = fs.readFileSync(file, "utf8").match(/^class_name\s+(\w+)/m);
+  return match ? match[1] : null;
 }
 
-function collectContentIds(root) {
+function readFoundation(root) {
+  const manifest = readJson(path.join(root, "gamebase", "gamebase.json")) || {};
+  return { modules: manifest.modules || {}, addons: manifest.addons || [] };
+}
+
+function readGames(root, foundation) {
+  const gamesRoot = path.join(root, "games");
+  if (!fs.existsSync(gamesRoot)) return [];
+  return fs
+    .readdirSync(gamesRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(gamesRoot, entry.name, "game.json")))
+    .map((entry) => {
+      const id = entry.name;
+      const manifest = readJson(path.join(gamesRoot, id, "game.json")) || {};
+      const modules = Array.isArray(manifest.modules) ? manifest.modules : [];
+      const addons = new Set([
+        ...foundation.addons,
+        ...modules.flatMap((module) => (foundation.modules[module] && foundation.modules[module].addons) || []),
+        ...(Array.isArray(manifest.addons) ? manifest.addons : []),
+      ]);
+      const projectFile = path.join(gamesRoot, id, "project.godot");
+      const project = fs.existsSync(projectFile) ? fs.readFileSync(projectFile, "utf8") : "";
+      return { id, dir: `games/${id}`, modules: new Set(modules), addons, project };
+    })
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
+// res://path inside a game project -> repository path.
+function repoPath(game, resPath) {
+  return resPath.startsWith("game/") || resPath.startsWith("test/") ? `${game.dir}/${resPath}` : resPath;
+}
+
+function collectModel(root) {
+  const foundation = readFoundation(root);
+  const games = readGames(root, foundation);
+  const classes = new Map(); // class_name -> repository file (foundation)
+  for (const file of walk(path.join(root, "gamebase", "core"), [".gd"]).concat(walk(path.join(root, "gamebase", "modules"), [".gd"]))) {
+    const name = classNameOf(file);
+    if (name) classes.set(name, rel(root, file));
+  }
+  for (const game of games) {
+    game.classes = new Map(); // class_name -> repository file
+    for (const file of walk(path.join(root, game.dir, "game"), [".gd"]).concat(walk(path.join(root, game.dir, "test"), [".gd"]))) {
+      const name = classNameOf(file);
+      if (name) game.classes.set(name, rel(root, file));
+    }
+    game.autoloads = new Map(); // name -> { file, layer }
+    game.contracts = new Map(); // name -> implementation file
+    for (const match of game.project.matchAll(/^(\w+)="\*res:\/\/([^"]+\.gd)"$/gm)) {
+      const [, name, resPath] = match;
+      const file = repoPath(game, resPath);
+      let layer = resLayer(resPath, game.id);
+      const absolute = path.join(root, file);
+      const base = fs.existsSync(absolute) ? (fs.readFileSync(absolute, "utf8").match(/^extends\s+(\w+)/m) || [])[1] : null;
+      if (layer === `game:${game.id}` && base && classes.has(base) && layerOf(classes.get(base)) === "core") {
+        game.contracts.set(name, file);
+        layer = "core";
+      }
+      game.autoloads.set(name, { file, layer });
+    }
+  }
+  return { foundation, games, classes };
+}
+
+// The layers a symbol has from the foundation's point of view: its class or
+// the scripts the games register under that autoload name.
+function foundationSymbols(model) {
+  const symbols = new Map(); // name -> Set of layers
+  const add = (name, layer) => (symbols.get(name) || symbols.set(name, new Set()).get(name)).add(layer);
+  for (const [name, file] of model.classes) add(name, layerOf(file));
+  for (const game of model.games) {
+    for (const name of game.classes.keys()) add(name, "game");
+    for (const [name, autoload] of game.autoloads) add(name, autoload.layer.startsWith("game:") ? "game" : autoload.layer);
+  }
+  return symbols;
+}
+
+function collectContentIds(root, games) {
   const ids = new Set();
-  for (const file of walk(path.join(root, "game", "data"), [".tres"])) {
-    const match = fs.readFileSync(file, "utf8").match(/^id = &"([^"]+)"$/m);
-    if (match) ids.add(match[1]);
+  for (const game of games) {
+    for (const file of walk(path.join(root, game.dir, "game", "data"), [".tres"])) {
+      const match = fs.readFileSync(file, "utf8").match(/^id = &"([^"]+)"$/m);
+      if (match) ids.add(match[1]);
+    }
   }
   return ids;
 }
 
-function findViolations(root = ROOT) {
-  const { symbols, contracts } = collectSymbols(root);
-  const contentIds = collectContentIds(root);
-  const violations = {}; // file -> Set of "symbol" | "path:..." | "literal:..."
-  const add = (file, what) => {
-    (violations[file] ||= new Set()).add(what);
-  };
-  const files = walk(path.join(root, "gamebase"), [".gd", ".tscn", ".tres"]);
-  for (const file of files) {
+// What one file uses: layers of the res:// paths and of the symbols it names.
+function usesOf(raw, isScript, symbolLayers, game) {
+  const used = [];
+  for (const match of raw.matchAll(/res:\/\/([\w./-]+)/g)) used.push({ what: `path:${match[1]}`, layer: resLayer(match[1], game) });
+  if (isScript) {
+    for (const word of new Set(stripComments(raw).match(/\b[A-Z]\w*\b/g) || [])) {
+      for (const layer of symbolLayers(word)) used.push({ what: word, layer });
+    }
+  }
+  return used;
+}
+
+function checkFoundation(root, model, problems) {
+  const symbols = foundationSymbols(model);
+  const contentIds = collectContentIds(root, model.games);
+  for (const file of walk(path.join(root, "gamebase", "core"), [".gd", ".tscn", ".tres"]).concat(walk(path.join(root, "gamebase", "modules"), [".gd", ".tscn", ".tres"]))) {
     const relative = rel(root, file);
     const from = layerOf(relative);
     const raw = fs.readFileSync(file, "utf8");
-    for (const match of raw.matchAll(/res:\/\/([\w./-]+)/g)) {
-      if (!allowed(from, layerOf(match[1]))) add(relative, `path:${match[1]}`);
-    }
-    if (!relative.endsWith(".gd")) continue;
-    const source = stripComments(raw);
-    for (const word of new Set(source.match(/\b[A-Z]\w*\b/g) || [])) {
-      const symbol = symbols.get(word);
-      if (symbol && !allowed(from, symbol.layer)) add(relative, word);
-    }
-    if (from === "core") {
-      for (const match of source.matchAll(/&?"([a-z][a-z0-9_]*)"/g)) {
-        if (contentIds.has(match[1])) add(relative, `literal:${match[1]}`);
+    const isScript = relative.endsWith(".gd");
+    const module = from.startsWith("module:") ? from.slice("module:".length) : null;
+    const declared = module ? model.foundation.modules[module] : null;
+    const reported = new Set();
+    for (const use of usesOf(raw, isScript, (word) => symbols.get(word) || [], null)) {
+      if (!allowed(from, use.layer)) {
+        reported.add(`${relative} (${from}) must not use ${use.what}`);
+      } else if (declared && use.layer.startsWith("module:") && use.layer !== from && !(declared.requires || []).includes(use.layer.slice(7))) {
+        reported.add(`gamebase/modules/${module} uses module ${use.layer.slice(7)}, which gamebase/gamebase.json does not list in its requires (${relative})`);
+      } else if (declared && use.layer.startsWith("addon:") && !(declared.addons || []).includes(use.layer.slice(6))) {
+        reported.add(`gamebase/modules/${module} uses addon ${use.layer.slice(6)}, which gamebase/gamebase.json does not list in its addons (${relative})`);
       }
     }
+    if (module && !declared) reported.add(`gamebase/modules/${module} is not listed under "modules" in gamebase/gamebase.json`);
+    if (from === "core" && isScript) {
+      for (const match of stripComments(raw).matchAll(/&?"([a-z][a-z0-9_]*)"/g)) {
+        if (contentIds.has(match[1])) reported.add(`${relative} (core) must not use literal:${match[1]}`);
+      }
+    }
+    for (const problem of reported) problems.add(problem);
   }
-  return { violations, contracts };
+  for (const [module, entry] of Object.entries(model.foundation.modules)) {
+    if (!fs.existsSync(path.join(root, "gamebase", "modules", module))) problems.add(`gamebase/gamebase.json lists module ${module}, which does not exist`);
+    for (const required of entry.requires || []) {
+      if (!model.foundation.modules[required]) problems.add(`gamebase/gamebase.json: module ${module} requires unknown module ${required}`);
+    }
+    for (const addon of entry.addons || []) {
+      if (!fs.existsSync(path.join(root, "addons", addon))) problems.add(`gamebase/gamebase.json: module ${module} uses addon ${addon}, which addons/ does not hold`);
+    }
+  }
 }
 
-function definedMethods(root, file, seen = new Set()) {
-  if (seen.has(file)) return new Set();
+function checkGame(root, model, game, problems) {
+  const label = `${game.dir}/game.json`;
+  for (const module of game.modules) {
+    const entry = model.foundation.modules[module];
+    if (!entry) {
+      problems.add(`${label} lists unknown module ${module}`);
+      continue;
+    }
+    for (const required of entry.requires || []) {
+      if (!game.modules.has(required)) problems.add(`${label}: module ${module} requires ${required}; list it in modules`);
+    }
+  }
+  for (const addon of game.addons) {
+    if (!fs.existsSync(path.join(root, "addons", addon))) problems.add(`${label} uses addon ${addon}, which addons/ does not hold`);
+  }
+
+  const symbolLayers = (word) => {
+    if (game.autoloads.has(word)) return [game.autoloads.get(word).layer];
+    if (game.classes.has(word)) return [`game:${game.id}`];
+    if (model.classes.has(word)) return [layerOf(model.classes.get(word))];
+    return [];
+  };
+  const checkUse = (relative, use) => {
+    if (!allowed(`game:${game.id}`, use.layer)) {
+      problems.add(`${relative} (game:${game.id}) must not use ${use.what}`);
+    } else if (use.layer.startsWith("module:") && !game.modules.has(use.layer.slice(7))) {
+      problems.add(`${relative} uses ${use.what} from module ${use.layer.slice(7)}, which ${label} does not list`);
+    } else if (use.layer.startsWith("addon:") && !game.addons.has(use.layer.slice(6))) {
+      problems.add(`${relative} uses ${use.what} from addon ${use.layer.slice(6)}, which ${label} does not list`);
+    }
+  };
+  const files = walk(path.join(root, game.dir, "game"), [".gd", ".tscn", ".tres"]).concat(walk(path.join(root, game.dir, "test"), [".gd", ".tscn", ".tres"]));
+  for (const file of files) {
+    const relative = rel(root, file);
+    for (const use of usesOf(fs.readFileSync(file, "utf8"), relative.endsWith(".gd"), symbolLayers, game.id)) checkUse(relative, use);
+  }
+  for (const use of usesOf(game.project, false, () => [], game.id)) checkUse(`${game.dir}/project.godot`, use);
+}
+
+function definedMethods(root, file, classes, seen = new Set()) {
+  if (seen.has(file) || !fs.existsSync(path.join(root, file))) return new Set();
   seen.add(file);
   const source = fs.readFileSync(path.join(root, file), "utf8");
   const methods = new Set([...source.matchAll(/^(?:static\s+)?func\s+(\w+)/gm)].map((m) => m[1]));
   const base = (source.match(/^extends\s+(\w+)/m) || [])[1];
-  if (base) {
-    const { symbols } = collectSymbols(root);
-    const symbol = symbols.get(base);
-    if (symbol && symbol.file.endsWith(".gd")) for (const m of definedMethods(root, symbol.file, seen)) methods.add(m);
-  }
+  if (base && classes.has(base)) for (const m of definedMethods(root, classes.get(base), classes, seen)) methods.add(m);
   return methods;
 }
 
-// Every method called on a contract autoload must exist in its implementation.
-function findContractGaps(root, contracts) {
-  const gaps = [];
-  const files = walk(path.join(root, "gamebase"), [".gd"]).concat(walk(path.join(root, "game"), [".gd"]));
-  for (const [name, contract] of contracts) {
-    const methods = definedMethods(root, contract.impl);
+// Every method the foundation a game links or the game itself calls on one of
+// its contract autoloads must exist in the game's implementation.
+function checkContracts(root, model, game, problems) {
+  if (game.contracts.size === 0) return;
+  const classes = new Map([...model.classes, ...game.classes]);
+  const files = walk(path.join(root, "gamebase", "core"), [".gd"])
+    .concat(...[...game.modules].map((module) => walk(path.join(root, "gamebase", "modules", module), [".gd"])))
+    .concat(walk(path.join(root, game.dir, "game"), [".gd"]));
+  for (const [name, impl] of game.contracts) {
+    const methods = definedMethods(root, impl, classes);
     const pattern = new RegExp(`\\b${name}\\.(\\w+)\\s*\\(`, "g");
     for (const file of files) {
       for (const match of stripComments(fs.readFileSync(file, "utf8")).matchAll(pattern)) {
-        if (!methods.has(match[1])) gaps.push(`${rel(root, file)} calls ${name}.${match[1]}(), which ${contract.impl} does not define`);
+        if (!methods.has(match[1])) problems.add(`${rel(root, file)} calls ${name}.${match[1]}(), which ${impl} does not define`);
       }
     }
   }
-  return gaps;
 }
 
-// Every module a module uses must be in its `requires` in gamebase/gamebase.json.
-function findUndeclaredModuleUses(root) {
-  const manifestFile = path.join(root, "gamebase", "gamebase.json");
-  if (!fs.existsSync(manifestFile)) return [];
-  const declared = JSON.parse(fs.readFileSync(manifestFile, "utf8")).modules || {};
-  const { symbols } = collectSymbols(root);
+function checkLayers(root = ROOT) {
+  const model = collectModel(root);
   const problems = new Set();
-  for (const file of walk(path.join(root, "gamebase", "modules"), [".gd", ".tscn", ".tres"])) {
-    const relative = rel(root, file);
-    const module = layerOf(relative).slice("module:".length);
-    const raw = fs.readFileSync(file, "utf8");
-    const used = [...raw.matchAll(/res:\/\/([\w./-]+)/g)].map((match) => layerOf(match[1]));
-    if (relative.endsWith(".gd")) {
-      for (const word of new Set(stripComments(raw).match(/\b[A-Z]\w*\b/g) || [])) {
-        if (symbols.has(word)) used.push(symbols.get(word).layer);
-      }
-    }
-    if (!declared[module]) {
-      problems.add(`gamebase/modules/${module} is not listed under "modules" in gamebase/gamebase.json`);
-      continue;
-    }
-    const requires = new Set(declared[module].requires || []);
-    for (const layer of used) {
-      if (!layer.startsWith("module:")) continue;
-      const other = layer.slice("module:".length);
-      if (other !== module && !requires.has(other)) {
-        problems.add(`gamebase/modules/${module} uses module ${other}, which gamebase/gamebase.json does not list in its requires (${relative})`);
-      }
-    }
-  }
-  for (const module of Object.keys(declared)) {
-    if (!fs.existsSync(path.join(root, "gamebase", "modules", module))) problems.add(`gamebase/gamebase.json lists module ${module}, which does not exist`);
+  checkFoundation(root, model, problems);
+  for (const game of model.games) {
+    checkGame(root, model, game, problems);
+    checkContracts(root, model, game, problems);
   }
   return [...problems];
-}
-
-function checkLayers(root = ROOT, baselinePath = BASELINE) {
-  const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, "utf8")) : { entries: {} };
-  const { violations, contracts } = findViolations(root);
-  const problems = findContractGaps(root, contracts).concat(findUndeclaredModuleUses(root));
-  for (const [file, found] of Object.entries(violations)) {
-    const known = new Set((baseline.entries[file] || {}).uses || []);
-    for (const what of found) {
-      if (!known.has(what)) problems.push(`${file} (${layerOf(file)}) must not use ${what}`);
-    }
-  }
-  for (const [file, entry] of Object.entries(baseline.entries)) {
-    for (const what of entry.uses || []) {
-      if (!(violations[file] && violations[file].has(what))) {
-        problems.push(`tools/layer_baseline.json lists ${file} -> ${what}, which no longer occurs; remove it`);
-      }
-    }
-  }
-  return problems;
 }
 
 function runCli() {
@@ -231,7 +322,7 @@ function runCli() {
   return 0;
 }
 
-module.exports = { checkLayers, findViolations, layerOf, allowed, stripComments, runCli };
+module.exports = { checkLayers, layerOf, resLayer, allowed, stripComments, runCli };
 
 if (require.main === module) {
   process.exitCode = runCli();

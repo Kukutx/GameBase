@@ -1,0 +1,119 @@
+{
+  "id": "farm1",
+  "modules": [
+    "combat",
+    "items",
+    "lifesim",
+    "npc_social",
+    "progression"
+  ],
+  "licensed_art": {
+    "sources": {
+      "gandalf": "A:\\Project\\Godot\\Asset\\GandalfHardcore",
+      "craftpix": "A:\\Project\\Godot\\Asset\\参考\\craftpix-net-436971-free-top-down-roguelike-game-kit-pixel-art.zip"
+    },
+    "packs": [
+      {
+        "source": "gandalf",
+        "archive": "GandalfHardcore Pixel Art Village Houses tiles.zip",
+        "folder": "GandalfHardcore Pixel Art Village Houses tiles",
+        "files": "*.png",
+        "destination": "gandalf_village"
+      },
+      {
+        "source": "gandalf",
+        "archive": "GandalfHardcore Farming Tiles and Crops 32x32.zip",
+        "folder": "GandalfHardcore Farming Tiles and Crops 32x32",
+        "files": "*.png",
+        "destination": "gandalf_farming"
+      },
+      {
+        "source": "gandalf",
+        "archive": "GandalfHardcore House Asset Pack 32x32.zip",
+        "folder": "GandalfHardcore House Asset Pack 32x32",
+        "files": "*.png",
+        "destination": "gandalf_house"
+      },
+      {
+        "source": "gandalf",
+        "archive": "GandalfHardcore Farm Animals.zip",
+        "folder": "GandalfHardcore Farm Animals",
+        "files": "*.png",
+        "destination": "gandalf_animals"
+      },
+      {
+        "source": "gandalf",
+        "archive": "GandalfHardcore Slime Enemy.zip",
+        "folder": "GandalfHardcore Slime Enemy",
+        "files": "*.png",
+        "destination": "gandalf_slime"
+      },
+      {
+        "source": "craftpix",
+        "folder": "1 Characters/1",
+        "files": [
+          "D_Idle.png",
+          "D_Walk.png",
+          "D_Attack.png",
+          "D_Hurt.png",
+          "D_Death.png",
+          "U_Idle.png",
+          "U_Walk.png",
+          "U_Attack.png",
+          "U_Hurt.png",
+          "U_Death.png",
+          "S_Idle.png",
+          "S_Walk.png",
+          "S_Attack.png",
+          "S_Hurt.png",
+          "S_Death.png"
+        ],
+        "destination": "craftpix_roguelike/character1"
+      },
+      {
+        "source": "craftpix",
+        "folder": "1 Characters/2",
+        "files": [
+          "D_Idle.png",
+          "D_Walk.png",
+          "D_Attack.png",
+          "D_Hurt.png",
+          "D_Death.png",
+          "U_Idle.png",
+          "U_Walk.png",
+          "U_Attack.png",
+          "U_Hurt.png",
+          "U_Death.png",
+          "S_Idle.png",
+          "S_Walk.png",
+          "S_Attack.png",
+          "S_Hurt.png",
+          "S_Death.png"
+        ],
+        "destination": "craftpix_roguelike/character2"
+      },
+      {
+        "source": "craftpix",
+        "folder": "1 Characters/3",
+        "files": [
+          "D_Idle.png",
+          "D_Walk.png",
+          "D_Attack.png",
+          "D_Hurt.png",
+          "D_Death.png",
+          "U_Idle.png",
+          "U_Walk.png",
+          "U_Attack.png",
+          "U_Hurt.png",
+          "U_Death.png",
+          "S_Idle.png",
+          "S_Walk.png",
+          "S_Attack.png",
+          "S_Hurt.png",
+          "S_Death.png"
+        ],
+        "destination": "craftpix_roguelike/character3"
+      }
+    ]
+  }
+}

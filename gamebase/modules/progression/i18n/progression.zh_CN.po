@@ -1,0 +1,349 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase modules/progression\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Town Notice Board"
+msgstr "城镇公告板"
+
+msgid "Town Projects"
+msgstr "城镇建设"
+
+msgid "Mailbox"
+msgstr "邮箱"
+
+msgid "Forge"
+msgstr "锻造台"
+
+msgid "Town"
+msgstr "城镇"
+
+msgid "No notice available today."
+msgstr "今天没有新的公告。"
+
+msgid "Unavailable"
+msgstr "不可用"
+
+msgid "[b]%s[/b]\n\n%s\n\nProgress: %d/%d\nReward: %dg\nDeadline: Day %d"
+msgstr "[b]%s[/b]\n\n%s\n\n进度：%d/%d\n奖励：%dg\n截止：第 %d 天"
+
+msgid "Accepted"
+msgstr "已接受"
+
+msgid "Available"
+msgstr "可接受"
+
+msgid "Claimed"
+msgstr "已领取"
+
+msgid "Claim Reward"
+msgstr "领取奖励"
+
+msgid "In Progress"
+msgstr "进行中"
+
+msgid "Accept Contract"
+msgstr "接受委托"
+
+msgid "The mailbox is empty"
+msgstr "邮箱是空的"
+
+msgid "From: %s   ·   %d/%d"
+msgstr "来自：%s   ·   %d/%d"
+
+msgid "Claim rewards"
+msgstr "领取附件"
+
+msgid "Attachments: %s"
+msgstr "附件：%s"
+
+msgid "No attachments"
+msgstr "无附件"
+
+msgid "Claimed attachments from %s"
+msgstr "已领取 %s 的附件"
+
+msgid "Mining"
+msgstr "采矿"
+
+msgid "Town Projects\nReward ready"
+msgstr "城镇建设\n奖励可领取"
+
+msgid "Town Projects\nRestored"
+msgstr "城镇建设\n已修复"
+
+msgid "Town Projects\nNeeds help"
+msgstr "城镇建设\n需要帮助"
+
+msgid "Read notice board"
+msgstr "查看公告板"
+
+msgid "Check notice board"
+msgstr "查看公告板"
+
+msgid "Use Forge"
+msgstr "使用锻造台"
+
+msgid "Check Mailbox"
+msgstr "查看邮箱"
+
+msgid "Review town projects"
+msgstr "查看城镇建设"
+
+msgid "Check town projects"
+msgstr "查看城镇建设"
+
+msgid "Read Mail (%d new)"
+msgstr "阅读邮件（%d 封新邮件）"
+
+msgid "%s Projects"
+msgstr "%s建设"
+
+msgid "No restoration projects are registered here yet."
+msgstr "这里还没有登记修复项目。"
+
+msgid "Materials"
+msgstr "材料"
+
+msgid "• %s  %d/%d  (carrying %d)"
+msgstr "• %s  %d/%d  （携带 %d）"
+
+msgid "Reward"
+msgstr "奖励"
+
+msgid "Complete the earlier town project first."
+msgstr "请先完成前置城镇建设项目。"
+
+msgid "Locked"
+msgstr "未解锁"
+
+msgid "Completed"
+msgstr "已完成"
+
+msgid "Donate Available Materials"
+msgstr "捐赠可用材料"
+
+msgid "You are not carrying any needed materials"
+msgstr "你没有携带当前需要的材料"
+
+msgid "Notice Board"
+msgstr "公告板"
+
+msgid "Notice Board\nDone today"
+msgstr "公告板\n今日已完成"
+
+msgid "Notice Board\nReward ready"
+msgstr "公告板\n奖励可领取"
+
+msgid "Notice Board\n%d/%d"
+msgstr "公告板\n%d/%d"
+
+msgid "Notice Board\nNew request"
+msgstr "公告板\n有新委托"
+
+msgid "Archive reward: %s"
+msgstr "收藏奖励：%s"
+
+msgid "Archive milestone ready: %s"
+msgstr "收藏里程碑可领取：%s"
+
+msgid "New mail: %s"
+msgstr "新邮件：%s"
+
+msgid "Make room in your inventory before claiming this letter"
+msgstr "领取邮件附件前请先清理背包空间"
+
+msgid "Mailbox UI is unavailable"
+msgstr "邮箱界面不可用"
+
+msgid "Accepted: %s"
+msgstr "已接受：%s"
+
+msgid "Contract complete · +%dg"
+msgstr "委托完成 · +%dg"
+
+msgid "Daily contract expired"
+msgstr "每日委托已过期"
+
+msgid "Daily contract complete — return to the notice board"
+msgstr "每日委托已完成——返回公告板领取奖励"
+
+msgid "Notice board UI is unavailable"
+msgstr "公告板界面不可用"
+
+msgid "Forge menu is unavailable"
+msgstr "锻造界面不可用"
+
+msgid "Missing tool, materials, money, or skill level"
+msgstr "缺少工具、材料、金钱或技能等级"
+
+msgid "Inventory or materials changed before the upgrade completed"
+msgstr "升级完成前背包或材料发生了变化"
+
+msgid "Upgraded to %s"
+msgstr "已升级为%s"
+
+msgid "Quest started: %s"
+msgstr "任务开始：%s"
+
+msgid "Quest complete — make room for the promised reward"
+msgstr "任务已完成——请为奖励腾出背包空间"
+
+msgid "Quest complete: %s"
+msgstr "任务完成：%s"
+
+msgid "Town project UI is unavailable"
+msgstr "城镇建设界面不可用"
+
+msgid "Project complete: %s"
+msgstr "建设项目完成：%s"
+
+msgid "Donated %d %s"
+msgstr "已捐赠 %d 个%s"
+
+msgid "Make room in your inventory before claiming the project reward"
+msgstr "领取建设奖励前请先腾出背包空间"
+
+msgid "Project reward claimed: %s"
+msgstr "已领取建设奖励：%s"
+
+msgid "Daily contract"
+msgstr "每日委托"
+
+msgid "From:"
+msgstr "来自："
+
+msgid "Letter"
+msgstr "邮件"
+
+msgid "Mail body"
+msgstr "邮件正文"
+
+msgid "Mailbox · %d new"
+msgstr "邮箱 · %d 封新邮件"
+
+msgid "Next"
+msgstr "下一封"
+
+msgid "Previous"
+msgstr "上一封"
+
+msgid "Refined copper and skill unlock stronger tools."
+msgstr "精炼铜锭并提升技能可以解锁更强的工具。"
+
+msgid "Rowan's Forge"
+msgstr "罗文的锻造台"
+
+msgid "Needs restoration"
+msgstr "需要修复"
+
+msgid "Restored"
+msgstr "已修复"
+
+msgid "Farm %d · Forage %d · Fish %d · Mine %d · Combat %d · Social %d"
+msgstr "耕作 %d · 采集 %d · 钓鱼 %d · 采矿 %d · 战斗 %d · 社交 %d"
+
+msgid "No active quest"
+msgstr "没有进行中的任务"
+
+msgid "Next passive at Lv5"
+msgstr "Lv5 解锁下一个被动效果"
+
+msgid "Field Efficiency %s · tool energy -%d%%"
+msgstr "田间效率 %s · 工具体力消耗 -%d%%"
+
+msgid "Gatherer %s · +%d forage quantity"
+msgstr "采集者 %s · 采集数量 +%d"
+
+msgid "Angler %s · bite wait -%d%% · reel window +%d%%"
+msgstr "钓手 %s · 咬钩等待 -%d%% · 收线时间 +%d%%"
+
+msgid "Miner %s · mining energy -%d%%"
+msgstr "矿工 %s · 采矿体力消耗 -%d%%"
+
+msgid "Fighter %s · attack +%d%% · attack energy -%d%%"
+msgstr "战士 %s · 攻击 +%d%% · 攻击体力消耗 -%d%%"
+
+msgid "Neighbor %s · positive gift friendship +%d%%"
+msgstr "好邻居 %s · 喜爱礼物的好感 +%d%%"
+
+msgid "Passive tier %d"
+msgstr "被动效果 %d 级"
+
+msgid "Crops"
+msgstr "作物"
+
+msgid "Animals"
+msgstr "畜产"
+
+msgid "Processed"
+msgstr "加工品"
+
+msgid "Forage"
+msgstr "采集物"
+
+msgid "Shipped"
+msgstr "已出货"
+
+msgid "%s — Claimed"
+msgstr "%s — 已领取"
+
+msgid "%s — Ready"
+msgstr "%s — 可领取"
+
+msgid "Unknown project"
+msgstr "未知建设项目"
+
+msgid "%s · Locked"
+msgstr "%s · 未解锁"
+
+msgid "%s · Complete"
+msgstr "%s · 已完成"
+
+msgid "%s · Reward ready"
+msgstr "%s · 奖励可领取"
+
+msgid "%s · %d/%d donated"
+msgstr "%s · 已捐赠 %d/%d"
+
+msgid "No notice available"
+msgstr "暂无公告"
+
+msgid "Daily contract claimed"
+msgstr "每日委托奖励已领取"
+
+msgid "Offer: %s"
+msgstr "新委托：%s"
+
+msgid "%s · Complete — claim at board · due Day %d"
+msgstr "%s · 已完成——到公告板领取 · 截止第 %d 天"
+
+msgid "%s · %d/%d · due Day %d"
+msgstr "%s · %d/%d · 截止第 %d 天"
+
+msgid "Forage %d %s"
+msgstr "采集 %d 个%s"
+
+msgid "Catch %d %s"
+msgstr "钓到 %d 条%s"
+
+msgid "Mine %d %s"
+msgstr "开采 %d 个%s"
+
+msgid "Ship %d %s"
+msgstr "出货 %d 个%s"
+
+msgid "Harvest %d %s"
+msgstr "收获 %d 个%s"
+
+msgid "Collect %d %s"
+msgstr "收集 %d 个%s"
+
+msgid "%s for the town request."
+msgstr "%s，完成城镇的委托。"
+
+msgid "Town Project"
+msgstr "城镇建设项目"

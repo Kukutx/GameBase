@@ -6,7 +6,7 @@ GameBase follows stable Godot 4.x releases without permanently locking the repos
 
 - `.godot-version` is the Godot version used by CI and normal release builds.
 - `licenses/GODOT_VERSION.txt` must match `.godot-version`; the adjacent Godot LICENSE/COPYRIGHT files are synchronized from that exact stable upstream tag.
-- `project.godot -> application/config/features` is the minimum project feature line, not the CI patch version.
+- `games/<id>/project.godot -> application/config/features` is the minimum project feature line of each game, not the CI patch version.
 - Local development may use a newer stable Godot 4.x release before the shared CI baseline is advanced.
 - Development, beta and release-candidate engine builds are not shared baselines unless explicitly requested.
 
@@ -25,13 +25,13 @@ This keeps builds reproducible while allowing regular engine upgrades. `.github/
 
    The tool first downloads and validates the official `<version>-stable` `LICENSE.txt` and `COPYRIGHT.txt`. Only after both succeed does it update `.godot-version`, `licenses/GODOT_VERSION.txt`, `licenses/GODOT_LICENSE.txt`, and `licenses/GODOT_COPYRIGHT.txt` together.
 
-5. Open/import the project once with the new engine.
-6. Review any automatic `project.godot`, scene or resource-format changes.
+5. Open/import each game project once with the new engine.
+6. Review any automatic `games/<id>/project.godot`, scene or resource-format changes.
 7. Run:
 
    ```text
    node tools/validate.js
-   node tools/export.js
+   node tools/export.js --all
    ```
 
 8. Verify the save slot and recovery tests and a real save/load cycle.
@@ -39,7 +39,7 @@ This keeps builds reproducible while allowing regular engine upgrades. `.github/
 
 ## Current baseline
 
-The current shared validation baseline is Godot 4.7.2. The project feature marker is 4.7 because the test stack now uses GUT 9.7.1, which targets Godot 4.7.x. The project uses the Compatibility renderer so the same 2D codebase can target Windows, Linux and Web; Godot 4 Web exports require the Compatibility/WebGL 2 rendering path.
+The current shared validation baseline is Godot 4.7.2. Each game's feature marker is 4.7 because the test stack now uses GUT 9.7.1, which targets Godot 4.7.x. Every game uses the Compatibility renderer so the same 2D codebase can target Windows, Linux and Web; Godot 4 Web exports require the Compatibility/WebGL 2 rendering path.
 
 ## Addon policy
 

@@ -105,6 +105,17 @@ async function prepareEditorSettings(godotBin) {
   }
 }
 
+// Imports a Godot project headless. A first import also initialises the editor
+// plugins, so it is preceded by prepareEditorSettings. The dedicated import mode
+// waits for importer and editor-plugin work to settle before exiting, which
+// launching the editor and quitting does not.
+async function importProject(godotBin, project, label) {
+  if (!fs.existsSync(path.join(project, ".godot"))) {
+    await prepareEditorSettings(godotBin);
+  }
+  await runGodotStep(godotBin, label, ["--headless", "--path", project, "--import"]);
+}
+
 function godotVersion(godotBin) {
   const result = spawnSync(godotBin, ["--version"], { encoding: "utf8", windowsHide: true });
   if (result.error || result.status !== 0) {
@@ -158,21 +169,6 @@ function tempFile(prefix) {
   return path.join(os.tmpdir(), `${prefix}-${process.pid}-${Date.now()}`);
 }
 
-// The game's name from `config/name` in project.godot.
-function projectName() {
-  const match = fs.readFileSync(rootPath("project.godot"), "utf8").match(/^config\/name="([^"]*)"$/m);
-  if (!match || !match[1].trim()) fail("project.godot has no config/name.");
-  return match[1];
-}
-
-// The file-safe form of the game's name: executables, packs and release
-// packages are named after it (Farm1.exe, Farm1-web.zip).
-function artifactName() {
-  const name = projectName().replace(/[^A-Za-z0-9_-]+/g, "");
-  if (!name) fail(`config/name "${projectName()}" has no letters or digits to name build artifacts after.`);
-  return name;
-}
-
 // Entry point wrapper: prints tool errors without a stack trace and sets the exit code.
 function main(entry) {
   Promise.resolve()
@@ -204,14 +200,12 @@ module.exports = {
   engineErrorLines,
   run,
   runGodotStep,
-  prepareEditorSettings,
+  importProject,
   godotVersion,
   git,
   npmCommand,
   download,
   removeRecursive,
   tempFile,
-  projectName,
-  artifactName,
   main,
 };

@@ -65,7 +65,7 @@ An anomaly seen during interactive exploration is first recorded as a candidate 
 - expected behaviour: the current data contract, the game facts or the platform rules explicitly allow or require it;
 - unknown: the evidence is insufficient or the result is unstable.
 
-Only a product defect, or a structural problem with sufficient static evidence, becomes a formal finding. A runtime anomaly that cannot be reproduced stably does not have its severity raised because "it looks like a bug". A path that was reproduced stably and fixed is preferably settled as a deterministic regression in the existing test, driver or replay system — a GUT test under `test/unit/` or a check in the runtime smoke under `test/runtime/` — instead of depending for the long term on an agent repeating the steps by hand.
+Only a product defect, or a structural problem with sufficient static evidence, becomes a formal finding. A runtime anomaly that cannot be reproduced stably does not have its severity raised because "it looks like a bug". A path that was reproduced stably and fixed is preferably settled as a deterministic regression in the existing test, driver or replay system — a GUT test under `games/<id>/test/unit/` or a check in a runtime script under `games/<id>/test/runtime/` — instead of depending for the long term on an agent repeating the steps by hand.
 
 ## Execution and stopping
 

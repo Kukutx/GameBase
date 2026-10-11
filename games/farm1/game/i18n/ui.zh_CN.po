@@ -1,0 +1,2281 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Farm1\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "A living-world RPG foundation"
+msgstr "一个持续运转的世界 RPG 基础"
+
+msgid "Empty slot"
+msgstr "空存档位"
+
+msgid "Continue"
+msgstr "继续游戏"
+
+msgid "New Game"
+msgstr "新游戏"
+
+msgid "Delete Save"
+msgstr "删除存档"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Quit"
+msgstr "退出"
+
+msgid "Start New Game"
+msgstr "开始新游戏"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Paused"
+msgstr "已暂停"
+
+msgid "Resume"
+msgstr "继续"
+
+msgid "Save Game"
+msgstr "保存游戏"
+
+msgid "Load Game"
+msgstr "读取游戏"
+
+msgid "Return to Title"
+msgstr "返回标题画面"
+
+msgid "Unsaved progress will be lost. Return to the title screen?"
+msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
+
+msgid "Master"
+msgstr "主音量"
+
+msgid "Music"
+msgstr "音乐"
+
+msgid "Sounds"
+msgstr "音效"
+
+msgid "Fullscreen"
+msgstr "全屏"
+
+msgid "VSync"
+msgstr "垂直同步"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Controls..."
+msgstr "按键设置..."
+
+msgid "Key Bindings"
+msgstr "按键绑定"
+
+msgid "Reset Defaults"
+msgstr "恢复默认"
+
+msgid "Back"
+msgstr "返回"
+
+msgid "Settings are saved automatically."
+msgstr "设置会自动保存。"
+
+msgid "Press a key..."
+msgstr "请按一个按键..."
+
+msgid "Move Up"
+msgstr "向上移动"
+
+msgid "Move Down"
+msgstr "向下移动"
+
+msgid "Move Left"
+msgstr "向左移动"
+
+msgid "Move Right"
+msgstr "向右移动"
+
+msgid "Interact / Reel"
+msgstr "互动 / 收线"
+
+msgid "Use Tool / Item"
+msgstr "使用工具 / 物品"
+
+msgid "Give Gift"
+msgstr "赠送礼物"
+
+msgid "Pack Building"
+msgstr "收起建筑"
+
+msgid "Open Menu"
+msgstr "打开菜单"
+
+msgid "Quick Save"
+msgstr "快速保存"
+
+msgid "Quick Load"
+msgstr "快速读取"
+
+msgid "Items"
+msgstr "物品"
+
+msgid "Quests"
+msgstr "任务"
+
+msgid "Social"
+msgstr "社交"
+
+msgid "Skills"
+msgstr "技能"
+
+msgid "Calendar"
+msgstr "日历"
+
+msgid "World"
+msgstr "世界"
+
+msgid "Log"
+msgstr "日志"
+
+msgid "Assign"
+msgstr "分配"
+
+msgid "Claim Archive Reward"
+msgstr "领取收藏奖励"
+
+msgid "Autosave"
+msgstr "自动保存"
+
+msgid "Save Slot %d"
+msgstr "存档位 %d"
+
+msgid " · temporary save recovery"
+msgstr " · 可从临时存档恢复"
+
+msgid " · backup available"
+msgstr " · 有可用备份"
+
+msgid "%s %d · Day %d · %02d:%02d · %dg%s"
+msgstr "%s %d日 · 第%d天 · %02d:%02d · %dg%s"
+
+msgid "Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?"
+msgstr "存档位 %d 已有游戏。开始新游戏会覆盖该存档，是否继续？"
+
+msgid "Loading Slot %d..."
+msgstr "正在读取存档位 %d..."
+
+msgid "No valid save found"
+msgstr "没有找到有效存档"
+
+msgid "Delete Save Slot %d? This removes the primary save and its backup."
+msgstr "删除存档位 %d？主存档及其备份都会被删除。"
+
+msgid "Deleted Slot %d"
+msgstr "已删除存档位 %d"
+
+msgid "Could not delete Slot %d"
+msgstr "无法删除存档位 %d"
+
+msgid "No save available"
+msgstr "没有可用存档"
+
+msgid "Save failed: %s"
+msgstr "保存失败：%s"
+
+msgid "Load failed: %s"
+msgstr "读取失败：%s"
+
+msgid "%s %d  %02d:%02d"
+msgstr "%s %d日  %02d:%02d"
+
+msgid "HP %d/%d   ·   Energy %d/%d   ·   %dg"
+msgstr "生命 %d/%d   ·   体力 %d/%d   ·   %dg"
+
+msgid "Quest: %s"
+msgstr "任务：%s"
+
+msgid "Buffs: %s"
+msgstr "增益：%s"
+
+msgid "Claim Archive Reward (%d)"
+msgstr "领取收藏奖励（%d）"
+
+msgid "Empty"
+msgstr "空"
+
+msgid "HP: %d/%d    Energy: %d/%d"
+msgstr "生命：%d/%d    体力：%d/%d"
+
+msgid "Use the controls below to bind any carried item to slots 1–9."
+msgstr "使用下方控件将携带的物品绑定到 1–9 热栏。"
+
+msgid "Quest Journal"
+msgstr "任务日志"
+
+msgid "No quests yet."
+msgstr "暂无任务。"
+
+msgid "Complete"
+msgstr "已完成"
+
+msgid "Town Contract"
+msgstr "城镇委托"
+
+msgid "Relationships"
+msgstr "人际关系"
+
+msgid "[b]%s[/b] — %s   %d ♥   (%d pts)"
+msgstr "[b]%s[/b] — %s   %d ♥   （%d 点）"
+
+msgid "[b]%s[/b]  Lv.%d   %d XP"
+msgstr "[b]%s[/b]  Lv.%d   %d XP"
+
+msgid "Active Buffs"
+msgstr "当前增益"
+
+msgid "• %s — %d min"
+msgstr "• %s — %d 分钟"
+
+msgid "Today: [b]%s %d[/b] — %s"
+msgstr "今天：[b]%s %d日[/b] — %s"
+
+msgid "Tomorrow: %s %d — %s"
+msgstr "明天：%s %d日 — %s"
+
+msgid "Upcoming events"
+msgstr "近期活动"
+
+msgid " · joined this year"
+msgstr " · 今年已参加"
+
+msgid "• %s%s — %s %d, %02d:%02d @ %s"
+msgstr "• %s%s — %s %d日，%02d:%02d @ %s"
+
+msgid "No events in the next 28 days."
+msgstr "未来 28 天没有活动。"
+
+msgid "Upcoming birthdays"
+msgstr "近期生日"
+
+msgid "• %s — %s %d"
+msgstr "• %s — %s %d日"
+
+msgid "No birthdays in the next 28 days."
+msgstr "未来 28 天没有生日。"
+
+msgid "Residents"
+msgstr "居民"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Collections"
+msgstr "收藏"
+
+msgid "Archive Milestones"
+msgstr "收藏里程碑"
+
+msgid "Interior"
+msgstr "室内"
+
+msgid "Wilderness"
+msgstr "野外"
+
+msgid "Dungeon"
+msgstr "地下区域"
+
+msgid "Spring"
+msgstr "春季"
+
+msgid "Summer"
+msgstr "夏季"
+
+msgid "Autumn"
+msgstr "秋季"
+
+msgid "Winter"
+msgstr "冬季"
+
+msgid "Clear"
+msgstr "晴朗"
+
+msgid "Rain"
+msgstr "下雨"
+
+msgid "Storm"
+msgstr "暴风雨"
+
+msgid "Starter Town"
+msgstr "起始镇"
+
+msgid "Riverside Town"
+msgstr "河畔镇"
+
+msgid "Harbor Town"
+msgstr "港口镇"
+
+msgid "Old Mine"
+msgstr "旧矿井"
+
+msgid "Player Home"
+msgstr "玩家住宅"
+
+msgid "Village General Store"
+msgstr "村庄杂货店"
+
+msgid "Chicken"
+msgstr "鸡"
+
+msgid "Cow"
+msgstr "奶牛"
+
+msgid "Pig"
+msgstr "猪"
+
+msgid "Hoe"
+msgstr "锄头"
+
+msgid "Watering Can"
+msgstr "洒水壶"
+
+msgid "Pickaxe"
+msgstr "镐"
+
+msgid "Rusty Sword"
+msgstr "生锈的剑"
+
+msgid "Fishing Rod"
+msgstr "钓鱼竿"
+
+msgid "Hay"
+msgstr "干草"
+
+msgid "Wood"
+msgstr "木材"
+
+msgid "Stone"
+msgstr "石头"
+
+msgid "Wild Berry"
+msgstr "野莓"
+
+msgid "Turnip"
+msgstr "芜菁"
+
+msgid "Turnip Seeds"
+msgstr "芜菁种子"
+
+msgid "Carrot"
+msgstr "胡萝卜"
+
+msgid "Carrot Seeds"
+msgstr "胡萝卜种子"
+
+msgid "Potato"
+msgstr "土豆"
+
+msgid "Potato Seeds"
+msgstr "土豆种子"
+
+msgid "Tomato"
+msgstr "番茄"
+
+msgid "Tomato Seeds"
+msgstr "番茄种子"
+
+msgid "Pumpkin"
+msgstr "南瓜"
+
+msgid "Pumpkin Seeds"
+msgstr "南瓜种子"
+
+msgid "Frostroot"
+msgstr "霜根"
+
+msgid "Frostroot Seeds"
+msgstr "霜根种子"
+
+msgid "Egg"
+msgstr "鸡蛋"
+
+msgid "Large Egg"
+msgstr "大鸡蛋"
+
+msgid "Milk"
+msgstr "牛奶"
+
+msgid "Large Milk"
+msgstr "大瓶牛奶"
+
+msgid "Truffle"
+msgstr "松露"
+
+msgid "Prime Truffle"
+msgstr "优质松露"
+
+msgid "Truffle Oil"
+msgstr "松露油"
+
+msgid "Copper Ore"
+msgstr "铜矿石"
+
+msgid "Copper Bar"
+msgstr "铜锭"
+
+msgid "Iron Ore"
+msgstr "铁矿石"
+
+msgid "Iron Bar"
+msgstr "铁锭"
+
+msgid "Gold Ore"
+msgstr "金矿石"
+
+msgid "Gold Bar"
+msgstr "金锭"
+
+msgid "Iridium Ore"
+msgstr "铱矿石"
+
+msgid "Iridium Bar"
+msgstr "铱锭"
+
+msgid "Slime Gel"
+msgstr "史莱姆凝胶"
+
+msgid "Seaweed"
+msgstr "海草"
+
+msgid "Mackerel"
+msgstr "鲭鱼"
+
+msgid "River Carp"
+msgstr "河鲤"
+
+msgid "River Trout"
+msgstr "河鳟"
+
+msgid "Sardine"
+msgstr "沙丁鱼"
+
+msgid "Storm Eel"
+msgstr "风暴鳗"
+
+msgid "Field Snack"
+msgstr "田野点心"
+
+msgid "Fish Soup"
+msgstr "鱼汤"
+
+msgid "Vegetable Stew"
+msgstr "蔬菜炖汤"
+
+msgid "Basic Sprinkler"
+msgstr "基础洒水器"
+
+msgid "Copper Hoe"
+msgstr "铜锄头"
+
+msgid "Copper Pickaxe"
+msgstr "铜镐"
+
+msgid "Copper Sword"
+msgstr "铜剑"
+
+msgid "Copper Watering Can"
+msgstr "铜洒水壶"
+
+msgid "Iron Hoe"
+msgstr "铁锄头"
+
+msgid "Iron Pickaxe"
+msgstr "铁镐"
+
+msgid "Iron Sword"
+msgstr "铁剑"
+
+msgid "Iron Watering Can"
+msgstr "铁洒水壶"
+
+msgid "Gold Hoe"
+msgstr "金锄头"
+
+msgid "Gold Pickaxe"
+msgstr "金镐"
+
+msgid "Gold Sword"
+msgstr "金剑"
+
+msgid "Gold Watering Can"
+msgstr "金洒水壶"
+
+msgid "Iridium Hoe"
+msgstr "铱锄头"
+
+msgid "Iridium Pickaxe"
+msgstr "铱镐"
+
+msgid "Iridium Sword"
+msgstr "铱剑"
+
+msgid "Iridium Watering Can"
+msgstr "铱洒水壶"
+
+msgid "Village gardener"
+msgstr "村庄园艺师"
+
+msgid "Harbor fishmonger"
+msgstr "港口鱼商"
+
+msgid "Riverside carpenter"
+msgstr "河畔木匠"
+
+msgid "Farming"
+msgstr "耕作"
+
+msgid "Foraging"
+msgstr "采集"
+
+msgid "Fishing"
+msgstr "钓鱼"
+
+msgid "Combat"
+msgstr "战斗"
+
+msgid "Coop"
+msgstr "鸡舍"
+
+msgid "Barn"
+msgstr "畜棚"
+
+msgid "Big Coop"
+msgstr "大型鸡舍"
+
+msgid "Deluxe Coop"
+msgstr "豪华鸡舍"
+
+msgid "Big Barn"
+msgstr "大型畜棚"
+
+msgid "Deluxe Barn"
+msgstr "豪华畜棚"
+
+msgid "Green Slime"
+msgstr "绿色史莱姆"
+
+msgid "Cave Slime"
+msgstr "洞穴史莱姆"
+
+msgid "Blue Slime"
+msgstr "蓝色史莱姆"
+
+msgid "Red Slime"
+msgstr "红色史莱姆"
+
+msgid "Shadow Slime"
+msgstr "暗影史莱姆"
+
+msgid "Void Slime"
+msgstr "虚空史莱姆"
+
+msgid "Ancient Slime"
+msgstr "远古史莱姆"
+
+msgid "Stone Rock"
+msgstr "岩石"
+
+msgid "Copper Vein"
+msgstr "铜矿脉"
+
+msgid "Iron Vein"
+msgstr "铁矿脉"
+
+msgid "Gold Vein"
+msgstr "金矿脉"
+
+msgid "Iridium Vein"
+msgstr "铱矿脉"
+
+msgid "Hearty Worker"
+msgstr "强健劳工"
+
+msgid "Angler Focus"
+msgstr "垂钓专注"
+
+msgid "Crop Archive"
+msgstr "作物档案"
+
+msgid "Angler Archive"
+msgstr "垂钓档案"
+
+msgid "Rancher Archive"
+msgstr "牧场档案"
+
+msgid "Prospector Archive"
+msgstr "勘探档案"
+
+msgid "Community Garden Restoration"
+msgstr "社区花园修复"
+
+msgid "Riverside Workshop Fund"
+msgstr "河畔工坊基金"
+
+msgid "Harbor Supply Drive"
+msgstr "港口补给行动"
+
+msgid "Spring Seed Fair"
+msgstr "春季种子集市"
+
+msgid "Summer River Fair"
+msgstr "夏季河畔节"
+
+msgid "Fall Harbor Derby"
+msgstr "秋季港口大赛"
+
+msgid "Winter Lantern Night"
+msgstr "冬季灯笼夜"
+
+msgid "Village Market"
+msgstr "村庄集市"
+
+msgid "Talk"
+msgstr "交谈"
+
+msgid "product"
+msgstr "产物"
+
+msgid "Feed"
+msgstr "饲料"
+
+msgid "Nothing to use %s on"
+msgstr "没有可使用%s的目标"
+
+msgid "You do not need that right now"
+msgstr "现在不需要使用它"
+
+msgid "You cannot build here"
+msgstr "这里不能建造"
+
+msgid "%s cannot be placed here"
+msgstr "%s不能放在这里"
+
+msgid "Not enough space to place %s"
+msgstr "没有足够空间放置%s"
+
+msgid "Placed %s"
+msgstr "已放置%s"
+
+msgid "New game initialized"
+msgstr "新游戏已初始化"
+
+msgid "Swung %s"
+msgstr "挥动了%s"
+
+msgid "Stand near someone to give a gift"
+msgstr "靠近某人后才能送礼"
+
+msgid "That is not someone you can gift"
+msgstr "这个对象不能收礼"
+
+msgid "Select a gift in the hotbar"
+msgstr "请先在热栏选择礼物"
+
+msgid "Stand near a placed structure to pack it up"
+msgstr "靠近已放置的建筑后才能收起"
+
+msgid "That cannot be packed up"
+msgstr "这个对象不能收起"
+
+msgid "Packed up %s"
+msgstr "已收起%s"
+
+msgid "structure"
+msgstr "建筑"
+
+msgid "feed"
+msgstr "饲料"
+
+msgid "Fresh Catch"
+msgstr "新鲜渔获"
+
+msgid "First Harvest"
+msgstr "初次收获"
+
+msgid "Meet the Neighbour"
+msgstr "认识邻居"
+
+msgid "Foraging Basics"
+msgstr "采集基础"
+
+msgid "Cave Pest"
+msgstr "洞穴害兽"
+
+msgid "Gold in the Deep"
+msgstr "深处的黄金"
+
+msgid "Iridium Veins"
+msgstr "铱矿脉"
+
+msgid "Iron in the Stone"
+msgstr "石中之铁"
+
+msgid "Into the Mine"
+msgstr "深入矿井"
+
+msgid "Below the Iron"
+msgstr "铁层之下"
+
+msgid "The Violet Depths"
+msgstr "紫色深渊"
+
+msgid "Into the Iron Depths"
+msgstr "深入铁矿层"
+
+msgid "Bottom of the Old Mine"
+msgstr "旧矿井之底"
+
+msgid "Refine the Ore"
+msgstr "精炼矿石"
+
+msgid "Refine the Gold"
+msgstr "精炼黄金"
+
+msgid "Refine the Iridium"
+msgstr "精炼铱矿"
+
+msgid "Refine the Iron"
+msgstr "精炼铁矿"
+
+msgid "A Better Pickaxe"
+msgstr "更好的镐"
+
+msgid "Catch any fish in Riverside or Harbor."
+msgstr "在河畔或港口钓到任意一条鱼。"
+
+msgid "Defeat a Green Slime in the Old Mine."
+msgstr "在旧矿井击败一只绿色史莱姆。"
+
+msgid "Grow and harvest three turnips."
+msgstr "种植并收获三棵芜菁。"
+
+msgid "Gather three wild berries around town."
+msgstr "在城镇周边采集三颗野莓。"
+
+msgid "Talk to Mira near the village path."
+msgstr "在村庄小路附近和米拉交谈。"
+
+msgid "Break Gold Veins in the deeper mine."
+msgstr "在矿井深处开采金矿脉。"
+
+msgid "Break Iridium Veins in the late mine."
+msgstr "在矿井后段开采铱矿脉。"
+
+msgid "Break an Iron Vein and bring back its ore."
+msgstr "开采一处铁矿脉并带回矿石。"
+
+msgid "Break a stone rock in the Old Mine."
+msgstr "在旧矿井开采一块岩石。"
+
+msgid "Reach Mine Floor 20, where Gold Veins begin to appear."
+msgstr "到达矿井第 20 层，金矿脉将从这里开始出现。"
+
+msgid "Reach Mine Floor 60 and locate the first Iridium Veins."
+msgstr "到达矿井第 60 层，并找到第一批铱矿脉。"
+
+msgid "Reach Mine Floor 6, where Iron Veins begin to appear."
+msgstr "到达矿井第 6 层，铁矿脉将从这里开始出现。"
+
+msgid "Reach Mine Floor 120 and survive the Ancient Slimes."
+msgstr "到达矿井第 120 层，并从远古史莱姆手中活下来。"
+
+msgid "Use Rowan's furnace to smelt two Copper Bars."
+msgstr "使用罗文的熔炉冶炼两块铜锭。"
+
+msgid "Smelt two Gold Bars at Rowan's furnace."
+msgstr "在罗文的熔炉中冶炼两块金锭。"
+
+msgid "Smelt two Iridium Bars and prepare for the final descent."
+msgstr "冶炼两块铱锭，为最后的深入做好准备。"
+
+msgid "Smelt two Iron Bars at Rowan's furnace."
+msgstr "在罗文的熔炉中冶炼两块铁锭。"
+
+msgid "Ask Rowan's forge to upgrade the starter Pickaxe to Copper."
+msgstr "请罗文用锻造台将初始镐升级为铜镐。"
+
+msgid "The garden is growing again"
+msgstr "花园又有生机了"
+
+msgid "A few extra seeds"
+msgstr "一些额外的种子"
+
+msgid "Not bad for a first catch"
+msgstr "第一次钓鱼还不赖"
+
+msgid "The shelves are full again"
+msgstr "货架又装满了"
+
+msgid "For the next repair"
+msgstr "留给下一次修理"
+
+msgid "So there really is a bottom"
+msgstr "原来真的有最底层"
+
+msgid "More room, fewer excuses"
+msgstr "空间更大，借口更少"
+
+msgid "You made it through your first day. I left a few extra turnip seeds with this note. Keep them dry until you are ready to plant. — Mira"
+msgstr "你顺利度过了第一天。我随信放了几包额外的芜菁种子。准备播种之前记得保持干燥。——米拉"
+
+msgid "Word travels fast along the water. Your first proper catch was not embarrassing, so I am sending you some seaweed. It is useful in the kitchen, and no, that does not make it glamorous. — Neri"
+msgstr "水边的消息传得很快。你的第一次正式渔获还算体面，所以我寄了些海草给你。做饭时挺有用——不，这并不会让它显得更体面。——奈莉"
+
+msgid "I heard you reached the bottom of the Old Mine. Most stories about that place get taller every time they cross the bridge, but this one I believe. I had one Iridium Bar set aside for a repair I never found a good reason to attempt. You have a better reason now. — Rowan"
+msgstr "听说你到达了旧矿井最底层。关于那地方的故事每过一次桥都会更夸张，但这次我信。我一直留着一块铱锭，本想用在某个始终没有好理由动手的修理上。现在你有更好的理由使用它。——罗文"
+
+msgid "Harbor stores finally look prepared instead of hopeful. That means fewer bad choices when the weather turns. I saved you a bowl from the first proper meal we cooked after restocking. — Neri"
+msgstr "港口的储备终于像是做好了准备，而不是只靠希望撑着。天气变坏时，我们就能少做些糟糕的选择。补给完成后做的第一顿像样饭菜，我给你留了一碗。——奈莉"
+
+msgid "I walked past the community garden this morning. It looks cared for again instead of abandoned. That changes how a town feels more than people admit. I left you a stew for one of the long work days ahead. — Mira"
+msgstr "今天早上我经过社区花园，它终于又像有人照料，而不是被遗弃。这样的变化对一座城镇的感觉影响很大，只是大家很少承认。我给你留了一份炖菜，等哪天干活特别久时吃。——米拉"
+
+msgid "The workshop finally has room to breathe. I can keep proper stock now instead of stacking repair lumber where people need to walk. You did your share, so take these for the next long repair day. — Rowan"
+msgstr "工坊终于有了能喘口气的空间。我现在可以好好存放材料，不必再把修理木料堆在人走路的地方。你出了不少力，这些就留给你下一次漫长的修理日。——罗文"
+
+msgid "Heard you handled the slime problem in the old mine. That place rewards preparation more than courage. Here is some copper ore from an old repair stock. Put it to better use than I was. — Rowan"
+msgstr "听说你解决了旧矿井里的史莱姆问题。那地方更奖赏准备充分的人，而不是只靠勇气的人。这些铜矿石来自我以前的修理库存，希望你能比我用得更好。——罗文"
+
+msgid "Restock the harbor pantry with food from the sea and farms so crews can stay supplied through rough weather."
+msgstr "用海产和农产品补充港口储藏室，让船员在恶劣天气里也能保持补给。"
+
+msgid "Rebuild the neglected community plots so the town can share produce again."
+msgstr "修复荒废的社区农地，让城镇居民再次共享收成。"
+
+msgid "Supply Rowan with enough materials to expand the riverside workshop and local processing tools."
+msgstr "为罗文提供足够材料，扩建河畔工坊和当地加工设施。"
+
+msgid "+%d energy"
+msgstr "+%d 体力"
+
+msgid "+%d HP"
+msgstr "+%d 生命"
+
+msgid "Ate %s%s"
+msgstr "吃了%s%s"
+
+msgid " · Birthday!"
+msgstr " · 生日！"
+
+msgid "food"
+msgstr "食物"
+
+msgid "Community Garden · overgrown"
+msgstr "社区花园 · 杂草丛生"
+
+msgid "Community Garden · restored"
+msgstr "社区花园 · 已修复"
+
+msgid "Delete this save slot and its backup?"
+msgstr "删除这个存档位及其备份？"
+
+msgid "GAMEBASE"
+msgstr "GAMEBASE"
+
+msgid "Harbor stores · depleted"
+msgstr "港口储备 · 已耗尽"
+
+msgid "Harbor stores · restocked"
+msgstr "港口储备 · 已补充"
+
+msgid "Home Interior"
+msgstr "住宅内部"
+
+msgid "NPC"
+msgstr "NPC"
+
+msgid "Starter Farm"
+msgstr "起始农场"
+
+msgid "This save slot already contains a game. Starting a new game will replace it. Continue?"
+msgstr "这个存档位已经有游戏。开始新游戏会覆盖它，是否继续？"
+
+msgid "Workshop · cramped"
+msgstr "工坊 · 拥挤"
+
+msgid "Workshop · expanded"
+msgstr "工坊 · 已扩建"
+
+msgid "Welcome to Starter Town. It is good to see the old farm active again."
+msgstr "欢迎来到起始镇。看到那座老农场重新有了动静，真不错。"
+
+msgid "Where should I begin?"
+msgstr "我该从哪里开始？"
+
+msgid "Tend the field, explore the valley, and talk to people when you see them. There is always more work than one pair of hands can finish."
+msgstr "先照料田地，多去山谷里走走，看到人就聊上几句。这里的活儿，永远不是一双手能全做完的。"
+
+msgid "What is beyond town?"
+msgstr "镇外还有什么？"
+
+msgid "Riverside is across the bridge, Harbor Town is farther east, and the Old Mine is worth visiting once you have a proper pickaxe."
+msgstr "过桥就是河畔镇，再往东是港口镇。等你有把像样的镐，旧矿井也值得去看看。"
+
+msgid "See you later."
+msgstr "回头见。"
+
+msgid "See you around."
+msgstr "镇上见。"
+
+msgid "You have become part of the rhythm around here. I notice when the farm is quiet now."
+msgstr "你已经成了这里日常节奏的一部分。现在农场一安静下来，我都会注意到。"
+
+msgid "Anything I can help with?"
+msgstr "有什么我能帮忙的吗？"
+
+msgid "Keep an eye on the weather. A rainy morning can save you a surprising amount of work."
+msgstr "多留意天气。一个下雨的早晨，能帮你省下意想不到的工夫。"
+
+msgid "I will see you around."
+msgstr "回头见。"
+
+msgid "I am counting on it."
+msgstr "我就指望着呢。"
+
+msgid "I used to think of your farm as the new place outside town. Now it just feels like part of home."
+msgstr "我以前总把你的农场当成镇外那块“新地方”。现在，它就像家的一部分。"
+
+msgid "That means a lot."
+msgstr "这话对我很重要。"
+
+msgid "Good. I meant it."
+msgstr "那就好。我是认真的。"
+
+msgid "You are getting sentimental."
+msgstr "你开始多愁善感了。"
+
+msgid "Do not get used to it."
+msgstr "别太习惯。"
+
+msgid "I saved some time for you. Walk with me for a minute?"
+msgstr "我特意给你留了点时间。陪我走一会儿？"
+
+msgid "When you first arrived, I expected another person who would rush through a season and disappear."
+msgstr "你刚来的时候，我以为你也会匆匆过完一个季节，然后消失。"
+
+msgid "You stayed, helped people, and actually learned how this place works. I am glad I was wrong."
+msgstr "可你留下了，帮了大家，也真的学会了这里是怎么运转的。很高兴我当初看错了。"
+
+msgid "I am glad I stayed too."
+msgstr "我也很庆幸自己留下来了。"
+
+msgid "Then keep staying."
+msgstr "那就继续留下来。"
+
+msgid "I still have a lot to learn."
+msgstr "我还有很多要学。"
+
+msgid "That is probably why you fit in."
+msgstr "也许这正是你能融进这里的原因。"
+
+msgid "I started leaving a little space in the garden plan for whatever strange crop you decide to bring home next."
+msgstr "我现在做花园计划时，会特意留一小块地方，等着看你下次又会带什么奇怪作物回来。"
+
+msgid "You plan around me now?"
+msgstr "你现在都把我算进计划里了？"
+
+msgid "Around your surprises. There is a difference."
+msgstr "我算进去的是你那些“惊喜”。这可不一样。"
+
+msgid "I will try to make it worth the space."
+msgstr "我会尽量让那块地方值得留下。"
+
+msgid "You usually do."
+msgstr "你通常都做得到。"
+
+msgid "When I set aside good seed now, I catch myself wondering what you would grow with it."
+msgstr "现在每次留下一批好种子，我都会忍不住想：换成你，会拿它种什么？"
+
+msgid "Save me the difficult ones."
+msgstr "难种的留给我。"
+
+msgid "I knew you would say that."
+msgstr "我就知道你会这么说。"
+
+msgid "Keep some for yourself too."
+msgstr "你自己也留一些。"
+
+msgid "That is why I trust you with the rest."
+msgstr "所以我才敢把剩下的交给你。"
+
+msgid "I used to measure seasons by planting dates. Lately I measure them by who I expect to still be here when they change."
+msgstr "我以前用播种日期来丈量季节。最近，我开始看季节变换时，自己期待哪些人还会留在这里。"
+
+msgid "I am not going anywhere."
+msgstr "我哪儿也不去。"
+
+msgid "Good. Neither am I."
+msgstr "很好。我也是。"
+
+msgid "Look at the garden beds now. Before the restoration, half of this ground was giving up."
+msgstr "看看现在这些花圃。修复之前，这片地有一半都快放弃了。"
+
+msgid "You did more than donate materials. You convinced people the place was worth investing in again."
+msgstr "你做的不只是捐材料。你让大家重新相信，这地方值得继续投入。"
+
+msgid "The town did the work together."
+msgstr "是整个镇一起完成的。"
+
+msgid "Exactly. You are learning what makes a place last."
+msgstr "对。你正在学会，一处地方为什么能长久存在。"
+
+msgid "I just wanted the garden back."
+msgstr "我只是想把花园找回来。"
+
+msgid "Practical motives can still grow into something bigger."
+msgstr "很实际的理由，也能慢慢长成更大的东西。"
+
+msgid "Funny meeting you in Riverside. A year ago these towns felt farther apart than the road says they are."
+msgstr "没想到会在河畔镇碰见你。一年前，这几个镇之间的距离，感觉比道路上标的远得多。"
+
+msgid "Now I hear your name here almost as often as back home."
+msgstr "现在我在这里听到你的名字，几乎和在家那边一样多。"
+
+msgid "I like having reasons to cross the bridge."
+msgstr "我喜欢有理由过桥。"
+
+msgid "Then keep making good ones."
+msgstr "那就继续给自己找些好理由。"
+
+msgid "Maybe the valley is getting smaller."
+msgstr "也许这座山谷正变得越来越小。"
+
+msgid "Or our idea of home is getting larger."
+msgstr "或者，是我们心里“家”的范围变大了。"
+
+msgid "People ask me what you think before they start new work now."
+msgstr "现在大家开新工程前，都会先问我你怎么想。"
+
+msgid "I hope you realize that trust is heavier than praise. You have to keep carrying it after everyone stops clapping."
+msgstr "希望你明白，信任比称赞更沉。等掌声停了，你还是得继续把它扛着。"
+
+msgid "I can carry it."
+msgstr "我扛得住。"
+
+msgid "I know. That is why I said it to you."
+msgstr "我知道。所以我才会对你说这些。"
+
+msgid "The three towns are arguing about ordinary things again. That is how I know the rebuilding worked."
+msgstr "三个镇又开始为普通小事争起来了。我就是靠这个知道，重建真的成功了。"
+
+msgid "No emergency meetings, no broken routes. Just people planning next season."
+msgstr "没有紧急会议，没有断掉的路线。大家只是在计划下个季节。"
+
+msgid "What are you planning?"
+msgstr "那你在计划什么？"
+
+msgid "A garden with enough room for whatever comes next. I already saved you a row."
+msgstr "一座有足够空间迎接下一件新事物的花园。我已经给你留好一垄了。"
+
+msgid "Harbor's awake. Fish don't wait for sleepy people."
+msgstr "港口醒了。鱼可不会等爱睡懒觉的人。"
+
+msgid "What's biting today?"
+msgstr "今天什么鱼咬钩？"
+
+msgid "River fish are calmer inland. Out here, sardines are steady and mackerel get more interesting when conditions line up."
+msgstr "内陆的河鱼安稳些。海这边沙丁鱼一直很稳，条件合适时鲭鱼就更有意思了。"
+
+msgid "Heard anything from the boats?"
+msgstr "船上最近有什么消息？"
+
+msgid "Enough rumors to fill a warehouse. Bring me a good catch and I might sort truth from dockside nonsense."
+msgstr "多得能装满一整个仓库。给我带条像样的鱼来，我也许会替你分一分哪些是真的，哪些只是码头上的胡扯。"
+
+msgid "Watch the tide on your way back."
+msgstr "回去时留意潮水。"
+
+msgid "You are getting better at reading the harbor. At least you no longer look surprised when the weather changes its mind."
+msgstr "你越来越会读懂港口了。至少天气临时改主意时，你已经不会一脸惊讶。"
+
+msgid "High praise."
+msgstr "评价真高。"
+
+msgid "From me? Absolutely."
+msgstr "从我嘴里说出来？当然高。"
+
+msgid "I kept the better catch aside because I knew you would come by."
+msgstr "我把更好的那批渔获留了下来，因为我知道你会过来。"
+
+msgid "You were expecting me?"
+msgstr "你在等我？"
+
+msgid "Do not make it dramatic. I am good at patterns."
+msgstr "别搞得那么戏剧化。我只是很会看规律。"
+
+msgid "Come here. Watch the water between those two boats."
+msgstr "过来。看那两条船中间的水面。"
+
+msgid "See how the surface changes before the wind reaches us? My family taught me that when I was little."
+msgstr "看见风还没到这里之前，水面是怎么先变的吗？我小时候家里人就是这么教我的。"
+
+msgid "I do not usually stop long enough to teach anyone else."
+msgstr "我平时可不会停下来这么久教别人。"
+
+msgid "Thanks for showing me."
+msgstr "谢谢你教我。"
+
+msgid "Remember it next time the sky looks harmless."
+msgstr "下次天空看起来人畜无害时，记得这个。"
+
+msgid "I can tell which crate you are going to check before you even reach the stall now."
+msgstr "现在你还没走到摊位，我就知道你会先去看哪只箱子。"
+
+msgid "Predictable?"
+msgstr "我这么好猜？"
+
+msgid "Consistent. Fishermen pretend there is a difference, so you can too."
+msgstr "叫“稳定”。渔夫们总假装这两者有区别，你也可以。"
+
+msgid "Boats coming in from the outer route have started asking whether you have been through lately."
+msgstr "最近从外海路线回来的船，都开始问你有没有来过。"
+
+msgid "Should I be worried?"
+msgstr "我该担心吗？"
+
+msgid "Only if you dislike having a reputation for actually helping."
+msgstr "除非你讨厌别人觉得你真的很能帮上忙。"
+
+msgid "Harbor used to feel like a place everyone was about to leave. It does not feel that way lately."
+msgstr "以前港口总像是所有人都准备离开的地方。最近不太一样了。"
+
+msgid "What changed?"
+msgstr "什么变了？"
+
+msgid "Enough people decided to come back tomorrow."
+msgstr "有足够多的人决定：明天还会回来。"
+
+msgid "Riverside is moving supplies again. That means Harbor can finally stop rationing half the repair stock."
+msgstr "河畔镇又开始送物资过来了。港口终于不用把一半修理材料省着用了。"
+
+msgid "You keep fixing problems upstream and somehow they wash up here as good news."
+msgstr "你总是在上游解决问题，然后那些问题不知怎么就顺着水漂到这里，变成了好消息。"
+
+msgid "I will take that kind of current."
+msgstr "这种水流我接受。"
+
+msgid "Me too. We have enough of the other kind."
+msgstr "我也是。另一种水流我们已经够多了。"
+
+msgid "Watch the line where the dark water meets the bright water."
+msgstr "看那条深色水域和亮色水域交界的线。"
+
+msgid "You can read a tide chart, sure. But knowing when not to trust the chart takes years."
+msgstr "潮汐表当然可以看。但什么时候不能信潮汐表，要花很多年才能学会。"
+
+msgid "You are teaching me the exceptions now?"
+msgstr "你现在开始教我那些例外了？"
+
+msgid "That is what happens when someone keeps showing up."
+msgstr "谁让某个人一直都肯出现呢。"
+
+msgid "I know every captain who exaggerates, every dockhand who forgets details, and every gull that steals from this stall."
+msgstr "我知道哪个船长爱夸张，哪个码头工记不住细节，也认得每一只会从这个摊位偷东西的海鸥。"
+
+msgid "Somehow you made it onto the short list of people I do not have to second-guess."
+msgstr "不知怎么的，你进了那张很短的名单——几个我不用反复怀疑的人。"
+
+msgid "That sounds exhausting."
+msgstr "听起来很累。"
+
+msgid "Trust is extremely efficient. I recommend it selectively."
+msgstr "信任非常省事。我建议有选择地使用。"
+
+msgid "Look at the docks. Full stores, open routes, boats leaving because they have work instead of because there is nothing here."
+msgstr "看看码头。仓库是满的，航路是通的，船出海是因为有活干，不是因为这里什么都没有。"
+
+msgid "We spent so long keeping Harbor alive that I forgot it could actually grow."
+msgstr "我们花了太久，只顾着让港口活下去，差点忘了它其实还能长大。"
+
+msgid "What do you want it to become?"
+msgstr "你希望它变成什么样？"
+
+msgid "A place worth returning to. Seems we are already getting there."
+msgstr "一个值得回来的地方。看起来，我们已经快做到了。"
+
+msgid "Bridge is holding. That's a good day by my standards."
+msgstr "桥还撑得住。按我的标准，这就算好日子。"
+
+msgid "What are you working on?"
+msgstr "你在忙什么？"
+
+msgid "Mostly the east rail today. Water finds every weak joint eventually."
+msgstr "今天主要修东侧栏杆。水迟早会找到每一处薄弱接缝。"
+
+msgid "Any advice for the mine?"
+msgstr "去矿井有什么建议吗？"
+
+msgid "Take a pickaxe, keep your energy up, and don't let the quiet fool you. Old places make their own trouble."
+msgstr "带上镐，别把体力耗空，也别被那里的安静骗了。老地方总会自己找出麻烦。"
+
+msgid "Keep your tools dry."
+msgstr "工具记得保持干燥。"
+
+msgid "You have stopped looking like someone borrowing tools and started looking like someone who knows why they break."
+msgstr "你已经不像是来借工具的人了，倒开始像个知道工具为什么会坏的人。"
+
+msgid "I will take that as a compliment."
+msgstr "那我就当这是夸奖。"
+
+msgid "You should. I do not hand them out often."
+msgstr "本来就是。我可不常夸人。"
+
+msgid "If you ever need a hand reinforcing the farm, ask before the roof is already falling in."
+msgstr "以后农场要加固，记得在屋顶真的塌下来之前叫我。"
+
+msgid "I thought you liked difficult repairs."
+msgstr "我还以为你喜欢难修的工程。"
+
+msgid "I like repairs. I dislike preventable ones."
+msgstr "我喜欢修东西。我不喜欢本来可以避免的问题。"
+
+msgid "Hold this end of the rail for me."
+msgstr "帮我扶住栏杆这头。"
+
+msgid "Most people only notice a bridge when it fails. You have been showing up before things fail."
+msgstr "大多数人只有桥坏了才会注意它。你却会在东西坏掉之前出现。"
+
+msgid "That matters more than people think."
+msgstr "这比大家以为的重要得多。"
+
+msgid "Reliable work deserves company."
+msgstr "可靠的活儿值得有人一起做。"
+
+msgid "Hm. Maybe you are learning."
+msgstr "嗯。也许你真的学会点东西了。"
+
+msgid "I left a spare key for the workshop shelf. Do not make me regret that sentence."
+msgstr "我在工坊架子那儿留了一把备用钥匙。别让我后悔说出这句话。"
+
+msgid "That almost sounds like trust."
+msgstr "听起来几乎像是信任。"
+
+msgid "Do not ruin it by naming it."
+msgstr "别说破了，免得坏事。"
+
+msgid "The bridge sounds different after a proper repair. Less complaining in the joints."
+msgstr "桥修好以后，听起来都不一样。接缝没那么爱抱怨了。"
+
+msgid "You can hear that?"
+msgstr "这你都听得出来？"
+
+msgid "You can too. You just have to stop talking first."
+msgstr "你也听得出来。前提是先别说话。"
+
+msgid "If I ever rebuild the whole waterwheel, I already know who I am asking to stand on the unsafe side."
+msgstr "要是哪天我重修整座水轮，我已经知道该让谁站在不安全的那一边了。"
+
+msgid "That is your highest compliment yet."
+msgstr "这大概是你至今最高的夸奖了。"
+
+msgid "Correct."
+msgstr "没错。"
+
+msgid "Workshop fund came through. New braces, dry storage, tools that are not older than I am."
+msgstr "工坊基金批下来了。新支架、干燥的储藏间，还有终于没我年纪大的工具。"
+
+msgid "Most people like finished buildings. You helped before there was anything impressive to look at."
+msgstr "大多数人只喜欢已经完工的建筑。你是在还没有任何东西值得炫耀时就来帮忙的。"
+
+msgid "Foundations matter."
+msgstr "地基很重要。"
+
+msgid "Now you are stealing my lines."
+msgstr "现在连我的话都学会拿来用了。"
+
+msgid "Here. Take this plane for a moment."
+msgstr "来，这把刨子你拿一下。"
+
+msgid "I do not lend that one out. The balance is right and replacing it would annoy me for years."
+msgstr "这把我从不外借。它的平衡刚刚好，要是换一把，我能烦上好几年。"
+
+msgid "Then why hand it to me?"
+msgstr "那为什么交给我？"
+
+msgid "Because I know you will hand it back in the same condition."
+msgstr "因为我知道你会原样交回来。"
+
+msgid "I used to repair the bridge because somebody had to."
+msgstr "我以前修桥，只因为总得有人来修。"
+
+msgid "Lately I catch myself thinking about what it connects instead of what might fail next."
+msgstr "最近我会想它把什么连接在一起，而不是下一处哪里会坏。"
+
+msgid "That sounds healthier."
+msgstr "听起来健康多了。"
+
+msgid "Do not get ambitious. I still inspect every joint."
+msgstr "别想太多。我还是会检查每一道接缝。"
+
+msgid "Good structures are not one beam holding everything up. They work because the load gets shared."
+msgstr "好的结构不是靠一根梁撑住所有东西。它之所以可靠，是因为重量有人分担。"
+
+msgid "The towns finally feel like that again."
+msgstr "几个镇终于又有这种感觉了。"
+
+msgid "And us?"
+msgstr "那我们呢？"
+
+msgid "Same principle. Reliable, tested, and worth maintaining."
+msgstr "一个道理。可靠，经得起检验，也值得一直维护。"
+
+msgctxt "dialogue"
+msgid "Mira"
+msgstr "米拉"
+
+msgctxt "dialogue"
+msgid "Neri"
+msgstr "奈莉"
+
+msgctxt "dialogue"
+msgid "Rowan"
+msgstr "罗文"
+
+msgid "A balanced copper blade with a much cleaner edge than the rusty starter sword."
+msgstr "一把平衡良好的铜剑，刀刃比初始的生锈长剑利落得多。"
+
+msgid "A basic crafting and building material."
+msgstr "基础的制作与建造材料。"
+
+msgid "A basic rod for fishing in rivers and at the harbor."
+msgstr "一根基础钓竿，可用于河流和港口钓鱼。"
+
+msgid "A common but dependable river catch."
+msgstr "常见但可靠的河鱼。"
+
+msgid "A crisp root crop that thrives in Winter soil."
+msgstr "清脆的根茎作物，适合在冬季土壤中生长。"
+
+msgid "A crisp root vegetable grown on the farm."
+msgstr "农场种出的清脆根茎蔬菜。"
+
+msgid "A crisp root vegetable."
+msgstr "清脆的根茎蔬菜。"
+
+msgid "A fast coastal fish with rich meat."
+msgstr "游速很快的近海鱼，肉质丰厚。"
+
+msgid "A filling stew made from fresh farm vegetables."
+msgstr "用新鲜农场蔬菜炖成的饱腹料理。"
+
+msgid "A fresh farm egg."
+msgstr "新鲜的农场鸡蛋。"
+
+msgid "A gold hoe that tills four nearby plots per swing."
+msgstr "金锄头，每次可耕作附近四块土地。"
+
+msgid "A gold pickaxe built for the late mine floors before Iridium becomes necessary."
+msgstr "用于矿井后段的金镐，在必须使用铱制工具之前足以应对深层矿石。"
+
+msgid "A gold watering can that waters four nearby plots per use."
+msgstr "金洒水壶，每次可为附近四块土地浇水。"
+
+msgid "A hearty farm staple."
+msgstr "朴实耐饱的农场主食。"
+
+msgid "A heavy Autumn pumpkin with strong market value."
+msgstr "沉甸甸的秋季南瓜，市场价值很高。"
+
+msgid "A juicy summer tomato from a regrowing vine."
+msgstr "多汁的夏季番茄，藤蔓收获后还能继续结果。"
+
+msgid "A late-game alloy used for the strongest tools and weapons."
+msgstr "后期合金，用于打造最强等级的工具与武器。"
+
+msgid "A late-game blade capable of cutting through the strongest mine creatures."
+msgstr "后期强力刀剑，足以对付矿井中最危险的生物。"
+
+msgid "A light harbor-style soup that sharpens your fishing rhythm."
+msgstr "清爽的港口风味鱼汤，能让钓鱼节奏更加敏锐。"
+
+msgid "A lively freshwater trout."
+msgstr "活力十足的淡水鳟鱼。"
+
+msgid "A placeable 24-slot storage chest. Empty it before packing it up."
+msgstr "可放置的 24 格储物箱。收起前必须先清空。"
+
+msgid "A placeable artisan machine for pressing valuable oils. Active jobs continue while you are away."
+msgstr "可放置的加工机器，用于压榨高价值油品。离开场景后加工仍会继续。"
+
+msgid "A placeable furnace for smelting Copper Bars. Active jobs continue while you are away."
+msgstr "可放置的熔炉，用于冶炼铜锭。离开场景后冶炼仍会继续。"
+
+msgid "A powerful late-mine sword for the dangerous tiers before Iridium weapons."
+msgstr "矿井后段使用的强力长剑，在获得铱制武器前足以应对危险层级。"
+
+msgid "A rare eel that surfaces only when violent weather churns Harbor waters."
+msgstr "只有恶劣天气搅动港口海水时才会出现的稀有鳗鱼。"
+
+msgid "A refined gold bar used for advanced tools and late-game construction."
+msgstr "精炼金锭，用于高级工具和后期建设。"
+
+msgid "A refined iron bar used for stronger tools and construction."
+msgstr "精炼铁锭，用于更强的工具与建设。"
+
+msgid "A reinforced hoe that tills soil with less effort."
+msgstr "经过加固的锄头，耕地时更省体力。"
+
+msgid "A reliable iron sword for the middle mine floors."
+msgstr "可靠的铁剑，适合矿井中层使用。"
+
+msgid "A rich egg produced by a very happy chicken."
+msgstr "幸福度很高的鸡产下的优质鸡蛋。"
+
+msgid "A simple berry snack for long days outside."
+msgstr "简单的野莓点心，适合长时间外出时补充体力。"
+
+msgid "A small schooling fish from Harbor waters."
+msgstr "港口水域常见的小型群游鱼。"
+
+msgid "A sticky material left behind by cave slimes."
+msgstr "洞穴史莱姆留下的黏性材料。"
+
+msgid "A stronger pickaxe that breaks early mine nodes faster."
+msgstr "更强的镐，可更快击碎矿井前段的矿点。"
+
+msgid "A sturdy watering can that uses less energy per plot."
+msgstr "结实的洒水壶，每块土地消耗的体力更少。"
+
+msgid "A sweet berry gathered near town. Restores a little energy and makes a simple gift."
+msgstr "城镇附近采到的甜野莓。可恢复少量体力，也适合作为简单礼物。"
+
+msgid "A top-tier pickaxe forged for the final depths of the Old Mine."
+msgstr "顶级镐，专为旧矿井最深处打造。"
+
+msgid "A valuable truffle found by a well-kept pig."
+msgstr "由照料良好的猪找到的高价值松露。"
+
+msgid "An exceptional truffle found by a very happy pig."
+msgstr "幸福度极高的猪找到的极品松露。"
+
+msgid "An iridium hoe that tills five nearby plots per swing."
+msgstr "铱锄头，每次可耕作附近五块土地。"
+
+msgid "An iridium watering can that waters five nearby plots per use."
+msgstr "铱洒水壶，每次可为附近五块土地浇水。"
+
+msgid "An iron hoe that tills three nearby plots per swing."
+msgstr "铁锄头，每次可耕作附近三块土地。"
+
+msgid "An iron pickaxe capable of breaking Gold Veins."
+msgstr "铁镐，可以开采金矿脉。"
+
+msgid "An iron watering can that waters three nearby plots per use."
+msgstr "铁洒水壶，每次可为附近三块土地浇水。"
+
+msgid "An old blade. Crude, but enough for cave pests."
+msgstr "一把老旧的剑。虽然粗糙，但对付洞穴害兽足够了。"
+
+msgid "Breaks rocks and ore nodes."
+msgstr "用于击碎岩石和矿点。"
+
+msgid "Catch every fish species recorded by the archive."
+msgstr "钓到档案中记录的所有鱼类。"
+
+msgid "Cold-hardy seeds bred to grow through Winter."
+msgstr "耐寒种子，可在冬季生长。"
+
+msgid "Collect every animal product recorded by the archive."
+msgstr "收集档案中记录的所有动物产物。"
+
+msgid "Common building stone from the old mine."
+msgstr "旧矿井中常见的建筑石料。"
+
+msgid "Dense ore found from Mine Floor 6 onward."
+msgstr "从矿井第 6 层开始出现的高密度矿石。"
+
+msgid "Dense violet ore found from Mine Floor 60 onward."
+msgstr "从矿井第 60 层开始出现的致密紫色矿石。"
+
+msgid "Dry feed for Coop and Barn animals. One piece feeds one animal for the day."
+msgstr "供鸡舍和畜棚动物食用的干草。一份可供一只动物一天所需。"
+
+msgid "Expand the Big Barn from 8 to 12 animal slots using deep-mine metals."
+msgstr "使用深层矿井金属，将大型畜棚容量从 8 扩至 12。"
+
+msgid "Expand the Big Coop from 8 to 12 animal slots using deep-mine metals."
+msgstr "使用深层矿井金属，将大型鸡舍容量从 8 扩至 12。"
+
+msgid "Expand the Starter Farm barn from 4 to 8 animal slots."
+msgstr "将起始农场畜棚容量从 4 扩至 8。"
+
+msgid "Expand the Starter Farm coop from 4 to 8 animal slots."
+msgstr "将起始农场鸡舍容量从 4 扩至 8。"
+
+msgid "Fast-growing seeds for Spring and Autumn."
+msgstr "适合春季和秋季的快速生长种子。"
+
+msgid "Fresh milk from a happy cow."
+msgstr "幸福奶牛产出的新鲜牛奶。"
+
+msgid "Fresh seaweed gathered along Harbor Town's shoreline."
+msgstr "从港口镇海岸采集的新鲜海草。"
+
+msgid "Harvest every crop recorded by the valley archive."
+msgstr "收获山谷档案中记录的所有作物。"
+
+msgid "High-quality milk from a very happy cow."
+msgstr "幸福度很高的奶牛产出的优质牛奶。"
+
+msgid "Mine every mineral type recorded by the archive."
+msgstr "开采档案中记录的所有矿物种类。"
+
+msgid "Place it on the Starter Farm to water nearby plots each morning."
+msgstr "放置在起始农场后，每天早晨会自动为附近土地浇水。"
+
+msgid "Plant in tilled soil during Spring or Autumn."
+msgstr "春季或秋季可种在已耕土地上。"
+
+msgid "Rare ore found in the deeper mine from Floor 20 onward."
+msgstr "从矿井第 20 层开始出现的稀有矿石。"
+
+msgid "Raw copper ore from mineral veins."
+msgstr "从矿脉中开采出的原始铜矿石。"
+
+msgid "Refined copper used for tool upgrades and machinery."
+msgstr "精炼铜锭，用于工具升级和机器制作。"
+
+msgid "Reliable Spring and Autumn seed potatoes."
+msgstr "适合春季和秋季种植的可靠土豆种薯。"
+
+msgid "Rich oil pressed from a fresh truffle. A valuable artisan product."
+msgstr "用新鲜松露压榨出的浓郁油品，是高价值的加工产品。"
+
+msgid "Slow-growing Autumn seeds with a valuable harvest."
+msgstr "生长较慢的秋季种子，但收获价值很高。"
+
+msgid "Smelt Gold Bar"
+msgstr "冶炼金锭"
+
+msgid "Smelt Iridium Bar"
+msgstr "冶炼铱锭"
+
+msgid "Smelt Iron Bar"
+msgstr "冶炼铁锭"
+
+msgid "Steadies your hands and makes bites easier to react to."
+msgstr "让双手更加稳定，更容易及时应对鱼咬钩。"
+
+msgid "Summer seeds that keep producing after the first harvest."
+msgstr "夏季种子，第一次收获后还能继续结果。"
+
+msgid "Tills a farm plot."
+msgstr "用于耕作农田。"
+
+msgid "Warm food makes chores easier for a while."
+msgstr "热腾腾的食物能在一段时间内让劳作更轻松。"
+
+msgid "Waters tilled soil so crops can grow overnight."
+msgstr "为已耕土地浇水，让作物能在夜间生长。"
+
+msgid "Kitchen"
+msgstr "厨房"
+
+msgid "Accessibility..."
+msgstr "无障碍设置..."
+
+msgid "Accessibility"
+msgstr "无障碍设置"
+
+msgid "Weather Effects"
+msgstr "天气视觉效果"
+
+msgid "Reduce Motion"
+msgstr "减少动态效果"
+
+msgid "Reduce Motion removes scene fades and animated rain/lightning while preserving weather gameplay."
+msgstr "减少动态效果会关闭场景淡入淡出和动态雨/闪电，同时保留天气玩法。"
+
+msgctxt "dialogue"
+msgid "Welcome to Starter Town. It is good to see the old farm active again."
+msgstr "欢迎来到起始镇。看到那座老农场重新有了动静，真不错。"
+
+msgctxt "dialogue"
+msgid "Where should I begin?"
+msgstr "我该从哪里开始？"
+
+msgctxt "dialogue"
+msgid "Tend the field, explore the valley, and talk to people when you see them. There is always more work than one pair of hands can finish."
+msgstr "先照料田地，多去山谷里走走，看到人就聊上几句。这里的活儿，永远不是一双手能全做完的。"
+
+msgctxt "dialogue"
+msgid "What is beyond town?"
+msgstr "镇外还有什么？"
+
+msgctxt "dialogue"
+msgid "Riverside is across the bridge, Harbor Town is farther east, and the Old Mine is worth visiting once you have a proper pickaxe."
+msgstr "过桥就是河畔镇，再往东是港口镇。等你有把像样的镐，旧矿井也值得去看看。"
+
+msgctxt "dialogue"
+msgid "See you later."
+msgstr "回头见。"
+
+msgctxt "dialogue"
+msgid "See you around."
+msgstr "镇上见。"
+
+msgctxt "dialogue"
+msgid "You have become part of the rhythm around here. I notice when the farm is quiet now."
+msgstr "你已经成了这里日常节奏的一部分。现在农场一安静下来，我都会注意到。"
+
+msgctxt "dialogue"
+msgid "Anything I can help with?"
+msgstr "有什么我能帮忙的吗？"
+
+msgctxt "dialogue"
+msgid "Keep an eye on the weather. A rainy morning can save you a surprising amount of work."
+msgstr "多留意天气。一个下雨的早晨，能帮你省下意想不到的工夫。"
+
+msgctxt "dialogue"
+msgid "I will see you around."
+msgstr "回头见。"
+
+msgctxt "dialogue"
+msgid "I am counting on it."
+msgstr "我就指望着呢。"
+
+msgctxt "dialogue"
+msgid "I used to think of your farm as the new place outside town. Now it just feels like part of home."
+msgstr "我以前总把你的农场当成镇外那块“新地方”。现在，它就像家的一部分。"
+
+msgctxt "dialogue"
+msgid "That means a lot."
+msgstr "这话对我很重要。"
+
+msgctxt "dialogue"
+msgid "Good. I meant it."
+msgstr "那就好。我是认真的。"
+
+msgctxt "dialogue"
+msgid "You are getting sentimental."
+msgstr "你开始多愁善感了。"
+
+msgctxt "dialogue"
+msgid "Do not get used to it."
+msgstr "别太习惯。"
+
+msgctxt "dialogue"
+msgid "I saved some time for you. Walk with me for a minute?"
+msgstr "我特意给你留了点时间。陪我走一会儿？"
+
+msgctxt "dialogue"
+msgid "When you first arrived, I expected another person who would rush through a season and disappear."
+msgstr "你刚来的时候，我以为你也会匆匆过完一个季节，然后消失。"
+
+msgctxt "dialogue"
+msgid "You stayed, helped people, and actually learned how this place works. I am glad I was wrong."
+msgstr "可你留下了，帮了大家，也真的学会了这里是怎么运转的。很高兴我当初看错了。"
+
+msgctxt "dialogue"
+msgid "I am glad I stayed too."
+msgstr "我也很庆幸自己留下来了。"
+
+msgctxt "dialogue"
+msgid "Then keep staying."
+msgstr "那就继续留下来。"
+
+msgctxt "dialogue"
+msgid "I still have a lot to learn."
+msgstr "我还有很多要学。"
+
+msgctxt "dialogue"
+msgid "That is probably why you fit in."
+msgstr "也许这正是你能融进这里的原因。"
+
+msgctxt "dialogue"
+msgid "I started leaving a little space in the garden plan for whatever strange crop you decide to bring home next."
+msgstr "我现在做花园计划时，会特意留一小块地方，等着看你下次又会带什么奇怪作物回来。"
+
+msgctxt "dialogue"
+msgid "You plan around me now?"
+msgstr "你现在都把我算进计划里了？"
+
+msgctxt "dialogue"
+msgid "Around your surprises. There is a difference."
+msgstr "我算进去的是你那些“惊喜”。这可不一样。"
+
+msgctxt "dialogue"
+msgid "I will try to make it worth the space."
+msgstr "我会尽量让那块地方值得留下。"
+
+msgctxt "dialogue"
+msgid "You usually do."
+msgstr "你通常都做得到。"
+
+msgctxt "dialogue"
+msgid "When I set aside good seed now, I catch myself wondering what you would grow with it."
+msgstr "现在每次留下一批好种子，我都会忍不住想：换成你，会拿它种什么？"
+
+msgctxt "dialogue"
+msgid "Save me the difficult ones."
+msgstr "难种的留给我。"
+
+msgctxt "dialogue"
+msgid "I knew you would say that."
+msgstr "我就知道你会这么说。"
+
+msgctxt "dialogue"
+msgid "Keep some for yourself too."
+msgstr "你自己也留一些。"
+
+msgctxt "dialogue"
+msgid "That is why I trust you with the rest."
+msgstr "所以我才敢把剩下的交给你。"
+
+msgctxt "dialogue"
+msgid "I used to measure seasons by planting dates. Lately I measure them by who I expect to still be here when they change."
+msgstr "我以前用播种日期来丈量季节。最近，我开始看季节变换时，自己期待哪些人还会留在这里。"
+
+msgctxt "dialogue"
+msgid "I am not going anywhere."
+msgstr "我哪儿也不去。"
+
+msgctxt "dialogue"
+msgid "Good. Neither am I."
+msgstr "很好。我也是。"
+
+msgctxt "dialogue"
+msgid "Look at the garden beds now. Before the restoration, half of this ground was giving up."
+msgstr "看看现在这些花圃。修复之前，这片地有一半都快放弃了。"
+
+msgctxt "dialogue"
+msgid "You did more than donate materials. You convinced people the place was worth investing in again."
+msgstr "你做的不只是捐材料。你让大家重新相信，这地方值得继续投入。"
+
+msgctxt "dialogue"
+msgid "The town did the work together."
+msgstr "是整个镇一起完成的。"
+
+msgctxt "dialogue"
+msgid "Exactly. You are learning what makes a place last."
+msgstr "对。你正在学会，一处地方为什么能长久存在。"
+
+msgctxt "dialogue"
+msgid "I just wanted the garden back."
+msgstr "我只是想把花园找回来。"
+
+msgctxt "dialogue"
+msgid "Practical motives can still grow into something bigger."
+msgstr "很实际的理由，也能慢慢长成更大的东西。"
+
+msgctxt "dialogue"
+msgid "Funny meeting you in Riverside. A year ago these towns felt farther apart than the road says they are."
+msgstr "没想到会在河畔镇碰见你。一年前，这几个镇之间的距离，感觉比道路上标的远得多。"
+
+msgctxt "dialogue"
+msgid "Now I hear your name here almost as often as back home."
+msgstr "现在我在这里听到你的名字，几乎和在家那边一样多。"
+
+msgctxt "dialogue"
+msgid "I like having reasons to cross the bridge."
+msgstr "我喜欢有理由过桥。"
+
+msgctxt "dialogue"
+msgid "Then keep making good ones."
+msgstr "那就继续给自己找些好理由。"
+
+msgctxt "dialogue"
+msgid "Maybe the valley is getting smaller."
+msgstr "也许这座山谷正变得越来越小。"
+
+msgctxt "dialogue"
+msgid "Or our idea of home is getting larger."
+msgstr "或者，是我们心里“家”的范围变大了。"
+
+msgctxt "dialogue"
+msgid "People ask me what you think before they start new work now."
+msgstr "现在大家开新工程前，都会先问我你怎么想。"
+
+msgctxt "dialogue"
+msgid "I hope you realize that trust is heavier than praise. You have to keep carrying it after everyone stops clapping."
+msgstr "希望你明白，信任比称赞更沉。等掌声停了，你还是得继续把它扛着。"
+
+msgctxt "dialogue"
+msgid "I can carry it."
+msgstr "我扛得住。"
+
+msgctxt "dialogue"
+msgid "I know. That is why I said it to you."
+msgstr "我知道。所以我才会对你说这些。"
+
+msgctxt "dialogue"
+msgid "The three towns are arguing about ordinary things again. That is how I know the rebuilding worked."
+msgstr "三个镇又开始为普通小事争起来了。我就是靠这个知道，重建真的成功了。"
+
+msgctxt "dialogue"
+msgid "No emergency meetings, no broken routes. Just people planning next season."
+msgstr "没有紧急会议，没有断掉的路线。大家只是在计划下个季节。"
+
+msgctxt "dialogue"
+msgid "What are you planning?"
+msgstr "那你在计划什么？"
+
+msgctxt "dialogue"
+msgid "A garden with enough room for whatever comes next. I already saved you a row."
+msgstr "一座有足够空间迎接下一件新事物的花园。我已经给你留好一垄了。"
+
+msgctxt "dialogue"
+msgid "Harbor's awake. Fish don't wait for sleepy people."
+msgstr "港口醒了。鱼可不会等爱睡懒觉的人。"
+
+msgctxt "dialogue"
+msgid "What's biting today?"
+msgstr "今天什么鱼咬钩？"
+
+msgctxt "dialogue"
+msgid "River fish are calmer inland. Out here, sardines are steady and mackerel get more interesting when conditions line up."
+msgstr "内陆的河鱼安稳些。海这边沙丁鱼一直很稳，条件合适时鲭鱼就更有意思了。"
+
+msgctxt "dialogue"
+msgid "Heard anything from the boats?"
+msgstr "船上最近有什么消息？"
+
+msgctxt "dialogue"
+msgid "Enough rumors to fill a warehouse. Bring me a good catch and I might sort truth from dockside nonsense."
+msgstr "多得能装满一整个仓库。给我带条像样的鱼来，我也许会替你分一分哪些是真的，哪些只是码头上的胡扯。"
+
+msgctxt "dialogue"
+msgid "Watch the tide on your way back."
+msgstr "回去时留意潮水。"
+
+msgctxt "dialogue"
+msgid "You are getting better at reading the harbor. At least you no longer look surprised when the weather changes its mind."
+msgstr "你越来越会读懂港口了。至少天气临时改主意时，你已经不会一脸惊讶。"
+
+msgctxt "dialogue"
+msgid "High praise."
+msgstr "评价真高。"
+
+msgctxt "dialogue"
+msgid "From me? Absolutely."
+msgstr "从我嘴里说出来？当然高。"
+
+msgctxt "dialogue"
+msgid "I kept the better catch aside because I knew you would come by."
+msgstr "我把更好的那批渔获留了下来，因为我知道你会过来。"
+
+msgctxt "dialogue"
+msgid "You were expecting me?"
+msgstr "你在等我？"
+
+msgctxt "dialogue"
+msgid "Do not make it dramatic. I am good at patterns."
+msgstr "别搞得那么戏剧化。我只是很会看规律。"
+
+msgctxt "dialogue"
+msgid "Come here. Watch the water between those two boats."
+msgstr "过来。看那两条船中间的水面。"
+
+msgctxt "dialogue"
+msgid "See how the surface changes before the wind reaches us? My family taught me that when I was little."
+msgstr "看见风还没到这里之前，水面是怎么先变的吗？我小时候家里人就是这么教我的。"
+
+msgctxt "dialogue"
+msgid "I do not usually stop long enough to teach anyone else."
+msgstr "我平时可不会停下来这么久教别人。"
+
+msgctxt "dialogue"
+msgid "Thanks for showing me."
+msgstr "谢谢你教我。"
+
+msgctxt "dialogue"
+msgid "Remember it next time the sky looks harmless."
+msgstr "下次天空看起来人畜无害时，记得这个。"
+
+msgctxt "dialogue"
+msgid "I can tell which crate you are going to check before you even reach the stall now."
+msgstr "现在你还没走到摊位，我就知道你会先去看哪只箱子。"
+
+msgctxt "dialogue"
+msgid "Predictable?"
+msgstr "我这么好猜？"
+
+msgctxt "dialogue"
+msgid "Consistent. Fishermen pretend there is a difference, so you can too."
+msgstr "叫“稳定”。渔夫们总假装这两者有区别，你也可以。"
+
+msgctxt "dialogue"
+msgid "Boats coming in from the outer route have started asking whether you have been through lately."
+msgstr "最近从外海路线回来的船，都开始问你有没有来过。"
+
+msgctxt "dialogue"
+msgid "Should I be worried?"
+msgstr "我该担心吗？"
+
+msgctxt "dialogue"
+msgid "Only if you dislike having a reputation for actually helping."
+msgstr "除非你讨厌别人觉得你真的很能帮上忙。"
+
+msgctxt "dialogue"
+msgid "Harbor used to feel like a place everyone was about to leave. It does not feel that way lately."
+msgstr "以前港口总像是所有人都准备离开的地方。最近不太一样了。"
+
+msgctxt "dialogue"
+msgid "What changed?"
+msgstr "什么变了？"
+
+msgctxt "dialogue"
+msgid "Enough people decided to come back tomorrow."
+msgstr "有足够多的人决定：明天还会回来。"
+
+msgctxt "dialogue"
+msgid "Riverside is moving supplies again. That means Harbor can finally stop rationing half the repair stock."
+msgstr "河畔镇又开始送物资过来了。港口终于不用把一半修理材料省着用了。"
+
+msgctxt "dialogue"
+msgid "You keep fixing problems upstream and somehow they wash up here as good news."
+msgstr "你总是在上游解决问题，然后那些问题不知怎么就顺着水漂到这里，变成了好消息。"
+
+msgctxt "dialogue"
+msgid "I will take that kind of current."
+msgstr "这种水流我接受。"
+
+msgctxt "dialogue"
+msgid "Me too. We have enough of the other kind."
+msgstr "我也是。另一种水流我们已经够多了。"
+
+msgctxt "dialogue"
+msgid "Watch the line where the dark water meets the bright water."
+msgstr "看那条深色水域和亮色水域交界的线。"
+
+msgctxt "dialogue"
+msgid "You can read a tide chart, sure. But knowing when not to trust the chart takes years."
+msgstr "潮汐表当然可以看。但什么时候不能信潮汐表，要花很多年才能学会。"
+
+msgctxt "dialogue"
+msgid "You are teaching me the exceptions now?"
+msgstr "你现在开始教我那些例外了？"
+
+msgctxt "dialogue"
+msgid "That is what happens when someone keeps showing up."
+msgstr "谁让某个人一直都肯出现呢。"
+
+msgctxt "dialogue"
+msgid "I know every captain who exaggerates, every dockhand who forgets details, and every gull that steals from this stall."
+msgstr "我知道哪个船长爱夸张，哪个码头工记不住细节，也认得每一只会从这个摊位偷东西的海鸥。"
+
+msgctxt "dialogue"
+msgid "Somehow you made it onto the short list of people I do not have to second-guess."
+msgstr "不知怎么的，你进了那张很短的名单——几个我不用反复怀疑的人。"
+
+msgctxt "dialogue"
+msgid "That sounds exhausting."
+msgstr "听起来很累。"
+
+msgctxt "dialogue"
+msgid "Trust is extremely efficient. I recommend it selectively."
+msgstr "信任非常省事。我建议有选择地使用。"
+
+msgctxt "dialogue"
+msgid "Look at the docks. Full stores, open routes, boats leaving because they have work instead of because there is nothing here."
+msgstr "看看码头。仓库是满的，航路是通的，船出海是因为有活干，不是因为这里什么都没有。"
+
+msgctxt "dialogue"
+msgid "We spent so long keeping Harbor alive that I forgot it could actually grow."
+msgstr "我们花了太久，只顾着让港口活下去，差点忘了它其实还能长大。"
+
+msgctxt "dialogue"
+msgid "What do you want it to become?"
+msgstr "你希望它变成什么样？"
+
+msgctxt "dialogue"
+msgid "A place worth returning to. Seems we are already getting there."
+msgstr "一个值得回来的地方。看起来，我们已经快做到了。"
+
+msgctxt "dialogue"
+msgid "Bridge is holding. That's a good day by my standards."
+msgstr "桥还撑得住。按我的标准，这就算好日子。"
+
+msgctxt "dialogue"
+msgid "What are you working on?"
+msgstr "你在忙什么？"
+
+msgctxt "dialogue"
+msgid "Mostly the east rail today. Water finds every weak joint eventually."
+msgstr "今天主要修东侧栏杆。水迟早会找到每一处薄弱接缝。"
+
+msgctxt "dialogue"
+msgid "Any advice for the mine?"
+msgstr "去矿井有什么建议吗？"
+
+msgctxt "dialogue"
+msgid "Take a pickaxe, keep your energy up, and don't let the quiet fool you. Old places make their own trouble."
+msgstr "带上镐，别把体力耗空，也别被那里的安静骗了。老地方总会自己找出麻烦。"
+
+msgctxt "dialogue"
+msgid "Keep your tools dry."
+msgstr "工具记得保持干燥。"
+
+msgctxt "dialogue"
+msgid "You have stopped looking like someone borrowing tools and started looking like someone who knows why they break."
+msgstr "你已经不像是来借工具的人了，倒开始像个知道工具为什么会坏的人。"
+
+msgctxt "dialogue"
+msgid "I will take that as a compliment."
+msgstr "那我就当这是夸奖。"
+
+msgctxt "dialogue"
+msgid "You should. I do not hand them out often."
+msgstr "本来就是。我可不常夸人。"
+
+msgctxt "dialogue"
+msgid "If you ever need a hand reinforcing the farm, ask before the roof is already falling in."
+msgstr "以后农场要加固，记得在屋顶真的塌下来之前叫我。"
+
+msgctxt "dialogue"
+msgid "I thought you liked difficult repairs."
+msgstr "我还以为你喜欢难修的工程。"
+
+msgctxt "dialogue"
+msgid "I like repairs. I dislike preventable ones."
+msgstr "我喜欢修东西。我不喜欢本来可以避免的问题。"
+
+msgctxt "dialogue"
+msgid "Hold this end of the rail for me."
+msgstr "帮我扶住栏杆这头。"
+
+msgctxt "dialogue"
+msgid "Most people only notice a bridge when it fails. You have been showing up before things fail."
+msgstr "大多数人只有桥坏了才会注意它。你却会在东西坏掉之前出现。"
+
+msgctxt "dialogue"
+msgid "That matters more than people think."
+msgstr "这比大家以为的重要得多。"
+
+msgctxt "dialogue"
+msgid "Reliable work deserves company."
+msgstr "可靠的活儿值得有人一起做。"
+
+msgctxt "dialogue"
+msgid "Hm. Maybe you are learning."
+msgstr "嗯。也许你真的学会点东西了。"
+
+msgctxt "dialogue"
+msgid "I left a spare key for the workshop shelf. Do not make me regret that sentence."
+msgstr "我在工坊架子那儿留了一把备用钥匙。别让我后悔说出这句话。"
+
+msgctxt "dialogue"
+msgid "That almost sounds like trust."
+msgstr "听起来几乎像是信任。"
+
+msgctxt "dialogue"
+msgid "Do not ruin it by naming it."
+msgstr "别说破了，免得坏事。"
+
+msgctxt "dialogue"
+msgid "The bridge sounds different after a proper repair. Less complaining in the joints."
+msgstr "桥修好以后，听起来都不一样。接缝没那么爱抱怨了。"
+
+msgctxt "dialogue"
+msgid "You can hear that?"
+msgstr "这你都听得出来？"
+
+msgctxt "dialogue"
+msgid "You can too. You just have to stop talking first."
+msgstr "你也听得出来。前提是先别说话。"
+
+msgctxt "dialogue"
+msgid "If I ever rebuild the whole waterwheel, I already know who I am asking to stand on the unsafe side."
+msgstr "要是哪天我重修整座水轮，我已经知道该让谁站在不安全的那一边了。"
+
+msgctxt "dialogue"
+msgid "That is your highest compliment yet."
+msgstr "这大概是你至今最高的夸奖了。"
+
+msgctxt "dialogue"
+msgid "Correct."
+msgstr "没错。"
+
+msgctxt "dialogue"
+msgid "Workshop fund came through. New braces, dry storage, tools that are not older than I am."
+msgstr "工坊基金批下来了。新支架、干燥的储藏间，还有终于没我年纪大的工具。"
+
+msgctxt "dialogue"
+msgid "Most people like finished buildings. You helped before there was anything impressive to look at."
+msgstr "大多数人只喜欢已经完工的建筑。你是在还没有任何东西值得炫耀时就来帮忙的。"
+
+msgctxt "dialogue"
+msgid "Foundations matter."
+msgstr "地基很重要。"
+
+msgctxt "dialogue"
+msgid "Now you are stealing my lines."
+msgstr "现在连我的话都学会拿来用了。"
+
+msgctxt "dialogue"
+msgid "Here. Take this plane for a moment."
+msgstr "来，这把刨子你拿一下。"
+
+msgctxt "dialogue"
+msgid "I do not lend that one out. The balance is right and replacing it would annoy me for years."
+msgstr "这把我从不外借。它的平衡刚刚好，要是换一把，我能烦上好几年。"
+
+msgctxt "dialogue"
+msgid "Then why hand it to me?"
+msgstr "那为什么交给我？"
+
+msgctxt "dialogue"
+msgid "Because I know you will hand it back in the same condition."
+msgstr "因为我知道你会原样交回来。"
+
+msgctxt "dialogue"
+msgid "I used to repair the bridge because somebody had to."
+msgstr "我以前修桥，只因为总得有人来修。"
+
+msgctxt "dialogue"
+msgid "Lately I catch myself thinking about what it connects instead of what might fail next."
+msgstr "最近我会想它把什么连接在一起，而不是下一处哪里会坏。"
+
+msgctxt "dialogue"
+msgid "That sounds healthier."
+msgstr "听起来健康多了。"
+
+msgctxt "dialogue"
+msgid "Do not get ambitious. I still inspect every joint."
+msgstr "别想太多。我还是会检查每一道接缝。"
+
+msgctxt "dialogue"
+msgid "Good structures are not one beam holding everything up. They work because the load gets shared."
+msgstr "好的结构不是靠一根梁撑住所有东西。它之所以可靠，是因为重量有人分担。"
+
+msgctxt "dialogue"
+msgid "The towns finally feel like that again."
+msgstr "几个镇终于又有这种感觉了。"
+
+msgctxt "dialogue"
+msgid "And us?"
+msgstr "那我们呢？"
+
+msgctxt "dialogue"
+msgid "Same principle. Reliable, tested, and worth maintaining."
+msgstr "一个道理。可靠，经得起检验，也值得一直维护。"
+
+msgid "Mira"
+msgstr "米拉"
+
+msgid "Neri"
+msgstr "奈莉"
+
+msgid "Rowan"
+msgstr "罗文"
+
+msgid "Support"
+msgstr "支持"
+
+msgid "Support bundles contain technical logs and save summaries, never raw saves."
+msgstr "支持诊断包包含技术日志和存档摘要，不包含原始存档。"
+
+msgid "Export Support Bundle"
+msgstr "导出支持诊断包"
+
+msgid "Open Support Folder"
+msgstr "打开支持文件夹"
+
+msgid "Support bundle could not be created"
+msgstr "无法创建支持诊断包"
+
+msgid "Support bundle created: %s"
+msgstr "已创建支持诊断包：%s"
+
+msgid "Finish fishing before saving"
+msgstr "请先结束钓鱼再保存"
+
+msgid "Could not update compatible backup (%d)"
+msgstr "无法更新兼容备份（%d）"
+
+msgid "Game saved to compatible backup · newer primary preserved"
+msgstr "已保存到兼容备份 · 较新的主存档已保留"
+
+msgid "Save file is from a newer game version"
+msgstr "该存档来自更新的游戏版本"
+
+msgid "Loaded Slot %d from compatible temporary save · newer primary preserved"
+msgstr "已从兼容的临时存档读取存档位 %d · 较新的主存档已保留"
+
+msgid "Loaded Slot %d from compatible backup · newer primary preserved"
+msgstr "已从兼容备份读取存档位 %d · 较新的主存档已保留"
+
+msgid "Advanced time by 1 hour"
+msgstr "时间已推进 1 小时"
+
+msgid "Tilled %d plots"
+msgstr "已翻耕 %d 块农田"
+
+msgid "Watered %d plots"
+msgstr "已浇灌 %d 块农田"
+
+msgid "Home Chest"
+msgstr "家用储物箱"
+
+msgid "Morning walk"
+msgstr "晨间散步"
+
+msgid "Browse Village Market"
+msgstr "逛村庄集市"
+
+msgid "Visit the east side"
+msgstr "去镇子东边走走"
+
+msgid "Return home"
+msgstr "回家"
+
+msgid "Sunday visit to Riverside"
+msgstr "周日去河畔镇"
+
+msgid "Shelter from the storm"
+msgstr "躲避暴风雨"
+
+msgid "Open the workshop"
+msgstr "打开工坊"
+
+msgid "Inspect the bridge"
+msgstr "检查桥梁"
+
+msgid "Lunch at the tavern"
+msgstr "在酒馆吃午饭"
+
+msgid "Finish repairs"
+msgstr "完成修理"
+
+msgid "Close the storage shed"
+msgstr "关好储物棚"
+
+msgid "Secure the shed during the storm"
+msgstr "暴风雨中加固储物棚"
+
+msgid "Inspect the morning catch"
+msgstr "查看早晨的渔获"
+
+msgid "Sort nets at the dock"
+msgstr "在码头整理渔网"
+
+msgid "Trade at the harbor market"
+msgstr "在港口集市做买卖"
+
+msgid "Wait out the storm at the tavern"
+msgstr "在酒馆等暴风雨过去"
+
+msgid "Visit the Spring Seed Fair"
+msgstr "逛春季种子集市"
+
+msgid "Join the Summer River Fair"
+msgstr "参加夏季河畔节"
+
+msgid "Watch the Harbor Derby"
+msgstr "观看港口大赛"
+
+msgid "Attend Lantern Night"
+msgstr "参加灯笼夜"

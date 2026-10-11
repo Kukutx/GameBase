@@ -276,10 +276,10 @@ test("a backtick reference to a concrete repository file goes through the same e
 
   const ignored = findBrokenRepositoryReferences(
     [
-      "A directory: `game/art/licensed/`.",
-      "Generated output: `build/windows/GameBase.exe`.",
+      "A directory: `games/farm1/game/art/licensed/`.",
+      "Generated output: `build/farm1/windows/Farm1.exe`.",
       "A command: `node tools/validate.js --skip-soak`.",
-      "A glob: `game/**/*.gd`.",
+      "A glob: `games/*/game/**/*.gd`.",
     ].join("\n"),
     ".agents/rules/docs.md",
     () => false,
@@ -383,16 +383,16 @@ test("supporting material must be reachable from its entry, by repository path o
 
 test("the required path routes cover every path rule owner", () => {
   assert.deepEqual(REQUIRED_AGENT_PATH_ROUTES, [
-    ["`game/**/*.gd`", "`.agents/rules/gdscript.md`"],
     ["`gamebase/**/*.gd`", "`.agents/rules/gdscript.md`"],
-    ["`test/**/*.gd`", "`.agents/rules/gdscript.md`"],
-    ["`game/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
-    ["`game/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
+    ["`games/*/game/**/*.gd`", "`.agents/rules/gdscript.md`"],
+    ["`games/*/test/**/*.gd`", "`.agents/rules/gdscript.md`"],
     ["`gamebase/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
     ["`gamebase/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
+    ["`games/*/game/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
+    ["`games/*/game/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
     ["`gamebase/core/save/**`", "`.agents/rules/save.md`"],
-    ["`game/i18n/**`", "`.agents/rules/localization.md`"],
-    ["`test/**`", "`.agents/rules/testing.md`"],
+    ["`games/*/game/i18n/**`", "`.agents/rules/localization.md`"],
+    ["`games/*/test/**`", "`.agents/rules/testing.md`"],
     ["`tools/**`", "`.agents/rules/tools.md`"],
     ["`.github/workflows/**`", "`.agents/rules/ci-performance.md`"],
     ["`docs/**`", "`.agents/rules/docs.md`"],

@@ -15,33 +15,31 @@ The settings menu exposes the locale selector and persists changes automatically
 
 ## UI strings
 
-Committed UI translations live under:
+Text is translated in the layer that owns it, so a string the foundation shows is translated once for every game:
 
 ```text
-game/i18n/
+gamebase/core/i18n/core.<locale>.po                 the core's text
+gamebase/modules/<module>/i18n/<module>.<locale>.po each module's text
+games/<id>/game/i18n/ui.<locale>.po                 the game's own text, data and dialogue
 ```
 
-Current Simplified Chinese catalog:
-
-```text
-game/i18n/ui.zh_CN.po
-```
+A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own. Farm1 registers the core, all five module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
 
 Scene-authored Control text participates in Godot translation automatically. Runtime-created text must use `tr(...)` or `TranslationServer.translate(...)` for translatable labels.
 
 Stable gameplay IDs, save keys, resource IDs, location IDs and internal enum/string values must never be translated.
 
-`tools/check_localization.js` scans runtime translation calls, player-visible scene properties, authored Dialogue Manager lines/responses, and player-facing data resource fields such as `display_name`, `title`, `description`, `subject`, `body`, `role`, and `activity`. It fails when a Simplified Chinese entry is missing or empty. This check is part of `tools/validate.js` and therefore part of CI and release readiness.
+`tools/check_localization.js` scans runtime translation calls, player-visible scene properties, authored Dialogue Manager lines/responses, and player-facing data resource fields such as `display_name`, `title`, `description`, `subject`, `body`, `role`, and `activity`. For each locale the game registers, every string of a layer needs a non-empty entry in a catalog of that layer or of a layer below it (the core below a module, a module's required modules below it, everything below the game). It also fails when the game does not register a catalog that a layer it uses ships for that locale, and when two registered catalogs translate the same string, so each string has one owner. This check is part of `tools/validate.js` and therefore part of CI and release readiness.
 
 ## What the coverage gate can and cannot see
 
-`tools/check_localization.js` finds a string only in these positions:
+`tools/check_localization.js` reads a game's own `games/<id>/game/`, `gamebase/core/` and the modules the game uses (`gamebase/modules/<module>/`), and finds a string only in these positions:
 
-- in `game/**/*.gd`: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional;
-- in `game/**/*.gd`: the default of an exported text property (`@export var display_name := "..."`) and a literal assigned to one from code (`interactable.prompt_text = "..."`);
-- in `game/**/*.tscn`: the properties `text`, `display_name`, `station_name`, `idle_text`, `dialog_text`, `prompt_text`, `title`, `ok_button_text`, `cancel_button_text`, `placeholder_text`, `tooltip_text`, `pending_text` and `completed_text`;
-- in `game/data/**/*.tres`: `display_name`, `title`, `description`, `subject`, `body`, `role` and `activity`;
-- authored lines and responses in `.dialogue` files.
+- in `.gd` scripts: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional;
+- in `.gd` scripts: the default of an exported text property (`@export var display_name := "..."`) and a literal assigned to one from code (`interactable.prompt_text = "..."`);
+- in `.tscn` scenes: the properties `text`, `display_name`, `station_name`, `idle_text`, `dialog_text`, `prompt_text`, `title`, `ok_button_text`, `cancel_button_text`, `placeholder_text`, `tooltip_text`, `pending_text` and `completed_text`;
+- in `games/<id>/game/data/**/*.tres`: `display_name`, `title`, `description`, `subject`, `body`, `role` and `activity`;
+- authored lines and responses in the game's `.dialogue` files.
 
 A player-visible string anywhere else passes the gate without a translation. The usual ways to end up there:
 
@@ -51,7 +49,7 @@ A player-visible string anywhere else passes the gate without a translation. The
 
 Write each visible string as its own literal call so the gate covers it. Where a string has to travel as data, add its PO entry by hand and say so in the change, because nothing will report it missing.
 
-The gate proves that an entry exists, not that the text is shown translated. `test/unit/test_localized_runtime_text.gd` covers that half: it switches to Simplified Chinese, asks the services for the text they format for the HUD and the menus, and fails on an untranslated word.
+The gate proves that an entry exists, not that the text is shown translated. `games/farm1/test/unit/test_localized_runtime_text.gd` covers that half: it switches to Simplified Chinese, asks the services for the text they format for the HUD and the menus, and fails on an untranslated word.
 
 ## Translate the template, then format
 
@@ -70,15 +68,15 @@ Any node that assigns visible text from code connects `GameSettings.locale_chang
 
 ## Dialogue
 
-Dialogue Manager remains the authored-dialogue layer. Dialogue source files under `game/dialogue/` are registered as translation sources in `project.godot`. The current Mira, Neri and Rowan authored dialogue lines and player responses have Simplified Chinese coverage in `game/i18n/ui.zh_CN.po`; character names use the `dialogue` PO context expected by the Dialogue Manager balloon.
+Dialogue Manager remains the authored-dialogue layer. Dialogue source files under `games/farm1/game/dialogue/` are registered as translation sources in `games/farm1/project.godot`. The current Mira, Neri and Rowan authored dialogue lines and player responses have Simplified Chinese coverage in Farm1's `games/farm1/game/i18n/ui.zh_CN.po`; character names use the `dialogue` PO context expected by the Dialogue Manager balloon.
 
 Keep dialogue translation data separate from gameplay state. Translation changes must not alter dialogue title IDs used by heart events or NPC progression.
 
 ## Adding a locale
 
 1. Add the locale ID and display name to `GameSettingsService`.
-2. Add a PO catalog under `game/i18n/`.
-3. Register the catalog in `project.godot`.
+2. Add a `<name>.<locale>.po` catalog to the core, to every module and to each game, and register them in each game's `locale/translations`.
+3. Register the catalog in `games/<id>/project.godot`.
 4. Add/extend automated translation tests.
 5. Verify the locale through the settings menu and a real exported build.
 6. Verify fonts cover all glyphs required by the locale.

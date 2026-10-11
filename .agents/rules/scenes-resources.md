@@ -1,17 +1,17 @@
 ---
-path: "game/**/*.tscn, game/**/*.tres, gamebase/**/*.tscn, gamebase/**/*.tres"
+path: "gamebase/**/*.tscn, gamebase/**/*.tres, games/*/game/**/*.tscn, games/*/game/**/*.tres"
 ---
 
-# Scenes and resources (`game/**/*.tscn`, `game/**/*.tres`, `gamebase/**/*.tscn`, `gamebase/**/*.tres`)
+# Scenes and resources (`gamebase/**/*.tscn`, `gamebase/**/*.tres`, `games/*/game/**/*.tscn`, `games/*/game/**/*.tres`)
 
-The `.tscn` and `.tres` files under `game/` and `gamebase/` were written as text rather than saved by the editor. Their headers carry `load_steps`, every `ext_resource` points at its file with `path=` and a readable id such as `id="1_player"`, none carries `uid=`, and nodes have no `unique_id`. New and edited files keep that shape. The engine behaviour described here was confirmed on Godot 4.7.2.
+The `.tscn` and `.tres` files under `gamebase/` and each game's `game/` were written as text rather than saved by the editor. Their headers carry `load_steps`, every `ext_resource` points at its file with `path=` and a readable id such as `id="1_player"`, none carries `uid=`, and nodes have no `unique_id`. New and edited files keep that shape. The engine behaviour described here was confirmed on Godot 4.7.2.
 
 ## P0
 
 - **Reference other files by `path=` only**: do not write a `uid="uid://..."` value that was not copied from a file the engine produced. An unknown uid only prints a `WARNING` and the loader falls back to the path, and warnings do not fail validation, so the invented value stays in the repository.
 - **Every resource id that is used has its entry**: an `ExtResource("id")` or `SubResource("id")` without a matching entry fails the whole load with `ERROR: ... Can't load cached ext-resource id`. After adding or renaming an entry, check every use of its id in the file.
 - **Scene path fields hold `res://` paths**: `WorldLocationData.scene_path`, `PlaceableData.scene_path`, `ScenePortal.target_scene` and the licensed-art `asset_path` are `@export_file` strings. `ContentDB.get_location_for_scene()` and the save code compare `scene_path` with a scene's `scene_file_path` as plain strings, so a `uid://` value in these fields would never match.
-- **Content exists for the game only after the manifest lists it**: a data resource is registered in `game/data/content_manifest.tres`, which takes two edits: an `ext_resource` line and an entry in the matching array. `ContentDB.rebuild()` runs at startup, indexes the manifest, checks ids and cross-references, and reports each problem with `push_error`, so a dangling reference fails every Godot step of `tools/validate.js`, not only the content tests.
+- **Content exists for the game only after the manifest lists it**: a data resource is registered in its game's `games/<id>/game/data/content_manifest.tres`, which takes two edits: an `ext_resource` line and an entry in the matching array. `ContentDB.rebuild()` runs at startup, indexes the manifest, checks ids and cross-references, and reports each problem with `push_error`, so a dangling reference fails every Godot step of `tools/validate.js`, not only the content tests.
 - **A script and its `.gd.uid` change together**: every script has a `.gd.uid` file next to it, written by the engine during import. After adding a script, run the import step and commit the generated `.gd.uid`. When a script is renamed, moved or deleted, do the same to its `.gd.uid` in the same change.
 
 ## P1

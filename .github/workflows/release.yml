@@ -1,11 +1,17 @@
 name: Release
 
+# One game per release: a tag game/<id>/v<version> builds and publishes that
+# game. The version must equal config/version in games/<id>/project.godot.
 on:
   push:
     tags:
-      - "v*"
+      - "game/*/v*"
   workflow_dispatch:
     inputs:
+      game:
+        description: Game id under games/ (optional while only one game is registered)
+        required: false
+        type: string
       engine_version:
         description: Optional Godot version override for this build
         required: false
@@ -24,7 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       engine_version: ${{ steps.engine.outputs.version }}
-      game_version: ${{ steps.game.outputs.version }}
+      game: ${{ steps.release.outputs.game }}
+      version: ${{ steps.release.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -34,11 +41,11 @@ jobs:
         with:
           node-version: 24
 
-      # Fails unless .game-version is a semantic version, matches project.godot
-      # and, on a tag build, equals the tag without its leading "v".
-      - name: Resolve game version
-        id: game
-        run: node tools/ci.js game-version
+      # On a tag build, fails unless the tag is exactly game/<id>/v<version>
+      # with the version in that game's project.godot.
+      - name: Resolve game and version
+        id: release
+        run: node tools/ci.js release --game "${{ inputs.game }}"
 
       - name: Resolve Godot version
         id: engine
@@ -53,8 +60,8 @@ jobs:
           use-dotnet: false
           include-templates: false
 
-      - name: Validate project
-        run: node tools/validate.js --godot-bin godot --clean-import
+      - name: Validate repository and game
+        run: node tools/validate.js --game ${{ steps.release.outputs.game }} --godot-bin godot --clean-import
 
   build:
     name: Build ${{ matrix.name }}
@@ -73,6 +80,8 @@ jobs:
           - name: Web
             preset: Web
             package: "*-web.zip"
+    env:
+      GAMEBASE_GAME: ${{ needs.validate.outputs.game }}
 
     steps:
       - name: Checkout
@@ -91,9 +100,6 @@ jobs:
           version: ${{ needs.validate.outputs.engine_version }}
           use-dotnet: false
           include-templates: true
-
-      - name: Import project
-        run: godot --headless --path . --import
 
       - name: Export
         run: node tools/export.js --godot-bin godot --preset "${{ matrix.preset }}" --skip-validation ${{ inputs.engine_version && '--allow-engine-drift' || '' }}
@@ -119,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: qa-web-smoke-release
-          path: artifacts/web-smoke
+          path: artifacts/${{ needs.validate.outputs.game }}/web-smoke
           if-no-files-found: ignore
           retention-days: 30
 
@@ -130,13 +136,13 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: release-${{ matrix.name }}
-          path: dist/${{ matrix.package }}
+          path: dist/${{ needs.validate.outputs.game }}/${{ matrix.package }}
           if-no-files-found: error
           retention-days: 30
 
   native-smoke:
     name: Native smoke ${{ matrix.name }}
-    needs: build
+    needs: [validate, build]
     strategy:
       fail-fast: false
       matrix:
@@ -148,6 +154,8 @@ jobs:
             os: ubuntu-latest
             artifact: release-Linux
     runs-on: ${{ matrix.os }}
+    env:
+      GAMEBASE_GAME: ${{ needs.validate.outputs.game }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -161,18 +169,20 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.artifact }}
-          path: dist
+          path: dist/${{ needs.validate.outputs.game }}
 
       - name: Smoke packaged build
         run: node tools/smoke_export.js --target ${{ matrix.name }} --from-package
 
   publish:
     name: Publish GitHub Release
-    if: startsWith(github.ref, 'refs/tags/v') && (github.event_name != 'workflow_dispatch' || inputs.engine_version == '')
+    if: startsWith(github.ref, 'refs/tags/game/') && (github.event_name != 'workflow_dispatch' || inputs.engine_version == '')
     needs: [validate, build, native-smoke]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      GAMEBASE_GAME: ${{ needs.validate.outputs.game }}
     steps:
       - name: Checkout release source
         uses: actions/checkout@v7
@@ -186,16 +196,16 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           pattern: release-*
-          path: dist
+          path: dist/${{ needs.validate.outputs.game }}
           merge-multiple: true
 
       - name: Validate release tag
-        run: node tools/ci.js verify-tag --expected "${{ needs.validate.outputs.game_version }}"
+        run: node tools/ci.js release
 
       - name: Validate packages and generate release manifest
-        run: node tools/generate_release_manifest.js --dist dist --game-version "${{ needs.validate.outputs.game_version }}" --engine-version "${{ needs.validate.outputs.engine_version }}" --git-commit "${{ github.sha }}" --tag "${{ github.ref_name }}"
+        run: node tools/generate_release_manifest.js --engine-version "${{ needs.validate.outputs.engine_version }}" --git-commit "${{ github.sha }}" --tag "${{ github.ref_name }}"
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: node tools/ci.js publish-release
+        run: node tools/ci.js publish-release --game ${{ needs.validate.outputs.game }}

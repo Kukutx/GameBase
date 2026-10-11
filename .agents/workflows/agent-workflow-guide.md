@@ -22,7 +22,7 @@ Check these questions only when the task adds, removes or materially changes a p
 - Does the owning service already provide the conclusion (whether an action is available, the current state, what to display)? If so, the UI does not derive it again.
 - Are "visible", "available", "unlocked", "in progress" and "completed" wrongly pressed into one state?
 - Are different facts being mixed: locale, a stable id, a display name, a location, in-game time and real time?
-- Does "the code exists" really mean the feature is open in a release? Where needed, check the content registration in `game/data/content_manifest.tres`, the scene that reaches it, the settings, and what the export includes.
+- Does "the code exists" really mean the feature is open in a release? Where needed, check the content registration in the game's content manifest (`games/farm1/game/data/content_manifest.tres` for Farm1), the scene that reaches it, the settings, and what the export includes.
 - After something ends or is cancelled (a quest, an event, a day, a conversation), which abilities are still legitimate? Do not close every later behaviour at once with a single terminal flag.
 
 Skip this group of checks for a pure pixel or style fix that does not change structure, state or behaviour.

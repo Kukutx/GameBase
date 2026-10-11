@@ -16,7 +16,7 @@ First use the current read-only GitHub and project entry points to get the recen
 node tools/validate.js
 ```
 
-They live in `test/unit/test_project_configuration.gd` and run in the GUT step.
+They live in `tools/repository.test.js` and run in the tool tests step.
 
 A failure is attributed with one of three conclusions only: a problem in the code, an occasional problem of the infrastructure or the environment, or insufficient evidence. When the log is incomplete, name the part that is missing; do not conclude "not a code problem" from partial evidence.
 
@@ -28,7 +28,7 @@ This repository runs on GitHub-hosted runners only: `.github/workflows/ci.yml`, 
 
 - When a hosted job seems to be blocked by billing, a spending limit, included minutes or availability, first read the job and check-run evidence. Only a job that got no runner, ran no step and carries a GitHub annotation that explicitly points at such a gate counts as a hosted outage; an ordinary failure in the code is not one.
 - Without an explicit decision by the user, do not add a self-hosted runner, a runner selection variable or a parallel workflow, and do not copy the workflows, secrets, environments or the repository. When the authorization is not enough, stay read-only and state the smallest approval that would be needed.
-- Meanwhile run the equivalent checks locally (`node tools/validate.js`, `node tools/export.js`, `node tools/smoke_export.js`, `npm run --prefix tools/web_smoke smoke:web`) and report them as local evidence; they do not make a pending or blocked remote check pass.
+- Meanwhile run the equivalent checks locally (`node tools/validate.js`, `node tools/export.js --all`, `node tools/smoke_export.js --game <id>`, `npm run --prefix tools/web_smoke smoke:web`) and report them as local evidence; they do not make a pending or blocked remote check pass.
 - Once hosted runners are available again, the same workflows run again unchanged.
 - A self-hosted runner is a persistent environment; system-level cleanup that suits only a one-off GitHub-hosted machine is not reused on one. An open-source repository does not put untrusted pull requests on a personal self-hosted runner.
 
@@ -50,8 +50,8 @@ Pick the smallest related checks for what really changed, for example:
 - GDScript, scenes, resources and content: `node tools/validate.js --skip-soak` while iterating, and without `--skip-soak` when the change touches save data or time progression
 - Player-visible text: `node tools/check_localization.js`
 - Tools: `node tools/validate.js`, which runs the packaging self-test, plus the tool that changed
-- Export and packaging: `node tools/export.js --preset <preset>` and `node tools/smoke_export.js`; for the Web target also `npm run --prefix tools/web_smoke smoke:web`
-- CI workflows: the workflow assertions in `test/unit/test_project_configuration.gd`
+- Export and packaging: `node tools/export.js --game <id> --preset <preset>` and `node tools/smoke_export.js --game <id>`; for the Web target also `npm run --prefix tools/web_smoke smoke:web`
+- CI workflows: the workflow assertions in `tools/repository.test.js`
 - `.agents`: `node tools/validate_rules.js --strict` plus a review of the related pressure-test scenarios
 
 Check whether the goal is complete, whether the scope crept, whether schemas, generated output and consumers are in step (content ids and the manifest, saved keys and `SAVE_VERSION`, exported resource fields and the scenes and resources that set them, text and its Simplified Chinese entry), whether a workaround, a second source of truth or compatibility without a basis was introduced, and whether changes from another session got mixed in. In the conclusion, say in one sentence whether this change can be taken back and how far its effect reaches: a save format that a published build has written, a pushed release tag and a published release with its packages are the kind that cannot be taken back; for everything else state how it is taken back. Evidence is written as a before-and-after comparison (the specific check that failed before and passes now, or the behaviour in the running game or the exported build); "checks pass" alone is not evidence. A check that did not run is not reported as passed; when the Git state is abnormal, do not repair the index and do not write files back from HEAD.

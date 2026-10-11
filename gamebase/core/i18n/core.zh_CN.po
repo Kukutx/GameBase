@@ -1,0 +1,124 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase core\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Unbound"
+msgstr "未绑定"
+
+msgid "Could not open the starting location"
+msgstr "无法打开初始地点"
+
+msgid "LT/RT"
+msgstr "LT/RT"
+
+msgid "1–9"
+msgstr "1–9"
+
+msgid "Left Stick / D-Pad"
+msgstr "左摇杆 / 十字键"
+
+msgid "WASD / Arrows"
+msgstr "WASD / 方向键"
+
+msgid "%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load"
+msgstr "%s 移动 · %s 互动/收线 · %s 工具/物品 · %s 送礼 · %s 收起建筑 · %s 菜单 · %s 热栏 · %s/%s 保存/读取"
+
+msgid "Interact"
+msgstr "互动"
+
+msgid "Sleep until tomorrow"
+msgstr "睡到明天"
+
+msgid "Unknown location: %s"
+msgstr "未知地点：%s"
+
+msgid "Travel spawn is unavailable"
+msgstr "目的地出生点不可用"
+
+msgid "Travel failed"
+msgstr "旅行失败"
+
+msgid "Could not replace the selected save slot"
+msgstr "无法替换当前存档位"
+
+msgid "Could not start the new game location"
+msgstr "无法启动新游戏地点"
+
+msgid "Could not return home after staying up late"
+msgstr "熬夜后无法返回家中"
+
+msgid "You stayed up too late and woke at home with reduced energy"
+msgstr "你熬得太晚，在家醒来时体力有所减少"
+
+msgid "You stayed up too late and recovered with reduced energy"
+msgstr "你熬得太晚，恢复后体力有所减少"
+
+msgid "Could not return home after collapse"
+msgstr "倒下后无法返回家中"
+
+msgid "You collapsed and lost %dg"
+msgstr "你倒下了，损失了 %dg"
+
+msgid "You collapsed and woke up at home"
+msgstr "你倒下了，随后在家中醒来"
+
+msgid "You collapsed, lost %dg, and recovered where you fell"
+msgstr "你倒下了，损失了 %dg，并在原地恢复"
+
+msgid "You collapsed and recovered where you fell"
+msgstr "你倒下了，并在原地恢复"
+
+msgid "Portal target is unavailable"
+msgstr "传送目标不可用"
+
+msgid "Slept until %s %d"
+msgstr "睡到了%s %d日"
+
+msgid "Bed"
+msgstr "床"
+
+msgid "Cannot save while traveling"
+msgstr "旅行途中无法保存"
+
+msgid "Save from a playable location"
+msgstr "请在可游玩的地点保存"
+
+msgid "Cannot save without the player"
+msgstr "找不到玩家角色，无法保存"
+
+msgid "Could not write temporary save file"
+msgstr "无法写入临时存档文件"
+
+msgid "Could not create save backup"
+msgstr "无法创建存档备份"
+
+msgid "Could not finalize save file (%d)"
+msgstr "无法完成存档写入（%d）"
+
+msgid "Game saved · Slot %d"
+msgstr "已保存 · 存档位 %d"
+
+msgid "Cannot load while traveling"
+msgstr "旅行途中无法读取"
+
+msgid "No save file yet"
+msgstr "还没有存档"
+
+msgid "Save references an unavailable scene"
+msgstr "存档指向的场景不可用"
+
+msgid "Recovered Slot %d from temporary save"
+msgstr "已从临时存档恢复存档位 %d"
+
+msgid "Recovered Slot %d from backup"
+msgstr "已从备份恢复存档位 %d"
+
+msgid "Game loaded · Slot %d"
+msgstr "已读取 · 存档位 %d"
+
+msgid "Finish the minigame before saving"
+msgstr "请先完成小游戏再保存"
