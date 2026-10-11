@@ -10,6 +10,6 @@
     "smoke:web": "node run.js"
   },
   "devDependencies": {
-    "playwright": "1.63.0"
+    "playwright": "1.64.0"
   }
 }
