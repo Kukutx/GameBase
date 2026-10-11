@@ -9,5 +9,5 @@ msgstr ""
 msgid "New game on GameBase"
 msgstr "基于 GameBase 的新游戏"
 
-msgid "Start"
+msgid "Starting Point"
 msgstr "起点"

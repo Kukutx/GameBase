@@ -29,7 +29,9 @@ Scene-authored Control text participates in Godot translation automatically. Run
 
 Stable gameplay IDs, save keys, resource IDs, location IDs and internal enum/string values must never be translated.
 
-`tools/check_localization.js` scans runtime translation calls, player-visible scene properties, authored Dialogue Manager lines/responses, and player-facing data resource fields such as `display_name`, `title`, `description`, `subject`, `body`, `role`, and `activity`. For each locale the game registers, every string of a layer needs a non-empty entry in a catalog of that layer or of a layer below it (the core below a module, a module's required modules below it, everything below the game). It also fails when the game does not register a catalog that a layer it uses ships for that locale, and when two registered catalogs translate the same string, so each string has one owner. This check is part of `tools/validate.js` and therefore part of CI and release readiness.
+`tools/check_localization.js` scans runtime translation calls, player-visible scene properties, authored Dialogue Manager lines/responses, and player-facing data resource fields such as `display_name`, `title`, `description`, `subject`, `body`, `role`, and `activity`. For each locale the game registers, every string of a layer needs a non-empty entry in a catalog of that layer or of a layer below it (the core below a module, a module's required modules below it, everything below the game). It also fails when the game does not register a catalog that a layer it uses ships for that locale, and when two registered catalogs translate the same string, so each string has one owner.
+
+The check also keeps every entry in the right catalog. An entry has to translate a string its own layer holds anywhere: a script literal, a scene or resource property, or a dialogue line. An entry no text of its layer holds is reported, so a removed string takes its entry with it. A string the core holds is translated in the core's catalog, and a string a module holds in a module's catalog, never in a game's. This covers the text the coverage scan below cannot see, such as the season and weather names, the control labels and the skill names, so every game that uses those layers gets their translation. This check is part of `tools/validate.js` and therefore part of CI and release readiness.
 
 ## What the coverage gate can and cannot see
 
@@ -47,7 +49,7 @@ A player-visible string anywhere else passes the gate without a translation. The
 - a service returns finished English text and the caller translates the result;
 - the string is passed through a helper before it reaches a translation call, such as a private `_commit(message)` that ends in `GameEvents.toast(message)`.
 
-Write each visible string as its own literal call so the gate covers it. Where a string has to travel as data, add its PO entry by hand and say so in the change, because nothing will report it missing.
+Write each visible string as its own literal call so the gate covers it. Where a string has to travel as data, add its PO entry by hand in the catalog of the layer whose code or data holds it, and say so in the change. Nothing reports such an entry missing; the placement check above only makes sure that it sits in the right catalog and is removed with its string.
 
 The gate proves that an entry exists, not that the text is shown translated. `games/farm1/test/unit/test_localized_runtime_text.gd` covers that half: it switches to Simplified Chinese, asks the services for the text they format for the HUD and the menus, and fails on an untranslated word.
 

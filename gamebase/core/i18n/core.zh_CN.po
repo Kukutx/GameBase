@@ -122,3 +122,63 @@ msgstr "已读取 · 存档位 %d"
 
 msgid "Finish the minigame before saving"
 msgstr "请先完成小游戏再保存"
+
+msgid "Back"
+msgstr "返回"
+
+msgid "Move Up"
+msgstr "向上移动"
+
+msgid "Move Down"
+msgstr "向下移动"
+
+msgid "Move Left"
+msgstr "向左移动"
+
+msgid "Move Right"
+msgstr "向右移动"
+
+msgid "Interact / Reel"
+msgstr "互动 / 收线"
+
+msgid "Use Tool / Item"
+msgstr "使用工具 / 物品"
+
+msgid "Give Gift"
+msgstr "赠送礼物"
+
+msgid "Pack Building"
+msgstr "收起建筑"
+
+msgid "Open Menu"
+msgstr "打开菜单"
+
+msgid "Quick Save"
+msgstr "快速保存"
+
+msgid "Quick Load"
+msgstr "快速读取"
+
+msgid "%s %d  %02d:%02d"
+msgstr "%s %d日  %02d:%02d"
+
+msgid "Spring"
+msgstr "春季"
+
+msgid "Summer"
+msgstr "夏季"
+
+msgid "Autumn"
+msgstr "秋季"
+
+msgid "Winter"
+msgstr "冬季"
+
+msgid "Clear"
+msgstr "晴朗"
+
+msgid "Rain"
+msgstr "下雨"
+
+msgid "Storm"
+msgstr "暴风雨"

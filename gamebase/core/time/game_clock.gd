@@ -52,7 +52,7 @@ func get_time_text() -> String:
 	return "Day %d  %02d:%02d" % [day, get_hour(), get_minute()]
 
 func get_calendar_text() -> String:
-	return "%s %d  %02d:%02d" % [get_season_name(), get_day_of_season(), get_hour(), get_minute()]
+	return tr("%s %d  %02d:%02d") % [tr(get_season_name()), get_day_of_season(), get_hour(), get_minute()]
 
 func get_season_index() -> int:
 	return get_season_index_for_day(day)

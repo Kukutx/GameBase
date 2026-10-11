@@ -461,3 +461,6 @@ msgstr "收线！"
 
 msgid "Press %s in the green zone · tries left: %d"
 msgstr "在绿色区域内按 %s · 剩余次数：%d"
+
+msgid "product"
+msgstr "产物"

@@ -347,3 +347,24 @@ msgstr "%s，完成城镇的委托。"
 
 msgid "Town Project"
 msgstr "城镇建设项目"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Farming"
+msgstr "耕作"
+
+msgid "Foraging"
+msgstr "采集"
+
+msgid "Fishing"
+msgstr "钓鱼"
+
+msgid "Combat"
+msgstr "战斗"
+
+msgid "Social"
+msgstr "社交"
+
+msgid "%s reached level %d"
+msgstr "%s 提升到 %d 级"
