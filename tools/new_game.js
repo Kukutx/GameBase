@@ -9,9 +9,10 @@
 // a content database, one start location, a unit test and a new-game smoke
 // script. It names the project, its log, its catalog and its export paths,
 // writes games/<id>/game.json with no module, and links the foundation in.
-// Enable a module by listing it (and the modules it requires) in game.json and
-// registering its autoloads and its catalogs in project.godot; then run
-// node tools/link.js. The module installs itself (its GameModule class).
+// Enable a module by listing it (and the modules it requires) in game.json,
+// then run node tools/link.js: it links the module and registers its autoloads
+// and catalogs in project.godot, and the module installs itself (its
+// GameModule class).
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
@@ -67,7 +68,7 @@ function createGame({ id, name, out }) {
   rewrite(path.join(root, "game", "i18n", "ui.zh_CN.po"), (text) => text.replace(/Project-Id-Version: [^\\]*/, `Project-Id-Version: ${name}`));
   fs.writeFileSync(path.join(root, "game.json"), `${JSON.stringify({ id, modules: [] }, null, 2)}\n`, "utf8");
 
-  const game = { id, root, modules: [], addons: [...readFoundation().addons].sort() };
+  const game = { id, root, modules: [], addons: [...readFoundation().addons].sort(), manifest: { id, modules: [] } };
   linkGame(game);
   return game;
 }

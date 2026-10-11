@@ -9,13 +9,17 @@
 // uses. They are links to the one copy at the repository root (junctions on
 // Windows, symbolic links elsewhere), so a change to the foundation reaches
 // every game at once. The links are generated and Git-ignored; the validation
-// and export tools refresh them before they run Godot. Without --game every
-// registered game is linked.
+// and export tools refresh them before they run Godot. It also writes the parts
+// of the game's project.godot that follow from the manifests: the autoloads of
+// the core and of the game's modules, the translation catalogs and the addon
+// plugins (tools/lib/project.js). Without --game every registered game is
+// linked.
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { fail, main, rootPath } = require("./lib/common");
 const { gamePath, resolveGames } = require("./lib/games");
+const { syncProject } = require("./lib/project");
 
 function isLink(file) {
   try {
@@ -74,6 +78,7 @@ function linkGame(game) {
   }
   pruneLinks(gamePath(game, "gamebase", "modules"), new Set(game.modules));
   pruneLinks(gamePath(game, "addons"), new Set(game.addons));
+  if (syncProject(game)) changed += 1;
   return changed;
 }
 

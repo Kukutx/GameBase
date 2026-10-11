@@ -3,9 +3,10 @@
 //   node tools/validate.js [--game <id>]... [--no-repository] [--no-games]
 //                          [--godot-bin <godot>] [--clean-import] [--skip-import] [--skip-soak]
 //
-// Repository steps run once: agent rules, tool tests, layer dependencies, the
-// engine baseline and its legal bundle, the release packaging self-test, and a
-// game freshly created from the new-game template (the core on its own). Game
+// Repository steps run once: agent rules, layer dependencies, each game's
+// project settings against the manifests, tool tests, the engine baseline and
+// its legal bundle, the release packaging self-test, and a game freshly
+// created from the new-game template (the core on its own). Game
 // steps run for each selected game, all registered games by default: links,
 // version, import, localization, GUT, every runtime script under test/runtime/
 // (the *_soak.gd ones are skipped by --skip-soak) and a boot of the main scene.
@@ -31,7 +32,8 @@ const {
   runGodotStep,
   tempFile,
 } = require("./lib/common");
-const { gameName, gamePath, gameVersion, resolveGames } = require("./lib/games");
+const { gameName, gamePath, gameVersion, listGameIds, loadGame, resolveGames } = require("./lib/games");
+const { projectInSync } = require("./lib/project");
 
 function step(title) {
   console.log("");
@@ -119,6 +121,13 @@ async function validateRepository(godot, version) {
   if (runLayerCheck() !== 0) {
     fail("Layer dependency check failed.");
   }
+
+  step("Game project settings");
+  const stale = listGameIds().filter((id) => !projectInSync(loadGame(id)));
+  if (stale.length > 0) {
+    fail(`${stale.map((id) => `games/${id}/project.godot`).join(", ")} does not hold the autoloads, translation catalogs and addon plugins its manifests give. Run node tools/link.js and commit the result.`);
+  }
+  console.log("Every game's autoloads, catalogs and plugins follow gamebase.json and game.json.");
 
   step("Tool tests");
   const toolTests = await run(process.execPath, ["--test", "tools/*.test.js"]);
