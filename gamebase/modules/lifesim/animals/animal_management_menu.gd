@@ -38,7 +38,7 @@ func _ready() -> void:
 func open(location_id: StringName) -> void:
 	_location_id = location_id
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"animal_management_menu", true, self)
 	_rebuild_housing_rows()
 	_rebuild()
 	_focus_primary_control()
@@ -47,7 +47,7 @@ func close() -> void:
 	if not visible:
 		return
 	visible = false
-	get_tree().paused = false
+	InputLock.unlock(&"animal_management_menu")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):

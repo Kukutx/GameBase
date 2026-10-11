@@ -1,7 +1,7 @@
 extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
-const TEST_PATH := "user://game_settings_test.cfg"
+const TEST_PATH := "user://game_settings_test.json"
 
 ## Input actions the fixture controls of a test added, erased after it.
 var _fixture_actions: Array[StringName] = []

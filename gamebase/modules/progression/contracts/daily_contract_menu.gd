@@ -16,7 +16,7 @@ func _ready() -> void:
 
 func open() -> void:
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"daily_contract_menu", true, self)
 	_refresh()
 	if action_button.disabled:
 		close_button.grab_focus()
@@ -27,7 +27,7 @@ func close() -> void:
 	if not visible:
 		return
 	visible = false
-	get_tree().paused = false
+	InputLock.unlock(&"daily_contract_menu")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):

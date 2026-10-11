@@ -466,7 +466,7 @@ func test_animal_name_typed_by_the_player_is_shown_as_plain_text() -> void:
 	add_child_autofree(menu)
 	await get_tree().process_frame
 	menu.open(&"fixture_farm")
-	get_tree().paused = false
+	InputLock.clear()
 	var details := menu.get_node("Panel/VBox/Details") as RichTextLabel
 	assert_true(details.text.contains("[lb]i]Bessie[lb]/i]"), details.text)
 	assert_true(details.get_parsed_text().contains("[i]Bessie[/i]"), details.get_parsed_text())

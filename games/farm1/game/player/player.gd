@@ -9,8 +9,6 @@ extends CharacterBody2D
 @onready var melee_controller: MeleeController = $MeleeController
 @onready var actor_visual: DirectionalActorVisual = $ActorVisual
 
-var _dialogue_locked := false
-var _fishing_locked := false
 var _previous_health := 0
 
 func _ready() -> void:
@@ -18,7 +16,6 @@ func _ready() -> void:
 	if dialogue_manager != null:
 		dialogue_manager.dialogue_started.connect(_on_dialogue_started)
 		dialogue_manager.dialogue_ended.connect(_on_dialogue_ended)
-	FishingState.fishing_active_changed.connect(_on_fishing_active_changed)
 	_previous_health = PlayerState.health
 	PlayerState.health_changed.connect(_on_health_changed)
 
@@ -111,20 +108,16 @@ func _slot_for_key(keycode: Key) -> int:
 		KEY_9: return 8
 	return -1
 
+# A menu, a dialogue, fishing or a minigame holds the controls (`InputLock`),
+# or the player's own action is still playing.
 func _is_input_locked() -> bool:
-	return _dialogue_locked or _fishing_locked or (actor_visual != null and actor_visual.is_action_playing())
+	return InputLock.is_locked() or (actor_visual != null and actor_visual.is_action_playing())
 
 func _on_dialogue_started(_resource: DialogueResource) -> void:
-	_dialogue_locked = true
-	velocity = Vector2.ZERO
+	InputLock.lock(&"dialogue", false, self)
 
 func _on_dialogue_ended(_resource: DialogueResource) -> void:
-	_dialogue_locked = false
-
-func _on_fishing_active_changed(active: bool) -> void:
-	_fishing_locked = active
-	if active:
-		velocity = Vector2.ZERO
+	InputLock.unlock(&"dialogue")
 
 func _on_health_changed(current: int, _maximum: int) -> void:
 	if current < _previous_health and actor_visual != null:

@@ -40,7 +40,7 @@ func open() -> void:
 	if visible:
 		return
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"pause_menu", true, self)
 	status_label.text = ""
 	load_button.disabled = not SaveManager.has_save()
 	resume_button.grab_focus()
@@ -49,7 +49,7 @@ func close() -> void:
 	if not visible:
 		return
 	visible = false
-	get_tree().paused = false
+	InputLock.unlock(&"pause_menu")
 
 func _save_game() -> void:
 	SaveManager.save_game()
@@ -60,7 +60,7 @@ func _load_game() -> void:
 		status_label.text = tr("No save available")
 		return
 	visible = false
-	get_tree().paused = false
+	InputLock.unlock(&"pause_menu")
 	var success: bool = await SaveManager.load_game()
 	if not success and is_inside_tree():
 		open()
@@ -78,7 +78,8 @@ func _confirm_return_to_title() -> void:
 	confirm_title.popup_centered()
 
 func _return_to_title() -> void:
-	get_tree().paused = false
+	# Nothing of the session holds the controls on the title screen.
+	InputLock.clear()
 	get_tree().change_scene_to_file("res://game/ui/title_screen.tscn")
 
 func _on_save_completed(success: bool, message: String) -> void:

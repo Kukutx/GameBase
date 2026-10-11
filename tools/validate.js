@@ -3,10 +3,11 @@
 //   node tools/validate.js [--game <id>]... [--no-repository] [--no-games]
 //                          [--godot-bin <godot>] [--clean-import] [--skip-import] [--skip-soak]
 //
-// Repository steps run once: agent rules, layer dependencies, each game's
-// project settings against the manifests, tool tests, the engine baseline and
-// its legal bundle, the release packaging self-test, and a game freshly
-// created from the new-game template (the core on its own). Game
+// Repository steps run once: agent rules, layer dependencies, code guardrails
+// (tools/check_code.js), each game's project settings against the manifests,
+// tool tests, the engine baseline and its legal bundle, the release packaging
+// self-test, and a game freshly created from the new-game template (the core
+// on its own). Game
 // steps run for each selected game, all registered games by default: links,
 // version, import, localization, GUT, every runtime script under test/runtime/
 // (the *_soak.gd ones are skipped by --skip-soak) and a boot of the main scene.
@@ -17,6 +18,7 @@ const { checkLocalization } = require("./check_localization");
 const { runSelfTest } = require("./package_release");
 const { runCli: runRulesCheck } = require("./validate_rules");
 const { runCli: runLayerCheck } = require("./check_layers");
+const { runCli: runCodeCheck } = require("./check_code");
 const { linkGame } = require("./link");
 const {
   ENGINE_VERSION_RE,
@@ -120,6 +122,11 @@ async function validateRepository(godot, version) {
   step("Layer dependencies");
   if (runLayerCheck() !== 0) {
     fail("Layer dependency check failed.");
+  }
+
+  step("Code guardrails");
+  if (runCodeCheck() !== 0) {
+    fail("Code guardrail check failed.");
   }
 
   step("Game project settings");

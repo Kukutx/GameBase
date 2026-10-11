@@ -4,7 +4,7 @@ const REEL := &"fishing_reel"
 
 func after_each() -> void:
 	MiniGameHost.cancel()
-	get_tree().paused = false
+	InputLock.clear()
 
 func _active_reel() -> FishingReelMiniGame:
 	return MiniGameHost.get("_active") as FishingReelMiniGame

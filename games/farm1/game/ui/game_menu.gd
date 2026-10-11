@@ -65,14 +65,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func open() -> void:
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"game_menu", true, self)
 	_show_tab(_tab)
 
 func close() -> void:
 	if not visible:
 		return
 	visible = false
-	get_tree().paused = false
+	InputLock.unlock(&"game_menu")
 
 func _show_tab(tab: String) -> void:
 	_tab = tab

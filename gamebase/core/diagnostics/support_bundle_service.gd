@@ -260,7 +260,7 @@ Included:
 
 Not included:
 - raw savegame JSON/temp/backup files
-- raw settings.cfg
+- raw settings.json
 - purchased/local licensed source art
 - absolute user filesystem paths
 - account credentials or device identifiers

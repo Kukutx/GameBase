@@ -27,7 +27,7 @@ func test_support_summary_uses_privacy_safe_whitelist() -> void:
 	assert_false(bool(privacy.get("licensed_source_art_included", true)))
 	assert_eq((summary.get("save_slots", []) as Array).size(), GameSaveManager.SLOT_COUNT)
 	var encoded := JSON.stringify(summary)
-	assert_false(encoded.contains("settings.cfg"))
+	assert_false(encoded.contains("settings.json"))
 	assert_false(encoded.contains("savegame.json"))
 	assert_false(encoded.contains(ProjectSettings.globalize_path("user://")))
 
@@ -56,7 +56,7 @@ func test_support_bundle_contains_only_sanitized_summary_notes_and_logs() -> voi
 	assert_has(files, "logs/" + _test_log_name)
 	for path: String in files:
 		assert_false(path.contains("savegame"), "Raw save must never be bundled: %s" % path)
-		assert_false(path.contains("settings.cfg"), "Raw settings must never be bundled: %s" % path)
+		assert_false(path.contains("settings.json"), "Raw settings must never be bundled: %s" % path)
 		assert_false(path.contains("licensed"), "Licensed art must never be bundled: %s" % path)
 
 	var summary_text := reader.read_file("support_summary.json").get_string_from_utf8()

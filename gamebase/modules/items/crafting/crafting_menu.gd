@@ -20,14 +20,14 @@ func open(category: RecipeData.Category = RecipeData.Category.CRAFTING, station_
 	current_category = category
 	current_station_name = station_name
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"crafting_menu", true, self)
 	_rebuild()
 
 func close() -> void:
 	if not visible:
 		return
 	visible = false
-	get_tree().paused = false
+	InputLock.unlock(&"crafting_menu")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):

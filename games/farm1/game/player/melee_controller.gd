@@ -10,7 +10,7 @@ const TOOL_ACTION := &"attack"
 var _attack_busy := false
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed(action):
+	if not event.is_action_pressed(action) or InputLock.is_locked():
 		return
 	if attack_selected_weapon():
 		get_viewport().set_input_as_handled()

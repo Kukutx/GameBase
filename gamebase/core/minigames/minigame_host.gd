@@ -47,9 +47,7 @@ func run(minigame_id: StringName, context: Dictionary = {}) -> MiniGameResult:
 		return MiniGameResult.lost()
 	var settings := definition.settings.duplicate(true)
 	settings.merge(context, true)
-	var was_paused := get_tree().paused
-	if definition.pause_world:
-		get_tree().paused = true
+	InputLock.lock(&"minigame", definition.pause_world)
 	_active = minigame
 	_active_id = definition.id
 	minigame.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -61,8 +59,7 @@ func run(minigame_id: StringName, context: Dictionary = {}) -> MiniGameResult:
 	_active = null
 	_active_id = &""
 	minigame.queue_free()
-	if definition.pause_world:
-		get_tree().paused = was_paused
+	InputLock.unlock(&"minigame")
 	if result == null:
 		result = MiniGameResult.lost()
 	if not result.cancelled:

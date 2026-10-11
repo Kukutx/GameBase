@@ -9,7 +9,7 @@ Source text is English (`en`). A game supports English and every locale it regis
 - `en` — English
 - `zh_CN` — Simplified Chinese
 
-The selected locale is stored in `user://settings.cfg` by `GameSettings` and applied through Godot's `TranslationServer`. Runtime-created HUD/menu/interact text must pass through `tr(...)`; input prompts also update when the active input device changes.
+The selected locale is stored in `user://settings.json` by `GameSettings` and applied through Godot's `TranslationServer`. Runtime-created HUD/menu/interact text must pass through `tr(...)`; input prompts also update when the active input device changes.
 
 The settings menu exposes the locale selector and persists changes automatically.
 
