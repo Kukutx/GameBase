@@ -16,6 +16,15 @@ func test_the_reel_minigame_is_registered_content() -> void:
 	assert_true(root is MiniGame, "the scene root extends MiniGame")
 	root.free()
 
+func test_the_reel_gives_three_tries() -> void:
+	var runner := func() -> void:
+		await MiniGameHost.run(REEL, {"difficulty": 1, "seed": 4})
+	runner.call()
+	var reel := _active_reel()
+	assert_not_null(reel)
+	if reel != null:
+		assert_eq(reel.attempts_left, 3)
+
 func test_winning_the_reel_lands_the_biting_fish() -> void:
 	var old_day := WorldClock.day
 	var old_minute := WorldClock.minute_of_day

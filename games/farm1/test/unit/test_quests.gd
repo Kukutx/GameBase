@@ -8,6 +8,7 @@ var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
+var _skills_snapshot: Dictionary
 
 func before_each() -> void:
 	_quest_snapshot = QuestState.to_save_data()
@@ -15,6 +16,7 @@ func before_each() -> void:
 	_player_snapshot = PlayerState.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
+	_skills_snapshot = Skills.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
 	PlayerState.reset_new_game()
@@ -26,11 +28,21 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
+	Skills.load_save_data(_skills_snapshot)
 
 func test_talking_to_mira_completes_intro_quest() -> void:
 	NpcSocialEvents.npc_talked.emit(&"mira")
 	assert_true(QuestState.is_completed(&"meet_mira"))
 	assert_eq(PlayerState.money, 550)
+
+func test_defeating_a_green_slime_rewards_two_hundred_gold_and_a_field_snack() -> void:
+	QuestState.load_save_data({})
+	assert_true(QuestState.start_quest(&"defeat_green_slime"))
+	var money_before := PlayerState.money
+	CombatEvents.enemy_defeated.emit(&"green_slime", 20)
+	assert_true(QuestState.is_completed(&"defeat_green_slime"))
+	assert_eq(PlayerState.money, money_before + 200)
+	assert_eq(InventoryState.get_quantity(&"field_snack"), 1)
 
 func test_collecting_berries_unlocks_first_harvest() -> void:
 	InventoryState.add_item_by_id(&"berry", 3)

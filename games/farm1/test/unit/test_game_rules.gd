@@ -7,3 +7,7 @@ extends GutTest
 
 func test_all_shipped_content_uses_registered_keys() -> void:
 	assert_eq(GameRules.validate_content(ContentDB), PackedStringArray())
+
+func test_a_farming_level_condition_runs_from_one_to_ten() -> void:
+	assert_eq(GameRules.validate_query("SKILL_LEVEL farming 10"), PackedStringArray())
+	assert_string_contains("\n".join(GameRules.validate_query("SKILL_LEVEL farming 11")), "skill 'farming' has no level 11 (1-10)")
