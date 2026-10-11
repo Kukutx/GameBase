@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="FoodBuffData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://game/core/buffs/food_buff_data.gd" id="1_buff"]
+[ext_resource type="Script" path="res://gamebase/modules/items/buffs/food_buff_data.gd" id="1_buff"]
 
 [resource]
 script = ExtResource("1_buff")

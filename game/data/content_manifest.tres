@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ContentManifest" load_steps=209 format=3]
 
-[ext_resource type="Script" path="res://game/core/content/content_manifest.gd" id="1_manifest"]
+[ext_resource type="Script" path="res://gamebase/core/content/content_manifest.gd" id="1_manifest"]
 [ext_resource type="Resource" path="res://game/data/items/berry.tres" id="2_berry"]
 [ext_resource type="Resource" path="res://game/data/items/wood.tres" id="3_wood"]
 [ext_resource type="Resource" path="res://game/data/items/turnip_seeds.tres" id="4_seeds"]

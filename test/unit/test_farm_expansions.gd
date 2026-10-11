@@ -27,7 +27,7 @@ func test_expansion_catalog_and_animal_ledger_controls_are_registered() -> void:
 	assert_eq(ContentDB.get_all_farm_expansions().size(), 4)
 	assert_not_null(ContentDB.get_farm_expansion(&"big_coop"))
 	assert_not_null(ContentDB.get_farm_expansion(&"deluxe_barn"))
-	var menu_scene := load("res://game/core/animals/animal_management_menu.tscn") as PackedScene
+	var menu_scene := load("res://gamebase/modules/lifesim/animals/animal_management_menu.tscn") as PackedScene
 	var menu := menu_scene.instantiate()
 	autofree(menu)
 	assert_not_null(menu.get_node_or_null("Panel/VBox/ExpansionRow/ExpandCoop"))

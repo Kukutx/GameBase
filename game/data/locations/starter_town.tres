@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="WorldLocationData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://game/core/world/world_location_data.gd" id="1_location"]
+[ext_resource type="Script" path="res://gamebase/core/world/world_location_data.gd" id="1_location"]
 
 [resource]
 script = ExtResource("1_location")

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://game/core/quests/quest_data.gd" id="1_quest"]
+[ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_data.gd" id="1_quest"]
 
 [resource]
 script = ExtResource("1_quest")

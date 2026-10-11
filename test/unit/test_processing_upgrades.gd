@@ -30,7 +30,7 @@ func after_each() -> void:
 func test_copper_furnace_consumes_inputs_finishes_by_game_time_and_collects_output() -> void:
 	InventoryState.add_item_by_id(&"copper_ore", 2)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_furnace"
 	furnace.display_name = "Test Furnace"
@@ -54,7 +54,7 @@ func test_copper_furnace_consumes_inputs_finishes_by_game_time_and_collects_outp
 func test_processing_finishes_while_station_scene_is_unloaded() -> void:
 	InventoryState.add_item_by_id(&"copper_ore", 2)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_offline_furnace"
 	furnace.display_name = "Offline Furnace"
@@ -95,7 +95,7 @@ func test_copper_pickaxe_upgrade_replaces_inventory_and_hotbar_atomically() -> v
 func test_copper_farm_tools_reduce_energy_cost() -> void:
 	InventoryState.add_item_by_id(&"copper_hoe", 1)
 	InventoryState.add_item_by_id(&"copper_watering_can", 1)
-	var plot_scene := load("res://game/core/farming/farm_plot.tscn") as PackedScene
+	var plot_scene := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn") as PackedScene
 	var plot := plot_scene.instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
@@ -109,7 +109,7 @@ func test_copper_farm_tools_reduce_energy_cost() -> void:
 
 func test_copper_pickaxe_breaks_starter_stone_in_one_hit() -> void:
 	InventoryState.add_item_by_id(&"copper_pickaxe", 1)
-	var node_scene := load("res://game/core/mining/mining_node.tscn") as PackedScene
+	var node_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var rock := node_scene.instantiate() as MiningNode
 	rock.data = ContentDB.get_mining_node(&"stone_rock")
 	rock.persistent_id = &""
@@ -124,7 +124,7 @@ func test_iron_bar_smelt_and_pickaxe_upgrade_extend_mining_progression() -> void
 	assert_eq(Skills.get_level(SkillManager.MINING), 3)
 	InventoryState.add_item_by_id(&"iron_ore", 3)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var station_scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := station_scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_iron_furnace"
 	furnace.recipe_ids = [&"smelt_copper_bar", &"smelt_iron_bar"]
@@ -164,7 +164,7 @@ func test_oil_maker_crafts_and_processes_truffle_into_artisan_oil() -> void:
 	assert_true(ResourceLoader.exists(placeable.scene_path))
 
 	InventoryState.add_item_by_id(&"truffle", 1)
-	var machine_scene := load("res://game/core/processing/oil_maker_placeable.tscn") as PackedScene
+	var machine_scene := load("res://gamebase/modules/lifesim/processing/oil_maker_placeable.tscn") as PackedScene
 	var machine := machine_scene.instantiate() as ProcessingStation
 	machine.station_id = &"test_oil_maker"
 	add_child_autofree(machine)
@@ -184,7 +184,7 @@ func test_gold_bar_smelt_and_pickaxe_upgrade_complete_deep_mining_chain() -> voi
 	assert_eq(Skills.get_level(SkillManager.MINING), 5)
 	InventoryState.add_item_by_id(&"gold_ore", 3)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var station_scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := station_scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_gold_furnace"
 	furnace.recipe_ids = [&"smelt_copper_bar", &"smelt_iron_bar", &"smelt_gold_bar"]
@@ -253,7 +253,7 @@ func test_iridium_bar_smelt_and_pickaxe_upgrade_complete_late_mining_chain() -> 
 	assert_eq(Skills.get_level(SkillManager.MINING), 7)
 	InventoryState.add_item_by_id(&"iridium_ore", 4)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var station_scene := load("res://game/core/processing/processing_station.tscn") as PackedScene
+	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := station_scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_iridium_furnace"
 	furnace.recipe_ids = [&"smelt_iridium_bar"]
@@ -281,7 +281,7 @@ func test_iridium_bar_smelt_and_pickaxe_upgrade_complete_late_mining_chain() -> 
 	assert_eq(ContentDB.get_item(&"iridium_pickaxe").tool_power, 5)
 
 func test_furnace_entry_points_expose_all_metal_recipes() -> void:
-	var packed := load("res://game/core/processing/copper_furnace_placeable.tscn") as PackedScene
+	var packed := load("res://gamebase/modules/lifesim/processing/copper_furnace_placeable.tscn") as PackedScene
 	var placeable := packed.instantiate() as ProcessingStation
 	add_child_autofree(placeable)
 	await get_tree().process_frame

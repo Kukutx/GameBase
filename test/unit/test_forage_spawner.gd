@@ -68,7 +68,7 @@ func test_collected_spawn_stays_gone_same_day_and_returns_next_day() -> void:
 	assert_eq(spawner.get_spawned_pickups().size(), 1)
 
 func test_pickup_blocks_item_added_reentrancy() -> void:
-	var scene := load("res://game/core/items/item_pickup.tscn") as PackedScene
+	var scene := load("res://gamebase/modules/items/items/item_pickup.tscn") as PackedScene
 	var pickup := scene.instantiate() as WorldItemPickup
 	pickup.item = ContentDB.get_item(&"berry")
 	pickup.quantity = 1

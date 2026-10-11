@@ -1,0 +1,38 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/animals/animal_ledger.gd" id="1_ledger"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="2_interactable"]
+
+[sub_resource type="RectangleShape2D" id="Rect_ledger"]
+size = Vector2(34, 24)
+
+[node name="AnimalLedger" type="Node2D"]
+script = ExtResource("1_ledger")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-17, -12, 17, -12, 17, 12, -17, 12)
+color = Color(0.32, 0.22, 0.13, 1)
+
+[node name="Paper" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-11, -8, 11, -8, 11, 8, -11, 8)
+color = Color(0.82, 0.78, 0.62, 1)
+
+[node name="Label" type="Label" parent="."]
+offset_left = -44.0
+offset_top = -29.0
+offset_right = 44.0
+offset_bottom = -15.0
+theme_override_font_sizes/font_size = 9
+text = "Animal Ledger"
+horizontal_alignment = 1
+
+[node name="Interactable" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("2_interactable")
+prompt_text = "Manage animals"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("Rect_ledger")

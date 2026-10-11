@@ -1,0 +1,94 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/animals/animal_management_menu.gd" id="1_menu"]
+[ext_resource type="Theme" path="res://game/ui/game_theme.tres" id="2_theme"]
+
+[node name="AnimalManagementMenu" type="CanvasLayer"]
+layer = 80
+script = ExtResource("1_menu")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_left = 70.0
+offset_top = 24.0
+offset_right = 410.0
+offset_bottom = 254.0
+theme = ExtResource("2_theme")
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Animal Ledger"
+horizontal_alignment = 1
+
+[node name="Summary" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = ""
+horizontal_alignment = 1
+
+[node name="AnimalSelect" type="OptionButton" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Details" type="RichTextLabel" parent="Panel/VBox"]
+custom_minimum_size = Vector2(0, 78)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = false
+scroll_active = false
+text = ""
+
+[node name="RenameRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Name" type="LineEdit" parent="Panel/VBox/RenameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_length = 20
+placeholder_text = "Animal name"
+
+[node name="Rename" type="Button" parent="Panel/VBox/RenameRow"]
+layout_mode = 2
+text = "Rename"
+
+[node name="FeedRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="FeedCoop" type="Button" parent="Panel/VBox/FeedRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+
+[node name="FeedBarn" type="Button" parent="Panel/VBox/FeedRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+
+[node name="ExpansionRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="ExpandCoop" type="Button" parent="Panel/VBox/ExpansionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+
+[node name="ExpandBarn" type="Button" parent="Panel/VBox/ExpansionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+
+[node name="Sell" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Sell Animal"
+
+[node name="Close" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Close"
+
+[node name="ConfirmSell" type="ConfirmationDialog" parent="."]
+title = "Sell Animal"
+dialog_text = "Sell this animal?"
+ok_button_text = "Sell"

@@ -178,7 +178,7 @@ func test_loaded_animal_state_clamps_future_daily_markers() -> void:
 	assert_not_null(data)
 	if data == null:
 		return
-	var animal_scene := load("res://game/core/animals/farm_animal.tscn") as PackedScene
+	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
 	chicken.data = data
 	chicken.persistent_id = &""
@@ -211,7 +211,7 @@ func test_pig_uses_real_sheet_layout_and_truffle_interval() -> void:
 	assert_eq(pig_data.product_item_id, &"truffle")
 	assert_eq(pig_data.product_interval_days, 2)
 
-	var animal_scene := load("res://game/core/animals/farm_animal.tscn") as PackedScene
+	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var pig := animal_scene.instantiate() as FarmAnimal
 	pig.data = pig_data
 	pig.persistent_id = &"test_pig_production"
@@ -244,7 +244,7 @@ func test_multi_product_collection_waits_until_the_full_output_fits() -> void:
 		"last_fed_day": 1,
 		"last_processed_day": 1,
 	})
-	var animal_scene := load("res://game/core/animals/farm_animal.tscn") as PackedScene
+	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
 	chicken.data = chicken_data
 	chicken.persistent_id = &"test_multi_product"
@@ -275,7 +275,7 @@ func test_product_collection_blocks_item_added_reentrancy() -> void:
 		"last_fed_day": WorldClock.day,
 		"last_processed_day": WorldClock.day,
 	})
-	var animal_scene := load("res://game/core/animals/farm_animal.tscn") as PackedScene
+	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
 	chicken.data = ContentDB.get_farm_animal(&"chicken")
 	chicken.persistent_id = &"test_product_reentrancy"
@@ -348,7 +348,7 @@ func test_animal_offline_catchup_penalizes_missed_feed_and_feeding_restores_prod
 		"last_processed_day": 1,
 	})
 	WorldClock.set_time(4, 8 * 60)
-	var animal_scene := load("res://game/core/animals/farm_animal.tscn") as PackedScene
+	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
 	chicken.data = ContentDB.get_farm_animal(&"chicken")
 	chicken.persistent_id = &"starter_chicken_01"
@@ -365,7 +365,7 @@ func test_animal_offline_catchup_penalizes_missed_feed_and_feeding_restores_prod
 	assert_eq(InventoryState.get_quantity(&"hay"), 0)
 
 func test_animal_catchup_handles_extreme_day_jump_without_per_day_iteration() -> void:
-	var animal_scene := load("res://game/core/animals/farm_animal.tscn") as PackedScene
+	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
 	chicken.data = ContentDB.get_farm_animal(&"chicken")
 	chicken.persistent_id = &""
@@ -387,7 +387,7 @@ func test_animal_catchup_commits_processed_day_before_happiness_signal_reentranc
 		"last_fed_day": 1,
 		"last_processed_day": 1,
 	})
-	var animal_scene := load("res://game/core/animals/farm_animal.tscn") as PackedScene
+	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
 	chicken.data = ContentDB.get_farm_animal(&"chicken")
 	chicken.persistent_id = &"test_catchup_reentrancy"
@@ -468,7 +468,7 @@ func test_high_happiness_unlocks_premium_animal_products() -> void:
 		"last_fed_day": 1,
 		"last_processed_day": 1,
 	})
-	var animal_scene := load("res://game/core/animals/farm_animal.tscn") as PackedScene
+	var animal_scene := load("res://gamebase/modules/lifesim/animals/farm_animal.tscn") as PackedScene
 	var chicken := animal_scene.instantiate() as FarmAnimal
 	chicken.data = chicken_data
 	chicken.persistent_id = &"test_happy_chicken"
@@ -481,7 +481,7 @@ func test_high_happiness_unlocks_premium_animal_products() -> void:
 
 func test_animal_name_typed_by_the_player_is_shown_as_plain_text() -> void:
 	assert_true(AnimalState.rename_animal(&"starter_chicken_01", "[i]Bessie[/i]"))
-	var menu := (load("res://game/core/animals/animal_management_menu.tscn") as PackedScene).instantiate()
+	var menu := (load("res://gamebase/modules/lifesim/animals/animal_management_menu.tscn") as PackedScene).instantiate()
 	add_child_autofree(menu)
 	await get_tree().process_frame
 	menu.open(&"starter_town")

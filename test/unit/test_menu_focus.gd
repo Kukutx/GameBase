@@ -49,13 +49,13 @@ func test_game_menu_keeps_selected_tab_focusable() -> void:
 
 func test_overlay_menus_open_with_a_valid_focus_target() -> void:
 	var cases: Array[Dictionary] = [
-		{"path": "res://game/core/animals/animal_management_menu.tscn", "kind": "animal"},
-		{"path": "res://game/core/contracts/daily_contract_menu.tscn", "kind": "contract"},
-		{"path": "res://game/core/crafting/crafting_menu.tscn", "kind": "crafting"},
-		{"path": "res://game/core/shop/shop_menu.tscn", "kind": "shop"},
-		{"path": "res://game/core/storage/storage_menu.tscn", "kind": "storage"},
-		{"path": "res://game/core/projects/town_project_menu.tscn", "kind": "projects"},
-		{"path": "res://game/core/upgrades/tool_upgrade_menu.tscn", "kind": "upgrade"},
+		{"path": "res://gamebase/modules/lifesim/animals/animal_management_menu.tscn", "kind": "animal"},
+		{"path": "res://gamebase/modules/progression/contracts/daily_contract_menu.tscn", "kind": "contract"},
+		{"path": "res://gamebase/modules/items/crafting/crafting_menu.tscn", "kind": "crafting"},
+		{"path": "res://gamebase/modules/items/shop/shop_menu.tscn", "kind": "shop"},
+		{"path": "res://gamebase/modules/items/storage/storage_menu.tscn", "kind": "storage"},
+		{"path": "res://gamebase/modules/progression/projects/town_project_menu.tscn", "kind": "projects"},
+		{"path": "res://gamebase/modules/progression/upgrades/tool_upgrade_menu.tscn", "kind": "upgrade"},
 		{"path": "res://game/ui/settings_menu.tscn", "kind": "settings"},
 		{"path": "res://game/ui/pause_menu.tscn", "kind": "pause"},
 	]

@@ -14,7 +14,7 @@ func test_project_config_has_no_local_development_references() -> void:
 	assert_false(project.contains("res://.dev/"), "project.godot must never reference local .dev content")
 	assert_false(project.contains("addons/top_down"), "production config must not depend on the removed shooter template")
 	assert_false(project.contains("addons/great_games_library"), "production config must not depend on the removed template library")
-	assert_true(project.contains('Transition="*res://game/core/world/scene_transition.gd"'))
+	assert_true(project.contains('Transition="*res://gamebase/core/world/scene_transition.gd"'))
 
 func test_legacy_shooter_addons_are_absent() -> void:
 	assert_false(DirAccess.dir_exists_absolute(ProjectSettings.globalize_path("res://addons/top_down")))
@@ -33,10 +33,10 @@ func test_localization_resources_are_registered() -> void:
 
 func test_input_audio_and_autosave_services_are_registered() -> void:
 	var project := _read_text("res://project.godot")
-	assert_true(project.contains('InputPrompts="*res://game/core/input/input_prompt_service.gd"'))
-	assert_true(project.contains('GameAudio="*res://game/core/audio/game_audio_service.gd"'))
-	assert_true(project.contains('AutoSave="*res://game/core/save/auto_save_service.gd"'))
-	assert_true(project.contains('SupportBundle="*res://game/core/diagnostics/support_bundle_service.gd"'))
+	assert_true(project.contains('InputPrompts="*res://gamebase/core/input/input_prompt_service.gd"'))
+	assert_true(project.contains('GameAudio="*res://gamebase/core/audio/game_audio_service.gd"'))
+	assert_true(project.contains('AutoSave="*res://gamebase/core/save/auto_save_service.gd"'))
+	assert_true(project.contains('SupportBundle="*res://gamebase/core/diagnostics/support_bundle_service.gd"'))
 
 func test_game_version_is_semver_and_matches_project_and_diagnostics() -> void:
 	var version := _read_text("res://.game-version").strip_edges()
@@ -50,7 +50,7 @@ func test_game_version_is_semver_and_matches_project_and_diagnostics() -> void:
 
 func test_release_diagnostics_are_configured() -> void:
 	var project := _read_text("res://project.godot")
-	assert_true(project.contains('GameDiagnostics="*res://game/core/diagnostics/game_diagnostics.gd"'))
+	assert_true(project.contains('GameDiagnostics="*res://gamebase/core/diagnostics/game_diagnostics.gd"'))
 	assert_true(bool(ProjectSettings.get_setting("debug/file_logging/enable_file_logging.pc", true)))
 	assert_true(project.contains('file_logging/log_path="user://logs/gamebase.log"'))
 	assert_eq(int(ProjectSettings.get_setting("debug/file_logging/max_log_files", 5)), 5)

@@ -35,7 +35,7 @@ func after_each() -> void:
 	InventoryState.max_slots = _inventory_slots
 
 func test_full_turnip_growth_cycle() -> void:
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 
@@ -63,7 +63,7 @@ func test_loaded_farm_state_clamps_future_day_and_excess_growth() -> void:
 	assert_not_null(crop)
 	if crop == null:
 		return
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	plot.load_state_data({
@@ -78,7 +78,7 @@ func test_loaded_farm_state_clamps_future_day_and_excess_growth() -> void:
 	assert_true(plot.can_harvest())
 
 func test_empty_plot_catchup_handles_extreme_day_jump_without_per_day_iteration() -> void:
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	plot.tilled = true
@@ -91,7 +91,7 @@ func test_empty_plot_catchup_handles_extreme_day_jump_without_per_day_iteration(
 	assert_eq(plot.watered, plot.tilled and bool(WeatherState.is_raining(1_000_000)))
 
 func test_seasonal_crop_catchup_stops_simulating_after_crop_dies() -> void:
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	plot.tilled = true
@@ -105,7 +105,7 @@ func test_seasonal_crop_catchup_stops_simulating_after_crop_dies() -> void:
 	assert_eq(plot.growth_days, 0)
 
 func test_unknown_legacy_crop_does_not_block_replanting() -> void:
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	plot.load_state_data({
@@ -122,7 +122,7 @@ func test_unknown_legacy_crop_does_not_block_replanting() -> void:
 	assert_eq(plot.crop_id, &"turnip")
 
 func test_plot_blocks_energy_changed_reentrancy_while_planting() -> void:
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	assert_true(plot.use_item(&"hoe"))
@@ -146,7 +146,7 @@ func test_plot_blocks_energy_changed_reentrancy_while_planting() -> void:
 
 func test_harvest_blocks_item_added_reentrancy() -> void:
 	var crop := ContentDB.get_crop(&"turnip")
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	await get_tree().process_frame
@@ -175,7 +175,7 @@ func test_multi_yield_harvest_waits_until_the_full_crop_fits() -> void:
 		return
 	var original_quantity := crop.harvest_quantity
 	crop.harvest_quantity = 2
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	await get_tree().process_frame
@@ -278,7 +278,7 @@ func test_mature_crop_gets_only_one_out_of_season_grace_day() -> void:
 	if tomato == null:
 		return
 	WorldClock.set_time(56, 6 * 60) # Summer 28
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	await get_tree().process_frame
@@ -299,7 +299,7 @@ func test_mature_crop_gets_only_one_out_of_season_grace_day() -> void:
 
 func test_tomato_is_summer_only_and_regrows_after_harvest() -> void:
 	InventoryState.add_item_by_id(&"tomato_seeds", 2)
-	var plot := load("res://game/core/farming/farm_plot.tscn").instantiate() as FarmPlot
+	var plot := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot
 	plot.persistent_id = &""
 	add_child_autofree(plot)
 	assert_true(plot.use_item(&"hoe"))

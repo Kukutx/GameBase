@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="PackedScene" path="res://game/core/processing/processing_station.tscn" id="1_station"]
-
-[node name="CopperFurnace" instance=ExtResource("1_station")]
-display_name = "Copper Furnace"
-recipe_ids = Array[StringName]([&"smelt_copper_bar", &"smelt_iron_bar", &"smelt_gold_bar", &"smelt_iridium_bar"])

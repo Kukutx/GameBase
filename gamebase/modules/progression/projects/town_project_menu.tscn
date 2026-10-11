@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/progression/projects/town_project_menu.gd" id="1_menu"]
+
+[node name="TownProjectMenu" type="CanvasLayer"]
+layer = 50
+script = ExtResource("1_menu")
+
+[node name="Dim" type="ColorRect" parent="."]
+offset_right = 480.0
+offset_bottom = 270.0
+color = Color(0, 0, 0, 0.62)
+mouse_filter = 1
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_left = 62.0
+offset_top = 20.0
+offset_right = 418.0
+offset_bottom = 250.0
+
+[node name="Layout" type="VBoxContainer" parent="Panel"]
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/Layout"]
+theme_override_font_sizes/font_size = 18
+text = "Town Projects"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/Layout"]
+custom_minimum_size = Vector2(0, 166)
+size_flags_vertical = 3
+
+[node name="Projects" type="VBoxContainer" parent="Panel/Layout/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Close" type="Button" parent="Panel/Layout"]
+text = "Close"

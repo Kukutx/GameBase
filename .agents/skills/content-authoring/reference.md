@@ -15,11 +15,11 @@ Read this only when a task crosses systems and the owner, the consumers or the v
 
 | Topic | Source of truth to look at first |
 | --- | --- |
-| Content of a type (item, crop, NPC, quest, mail, location, audio cue) | the resource class under `game/core/`, the resource under `game/data/`, `game/data/content_manifest.tres`, `ContentDB` |
+| Content of a type (item, crop, NPC, quest, mail, location, audio cue) | the resource class under `gamebase/core/` or `gamebase/modules/`, the resource under `game/data/`, `game/data/content_manifest.tres`, `ContentDB` |
 | Runtime state of a system | the autoload service that owns it; a scene only presents it |
 | What a save contains | `GameSaveManager`, `SaveMigration`, and the `to_save_data()` / `load_save_data()` pair of the owning service |
 | Player-visible text | the string literal at its call site or in the scene or resource, `game/i18n/ui.zh_CN.po`, `tools/check_localization.js` |
-| Input actions | `game/core/settings/game_settings.gd` for rebindable actions, the `[input]` section of `project.godot` for the rest |
+| Input actions | `gamebase/core/settings/game_settings.gd` for rebindable actions, the `[input]` section of `project.godot` for the rest |
 | Travel between locations | `WorldTravel`, the `WorldLocationData` resources and the `WorldSpawnPoint` nodes |
 | Audio | `GameAudio`, the `AudioCueData` resources, `docs/AUDIO.md` |
 | Engine and application versions | `.godot-version`, `.game-version`, `project.godot`; whether to change them follows the officially supported facts |

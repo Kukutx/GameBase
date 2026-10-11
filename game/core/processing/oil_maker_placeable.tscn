@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="PackedScene" path="res://game/core/processing/processing_station.tscn" id="1_station"]
-
-[node name="OilMaker" instance=ExtResource("1_station")]
-display_name = "Oil Maker"
-recipe_ids = Array[StringName]([&"press_truffle_oil"])

@@ -1,0 +1,34 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_ladder.gd" id="1_ladder"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="2_interactable"]
+
+[sub_resource type="RectangleShape2D" id="Rect_ladder"]
+size = Vector2(34, 34)
+
+[node name="DeepLadder" type="Node2D"]
+script = ExtResource("1_ladder")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-13, -14, 13, -14, 13, 14, -13, 14)
+color = Color(0.30, 0.23, 0.16, 1)
+
+[node name="Label" type="Label" parent="."]
+offset_left = -52.0
+offset_top = -34.0
+offset_right = 52.0
+offset_bottom = -16.0
+theme_override_font_sizes/font_size = 9
+text = "Ladder locked"
+horizontal_alignment = 1
+
+[node name="Interactable" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("2_interactable")
+prompt_text = "Clear the floor first"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("Rect_ladder")

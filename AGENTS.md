@@ -20,9 +20,9 @@ This file is the smallest routing layer every task in this repository sees. It h
 
 | Target path | Read this rule first |
 | --- | --- |
-| `game/**/*.gd`, `test/**/*.gd` | `.agents/rules/gdscript.md` |
-| `game/**/*.tscn`, `game/**/*.tres` | `.agents/rules/scenes-resources.md` |
-| `game/core/save/**` | `.agents/rules/save.md` |
+| `game/**/*.gd`, `gamebase/**/*.gd`, `test/**/*.gd` | `.agents/rules/gdscript.md` |
+| `game/**/*.tscn`, `game/**/*.tres`, `gamebase/**/*.tscn`, `gamebase/**/*.tres` | `.agents/rules/scenes-resources.md` |
+| `gamebase/core/save/**` | `.agents/rules/save.md` |
 | `game/i18n/**` | `.agents/rules/localization.md` |
 | `test/**` | `.agents/rules/testing.md` |
 | `tools/**` | `.agents/rules/tools.md` |
