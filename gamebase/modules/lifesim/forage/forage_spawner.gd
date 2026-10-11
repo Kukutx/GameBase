@@ -39,7 +39,7 @@ func generate_plan(day: int, target_location_id: StringName = &"") -> Array[Dict
 		result.append({
 			"index": index,
 			"item_id": String(entry.item_id),
-			"quantity": entry.get_quantity(rng) + Skills.get_forage_quantity_bonus(),
+			"quantity": roundi(GameStats.apply(&"forage_quantity", entry.get_quantity(rng))),
 			"position": Vector2(
 				rng.randf_range(spawn_rect.position.x, spawn_rect.end.x),
 				rng.randf_range(spawn_rect.position.y, spawn_rect.end.y)

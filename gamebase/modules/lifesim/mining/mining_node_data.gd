@@ -24,6 +24,6 @@ static func find_all() -> Array[MiningNodeData]:
 	return result
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
-	if not ItemData.has_tagged(registry, drop_item_id, "mining"):
-		return PackedStringArray(["drop '%s' is no item tagged mining" % drop_item_id])
+	if not ItemData.has_tagged(registry, drop_item_id, "mined"):
+		return PackedStringArray(["drop '%s' is no item tagged mined" % drop_item_id])
 	return PackedStringArray()

@@ -136,11 +136,11 @@ func test_mining_and_enemy_ground_drops_do_not_count_as_forage() -> void:
 		add_child_autofree(mining_drop)
 		await get_tree().process_frame
 		assert_false(mining_drop.counts_as_forage)
-		var forage_xp_before := Skills.get_xp(SkillManager.FORAGING)
+		var forage_xp_before := Skills.get_xp(&"foraging")
 		mining_drop.get_node("Interactable").interact(null)
 		await get_tree().process_frame
 		assert_eq(InventoryState.get_quantity(&"stone"), 2)
-		assert_eq(Skills.get_xp(SkillManager.FORAGING), forage_xp_before)
+		assert_eq(Skills.get_xp(&"foraging"), forage_xp_before)
 
 	InventoryState.clear()
 	var creature_scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
@@ -231,7 +231,7 @@ func test_melee_attack_blocks_energy_changed_reentrancy() -> void:
 		PlayerState.energy_changed.disconnect(listener)
 	assert_true(bool(observed["entered"]))
 	assert_false(bool(observed["inner_result"]))
-	var expected_cost := maxi(int(floor(float(controller.energy_cost) * BuffState.get_multiplier(&"tool_energy") * Skills.get_energy_multiplier(SkillManager.COMBAT))), 1)
+	var expected_cost := maxi(int(floor(float(controller.energy_cost) * GameStats.get_multiplier(&"tool_energy") * GameStats.get_multiplier(&"attack_energy"))), 1)
 	assert_eq(PlayerState.energy, 100 - expected_cost)
 
 func test_slime_takes_melee_damage_drops_loot_and_awards_combat_xp() -> void:

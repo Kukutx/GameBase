@@ -10,4 +10,4 @@ description = "A refined gold bar used for advanced tools and late-game construc
 max_stack = 99
 kind = 0
 sell_price = 320
-tags = PackedStringArray("bar", "mining", "gold", "processed", "valuable")
+tags = PackedStringArray("bar", "mined", "gold", "processed", "valuable")

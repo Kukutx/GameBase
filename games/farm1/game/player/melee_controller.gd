@@ -30,7 +30,7 @@ func _attack(weapon: ItemData) -> bool:
 	if not InventoryState.has_item(weapon.id, 1):
 		GameEvents.toastf("You do not have %s", [weapon.display_name])
 		return false
-	var energy_multiplier := BuffState.get_multiplier(&"tool_energy") * Skills.get_energy_multiplier(SkillManager.COMBAT)
+	var energy_multiplier := GameStats.get_multiplier(&"tool_energy") * GameStats.get_multiplier(&"attack_energy")
 	var adjusted_cost := maxi(int(floor(float(energy_cost) * energy_multiplier)), 1)
 	if not PlayerState.consume_energy(adjusted_cost):
 		GameEvents.toast("Not enough energy")
@@ -49,7 +49,7 @@ func _attack(weapon: ItemData) -> bool:
 func get_attack_damage(weapon: ItemData) -> int:
 	if weapon == null:
 		return 0
-	return maxi(roundi(float(weapon.tool_power) * Skills.get_combat_damage_multiplier()), 1)
+	return maxi(roundi(GameStats.apply(&"attack_damage", weapon.tool_power)), 1)
 
 func _play_attack_animation() -> void:
 	var actor := get_parent()

@@ -49,7 +49,7 @@ func _use_item_internal(item_id: StringName) -> bool:
 	if not InventoryState.has_item(item.id, 1):
 		GameEvents.toastf("You do not have %s", [item.display_name])
 		return false
-	var energy_multiplier := BuffState.get_multiplier(&"tool_energy") * Skills.get_energy_multiplier(SkillManager.MINING)
+	var energy_multiplier := GameStats.get_multiplier(&"tool_energy") * GameStats.get_multiplier(&"mining_energy")
 	var energy_cost := maxi(int(floor(float(data.energy_cost) * energy_multiplier)), 1)
 	if not PlayerState.consume_energy(energy_cost):
 		GameEvents.toast("Not enough energy")

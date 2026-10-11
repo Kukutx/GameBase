@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/skills/skill_data.gd" id="1_skill"]
+[ext_resource type="Script" path="res://gamebase/modules/skills/skill_perk.gd" id="2_perk"]
+
+[sub_resource type="Resource" id="Resource_level5"]
+script = ExtResource("2_perk")
+level = 5
+description = "Angler I · bite wait -10% · reel window +15%"
+multipliers = Dictionary[StringName, float]({&"fishing_wait": 0.9, &"fishing_window": 1.15})
+
+[sub_resource type="Resource" id="Resource_level10"]
+script = ExtResource("2_perk")
+level = 10
+description = "Angler II · bite wait -20% · reel window +30%"
+multipliers = Dictionary[StringName, float]({&"fishing_wait": 0.8, &"fishing_window": 1.3})
+
+[resource]
+script = ExtResource("1_skill")
+id = &"fishing"
+display_name = "Fishing"
+short_name = "Fish"
+order = 2
+level_xp = PackedInt32Array(100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200)
+perks = [SubResource("Resource_level5"), SubResource("Resource_level10")]

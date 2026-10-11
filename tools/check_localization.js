@@ -71,7 +71,7 @@ function registeredCatalogs(game, layers) {
 const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\s*/g;
 
 // Player-facing fields of data resources.
-const DATA_RE = /^(?:display_name|title|description|subject|body|role|activity) = "((?:[^"\\]|\\.)*)"$/gm;
+const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|role|activity) = "((?:[^"\\]|\\.)*)"$/gm;
 
 const SCENE_PROPERTIES = [
   "text",

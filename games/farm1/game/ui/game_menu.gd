@@ -133,9 +133,9 @@ func _social_text() -> String:
 
 func _skills_text() -> String:
 	var lines := PackedStringArray(["[font_size=18][b]%s[/b][/font_size]" % tr("Skills"), ""])
-	for skill: StringName in SkillManager.SKILL_IDS:
-		lines.append(tr("[b]%s[/b]  Lv.%d   %d XP") % [Skills.get_skill_name(skill), Skills.get_level(skill), Skills.get_xp(skill)])
-		lines.append("  %s" % Skills.get_perk_summary(skill))
+	for skill: SkillData in SkillData.find_all():
+		lines.append(tr("[b]%s[/b]  Lv.%d   %d XP") % [tr(skill.display_name), Skills.get_level(skill.id), Skills.get_xp(skill.id)])
+		lines.append("  %s" % Skills.get_perk_summary(skill.id))
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Active Buffs"))
 	var buffs := BuffState.get_active_entries()

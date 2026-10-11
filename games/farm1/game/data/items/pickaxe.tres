@@ -12,4 +12,4 @@ kind = 3
 buy_price = 600
 tool_action = &"mine"
 tool_power = 1
-tags = PackedStringArray("tool", "mining")
+tags = PackedStringArray("tool", "mined")

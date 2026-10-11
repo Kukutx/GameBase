@@ -106,7 +106,7 @@ test("a catalog entry translates text of its own layer, and the core's text in t
   assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Nobody says this", which no text of games/probe holds'));
 });
 
-test("a resource's player-facing field needs a translation, such as a control's name", () => {
+test("a resource's player-facing field needs a translation, such as a control's name or a skill's short name", () => {
   const out = tempFile("gamebase-resource-text-test");
   const log = console.log;
   const lines = [];
@@ -115,6 +115,9 @@ test("a resource's player-facing field needs a translation, such as a control's 
     const control = gamePath(game, "game", "input", "jump.tres");
     fs.mkdirSync(path.dirname(control), { recursive: true });
     fs.writeFileSync(control, '[gd_resource type="Resource" format=3]\n\n[resource]\naction = &"jump"\ndisplay_name = "Probe Jump"\nkey = 32\n', "utf8");
+    const skill = gamePath(game, "game", "data", "skills", "probing.tres");
+    fs.mkdirSync(path.dirname(skill), { recursive: true });
+    fs.writeFileSync(skill, '[gd_resource type="Resource" format=3]\n\n[resource]\nid = &"probing"\nshort_name = "Probe Short"\n', "utf8");
     console.log = (line) => lines.push(String(line));
     assert.equal(checkLocalization(game), 1);
   } finally {
@@ -122,6 +125,7 @@ test("a resource's player-facing field needs a translation, such as a control's 
     removeRecursive(out);
   }
   assert.ok(lines.includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing Probe Jump"));
+  assert.ok(lines.includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing Probe Short"));
 });
 
 test("every game's project.godot holds the autoloads, catalogs and plugins of its manifests", () => {

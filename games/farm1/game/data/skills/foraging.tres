@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/skills/skill_data.gd" id="1_skill"]
+[ext_resource type="Script" path="res://gamebase/modules/skills/skill_perk.gd" id="2_perk"]
+
+[sub_resource type="Resource" id="Resource_level5"]
+script = ExtResource("2_perk")
+level = 5
+description = "Gatherer I · +1 forage quantity"
+bonuses = Dictionary[StringName, float]({&"forage_quantity": 1.0})
+
+[sub_resource type="Resource" id="Resource_level10"]
+script = ExtResource("2_perk")
+level = 10
+description = "Gatherer II · +2 forage quantity"
+bonuses = Dictionary[StringName, float]({&"forage_quantity": 2.0})
+
+[resource]
+script = ExtResource("1_skill")
+id = &"foraging"
+display_name = "Foraging"
+short_name = "Gather"
+order = 1
+level_xp = PackedInt32Array(100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200)
+perks = [SubResource("Resource_level5"), SubResource("Resource_level10")]

@@ -10,4 +10,4 @@ description = "Dense violet ore found from Mine Floor 60 onward."
 max_stack = 99
 kind = 0
 sell_price = 180
-tags = PackedStringArray("ore", "mining", "iridium", "valuable")
+tags = PackedStringArray("ore", "mined", "iridium", "valuable")

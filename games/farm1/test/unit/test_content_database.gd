@@ -179,7 +179,7 @@ func test_entries_report_invalid_rewards_tools_and_tags() -> void:
 	bad_crop.harvest_item_id = &"berry"
 	var bad_buff := FoodBuffData.new()
 	bad_buff.id = &"bad_buff"
-	bad_buff.modifiers = {"typo_speed": 1.2, "tool_energy": 0.0}
+	bad_buff.multipliers = {&"typo_speed": 1.2, &"tool_energy": 0.0}
 	var bad_fish := FishData.new()
 	bad_fish.id = &"bad_fish"
 	bad_fish.item_id = &"berry"
@@ -212,13 +212,13 @@ func test_entries_report_invalid_rewards_tools_and_tags() -> void:
 	assert_string_contains(joined, "item 'bad_seed' is a seed of unknown crop 'missing_crop'")
 	assert_string_contains(joined, "crop 'bad_crop' harvest item 'berry' is not a CROP item")
 	assert_string_contains(joined, "food buff 'bad_buff' changes stat 'typo_speed', which no installed module or the game reads")
-	assert_string_contains(joined, "food buff 'bad_buff' has non-positive or non-numeric multiplier for 'tool_energy'")
+	assert_string_contains(joined, "food buff 'bad_buff' has a non-positive multiplier of 'tool_energy'")
 	assert_string_contains(joined, "fish 'bad_fish' item 'berry' is no item tagged fish")
 	assert_string_contains(joined, "fish 'bad_fish' has an empty time window")
 	assert_string_contains(joined, "farm animal 'bad_animal' product 'berry' is no item tagged animal_product")
 	assert_string_contains(joined, "farm animal 'bad_animal' has no housing type")
 	assert_string_contains(joined, "farm animal 'bad_animal' feed '' is no item tagged animal_feed")
-	assert_string_contains(joined, "mining node 'bad_mining' drop 'berry' is no item tagged mining")
+	assert_string_contains(joined, "mining node 'bad_mining' drop 'berry' is no item tagged mined")
 	assert_string_contains(joined, "tool upgrade 'bad_upgrade' changes tool action from 'mine' to 'attack'")
 	assert_string_contains(joined, "tool upgrade 'bad_upgrade' result power 2 does not exceed source power 2")
 

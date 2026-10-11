@@ -293,7 +293,7 @@ func _state_key() -> StringName:
 func _scaled_tool_energy(base_cost: int, tool: ItemData) -> int:
 	var power := maxi(tool.tool_power if tool != null else 1, 1)
 	var reduced := float(maxi(base_cost, 1)) / float(power)
-	var multiplier := BuffState.get_multiplier(&"tool_energy") * Skills.get_energy_multiplier(SkillManager.FARMING)
+	var multiplier := GameStats.get_multiplier(&"tool_energy") * GameStats.get_multiplier(&"farming_energy")
 	return maxi(int(floor(reduced * multiplier)), 1)
 
 func _refresh_visual() -> void:

@@ -10,4 +10,4 @@ description = "A late-game alloy used for the strongest tools and weapons."
 max_stack = 99
 kind = 0
 sell_price = 850
-tags = PackedStringArray("bar", "mining", "iridium", "processed", "valuable")
+tags = PackedStringArray("bar", "mined", "iridium", "processed", "valuable")

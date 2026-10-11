@@ -8,4 +8,4 @@ id = &"angler_focus"
 display_name = "Angler Focus"
 description = "Steadies your hands and makes bites easier to react to."
 duration_minutes = 180
-modifiers = {"fishing_wait": 0.7, "fishing_window": 1.35}
+multipliers = Dictionary[StringName, float]({&"fishing_wait": 0.7, &"fishing_window": 1.35})
