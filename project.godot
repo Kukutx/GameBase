@@ -66,6 +66,7 @@ GameAudio="*res://gamebase/core/audio/game_audio_service.gd"
 SaveManager="*res://gamebase/core/save/game_save_manager.gd"
 AutoSave="*res://gamebase/core/save/auto_save_service.gd"
 GameSession="*res://gamebase/core/session/game_session.gd"
+GameSetup="*res://game/game_setup.gd"
 GameDiagnostics="*res://gamebase/core/diagnostics/game_diagnostics.gd"
 SupportBundle="*res://gamebase/core/diagnostics/support_bundle_service.gd"
 
@@ -86,6 +87,10 @@ window/stretch/aspect="keep_height"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/gut/plugin.cfg")
+
+[gamebase]
+
+game_definition="res://game/game_definition.tres"
 
 [input]
 

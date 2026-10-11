@@ -1,58 +1,78 @@
 class_name GameSessionService
 extends Node
 
-const START_LOCATION_ID := &"starter_town"
 const NEW_GAME_FLAG := &"system:new_game_initialized"
+## Project setting naming the game's `GameDefinition` resource.
+const DEFINITION_SETTING := "gamebase/game_definition"
+## Orders of the new-game steps the session runs itself. A game registers its own
+## steps between them with `register_new_game_step()`.
+const NEW_GAME_ORDER_WORLD := 200
+const NEW_GAME_ORDER_PLAYER := 400
+const NEW_GAME_ORDER_CLOCK := 1200
+const NEW_GAME_ORDER_FINISH := 10000
 
 signal new_game_started
 signal continue_started(success: bool)
 signal player_collapsed(money_lost: int)
 signal late_night_collapse
 
+## The running game's facts (start location, home, starting clock and items).
+var definition: GameDefinition
+
 var _handling_defeat := false
 var _handling_late_night := false
+var _new_game_steps: Array[Dictionary] = []
+
+func _init() -> void:
+	definition = _load_definition()
 
 func _ready() -> void:
+	register_new_game_step(&"world", NEW_GAME_ORDER_WORLD, WorldState.clear)
+	register_new_game_step(&"player", NEW_GAME_ORDER_PLAYER, PlayerState.reset_new_game)
+	register_new_game_step(&"clock", NEW_GAME_ORDER_CLOCK, _reset_clock_and_weather)
+	register_new_game_step(&"finish", NEW_GAME_ORDER_FINISH, WorldState.set_value.bind(NEW_GAME_FLAG, true))
 	PlayerState.health_changed.connect(_on_health_changed)
 	WorldClock.minute_changed.connect(_on_minute_changed)
 
+## Registers a step that resets or seeds a service when a new game starts. Steps
+## run by ascending `order`; registering the same id again replaces the step.
+func register_new_game_step(id: StringName, order: int, step: Callable) -> void:
+	for index: int in range(_new_game_steps.size() - 1, -1, -1):
+		if _new_game_steps[index]["id"] == id:
+			_new_game_steps.remove_at(index)
+	_new_game_steps.append({"id": id, "order": order, "step": step})
+	_new_game_steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["order"]) < int(b["order"]))
+
 func initialize_new_game_state() -> void:
-	InventoryState.clear()
-	WorldState.clear()
-	AnimalState.reset_new_game()
-	PlayerState.reset_new_game()
-	RelationshipState.clear()
-	NpcMemory.clear()
-	QuestState.load_save_data({})
-	Skills.reset_new_game()
-	BuffState.clear()
-	ShippingState.reset_new_game()
-	FishingState.reset_new_game()
-	WorldClock.set_time(1, 8 * 60)
+	SaveManager.clear_carried_sections()
+	for step: Dictionary in _new_game_steps:
+		(step["step"] as Callable).call()
+
+func _reset_clock_and_weather() -> void:
+	WorldClock.set_time(definition.start_day, definition.start_minute_of_day)
 	# Reset through the weather save API so current_weather is recalculated for
-	# Day 1 even when the previous session was already on Day 1 with another seed.
-	WeatherState.load_save_data({"world_seed": 93017})
-	InventoryState.add_item_by_id(&"hoe", 1)
-	InventoryState.add_item_by_id(&"watering_can", 1)
-	InventoryState.add_item_by_id(&"pickaxe", 1)
-	InventoryState.add_item_by_id(&"rusty_sword", 1)
-	InventoryState.add_item_by_id(&"fishing_rod", 1)
-	InventoryState.add_item_by_id(&"turnip_seeds", 10)
-	InventoryState.add_item_by_id(&"hay", 20)
-	QuestState.reset_new_game()
-	WorldState.set_value(NEW_GAME_FLAG, true)
+	# the first day even when the previous session was already on it with another seed.
+	WeatherState.load_save_data({"world_seed": definition.world_seed})
+
+func _load_definition() -> GameDefinition:
+	var path := String(ProjectSettings.get_setting(DEFINITION_SETTING, ""))
+	var loaded: Resource = load(path) if not path.is_empty() and ResourceLoader.exists(path) else null
+	if loaded is GameDefinition:
+		return loaded
+	push_error("GameSession: project setting '%s' must point to a GameDefinition resource (got '%s')" % [DEFINITION_SETTING, path])
+	return GameDefinition.new()
 
 func start_new_game() -> bool:
 	# Validate the starting world before destroying the selected slot. A broken
 	# Location/scene/transition must leave the player's existing save untouched.
-	if not WorldTravel.can_travel_to(START_LOCATION_ID):
+	if not WorldTravel.can_travel_to(definition.start_location_id):
 		GameEvents.toast("Could not open the starting location")
 		return false
 	if SaveManager.has_save() and not SaveManager.delete_save():
 		GameEvents.toast("Could not replace the selected save slot")
 		return false
 	initialize_new_game_state()
-	if not WorldTravel.travel_to(START_LOCATION_ID):
+	if not WorldTravel.travel_to(definition.start_location_id):
 		GameEvents.toast("Could not start the new game location")
 		return false
 	new_game_started.emit()
@@ -85,13 +105,13 @@ func _handle_late_night(day: int) -> void:
 	PlayerState.set_energy(maxi(PlayerState.max_energy / 2, 1))
 	PlayerState.restore_full_health()
 	var current_location := ContentDB.get_current_location(get_tree())
-	var returned_home := current_location != null and current_location.id == &"player_home"
+	var returned_home := current_location != null and current_location.id == definition.home_location_id
 	if not returned_home:
-		if WorldTravel.travel_to(&"player_home", &"from_town"):
+		if WorldTravel.travel_to(definition.home_location_id, definition.home_spawn_id):
 			await WorldTravel.travel_finished
 			await get_tree().process_frame
 			var arrived_location := ContentDB.get_current_location(get_tree())
-			returned_home = arrived_location != null and arrived_location.id == &"player_home"
+			returned_home = arrived_location != null and arrived_location.id == definition.home_location_id
 		else:
 			GameEvents.toast("Could not return home after staying up late")
 	SaveManager.save_game()
@@ -115,13 +135,13 @@ func _handle_player_defeat() -> void:
 	PlayerState.restore_full_energy()
 	PlayerState.restore_full_health()
 	var current_location := ContentDB.get_current_location(get_tree())
-	var returned_home := current_location != null and current_location.id == &"player_home"
+	var returned_home := current_location != null and current_location.id == definition.home_location_id
 	if not returned_home:
-		if WorldTravel.travel_to(&"player_home", &"from_town"):
+		if WorldTravel.travel_to(definition.home_location_id, definition.home_spawn_id):
 			await WorldTravel.travel_finished
 			await get_tree().process_frame
 			var arrived_location := ContentDB.get_current_location(get_tree())
-			returned_home = arrived_location != null and arrived_location.id == &"player_home"
+			returned_home = arrived_location != null and arrived_location.id == definition.home_location_id
 		else:
 			GameEvents.toast("Could not return home after collapse")
 	SaveManager.save_game()

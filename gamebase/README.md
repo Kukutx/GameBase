@@ -13,4 +13,6 @@ gamebase/modules/lifesim/     Farming, animals, fishing, forage, processing, bui
 gamebase/modules/combat/      Hostile creatures and enemy data
 ```
 
-Dependency direction: `game/` may use `gamebase/`; a module may use `core/`; `core/` must not depend on a module. This layout is the first step of that split: the files were moved without behaviour changes, and `core/` still reaches into modules in a few places (notably `save/game_save_manager.gd`, `session/game_session.gd` and `content/content_database.gd`). Those references are removed as the save registry, content registry and game definition replace them; until then, do not add new ones.
+Dependency direction: `game/` may use `gamebase/`; a module may use `core/`; `core/` must not depend on a module. This layout is the first step of that split: the files were moved without behaviour changes, and `core/` still reaches into modules in a few places (notably `content/content_database.gd` and the late-night and collapse handling in `session/game_session.gd`). Those references are removed as the content registry replaces them; until then, do not add new ones.
+
+A game wires its modules into the core through registration, not through edits to `core/`: `game/game_setup.gd` registers each module's save sections, load-time repairs, save blockers and new-game steps, and `game/game_definition.tres` (named by the `gamebase/game_definition` project setting) gives the start location, home, starting clock and items.

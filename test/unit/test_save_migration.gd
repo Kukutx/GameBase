@@ -29,8 +29,8 @@ func test_v1_save_migrates_to_current_structure() -> void:
 	assert_eq(int(migrated["clock"]["day"]), 3)
 	assert_eq(String(migrated.get("scene", "")), SaveMigration.LEGACY_DEFAULT_SCENE)
 	assert_eq(String(migrated.get("location_id", "")), SaveMigration.LEGACY_DEFAULT_LOCATION_ID)
-	assert_eq(String(GameSessionService.START_LOCATION_ID), SaveMigration.LEGACY_DEFAULT_LOCATION_ID)
-	var start_location := ContentDB.get_location(GameSessionService.START_LOCATION_ID)
+	assert_eq(String(GameSession.definition.start_location_id), SaveMigration.LEGACY_DEFAULT_LOCATION_ID)
+	var start_location := ContentDB.get_location(GameSession.definition.start_location_id)
 	assert_not_null(start_location)
 	if start_location != null:
 		assert_true(ResourceLoader.exists(start_location.scene_path))
