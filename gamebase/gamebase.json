@@ -27,11 +27,15 @@
   },
   "modules": {
     "combat": {
-      "requires": ["items"]
+      "requires": ["items"],
+      "autoloads": {
+        "CombatEvents": "res://gamebase/modules/combat/combat_events.gd"
+      }
     },
     "items": {
       "requires": [],
       "autoloads": {
+        "ItemsEvents": "res://gamebase/modules/items/items_events.gd",
         "InventoryState": "res://gamebase/modules/items/items/inventory_store.gd",
         "Hotbar": "res://gamebase/modules/items/hotbar/hotbar_service.gd",
         "BuffState": "res://gamebase/modules/items/buffs/buff_service.gd",
@@ -44,6 +48,7 @@
     "lifesim": {
       "requires": ["combat", "items", "skills"],
       "autoloads": {
+        "LifesimEvents": "res://gamebase/modules/lifesim/lifesim_events.gd",
         "EventState": "res://gamebase/modules/lifesim/calendar/calendar_event_manager.gd",
         "ShippingState": "res://gamebase/modules/lifesim/economy/shipping_service.gd",
         "FarmExpansionState": "res://gamebase/modules/lifesim/expansions/farm_expansion_service.gd",
@@ -56,6 +61,7 @@
       "requires": ["items", "lifesim", "skills"],
       "addons": ["dialogue_manager"],
       "autoloads": {
+        "NpcSocialEvents": "res://gamebase/modules/npc_social/npc_social_events.gd",
         "DialogueManager": "res://addons/dialogue_manager/dialogue_manager.gd",
         "RelationshipState": "res://gamebase/modules/npc_social/npc/relationship_manager.gd",
         "HeartEvents": "res://gamebase/modules/npc_social/npc/heart_event_service.gd",
@@ -67,6 +73,7 @@
     "progression": {
       "requires": ["combat", "items", "lifesim", "npc_social", "skills"],
       "autoloads": {
+        "ProgressionEvents": "res://gamebase/modules/progression/progression_events.gd",
         "QuestState": "res://gamebase/modules/progression/quests/quest_manager.gd",
         "MailState": "res://gamebase/modules/progression/mail/mail_service.gd",
         "UpgradeState": "res://gamebase/modules/progression/upgrades/tool_upgrade_service.gd",

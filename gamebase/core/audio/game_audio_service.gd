@@ -59,18 +59,23 @@ func _build_players() -> void:
 		add_child(player)
 		_sfx_players.append(player)
 
-## Plays the cue the game's `GameDefinition.event_cues` assigns to each
-## `GameEvents` signal, whatever arguments the signal carries.
+## Plays the cue the game's `GameDefinition.event_cues` assigns to each event,
+## a signal of an autoload named `<Autoload>.<signal>`
+## (`LifesimEvents.crop_harvested`), whatever arguments the signal carries.
 func _connect_gameplay_events() -> void:
-	var argument_counts: Dictionary = {}
-	for info: Dictionary in GameEvents.get_signal_list():
-		argument_counts[StringName(info["name"])] = (info["args"] as Array).size()
-	for signal_name: StringName in GameSession.definition.event_cues:
-		if not argument_counts.has(signal_name):
-			push_error("GameAudio: GameDefinition.event_cues names unknown GameEvents signal '%s'" % signal_name)
+	for event: StringName in GameSession.definition.event_cues:
+		var parts := String(event).split(".")
+		var source: Node = get_tree().root.get_node_or_null(NodePath(parts[0])) if parts.size() == 2 else null
+		var argument_count := -1
+		if source != null:
+			for info: Dictionary in source.get_signal_list():
+				if info["name"] == parts[1]:
+					argument_count = (info["args"] as Array).size()
+		if argument_count < 0:
+			push_error("GameAudio: GameDefinition.event_cues names unknown event '%s'; name it <Autoload>.<signal>" % event)
 			continue
-		var cue_id: StringName = GameSession.definition.event_cues[signal_name]
-		GameEvents.connect(signal_name, play_cue.bind(cue_id).unbind(int(argument_counts[signal_name])))
+		var cue_id: StringName = GameSession.definition.event_cues[event]
+		source.connect(parts[1], play_cue.bind(cue_id).unbind(argument_count))
 
 func _play_music(cue: AudioCueData) -> bool:
 	if _music_player == null:

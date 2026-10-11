@@ -51,7 +51,7 @@ func _upgrade_internal(upgrade_id: StringName) -> bool:
 		if Hotbar.slots[index] == source.id:
 			Hotbar.set_slot_item(index, result.id)
 	tool_upgraded.emit(upgrade_data.id, source.id, result.id)
-	GameEvents.tool_upgraded.emit(upgrade_data.id, result.id)
+	ProgressionEvents.tool_upgraded.emit(upgrade_data.id, result.id)
 	GameEvents.toastf("Upgraded to %s", [result.display_name])
 	return true
 

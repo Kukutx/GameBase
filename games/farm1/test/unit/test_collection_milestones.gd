@@ -114,11 +114,11 @@ func test_rancher_archive_requires_premium_products_not_only_base_outputs() -> v
 	var animal_ids := CollectionState.get_total_ids(CollectionService.ANIMAL_PRODUCTS)
 	assert_eq(animal_ids.size(), 6)
 	for item_id: StringName in [&"egg", &"milk", &"truffle"]:
-		GameEvents.animal_product_collected.emit(&"test_animal", item_id, 1)
+		LifesimEvents.animal_product_collected.emit(&"test_animal", item_id, 1)
 	assert_eq(CollectionState.get_discovered_count(CollectionService.ANIMAL_PRODUCTS), 3)
 	assert_false(CollectionMilestones.is_ready(&"animal_archive"))
 	for item_id: StringName in [&"large_egg", &"large_milk", &"prime_truffle"]:
-		GameEvents.animal_product_collected.emit(&"test_animal", item_id, 1)
+		LifesimEvents.animal_product_collected.emit(&"test_animal", item_id, 1)
 	assert_eq(CollectionState.get_discovered_count(CollectionService.ANIMAL_PRODUCTS), 6)
 	assert_true(CollectionMilestones.is_ready(&"animal_archive"))
 

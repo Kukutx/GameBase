@@ -41,7 +41,8 @@ static func current() -> GameDefinition:
 @export var world_seed := 0
 ## Items granted at the start of a new game, as item id → amount.
 @export var start_items: Dictionary[StringName, int] = {}
-## Audio cue played for a `GameEvents` signal, as signal name → cue id.
+## Audio cue played for an event, as `<Autoload>.<signal>`
+## (`LifesimEvents.crop_harvested`) → cue id.
 @export var event_cues: Dictionary[StringName, StringName] = {}
 ## Starting money and hotbar of a new game (item ids; empty for a free slot).
 @export_range(0, 999999) var start_money := 500

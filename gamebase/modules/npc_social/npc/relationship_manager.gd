@@ -70,7 +70,7 @@ func give_gift(profile: NpcProfileData, item_id: StringName) -> int:
 	if delta > 0:
 		delta = roundi(float(delta) * Skills.get_friendship_multiplier())
 	add_friendship(profile.id, delta)
-	GameEvents.gift_given.emit(profile.id, item_id, delta)
+	NpcSocialEvents.gift_given.emit(profile.id, item_id, delta)
 	var occasion := " · Birthday!" if birthday else ""
 	GameEvents.toastf("Gifted %s to %s (%+d friendship)%s", [item.display_name, profile.display_name, delta, occasion])
 	return delta

@@ -119,9 +119,9 @@ func test_gameplay_audio_mapping_requests_stable_cue_ids() -> void:
 	GameAudio.cue_requested.connect(on_requested)
 	# Call GameAudio's own handlers only; emitting the signals would also
 	# advance quests, contracts and collections.
-	_call_audio_handler(GameEvents.fish_caught, [&"river_trout", &"river_trout"])
-	_call_audio_handler(GameEvents.resource_mined, [&"stone_rock", &"stone", 1])
-	_call_audio_handler(GameEvents.tool_upgraded, [&"copper_pickaxe", &"copper_pickaxe"])
+	_call_audio_handler(LifesimEvents.fish_caught, [&"river_trout", &"river_trout"])
+	_call_audio_handler(LifesimEvents.resource_mined, [&"stone_rock", &"stone", 1])
+	_call_audio_handler(ProgressionEvents.tool_upgraded, [&"copper_pickaxe", &"copper_pickaxe"])
 	assert_eq(requested, [&"sfx_fish_caught", &"sfx_resource_mined", &"sfx_tool_upgraded"])
 	GameAudio.cue_requested.disconnect(on_requested)
 

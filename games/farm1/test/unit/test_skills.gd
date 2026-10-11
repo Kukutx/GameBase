@@ -1,5 +1,13 @@
 extends GutTest
 
+var _skills_saved: Dictionary
+
+func before_each() -> void:
+	_skills_saved = Skills.to_save_data()
+
+func after_each() -> void:
+	Skills.load_save_data(_skills_saved)
+
 func test_skill_levels_follow_thresholds() -> void:
 	var skills := SkillManager.new()
 	add_child_autofree(skills)
@@ -62,3 +70,10 @@ func test_skill_level_entitlement_is_backfilled_and_never_regresses() -> void:
 	rebalanced.add_xp(SkillManager.FARMING, 900)
 	assert_eq(rebalanced.get_level(SkillManager.FARMING), 6)
 	assert_eq(int(rebalanced.to_save_data().get("__level:farming", 0)), 6)
+
+func test_farm1_turns_module_events_into_skill_experience() -> void:
+	var social := Skills.get_xp(SkillManager.SOCIAL)
+	NpcSocialEvents.gift_given.emit(&"mira", &"berry", 0)
+	assert_eq(Skills.get_xp(SkillManager.SOCIAL), social, "a gift that changes nothing earns nothing")
+	NpcSocialEvents.gift_given.emit(&"mira", &"berry", 20)
+	assert_eq(Skills.get_xp(SkillManager.SOCIAL), social + 15)

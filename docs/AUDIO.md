@@ -51,7 +51,7 @@ This is deliberate. Do not add generated beeps, temporary music, or unlicensed t
 5. Add a new cue resource and list it in the content pack only when a genuinely new semantic sound event is needed.
 6. Run `tools/validate.js` and release export verification.
 
-Do not put audio file paths in farming, fishing, combat, NPC, shop, quest, or UI gameplay code. Those systems should emit game events or call `GameAudio.play_cue(<stable_id>)`.
+Do not put audio file paths in farming, fishing, combat, NPC, shop, quest, or UI gameplay code. Those systems announce what happened on their module's `<Module>Events` autoload, and the game's `GameDefinition.event_cues` maps such an event, named `<Autoload>.<signal>` (`LifesimEvents.crop_harvested`), to a cue id; otherwise they call `GameAudio.play_cue(<stable_id>)`.
 
 ## Testing
 

@@ -14,10 +14,10 @@ const HARVEST := &"harvest"
 
 func _ready() -> void:
 	WorldClock.day_changed.connect(_on_day_changed)
-	GameEvents.item_foraged.connect(_on_item_foraged)
-	GameEvents.fish_caught.connect(_on_fish_caught)
-	GameEvents.resource_mined.connect(_on_resource_mined)
-	GameEvents.crop_harvested.connect(_on_crop_harvested)
+	ItemsEvents.item_foraged.connect(_on_item_foraged)
+	LifesimEvents.fish_caught.connect(_on_fish_caught)
+	LifesimEvents.resource_mined.connect(_on_resource_mined)
+	LifesimEvents.crop_harvested.connect(_on_crop_harvested)
 	ShippingState.item_shipped.connect(_on_item_shipped)
 	_ensure_contract()
 

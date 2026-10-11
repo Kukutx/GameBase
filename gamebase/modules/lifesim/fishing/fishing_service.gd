@@ -223,7 +223,7 @@ func _award_fish(fish: FishData) -> bool:
 		GameEvents.toast("Inventory is full")
 		return false
 	fish_caught.emit(fish.id, fish.item_id)
-	GameEvents.fish_caught.emit(fish.id, fish.item_id)
+	LifesimEvents.fish_caught.emit(fish.id, fish.item_id)
 	GameEvents.toastf("Caught %s", [item.display_name])
 	return true
 

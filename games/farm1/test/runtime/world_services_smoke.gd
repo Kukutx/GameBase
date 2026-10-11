@@ -119,7 +119,7 @@ func _run() -> void:
 
 	# Talk/social path without opening the dialogue balloon in headless mode.
 	relationship_state.record_talk(&"mira")
-	root.get_node("GameEvents").npc_talked.emit(&"mira")
+	root.get_node("NpcSocialEvents").npc_talked.emit(&"mira")
 	_check(quest_state.is_completed(&"meet_mira"), "Meet Mira quest did not complete")
 	_check(relationship_state.get_points(&"mira") == 10, "Daily talk friendship missing")
 	npc_memory.append_message(&"mira", &"player", "How is the garden today?")
@@ -684,13 +684,13 @@ func _run() -> void:
 			_check(festival_schedule != null and String(festival_schedule.get("current_activity")) == "Watch the Harbor Derby", "%s did not switch to the Harbor Derby schedule" % festival_npc_name)
 	var derby_money_before: int = int(player_state.money)
 	var derby_soup_before: int = inventory.get_quantity(&"fish_soup")
-	var derby_fishing_xp_before: int = skills.get_xp(SkillManager.FISHING)
+	var derby_fishing_xp_before: int = skills.get_xp(&"fishing")
 	derby_booth.get_node("Interactable").interact(player)
 	await process_frame
 	_check(event_state.has_claimed_participation(&"fall_harbor_derby"), "Fall Harbor Derby participation did not persist")
 	_check(int(player_state.money) == derby_money_before + 400, "Fall Harbor Derby money reward incorrect")
 	_check(inventory.get_quantity(&"fish_soup") == derby_soup_before + 2, "Fall Harbor Derby item reward incorrect")
-	_check(skills.get_xp(SkillManager.FISHING) == derby_fishing_xp_before + 150, "Fall Harbor Derby Fishing XP reward incorrect")
+	_check(skills.get_xp(&"fishing") == derby_fishing_xp_before + 150, "Fall Harbor Derby Fishing XP reward incorrect")
 	derby_booth.get_node("Interactable").interact(player)
 	await process_frame
 	_check(int(player_state.money) == derby_money_before + 400, "Fall Harbor Derby could be claimed twice in one year")

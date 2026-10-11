@@ -14,12 +14,12 @@ const SHIPPED := &"shipped"
 const CATEGORIES: Array[StringName] = [CROPS, FISH, MINERALS, ANIMAL_PRODUCTS, PROCESSED, FORAGE, SHIPPED]
 
 func _ready() -> void:
-	GameEvents.crop_harvested.connect(_on_crop_harvested)
-	GameEvents.fish_caught.connect(_on_fish_caught)
-	GameEvents.resource_mined.connect(_on_resource_mined)
-	GameEvents.animal_product_collected.connect(_on_animal_product_collected)
-	GameEvents.item_processed.connect(_on_item_processed)
-	GameEvents.item_foraged.connect(_on_item_foraged)
+	LifesimEvents.crop_harvested.connect(_on_crop_harvested)
+	LifesimEvents.fish_caught.connect(_on_fish_caught)
+	LifesimEvents.resource_mined.connect(_on_resource_mined)
+	LifesimEvents.animal_product_collected.connect(_on_animal_product_collected)
+	LifesimEvents.item_processed.connect(_on_item_processed)
+	ItemsEvents.item_foraged.connect(_on_item_foraged)
 	ShippingState.item_shipped.connect(_on_item_shipped)
 
 func record(category: StringName, item_id: StringName, quantity: int = 1) -> int:

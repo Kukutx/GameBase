@@ -42,7 +42,6 @@ func _attack(weapon: ItemData) -> bool:
 			continue
 		body.call("take_damage", get_attack_damage(weapon))
 		hits += 1
-	GameEvents.item_used.emit(weapon.id)
 	if hits == 0:
 		GameEvents.toastf("Swung %s", [weapon.display_name])
 	return true

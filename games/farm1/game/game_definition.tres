@@ -105,15 +105,15 @@ start_items = Dictionary[StringName, int]({
 &"hay": 20
 })
 event_cues = Dictionary[StringName, StringName]({
-&"item_foraged": &"sfx_pickup",
-&"crop_harvested": &"sfx_harvest",
-&"gift_given": &"sfx_gift",
-&"animal_product_collected": &"sfx_pickup",
-&"fish_caught": &"sfx_fish_caught",
-&"resource_mined": &"sfx_resource_mined",
-&"enemy_defeated": &"sfx_enemy_defeated",
-&"item_processed": &"sfx_processing_complete",
-&"tool_upgraded": &"sfx_tool_upgraded"
+&"ItemsEvents.item_foraged": &"sfx_pickup",
+&"LifesimEvents.crop_harvested": &"sfx_harvest",
+&"NpcSocialEvents.gift_given": &"sfx_gift",
+&"LifesimEvents.animal_product_collected": &"sfx_pickup",
+&"LifesimEvents.fish_caught": &"sfx_fish_caught",
+&"LifesimEvents.resource_mined": &"sfx_resource_mined",
+&"CombatEvents.enemy_defeated": &"sfx_enemy_defeated",
+&"LifesimEvents.item_processed": &"sfx_processing_complete",
+&"ProgressionEvents.tool_upgraded": &"sfx_tool_upgraded"
 })
 start_money = 500
 start_hotbar = Array[StringName]([&"hoe", &"watering_can", &"pickaxe", &"rusty_sword", &"turnip_seeds", &"fishing_rod", &"berry"])
