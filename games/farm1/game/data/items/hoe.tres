@@ -10,5 +10,5 @@ description = "Tills a farm plot."
 max_stack = 1
 kind = 3
 buy_price = 500
-tool_action = &"hoe"
+tool_action = &"till"
 tags = PackedStringArray("tool")

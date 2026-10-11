@@ -84,8 +84,16 @@ func test_location_scene_reference_validator_rejects_broken_runtime_links() -> v
 	var trough := AnimalFeedTrough.new()
 	trough.name = "BadTrough"
 	trough.housing_id = &"missing_housing"
-	trough.feed_item_id = &"berry"
 	root.add_child(trough)
+	var housing := AnimalHousing.new()
+	housing.name = "BadHousing"
+	housing.housing_id = &"bad_housing"
+	housing.location_id = location.id
+	root.add_child(housing)
+	var mine := MineFloorController.new()
+	mine.name = "BadMine"
+	mine.floor_spawn_id = &"missing_spawn"
+	root.add_child(mine)
 	var field := FarmField.new()
 	field.name = "BadField"
 	field.field_id = &"bad_field"
@@ -99,7 +107,6 @@ func test_location_scene_reference_validator_rejects_broken_runtime_links() -> v
 	var spot := FishingSpot.new()
 	spot.name = "BadFishing"
 	spot.location_id = &"harbor_town"
-	spot.required_rod_id = &"hoe"
 	root.add_child(spot)
 	var board := TownProjectBoard.new()
 	board.name = "BadBoard"
@@ -124,11 +131,12 @@ func test_location_scene_reference_validator_rejects_broken_runtime_links() -> v
 	root.free()
 	var joined := "\n".join(errors)
 	assert_string_contains(joined, "feed trough 'BadTrough' references unknown housing 'missing_housing'")
-	assert_string_contains(joined, "feed trough 'BadTrough' references invalid feed item 'berry'")
+	assert_string_contains(joined, "housing 'bad_housing' needs a display name and a housing type")
+	assert_string_contains(joined, "mine 'BadMine' has no entrance spawn")
+	assert_string_contains(joined, "mine 'BadMine' names spawn 'missing_spawn', which its scene does not have")
 	assert_string_contains(joined, "farm field 'BadField' references different location 'harbor_town'")
 	assert_string_contains(joined, "forage spawner 'BadSpawner' references different location 'harbor_town'")
 	assert_string_contains(joined, "fishing spot 'BadFishing' references different location 'harbor_town'")
-	assert_string_contains(joined, "fishing spot 'BadFishing' references invalid fishing rod 'hoe'")
 	assert_string_contains(joined, "town project board 'BadBoard' references different location 'harbor_town'")
 	assert_string_contains(joined, "event booth 'BadBooth' references event 'summer_river_fair' from location 'riverside_town'")
 	assert_string_contains(joined, "processing station 'BadStation' repeats recipe 'smelt_copper_bar'")
@@ -145,7 +153,7 @@ func test_reference_validator_rejects_invalid_deferred_reward_and_condition_data
 	var source_tool := ItemData.new()
 	source_tool.id = &"source_tool"
 	source_tool.kind = ItemData.Kind.TOOL
-	source_tool.tool_action = &"pickaxe"
+	source_tool.tool_action = ItemData.ACTION_MINE
 	source_tool.tool_power = 2
 	source_tool.max_stack = 1
 	var result_tool := ItemData.new()
@@ -241,8 +249,10 @@ func test_reference_validator_rejects_invalid_deferred_reward_and_condition_data
 	assert_string_contains(joined, "fish 'bad_fish' item 'berry' lacks fish tag")
 	assert_string_contains(joined, "fish 'bad_fish' has an empty time window")
 	assert_string_contains(joined, "farm animal 'bad_animal' product 'berry' lacks animal_product tag")
+	assert_string_contains(joined, "farm animal 'bad_animal' has no housing type")
+	assert_string_contains(joined, "farm animal 'bad_animal' references invalid feed item ''")
 	assert_string_contains(joined, "mining node 'bad_mining' drop 'berry' lacks mining tag")
-	assert_string_contains(joined, "tool upgrade 'bad_upgrade' changes tool action from 'pickaxe' to 'attack'")
+	assert_string_contains(joined, "tool upgrade 'bad_upgrade' changes tool action from 'mine' to 'attack'")
 	assert_string_contains(joined, "tool upgrade 'bad_upgrade' result power 2 does not exceed source power 2")
 
 func test_reference_validator_reports_malformed_numeric_and_unreachable_schedule_values_without_crashing() -> void:

@@ -6,7 +6,8 @@
 //   games/<id>/           may use the core, and only the modules and addons its
 //                         game.json lists (the addons of gamebase.json and of
 //                         those modules come with them);
-// and gamebase/core may not name a content id of any game. A script "uses" a
+// and no foundation file may name a content id of any game: an id a game gives
+// to `id` or to a `*_id` property in its data and scenes. A script "uses" a
 // layer when it names one of its autoloads or class_names, or a res:// path in
 // it; a game's project.godot uses the scripts and plugins it registers. An
 // autoload whose script lives in a game but extends a core class (ContentDB
@@ -170,15 +171,23 @@ function foundationSymbols(model) {
   return symbols;
 }
 
+// The ids the games define or name in their data and scenes: content entries,
+// locations, spawn points, housings, containers and the like.
 function collectContentIds(root, games) {
   const ids = new Set();
   for (const game of games) {
-    for (const file of walk(path.join(root, game.dir, "game", "data"), [".tres"])) {
-      const match = fs.readFileSync(file, "utf8").match(/^id = &"([^"]+)"$/m);
-      if (match) ids.add(match[1]);
+    for (const file of walk(path.join(root, game.dir, "game"), [".tres", ".tscn"])) {
+      for (const match of fs.readFileSync(file, "utf8").matchAll(/^(?:\w+_)?id = &"([^"]+)"$/gm)) ids.add(match[1]);
     }
   }
   return ids;
+}
+
+// The id literals of a foundation file: any lowercase string in a script, and
+// the StringNames of a scene or resource.
+function idLiterals(raw, isScript) {
+  const pattern = isScript ? /&?"([a-z][a-z0-9_]*)"/g : /&"([a-z][a-z0-9_]*)"/g;
+  return [...(isScript ? stripComments(raw) : raw).matchAll(pattern)].map((match) => match[1]);
 }
 
 // What one file uses: layers of the res:// paths and of the symbols it names.
@@ -214,10 +223,8 @@ function checkFoundation(root, model, problems) {
       }
     }
     if (module && !declared) reported.add(`gamebase/modules/${module} is not listed under "modules" in gamebase/gamebase.json`);
-    if (from === "core" && isScript) {
-      for (const match of stripComments(raw).matchAll(/&?"([a-z][a-z0-9_]*)"/g)) {
-        if (contentIds.has(match[1])) reported.add(`${relative} (core) must not use literal:${match[1]}`);
-      }
+    for (const literal of idLiterals(raw, isScript)) {
+      if (contentIds.has(literal)) reported.add(`${relative} (${from}) must not use literal:${literal}`);
     }
     for (const problem of reported) problems.add(problem);
   }

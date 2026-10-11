@@ -31,7 +31,7 @@ func grant_animal(instance_id: StringName, animal_id: StringName, location_id: S
 	ownership_changed.emit(location_id)
 	return true
 
-func register_housing(housing_id: StringName, location_id: StringName, housing_type: StringName, capacity: int) -> void:
+func register_housing(housing_id: StringName, location_id: StringName, housing_type: StringName, capacity: int, display_name: String) -> void:
 	if housing_id == &"" or location_id == &"" or housing_type == &"" or capacity <= 0:
 		return
 	_housing[String(housing_id)] = {
@@ -39,10 +39,36 @@ func register_housing(housing_id: StringName, location_id: StringName, housing_t
 		"location_id": String(location_id),
 		"housing_type": String(housing_type),
 		"capacity": capacity,
+		"display_name": display_name,
 	}
 
 func unregister_housing(housing_id: StringName) -> void:
 	_housing.erase(String(housing_id))
+
+## The housings registered at `location_id`, in the order they registered (their
+## scene order).
+func get_housing_ids(location_id: StringName) -> Array[StringName]:
+	var result: Array[StringName] = []
+	for raw: Variant in _housing.values():
+		var housing: Dictionary = raw
+		if StringName(String(housing["location_id"])) == location_id:
+			result.append(StringName(String(housing["id"])))
+	return result
+
+func get_housing_name(housing_id: StringName) -> String:
+	var raw: Variant = _housing.get(String(housing_id), {})
+	return String((raw as Dictionary).get("display_name", "")) if raw is Dictionary else ""
+
+## The items the animals that can live at `location_id` eat, in content order.
+func get_feed_item_ids(location_id: StringName) -> Array[StringName]:
+	var housing_types: Dictionary = {}
+	for housing_id: StringName in get_housing_ids(location_id):
+		housing_types[String(_housing[String(housing_id)]["housing_type"])] = true
+	var result: Array[StringName] = []
+	for data: FarmAnimalData in ContentDB.get_all_farm_animals():
+		if housing_types.has(String(data.housing_type)) and data.feed_item_id != &"" and not result.has(data.feed_item_id):
+			result.append(data.feed_item_id)
+	return result
 
 func get_owned(location_id: StringName = &"", housing_id: StringName = &"") -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
@@ -140,30 +166,45 @@ func get_unfed_count(housing_id: StringName) -> int:
 			count += 1
 	return count
 
-func feed_housing(housing_id: StringName, feed_item_id: StringName = &"hay") -> int:
+## What the animals of `housing_id` that are not fed today eat: feed item id →
+## number of animals.
+func get_feed_needs(housing_id: StringName) -> Dictionary[StringName, int]:
+	var needs: Dictionary[StringName, int] = {}
+	for record: Dictionary in get_owned(&"", housing_id):
+		var instance_id := StringName(String(record.get("instance_id", "")))
+		var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+		if instance_id == &"" or data == null or data.feed_item_id == &"":
+			continue
+		if int(_get_animal_state(instance_id).get("last_fed_day", WorldClock.day)) < WorldClock.day:
+			needs[data.feed_item_id] = needs.get(data.feed_item_id, 0) + 1
+	return needs
+
+## Feeds each animal of `housing_id` that is not fed today one of the item it
+## eats, while the inventory has it. Returns how many animals were fed.
+func feed_housing(housing_id: StringName) -> int:
 	var housing_key := String(housing_id)
 	if _feeding_housing.has(housing_key):
 		return 0
 	_feeding_housing[housing_key] = true
-	var fed := _feed_housing_internal(housing_id, feed_item_id)
+	var fed := _feed_housing_internal(housing_id)
 	_feeding_housing.erase(housing_key)
 	return fed
 
-func _feed_housing_internal(housing_id: StringName, feed_item_id: StringName) -> int:
-	if housing_id == &"" or feed_item_id == &"":
+func _feed_housing_internal(housing_id: StringName) -> int:
+	if housing_id == &"":
 		return 0
 	var fed := 0
 	for record: Dictionary in get_owned(&"", housing_id):
 		var instance_id := StringName(String(record.get("instance_id", "")))
 		var animal_id := StringName(String(record.get("animal_id", "")))
 		var data := ContentDB.get_farm_animal(animal_id)
-		if instance_id == &"" or data == null or data.feed_item_id != feed_item_id:
+		if instance_id == &"" or data == null or data.feed_item_id == &"":
 			continue
 		var state := _get_animal_state(instance_id)
 		if int(state.get("last_fed_day", WorldClock.day)) >= WorldClock.day:
 			continue
-		if not InventoryState.remove_item(feed_item_id, 1):
-			break
+		if not InventoryState.remove_item(data.feed_item_id, 1):
+			continue
 		state["last_fed_day"] = WorldClock.day
 		if not state.has("last_processed_day"):
 			state["last_processed_day"] = WorldClock.day

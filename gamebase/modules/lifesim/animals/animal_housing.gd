@@ -3,7 +3,10 @@ extends Node2D
 
 @export var housing_id: StringName
 @export var location_id: StringName
-@export var housing_type: StringName = &"coop"
+## Its name in menus.
+@export var display_name: String
+## The animals that live here: those whose FarmAnimalData.housing_type matches.
+@export var housing_type: StringName
 @export_range(1, 32, 1) var capacity := 4
 @export var spawn_positions: Array[Vector2] = []
 @export var animal_scene: PackedScene = preload("res://gamebase/modules/lifesim/animals/farm_animal.tscn")
@@ -11,7 +14,7 @@ extends Node2D
 var _spawned: Dictionary = {}
 
 func _ready() -> void:
-	AnimalState.register_housing(housing_id, location_id, housing_type, capacity)
+	AnimalState.register_housing(housing_id, location_id, housing_type, capacity, display_name)
 	AnimalState.ownership_changed.connect(_on_ownership_changed)
 	_refresh_animals.call_deferred()
 

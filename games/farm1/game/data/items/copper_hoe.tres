@@ -10,6 +10,6 @@ description = "A reinforced hoe that tills soil with less effort."
 max_stack = 1
 kind = 3
 buy_price = 0
-tool_action = &"hoe"
+tool_action = &"till"
 tool_power = 2
 tags = PackedStringArray("tool", "copper")

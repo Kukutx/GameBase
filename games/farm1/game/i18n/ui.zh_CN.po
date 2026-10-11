@@ -2279,3 +2279,9 @@ msgstr "观看港口大赛"
 
 msgid "Attend Lantern Night"
 msgstr "参加灯笼夜"
+
+msgid "Copper Furnace"
+msgstr "铜制熔炉"
+
+msgid "Oil Maker"
+msgstr "榨油机"

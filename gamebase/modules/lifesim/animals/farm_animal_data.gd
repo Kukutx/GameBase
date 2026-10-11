@@ -17,9 +17,11 @@ extends ContentEntry
 @export var visual_offset := Vector2.ZERO
 @export_range(0.1, 4.0, 0.05) var visual_scale := 1.0
 @export_group("Ownership")
-@export var housing_type: StringName = &"coop"
+## The kind of AnimalHousing the animal lives in (its housing_type).
+@export var housing_type: StringName
 @export_range(0, 999999, 1) var purchase_price := 500
-@export var feed_item_id: StringName = &"hay"
+## The item the animal eats, one a day.
+@export var feed_item_id: StringName
 @export_range(0, 100, 1) var missed_feed_happiness_loss := 3
 
 @export_group("Production")

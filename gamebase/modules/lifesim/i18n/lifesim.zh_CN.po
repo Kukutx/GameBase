@@ -24,12 +24,6 @@ msgstr "钓鱼 · 上钩！按 %s"
 msgid "None"
 msgstr "无"
 
-msgid "Copper Furnace"
-msgstr "铜制熔炉"
-
-msgid "Oil Maker"
-msgstr "榨油机"
-
 msgid "Sprinkler"
 msgstr "洒水器"
 
@@ -102,14 +96,8 @@ msgstr "%s · 已完成"
 msgid "%s · %d min"
 msgstr "%s · 剩余 %d 分钟"
 
-msgid "Coop %d/%d · Barn %d/%d · Hay %d"
-msgstr "鸡舍 %d/%d · 畜棚 %d/%d · 干草 %d"
-
-msgid "Feed Coop (%d)"
-msgstr "喂鸡舍（%d）"
-
-msgid "Feed Barn (%d)"
-msgstr "喂畜棚（%d）"
+msgid "Feed %s (%d)"
+msgstr "喂%s（%d）"
 
 msgid "No animals owned here."
 msgstr "这里还没有饲养动物。"

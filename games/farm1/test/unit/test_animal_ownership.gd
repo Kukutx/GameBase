@@ -21,8 +21,8 @@ func before_each() -> void:
 	PlayerState.reset_new_game()
 	PlayerState.money = 10000
 	WorldClock.set_time(1, 8 * 60)
-	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4)
-	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4)
+	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4, "Coop")
+	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4, "Barn")
 	AnimalState.reset_new_game()
 	AnimalState.grant_animal(&"starter_chicken_01", &"chicken", &"starter_town", &"starter_coop", 0)
 	AnimalState.grant_animal(&"starter_cow_01", &"cow", &"starter_town", &"starter_barn", 0)
@@ -119,7 +119,7 @@ func test_purchase_uses_correct_housing_and_money_and_respects_capacity() -> voi
 	assert_eq(AnimalState.purchase(&"chicken", &"starter_town"), &"")
 
 func test_animal_purchase_blocks_money_callback_reentrancy() -> void:
-	AnimalState.register_housing(&"race_coop", &"race_town", &"coop", 1)
+	AnimalState.register_housing(&"race_coop", &"race_town", &"coop", 1, "Coop")
 	PlayerState.money = 5000
 	var observed := {"entered": false, "inner_id": StringName()}
 	var race_purchase := func(_money: int) -> void:
@@ -313,6 +313,16 @@ func test_feed_housing_consumes_one_hay_per_unfed_animal_and_is_idempotent() -> 
 	assert_eq(AnimalState.get_unfed_count(&"starter_coop"), 0)
 	assert_eq(AnimalState.feed_housing(&"starter_coop"), 0)
 	assert_eq(InventoryState.get_quantity(&"hay"), 1)
+
+func test_housings_name_themselves_and_report_what_their_animals_eat() -> void:
+	assert_eq(AnimalState.get_housing_ids(&"starter_town"), [&"starter_coop", &"starter_barn"] as Array[StringName])
+	assert_eq(AnimalState.get_housing_name(&"starter_barn"), "Barn")
+	assert_eq(AnimalState.get_feed_item_ids(&"starter_town"), [&"hay"] as Array[StringName])
+	assert_true(AnimalState.get_feed_needs(&"starter_coop").is_empty())
+	WorldState.set_value(&"animal:starter_chicken_01", {"happiness": 50, "last_product_day": 1, "last_pet_day": 1, "last_fed_day": 1, "last_processed_day": 1})
+	WorldClock.set_time(2, 8 * 60)
+	assert_eq(AnimalState.get_feed_needs(&"starter_coop"), {&"hay": 1} as Dictionary[StringName, int])
+	assert_eq(AnimalState.feed_housing(&"starter_coop"), 0, "No hay in the inventory")
 
 func test_feed_housing_blocks_item_removed_reentrancy() -> void:
 	WorldState.set_value(&"animal:starter_chicken_01", {

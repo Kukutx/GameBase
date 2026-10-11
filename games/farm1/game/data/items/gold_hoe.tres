@@ -9,6 +9,6 @@ display_name = "Gold Hoe"
 description = "A gold hoe that tills four nearby plots per swing."
 max_stack = 1
 kind = 3
-tool_action = &"hoe"
+tool_action = &"till"
 tool_power = 4
 tags = PackedStringArray("tool", "gold")

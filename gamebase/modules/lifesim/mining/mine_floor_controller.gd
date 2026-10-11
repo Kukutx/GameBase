@@ -1,40 +1,70 @@
 class_name MineFloorController
 extends Node2D
 
+## The root of a mine location's scene. Floor 1 is the scene as built: the
+## MiningNode and HostileCreature children placed in it. Deeper floors replace
+## them with rocks and enemies generated from `MineState.floor_table`. Every
+## floor is the same location; its ladder and elevator reload it.
+
 const MINING_SCENE := preload("res://gamebase/modules/lifesim/mining/mining_node.tscn")
 const ENEMY_SCENE := preload("res://gamebase/modules/combat/combat/hostile_creature.tscn")
-const FLOOR_ONE_NODE_NAMES := [&"StoneRockA", &"StoneRockB", &"CopperRock", &"GreenSlime"]
+
+## Spawn points the mine is entered at from outside; arriving at one starts again at floor 1.
+@export var entrance_spawn_ids: Array[StringName] = []
+## Spawn point the ladder and the elevator bring the player to on another floor.
+@export var floor_spawn_id: StringName
 
 @onready var mine_label: Label = $MineLabel
 @onready var ladder: MineLadder = $DeepLadder
 @onready var elevator: MineElevator = $MineElevator
 
 var current_floor := 1
+var _placed_rocks: Array[MiningNode] = []
+var _placed_enemies: Array[HostileCreature] = []
 var _generated_rocks: Array[MiningNode] = []
 var _generated_enemies: Array[HostileCreature] = []
 
 func _enter_tree() -> void:
-	# Entering from Riverside always means a fresh surface entrance. Internal
-	# ladder/elevator reloads use floor_entry and preserve MineState.current_floor.
-	if WorldTravel.get_pending_spawn_id() == &"from_riverside":
+	# Ladder and elevator reloads arrive at floor_spawn_id and keep the floor.
+	if entrance_spawn_ids.has(WorldTravel.get_pending_spawn_id()):
 		MineState.enter_from_surface()
 
 func _ready() -> void:
 	current_floor = MineState.set_floor(MineState.get_current_floor())
+	ladder.mine = self
+	elevator.mine = self
 	GameEvents.resource_mined.connect(_on_floor_progress_event)
 	GameEvents.enemy_defeated.connect(_on_floor_progress_event)
 	WorldClock.day_changed.connect(_on_day_changed)
 	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh_label()
+	for child: Node in get_children():
+		if child is MiningNode:
+			_placed_rocks.append(child as MiningNode)
+		elif child is HostileCreature:
+			_placed_enemies.append(child as HostileCreature)
 	if current_floor > 1:
-		for node_name: StringName in FLOOR_ONE_NODE_NAMES:
-			var node := get_node_or_null(NodePath(String(node_name)))
-			if node != null:
-				node.queue_free()
+		for rock: MiningNode in _placed_rocks:
+			rock.queue_free()
+		for enemy: HostileCreature in _placed_enemies:
+			enemy.queue_free()
+		_placed_rocks.clear()
+		_placed_enemies.clear()
 		_spawn_dynamic_floor.call_deferred(current_floor)
 	else:
-		_connect_floor_one_nodes()
+		for rock: MiningNode in _placed_rocks:
+			rock.depleted.connect(_on_node_state_changed)
+			rock.respawned.connect(_on_node_state_changed)
 		_refresh_ladder.call_deferred()
+
+## Brings the player to `floor` of this mine. Returns false when the travel
+## could not start.
+func travel_to_floor(floor: int) -> bool:
+	var location := ContentDB.get_location_for_scene(scene_file_path)
+	if location == null or floor_spawn_id == &"" or not WorldTravel.travel_to(location.id, floor_spawn_id):
+		return false
+	MineState.set_floor(floor)
+	return true
 
 func get_generated_rocks() -> Array[MiningNode]:
 	return _generated_rocks.duplicate()
@@ -95,31 +125,11 @@ func _spawn_dynamic_floor(floor: int) -> void:
 		_generated_enemies.append(enemy)
 	_refresh_ladder()
 
-func _connect_floor_one_nodes() -> void:
-	for rock_name: StringName in [&"StoneRockA", &"StoneRockB", &"CopperRock"]:
-		var rock := get_node_or_null(NodePath(String(rock_name))) as MiningNode
-		if rock != null:
-			rock.depleted.connect(_on_node_state_changed)
-			rock.respawned.connect(_on_node_state_changed)
-
 func _get_floor_rocks() -> Array[MiningNode]:
-	if current_floor > 1:
-		return _generated_rocks
-	var result: Array[MiningNode] = []
-	for node_name: StringName in [&"StoneRockA", &"StoneRockB", &"CopperRock"]:
-		var rock := get_node_or_null(NodePath(String(node_name))) as MiningNode
-		if rock != null:
-			result.append(rock)
-	return result
+	return _generated_rocks if current_floor > 1 else _placed_rocks
 
 func _get_floor_enemies() -> Array[HostileCreature]:
-	if current_floor > 1:
-		return _generated_enemies
-	var result: Array[HostileCreature] = []
-	var enemy := get_node_or_null("GreenSlime") as HostileCreature
-	if enemy != null:
-		result.append(enemy)
-	return result
+	return _generated_enemies if current_floor > 1 else _placed_enemies
 
 func _on_floor_progress_event(_a: Variant, _b: Variant = null, _c: Variant = null) -> void:
 	_refresh_ladder.call_deferred()

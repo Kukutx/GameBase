@@ -21,6 +21,7 @@ collision_size = Vector2(21, 12)
 visual_offset = Vector2(0, -12)
 visual_scale = 0.7
 housing_type = &"barn"
+feed_item_id = &"hay"
 purchase_price = 2400
 product_item_id = &"truffle"
 premium_product_item_id = &"prime_truffle"

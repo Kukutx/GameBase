@@ -3,7 +3,7 @@ extends Area2D
 
 @export var action: StringName = &"use_tool"
 
-const SUPPORTED_TOOL_ACTIONS: Array[StringName] = [&"hoe", &"water", &"pickaxe"]
+const SUPPORTED_TOOL_ACTIONS: Array[StringName] = [ItemData.ACTION_TILL, ItemData.ACTION_WATER, ItemData.ACTION_MINE]
 
 var _action_busy := false
 
@@ -36,7 +36,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	var used := false
-	if target is FarmPlot and selected.is_tool() and (selected.tool_action == &"hoe" or selected.tool_action == &"water") and selected.tool_power > 1:
+	if target is FarmPlot and selected.is_tool() and (selected.tool_action == ItemData.ACTION_TILL or selected.tool_action == ItemData.ACTION_WATER) and selected.tool_power > 1:
 		used = _use_multi_plot_tool(selected, target as FarmPlot)
 	else:
 		used = bool(target.call("use_item", selected.id))
@@ -101,7 +101,7 @@ func _use_multi_plot_tool_internal(tool: ItemData, target: FarmPlot) -> bool:
 		if energy_cost > 0:
 			PlayerState.restore_energy(energy_cost)
 		return false
-	if tool.tool_action == &"hoe":
+	if tool.tool_action == ItemData.ACTION_TILL:
 		GameEvents.toastf("Tilled %d plots", [affected])
 	else:
 		GameEvents.toastf("Watered %d plots", [affected])

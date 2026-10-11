@@ -12,6 +12,13 @@ enum Kind {
 	PLACEABLE,
 }
 
+## Tool actions the foundation's modules respond to. A game may give its tools
+## other actions and handle them in its own code.
+const ACTION_TILL := &"till"
+const ACTION_WATER := &"water"
+const ACTION_MINE := &"mine"
+const ACTION_FISH := &"fish"
+
 @export var display_name: String
 @export_multiline var description: String
 @export_range(1, 999, 1) var max_stack := 99
@@ -23,6 +30,7 @@ enum Kind {
 @export_range(0, 999, 1) var health_restore := 0
 @export var food_buff_id: StringName
 @export var tags: PackedStringArray = PackedStringArray()
+## What the tool does: one of the ACTION_ constants, or an action of the game's own.
 @export var tool_action: StringName
 @export_range(1, 999, 1) var tool_power := 1
 @export var crop_id: StringName

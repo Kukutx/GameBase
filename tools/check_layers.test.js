@@ -66,6 +66,22 @@ test("core using a module, a game path or a content id is reported", () => {
   assert.ok(!problems.some((p) => p.includes("ContentDB.get_item") || p.includes("use ContentDB")));
 });
 
+test("a module naming an id a game defines in its scenes is reported", () => {
+  const root = fixture({
+    "gamebase/gamebase.json": FOUNDATION,
+    "games/one/game.json": { id: "one", modules: ["items"] },
+    "games/one/project.godot": PROJECT,
+    "games/one/game/data/berry.tres": '[resource]\nid = &"berry"\n',
+    "games/one/game/world/farm.tscn": '[node name="Coop" type="Node2D"]\nhousing_id = &"starter_coop"\n',
+    "gamebase/modules/items/inventory.gd": 'extends Node\nconst KIND := &"tool"\nfunc f() -> void:\n\tprint("starter_coop") # &"berry"\n',
+    "gamebase/modules/items/chest.tscn": '[node name="Chest" type="Node2D"]\ncontainer_id = &"berry"\ntext = "starter_coop"\n',
+  });
+  const problems = checkLayers(root);
+  assert.ok(problems.includes("gamebase/modules/items/inventory.gd (module:items) must not use literal:starter_coop"));
+  assert.ok(problems.includes("gamebase/modules/items/chest.tscn (module:items) must not use literal:berry"));
+  assert.ok(!problems.some((p) => p.includes("literal:tool") || p.includes("inventory.gd (module:items) must not use literal:berry") || p.includes("chest.tscn (module:items) must not use literal:starter_coop")));
+});
+
 test("a module using a module or addon it does not declare is reported", () => {
   const root = fixture({
     "gamebase/gamebase.json": { modules: { items: {}, fishing: { requires: [] }, ghost: {} } },

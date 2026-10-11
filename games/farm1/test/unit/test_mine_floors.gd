@@ -170,28 +170,31 @@ func test_dynamic_mine_floor_spawns_and_unlocks_ladder_only_after_clear() -> voi
 	assert_true(mine.is_floor_cleared())
 	assert_true(ladder.unlocked)
 
-func test_internal_mine_travel_uses_stable_location_id() -> void:
-	var ladder_source := FileAccess.get_file_as_string("res://gamebase/modules/lifesim/mining/mine_ladder.gd")
-	var elevator_source := FileAccess.get_file_as_string("res://gamebase/modules/lifesim/mining/mine_elevator.gd")
-	for source: String in [ladder_source, elevator_source]:
-		assert_string_contains(source, "WorldTravel.travel_to(&\"old_mine\", &\"floor_entry\")")
-		assert_false("WorldTravel.travel(\"res://game/world/old_mine.tscn\"" in source)
+func test_mine_scene_routes_its_ladder_and_elevator_through_its_own_location() -> void:
+	var mine := (load("res://game/world/old_mine.tscn") as PackedScene).instantiate() as MineFloorController
+	add_child_autofree(mine)
+	assert_eq(mine.entrance_spawn_ids, [&"from_riverside"] as Array[StringName])
+	assert_eq(mine.floor_spawn_id, &"floor_entry")
+	assert_true(ContentDB.has_location_spawn(&"old_mine", mine.floor_spawn_id))
+	assert_eq(ContentDB.get_location_for_scene(mine.scene_file_path).id, &"old_mine")
+	assert_eq((mine.get_node("DeepLadder") as MineLadder).mine, mine)
+	assert_eq((mine.get_node("MineElevator") as MineElevator).mine, mine)
 
 func test_failed_mine_travel_does_not_commit_floor_change() -> void:
 	MineState.set_floor(5)
 	var deepest_before := MineState.get_deepest_floor()
 	var previous_traveling := WorldTravel.is_traveling()
+	var mine := (load("res://game/world/old_mine.tscn") as PackedScene).instantiate() as MineFloorController
+	add_child_autofree(mine)
 	WorldTravel.set("_traveling", true)
 
-	var ladder := load("res://gamebase/modules/lifesim/mining/mine_ladder.tscn").instantiate() as MineLadder
-	add_child_autofree(ladder)
+	var ladder := mine.get_node("DeepLadder") as MineLadder
 	ladder.set_unlocked(true)
 	ladder.call("_on_interacted", null)
 	var floor_after_ladder := MineState.get_current_floor()
 	var deepest_after_ladder := MineState.get_deepest_floor()
 
-	var elevator := load("res://gamebase/modules/lifesim/mining/mine_elevator.tscn").instantiate() as MineElevator
-	add_child_autofree(elevator)
+	var elevator := mine.get_node("MineElevator") as MineElevator
 	elevator.call("_on_interacted", null)
 	var floor_after_elevator := MineState.get_current_floor()
 	WorldTravel.set("_traveling", previous_traveling)

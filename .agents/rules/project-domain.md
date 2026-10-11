@@ -6,6 +6,7 @@ This file holds the domain invariants of the game base. Generic engineering rule
 
 - `gamebase/` is the foundation every game in `games/` builds on. Rules here protect what the games and their players rely on: stable ids, the save format, the service boundaries and the data-driven content pipeline. A game's content (Farm1's towns, crops, NPCs and quests) belongs to that game; changing it is allowed, breaking the mechanisms that carry it is not.
 - A capability belongs in the foundation when it is not specific to one game and a registered game uses it; it then lives once in `gamebase/` and is never copied into a game. What only one game needs stays in that game's `game/`. Do not add placeholder systems, compatibility shells or hooks for a hypothetical future game.
+- Nothing in `gamebase/`, scripts, scenes and resources alike, names a game's ids: its content ids, nor the ids its scenes give to locations, spawn points, housings, containers and the like. A module reads them from a slot the game fills (an exported property set in the game's scene, a field of the game's data, `GameDefinition`) and owns only its own vocabulary, such as the `ItemData.ACTION_` tool actions. `tools/check_layers.js` enforces this.
 - Code or data that is explicitly registered as reserved for later (an empty audio cue stream, a location without music, the optional AI dialogue layer) is not dead code and is not removed in a cleanup.
 
 ## Content and ids

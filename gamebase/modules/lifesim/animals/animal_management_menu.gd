@@ -7,16 +7,17 @@ extends CanvasLayer
 @onready var details_label: RichTextLabel = $Panel/VBox/Details
 @onready var name_edit: LineEdit = $Panel/VBox/RenameRow/Name
 @onready var rename_button: Button = $Panel/VBox/RenameRow/Rename
-@onready var feed_coop_button: Button = $Panel/VBox/FeedRow/FeedCoop
-@onready var feed_barn_button: Button = $Panel/VBox/FeedRow/FeedBarn
-@onready var expand_coop_button: Button = $Panel/VBox/ExpansionRow/ExpandCoop
-@onready var expand_barn_button: Button = $Panel/VBox/ExpansionRow/ExpandBarn
+@onready var feed_row: HBoxContainer = $Panel/VBox/FeedRow
+@onready var expansion_row: HBoxContainer = $Panel/VBox/ExpansionRow
 @onready var sell_button: Button = $Panel/VBox/Sell
 @onready var close_button: Button = $Panel/VBox/Close
 @onready var confirm_sell: ConfirmationDialog = $ConfirmSell
 
 var _location_id: StringName
 var _selected_instance_id: StringName
+## The feed and expansion button of each housing at the open location.
+var _feed_buttons: Dictionary[StringName, Button] = {}
+var _expansion_buttons: Dictionary[StringName, Button] = {}
 
 func _ready() -> void:
 	add_to_group("animal_management_menu")
@@ -25,10 +26,6 @@ func _ready() -> void:
 	visible = false
 	animal_select.item_selected.connect(_on_animal_selected)
 	rename_button.pressed.connect(_rename_selected)
-	feed_coop_button.pressed.connect(_feed_housing.bind(&"starter_coop"))
-	feed_barn_button.pressed.connect(_feed_housing.bind(&"starter_barn"))
-	expand_coop_button.pressed.connect(_purchase_next_expansion.bind(&"starter_coop"))
-	expand_barn_button.pressed.connect(_purchase_next_expansion.bind(&"starter_barn"))
 	sell_button.pressed.connect(_request_sell)
 	close_button.pressed.connect(close)
 	confirm_sell.confirmed.connect(_sell_selected)
@@ -42,6 +39,7 @@ func open(location_id: StringName) -> void:
 	_location_id = location_id
 	visible = true
 	get_tree().paused = true
+	_rebuild_housing_rows()
 	_rebuild()
 	_focus_primary_control()
 
@@ -81,36 +79,55 @@ func _rebuild() -> void:
 	_refresh_summary()
 	_refresh_selected()
 
+## One feed and one expansion button for each housing at the open location.
+func _rebuild_housing_rows() -> void:
+	for row: HBoxContainer in [feed_row, expansion_row]:
+		for child: Node in row.get_children():
+			row.remove_child(child)
+			child.queue_free()
+	_feed_buttons.clear()
+	_expansion_buttons.clear()
+	for housing_id: StringName in AnimalState.get_housing_ids(_location_id):
+		_feed_buttons[housing_id] = _add_row_button(feed_row, _feed_housing.bind(housing_id))
+		_expansion_buttons[housing_id] = _add_row_button(expansion_row, _purchase_next_expansion.bind(housing_id))
+
+func _add_row_button(row: HBoxContainer, action: Callable) -> Button:
+	var button := Button.new()
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.pressed.connect(action)
+	row.add_child(button)
+	return button
+
 func _focus_primary_control() -> void:
 	if animal_select.item_count > 0:
 		animal_select.grab_focus()
-	elif not feed_coop_button.disabled:
-		feed_coop_button.grab_focus()
-	elif not feed_barn_button.disabled:
-		feed_barn_button.grab_focus()
-	elif not expand_coop_button.disabled:
-		expand_coop_button.grab_focus()
-	elif not expand_barn_button.disabled:
-		expand_barn_button.grab_focus()
-	else:
-		close_button.grab_focus()
+		return
+	for button: Button in _feed_buttons.values() + _expansion_buttons.values():
+		if not button.disabled:
+			button.grab_focus()
+			return
+	close_button.grab_focus()
 
 func _refresh_summary() -> void:
 	title_label.text = tr("Animal Ledger")
-	var coop_count := AnimalState.get_housing_occupancy(&"starter_coop")
-	var coop_capacity := AnimalState.get_housing_capacity(&"starter_coop")
-	var barn_count := AnimalState.get_housing_occupancy(&"starter_barn")
-	var barn_capacity := AnimalState.get_housing_capacity(&"starter_barn")
-	var hay := InventoryState.get_quantity(&"hay")
-	summary_label.text = tr("Coop %d/%d · Barn %d/%d · Hay %d") % [coop_count, coop_capacity, barn_count, barn_capacity, hay]
-	var coop_unfed := AnimalState.get_unfed_count(&"starter_coop")
-	var barn_unfed := AnimalState.get_unfed_count(&"starter_barn")
-	feed_coop_button.text = tr("Feed Coop (%d)") % coop_unfed
-	feed_barn_button.text = tr("Feed Barn (%d)") % barn_unfed
-	feed_coop_button.disabled = coop_unfed <= 0 or hay <= 0
-	feed_barn_button.disabled = barn_unfed <= 0 or hay <= 0
-	_refresh_expansion_button(expand_coop_button, &"starter_coop")
-	_refresh_expansion_button(expand_barn_button, &"starter_barn")
+	var parts := PackedStringArray()
+	for housing_id: StringName in _feed_buttons:
+		parts.append("%s %d/%d" % [tr(AnimalState.get_housing_name(housing_id)), AnimalState.get_housing_occupancy(housing_id), AnimalState.get_housing_capacity(housing_id)])
+	for item_id: StringName in AnimalState.get_feed_item_ids(_location_id):
+		var item := ContentDB.get_item(item_id)
+		parts.append("%s %d" % [tr(item.display_name) if item != null else String(item_id), InventoryState.get_quantity(item_id)])
+	summary_label.text = " · ".join(parts)
+	for housing_id: StringName in _feed_buttons:
+		var needs := AnimalState.get_feed_needs(housing_id)
+		var unfed := 0
+		var can_feed := false
+		for item_id: StringName in needs:
+			unfed += needs[item_id]
+			can_feed = can_feed or InventoryState.has_item(item_id)
+		var feed_button := _feed_buttons[housing_id]
+		feed_button.text = tr("Feed %s (%d)") % [tr(AnimalState.get_housing_name(housing_id)), unfed]
+		feed_button.disabled = not can_feed
+		_refresh_expansion_button(_expansion_buttons[housing_id], housing_id)
 
 func _refresh_selected() -> void:
 	var record := AnimalState.get_record(_selected_instance_id)
@@ -139,7 +156,7 @@ func _refresh_selected() -> void:
 	details_label.text = tr("[b]%s[/b]\nSpecies: %s\nHousing: %s\nHappiness: %d/100\nFed today: %s\nProduct: %s%s") % [
 		details_name,
 		tr(data.display_name),
-		tr(String(data.housing_type).capitalize()),
+		tr(AnimalState.get_housing_name(StringName(String(record.get("housing_id", ""))))),
 		happiness,
 		tr("Yes") if fed_today else tr("No"),
 		product_name,
@@ -188,7 +205,7 @@ func _feed_housing(housing_id: StringName) -> void:
 func _refresh_expansion_button(button: Button, housing_id: StringName) -> void:
 	var expansion := FarmExpansionState.get_next_expansion_for_housing(housing_id)
 	if expansion == null:
-		button.text = tr("%s Maxed") % tr(String(housing_id).trim_prefix("starter_").capitalize())
+		button.text = tr("%s Maxed") % tr(AnimalState.get_housing_name(housing_id))
 		button.tooltip_text = tr("Maximum housing capacity reached")
 		button.disabled = true
 		return

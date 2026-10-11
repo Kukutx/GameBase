@@ -291,7 +291,7 @@ func _validate_references(errors: PackedStringArray) -> void:
 		valid_seasons.append(season)
 	var valid_skills: Array[StringName] = SkillManager.SKILL_IDS.duplicate()
 	var valid_buff_stats: Array[StringName] = [&"move_speed", &"tool_energy", &"fishing_wait", &"fishing_window"]
-	var valid_tool_actions: Array[StringName] = [&"hoe", &"water", &"pickaxe", &"attack", &"fish"]
+	var valid_tool_actions: Array[StringName] = [ItemData.ACTION_TILL, ItemData.ACTION_WATER, ItemData.ACTION_MINE, ItemData.ACTION_FISH, MeleeController.TOOL_ACTION]
 
 	for raw: Variant in _items.values():
 		var item := raw as ItemData
@@ -519,8 +519,12 @@ func _validate_references(errors: PackedStringArray) -> void:
 				if premium_item == null or not premium_item.has_tag("animal_product"):
 					var premium_tags: Variant = premium_item.tags if premium_item != null else null
 					errors.append("farm animal '%s' premium product '%s' lacks animal_product tag (tags=%s)" % [animal.id, animal.premium_product_item_id, premium_tags])
-		if animal.feed_item_id != &"" and not _items.has(String(animal.feed_item_id)):
-			errors.append("farm animal '%s' references unknown feed item '%s'" % [animal.id, animal.feed_item_id])
+		if animal.housing_type == &"":
+			errors.append("farm animal '%s' has no housing type" % animal.id)
+		var feed_item := _items.get(String(animal.feed_item_id)) as ItemData
+		if feed_item == null or not feed_item.has_tag("animal_feed"):
+			var feed_tags: Variant = feed_item.tags if feed_item != null else null
+			errors.append("farm animal '%s' references invalid feed item '%s' (tags=%s)" % [animal.id, animal.feed_item_id, feed_tags])
 
 	for raw: Variant in _fish.values():
 		var fish := raw as FishData
@@ -967,14 +971,21 @@ func _validate_location_node_references(node: Node, location: WorldLocationData,
 		var housing := node as AnimalHousing
 		if housing.location_id == &"" or housing.location_id != location_id:
 			errors.append("location '%s' housing '%s' has mismatched location id '%s'" % [location_id, housing.housing_id, housing.location_id])
+		if housing.display_name.is_empty() or housing.housing_type == &"":
+			errors.append("location '%s' housing '%s' needs a display name and a housing type" % [location_id, housing.housing_id])
 	elif node is AnimalFeedTrough:
 		var trough := node as AnimalFeedTrough
 		if trough.housing_id == &"" or not housing_ids.has(String(trough.housing_id)):
 			errors.append("location '%s' feed trough '%s' references unknown housing '%s'" % [location_id, node.name, trough.housing_id])
-		var feed_item := get_item(trough.feed_item_id)
-		if trough.feed_item_id == &"" or feed_item == null or not feed_item.has_tag("animal_feed"):
-			var feed_tags: Variant = feed_item.tags if feed_item != null else null
-			errors.append("location '%s' feed trough '%s' references invalid feed item '%s' (tags=%s)" % [location_id, node.name, trough.feed_item_id, feed_tags])
+	elif node is MineFloorController:
+		var mine := node as MineFloorController
+		if mine.entrance_spawn_ids.is_empty():
+			errors.append("location '%s' mine '%s' has no entrance spawn" % [location_id, node.name])
+		var spawn_ids: Array[StringName] = mine.entrance_spawn_ids.duplicate()
+		spawn_ids.append(mine.floor_spawn_id)
+		for spawn_id: StringName in spawn_ids:
+			if not has_location_spawn(location_id, spawn_id):
+				errors.append("location '%s' mine '%s' names spawn '%s', which its scene does not have" % [location_id, node.name, spawn_id])
 	elif node is FarmField:
 		var field := node as FarmField
 		if field.location_id != &"" and field.location_id != location_id:
@@ -987,10 +998,6 @@ func _validate_location_node_references(node: Node, location: WorldLocationData,
 		var spot := node as FishingSpot
 		if spot.location_id != &"" and spot.location_id != location_id:
 			errors.append("location '%s' fishing spot '%s' references different location '%s'" % [location_id, node.name, spot.location_id])
-		if spot.required_rod_id != &"":
-			var rod := get_item(spot.required_rod_id)
-			if rod == null or not rod.is_tool() or rod.tool_action != &"fish":
-				errors.append("location '%s' fishing spot '%s' references invalid fishing rod '%s'" % [location_id, node.name, spot.required_rod_id])
 	elif node is TownProjectBoard:
 		var board := node as TownProjectBoard
 		if board.location_id != &"" and board.location_id != location_id:

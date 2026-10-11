@@ -14,8 +14,8 @@ func before_each() -> void:
 	InventoryState.clear()
 	PlayerState.reset_new_game()
 	PlayerState.money = 50000
-	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4)
-	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4)
+	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4, "Coop")
+	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4, "Barn")
 	AnimalState.reset_new_game()
 	AnimalState.grant_animal(&"starter_chicken_01", &"chicken", &"starter_town", &"starter_coop", 0)
 
@@ -27,15 +27,26 @@ func after_each() -> void:
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
-func test_expansion_catalog_and_animal_ledger_controls_are_registered() -> void:
+func test_expansion_catalog_is_registered() -> void:
 	assert_eq(ContentDB.get_all_farm_expansions().size(), 4)
 	assert_not_null(ContentDB.get_farm_expansion(&"big_coop"))
 	assert_not_null(ContentDB.get_farm_expansion(&"deluxe_barn"))
+
+func test_animal_ledger_has_a_feed_and_an_expansion_button_per_housing() -> void:
 	var menu_scene := load("res://gamebase/modules/lifesim/animals/animal_management_menu.tscn") as PackedScene
-	var menu := menu_scene.instantiate()
-	autofree(menu)
-	assert_not_null(menu.get_node_or_null("Panel/VBox/ExpansionRow/ExpandCoop"))
-	assert_not_null(menu.get_node_or_null("Panel/VBox/ExpansionRow/ExpandBarn"))
+	var menu := menu_scene.instantiate() as AnimalManagementMenu
+	add_child_autofree(menu)
+	InventoryState.add_item_by_id(&"hay", 3)
+	menu.open(&"starter_town")
+	var feed_buttons := menu.get_node("Panel/VBox/FeedRow").get_children()
+	var expansion_buttons := menu.get_node("Panel/VBox/ExpansionRow").get_children()
+	menu.close()
+	assert_eq(feed_buttons.size(), 2)
+	assert_eq(expansion_buttons.size(), 2)
+	assert_eq((feed_buttons[0] as Button).text, "Feed Coop (0)")
+	assert_eq((feed_buttons[1] as Button).text, "Feed Barn (0)")
+	assert_true((feed_buttons[0] as Button).disabled, "The starting chicken is already fed")
+	assert_eq((menu.get_node("Panel/VBox/Summary") as Label).text, "Coop 1/4 · Barn 0/4 · Hay 3")
 
 func test_coop_expands_from_four_to_eight_to_twelve_and_persists() -> void:
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 4)
