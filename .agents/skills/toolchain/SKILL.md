@@ -9,7 +9,7 @@ Handles the versions this repository pins by hand: the shared Godot baseline, th
 
 ## Collect the facts first
 
-- Engine baseline: `.godot-version`, mirrored in `licenses/GODOT_VERSION.txt`. Feature marker: `config/features` in `project.godot`. The engine a command really used is the `Godot:` line printed by `node tools/validate.js`.
+- Engine baseline: `.godot-version`, mirrored in `licenses/GODOT_VERSION.txt`. Feature marker: `config/features` in each `games/<id>/project.godot`. The engine a command really used is the `Godot:` line printed by `node tools/validate.js`.
 - Addons: `version=` in `addons/dialogue_manager/plugin.cfg` and `addons/gut/plugin.cfg`. `node tools/check_addon_updates.js` compares them with upstream stable tags and writes `artifacts/addon-updates.md`.
 - Node: the `node-version` of every workflow under `.github/workflows/` and `engines.node` in `tools/web_smoke/package.json`; they move together.
 - Do not judge "latest" from memory. When an upstream query fails, report that; do not treat it as "already current".
@@ -18,8 +18,8 @@ Handles the versions this repository pins by hand: the shared Godot baseline, th
 
 1. Confirm that GUT, Dialogue Manager and any other enabled addon support the target stable release.
 2. `node tools/update_engine_baseline.js --version <x.y.z>` downloads and validates the official LICENSE and COPYRIGHT of that tag and only then moves `.godot-version` and the legal bundle together. Do not edit those files by hand.
-3. Import once with the new engine and review every change it makes to `project.godot`, scenes and resources. Saving with a newer engine rewrites file headers (`.agents/rules/scenes-resources.md`); keep that rewrite in its own commit.
-4. `node tools/validate.js --godot-bin <new engine>` including the soak, then `node tools/export.js` for all three presets. Install matching export templates with `node tools/install_export_templates.js`.
+3. Import each game once with the new engine and review every change it makes to `games/<id>/project.godot`, scenes and resources. Saving with a newer engine rewrites file headers (`.agents/rules/scenes-resources.md`); keep that rewrite in its own commit.
+4. `node tools/validate.js --godot-bin <new engine>` including the soak, then `node tools/export.js --all` for all three presets of every game. Install matching export templates with `node tools/install_export_templates.js`.
 5. Read the official migration notes between the old and the new version and compare them with how this project uses the engine. Besides errors, look for things that stop working without an error: a renamed setting that silently falls back to a default, a deprecated call that still runs.
 6. Report separately: new capabilities that would remove custom code, deprecated usages still present, behaviour changes that need a gameplay check.
 
@@ -28,7 +28,7 @@ Development, beta and release-candidate builds do not become the shared baseline
 ## Addon upgrade
 
 - Prefer the newest compatible patch or minor release that does not force unrelated gameplay migrations. A major upgrade is isolated, migration-tested and reversible.
-- After replacing the vendored directory: check the release-export exclusions in `export_presets.cfg` and the required and forbidden lists in `tools/verify_export_contents.js`, update the versions asserted in `test/unit/test_project_configuration.gd`, then run the full validation and all exports.
+- After replacing the vendored directory: check the release-export exclusions in each `games/<id>/export_presets.cfg` and the required and forbidden lists in `tools/verify_export_contents.js`, check the addon assertions in `tools/repository.test.js`, then run the full validation and all exports.
 - The rules for touching `addons/` are in `.agents/rules/addons.md`.
 
 ## Only asking what is new

@@ -1,21 +1,20 @@
-# Godot 4+ generated state
+# Godot 4+ generated state of each game project
 .godot/
 .import/
-.build/
+*.translation
 
-# Export output / local export credentials
+# Links to the shared foundation and addons, created by tools/link.js
+/games/*/gamebase/
+/games/*/addons/
+
+# Build, release and QA outputs, one directory per game
+/build/
+/dist/
+/artifacts/
+
+# Local export credentials
 export.cfg
 export_credentials.cfg
-build/*
-!build/.gdignore
-artifacts/*
-!artifacts/.gdignore
-dist/*
-!dist/.gdignore
-
-# Imported/generated resources. Godot 4 keeps importer settings and resource
-# UIDs in .import files, so they are committed; only the cache under .godot/ is local.
-*.translation
 
 # Mono
 .mono/
@@ -26,7 +25,7 @@ mono_crash.*.json
 node_modules/
 
 # Local development probes, references, and vendored upgrade staging
-.dev/
+/.dev/
 
 # Purchased/local licensed art - never commit or redistribute raw source assets
-game/art/licensed/
+/games/*/game/art/licensed/

@@ -12,7 +12,7 @@ The detailed capture procedure — which states to visit, when to take a screens
 ## Read first
 
 1. The scope the user named and where output may be written (`artifacts/`).
-2. How the game is run: the editor or `godot --path .` for the windowed game, `node tools/smoke_export.js` for an exported build, `npm run --prefix tools/web_smoke smoke:web` for the Web export in Chromium. The log is `user://logs/gamebase.log`.
+2. How the game is run: the editor or `godot --path games/<id>` for the windowed game (after `node tools/link.js`), `node tools/smoke_export.js` for an exported build, `npm run --prefix tools/web_smoke smoke:web` for the Web export in Chromium. The log is `user://logs/<id>.log`.
 3. The code, tests and data of the area under test, and `.agents/rules/testing.md`.
 
 ## The loop
@@ -51,7 +51,7 @@ An anomaly is a candidate. It becomes a defect only after it has been replayed f
 
 ## Make it stay fixed
 
-A reproduction that is stable becomes a GUT test under `test/unit/` or a check in `test/runtime/world_services_smoke.gd`. Do not leave a fixed defect guarded only by repeating the steps by hand.
+A reproduction that is stable becomes a GUT test under `games/<id>/test/unit/` or a check in `games/farm1/test/runtime/world_services_smoke.gd`. Do not leave a fixed defect guarded only by repeating the steps by hand.
 
 ## Boundaries
 

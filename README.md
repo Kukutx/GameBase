@@ -1,151 +1,80 @@
-﻿# GameBase
+# GameBase
 
-Godot 4.x life-sim / RPG foundation built from the Godot-GameTemplate repository and extended into a data-driven multi-town game prototype. The application version lives in `.game-version`; the independent shared engine-validation baseline lives in `.godot-version` (currently 4.7.2), so game releases and Godot upgrades can move independently.
+GameBase is the single repository for a family of Godot 4.x games: a shared, genre-agnostic foundation and every game built on it, side by side. A fix to the foundation reaches every game in the same commit; there is no second repository, no copied foundation and no version pin to move.
 
-The current project is a reusable gameplay base rather than a finished content release. The main playable loop already connects farming, fishing, mining/combat, animals, crafting/processing, NPC relationships, quests, weather/calendar systems, town progression, saving and world travel.
-
-## Engine and addons
-
-- GameBase application version: `.game-version` (mirrored to `application/config/version`)
-- Godot **4.x**; current CI validation baseline: **4.7.2** via `.godot-version`
-- Dialogue Manager **4.1.0**
-- GUT **9.7.1** for automated tests
-- Game-owned runtime layer; the inherited shooter/template addons are no longer production dependencies
-
-Stable Godot 4.x upgrades are expected. Update the single `.godot-version` CI baseline, confirm addon compatibility, and run the full validation/export suite. Check `AGENTS.md` before framework or dependency changes.
-
-## Run
-
-Open this folder in a compatible stable Godot 4.x release and run the project. The current shared validation baseline is Godot 4.7.2. The main scene is:
+## Layout
 
 ```text
-res://game/ui/title_screen.tscn
+gamebase/core/        Genre-agnostic foundation services (save, content, session, rules, settings,
+                      input, audio, world travel, time, interactions, minigames, diagnostics)
+gamebase/modules/     Optional gameplay modules: items, npc_social, progression, lifesim, combat
+gamebase/templates/   The template tools/new_game.js creates a game from
+gamebase/gamebase.json  Modules, the modules each one requires and the addons each one uses
+addons/               Vendored third-party Godot addons shared by every game (Dialogue Manager, GUT)
+games/<id>/           One Godot project per game: game.json, project.godot, export_presets.cfg,
+                      game/ (the game's own code and data) and test/ (GUT and runtime checks)
+tools/                Node tooling: links, validation, export, packaging, release checks
+docs/                 Project documentation (release, localization, audio, support, engine upgrades, automation policy)
+AGENTS.md, .agents/   Agent instructions: rules, skills, workflows, standards and templates
 ```
 
-Full local validation:
+The registered games:
+
+| Game | Directory | Description |
+| --- | --- | --- |
+| Farm1 | `games/farm1/` | The first-generation farming life-sim; see [games/farm1/README.md](games/farm1/README.md) |
+
+A game is registered by its `games/<id>/game.json`, which lists the foundation modules it uses (with every module they require) and any extra shared addons. Inside a game project, `res://game/` is that game's code, `res://gamebase/` the foundation and `res://addons/` the addons. Dependencies point one way: a game may use the core and its listed modules, a module may use the core and the modules it declares, and the core uses neither; `tools/check_layers.js` enforces this. See [gamebase/README.md](gamebase/README.md).
+
+## Set up and run
+
+A Godot project only sees files inside its own directory, so the foundation and the addons are linked into each game (junctions on Windows, symbolic links elsewhere; Git ignores them). After cloning, and after changing a game's modules:
+
+```text
+node tools/link.js
+```
+
+Then open `games/<id>/project.godot` in a stable Godot 4.x editor. The shared engine baseline is `.godot-version` (currently 4.7.2); newer stable 4.x releases are allowed locally. The tooling needs Node.js 24 or newer and has no other dependency; tools use `--godot-bin <path>`, else `GODOT_BIN`, else `godot` from `PATH`.
+
+Create a new game (the core only, no module) with:
+
+```text
+node tools/new_game.js --id <id> --name "<Game Name>"
+```
+
+## Validation and release
 
 ```text
 node tools/validate.js
 ```
 
-The tooling needs Node.js 24 or newer and has no other dependency. The script uses `--godot-bin <path>` when given, else `GODOT_BIN` when set, otherwise `godot` from `PATH`. It accepts newer stable Godot 4.x versions and warns when the local engine differs from the shared CI baseline.
+runs the repository checks once (agent rules, layer dependencies, tool tests, the engine baseline and its legal bundle, the packaging self-test, and a game freshly created from the template) and then every game's checks (links, version, localization coverage, clean import, GUT, its runtime scripts and a main-scene boot). `--game <id>` limits the games; `--no-repository` and `--no-games` skip one half.
 
-A successful runtime integration check ends with:
-
-```text
-LIFE_SIMULATION_SMOKE_OK
-```
-
-## Current gameplay foundation
-
-- Three connected settlements: Starter Town, Riverside Town and Harbor Town
-- Player home and Old Mine interiors/areas
-- Farming with seasonal crops, watering, harvests and sprinkler automation
-- Fishing with location, season, time and weather-specific pools
-- 120-floor Old Mine progression with persistent depth, 5-floor elevator checkpoints, Iron at Floor 6, Gold at Floor 20, Iridium at Floor 60, escalating enemy tiers through the Ancient Slimes on Floor 120, melee combat and renewable resource nodes
-- Farm animals with housing, feeding, happiness, naming, selling, premium products and purchasable 4→8→12 slot coop/barn expansions
-- Inventory, hotbar, shops, crafting, cooking, buffs, processing and copper→iron→gold→iridium tool/weapon upgrades
-- Placeable storage, machines and persistent building placement
-- Shipping bin and overnight economy settlement
-- NPC schedules, cross-town movement, gifts, 0→10-heart relationship dialogue stages and five heart-event tiers per core NPC, with later events tied to town progress
-- Dialogue abstraction plus bounded NPC memory/context for optional AI dialogue later
-- A long mining quest chain from copper tools through Iron, Gold and Iridium to Floor 120, plus progression mail that can react immediately to completed quests and world flags
-- A deterministic calendar/weather system with four recurring seasonal festivals, in-world participation booths and once-per-year rewards
-- Daily contracts that filter mining targets by discovered mine depth, harvest work by crop maturation/season time remaining, and weather-locked fish by reachable forecast windows
-- Chained long-term town restoration projects with world-state visuals, NPC-context exposure and immediate completion mail
-- Six skills with Lv5/Lv10 passive gameplay perks and persisted highest-earned levels; collections include premium animal products and Iridium content with claimable archive milestones
-- Three save slots in one save format (no migrations: a format change raises the version and older saves stop loading), saves that name their Location by id, and primary/backup/temp crash recovery that finishes a save interrupted after its temp file was written
-- Stable world travel end-to-end: new game, scene portals, mine ladders/elevators and save recovery resolve Location/Spawn IDs instead of depending on gameplay scene filenames
-- Loading drops whatever names content that no longer exists (items, quests, animals, placeables, crops, processing outputs) instead of keeping it
-- Deferred rewards are snapshotted when promised (mail delivery, project completion, archive readiness and blocked quest completion), so a rebalance before the claim does not change what the player receives
-- Sleep, defeat/collapse recovery and late-night exhaustion handling
-- Rebindable keyboard controls, D-Pad/analog movement, LT/RT hotbar cycling, device-aware interaction prompts and default gamepad bindings for all core actions
-- Safe periodic/travel autosave using the same atomic backup path as manual saves; autosave can be disabled in Settings
-- Opt-in desktop support bundles with sanitized logs, runtime/settings metadata and save-slot summaries; raw saves and absolute user paths are excluded by default
-- Persistent English / Simplified Chinese UI locale selection, with dialogue localization kept behind Dialogue Manager
-- Data-driven `GameAudio` layer with separate Music/Sounds buses, stable gameplay cue IDs and per-location music slots; production audio streams are intentionally still pending rather than filled with placeholder tracks
-
-## Project structure
+Tools that act on one game take `--game <id>` or `GAMEBASE_GAME`; while only one game is registered they pick it themselves:
 
 ```text
-gamebase/core/     Genre-agnostic foundation services (save, content, settings, input, audio, world travel, time, diagnostics)
-gamebase/modules/  Optional gameplay modules: items, npc_social, progression, lifesim, combat
-game/data/         Data resources indexed through ContentDB
-game/world/        Playable locations and shared world HUD
-game/npc/          NPC scenes and presentation
-game/player/       Player scene/controller
-game/ui/           Title, pause, settings and game menus
-test/unit/         Focused GUT regression tests
-test/runtime/      End-to-end life-simulation smoke test
-tools/             Node tooling: validation, export, packaging, release checks
-docs/              Project-specific documentation (release, localization, audio, support, engine upgrades, automation policy, official documentation index)
-AGENTS.md          Entry point of the agent instructions
-.agents/           Agent rules, skills, workflows, standards and templates
+node tools/export.js [--game <id>] [--preset "<name>"]
+node tools/release_readiness.js [--game <id>]
+node tools/update_game_version.js [--game <id>] --version <next-semver>
 ```
 
-New reusable content should normally be added to `game/data/content_manifest.tres` and accessed through `ContentDB` rather than hard-coded lookup tables.
+Builds go to `build/<id>/<platform>/`, packages to `dist/<id>/` and QA output to `artifacts/<id>/`. A game's version lives only in `config/version` of its `project.godot`; the engine baseline moves separately with `node tools/update_engine_baseline.js --version <x.y.z>`, which also refreshes the official Godot LICENSE/COPYRIGHT bundle.
 
-## Validation and release
+GitHub Actions:
 
-The repository tracks `export_presets.cfg` for Windows, Linux and Web. Local exports:
+- `.github/workflows/ci.yml`: repository checks, then per-game clean-import validation, Windows/Linux/Web exports, native Windows/Linux execution and Chromium Web smoke. A pull request that changes only some games' own directories validates only those games.
+- `.github/workflows/release.yml`: a `game/<id>/v<version>` tag builds that game's deterministic Windows/Linux/Web packages, smokes them, writes `RELEASE_MANIFEST.json` and SHA-256 checksums and publishes a GitHub Release.
+- `.github/workflows/engine-compat.yml`: weekly validation and exports of every game against the newest stable Godot 4.x release, without moving the shared baseline.
+- `.github/workflows/addon-freshness.yml`: weekly stable-tag comparison for the vendored addons; it maintains one reminder issue and never replaces addon code.
 
-```text
-node tools/export.js
-```
-
-Preferred full pre-release verification:
-
-```text
-node tools/release_readiness.js
-```
-
-That command performs a clean import, the full test suite, all three exports, native exported-build smoke where supported, and a real Chromium smoke of the Web build.
-
-GitHub Actions provides:
-
-- `.github/workflows/ci.yml`: strict clean-import validation, GUT/runtime/main-scene smoke, Windows/Linux/Web exports, native Windows/Linux execution and Chromium Web smoke.
-- `.github/workflows/release.yml`: gated Windows/Linux/Web packages using repository-owned deterministic ZIP/TAR generation, native/browser smoke, package-internal identity verification, `RELEASE_MANIFEST.json`, SHA-256 checksums, and automatic GitHub Release publishing for `v*` tags.
-- `.github/workflows/engine-compat.yml`: weekly validation against the newest stable Godot 4.x release without silently moving the shared baseline; compatibility artifacts explicitly allow engine drift and carry the matching temporary Godot legal bundle.
-- `.github/workflows/addon-freshness.yml`: weekly stable-tag comparison for vendored Dialogue Manager and GUT; it maintains one upgrade-reminder issue when upstream moves ahead, but never auto-replaces vendored addon code.
-- `.github/dependabot.yml`: weekly GitHub Actions and npm QA-tool dependency maintenance.
-
-The game version and engine baseline are intentionally separate. Bump the application version with:
-
-```text
-node tools/update_game_version.js --version <next-semver>
-```
-
-The engine version used by CI is read from `.godot-version`. To move the shared validation baseline to a newer stable Godot 4.x release, use the repository tool; it also downloads and validates the matching official Godot LICENSE/COPYRIGHT bundle before moving the baseline:
-
-```text
-node tools/update_engine_baseline.js --version <next-stable-4.x-version>
-```
-
-Then validate with the new engine before committing the baseline change. See `docs/ENGINE_UPGRADES.md`, `docs/RELEASE.md`, `docs/LOCALIZATION.md`, `docs/AUDIO.md`, and `docs/SUPPORT.md`.
-
-## Licensed local art
-
-Purchased/local source art is intentionally excluded from Git under:
-
-```text
-game/art/licensed/
-```
-
-On the owner's workstation, restore the selected runtime assets with:
-
-```text
-node tools/sync_licensed_assets.js
-```
-
-See `docs/LICENSED_ASSETS.md` for the packs currently used and redistribution constraints. Gameplay scenes must remain runnable when those local files are absent; fallback visuals are part of the project design.
+See `docs/RELEASE.md`, `docs/ENGINE_UPGRADES.md`, `docs/LOCALIZATION.md`, `docs/AUDIO.md` and `docs/SUPPORT.md`.
 
 ## Development rules
 
 `AGENTS.md` is the entry point of the project constraints; it routes to the rules, skills and workflows under `.agents/`. `node tools/validate_rules.js --strict` checks that tree and runs as part of `node tools/validate.js`. In particular:
 
-- keep the project on stable Godot 4.x and treat `.godot-version` as an updateable CI validation baseline rather than a permanent patch-version lock;
-- prefer built-in Godot features and established, maintained addons;
-- keep third-party code under `addons/` and game-specific code under `game/`;
-- preserve stable content/location/spawn IDs; a save format change raises `SAVE_VERSION` instead of adding compatibility code;
-- add focused GUT coverage for reusable gameplay systems;
-- keep the optional AI dialogue layer behind `ConversationService`, `NpcContext` and `NpcMemory` rather than coupling gameplay to a model runtime.
+- everything lives in this repository: a new game is a new `games/<id>/`, never a new repository, and a foundation change is made once in `gamebase/`;
+- keep the projects on stable Godot 4.x and treat `.godot-version` as an updateable CI baseline rather than a permanent patch-version lock;
+- prefer built-in Godot features and established, maintained addons, kept under `addons/`;
+- preserve stable content, location and spawn ids; a save format change raises `SAVE_VERSION` instead of adding compatibility code;
+- add focused GUT coverage for reusable gameplay systems.

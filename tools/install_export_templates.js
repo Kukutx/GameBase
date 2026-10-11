@@ -29,9 +29,6 @@ async function installExportTemplates({ version, cacheDirectory, force = false }
   }
   const devRoot = rootPath(".dev");
   fs.mkdirSync(devRoot, { recursive: true });
-  if (!fs.existsSync(path.join(devRoot, ".gdignore"))) {
-    fs.writeFileSync(path.join(devRoot, ".gdignore"), "");
-  }
   const cache = cacheDirectory ? path.resolve(cacheDirectory) : path.join(devRoot, "export-templates");
   fs.mkdirSync(cache, { recursive: true });
 

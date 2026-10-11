@@ -1,8 +1,9 @@
 extends SceneTree
 
-## Boots a project created by tools/new_game.js, which has the GameBase core
-## and no module: starts a new game, saves, changes state and loads it back.
-## tools/validate.js copies this script into the scaffolded project to run it.
+## Boots a game created by tools/new_game.js, which has the GameBase core and
+## no module: starts a new game, saves, changes state and loads it back.
+## tools/validate.js runs every script under test/runtime/, so a new game keeps
+## this check until it replaces it with its own.
 
 const SAVE_DIRECTORY := "user://new_game_smoke"
 const FLAG := &"smoke:new_game"

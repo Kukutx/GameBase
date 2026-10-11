@@ -1,12 +1,11 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
+const { linkGame } = require("./link");
 const { validate } = require("./validate");
 const { verifyExportContents } = require("./verify_export_contents");
 const {
   ENGINE_VERSION_RE,
-  GAME_VERSION_RE,
-  ROOT,
   download,
   fail,
   git,
@@ -17,15 +16,20 @@ const {
   resolveGodotBin,
   rootPath,
   runGodotStep,
-  artifactName,
 } = require("./lib/common");
+const { artifactName, buildPath, gameVersion, resolveGame, resolveGames } = require("./lib/games");
 
-const NAME = artifactName();
-const PRESETS = {
-  "Windows Desktop": { output: `build/windows/${NAME}.exe`, pack: `build/windows/${NAME}.pck` },
-  Linux: { output: `build/linux/${NAME}.x86_64`, pack: `build/linux/${NAME}.pck` },
-  Web: { output: "build/web/index.html", pack: "build/web/index.pck" },
-};
+const PRESET_NAMES = ["Windows Desktop", "Linux", "Web"];
+
+// Where each preset of a game exports to: build/<game>/<platform>/.
+function presetsFor(game) {
+  const name = artifactName(game);
+  return {
+    "Windows Desktop": { output: buildPath(game, "windows", `${name}.exe`), pack: buildPath(game, "windows", `${name}.pck`) },
+    Linux: { output: buildPath(game, "linux", `${name}.x86_64`), pack: buildPath(game, "linux", `${name}.pck`) },
+    Web: { output: buildPath(game, "web", "index.html"), pack: buildPath(game, "web", "index.pck") },
+  };
+}
 const LICENSE_FILES = [
   "GODOT_LICENSE.txt",
   "GODOT_COPYRIGHT.txt",
@@ -69,16 +73,13 @@ function gitIdentity() {
   };
 }
 
-async function exportPresets({ presets, godotBin, skipValidation = false, allowEngineDrift = false }) {
+async function exportPresets({ game, presets = PRESET_NAMES, godotBin, skipValidation = false, allowEngineDrift = false }) {
   const godot = resolveGodotBin(godotBin);
   if (!skipValidation) {
-    await validate({ godotBin: godot });
+    await validate({ godotBin: godot, games: [game.id] });
   }
-
-  const gameVersion = readTrimmed(".game-version");
-  if (!GAME_VERSION_RE.test(gameVersion)) {
-    fail(`Invalid .game-version: ${gameVersion}`);
-  }
+  linkGame(game);
+  const version = gameVersion(game);
   const engineVersion = godotVersion(godot);
   const engineMatch = /^(\d+\.\d+\.\d+)/.exec(engineVersion);
   if (!engineMatch) {
@@ -111,30 +112,33 @@ async function exportPresets({ presets, godotBin, skipValidation = false, allowE
     );
   }
   const identity = gitIdentity();
+  const outputs = presetsFor(game);
 
   try {
+    // Exporting needs an imported project; the import is quick when nothing changed.
+    await runGodotStep(godot, `${game.id}: import`, ["--headless", "--path", game.root, "--import"]);
     for (const name of presets) {
-      const preset = PRESETS[name];
-      const absoluteOutput = rootPath(preset.output);
-      const parent = path.dirname(absoluteOutput);
+      const preset = outputs[name];
+      const label = path.relative(rootPath(), preset.output).split(path.sep).join("/");
+      const parent = path.dirname(preset.output);
       removeRecursive(parent);
       fs.mkdirSync(parent, { recursive: true });
 
-      await runGodotStep(godot, `Exporting ${name} -> ${preset.output}`, [
+      await runGodotStep(godot, `${game.id}: exporting ${name} -> ${label}`, [
         "--headless",
         "--path",
-        ROOT,
+        game.root,
         "--export-release",
         name,
         preset.output,
       ]);
-      if (!fs.existsSync(absoluteOutput)) {
-        fail(`Export '${name}' did not create '${preset.output}'.`);
+      if (!fs.existsSync(preset.output)) {
+        fail(`Export '${name}' did not create '${label}'.`);
       }
-      if (!fs.existsSync(rootPath(preset.pack))) {
+      if (!fs.existsSync(preset.pack)) {
         fail(`Export '${name}' did not create expected resource pack '${preset.pack}'.`);
       }
-      await verifyExportContents({ pckPath: preset.pack, godotBin: godot });
+      await verifyExportContents({ game, pckPath: preset.pack, godotBin: godot });
 
       // Distribution licenses stay beside the executable or Web payload rather
       // than inside the PCK, which keeps legal documents out of res:// while
@@ -148,7 +152,8 @@ async function exportPresets({ presets, godotBin, skipValidation = false, allowE
 
       const buildInfo = {
         schema: 1,
-        game_version: gameVersion,
+        game: game.id,
+        game_version: version,
         engine: engineVersion,
         legal_bundle_version: legalBundleVersion,
         git_commit: identity.commit,
@@ -166,29 +171,38 @@ async function exportPresets({ presets, godotBin, skipValidation = false, allowE
   }
 }
 
-module.exports = { PRESETS, exportPresets };
+module.exports = { PRESET_NAMES, presetsFor, exportPresets };
 
 if (require.main === module) {
   main(async () => {
     const { values } = parseArgs({
       options: {
+        game: { type: "string" },
+        all: { type: "boolean", default: false },
         preset: { type: "string", multiple: true },
         "godot-bin": { type: "string" },
         "skip-validation": { type: "boolean", default: false },
         "allow-engine-drift": { type: "boolean", default: false },
       },
     });
-    const presets = values.preset && values.preset.length > 0 ? values.preset : Object.keys(PRESETS);
+    const presets = values.preset && values.preset.length > 0 ? values.preset : PRESET_NAMES;
     for (const name of presets) {
-      if (!PRESETS[name]) {
-        fail(`Unknown --preset '${name}'. Use one of: ${Object.keys(PRESETS).join(", ")}.`);
+      if (!PRESET_NAMES.includes(name)) {
+        fail(`Unknown --preset '${name}'. Use one of: ${PRESET_NAMES.join(", ")}.`);
       }
     }
-    await exportPresets({
-      presets,
-      godotBin: values["godot-bin"],
-      skipValidation: values["skip-validation"],
-      allowEngineDrift: values["allow-engine-drift"],
-    });
+    if (values.all && values.game) {
+      fail("Use --game <id> or --all, not both.");
+    }
+    const games = values.all ? resolveGames() : [resolveGame(values.game)];
+    for (const game of games) {
+      await exportPresets({
+        game,
+        presets,
+        godotBin: values["godot-bin"],
+        skipValidation: values["skip-validation"],
+        allowEngineDrift: values["allow-engine-drift"],
+      });
+    }
   });
 }

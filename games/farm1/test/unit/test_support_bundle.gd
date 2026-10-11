@@ -2,7 +2,8 @@ extends GutTest
 
 const TEST_ZIP := "user://support_bundle_test.zip"
 const TEST_LOG_DIR := "user://support_bundle_test_logs"
-const TEST_LOG := "user://support_bundle_test_logs/gamebase-test.log"
+# The bundle takes the logs named after the project log file (user://logs/farm1.log).
+const TEST_LOG := "user://support_bundle_test_logs/farm1-test.log"
 
 func before_each() -> void:
 	_cleanup()
@@ -47,7 +48,7 @@ func test_support_bundle_contains_only_sanitized_summary_notes_and_logs() -> voi
 	var files := reader.get_files()
 	assert_has(files, "support_summary.json")
 	assert_has(files, "README.txt")
-	assert_has(files, "logs/gamebase-test.log")
+	assert_has(files, "logs/farm1-test.log")
 	for path: String in files:
 		assert_false(path.contains("savegame"), "Raw save must never be bundled: %s" % path)
 		assert_false(path.contains("settings.cfg"), "Raw settings must never be bundled: %s" % path)
@@ -61,7 +62,7 @@ func test_support_bundle_contains_only_sanitized_summary_notes_and_logs() -> voi
 		assert_false(bool(privacy.get("raw_saves_included", true)))
 		assert_true(bool(privacy.get("absolute_paths_redacted", false)))
 
-	var log_text := reader.read_file("logs/gamebase-test.log").get_string_from_utf8()
+	var log_text := reader.read_file("logs/farm1-test.log").get_string_from_utf8()
 	assert_false(log_text.contains(fake_path))
 	assert_true(log_text.contains("<USER_DATA>"))
 	assert_true(log_text.contains("GAMEBASE_DIAGNOSTIC test"))

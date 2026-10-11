@@ -10,9 +10,6 @@ async function updateEngineBaseline({ version, godotBin }) {
   }
   const devRoot = rootPath(".dev");
   fs.mkdirSync(devRoot, { recursive: true });
-  if (!fs.existsSync(path.join(devRoot, ".gdignore"))) {
-    fs.writeFileSync(path.join(devRoot, ".gdignore"), "");
-  }
   const tag = `${version}-stable`;
   const tempLicense = path.join(devRoot, `godot-license-${version}.tmp`);
   const tempCopyright = path.join(devRoot, `godot-copyright-${version}.tmp`);

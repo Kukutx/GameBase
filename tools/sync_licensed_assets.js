@@ -1,62 +1,54 @@
+// Restores a game's purchased art from the owner's local source archives into
+// the Git-ignored games/<id>/game/art/licensed/ tree:
+//
+//   node tools/sync_licensed_assets.js [--game <id>] [--source <name>=<path>]...
+//
+// The game's game.json lists the sources under licensed_art.sources (a
+// directory or a ZIP archive on the owner's machine; --source overrides one on
+// another machine) and the packs to extract under licensed_art.packs: which
+// source, the ZIP inside a source directory when there is one, the folder in
+// the archive, the files ("*.png" or a list of names) and the destination
+// under game/art/licensed/. See docs/LICENSED_ASSETS.md.
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { extractZip } = require("./lib/archive");
-const { fail, main, rootPath } = require("./lib/common");
+const { fail, main } = require("./lib/common");
+const { gamePath, resolveGame } = require("./lib/games");
 
-// The owner's local archive locations; see docs/LICENSED_ASSETS.md. Override
-// them with --gandalf-root and --craftpix-archive on another machine.
-const DEFAULT_GANDALF_ROOT = "A:\\Project\\Godot\\Asset\\GandalfHardcore";
-const DEFAULT_CRAFTPIX_ARCHIVE = "A:\\Project\\Godot\\Asset\\参考\\craftpix-net-436971-free-top-down-roguelike-game-kit-pixel-art.zip";
+function selectFiles(folder, files) {
+  if (files === "*.png") {
+    return fs.readdirSync(folder, { withFileTypes: true }).filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".png")).map((entry) => entry.name);
+  }
+  if (!Array.isArray(files) || files.length === 0) fail(`A licensed art pack must list its files or use "*.png".`);
+  return files;
+}
 
-const GANDALF_PACKS = [
-  { zip: "GandalfHardcore Pixel Art Village Houses tiles.zip", folder: "GandalfHardcore Pixel Art Village Houses tiles", destination: "gandalf_village" },
-  { zip: "GandalfHardcore Farming Tiles and Crops 32x32.zip", folder: "GandalfHardcore Farming Tiles and Crops 32x32", destination: "gandalf_farming" },
-  { zip: "GandalfHardcore House Asset Pack 32x32.zip", folder: "GandalfHardcore House Asset Pack 32x32", destination: "gandalf_house" },
-  { zip: "GandalfHardcore Farm Animals.zip", folder: "GandalfHardcore Farm Animals", destination: "gandalf_animals" },
-  { zip: "GandalfHardcore Slime Enemy.zip", folder: "GandalfHardcore Slime Enemy", destination: "gandalf_slime" },
-];
-const CRAFTPIX_STRIPS = ["D", "U", "S"].flatMap((direction) =>
-  ["Idle", "Walk", "Attack", "Hurt", "Death"].map((action) => `${direction}_${action}.png`),
-);
-
-function syncLicensedAssets({ gandalfRoot, craftpixArchive }) {
-  const destinationRoot = rootPath("game", "art", "licensed");
+function syncLicensedAssets({ game, overrides }) {
+  const config = game.manifest.licensed_art;
+  if (!config) fail(`games/${game.id}/game.json has no licensed_art.`);
+  const sources = { ...config.sources, ...overrides };
+  const destinationRoot = gamePath(game, "game", "art", "licensed");
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "gamebase-licensed-assets-"));
+  const extracted = new Map(); // archive path -> extraction directory
   fs.mkdirSync(destinationRoot, { recursive: true });
   try {
-    for (const pack of GANDALF_PACKS) {
-      const zipPath = path.join(gandalfRoot, pack.zip);
-      if (!fs.existsSync(zipPath)) {
-        fail(`Missing licensed source archive: ${zipPath}`);
+    for (const pack of config.packs || []) {
+      if (!sources[pack.source]) fail(`Licensed art pack ${pack.destination} names unknown source '${pack.source}'.`);
+      const archive = pack.archive ? path.join(sources[pack.source], pack.archive) : sources[pack.source];
+      if (!fs.existsSync(archive)) fail(`Missing licensed source archive: ${archive}`);
+      if (!extracted.has(archive)) {
+        const target = path.join(tempRoot, String(extracted.size));
+        extractZip(archive, target);
+        extracted.set(archive, target);
       }
-      const extractRoot = path.join(tempRoot, pack.destination);
-      extractZip(zipPath, extractRoot);
-      const sourceFolder = path.join(extractRoot, pack.folder);
-      const destination = path.join(destinationRoot, pack.destination);
+      const folder = path.join(extracted.get(archive), ...pack.folder.split("/"));
+      const destination = path.join(destinationRoot, ...pack.destination.split("/"));
       fs.mkdirSync(destination, { recursive: true });
-      for (const entry of fs.readdirSync(sourceFolder, { withFileTypes: true })) {
-        if (entry.isFile() && entry.name.toLowerCase().endsWith(".png")) {
-          fs.copyFileSync(path.join(sourceFolder, entry.name), path.join(destination, entry.name));
-        }
-      }
-    }
-
-    if (!fs.existsSync(craftpixArchive)) {
-      fail(`Missing Craftpix source archive: ${craftpixArchive}`);
-    }
-    const craftpixExtract = path.join(tempRoot, "craftpix_roguelike");
-    extractZip(craftpixArchive, craftpixExtract);
-    for (const characterId of [1, 2, 3]) {
-      const source = path.join(craftpixExtract, "1 Characters", String(characterId));
-      const destination = path.join(destinationRoot, "craftpix_roguelike", `character${characterId}`);
-      fs.mkdirSync(destination, { recursive: true });
-      for (const name of CRAFTPIX_STRIPS) {
-        const file = path.join(source, name);
-        if (!fs.existsSync(file)) {
-          fail(`Missing Craftpix character strip: ${file}`);
-        }
+      for (const name of selectFiles(folder, pack.files)) {
+        const file = path.join(folder, name);
+        if (!fs.existsSync(file)) fail(`Missing licensed file: ${file}`);
         fs.copyFileSync(file, path.join(destination, name));
       }
     }
@@ -68,12 +60,13 @@ function syncLicensedAssets({ gandalfRoot, craftpixArchive }) {
 
 if (require.main === module) {
   main(() => {
-    const { values } = parseArgs({
-      options: {
-        "gandalf-root": { type: "string", default: DEFAULT_GANDALF_ROOT },
-        "craftpix-archive": { type: "string", default: DEFAULT_CRAFTPIX_ARCHIVE },
-      },
-    });
-    syncLicensedAssets({ gandalfRoot: values["gandalf-root"], craftpixArchive: values["craftpix-archive"] });
+    const { values } = parseArgs({ options: { game: { type: "string" }, source: { type: "string", multiple: true } } });
+    const overrides = {};
+    for (const entry of values.source || []) {
+      const separator = entry.indexOf("=");
+      if (separator <= 0) fail(`--source expects <name>=<path>; got '${entry}'.`);
+      overrides[entry.slice(0, separator)] = entry.slice(separator + 1);
+    }
+    syncLicensedAssets({ game: resolveGame(values.game), overrides });
   });
 }

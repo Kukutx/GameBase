@@ -5,7 +5,7 @@ GameBase has a data-driven audio routing layer, but the repository intentionally
 ## Runtime architecture
 
 - `GameAudio` is the game-owned audio service.
-- `AudioCueData` resources are registered through `game/data/content_manifest.tres` and resolved through `ContentDB`.
+- `AudioCueData` resources are registered through `games/farm1/game/data/content_manifest.tres` and resolved through `ContentDB`.
 - Music routes to the `Music` bus.
 - Sound effects route to the `Sounds` bus.
 - Master/Music/Sounds levels are persisted by `GameSettings` and already exposed in Settings.
@@ -44,9 +44,9 @@ This is deliberate. Do not add generated beeps, temporary music, or unlicensed t
 
 ## Adding production audio
 
-1. Add distribution-approved audio files under a committed game-owned path such as `game/audio/music/` or `game/audio/sfx/`.
+1. Add distribution-approved audio files under a committed game-owned path such as `games/<id>/game/audio/music/` or `games/<id>/game/audio/sfx/`.
 2. Keep raw purchased/source packs outside the distributable runtime tree unless their license explicitly permits redistribution in the shipped form.
-3. Assign the imported `AudioStream` to the matching `game/data/audio/*.tres` cue.
+3. Assign the imported `AudioStream` to the matching `games/farm1/game/data/audio/*.tres` cue.
 4. Reuse an existing stable cue ID whenever the gameplay meaning is unchanged.
 5. Add a new cue resource and register it in `ContentManifest` only when a genuinely new semantic sound event is needed.
 6. Run `tools/validate.js` and release export verification.
@@ -55,7 +55,7 @@ Do not put audio file paths in farming, fishing, combat, NPC, shop, quest, or UI
 
 ## Testing
 
-`test/unit/test_audio.gd` verifies:
+`games/farm1/test/unit/test_audio.gd` verifies:
 
 - all current cue IDs are indexed;
 - every playable location resolves a MUSIC cue;

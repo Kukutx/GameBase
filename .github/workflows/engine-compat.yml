@@ -46,11 +46,11 @@ jobs:
           use-dotnet: false
           include-templates: true
 
-      - name: Validate against target engine
+      - name: Validate every game against target engine
         run: node tools/validate.js --godot-bin godot --clean-import
 
-      - name: Verify all release exports
-        run: node tools/export.js --godot-bin godot --skip-validation --allow-engine-drift
+      - name: Verify the release exports of every game
+        run: node tools/export.js --all --godot-bin godot --skip-validation --allow-engine-drift
 
       - name: Compatibility summary
         if: always()

@@ -6,7 +6,7 @@ path: "addons/**"
 
 ## P0
 
-- Third-party addon code stays under `addons/`; game-owned code stays under `game/`. Do not mix gameplay-specific logic into a vendored addon unless it fixes a verified upstream compatibility bug, and say so in the change.
+- Third-party addon code stays under the root `addons/`, shared by every game through the links `node tools/link.js` creates; game-owned code stays under its `games/<id>/game/`. `gamebase/gamebase.json` names the addons every game links and the ones each module needs; a game's `game.json` can add more. Do not mix gameplay-specific logic into a vendored addon unless it fixes a verified upstream compatibility bug, and say so in the change.
 - The approved infrastructure addons are **Dialogue Manager 4.1.0** for authored branching dialogue and **GUT 9.7.1** for tests. Adding, removing, upgrading or downgrading an addon is a dependency change and needs its own authorization (`.agents/rules/project.md`).
 - Addon sources stay byte-for-byte close to upstream, including whitespace an upstream release carries. Do not reformat, lint or "clean up" files under `addons/`.
 - `.github/workflows/addon-freshness.yml` and `tools/check_addon_updates.js` compare the vendored versions with upstream stable tags every week. They may open or update a maintenance issue; they never replace vendored addon code. Upgrade an addon explicitly, isolate a major migration behind a clean Git baseline, and run the full validation and export suite.
@@ -21,4 +21,4 @@ path: "addons/**"
 ## Verification
 
 - `node tools/check_addon_updates.js` reports the installed and the newest stable upstream version of each addon.
-- After an addon change: `node tools/validate.js`, then `node tools/export.js` for all three presets.
+- After an addon change: `node tools/validate.js`, then `node tools/export.js --all` for every game and preset.

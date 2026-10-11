@@ -14,16 +14,14 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="GameBase"
+config/name="New Game"
 config/version="0.1.0"
-run/main_scene="res://game/ui/title_screen.tscn"
+run/main_scene="res://game/world/start.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
 
 [autoload]
 
 Transition="*res://gamebase/core/world/scene_transition.gd"
-DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 GameSettings="*res://gamebase/core/settings/game_settings.gd"
 InputPrompts="*res://gamebase/core/input/input_prompt_service.gd"
 GameEvents="*res://gamebase/core/events/game_events.gd"
@@ -31,37 +29,8 @@ GameRules="*res://gamebase/core/rules/game_rules.gd"
 WorldClock="*res://gamebase/core/time/game_clock.gd"
 WeatherState="*res://gamebase/core/time/weather_system.gd"
 ContentDB="*res://game/content/game_content_database.gd"
-ItemCatalog="*res://gamebase/modules/items/items/item_catalog.gd"
-CropCatalog="*res://gamebase/modules/lifesim/farming/crop_catalog.gd"
-InventoryState="*res://gamebase/modules/items/items/inventory_store.gd"
-Hotbar="*res://gamebase/modules/items/hotbar/hotbar_service.gd"
 PlayerState="*res://gamebase/core/player/player_state.gd"
 WorldState="*res://gamebase/core/world/world_state.gd"
-EventState="*res://gamebase/modules/lifesim/calendar/calendar_event_manager.gd"
-NpcCatalog="*res://gamebase/modules/npc_social/npc/npc_catalog.gd"
-RelationshipState="*res://gamebase/modules/npc_social/npc/relationship_manager.gd"
-HeartEvents="*res://gamebase/modules/npc_social/npc/heart_event_service.gd"
-QuestState="*res://gamebase/modules/progression/quests/quest_manager.gd"
-MailState="*res://gamebase/modules/progression/mail/mail_service.gd"
-Skills="*res://gamebase/modules/progression/skills/skill_manager.gd"
-BuffState="*res://gamebase/modules/items/buffs/buff_service.gd"
-NpcMemory="*res://gamebase/modules/npc_social/npc/npc_memory_store.gd"
-NpcContext="*res://gamebase/modules/npc_social/npc/npc_context_service.gd"
-ShopState="*res://gamebase/modules/items/shop/shop_service.gd"
-CraftingState="*res://gamebase/modules/items/crafting/crafting_service.gd"
-UpgradeState="*res://gamebase/modules/progression/upgrades/tool_upgrade_service.gd"
-ShippingState="*res://gamebase/modules/lifesim/economy/shipping_service.gd"
-CollectionState="*res://gamebase/modules/progression/collections/collection_service.gd"
-CollectionMilestones="*res://gamebase/modules/progression/collections/collection_milestone_service.gd"
-DailyContractState="*res://gamebase/modules/progression/contracts/daily_contract_service.gd"
-TownProjects="*res://gamebase/modules/progression/projects/town_project_service.gd"
-FarmExpansionState="*res://gamebase/modules/lifesim/expansions/farm_expansion_service.gd"
-MineState="*res://gamebase/modules/lifesim/mining/mine_run_state.gd"
-StorageState="*res://gamebase/modules/items/storage/storage_service.gd"
-AnimalState="*res://gamebase/modules/lifesim/animals/animal_ownership_service.gd"
-BuildingState="*res://gamebase/modules/lifesim/building/building_placement_service.gd"
-FishingState="*res://gamebase/modules/lifesim/fishing/fishing_service.gd"
-ConversationService="*res://gamebase/modules/npc_social/npc/conversation_service.gd"
 LocationCatalog="*res://gamebase/core/world/world_location_catalog.gd"
 WorldTravel="*res://gamebase/core/world/world_travel.gd"
 GameAudio="*res://gamebase/core/audio/game_audio_service.gd"
@@ -75,7 +44,7 @@ SupportBundle="*res://gamebase/core/diagnostics/support_bundle_service.gd"
 
 [debug]
 
-file_logging/log_path="user://logs/gamebase.log"
+file_logging/log_path="user://logs/game.log"
 settings/gdscript/always_track_call_stacks=true
 
 [display]
@@ -89,7 +58,7 @@ window/stretch/aspect="keep_height"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/gut/plugin.cfg")
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 
 [gamebase]
 
@@ -183,11 +152,6 @@ open_menu={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":73,"key_label":0,"unicode":105,"location":0,"echo":false,"script":null)
 ]
 }
-
-[internationalization]
-
-locale/translations=PackedStringArray("res://game/i18n/ui.zh_CN.po")
-locale/translations_pot_files=PackedStringArray("res://game/dialogue/intro.dialogue", "res://game/dialogue/neri.dialogue", "res://game/dialogue/rowan.dialogue")
 
 [layer_names]
 

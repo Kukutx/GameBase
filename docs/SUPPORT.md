@@ -6,14 +6,14 @@ GameBase keeps release diagnostics intentionally small and local.
 
 Desktop builds use Godot file logging with:
 
-- log path: `user://logs/gamebase.log`
+- log path: `user://logs/<id>.log`, for example `user://logs/farm1.log`
 - retained logs: 5
 - GDScript call stacks enabled in release builds
 
 Typical host locations:
 
-- Windows: `%APPDATA%\Godot\app_userdata\GameBase\logs\`
-- Linux: `$XDG_DATA_HOME/godot/app_userdata/GameBase/logs/`, usually `~/.local/share/godot/app_userdata/GameBase/logs/`
+- Windows: `%APPDATA%\Godot\app_userdata\<Game Name>\logs\`
+- Linux: `$XDG_DATA_HOME/godot/app_userdata/<Game Name>/logs/`, usually `~/.local/share/godot/app_userdata/<Game Name>/logs/`
 
 The Web build uses the browser console instead of desktop file logging.
 
@@ -24,7 +24,7 @@ The Web build uses the browser console instead of desktop file logging.
 The diagnostic payload contains only technical game context:
 
 - diagnostic schema version
-- GameBase application version
+- game application version
 - Godot engine version
 - operating system name
 - active locale
@@ -42,7 +42,7 @@ The bundle is opt-in and contains:
 
 - a whitelisted runtime/settings summary;
 - summaries for all three save slots, without raw save payloads;
-- up to five recent GameBase logs, capped at 2 MiB each;
+- up to five recent game logs, capped at 2 MiB each;
 - a README describing the bundle contents.
 
 Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw `savegame*.json/.tmp/.bak`, `settings.cfg`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
@@ -51,12 +51,12 @@ Before logs are packaged, known user-data, project, executable and home-director
 
 Ask for:
 
-1. the player-created support bundle when available, or the newest `gamebase.log` otherwise;
+1. the player-created support bundle when available, or the newest `<id>.log` otherwise;
 2. the adjacent release `BUILD_INFO.json` when available;
 3. the affected raw save slot files only when the problem is specifically save-related and the player chooses to share them;
 4. the exact action that triggered the issue.
 
-`BUILD_INFO.json` identifies the GameBase version, exact Git commit, actual Godot engine used for the export, whether the source tree was dirty, and the target platform.
+`BUILD_INFO.json` identifies the game and its version, exact Git commit, actual Godot engine used for the export, whether the source tree was dirty, and the target platform.
 
 Search the log for `GAMEBASE_DIAGNOSTIC`, `ERROR:`, and `SCRIPT ERROR:` first.
 
@@ -64,7 +64,7 @@ Search the log for `GAMEBASE_DIAGNOSTIC`, `ERROR:`, and `SCRIPT ERROR:` first.
 
 Save snapshots record both `game_version` and `engine_version` at the top level, and slot summaries expose them.
 
-The numeric save `version` field is the save-format version and is independent from `.game-version`. Only a save of the current format loads; there are no migrations.
+The numeric save `version` field is the save-format version and is independent from the game version in `config/version` of `games/<id>/project.godot`. Only a save of the current format loads; there are no migrations.
 
 Manual saves and autosaves share the same temporary-file, backup and atomic finalization path.
 

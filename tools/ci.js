@@ -3,7 +3,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
-const { ENGINE_VERSION_RE, GAME_VERSION_RE, fail, main, projectName, readTrimmed, rootPath, run } = require("./lib/common");
+const { ENGINE_VERSION_RE, fail, git, main, readTrimmed, rootPath, run } = require("./lib/common");
+const { distPath, gameName, gameVersion, listGameIds, loadGame, parseReleaseTag, releaseTag, resolveGame } = require("./lib/games");
 
 const ADDON_ISSUE_TITLE = "Addon updates available";
 
@@ -53,25 +54,49 @@ async function engineVersion({ latest }) {
   console.log(`Using Godot ${version} (shared baseline ${baseline})`);
 }
 
-function gameVersion() {
-  const version = readTrimmed(".game-version");
-  if (!GAME_VERSION_RE.test(version)) {
-    fail(`Invalid .game-version: ${version}`);
+// The games a CI run covers. A push or a manual run covers every game; a pull
+// request covers only the games whose own directory it changes, unless it also
+// changes anything shared (the foundation, addons, tools, workflows), which
+// can affect every game.
+function games({ changedFrom }) {
+  const all = listGameIds();
+  let selected = all;
+  if (changedFrom) {
+    const changed = git(["diff", "--name-only", changedFrom, "HEAD"]).split(/\r?\n/).filter(Boolean);
+    const owners = changed.map((file) => {
+      const match = /^games\/([^/]+)\//.exec(file);
+      return match && all.includes(match[1]) ? match[1] : null;
+    });
+    if (changed.length > 0 && owners.every(Boolean)) {
+      selected = all.filter((id) => owners.includes(id));
+    }
   }
-  const projectLines = fs.readFileSync(rootPath("project.godot"), "utf8").split(/\r?\n/);
-  if (!projectLines.includes(`config/version="${version}"`)) {
-    fail(`project.godot version does not match .game-version (${version})`);
-  }
-  verifyTag(version);
-  setOutput("version", version);
-  console.log(`Using ${projectName()} ${version}`);
+  setOutput("games", JSON.stringify(selected));
+  console.log(`Games: ${selected.join(", ")}`);
 }
 
-// A release tag must be exactly "v" plus the committed game version.
-function verifyTag(version) {
-  if (process.env.GITHUB_REF_TYPE === "tag" && process.env.GITHUB_REF_NAME !== `v${version}`) {
-    fail(`Release tag ${process.env.GITHUB_REF_NAME} must exactly match v${version}`);
+// The game and version a release builds: from a game/<id>/v<version> tag, or
+// from --game on a manual run. A tag must equal the version in the game's
+// project.godot.
+function release({ game: requested }) {
+  let game;
+  if (process.env.GITHUB_REF_TYPE === "tag") {
+    const tag = parseReleaseTag(process.env.GITHUB_REF_NAME);
+    if (!tag) {
+      fail(`Release tag ${process.env.GITHUB_REF_NAME} must look like game/<id>/v<version>.`);
+    }
+    game = loadGame(tag.id);
+    if (tag.version !== gameVersion(game)) {
+      fail(`Release tag ${process.env.GITHUB_REF_NAME} must exactly match ${releaseTag(game, gameVersion(game))}.`);
+    }
+  } else {
+    game = resolveGame(requested);
   }
+  const version = gameVersion(game);
+  setOutput("game", game.id);
+  setOutput("version", version);
+  setOutput("tag", releaseTag(game, version));
+  console.log(`Releasing ${gameName(game)} ${version} (games/${game.id})`);
 }
 
 async function gh(args) {
@@ -120,30 +145,31 @@ function compatSummary({ baseline, version }) {
   appendSummary(lines.join("\n"));
 }
 
-async function publishRelease() {
-  const tag = process.env.GITHUB_REF_NAME;
-  if (!tag) {
-    fail("GITHUB_REF_NAME is required to publish a release.");
+async function publishRelease({ game: requested }) {
+  const tag = parseReleaseTag(process.env.GITHUB_REF_NAME);
+  if (!tag || tag.id !== requested) {
+    fail(`publish-release runs on a game/${requested}/v<version> tag; got '${process.env.GITHUB_REF_NAME || ""}'.`);
   }
-  const dist = rootPath("dist");
-  const assets = fs
-    .readdirSync(dist)
-    .filter((name) => name !== ".gdignore")
-    .map((name) => path.join(dist, name));
+  const game = loadGame(tag.id);
+  const dist = distPath(game);
+  const assets = fs.existsSync(dist) ? fs.readdirSync(dist).map((name) => path.join(dist, name)) : [];
   if (assets.length === 0) {
-    fail("dist/ contains no release assets.");
+    fail(`dist/${game.id}/ contains no release assets.`);
   }
-  console.log(await gh(["release", "create", tag, ...assets, "--repo", process.env.GITHUB_REPOSITORY, "--generate-notes", "--verify-tag"]));
+  const title = `${gameName(game)} ${tag.version}`;
+  console.log(
+    await gh(["release", "create", process.env.GITHUB_REF_NAME, ...assets, "--repo", process.env.GITHUB_REPOSITORY, "--title", title, "--generate-notes", "--verify-tag"]),
+  );
 }
 
 const COMMANDS = {
   "engine-version": (values) => engineVersion({ latest: values.latest }),
-  "game-version": () => gameVersion(),
-  "verify-tag": (values) => verifyTag(values.expected || readTrimmed(".game-version")),
+  games: (values) => games({ changedFrom: values["changed-from"] }),
+  release: (values) => release({ game: values.game }),
   "addon-issue": (values) => addonIssue({ updatesAvailable: values["updates-available"] === "true" }),
   "compat-summary": (values) => compatSummary({ baseline: values.baseline, version: values.version }),
   "append-summary": (values) => appendSummary(fs.readFileSync(path.resolve(values.file), "utf8")),
-  "publish-release": () => publishRelease(),
+  "publish-release": (values) => publishRelease({ game: values.game }),
 };
 
 if (require.main === module) {
@@ -152,7 +178,8 @@ if (require.main === module) {
       allowPositionals: true,
       options: {
         latest: { type: "boolean", default: false },
-        expected: { type: "string" },
+        game: { type: "string" },
+        "changed-from": { type: "string" },
         "updates-available": { type: "string" },
         baseline: { type: "string" },
         version: { type: "string" },

@@ -14,15 +14,15 @@ Read only when the task is to move the shared Godot baseline or to judge the res
 
    It downloads and validates the official `LICENSE.txt` and `COPYRIGHT.txt` of `<version>-stable` first and only then updates `.godot-version`, `licenses/GODOT_VERSION.txt`, `licenses/GODOT_LICENSE.txt` and `licenses/GODOT_COPYRIGHT.txt` together.
 4. Install the matching export templates: `node tools/install_export_templates.js`.
-5. Open or import the project once with the new engine and review every automatic change to `project.godot`, scenes and resources. Keep engine-generated format changes in their own commit.
+5. Open or import each game project once with the new engine and review every automatic change to `games/<id>/project.godot`, scenes and resources. Keep engine-generated format changes in their own commit.
 6. Run the full validation and every export with the new engine:
 
    ```text
    node tools/validate.js --godot-bin <new engine> --clean-import
-   node tools/export.js --godot-bin <new engine>
+   node tools/export.js --all --godot-bin <new engine>
    ```
 
-7. Check save migration and recovery: the save tests in `test/unit/` and one real save and load cycle with a save made before the upgrade.
+7. Check save migration and recovery: the save tests in `games/<id>/test/unit/` and one real save and load cycle with a save made before the upgrade.
 8. Re-check the engine facts recorded in `.agents/rules/gdscript.md`, `.agents/rules/scenes-resources.md`, `.agents/rules/save.md` and `.agents/rules/testing.md`; they were confirmed on the previous baseline. Update the ones the new engine changes and keep only statements that were confirmed again.
 9. Commit the baseline, the synchronized legal bundle, addon compatibility updates and engine-generated format changes together.
 
@@ -33,5 +33,5 @@ Read only when the task is to move the shared Godot baseline or to judge the res
 ## Do not
 
 - Use a development, beta or release-candidate engine as the shared baseline unless the user asks for it.
-- Raise the feature marker in `project.godot` merely to match a patch release.
+- Raise the feature marker in `games/<id>/project.godot` merely to match a patch release.
 - Lower the baseline, delete a check or widen a version range to make a failing check pass.

@@ -1,6 +1,6 @@
 # Official Documentation Index
 
-**Purpose**: looking up syntax, breaking changes, the shape of an API and platform support. **The versions in use are the ones in the project files** (`.godot-version`, `project.godot`, the `plugin.cfg` of each vendored addon, `tools/web_smoke/package.json` and its lockfile). The repository's code shows the current implementation; official material shows what that version supports and where its limits are. When the two disagree, find the difference in version or implementation; the current implementation is not assumed to be right.
+**Purpose**: looking up syntax, breaking changes, the shape of an API and platform support. **The versions in use are the ones in the project files** (`.godot-version`, each `games/<id>/project.godot`, the `plugin.cfg` of each vendored addon, `tools/web_smoke/package.json` and its lockfile). The repository's code shows the current implementation; official material shows what that version supports and where its limits are. When the two disagree, find the difference in version or implementation; the current implementation is not assumed to be right.
 
 ## Engine
 

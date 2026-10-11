@@ -1,7 +1,7 @@
 # Third-party notices
 
-GameBase release packages include software covered by the licenses below. The
-full license and copyright files are distributed in the adjacent `licenses/`
+Release packages of the games built on GameBase include software covered by
+the licenses below. The full license and copyright files are distributed in the adjacent `licenses/`
 directory.
 
 ## GameBase / upstream project foundation
@@ -22,8 +22,8 @@ the licensing information for third-party code distributed with the engine.
 
 ## Dialogue Manager
 
-GameBase includes Dialogue Manager 4.1.0 by Nathan Hoad and contributors,
-licensed under the MIT license. Its license is distributed as
+Games that use the `npc_social` module include Dialogue Manager 4.1.0 by Nathan
+Hoad and contributors, licensed under the MIT license. Its license is distributed as
 `licenses/DIALOGUE_MANAGER_LICENSE.txt`.
 
 ## Development-only dependencies
@@ -33,7 +33,7 @@ resource packs.
 
 ## Locally licensed art
 
-Raw purchased/local source art under `game/art/licensed/` is development-only
+Raw purchased/local source art under a game's `game/art/licensed/` is development-only
 and is explicitly excluded from release resource packs. GameBase runtime
 components fall back to committed project visuals when those local assets are
 unavailable. Do not add those raw source files to release packages without a

@@ -3,14 +3,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { openZip, readTar } = require("./lib/archive");
-const { artifactName, fail, git, main, readTrimmed, rootPath } = require("./lib/common");
-
-const NAME = artifactName();
-const EXPECTED_PACKAGES = {
-  windows: `${NAME}-windows-x86_64.zip`,
-  linux: `${NAME}-linux-x86_64.tar.gz`,
-  web: `${NAME}-web.zip`,
-};
+const { fail, git, main, readTrimmed, rootPath } = require("./lib/common");
+const { artifactName, distPath, gameVersion, resolveGame } = require("./lib/games");
+const { targetsFor } = require("./package_release");
 const REQUIRED_PACKAGE_FILES = [
   "BUILD_INFO.json",
   "THIRD_PARTY_NOTICES.md",
@@ -20,11 +15,13 @@ const REQUIRED_PACKAGE_FILES = [
   "licenses/GODOT_VERSION.txt",
   "licenses/DIALOGUE_MANAGER_LICENSE.txt",
 ];
-const TARGET_REQUIRED_FILES = {
-  windows: [`${NAME}.exe`, `${NAME}.pck`],
-  linux: [`${NAME}.x86_64`, `${NAME}.pck`],
-  web: ["index.html", "index.js", "index.wasm", "index.pck"],
-};
+function targetRequiredFiles(name) {
+  return {
+    windows: [`${name}.exe`, `${name}.pck`],
+    linux: [`${name}.x86_64`, `${name}.pck`],
+    web: ["index.html", "index.js", "index.wasm", "index.pck"],
+  };
+}
 const EXPECTED_TARGET = { windows: "Windows Desktop", linux: "Linux", web: "Web" };
 
 function sha256(file) {
@@ -93,12 +90,13 @@ function validatePackage(target, file, expected) {
     fail(`Missing or empty ${target} package: ${file}`);
   }
   const { names, payloads, modes } = packageMembers(file);
-  const missing = [...REQUIRED_PACKAGE_FILES, ...TARGET_REQUIRED_FILES[target]].filter((name) => !names.has(name)).sort();
+  const missing = [...REQUIRED_PACKAGE_FILES, ...targetRequiredFiles(expected.name)[target]].filter((name) => !names.has(name)).sort();
   if (missing.length > 0) {
     fail(`${label} is missing distribution/runtime files: ${missing.join(", ")}`);
   }
-  if (target === "linux" && (modes.get(`${NAME}.x86_64`) & 0o111) === 0) {
-    fail(`${label} ${NAME}.x86_64 is not executable (mode ${modes.get(`${NAME}.x86_64`).toString(8)})`);
+  const executable = `${expected.name}.x86_64`;
+  if (target === "linux" && (modes.get(executable) & 0o111) === 0) {
+    fail(`${label} ${executable} is not executable (mode ${modes.get(executable).toString(8)})`);
   }
 
   let buildInfo;
@@ -108,6 +106,7 @@ function validatePackage(target, file, expected) {
     fail(`${label} has invalid BUILD_INFO.json: ${error.message}`);
   }
   const checks = {
+    game: expected.game,
     game_version: expected.gameVersion,
     git_commit: expected.commit,
     target: EXPECTED_TARGET[target],
@@ -136,15 +135,17 @@ function validatePackage(target, file, expected) {
 function cli() {
   const { values } = parseArgs({
     options: {
-      dist: { type: "string", default: rootPath("dist") },
-      "game-version": { type: "string" },
+      game: { type: "string" },
+      dist: { type: "string" },
       "engine-version": { type: "string" },
       "git-commit": { type: "string" },
       tag: { type: "string", default: "" },
     },
   });
-  const dist = path.resolve(values.dist);
-  const gameVersion = values["game-version"] || readTrimmed(".game-version");
+  const game = resolveGame(values.game);
+  const name = artifactName(game);
+  const dist = values.dist ? path.resolve(values.dist) : distPath(game);
+  const version = gameVersion(game);
   const engineVersion = values["engine-version"] || readTrimmed(".godot-version");
   const commit = values["git-commit"] || git(["rev-parse", "HEAD"]).trim();
   const legalVersion = readTrimmed("licenses/GODOT_VERSION.txt");
@@ -152,20 +153,20 @@ function cli() {
     fail(`Godot legal bundle ${legalVersion} does not match engine ${engineVersion}`);
   }
 
-  const artifacts = Object.entries(EXPECTED_PACKAGES).map(([target, filename]) =>
-    validatePackage(target, path.join(dist, filename), { gameVersion, engineVersion, commit, legalVersion }),
+  const packages = targetsFor(game);
+  const expected = { game: game.id, name, gameVersion: version, engineVersion, commit, legalVersion };
+  const artifacts = Object.entries({ windows: packages.Windows, linux: packages.Linux, web: packages.Web }).map(([target, entry]) =>
+    validatePackage(target, path.join(dist, path.basename(entry.output)), expected),
   );
   const manifest = {
     schema: 1,
-    game_version: gameVersion,
+    game: game.id,
+    game_version: version,
     tag: values.tag,
     git_commit: commit,
     godot_version: engineVersion,
     godot_legal_bundle_version: legalVersion,
-    addons: {
-      dialogue_manager: pluginVersion("addons/dialogue_manager/plugin.cfg"),
-      gut: pluginVersion("addons/gut/plugin.cfg"),
-    },
+    addons: Object.fromEntries(game.addons.map((addon) => [addon, pluginVersion(`addons/${addon}/plugin.cfg`)])),
     artifacts,
   };
 

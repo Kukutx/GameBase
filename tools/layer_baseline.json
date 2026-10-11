@@ -1,4 +1,0 @@
-{
-  "//": "Known layer violations that predate tools/check_layers.js. Only remove entries; never add one.",
-  "entries": {}
-}

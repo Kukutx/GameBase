@@ -1,12 +1,22 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
-const { main, rootPath } = require("./lib/common");
+const { fail, main, rootPath } = require("./lib/common");
+const { gamePath, projectSetting, resolveGames } = require("./lib/games");
 
-const GAME = rootPath("game");
-// Scripts and scenes with player-visible text: the game and the foundation it runs on.
-const SOURCE_ROOTS = [GAME, rootPath("gamebase")];
-const PO = rootPath("game", "i18n", "ui.zh_CN.po");
+// Scripts and scenes with player-visible text: the game and the parts of the
+// foundation it links (the core and its modules).
+function sourceRoots(game) {
+  return [gamePath(game, "game"), rootPath("gamebase", "core"), ...game.modules.map((module) => rootPath("gamebase", "modules", module))];
+}
+
+// The translation catalogs the game registers in project.godot.
+function poFiles(game) {
+  const raw = projectSetting(game, "internationalization", "locale/translations") || "";
+  const files = [...raw.matchAll(/"res:\/\/([^"]+\.po)"/g)].map((match) => gamePath(game, match[1]));
+  if (files.length === 0) fail(`games/${game.id}/project.godot registers no .po translation in locale/translations.`);
+  return files;
+}
 
 // Calls whose first argument is player-visible source text.
 const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(/g;
@@ -51,10 +61,9 @@ function decodeString(raw) {
   }
 }
 
-// Skips directories with a .gdignore, which Godot does not import either
-// (gamebase/templates holds files for other projects).
+// Skips directories with a .gdignore, which Godot does not import either.
 function walk(directory, extension, files = []) {
-  if (fs.existsSync(path.join(directory, ".gdignore"))) return files;
+  if (!fs.existsSync(directory) || fs.existsSync(path.join(directory, ".gdignore"))) return files;
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) {
@@ -105,9 +114,9 @@ function firstArgumentLiterals(text, start) {
   return literals;
 }
 
-function collectDialogueKeys() {
+function collectDialogueKeys(game) {
   const keys = new Set();
-  for (const file of walk(GAME, ".dialogue")) {
+  for (const file of walk(gamePath(game, "game"), ".dialogue")) {
     for (const rawLine of readText(file).split(/\r?\n/)) {
       const line = rawLine.trim();
       if (!line || line.startsWith("~") || line.startsWith("=>") || line.startsWith("#")) {
@@ -126,7 +135,8 @@ function collectDialogueKeys() {
   return keys;
 }
 
-function collectNonDialogueKeys() {
+function collectNonDialogueKeys(game) {
+  const roots = sourceRoots(game);
   const keys = new Set();
   const add = (raw) => {
     const value = decodeString(raw);
@@ -134,7 +144,7 @@ function collectNonDialogueKeys() {
       keys.add(value);
     }
   };
-  for (const file of SOURCE_ROOTS.flatMap((root) => walk(root, ".gd"))) {
+  for (const file of roots.flatMap((root) => walk(root, ".gd"))) {
     const text = readText(file);
     for (const match of text.matchAll(CALL_RE)) {
       firstArgumentLiterals(text, match.index + match[0].length).forEach(add);
@@ -149,12 +159,12 @@ function collectNonDialogueKeys() {
       }
     }
   }
-  for (const file of SOURCE_ROOTS.flatMap((root) => walk(root, ".tscn"))) {
+  for (const file of roots.flatMap((root) => walk(root, ".tscn"))) {
     for (const match of readText(file).matchAll(SCENE_RE)) {
       add(match[1]);
     }
   }
-  for (const file of walk(path.join(GAME, "data"), ".tres")) {
+  for (const file of walk(gamePath(game, "game", "data"), ".tres")) {
     for (const match of readText(file).matchAll(DATA_RE)) {
       add(match[1]);
     }
@@ -170,9 +180,9 @@ function poString(line, prefix) {
   }
 }
 
-function collectPoEntries() {
+function collectPoEntries(po) {
   const entries = new Map();
-  for (const block of fs.readFileSync(PO, "utf8").split(/\r?\n\r?\n/)) {
+  for (const block of fs.readFileSync(po, "utf8").split(/\r?\n\r?\n/)) {
     let context = "";
     let msgid;
     let msgstr;
@@ -193,24 +203,29 @@ function collectPoEntries() {
   return entries;
 }
 
-function checkLocalization({ reportOnly = false } = {}) {
-  const dialogueKeys = collectDialogueKeys();
-  const nonDialogueKeys = collectNonDialogueKeys();
-  const entries = collectPoEntries();
-  const missingGeneric = [...nonDialogueKeys].filter((key) => !entries.get(`\u0000${key}`)).sort();
-  const missingDialogue = [...dialogueKeys].filter((key) => !entries.get(`dialogue\u0000${key}`)).sort();
-  const missingCount = missingGeneric.length + missingDialogue.length;
-
+// Every source key needs a non-empty entry in every catalog the game registers.
+function checkLocalization(game, { reportOnly = false } = {}) {
+  const dialogueKeys = collectDialogueKeys(game);
+  const nonDialogueKeys = collectNonDialogueKeys(game);
+  let missingCount = 0;
   console.log(`LOCALIZATION_SOURCE_KEYS=${new Set([...nonDialogueKeys, ...dialogueKeys]).size}`);
-  console.log(`LOCALIZATION_PO_ENTRIES=${entries.size}`);
   console.log(`LOCALIZATION_DIALOGUE_KEYS=${dialogueKeys.size}`);
-  console.log(`LOCALIZATION_MISSING=${missingCount}`);
-  console.log(`LOCALIZATION_DIALOGUE_CONTEXT_MISSING=${missingDialogue.length}`);
-  for (const key of missingGeneric) {
-    console.log(`MISSING: ${key}`);
-  }
-  for (const key of missingDialogue) {
-    console.log(`MISSING_DIALOGUE_CONTEXT: ${key}`);
+  for (const po of poFiles(game)) {
+    const label = path.relative(rootPath(), po).split(path.sep).join("/");
+    if (!fs.existsSync(po)) fail(`games/${game.id}/project.godot registers ${label}, which does not exist.`);
+    const entries = collectPoEntries(po);
+    const missingGeneric = [...nonDialogueKeys].filter((key) => !entries.get(`\u0000${key}`)).sort();
+    const missingDialogue = [...dialogueKeys].filter((key) => !entries.get(`dialogue\u0000${key}`)).sort();
+    missingCount += missingGeneric.length + missingDialogue.length;
+    console.log(`${label}: LOCALIZATION_PO_ENTRIES=${entries.size}`);
+    console.log(`${label}: LOCALIZATION_MISSING=${missingGeneric.length + missingDialogue.length}`);
+    console.log(`${label}: LOCALIZATION_DIALOGUE_CONTEXT_MISSING=${missingDialogue.length}`);
+    for (const key of missingGeneric) {
+      console.log(`MISSING: ${key}`);
+    }
+    for (const key of missingDialogue) {
+      console.log(`MISSING_DIALOGUE_CONTEXT: ${key}`);
+    }
   }
   return missingCount > 0 && !reportOnly ? 1 : 0;
 }
@@ -219,7 +234,14 @@ module.exports = { checkLocalization };
 
 if (require.main === module) {
   main(() => {
-    const { values } = parseArgs({ options: { "report-only": { type: "boolean", default: false } } });
-    return checkLocalization({ reportOnly: values["report-only"] });
+    const { values } = parseArgs({
+      options: { game: { type: "string", multiple: true }, "report-only": { type: "boolean", default: false } },
+    });
+    let failed = 0;
+    for (const game of resolveGames(values.game || [])) {
+      console.log(`== ${game.id}`);
+      failed += checkLocalization(game, { reportOnly: values["report-only"] });
+    }
+    return failed > 0 ? 1 : 0;
   });
 }
