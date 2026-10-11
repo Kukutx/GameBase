@@ -5,10 +5,17 @@ extends Node
 ## `gamebase/core` does not know which modules a game enables. This autoload runs
 ## after every service and tells the core services about the enabled modules:
 ## which save sections they own, what to repair after loading, what blocks saving
-## and how to reset them for a new game. Orders interleave with the core's own
+## how to reset them for a new game, and which condition and action keys exist. Orders interleave with the core's own
 ## (`GameSaveManager.SECTION_ORDER_*`, `GameSessionService.NEW_GAME_ORDER_*`).
 
 func _ready() -> void:
+	ItemsRules.register(GameRules)
+	ProgressionRules.register(GameRules)
+	NpcSocialRules.register(GameRules)
+	# Content is indexed before the modules register their rule keys, so the
+	# conditions and actions it names are checked here, once every key exists.
+	for problem: String in GameRules.validate_content(ContentDB):
+		push_error("GameRules: " + problem)
 	_register_save_sections()
 	_register_load_steps()
 	_register_new_game_steps()

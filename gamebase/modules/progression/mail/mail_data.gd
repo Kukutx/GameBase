@@ -10,6 +10,9 @@ extends ContentEntry
 @export var required_world_flag: StringName
 @export var required_world_flag_value := true
 @export_range(0, 10, 1) var required_hearts := 0
+## Extra availability check in the `GameQuery` syntax, e.g. `HAS_ITEM berry 3`;
+## empty means no extra check.
+@export var condition: String = ""
 @export var reward_items: Dictionary = {}
 @export_range(0, 999999, 1) var reward_money := 0
 
@@ -24,6 +27,8 @@ func is_available(day: int = -1) -> bool:
 	if required_hearts > 0:
 		if sender_npc_id == &"" or RelationshipState.get_hearts(sender_npc_id) < required_hearts:
 			return false
+	if not condition.is_empty() and not GameRules.check(condition, {"day": resolved_day}):
+		return false
 	return true
 
 func get_sender_display_name() -> String:

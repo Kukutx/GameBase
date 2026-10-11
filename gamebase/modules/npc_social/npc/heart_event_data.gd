@@ -10,6 +10,9 @@ extends ContentEntry
 @export_range(1, 1440, 1) var end_minute := 1440
 @export var required_world_flag: StringName
 @export var required_flag_value := true
+## Extra availability check in the `GameQuery` syntax, e.g. `HAS_ITEM berry 3`;
+## empty means no extra check.
+@export var condition: String = ""
 
 func matches(target_npc_id: StringName, hearts: int, target_location_id: StringName, day: int, minute_of_day: int) -> bool:
 	if id == &"" or npc_id == &"" or target_npc_id != npc_id:
@@ -23,5 +26,7 @@ func matches(target_npc_id: StringName, hearts: int, target_location_id: StringN
 	if minute_of_day < start_minute or minute_of_day >= end_minute:
 		return false
 	if required_world_flag != &"" and WorldState.get_bool(required_world_flag) != required_flag_value:
+		return false
+	if not condition.is_empty() and not GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day, "location_id": target_location_id}):
 		return false
 	return true
