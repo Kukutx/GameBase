@@ -14,7 +14,7 @@ signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const SLOT_COUNT := 3
 
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
