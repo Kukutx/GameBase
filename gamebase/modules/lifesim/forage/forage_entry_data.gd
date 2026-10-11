@@ -27,7 +27,7 @@ func is_available(location_id: StringName, season_name: String) -> bool:
 		return false
 	return item_id != &"" and weight > 0.0
 
-func get_quantity(rng: RandomNumberGenerator) -> int:
+func get_quantity(rng: GameRandomStream) -> int:
 	var minimum := mini(min_quantity, max_quantity)
 	var maximum := maxi(min_quantity, max_quantity)
 	return rng.randi_range(minimum, maximum)

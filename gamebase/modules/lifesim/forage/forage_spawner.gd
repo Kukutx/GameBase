@@ -91,7 +91,7 @@ func _on_pickup_collected(_item_id: StringName, index: int) -> void:
 	state["collected"] = collected
 	_set_state(state)
 
-func _weighted_pick(entries: Array[ForageEntryData], rng: RandomNumberGenerator) -> ForageEntryData:
+func _weighted_pick(entries: Array[ForageEntryData], rng: GameRandomStream) -> ForageEntryData:
 	var total := 0.0
 	for entry: ForageEntryData in entries:
 		total += maxf(entry.weight, 0.0)

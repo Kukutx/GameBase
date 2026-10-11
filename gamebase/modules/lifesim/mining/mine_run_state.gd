@@ -111,7 +111,7 @@ func generate_floor_layout(floor: int) -> Dictionary:
 		})
 	return {"floor": resolved, "rocks": rocks, "enemies": enemies}
 
-func _pick_position(rng: RandomNumberGenerator, occupied: Array[Vector2]) -> Vector2:
+func _pick_position(rng: GameRandomStream, occupied: Array[Vector2]) -> Vector2:
 	for _attempt in range(64):
 		var candidate := Vector2(rng.randf_range(-205.0, 245.0), rng.randf_range(-132.0, 132.0)).snapped(Vector2(8, 8))
 		if candidate.distance_to(Vector2(-305, 0)) < 95.0 or candidate.distance_to(Vector2(300, 0)) < 70.0:

@@ -6,8 +6,9 @@ extends Node
 ## `"fish:3:0:river"`).
 ##
 ## The same seed and key always give the same numbers, on every platform and
-## engine version, so loading a save replays the day's weather, catches and mine
-## floors instead of rolling them again, and a test pins an outcome by its seed.
+## engine version (`GameRandomStream` is the project's own algorithm), so
+## loading a save replays the day's weather, catches and mine floors instead of
+## rolling them again, and a test pins an outcome by its seed.
 ## Gameplay randomness goes through here; cosmetic jitter, such as a sound's
 ## pitch, may use the global generator.
 
@@ -21,16 +22,10 @@ func set_seed(value: int) -> void:
 	world_seed = value
 	seed_changed.emit(world_seed)
 
-## A new generator for `key` in this world, at the start of its sequence.
-func stream(key: String) -> RandomNumberGenerator:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = seed_for(key)
-	return rng
-
-## The seed of `key`'s stream: the first eight bytes of the SHA-256 of the world
-## seed and the key.
-func seed_for(key: String) -> int:
-	return ("%d:%s" % [world_seed, key]).sha256_buffer().decode_s64(0)
+## A new stream for `key` in this world, at the start of its sequence: seeded
+## by the SHA-256 of the world seed and the key ("<seed>:<key>").
+func stream(key: String) -> GameRandomStream:
+	return GameRandomStream.new(("%d:%s" % [world_seed, key]).sha256_buffer())
 
 ## Seeds a new game: the game's own `GameDefinition.world_seed`, or a fresh one
 ## when the game fixes none (0).
