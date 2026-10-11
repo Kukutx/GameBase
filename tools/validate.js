@@ -5,7 +5,6 @@ const { checkLocalization } = require("./check_localization");
 const { runSelfTest } = require("./package_release");
 const { runCli: runRulesCheck } = require("./validate_rules");
 const { runCli: runLayerCheck } = require("./check_layers");
-const { createGame } = require("./new_game");
 const {
   ENGINE_VERSION_RE,
   GAME_VERSION_RE,
@@ -30,7 +29,8 @@ const { check: checkFoundation } = require("./gamebase_sync");
 async function validateNewGame(godot) {
   const project = tempFile("gamebase-new-game");
   try {
-    createGame({ out: project, name: "GameBase New Game Check", from: ROOT });
+    // new_game.js stays in GameBase (games do not ship it), so it is loaded only here.
+    require("./new_game").createGame({ out: project, name: "GameBase New Game Check", from: ROOT });
     fs.mkdirSync(path.join(project, "test"), { recursive: true });
     fs.copyFileSync(rootPath("test", "runtime", "new_game_smoke.gd"), path.join(project, "test", "new_game_smoke.gd"));
     await runGodotStep(godot, "New game scaffold import", ["--headless", "--path", project, "--import"]);
