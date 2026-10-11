@@ -149,7 +149,7 @@ func _place_selected(item: ItemData) -> void:
 func _place_selected_internal(item: ItemData) -> void:
 	if item == null or not item.is_placeable() or not InventoryState.has_item(item.id, 1):
 		return
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	if location == null:
 		GameEvents.toast("You cannot build here")
 		return

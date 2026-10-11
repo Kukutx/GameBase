@@ -74,8 +74,15 @@ func test_export_presets_cover_supported_release_targets() -> void:
 	assert_true(presets.contains('name="Windows Desktop"'))
 	assert_true(presets.contains('name="Linux"'))
 	assert_true(presets.contains('name="Web"'))
+	var filters: Array[PackedStringArray] = []
+	for line: String in presets.split("\n"):
+		if line.begins_with("exclude_filter="):
+			filters.append(line.trim_prefix("exclude_filter=").trim_prefix("\"").trim_suffix("\"").split(","))
+	assert_eq(filters.size(), 3, "each of the three presets has an exclude filter")
 	for required_exclusion: String in [
 		"test/*",
+		"gamebase/core/test/*",
+		"gamebase/modules/*/test/*",
 		"addons/gut/*",
 		"game/art/licensed/*",
 		".gutconfig.json",
@@ -95,4 +102,5 @@ func test_export_presets_cover_supported_release_targets() -> void:
 		"addons/dialogue_manager/nodes/dialogue_label/DialogueLabel.tscn",
 		"addons/dialogue_manager/nodes/responses_menu/*.cs*",
 	]:
-		assert_eq(presets.count(required_exclusion), 3, "Missing release exclusion: %s" % required_exclusion)
+		for filter: PackedStringArray in filters:
+			assert_true(filter.has(required_exclusion), "Missing release exclusion: %s" % required_exclusion)

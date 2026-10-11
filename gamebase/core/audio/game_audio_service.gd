@@ -63,7 +63,8 @@ func _build_players() -> void:
 ## a signal of an autoload named `<Autoload>.<signal>`
 ## (`LifesimEvents.crop_harvested`), whatever arguments the signal carries.
 func _connect_gameplay_events() -> void:
-	for event: StringName in GameSession.definition.event_cues:
+	var event_cues := GameDefinition.current().event_cues
+	for event: StringName in event_cues:
 		var parts := String(event).split(".")
 		var source: Node = get_tree().root.get_node_or_null(NodePath(parts[0])) if parts.size() == 2 else null
 		var argument_count := -1
@@ -74,7 +75,7 @@ func _connect_gameplay_events() -> void:
 		if argument_count < 0:
 			push_error("GameAudio: GameDefinition.event_cues names unknown event '%s'; name it <Autoload>.<signal>" % event)
 			continue
-		var cue_id: StringName = GameSession.definition.event_cues[event]
+		var cue_id: StringName = event_cues[event]
 		source.connect(parts[1], play_cue.bind(cue_id).unbind(argument_count))
 
 func _play_music(cue: AudioCueData) -> bool:
@@ -112,7 +113,7 @@ func _on_scene_changed() -> void:
 
 func _sync_location_music() -> void:
 	await get_tree().process_frame
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	if location == null or location.music_cue_id == &"":
 		stop_music()
 		return

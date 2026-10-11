@@ -21,63 +21,11 @@ func after_each() -> void:
 	WorldClock.set_time(_clock_day, _clock_minute)
 	WeatherState.world_seed = _seed
 
-func test_floor_layout_is_deterministic_unique_and_scales_with_depth() -> void:
-	var floor2_a := MineState.generate_floor_layout(2)
-	var floor2_b := MineState.generate_floor_layout(2)
-	var floor20 := MineState.generate_floor_layout(20)
-	assert_eq(floor2_a, floor2_b)
-	assert_eq(int(floor2_a["floor"]), 2)
-	assert_gt((floor2_a["rocks"] as Array).size(), 0)
-	assert_gt((floor2_a["enemies"] as Array).size(), 0)
-	assert_gte((floor20["rocks"] as Array).size(), (floor2_a["rocks"] as Array).size())
-	assert_gte((floor20["enemies"] as Array).size(), (floor2_a["enemies"] as Array).size())
-	var ids: Dictionary = {}
-	for entry: Dictionary in floor20["rocks"]:
-		var id := String(entry["persistent_id"])
-		assert_false(ids.has(id))
-		ids[id] = true
-	for entry: Dictionary in floor20["enemies"]:
-		var id := String(entry["persistent_id"])
-		assert_false(ids.has(id))
-		ids[id] = true
-
 func test_the_game_mine_floor_table_names_real_content() -> void:
 	assert_not_null(MineState.floor_table)
 	assert_eq(MineState.floor_table.find_problems(ContentDB), PackedStringArray())
 	assert_eq(MineState.floor_table.get_enemy_id(1), &"green_slime")
 	assert_eq(MineState.floor_table.get_enemy_id(59), &"red_slime")
-
-func test_a_floor_table_drives_rocks_and_enemies() -> void:
-	var previous := MineState.floor_table
-	var table := MineFloorTable.new()
-	table.default_rock_id = &"stone_rock"
-	var gold := MineRockTier.new()
-	gold.rock_id = &"gold_rock"
-	gold.base_chance = 1.0
-	gold.max_chance = 1.0
-	table.rock_tiers = [gold]
-	var tier := MineEnemyTier.new()
-	tier.enemy_id = &"void_slime"
-	table.enemy_tiers = [tier]
-	MineState.floor_table = table
-	var floor30 := MineState.generate_floor_layout(30)
-	var floor10 := MineState.generate_floor_layout(10)
-	MineState.floor_table = previous
-	for entry: Dictionary in floor30["rocks"]:
-		assert_eq(String(entry["kind"]), "gold_rock")
-	for entry: Dictionary in floor10["rocks"]:
-		assert_eq(String(entry["kind"]), "stone_rock", "gold is locked above its minimum floor")
-	for entry: Dictionary in floor30["enemies"]:
-		assert_eq(String(entry["kind"]), "void_slime")
-
-func test_malformed_mine_floor_state_falls_back_to_safe_bounds() -> void:
-	WorldState.set_value(MineRunState.CURRENT_FLOOR_KEY, {"bad": true})
-	WorldState.set_value(MineRunState.DEEPEST_FLOOR_KEY, [999])
-	assert_eq(MineState.get_current_floor(), 1)
-	assert_eq(MineState.get_deepest_floor(), 1)
-	assert_eq(MineState.set_floor(5), 5)
-	assert_eq(MineState.get_current_floor(), 5)
-	assert_eq(MineState.get_deepest_floor(), 5)
 
 func test_deep_floors_guarantee_iron_and_cave_slime_progression() -> void:
 	var floor5 := MineState.generate_floor_layout(5)
@@ -129,25 +77,6 @@ func test_floor_ten_scene_maps_cave_slime_to_stronger_enemy_data() -> void:
 			break
 	assert_true(found_cave_slime)
 
-func test_floor_state_and_elevator_checkpoints_are_world_persistent() -> void:
-	assert_eq(MineState.get_current_floor(), 1)
-	assert_eq(MineState.get_deepest_floor(), 1)
-	MineState.set_floor(4)
-	assert_eq(MineState.get_current_floor(), 4)
-	assert_eq(MineState.get_deepest_floor(), 4)
-	assert_eq(MineState.get_deepest_checkpoint(), 1)
-	MineState.set_floor(5)
-	assert_eq(MineState.get_deepest_floor(), 5)
-	assert_eq(MineState.get_deepest_checkpoint(), 5)
-	assert_true(MineState.can_use_elevator_floor(1))
-	assert_true(MineState.can_use_elevator_floor(5))
-	assert_false(MineState.can_use_elevator_floor(4))
-	MineState.set_floor(12)
-	assert_eq(MineState.get_deepest_checkpoint(), 10)
-	assert_eq(Array(MineState.get_elevator_floors()), [1, 5, 10])
-	MineState.set_floor(1)
-	assert_eq(MineState.get_deepest_floor(), 12)
-
 func test_dynamic_mine_floor_spawns_and_unlocks_ladder_only_after_clear() -> void:
 	MineState.set_floor(2)
 	var packed := load("res://game/world/old_mine.tscn") as PackedScene
@@ -176,7 +105,7 @@ func test_mine_scene_routes_its_ladder_and_elevator_through_its_own_location() -
 	assert_eq(mine.entrance_spawn_ids, [&"from_riverside"] as Array[StringName])
 	assert_eq(mine.floor_spawn_id, &"floor_entry")
 	assert_true(ContentDB.has_location_spawn(&"old_mine", mine.floor_spawn_id))
-	assert_eq(ContentDB.get_location_for_scene(mine.scene_file_path).id, &"old_mine")
+	assert_eq(WorldLocationData.find_for_scene(mine.scene_file_path).id, &"old_mine")
 	assert_eq((mine.get_node("DeepLadder") as MineLadder).mine, mine)
 	assert_eq((mine.get_node("MineElevator") as MineElevator).mine, mine)
 
@@ -214,11 +143,6 @@ func test_mine_progression_content_is_registered() -> void:
 		assert_not_null(ProcessingRecipeData.find(recipe_id), "Missing metal recipe %s" % recipe_id)
 	for upgrade_id: StringName in [&"iron_hoe_upgrade", &"iron_watering_can_upgrade", &"iron_pickaxe_upgrade", &"iron_sword_upgrade", &"gold_hoe_upgrade", &"gold_watering_can_upgrade", &"gold_pickaxe_upgrade", &"gold_sword_upgrade", &"iridium_hoe_upgrade", &"iridium_watering_can_upgrade", &"iridium_pickaxe_upgrade", &"iridium_sword_upgrade"]:
 		assert_not_null(ToolUpgradeData.find(upgrade_id), "Missing mine progression upgrade %s" % upgrade_id)
-
-func test_max_floor_never_unlocks_deeper_ladder() -> void:
-	MineState.set_floor(MineRunState.MAX_FLOOR)
-	assert_eq(MineState.descend(), MineRunState.MAX_FLOOR)
-	assert_eq(MineState.get_current_floor(), MineRunState.MAX_FLOOR)
 
 func test_gold_and_deep_slime_tiers_unlock_at_defined_floors() -> void:
 	var floor19 := MineState.generate_floor_layout(19)

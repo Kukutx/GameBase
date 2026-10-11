@@ -31,7 +31,7 @@ func can_travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 	if location == null or location.scene_path.is_empty() or not ResourceLoader.exists(location.scene_path):
 		return false
 	var target_spawn := spawn_id if spawn_id != &"" else location.default_spawn_id
-	if target_spawn == &"" or not ContentDB.has_location_spawn(location_id, target_spawn):
+	if target_spawn == &"" or not ContentRegistry.active.has_location_spawn(location_id, target_spawn):
 		return false
 	if not ResourceLoader.load(location.scene_path) is PackedScene:
 		return false
@@ -50,7 +50,7 @@ func travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 		GameEvents.toastf("Unknown location: %s", [String(location_id)])
 		return false
 	var target_spawn := spawn_id if spawn_id != &"" else location.default_spawn_id
-	if target_spawn == &"" or not ContentDB.has_location_spawn(location_id, target_spawn):
+	if target_spawn == &"" or not ContentRegistry.active.has_location_spawn(location_id, target_spawn):
 		travel_failed.emit(location.scene_path, target_spawn, "Unknown spawn '%s' for location '%s'" % [target_spawn, location_id])
 		GameEvents.toast("Travel spawn is unavailable")
 		return false

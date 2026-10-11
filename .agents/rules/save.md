@@ -29,7 +29,7 @@ path: "gamebase/core/save/**"
   - `Vector2`, `Color` and other engine types are written as their text form and come back as a `String`. Store their components, as the `player` section stores `x` and `y`.
 - **Closing the window is a save point**: `AutoSaveService` asks for an autosave on `NOTIFICATION_WM_CLOSE_REQUEST`. With `auto_accept_quit` on, the handlers run to completion before the tree quits (confirmed on Windows), so that save stays synchronous; an `await` in it would never finish.
 - **A save result is already translated**: `save_completed` and `load_completed` carry text in the current language, and `get_save_block_reason()` returns translated text or an empty string. A consumer shows the message as it is and tests a block with `is_empty()`, not against a sentence.
-- **A test that writes a save uses its own directory**: it sets `save_directory` to its own `user://` directory and calls `select_slot()`, restores the original directory afterwards and deletes the slots it wrote (`games/farm1/test/unit/test_game_session_start.gd`).
+- **A test that writes a save uses its own directory**: it sets `save_directory` to its own `user://` directory and calls `select_slot()`, restores the original directory afterwards and deletes the slots it wrote (`gamebase/core/test/test_game_session_start.gd`).
 
 ## Verification
 

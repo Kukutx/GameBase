@@ -166,7 +166,7 @@ func get_save_block_reason() -> String:
 	if WorldTravel.is_traveling():
 		return tr("Cannot save while traveling")
 	var scene := get_tree().current_scene
-	if scene == null or ContentDB.get_location_for_scene(scene.scene_file_path) == null:
+	if scene == null or WorldLocationData.find_for_scene(scene.scene_file_path) == null:
 		return tr("Save from a playable location")
 	if get_tree().get_first_node_in_group("player") == null:
 		return tr("Cannot save without the player")
@@ -240,7 +240,7 @@ func load_game() -> bool:
 	return true
 
 func build_snapshot() -> Dictionary:
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	var snapshot := {
 		"version": SAVE_VERSION,

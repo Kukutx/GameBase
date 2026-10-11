@@ -1,14 +1,5 @@
 extends GutTest
 
-func test_direction_name_prefers_dominant_axis() -> void:
-	assert_eq(DirectionalActorVisual.direction_name(Vector2(1, 0.2)), &"right")
-	assert_eq(DirectionalActorVisual.direction_name(Vector2(-1, 0.2)), &"left")
-	assert_eq(DirectionalActorVisual.direction_name(Vector2(0.2, -1)), &"up")
-	assert_eq(DirectionalActorVisual.direction_name(Vector2(0.2, 1)), &"down")
-
-func test_zero_direction_defaults_down() -> void:
-	assert_eq(DirectionalActorVisual.direction_name(Vector2.ZERO), &"down")
-
 func test_local_craftpix_strips_build_all_directional_animations_when_available() -> void:
 	var strip_root := "res://game/art/licensed/craftpix_roguelike/character1"
 	if not ResourceLoader.exists(strip_root.path_join("D_Idle.png")):

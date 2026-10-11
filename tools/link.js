@@ -91,6 +91,6 @@ if (require.main === module) {
       const changed = linkGame(game);
       console.log(`${game.id}: foundation core, ${game.modules.length} module(s) and ${game.addons.length} addon(s) linked${changed ? ` (${changed} updated)` : ""}.`);
     }
-    if (!values.game && syncProject(templateGame())) console.log("gamebase/templates/new_game/project.godot updated.");
+    if (!values.game && syncProject(templateGame())) console.log("gamebase/templates/new_game/project.godot and .gutconfig.json updated.");
   });
 }

@@ -112,7 +112,7 @@ func _on_locale_changed(_locale: String) -> void:
 func _refresh_clock() -> void:
 	if not is_inside_tree():
 		return
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	var location_id := location.id if location != null else &""
 	var event_summary := EventState.get_summary(location_id)
 	clock_label.text = "%s · %s" % [WorldClock.get_calendar_text(), tr(WeatherState.get_weather_name())]

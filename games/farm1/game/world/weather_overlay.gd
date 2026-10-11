@@ -38,7 +38,7 @@ func _on_settings_changed() -> void:
 	_set_weather(_weather)
 
 func _refresh_location_exposure() -> void:
-	var location := ContentDB.get_current_location(get_tree())
+	var location := WorldLocationData.find_current(get_tree())
 	_weather_exposed = location == null or location.weather_exposed
 
 func _draw() -> void:

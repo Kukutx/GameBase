@@ -48,7 +48,8 @@ const ADDON_EDITOR_DIRS = {
 
 // What a game's pack must and must not contain. Required: the main scene, the
 // game definition, every autoload script, every registered translation and the
-// runtime files of its addons. Forbidden: tests, the test addon, the local
+// runtime files of its addons. Forbidden: tests (the game's and those of the
+// foundation layers it links), the test addon, the local
 // licensed source art, the game manifest, build metadata and addon editor files.
 function expectations(game) {
   const strings = (raw) => [...String(raw || "").matchAll(/"(res:\/\/[^"]+)"/g)].map((match) => match[1]);
@@ -60,7 +61,13 @@ function expectations(game) {
   const project = fs.readFileSync(path.join(game.root, "project.godot"), "utf8");
   for (const match of project.matchAll(/^\w+="\*(res:\/\/[^"]+)"$/gm)) required.add(match[1]);
   const files = ["res://.gutconfig.json", "res://game.json", "res://BUILD_INFO.json"];
-  const dirs = ["res://test", "res://addons/gut", "res://game/art/licensed"];
+  const dirs = [
+    "res://test",
+    "res://gamebase/core/test",
+    ...game.modules.map((module) => `res://gamebase/modules/${module}/test`),
+    "res://addons/gut",
+    "res://game/art/licensed",
+  ];
   for (const addon of game.addons) {
     for (const file of ADDON_RUNTIME[addon] || []) required.add(file);
     files.push(...(ADDON_EDITOR_FILES[addon] || []));

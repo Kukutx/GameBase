@@ -110,13 +110,18 @@ function decodeString(raw) {
   }
 }
 
-// Skips directories with a .gdignore, which Godot does not import either.
+// A foundation layer's tests (gamebase/core/test/, gamebase/modules/<m>/test/),
+// which hold no text the player sees.
+const TESTS_RE = /[\\/]gamebase[\\/](?:core|modules[\\/][^\\/]+)[\\/]test$/;
+
+// Skips directories with a .gdignore, which Godot does not import either, and
+// the foundation's tests.
 function walk(directory, extension, files = []) {
   if (!fs.existsSync(directory) || fs.existsSync(path.join(directory, ".gdignore"))) return files;
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) {
-      walk(absolute, extension, files);
+      if (!TESTS_RE.test(absolute)) walk(absolute, extension, files);
     } else if (entry.name.endsWith(extension)) {
       files.push(absolute);
     }

@@ -185,7 +185,7 @@ func _calendar_text() -> String:
 	return "\n".join(lines)
 
 func _world_text() -> String:
-	var current := ContentDB.get_current_location(get_tree())
+	var current := WorldLocationData.find_current(get_tree())
 	var lines := PackedStringArray(["[font_size=18][b]%s[/b][/font_size]" % tr("World"), ""])
 	for location: WorldLocationData in WorldLocationData.find_all():
 		var marker := "→" if current != null and current.id == location.id else "•"

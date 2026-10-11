@@ -14,15 +14,9 @@ signal continue_started(success: bool)
 signal player_collapsed(money_lost: int)
 signal late_night_collapse
 
-## The running game's facts (start location, home, starting clock and items).
-var definition: GameDefinition
-
 var _handling_defeat := false
 var _handling_late_night := false
 var _new_game_steps: Array[Dictionary] = []
-
-func _init() -> void:
-	definition = GameDefinition.current()
 
 func _ready() -> void:
 	register_new_game_step(&"world", NEW_GAME_ORDER_WORLD, WorldState.clear)
@@ -46,6 +40,7 @@ func initialize_new_game_state() -> void:
 		(step["step"] as Callable).call()
 
 func _reset_clock_and_weather() -> void:
+	var definition := GameDefinition.current()
 	WorldClock.set_time(definition.start_day, definition.start_minute_of_day)
 	# Reset through the weather save API so current_weather is recalculated for
 	# the first day even when the previous session was already on it with another seed.
@@ -53,6 +48,7 @@ func _reset_clock_and_weather() -> void:
 
 
 func start_new_game() -> bool:
+	var definition := GameDefinition.current()
 	# Validate the starting world before destroying the selected slot. A broken
 	# Location/scene/transition must leave the player's existing save untouched.
 	if not WorldTravel.can_travel_to(definition.start_location_id):
@@ -84,6 +80,7 @@ func _on_minute_changed(day: int, minute_of_day: int) -> void:
 	_handle_late_night.call_deferred(day)
 
 func _handle_late_night(day: int) -> void:
+	var definition := GameDefinition.current()
 	if _handling_late_night or _handling_defeat:
 		return
 	if WorldClock.day != day or WorldClock.minute_of_day != 2 * 60:
@@ -94,13 +91,13 @@ func _handle_late_night(day: int) -> void:
 	WorldClock.set_time(day, 6 * 60)
 	PlayerState.set_energy(maxi(PlayerState.max_energy / 2, 1))
 	PlayerState.restore_full_health()
-	var current_location := ContentDB.get_current_location(get_tree())
+	var current_location := WorldLocationData.find_current(get_tree())
 	var returned_home := current_location != null and current_location.id == definition.home_location_id
 	if not returned_home:
 		if WorldTravel.travel_to(definition.home_location_id, definition.home_spawn_id):
 			await WorldTravel.travel_finished
 			await get_tree().process_frame
-			var arrived_location := ContentDB.get_current_location(get_tree())
+			var arrived_location := WorldLocationData.find_current(get_tree())
 			returned_home = arrived_location != null and arrived_location.id == definition.home_location_id
 		else:
 			GameEvents.toast("Could not return home after staying up late")
@@ -115,6 +112,7 @@ func _on_health_changed(current: int, _maximum: int) -> void:
 	_handle_player_defeat.call_deferred()
 
 func _handle_player_defeat() -> void:
+	var definition := GameDefinition.current()
 	if _handling_defeat or PlayerState.health > 0:
 		return
 	_handling_defeat = true
@@ -124,13 +122,13 @@ func _handle_player_defeat() -> void:
 	WorldClock.set_time(WorldClock.day + 1, 6 * 60)
 	PlayerState.restore_full_energy()
 	PlayerState.restore_full_health()
-	var current_location := ContentDB.get_current_location(get_tree())
+	var current_location := WorldLocationData.find_current(get_tree())
 	var returned_home := current_location != null and current_location.id == definition.home_location_id
 	if not returned_home:
 		if WorldTravel.travel_to(definition.home_location_id, definition.home_spawn_id):
 			await WorldTravel.travel_finished
 			await get_tree().process_frame
-			var arrived_location := ContentDB.get_current_location(get_tree())
+			var arrived_location := WorldLocationData.find_current(get_tree())
 			returned_home = arrived_location != null and arrived_location.id == definition.home_location_id
 		else:
 			GameEvents.toast("Could not return home after collapse")

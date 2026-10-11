@@ -27,6 +27,22 @@ static func find_all() -> Array[WorldLocationData]:
 	result.assign(ContentRegistry.active.get_entries(KIND))
 	return result
 
+## The location whose scene is `scene_path` in the running game's content, or
+## null.
+static func find_for_scene(scene_path: String) -> WorldLocationData:
+	if scene_path.is_empty():
+		return null
+	for location: WorldLocationData in find_all():
+		if location.scene_path == scene_path:
+			return location
+	return null
+
+## The location whose scene is `tree`'s current scene, or null.
+static func find_current(tree: SceneTree) -> WorldLocationData:
+	if tree == null or tree.current_scene == null:
+		return null
+	return find_for_scene(tree.current_scene.scene_file_path)
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	if music_cue_id == &"":
 		return PackedStringArray()

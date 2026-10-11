@@ -1,9 +1,8 @@
 extends GutTest
 
-class FakeAiProvider:
-	extends Node
-	func start_conversation(_npc: GameNpc, _actor: Node, _context: Dictionary) -> void:
-		pass
+## Farm1's NPCs, their dialogue and their heart events. How heart events match,
+## are seen and take priority in a conversation is tested with the NPC social
+## module.
 
 var _world_snapshot: Dictionary
 var _relationship_snapshot: Dictionary
@@ -112,75 +111,16 @@ func test_authored_daily_and_heart_event_titles_exist_in_dialogue_resources() ->
 		if dialogue != null:
 			assert_true(dialogue.cues.has(event.dialogue_title), "%s heart-event cue '%s' is missing" % [String(event.id), event.dialogue_title])
 
-func test_heart_event_priority_disables_ai_and_daily_title_falls_back_safely() -> void:
-	var service := GameConversationService.new()
-	var provider := FakeAiProvider.new()
-	add_child_autofree(service)
-	add_child_autofree(provider)
-	service.prefer_ai = true
-	service.ai_provider = provider
-	var profile := NpcProfileData.new()
-	profile.ai_enabled = true
-	profile.dialogue_titles_by_hearts = {2: "missing_friend_title"}
-	var event := HeartEventData.new()
-	event.id = &"test_heart_event"
-	event.dialogue_title = "heart_2"
-	assert_true(bool(service.call("_can_use_ai", profile, null)))
-	assert_false(bool(service.call("_can_use_ai", profile, event)))
-
-	var dialogue := load("res://game/dialogue/intro.dialogue") as DialogueResource
-	assert_not_null(dialogue)
-	if dialogue != null:
-		assert_eq(String(service.call("_resolve_daily_title", dialogue, profile, "start", 2)), "start")
-		assert_true(bool(service.call("_dialogue_has_key", dialogue, "heart_2")))
-		assert_false(bool(service.call("_dialogue_has_key", dialogue, "definitely_missing_title")))
-
-func test_heart_event_seen_commits_on_dialogue_end_not_interrupted_balloon_exit() -> void:
+func test_mira_two_hearts_plays_in_starter_town_during_the_day_at_two_hearts() -> void:
 	var event := HeartEventData.find(&"mira_two_hearts")
-	var dialogue := load("res://game/dialogue/intro.dialogue") as DialogueResource
 	assert_not_null(event)
-	assert_not_null(dialogue)
-	if event == null or dialogue == null:
+	if event == null:
 		return
-	var service := GameConversationService.new()
-	add_child_autofree(service)
-	assert_false(HeartEvents.is_seen(event.id))
-
-	service.set("_active_balloon_id", 7001)
-	service.set("_active_heart_event", event)
-	service.set("_active_heart_dialogue", dialogue)
-	service.call("_on_scripted_balloon_exited", 7001)
-	assert_false(HeartEvents.is_seen(event.id))
-	assert_null(service.get("_active_heart_event"))
-
-	service.set("_active_heart_event", event)
-	service.set("_active_heart_dialogue", dialogue)
-	service.call("_on_dialogue_ended", dialogue)
-	assert_true(HeartEvents.is_seen(event.id))
-	assert_true(bool(NpcMemory.get_facts(&"mira").get("heart_event:mira_two_hearts", false)))
-
-func test_two_heart_events_match_only_correct_npc_location_time_and_hearts() -> void:
-	var event := HeartEventData.find(&"mira_two_hearts")
-	assert_not_null(event)
 	assert_true(event.matches(&"mira", 2, &"starter_town", 1, 10 * 60))
 	assert_false(event.matches(&"mira", 1, &"starter_town", 1, 10 * 60))
 	assert_false(event.matches(&"rowan", 2, &"starter_town", 1, 10 * 60))
 	assert_false(event.matches(&"mira", 2, &"riverside_town", 1, 10 * 60))
 	assert_false(event.matches(&"mira", 2, &"starter_town", 1, 19 * 60))
-
-func test_heart_event_seen_state_uses_world_state_and_npc_memory() -> void:
-	var event := HeartEventData.find(&"mira_two_hearts")
-	assert_not_null(event)
-	assert_false(HeartEvents.is_seen(event.id))
-	HeartEvents.mark_seen(event)
-	assert_true(HeartEvents.is_seen(event.id))
-	assert_true(bool(NpcMemory.get_facts(&"mira").get("heart_event:mira_two_hearts", false)))
-
-	var saved_world := WorldState.to_save_data()
-	WorldState.clear()
-	assert_false(HeartEvents.is_seen(event.id))
-	WorldState.load_save_data(saved_world)
-	assert_true(HeartEvents.is_seen(event.id))
 
 func test_manifest_contains_five_heart_events_for_each_core_npc() -> void:
 	var by_npc: Dictionary = {}

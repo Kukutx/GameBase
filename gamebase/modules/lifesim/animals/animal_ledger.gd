@@ -15,6 +15,6 @@ func _on_interacted(_actor: Node) -> void:
 		return
 	var managed := location_id
 	if managed == &"":
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		managed = location.id if location != null else &""
 	menu.open(managed)

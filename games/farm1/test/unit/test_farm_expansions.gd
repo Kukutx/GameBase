@@ -1,5 +1,8 @@
 extends GutTest
 
+## Farm1's coop and barn expansions: their tiers, costs and the town projects
+## that unlock them. How expansions are bought is tested with the lifesim module.
+
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
@@ -17,7 +20,6 @@ func before_each() -> void:
 	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4, "Coop")
 	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4, "Barn")
 	AnimalState.reset_new_game()
-	AnimalState.grant_animal(&"starter_chicken_01", &"chicken", &"starter_town", &"starter_coop", 0)
 
 func after_each() -> void:
 	AnimalState.unregister_housing(&"starter_coop")
@@ -32,24 +34,9 @@ func test_expansion_catalog_is_registered() -> void:
 	assert_not_null(FarmExpansionData.find(&"big_coop"))
 	assert_not_null(FarmExpansionData.find(&"deluxe_barn"))
 
-func test_animal_ledger_has_a_feed_and_an_expansion_button_per_housing() -> void:
-	var menu_scene := load("res://gamebase/modules/lifesim/animals/animal_management_menu.tscn") as PackedScene
-	var menu := menu_scene.instantiate() as AnimalManagementMenu
-	add_child_autofree(menu)
-	InventoryState.add_item_by_id(&"hay", 3)
-	menu.open(&"starter_town")
-	var feed_buttons := menu.get_node("Panel/VBox/FeedRow").get_children()
-	var expansion_buttons := menu.get_node("Panel/VBox/ExpansionRow").get_children()
-	menu.close()
-	assert_eq(feed_buttons.size(), 2)
-	assert_eq(expansion_buttons.size(), 2)
-	assert_eq((feed_buttons[0] as Button).text, "Feed Coop (0)")
-	assert_eq((feed_buttons[1] as Button).text, "Feed Barn (0)")
-	assert_true((feed_buttons[0] as Button).disabled, "The starting chicken is already fed")
-	assert_eq((menu.get_node("Panel/VBox/Summary") as Label).text, "Coop 1/4 · Barn 0/4 · Hay 3")
-
-func test_coop_expands_from_four_to_eight_to_twelve_and_persists() -> void:
+func test_coop_expands_from_four_to_eight_to_twelve_after_the_garden_and_workshop_projects() -> void:
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 4)
+	assert_false(FarmExpansionState.is_available(&"big_coop"))
 	WorldState.set_value(&"project:starter_garden:complete", true)
 	InventoryState.add_item_by_id(&"wood", 30)
 	InventoryState.add_item_by_id(&"stone", 10)
@@ -61,6 +48,7 @@ func test_coop_expands_from_four_to_eight_to_twelve_and_persists() -> void:
 	assert_eq(InventoryState.get_quantity(&"stone"), 0)
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 8)
 
+	assert_false(FarmExpansionState.is_available(&"deluxe_coop"))
 	WorldState.set_value(&"project:riverside_workshop:complete", true)
 	InventoryState.add_item_by_id(&"wood", 50)
 	InventoryState.add_item_by_id(&"iron_bar", 3)
@@ -68,73 +56,15 @@ func test_coop_expands_from_four_to_eight_to_twelve_and_persists() -> void:
 	assert_true(FarmExpansionState.is_available(&"deluxe_coop"))
 	assert_true(FarmExpansionState.purchase(&"deluxe_coop"))
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 12)
-	assert_eq(AnimalState.get_available_slots(&"starter_town", &"coop"), 11)
 
-	var saved := WorldState.to_save_data()
-	WorldState.clear()
-	assert_false(FarmExpansionState.is_completed(&"big_coop"))
-	WorldState.load_save_data(saved)
-	assert_true(FarmExpansionState.is_completed(&"big_coop"))
-	assert_true(FarmExpansionState.is_completed(&"deluxe_coop"))
-	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 12)
-
-func test_expansion_state_ignores_malformed_completion_values() -> void:
-	WorldState.set_value(FarmExpansionService.STATE_KEY, {"big_coop": {"bad": true}})
-	assert_false(FarmExpansionState.is_completed(&"big_coop"))
-	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 4)
-	WorldState.set_value(FarmExpansionService.STATE_KEY, {"big_coop": true})
-	assert_true(FarmExpansionState.is_completed(&"big_coop"))
-	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 8)
-
-func test_expansion_purchase_blocks_item_removed_reentrancy() -> void:
-	WorldState.set_value(&"project:starter_garden:complete", true)
-	InventoryState.add_item_by_id(&"wood", 30)
-	InventoryState.add_item_by_id(&"stone", 10)
-	var money_before := PlayerState.money
-	var observed := {"entered": false, "inner_result": true}
-	var reenter := func(_item_id: StringName, _quantity: int) -> void:
-		if bool(observed["entered"]):
-			return
-		observed["entered"] = true
-		observed["inner_result"] = FarmExpansionState.purchase(&"big_coop")
-	InventoryState.item_removed.connect(reenter)
-	assert_true(FarmExpansionState.purchase(&"big_coop"))
-	if InventoryState.item_removed.is_connected(reenter):
-		InventoryState.item_removed.disconnect(reenter)
-	assert_true(bool(observed["entered"]))
-	assert_false(bool(observed["inner_result"]))
-	assert_true(FarmExpansionState.is_completed(&"big_coop"))
-	assert_eq(InventoryState.get_quantity(&"wood"), 0)
-	assert_eq(InventoryState.get_quantity(&"stone"), 0)
-	assert_eq(PlayerState.money, money_before - 2000)
-
-func test_expansion_material_commit_is_atomic_before_inventory_listeners_run() -> void:
-	WorldState.set_value(&"project:starter_garden:complete", true)
-	InventoryState.add_item_by_id(&"wood", 30)
-	InventoryState.add_item_by_id(&"stone", 10)
-	var money_before := PlayerState.money
-	var observed := {"signals": 0, "final_state": true}
-	var listener := func(_item_id: StringName, _quantity: int) -> void:
-		observed["signals"] = int(observed["signals"]) + 1
-		observed["final_state"] = bool(observed["final_state"]) and InventoryState.get_quantity(&"wood") == 0 and InventoryState.get_quantity(&"stone") == 0
-	InventoryState.item_removed.connect(listener)
-	assert_true(FarmExpansionState.purchase(&"big_coop"))
-	if InventoryState.item_removed.is_connected(listener):
-		InventoryState.item_removed.disconnect(listener)
-	assert_eq(int(observed["signals"]), 2)
-	assert_true(bool(observed["final_state"]))
-	assert_eq(InventoryState.get_quantity(&"wood"), 0)
-	assert_eq(InventoryState.get_quantity(&"stone"), 0)
-	assert_eq(PlayerState.money, money_before - 2000)
-	assert_true(FarmExpansionState.is_completed(&"big_coop"))
-	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 8)
-
-func test_deluxe_expansion_requires_previous_tier_and_riverside_project() -> void:
+func test_deluxe_barn_requires_the_big_barn_and_the_riverside_workshop() -> void:
 	WorldState.set_value(&"project:starter_garden:complete", true)
 	WorldState.set_value(&"project:riverside_workshop:complete", true)
 	assert_false(FarmExpansionState.is_available(&"deluxe_barn"))
 	InventoryState.add_item_by_id(&"wood", 40)
 	InventoryState.add_item_by_id(&"stone", 20)
 	assert_true(FarmExpansionState.purchase(&"big_barn"))
-	assert_true(FarmExpansionState.is_available(&"deluxe_barn"))
 	assert_eq(AnimalState.get_housing_capacity(&"starter_barn"), 8)
+	assert_true(FarmExpansionState.is_available(&"deluxe_barn"))
+	WorldState.set_value(&"project:riverside_workshop:complete", false)
+	assert_false(FarmExpansionState.is_available(&"deluxe_barn"))

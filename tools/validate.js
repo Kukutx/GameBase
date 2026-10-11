@@ -123,10 +123,10 @@ async function validateRepository(godot, version) {
   }
 
   step("Game project settings");
-  const stale = listGameIds().filter((id) => !projectInSync(loadGame(id))).map((id) => `games/${id}/project.godot`);
-  if (!projectInSync(templateGame())) stale.push("gamebase/templates/new_game/project.godot");
+  const stale = listGameIds().filter((id) => !projectInSync(loadGame(id))).map((id) => `games/${id}`);
+  if (!projectInSync(templateGame())) stale.push("gamebase/templates/new_game");
   if (stale.length > 0) {
-    fail(`${stale.join(", ")} does not hold the autoloads, translation catalogs and addon plugins its manifests give. Run node tools/link.js and commit the result.`);
+    fail(`${stale.join(", ")}: project.godot or .gutconfig.json does not hold the autoloads, translation catalogs, addon plugins and test directories its manifests give. Run node tools/link.js and commit the result.`);
   }
   console.log("Every game's and the template's autoloads, catalogs and plugins follow gamebase.json and game.json.");
 

@@ -19,7 +19,7 @@ func _ready() -> void:
 		if not profile.schedule_entries.is_empty():
 			schedule.entries = profile.schedule_entries
 	if location_id == &"":
-		var location := ContentDB.get_current_location(get_tree())
+		var location := WorldLocationData.find_current(get_tree())
 		if location != null:
 			location_id = location.id
 	label.text = display_name

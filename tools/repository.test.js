@@ -8,7 +8,7 @@ const { checkLocalization } = require("./check_localization");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
 const { checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
-const { desiredAutoloads, moduleOrder, projectInSync, syncedProject } = require("./lib/project");
+const { desiredAutoloads, desiredTestDirs, moduleOrder, projectInSync, syncedGutConfig, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
 
 const read = (...parts) => fs.readFileSync(rootPath(...parts), "utf8");
@@ -47,7 +47,7 @@ function assertCompleteGame(game) {
   for (const name of ["Windows Desktop", "Linux", "Web"]) assert.ok(presets.includes(`name="${name}"`), `${id} preset ${name}`);
   for (const filter of presets.matchAll(/^exclude_filter="([^"]*)"$/gm)) {
     const excluded = filter[1].split(",");
-    for (const required of ["test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
+    for (const required of ["test/*", "gamebase/core/test/*", "gamebase/modules/*/test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
       assert.ok(excluded.includes(required), `${id} export excludes ${required}`);
     }
   }
@@ -128,9 +128,20 @@ test("a resource's player-facing field needs a translation, such as a control's 
   assert.ok(lines.includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing Probe Short"));
 });
 
-test("every game's project.godot holds the autoloads, catalogs and plugins of its manifests", () => {
-  for (const id of listGameIds()) assert.ok(projectInSync(loadGame(id)), `games/${id}/project.godot: run node tools/link.js`);
-  assert.ok(projectInSync(templateGame()), "gamebase/templates/new_game/project.godot: run node tools/link.js");
+test("every game's project.godot and .gutconfig.json hold what its manifests give", () => {
+  for (const id of listGameIds()) assert.ok(projectInSync(loadGame(id)), `games/${id}: run node tools/link.js`);
+  assert.ok(projectInSync(templateGame()), "gamebase/templates/new_game: run node tools/link.js");
+});
+
+test("a game runs the tests of the core, of each of its modules and its own", () => {
+  const foundation = readFoundation();
+  const game = { id: "probe", root: rootPath("games", "probe"), modules: ["skills", "items"], addons: ["gut"], manifest: {} };
+  const dirs = desiredTestDirs(game, foundation);
+  assert.equal(dirs[0], "res://gamebase/core/test/");
+  assert.equal(dirs[dirs.length - 1], "res://test/unit/");
+  for (const dir of dirs.slice(1, -1)) assert.match(dir, /^res:\/\/gamebase\/modules\/(items|skills)\/test\/$/);
+  const config = JSON.parse(syncedGutConfig('{"dirs": ["res://stale/"], "should_exit": true}', game, foundation));
+  assert.deepEqual(config, { dirs, should_exit: true });
 });
 
 test("a module's autoloads follow the modules it requires, between the core's", () => {

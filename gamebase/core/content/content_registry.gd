@@ -179,19 +179,6 @@ func get_kind_of(entry: ContentEntry) -> StringName:
 static func get_kind_label(kind: StringName) -> String:
 	return String(kind).replace("_", " ")
 
-func get_location_for_scene(scene_path: String) -> WorldLocationData:
-	if scene_path.is_empty():
-		return null
-	for location: WorldLocationData in _locations():
-		if location.scene_path == scene_path:
-			return location
-	return null
-
-func get_current_location(tree: SceneTree) -> WorldLocationData:
-	if tree == null or tree.current_scene == null:
-		return null
-	return get_location_for_scene(tree.current_scene.scene_file_path)
-
 ## Whether the scene of `location_id` has exactly one spawn point `spawn_id`,
 ## as `find_problems()` last saw it.
 func has_location_spawn(location_id: StringName, spawn_id: StringName) -> bool:
