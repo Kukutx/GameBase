@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=18
+type="Resource"
+uid="uid://b53uwfnuv7e8c"
+path="res://.godot/imported/neri.dialogue-312b41f90a60517182d1dbcf898ccc64.tres"
+
+[deps]
+
+source_file="res://game/dialogue/neri.dialogue"
+dest_files=["res://.godot/imported/neri.dialogue-312b41f90a60517182d1dbcf898ccc64.tres"]
+
+[params]
+
+defaults=true
