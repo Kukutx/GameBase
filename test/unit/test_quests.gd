@@ -27,35 +27,18 @@ func after_each() -> void:
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
-func test_loaded_completed_quest_repairs_appended_chain_and_syncs_historical_depth() -> void:
-	MineState.set_floor(25)
+func test_load_normalizes_progress_and_drops_unknown_quests_and_statuses() -> void:
 	QuestState.load_save_data({
 		"smelt_iron": {"status": QuestManager.Status.COMPLETED, "progress": 999},
-		"retired_quest": {"status": 77, "progress": 12, "legacy_note": "preserve"},
+		"mine_gold": {"status": 999, "progress": 2},
+		"removed_quest": {"status": QuestManager.Status.ACTIVE, "progress": 1},
 	})
 	assert_true(QuestState.is_completed(&"smelt_iron"))
 	assert_eq(int(QuestState.get_state(&"smelt_iron").get("progress", 0)), ContentDB.get_quest(&"smelt_iron").required_amount)
-	assert_true(QuestState.is_active(&"reach_gold_depth"))
 	assert_false(QuestState.is_active(&"mine_gold"))
-	assert_true(QuestState.to_save_data().has("retired_quest"))
-
-	var money_before := PlayerState.money
-	QuestState.reconcile_loaded_progress()
-	assert_true(QuestState.is_completed(&"reach_gold_depth"))
-	assert_true(QuestState.is_active(&"mine_gold"))
-	assert_eq(PlayerState.money, money_before + ContentDB.get_quest(&"reach_gold_depth").reward_money)
-
-func test_invalid_known_quest_status_is_normalized_without_deleting_unknown_history() -> void:
-	QuestState.load_save_data({
-		"mine_gold": {"status": 999, "progress": 2},
-		"retired_quest": {"status": 999, "progress": 9, "legacy": true},
-	})
-	assert_true(QuestState.is_active(&"mine_gold"))
-	assert_eq(int(QuestState.get_state(&"mine_gold").get("progress", 0)), 2)
 	var saved := QuestState.to_save_data()
-	assert_true(saved.has("retired_quest"))
-	assert_eq(int((saved["retired_quest"] as Dictionary).get("status", 0)), 999)
-	assert_true(bool((saved["retired_quest"] as Dictionary).get("legacy", false)))
+	assert_false(saved.has("mine_gold"))
+	assert_false(saved.has("removed_quest"))
 
 func test_new_game_auto_starts_only_data_declared_entry_quests() -> void:
 	for quest: QuestData in ContentDB.get_all_quests():
@@ -100,28 +83,22 @@ func test_item_reward_quest_waits_for_inventory_space_then_completes_atomically(
 	assert_eq(InventoryState.get_quantity(&"field_snack"), 1)
 	assert_true(QuestState.is_active(&"smelt_copper"))
 
-func test_blocked_quest_keeps_promised_reward_snapshot_across_content_removal() -> void:
+func test_loaded_quest_waiting_for_inventory_space_completes_with_its_promised_reward() -> void:
 	QuestState.load_save_data({
 		"defeat_green_slime": {
 			"status": QuestManager.Status.ACTIVE,
 			"progress": 1,
-			"reward_snapshot": {
-				"items": {
-					"retired_quest_token": {"quantity": 5, "display_name": "Retired Quest Token", "max_stack": 10},
-				},
-				"money": 654,
-			},
+			"reward_snapshot": {"items": {"wood": 5}, "money": 654},
 		},
 	})
 	InventoryState.clear()
 	var money_before := PlayerState.money
-	QuestState.reconcile_loaded_progress()
+	QuestState.complete_ready_quests()
 	assert_true(QuestState.is_completed(&"defeat_green_slime"))
 	assert_true(QuestState.is_active(&"smelt_copper"))
 	assert_eq(PlayerState.money, money_before + 654)
-	assert_eq(InventoryState.get_quantity(&"retired_quest_token"), 5)
+	assert_eq(InventoryState.get_quantity(&"wood"), 5)
 	assert_eq(InventoryState.get_quantity(&"field_snack"), 0)
-	assert_eq(InventoryState.get_used_slots(), 0)
 
 func test_exploration_chain_progresses_from_fishing_to_mining_to_combat() -> void:
 	QuestState.load_save_data({})

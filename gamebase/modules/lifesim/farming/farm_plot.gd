@@ -116,14 +116,13 @@ func load_state_data(data: Dictionary, persist := true) -> void:
 	crop_id = StringName(String(data.get("crop_id", "")))
 	growth_days = maxi(_safe_int(data.get("growth_days", 0), 0), 0)
 	last_processed_day = clampi(_safe_int(data.get("last_processed_day", WorldClock.day), WorldClock.day), 1, maxi(WorldClock.day, 1))
-	# A crop definition can disappear across content versions. Preserve the raw
-	# WorldState until the player next changes this plot, but do not let an
-	# invisible orphan crop permanently block planting in the current session.
+	# A crop that is not content is dropped.
 	var crop := CropCatalog.get_crop(crop_id)
-	if crop_id != &"" and crop == null:
+	if crop == null:
+		persist = persist or crop_id != &""
 		crop_id = &""
 		growth_days = 0
-	elif crop != null:
+	else:
 		growth_days = mini(growth_days, crop.days_to_mature)
 	if persist:
 		_persist()

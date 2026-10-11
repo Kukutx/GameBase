@@ -82,7 +82,7 @@ func test_shipping_day_marker_survives_money_callback_advancing_clock() -> void:
 	assert_gt(pending, 0)
 	assert_eq(int(ShippingState.to_save_data().get("last_day_seen", 0)), 3)
 
-func test_shipping_load_sanitizes_invalid_pending_values_and_future_day_marker() -> void:
+func test_shipping_load_drops_invalid_pending_values() -> void:
 	ShippingState.load_save_data({
 		"pending": {
 			"turnip": {"quantity": 2, "value": 180},
@@ -90,16 +90,14 @@ func test_shipping_load_sanitizes_invalid_pending_values_and_future_day_marker()
 			"stone": {"quantity": 3, "value": -50},
 			"berry": "corrupt",
 		},
-		"last_day_seen": 9999,
+		"last_day_seen": 5,
 	})
-	ShippingState.reconcile_loaded_day(5)
 	var saved := ShippingState.to_save_data()
 	var pending := saved["pending"] as Dictionary
 	assert_eq(pending.size(), 1)
 	assert_true(pending.has("turnip"))
 	assert_eq(int((pending["turnip"] as Dictionary).get("quantity", 0)), 2)
 	assert_eq(int((pending["turnip"] as Dictionary).get("value", 0)), 180)
-	assert_eq(int(saved.get("last_day_seen", 0)), 5)
 
 func test_shipping_state_round_trips_without_early_payout() -> void:
 	var carrot := ContentDB.get_item(&"carrot")

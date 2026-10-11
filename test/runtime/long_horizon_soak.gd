@@ -1,8 +1,6 @@
 extends SceneTree
 
-const SOAK_SAVE_PATH := "user://long_horizon_soak.json"
-const SOAK_TEMP_PATH := "user://long_horizon_soak.tmp"
-const SOAK_BACKUP_PATH := "user://long_horizon_soak.bak"
+const SOAK_SAVE_DIRECTORY := "user://long_horizon_soak"
 const YEARS_TO_SOAK := 3
 const MORNING_MINUTE := 6 * 60
 
@@ -31,9 +29,8 @@ func _run() -> void:
 	var save_constants: Dictionary = (save_manager.get_script() as Script).get_script_constant_map()
 	var current_save_version := int(save_constants.get("SAVE_VERSION", 0))
 
-	save_manager.save_path = SOAK_SAVE_PATH
-	save_manager.temp_path = SOAK_TEMP_PATH
-	save_manager.backup_path = SOAK_BACKUP_PATH
+	save_manager.save_directory = SOAK_SAVE_DIRECTORY
+	save_manager.select_slot(1)
 	_cleanup_soak_files()
 
 	var change_error := change_scene_to_file("res://game/world/dev_world.tscn")
@@ -85,7 +82,7 @@ func _run() -> void:
 				_fail("Checkpoint save failed on Day %d" % day)
 				break
 
-			var raw: Dictionary = save_manager.call("_read_dictionary", SOAK_SAVE_PATH)
+			var raw: Dictionary = save_manager.call("_read_dictionary", save_manager.save_path)
 			_check(int(raw.get("version", 0)) == current_save_version, "Checkpoint schema mismatch on Day %d" % day)
 			_check(String(raw.get("game_version", "")) == String(ProjectSettings.get_setting("application/config/version", "unknown")), "Checkpoint game provenance mismatch on Day %d" % day)
 			_check(not String(raw.get("engine_version", "")).is_empty(), "Checkpoint engine provenance missing on Day %d" % day)
@@ -150,6 +147,4 @@ func _fail(message: String) -> void:
 	push_error("LONG_HORIZON_SOAK: " + message)
 
 func _cleanup_soak_files() -> void:
-	for path in [SOAK_SAVE_PATH, SOAK_TEMP_PATH, SOAK_BACKUP_PATH]:
-		if FileAccess.file_exists(path):
-			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	root.get_node("SaveManager").delete_slot(1)

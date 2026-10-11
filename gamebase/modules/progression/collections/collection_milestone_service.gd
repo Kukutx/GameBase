@@ -40,9 +40,8 @@ func is_ready(id: StringName) -> bool:
 		return false
 	# Once the player has qualified for a milestone, later content additions must
 	# not revoke an already-promised reward by increasing the catalog size or
-	# changing prerequisites. The old notified flag doubles as a legacy proof of
-	# qualification for saves created before the dedicated flag existed.
-	if WorldState.get_bool(_qualified_key(id)) or WorldState.get_bool(_notified_key(id)):
+	# changing prerequisites.
+	if WorldState.get_bool(_qualified_key(id)):
 		return true
 	if not _prerequisites_met(milestone):
 		return false
@@ -103,18 +102,6 @@ func get_ready_count() -> int:
 			count += 1
 	return count
 
-func reconcile_loaded_state() -> void:
-	# Claimed milestones are permanent achievements. Reapply the current unlock
-	# flags so a later content update can safely add derived world flags without
-	# requiring players to re-claim an already-consumed reward.
-	for milestone: CollectionMilestoneData in get_all_milestones():
-		if milestone == null or not is_claimed(milestone.id):
-			continue
-		for flag: StringName in milestone.unlock_flags:
-			if flag != &"" and not WorldState.get_bool(flag):
-				WorldState.set_value(flag, true)
-	_check_ready_milestones()
-
 func _on_collection_changed(_category: StringName, _item_id: StringName, _count: int) -> void:
 	_check_ready_milestones()
 
@@ -125,7 +112,6 @@ func _check_ready_milestones() -> void:
 		if not WorldState.get_bool(_qualified_key(milestone.id)):
 			WorldState.set_value(_qualified_key(milestone.id), true)
 		# Freeze the promised reward as soon as the milestone first becomes ready.
-		# Older saves without a snapshot are backfilled from current content here.
 		_get_reward_snapshot(milestone)
 		var notify_key := _notified_key(milestone.id)
 		if WorldState.get_bool(notify_key):

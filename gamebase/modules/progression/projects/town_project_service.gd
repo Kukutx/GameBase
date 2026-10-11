@@ -118,48 +118,6 @@ func contribute_all_available(project_id: StringName) -> int:
 			break
 	return total
 
-func reconcile_loaded_progress() -> Array[StringName]:
-	var completed_now: Array[StringName] = []
-	for project: TownProjectData in ContentDB.get_all_town_projects():
-		if project == null:
-			continue
-		var state := get_state(project.id)
-		if state.is_empty():
-			continue
-		var progress: Dictionary = state.get("progress", {}) if state.get("progress", {}) is Dictionary else {}
-		var was_completed := bool(state.get("completed", false))
-		var claimed := bool(state.get("claimed", false))
-		if not was_completed and not claimed and not _requirements_complete(project, progress):
-			continue
-		var changed := false
-		if not was_completed:
-			state["completed"] = true
-			completed_now.append(project.id)
-			changed = true
-		var completed_day := clampi(int(state.get("completed_day", 0)), 0, WorldClock.day)
-		if completed_day <= 0:
-			completed_day = WorldClock.day
-		if int(state.get("completed_day", 0)) != completed_day:
-			state["completed_day"] = completed_day
-			changed = true
-		if claimed:
-			var claimed_day := clampi(int(state.get("claimed_day", 0)), 0, WorldClock.day)
-			if claimed_day <= 0:
-				claimed_day = completed_day
-			if int(state.get("claimed_day", 0)) != claimed_day:
-				state["claimed_day"] = claimed_day
-				changed = true
-		if not claimed:
-			var reward := DeferredRewardSnapshot.ensure(state.get("reward_snapshot", {}), project.reward_items, project.reward_money)
-			var raw_reward: Variant = state.get("reward_snapshot", {})
-			if not raw_reward is Dictionary or (raw_reward as Dictionary).is_empty():
-				state["reward_snapshot"] = reward
-				changed = true
-		if changed:
-			_set_state(project.id, state)
-		_apply_unlock_flags(project)
-	return completed_now
-
 func claim_reward(project_id: StringName) -> bool:
 	var claim_key := String(project_id)
 	if _claiming_projects.has(claim_key):
@@ -170,10 +128,6 @@ func claim_reward(project_id: StringName) -> bool:
 	_claiming_projects[claim_key] = true
 	var state := _ensure_state(project_id)
 	var reward := DeferredRewardSnapshot.ensure(state.get("reward_snapshot", {}), project.reward_items, project.reward_money)
-	var raw_reward: Variant = state.get("reward_snapshot", {})
-	if not raw_reward is Dictionary or (raw_reward as Dictionary).is_empty():
-		state["reward_snapshot"] = reward.duplicate(true)
-		_set_state(project_id, state)
 	if not DeferredRewardSnapshot.grant_items(reward):
 		_claiming_projects.erase(claim_key)
 		GameEvents.toast("Make room in your inventory before claiming the project reward")

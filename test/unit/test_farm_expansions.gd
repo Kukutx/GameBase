@@ -17,6 +17,7 @@ func before_each() -> void:
 	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4)
 	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4)
 	AnimalState.reset_new_game()
+	AnimalState.grant_animal(&"starter_chicken_01", &"chicken", &"starter_town", &"starter_coop", 0)
 
 func after_each() -> void:
 	AnimalState.unregister_housing(&"starter_coop")
@@ -66,31 +67,11 @@ func test_coop_expands_from_four_to_eight_to_twelve_and_persists() -> void:
 	assert_true(FarmExpansionState.is_completed(&"deluxe_coop"))
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 12)
 
-func test_loaded_expansion_backfills_and_preserves_paid_capacity_entitlement() -> void:
-	WorldState.set_value(&"farm_expansions:completed", {"big_coop": true})
-	assert_eq(int((WorldState.get_value(&"farm_expansions:capacity_entitlements", {}) as Dictionary).get("starter_coop", 0)), 0)
-	FarmExpansionState.reconcile_loaded_state()
-	var entitlements := WorldState.get_value(&"farm_expansions:capacity_entitlements", {}) as Dictionary
-	assert_eq(int(entitlements.get("starter_coop", 0)), 8)
-	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 8)
-
-	# Simulate the old expansion ID disappearing after the entitlement was saved.
-	WorldState.set_value(&"farm_expansions:completed", {"retired_big_coop": true})
-	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 8)
-	assert_true(FarmExpansionState.is_completed(&"big_coop"))
-	assert_false(FarmExpansionState.is_available(&"big_coop"))
-
-func test_expansion_state_ignores_malformed_completion_and_capacity_values() -> void:
+func test_expansion_state_ignores_malformed_completion_values() -> void:
 	WorldState.set_value(FarmExpansionService.STATE_KEY, {"big_coop": {"bad": true}})
-	WorldState.set_value(FarmExpansionService.CAPACITY_KEY, {"starter_coop": {"bad": true}, "legacy_housing": 9})
 	assert_false(FarmExpansionState.is_completed(&"big_coop"))
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 4)
-	var normalized_capacity := FarmExpansionState.call("_get_capacity_state") as Dictionary
-	assert_false(normalized_capacity.has("starter_coop"))
-	assert_eq(int(normalized_capacity.get("legacy_housing", 0)), 9)
-
 	WorldState.set_value(FarmExpansionService.STATE_KEY, {"big_coop": true})
-	FarmExpansionState.reconcile_loaded_state()
 	assert_true(FarmExpansionState.is_completed(&"big_coop"))
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 8)
 

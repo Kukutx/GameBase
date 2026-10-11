@@ -27,7 +27,7 @@ This file describes only what is specific to this repository. The generic engine
 
 ## Default evolution strategy and language
 
-- `default_evolution`: `maintained` for everything a player's save or a derived game already depends on — the save schema, stable content, Location and Spawn ids, audio cue ids, exported resource fields. New systems are written for the current stable engine without compatibility layers for things that never shipped.
+- `default_evolution`: `greenfield`. The project is experimental and has no published saves or builds to protect: every change uses the current best solution, with no compatibility code, migrations, shims or fallbacks for earlier formats, data or interfaces. Versions start from their initial values (save format 1, game and foundation 0.1.0) and dependencies track the newest stable releases. Stable ids still never change meaning, because a derived game's data refers to them.
 - The current fact roots are the code, the data resources under `game/data/`, `project.godot`, `export_presets.cfg` and the pages under `docs/`.
 - Documentation, code comments and commit messages are in English. Commit subjects follow the Conventional Commits style of the existing history. A comment describes what the code does now and why, not what it used to do.
 - Stable gameplay ids, save keys, resource ids and enum values are never translated. Generated files and vendored addon sources are not rewritten for style.

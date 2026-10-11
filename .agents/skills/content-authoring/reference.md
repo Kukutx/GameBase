@@ -17,7 +17,7 @@ Read this only when a task crosses systems and the owner, the consumers or the v
 | --- | --- |
 | Content of a type (item, crop, NPC, quest, mail, location, audio cue) | the resource class under `gamebase/core/` or `gamebase/modules/`, the resource under `game/data/`, `game/data/content_manifest.tres`, `ContentDB` |
 | Runtime state of a system | the autoload service that owns it; a scene only presents it |
-| What a save contains | `GameSaveManager`, `SaveMigration`, and the `to_save_data()` / `load_save_data()` pair of the owning service |
+| What a save contains | `GameSaveManager` and the `to_save_data()` / `load_save_data()` pair of the owning service |
 | Player-visible text | the string literal at its call site or in the scene or resource, `game/i18n/ui.zh_CN.po`, `tools/check_localization.js` |
 | Input actions | `gamebase/core/settings/game_settings.gd` for rebindable actions, the `[input]` section of `project.godot` for the rest |
 | Travel between locations | `WorldTravel`, the `WorldLocationData` resources and the `WorldSpawnPoint` nodes |
@@ -25,7 +25,7 @@ Read this only when a task crosses systems and the owner, the consumers or the v
 | Engine and application versions | `.godot-version`, `.game-version`, `project.godot`; whether to change them follows the officially supported facts |
 | What an export contains | `export_presets.cfg`, `tools/verify_export_contents.js`, the export assertions in `test/unit/test_project_configuration.gd` |
 | Verification commands | the scripts under `tools/`, `docs/RELEASE.md`, the workflows under `.github/workflows/` |
-| Compatibility obligations | published saves, stable ids, exported resource fields that a derived game sets |
+| Compatibility obligations | stable ids and exported resource fields that a derived game sets; saves have none (`.agents/rules/save.md`) |
 
 ## Stop signal
 

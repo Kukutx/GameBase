@@ -28,9 +28,8 @@ func get_placements(location_id: StringName) -> Array[Dictionary]:
 			var record_location := StringName(String(record.get("location_id", "")))
 			var raw_x: Variant = record.get("x", null)
 			var raw_y: Variant = record.get("y", null)
-			# Keep unknown/malformed legacy records in raw WorldState for forward
-			# compatibility, but exclude them from gameplay so they cannot become
-			# invisible blockers or crash numeric placement calculations.
+			# Malformed records and placeables that are not content are dropped, so
+			# they cannot become invisible blockers or break placement maths.
 			if placement_id == &"" or seen_ids.has(String(placement_id)):
 				continue
 			if placeable_id == &"" or ContentDB.get_placeable(placeable_id) == null:
@@ -259,15 +258,7 @@ func _next_unique_serial() -> int:
 	return serial
 
 func _refund_fits(item_id: StringName) -> bool:
-	var item := ContentDB.get_item(item_id)
-	if item == null:
-		return false
-	var probe := InventoryStore.new()
-	probe.max_slots = InventoryState.max_slots
-	probe.load_save_data(InventoryState.to_save_data())
-	var remaining := probe.add_item(item, 1)
-	probe.free()
-	return remaining == 0
+	return InventoryState.can_add_item(ContentDB.get_item(item_id), 1)
 
 func _is_numeric(value: Variant) -> bool:
 	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT

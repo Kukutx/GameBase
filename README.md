@@ -53,11 +53,11 @@ LIFE_SIMULATION_SMOKE_OK
 - A deterministic calendar/weather system with four recurring seasonal festivals, in-world participation booths and once-per-year rewards
 - Daily contracts that filter mining targets by discovered mine depth, harvest work by crop maturation/season time remaining, and weather-locked fish by reachable forecast windows
 - Chained long-term town restoration projects with world-state visuals, NPC-context exposure and immediate completion mail
-- Six skills with Lv5/Lv10 passive gameplay perks and persisted highest-earned level entitlements, so later XP-threshold rebalance cannot take away an already-earned skill level/perk; collections include premium animal products and Iridium content with claimable archive milestones
-- Three save slots with Save v9 migration, stable Location-ID recovery across scene renames, millisecond-aware primary/backup/temp crash recovery (including a newer complete temp written before primary removal), and protection for newer-version primary saves when an older build falls back to a compatible backup
+- Six skills with Lv5/Lv10 passive gameplay perks and persisted highest-earned levels; collections include premium animal products and Iridium content with claimable archive milestones
+- Three save slots in one save format (no migrations: a format change raises the version and older saves stop loading), saves that name their Location by id, and primary/backup/temp crash recovery that finishes a save interrupted after its temp file was written
 - Stable world travel end-to-end: new game, scene portals, mine ladders/elevators and save recovery resolve Location/Spawn IDs instead of depending on gameplay scene filenames
-- Long-lived save repair for content evolution: appended quest/project chains backfill on load; completed projects reapply current unlock flags; paid coop/barn capacity is preserved independently from expansion resource IDs; already-ready archive milestones remain qualified when catalogs grow; and removed crops/animals/placeables/contracts/processing content plus legacy inventory items degrade safely instead of blocking play or silently deleting player value
-- Deferred rewards are snapshotted when promised (mail delivery, project completion, archive readiness and blocked quest completion), preserving the original money/items even if later content updates rebalance or retire reward entries
+- Loading drops whatever names content that no longer exists (items, quests, animals, placeables, crops, processing outputs) instead of keeping it
+- Deferred rewards are snapshotted when promised (mail delivery, project completion, archive readiness and blocked quest completion), so a rebalance before the claim does not change what the player receives
 - Sleep, defeat/collapse recovery and late-night exhaustion handling
 - Rebindable keyboard controls, D-Pad/analog movement, LT/RT hotbar cycling, device-aware interaction prompts and default gamepad bindings for all core actions
 - Safe periodic/travel autosave using the same atomic backup path as manual saves; autosave can be disabled in Settings
@@ -146,6 +146,6 @@ See `docs/LICENSED_ASSETS.md` for the packs currently used and redistribution co
 - keep the project on stable Godot 4.x and treat `.godot-version` as an updateable CI validation baseline rather than a permanent patch-version lock;
 - prefer built-in Godot features and established, maintained addons;
 - keep third-party code under `addons/` and game-specific code under `game/`;
-- preserve stable content/location/spawn IDs and save compatibility;
+- preserve stable content/location/spawn IDs; a save format change raises `SAVE_VERSION` instead of adding compatibility code;
 - add focused GUT coverage for reusable gameplay systems;
 - keep the optional AI dialogue layer behind `ConversationService`, `NpcContext` and `NpcMemory` rather than coupling gameplay to a model runtime.

@@ -14,7 +14,7 @@ func _ready() -> void:
 	WorldClock.day_changed.connect(_on_day_changed)
 	refresh(WorldClock.day, WorldClock.minute_of_day)
 
-func refresh(day: int, minute_of_day: int, reconcile_orphans := false) -> void:
+func refresh(day: int, minute_of_day: int) -> void:
 	var next_active: Dictionary = {}
 	for event: CalendarEventData in ContentDB.get_all_calendar_events():
 		if event.is_active(day, minute_of_day):
@@ -23,20 +23,6 @@ func refresh(day: int, minute_of_day: int, reconcile_orphans := false) -> void:
 		if not next_active.has(key):
 			WorldState.erase(StringName("event:%s:active" % key))
 			event_ended.emit(StringName(key))
-	# event:<id>:active is derived state, not durable progress. Scan the full
-	# WorldState only during explicit load reconciliation; normal minute refreshes
-	# should stay proportional to the small calendar-event catalog.
-	if reconcile_orphans:
-		var stale_active_keys: Array[StringName] = []
-		for raw_key: Variant in WorldState.to_save_data().keys():
-			var state_key := String(raw_key)
-			if not state_key.begins_with("event:") or not state_key.ends_with(":active"):
-				continue
-			var event_id := state_key.trim_prefix("event:").trim_suffix(":active")
-			if not next_active.has(event_id):
-				stale_active_keys.append(StringName(state_key))
-		for state_key: StringName in stale_active_keys:
-			WorldState.erase(state_key)
 	for key: String in next_active.keys():
 		WorldState.set_value(StringName("event:%s:active" % key), true)
 		if not _active.has(key):

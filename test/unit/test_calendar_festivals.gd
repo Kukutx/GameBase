@@ -127,33 +127,12 @@ func test_festival_claim_state_round_trips_with_world_state() -> void:
 	WorldState.load_save_data(snapshot)
 	assert_true(EventState.has_claimed_participation(&"summer_river_fair"))
 
-func test_loading_old_festival_time_rebuilds_missing_active_event_world_flag() -> void:
-	var snapshot := {
-		"weather": WeatherState.to_save_data(),
-		"shipping": ShippingState.to_save_data(),
-		"clock": {"day": 9, "minute_of_day": 10 * 60},
-		"buffs": BuffState.to_save_data(),
-		"inventory": InventoryState.to_save_data(),
-		"player_state": PlayerState.to_save_data(),
-		"world": {},
-		"relationships": RelationshipState.to_save_data(),
-		"npc_memory": NpcMemory.to_save_data(),
-		"quests": QuestState.to_save_data(),
-		"skills": Skills.to_save_data(),
-		"fishing": FishingState.to_save_data(),
-		"scene": "",
-	}
-	assert_true(await SaveManager.apply_snapshot(snapshot))
+func test_refresh_after_loading_restores_the_active_event_flag() -> void:
+	WorldClock.set_time(9, 10 * 60)
+	WorldState.load_save_data({})
+	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)
 	assert_true(EventState.is_active(&"spring_seed_fair"))
 	assert_true(WorldState.get_bool(&"event:spring_seed_fair:active"))
-
-func test_event_refresh_clears_orphan_active_flags_without_deleting_history() -> void:
-	WorldState.set_value(&"event:retired_festival:active", true)
-	WorldState.set_value(&"event:retired_festival:year:1:participated", true)
-	EventState.refresh(1, 8 * 60, true)
-	assert_false(WorldState.get_bool(&"event:retired_festival:active"))
-	assert_false(WorldState.to_save_data().has("event:retired_festival:active"))
-	assert_true(WorldState.get_bool(&"event:retired_festival:year:1:participated"))
 
 func test_all_festival_booths_are_exposed_in_playable_town_scenes() -> void:
 	var starter := (load("res://game/world/dev_world.tscn") as PackedScene).instantiate()

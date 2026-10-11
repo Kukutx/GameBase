@@ -24,6 +24,8 @@ func before_each() -> void:
 	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4)
 	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4)
 	AnimalState.reset_new_game()
+	AnimalState.grant_animal(&"starter_chicken_01", &"chicken", &"starter_town", &"starter_coop", 0)
+	AnimalState.grant_animal(&"starter_cow_01", &"cow", &"starter_town", &"starter_barn", 0)
 
 func after_each() -> void:
 	AnimalState.unregister_housing(&"starter_coop")
@@ -35,7 +37,7 @@ func after_each() -> void:
 	InventoryState.max_slots = _inventory_slots
 	WorldClock.set_time(_clock_day, _clock_minute)
 
-func test_legacy_default_animals_keep_stable_ids_and_housing_slots() -> void:
+func test_granted_animals_keep_stable_ids_and_housing_slots() -> void:
 	var owned := AnimalState.get_owned(&"starter_town")
 	assert_eq(owned.size(), 2)
 	assert_eq(String(owned[0]["instance_id"]), "starter_chicken_01")
@@ -47,31 +49,34 @@ func test_legacy_default_animals_keep_stable_ids_and_housing_slots() -> void:
 	assert_eq(AnimalState.get_available_slots(&"starter_town", &"coop"), 3)
 	assert_eq(AnimalState.get_available_slots(&"starter_town", &"barn"), 3)
 
-func test_unknown_legacy_animal_is_preserved_but_does_not_consume_capacity() -> void:
+func test_grant_rejects_unknown_animals_and_repeated_instances() -> void:
+	assert_false(AnimalState.grant_animal(&"starter_chicken_01", &"chicken", &"starter_town", &"starter_coop", 1))
+	assert_false(AnimalState.grant_animal(&"other", &"removed_animal_type", &"starter_town", &"starter_coop", 1))
+	assert_eq(AnimalState.get_housing_occupancy(&"starter_coop"), 1)
+
+func test_records_of_unknown_animals_are_dropped() -> void:
 	var raw_records: Array = (WorldState.get_value(AnimalOwnershipService.OWNERSHIP_KEY, []) as Array).duplicate(true)
 	raw_records.append({
-		"instance_id": "legacy_removed_animal",
+		"instance_id": "removed_animal_01",
 		"animal_id": "removed_animal_type",
 		"location_id": "starter_town",
 		"housing_id": "starter_coop",
-		"slot_index": 3,
-		"node_name": "LegacyAnimal",
+		"slot_index": 1,
+		"node_name": "RemovedAnimal",
 	})
 	WorldState.set_value(AnimalOwnershipService.OWNERSHIP_KEY, raw_records)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_coop"), 1)
-	assert_eq(AnimalState.get_available_slots(&"starter_town", &"coop"), 3)
-	assert_true(AnimalState.get_record(&"legacy_removed_animal").is_empty())
-	var preserved_raw: Array = WorldState.get_value(AnimalOwnershipService.OWNERSHIP_KEY, []) as Array
-	assert_true(preserved_raw.any(func(record: Variant) -> bool:
-		return record is Dictionary and String((record as Dictionary).get("instance_id", "")) == "legacy_removed_animal"
-	))
+	assert_true(AnimalState.get_record(&"removed_animal_01").is_empty())
 
 	var bought := AnimalState.purchase(&"chicken", &"starter_town")
 	assert_ne(bought, &"")
-	var bought_record := AnimalState.get_record(bought)
-	assert_eq(int(bought_record.get("slot_index", -1)), 1)
+	assert_eq(int(AnimalState.get_record(bought).get("slot_index", -1)), 1)
+	var stored: Array = WorldState.get_value(AnimalOwnershipService.OWNERSHIP_KEY, []) as Array
+	assert_false(stored.any(func(record: Variant) -> bool:
+		return String((record as Dictionary).get("instance_id", "")) == "removed_animal_01"
+	))
 
-func test_malformed_known_ownership_records_and_state_do_not_block_housing() -> void:
+func test_malformed_ownership_records_and_state_do_not_block_housing() -> void:
 	var raw_records: Array = (WorldState.get_value(AnimalOwnershipService.OWNERSHIP_KEY, []) as Array).duplicate(true)
 	raw_records.append({
 		"instance_id": "",
@@ -87,15 +92,7 @@ func test_malformed_known_ownership_records_and_state_do_not_block_housing() -> 
 		"housing_id": "starter_coop",
 		"slot_index": [99],
 	})
-	# A retired orphan can still reserve a historical stable ID even though it
-	# does not consume gameplay housing capacity.
-	raw_records.append({
-		"instance_id": "owned_chicken_0003",
-		"animal_id": "removed_animal_type",
-		"location_id": "starter_town",
-		"housing_id": "starter_coop",
-		"slot_index": 3,
-	})
+	raw_records.append("not a record")
 	WorldState.set_value(AnimalOwnershipService.OWNERSHIP_KEY, raw_records)
 	WorldState.set_value(AnimalOwnershipService.SEQUENCE_KEY, {"bad": true})
 	WorldState.set_value(&"animal:starter_chicken_01", {"last_fed_day": {"bad": true}, "happiness": [1000]})
@@ -104,8 +101,8 @@ func test_malformed_known_ownership_records_and_state_do_not_block_housing() -> 
 	assert_eq(AnimalState.get_available_slots(&"starter_town", &"coop"), 3)
 	assert_eq(AnimalState.get_unfed_count(&"starter_coop"), 0)
 	var bought := AnimalState.purchase(&"chicken", &"starter_town")
-	assert_eq(String(bought), "owned_chicken_0004")
-	assert_eq(WorldState.get_value(AnimalOwnershipService.SEQUENCE_KEY, 0), 4)
+	assert_eq(String(bought), "owned_chicken_0001")
+	assert_eq(WorldState.get_value(AnimalOwnershipService.SEQUENCE_KEY, 0), 1)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_coop"), 2)
 
 func test_purchase_uses_correct_housing_and_money_and_respects_capacity() -> void:
@@ -159,7 +156,7 @@ func test_general_store_reuses_shop_service_for_animals() -> void:
 	assert_eq(PlayerState.money, money_before - ContentDB.get_farm_animal(&"pig").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 3)
 
-func test_existing_animal_state_survives_ownership_adoption() -> void:
+func test_owned_animal_state_is_applied_to_scene_animals() -> void:
 	WorldState.set_value(GameSession.NEW_GAME_FLAG, true)
 	WorldState.set_value(&"animal:starter_chicken_01", {"happiness": 73, "last_product_day": 4, "last_pet_day": 3})
 	var scene := load("res://game/world/dev_world.tscn") as PackedScene

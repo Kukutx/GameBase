@@ -82,9 +82,8 @@ func test_save_and_load_results_are_translated() -> void:
 	# an empty slot fails; both report a reason to the player.
 	var manager := GameSaveManager.new()
 	add_child_autofree(manager)
-	manager.save_path = "user://test_localized_text.json"
-	manager.temp_path = "user://test_localized_text.tmp"
-	manager.backup_path = "user://test_localized_text.bak"
+	manager.save_directory = "user://test_localized_text"
+	manager.select_slot(1)
 	var messages: Array[String] = []
 	manager.save_completed.connect(func(_success: bool, message: String) -> void: messages.append(message))
 	manager.load_completed.connect(func(_success: bool, message: String) -> void: messages.append(message))

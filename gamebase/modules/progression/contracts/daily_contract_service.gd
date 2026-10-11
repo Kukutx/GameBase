@@ -111,8 +111,6 @@ func _ensure_contract() -> void:
 	var completed := bool(state.get("completed", false))
 	var claimed := bool(state.get("claimed", false))
 	if not completed and not claimed and not _is_contract_content_valid(state):
-		if accepted:
-			GameEvents.toast("Daily contract was withdrawn after a content update")
 		_set_state(generate_contract_for_day(WorldClock.day))
 		return
 	if claimed and WorldClock.day > generated_day:

@@ -34,7 +34,7 @@ This keeps builds reproducible while allowing regular engine upgrades. `.github/
    node tools/export.js
    ```
 
-8. Verify save migration/recovery tests and a real save/load cycle.
+8. Verify the save slot and recovery tests and a real save/load cycle.
 9. Commit the engine baseline, synchronized Godot legal bundle, addon compatibility updates and any engine-generated project-format changes together.
 
 ## Current baseline

@@ -142,4 +142,6 @@ func _on_locale_changed(_locale: String) -> void:
 
 func _refresh_label() -> void:
 	if mine_label != null:
-		mine_label.text = tr("Old Mine · Floor %d · Deepest %d") % [current_floor, MineState.get_deepest_floor()]
+		var location := ContentDB.get_current_location(get_tree())
+		var mine_name := tr(location.display_name) if location != null else ""
+		mine_label.text = tr("%s · Floor %d · Deepest %d") % [mine_name, current_floor, MineState.get_deepest_floor()]

@@ -89,61 +89,37 @@ func test_empty_inventory_transactions_emit_no_fake_change_signal() -> void:
 	inventory.changed.connect(func() -> void: changed_count += 1)
 	assert_true(inventory.apply_transaction_atomic({}, {}))
 	assert_true(inventory.apply_transaction_atomic({"stone": 0}, {"wood": 0}))
-	assert_true(inventory.apply_refund_snapshot_atomic({}))
-	assert_true(inventory.apply_refund_snapshot_atomic({"retired": {"quantity": 0, "display_name": "Retired", "max_stack": 1}}))
+	assert_true(inventory.add_items_atomic({}))
+	assert_true(inventory.add_items_atomic({"stone": 0}))
 	assert_eq(changed_count, 0)
 	assert_true(inventory.to_save_data().is_empty())
 
-func test_inventory_load_and_refund_snapshot_sanitize_malformed_numeric_metadata() -> void:
+func test_load_drops_malformed_quantities_and_items_that_are_not_content() -> void:
 	var inventory := InventoryStore.new()
 	inventory.max_slots = 2
 	add_child_autofree(inventory)
 	inventory.load_save_data({
-		"stone": {"quantity": {"bad": true}, "display_name": {"bad": true}, "max_stack": [99]},
-		"retired_item": {"quantity": 7, "display_name": {"bad": true}, "max_stack": {"bad": true}},
+		"stone": {"bad": true},
+		"wood": 3.0,
+		"copper_ore": -4,
+		"removed_item": 7,
 	})
 	assert_eq(inventory.get_quantity(&"stone"), 0)
-	assert_eq(inventory.get_quantity(&"retired_item"), 7)
-	var saved := inventory.to_save_data()
-	assert_eq(String((saved["retired_item"] as Dictionary).get("display_name", "")), "retired_item")
-	assert_eq(int((saved["retired_item"] as Dictionary).get("max_stack", 0)), 99)
+	assert_eq(inventory.get_quantity(&"wood"), 3)
+	assert_eq(inventory.get_quantity(&"copper_ore"), 0)
+	assert_eq(inventory.get_quantity(&"removed_item"), 0)
+	assert_eq(inventory.to_save_data(), {"wood": 3})
+	assert_eq(inventory.get_used_slots(), 1)
 
-	assert_true(inventory.apply_refund_snapshot_atomic({
-		"stone": {"quantity": {"bad": true}},
-		"retired_item": {"quantity": 3, "display_name": ["bad"], "max_stack": {"bad": true}},
-	}))
-	assert_eq(inventory.get_quantity(&"stone"), 0)
-	assert_eq(inventory.get_quantity(&"retired_item"), 10)
-
-func test_unknown_legacy_item_is_preserved_without_consuming_capacity() -> void:
+func test_add_items_atomic_adds_all_or_nothing() -> void:
 	var inventory := InventoryStore.new()
 	inventory.max_slots = 1
 	add_child_autofree(inventory)
-	inventory.load_save_data({
-		"removed_item": {
-			"quantity": 99,
-			"display_name": "Removed Legacy Item",
-			"max_stack": 99,
-		},
-	})
-	assert_eq(inventory.get_quantity(&"removed_item"), 99)
-	assert_eq(inventory.get_used_slots(), 0)
-	assert_eq(inventory.get_free_slots(), 1)
-	var entries := inventory.get_entries()
-	assert_eq(entries.size(), 1)
-	assert_false(bool(entries[0].get("known", true)))
-	assert_eq(int(entries[0].get("slots", -1)), 0)
-	assert_true(inventory.get_slot_entries().is_empty())
-
-	var stone := ContentDB.get_item(&"stone")
-	assert_not_null(stone)
-	if stone == null:
-		return
-	assert_eq(inventory.add_item(stone, 1), 0)
-	assert_eq(inventory.get_used_slots(), 1)
-	var saved := inventory.to_save_data()
-	assert_eq(int((saved["removed_item"] as Dictionary).get("quantity", 0)), 99)
-	assert_eq(int((saved["stone"] as Dictionary).get("quantity", 0)), 1)
+	assert_false(inventory.add_items_atomic({"stone": 1, "wood": 1}))
+	assert_false(inventory.add_items_atomic({"removed_item": 1}))
+	assert_true(inventory.to_save_data().is_empty())
+	assert_true(inventory.add_items_atomic({"stone": 2}))
+	assert_eq(inventory.get_quantity(&"stone"), 2)
 
 func test_inventory_round_trips_save_data() -> void:
 	var source := InventoryStore.new()
