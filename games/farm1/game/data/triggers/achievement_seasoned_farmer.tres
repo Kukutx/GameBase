@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/rules/trigger_data.gd" id="1_trigger"]
+
+[resource]
+script = ExtResource("1_trigger")
+id = &"achievement_seasoned_farmer"
+event = &"GameProfile.flag_changed"
+condition = "EVENT_ARG key crops_harvested, PROFILE_FLAG_AT_LEAST crops_harvested 100"
+actions = PackedStringArray("UNLOCK_ACHIEVEMENT seasoned_farmer")

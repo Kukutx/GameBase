@@ -14,7 +14,8 @@
       "ContentDB": "res://gamebase/core/content/content_registry.gd",
       "GameModules": "res://gamebase/core/modules/game_modules.gd",
       "PlayerState": "res://gamebase/core/player/player_state.gd",
-      "WorldState": "res://gamebase/core/world/world_state.gd"
+      "WorldState": "res://gamebase/core/world/world_state.gd",
+      "GameProfile": "res://gamebase/core/profile/game_profile.gd"
     },
     "after_modules": {
       "WorldTravel": "res://gamebase/core/world/world_travel.gd",

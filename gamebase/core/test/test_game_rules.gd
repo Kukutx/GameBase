@@ -80,6 +80,8 @@ func test_validation_reports_unknown_keys_argument_counts_kinds_and_negated_acti
 	assert_string_contains(problems, "unknown condition 'TYPO_KEY'")
 	assert_string_contains(problems, "takes 1-2 arguments, got 0")
 	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["!ADD_MONEY 3"]))), "cannot be negated")
+	assert_eq(GameRules.validate_actions(PackedStringArray(["SET_FLAG %s false, SET_FLAG %s 3" % [FLAG, COUNTER]])), PackedStringArray())
+	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["SET_FLAG %s ture" % FLAG]))), "'ture' is not true, false or an integer")
 
 func test_content_arguments_are_checked_against_the_running_game_content() -> void:
 	var location := WorldLocationData.new()

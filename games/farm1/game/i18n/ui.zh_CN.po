@@ -2270,3 +2270,24 @@ msgstr "好邻居 I · 喜爱礼物的好感 +10%"
 
 msgid "Neighbor II · positive gift friendship +20%"
 msgstr "好邻居 II · 喜爱礼物的好感 +20%"
+
+msgid "Achievements"
+msgstr "成就"
+
+msgid "Green Thumb"
+msgstr "绿手指"
+
+msgid "Harvest your first crop."
+msgstr "收获第一份作物。"
+
+msgid "Angler"
+msgstr "垂钓者"
+
+msgid "Catch your first fish."
+msgstr "钓到第一条鱼。"
+
+msgid "Seasoned Farmer"
+msgstr "老练农夫"
+
+msgid "Harvest 100 crops, counting every save."
+msgstr "累计收获 100 份作物（所有存档合计）。"

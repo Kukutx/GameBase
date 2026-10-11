@@ -10,7 +10,7 @@
     "res://gamebase/modules/progression/test/",
     "res://test/unit/"
   ],
-  "pre_run_script": "res://test/gut_pre_run.gd",
+  "pre_run_script": "res://gamebase/core/test/gut_pre_run.gd",
   "should_exit": true,
   "should_exit_on_success": true,
   "log_level": 1,

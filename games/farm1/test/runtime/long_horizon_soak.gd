@@ -32,7 +32,9 @@ func _run() -> void:
 
 	save_manager.save_directory = SOAK_SAVE_DIRECTORY
 	save_manager.select_slot(1)
+	root.get_node("GameProfile").set("profile_path", SOAK_SAVE_DIRECTORY + "/profile.json")
 	_cleanup_soak_files()
+	root.get_node("GameProfile").call("load_profile")
 
 	var change_error := change_scene_to_file("res://game/world/dev_world.tscn")
 	if change_error != OK:
@@ -149,3 +151,9 @@ func _fail(message: String) -> void:
 
 func _cleanup_soak_files() -> void:
 	root.get_node("SaveManager").delete_slot(1)
+	# Written first, so nothing waits to be written when the soak quits.
+	root.get_node("GameProfile").call("write_now")
+	var profile_path := String(root.get_node("GameProfile").get("profile_path"))
+	for path: String in [profile_path, profile_path + ".tmp"]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
