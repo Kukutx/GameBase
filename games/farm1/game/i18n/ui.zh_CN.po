@@ -2100,9 +2100,6 @@ msgstr "无法创建支持诊断包"
 msgid "Support bundle created: %s"
 msgstr "已创建支持诊断包：%s"
 
-msgid "Finish fishing before saving"
-msgstr "请先结束钓鱼再保存"
-
 msgid "Advanced time by 1 hour"
 msgstr "时间已推进 1 小时"
 

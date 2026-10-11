@@ -1,8 +1,8 @@
 extends Node
 
-## Wires the modules this game enables into the foundation: their save sections,
-## load steps, save blockers, new-game steps and rule keys. See
-## games/farm1/game/game_setup.gd for a game that enables every module.
+## The game's own setup. The modules the game enables install themselves
+## (`GameModules`); this sets what only this game knows, such as the data a
+## module reads from a slot the game fills. See games/farm1/game/game_setup.gd.
 
 func _ready() -> void:
 	pass
