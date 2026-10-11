@@ -12,7 +12,7 @@ var _registry: ContentRegistry
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
-	_seed = WeatherState.world_seed
+	_seed = GameRandom.world_seed
 	_floor_table = MineState.floor_table
 	# The fixture is the only content even for the tests that build none, so
 	# nothing that follows the mine's floors advances the game's own content.
@@ -25,7 +25,7 @@ func before_each() -> void:
 	])
 	MineState.floor_table = null
 	WorldState.clear()
-	WeatherState.world_seed = 93017
+	GameRandom.set_seed(93017)
 	MineState.enter_from_surface()
 
 func after_each() -> void:
@@ -33,7 +33,7 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	MineState.floor_table = _floor_table
 	WorldState.load_save_data(_world_snapshot)
-	WeatherState.world_seed = _seed
+	GameRandom.set_seed(_seed)
 
 func test_floor_layout_is_deterministic_unique_and_scales_with_depth() -> void:
 	MineState.floor_table = _table(&"fixture_stone", [], [_enemy_tier(&"fixture_slime", 1)])

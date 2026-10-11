@@ -88,8 +88,7 @@ func roll_catch(location_id: StringName) -> FishData:
 		total_weight += maxf(fish.catch_weight, 0.0)
 	if total_weight <= 0.0:
 		return null
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash("fish:%d:%d:%d:%s" % [WeatherState.world_seed, WorldClock.day, cast_count, String(location_id)])
+	var rng := GameRandom.stream("fish:%d:%d:%s" % [WorldClock.day, cast_count, location_id])
 	cast_count += 1
 	var roll := rng.randf_range(0.0, total_weight)
 	var cursor := 0.0
@@ -123,8 +122,7 @@ func _start_cast_internal(location_id: StringName, energy_cost: int) -> bool:
 		return false
 	_pending_fish = fish
 	_active_location_id = location_id
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash("bite:%d:%d:%d:%s" % [WeatherState.world_seed, WorldClock.day, cast_count, String(location_id)])
+	var rng := GameRandom.stream("bite:%d:%d:%s" % [WorldClock.day, cast_count, location_id])
 	var min_delay := minf(bite_delay_range.x, bite_delay_range.y)
 	var max_delay := maxf(bite_delay_range.x, bite_delay_range.y)
 	_time_remaining = rng.randf_range(maxf(min_delay, 0.05), maxf(max_delay, 0.05)) * get_effective_wait_multiplier()

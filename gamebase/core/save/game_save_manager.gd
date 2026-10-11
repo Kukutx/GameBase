@@ -14,7 +14,7 @@ signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const SLOT_COUNT := 3
 
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
@@ -24,7 +24,7 @@ const HEADER_KEYS: Array[String] = [
 
 ## Restore orders of the sections the foundation owns. A game places its own
 ## sections between them (see `.agents/rules/save.md`).
-const SECTION_ORDER_WEATHER := 100
+const SECTION_ORDER_RANDOM := 100
 const SECTION_ORDER_CLOCK := 300
 const SECTION_ORDER_PLAYER_STATE := 600
 const SECTION_ORDER_WORLD := 700
@@ -57,8 +57,8 @@ func _exit_tree() -> void:
 		_save_blockers.clear()
 
 func _register_core_sections() -> void:
-	register_section(SaveSection.new(&"weather", SECTION_ORDER_WEATHER,
-		WeatherState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: WeatherState.load_save_data(section)))
+	register_section(SaveSection.new(&"random", SECTION_ORDER_RANDOM,
+		GameRandom.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: GameRandom.load_save_data(section)))
 	register_section(SaveSection.new(&"clock", SECTION_ORDER_CLOCK,
 		WorldClock.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: WorldClock.load_save_data(section)))
 	register_section(SaveSection.new(&"player_state", SECTION_ORDER_PLAYER_STATE,

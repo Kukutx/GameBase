@@ -32,13 +32,13 @@ var _frame_accumulator := 0.0
 var _frame_index := 0
 var _home_position := Vector2.ZERO
 var _walk_target := Vector2.ZERO
-var _rng := RandomNumberGenerator.new()
+var _rng: GameRandomStream
 var _has_art := false
 var _interaction_busy := false
 
 func _ready() -> void:
 	_home_position = global_position
-	_rng.seed = absi(hash(String(persistent_id))) + 1
+	_rng = GameRandom.stream("animal:%s" % persistent_id)
 	_load_state()
 	if last_processed_day <= 0:
 		last_processed_day = WorldClock.day

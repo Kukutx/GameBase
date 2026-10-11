@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/interact.tres" id="5_interact"]
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/quick_save.tres" id="6_quick_save"]
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/quick_load.tres" id="7_quick_load"]
+[ext_resource type="Script" path="res://gamebase/core/time/weather_odds.gd" id="8_weather_odds"]
 
 [sub_resource type="Resource" id="Control_move_up"]
 script = ExtResource("4_control")
@@ -86,6 +87,30 @@ action = &"hotbar_next"
 rebindable = false
 gamepad_axis = 5
 
+[sub_resource type="Resource" id="Weather_spring"]
+script = ExtResource("8_weather_odds")
+season = "Spring"
+rain = 0.25
+storm = 0.05
+
+[sub_resource type="Resource" id="Weather_summer"]
+script = ExtResource("8_weather_odds")
+season = "Summer"
+rain = 0.12
+storm = 0.04
+
+[sub_resource type="Resource" id="Weather_autumn"]
+script = ExtResource("8_weather_odds")
+season = "Autumn"
+rain = 0.27
+storm = 0.07
+
+[sub_resource type="Resource" id="Weather_winter"]
+script = ExtResource("8_weather_odds")
+season = "Winter"
+rain = 0.1
+storm = 0.02
+
 [resource]
 script = ExtResource("1_definition")
 content = [ExtResource("2_content")]
@@ -95,6 +120,7 @@ home_spawn_id = &"from_town"
 start_day = 1
 start_minute_of_day = 480
 world_seed = 93017
+weather_odds = Array[ExtResource("8_weather_odds")]([SubResource("Weather_spring"), SubResource("Weather_summer"), SubResource("Weather_autumn"), SubResource("Weather_winter")])
 start_items = Dictionary[StringName, int]({
 &"hoe": 1,
 &"watering_can": 1,

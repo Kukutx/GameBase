@@ -18,7 +18,7 @@ var _world_snapshot: Dictionary
 func before_each() -> void:
 	_clock_day = WorldClock.day
 	_clock_minute = WorldClock.minute_of_day
-	_seed = WeatherState.world_seed
+	_seed = GameRandom.world_seed
 	_inventory_snapshot = InventoryState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
@@ -35,7 +35,7 @@ func before_each() -> void:
 	WorldClock.set_time(1, 8 * 60)
 	# Rain would water the plot as soon as it is tilled.
 	while WeatherState.is_raining(1):
-		WeatherState.world_seed += 1
+		GameRandom.set_seed(GameRandom.world_seed + 1)
 
 func after_each() -> void:
 	# GUT frees the fixture after this; restore against the game's content.
@@ -43,7 +43,7 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
 	WorldState.load_save_data(_world_snapshot)
-	WeatherState.world_seed = _seed
+	GameRandom.set_seed(_seed)
 	WorldClock.set_time(_clock_day, _clock_minute)
 
 func test_tool_power_divides_the_energy_a_farm_plot_costs() -> void:
