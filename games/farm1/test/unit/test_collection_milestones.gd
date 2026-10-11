@@ -21,9 +21,9 @@ func after_each() -> void:
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_archive_milestones_are_registered_and_visible_in_game_menu() -> void:
-	assert_eq(ContentDB.get_all_collection_milestones().size(), 4)
+	assert_eq(CollectionMilestoneData.find_all().size(), 4)
 	for milestone_id: StringName in [&"crop_archive", &"fish_archive", &"mineral_archive", &"animal_archive"]:
-		assert_not_null(ContentDB.get_collection_milestone(milestone_id))
+		assert_not_null(CollectionMilestoneData.find(milestone_id))
 	var menu_scene := load("res://game/ui/game_menu.tscn") as PackedScene
 	var menu := menu_scene.instantiate()
 	autofree(menu)

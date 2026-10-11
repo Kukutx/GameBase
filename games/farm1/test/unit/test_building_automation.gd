@@ -31,7 +31,7 @@ func after_each() -> void:
 	WorldClock.load_save_data(_clock_snapshot)
 
 func test_sprinkler_is_craftable_placeable_and_refundable() -> void:
-	assert_not_null(ContentDB.get_placeable(&"basic_sprinkler"))
+	assert_not_null(PlaceableData.find(&"basic_sprinkler"))
 	assert_not_null(CraftingState.get_recipe(&"basic_sprinkler"))
 	InventoryState.add_item_by_id(&"copper_bar", 1)
 	InventoryState.add_item_by_id(&"wood", 2)

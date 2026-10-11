@@ -60,7 +60,7 @@ func _rebuild() -> void:
 	var records := AnimalState.get_owned(_location_id)
 	for record: Dictionary in records:
 		var instance_id := StringName(String(record.get("instance_id", "")))
-		var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+		var data := FarmAnimalData.find(StringName(String(record.get("animal_id", ""))))
 		if instance_id == &"" or data == null:
 			continue
 		var custom_name := String(record.get("custom_name", ""))
@@ -114,7 +114,7 @@ func _refresh_summary() -> void:
 	for housing_id: StringName in _feed_buttons:
 		parts.append("%s %d/%d" % [tr(AnimalState.get_housing_name(housing_id)), AnimalState.get_housing_occupancy(housing_id), AnimalState.get_housing_capacity(housing_id)])
 	for item_id: StringName in AnimalState.get_feed_item_ids(_location_id):
-		var item := ContentDB.get_item(item_id)
+		var item := ItemData.find(item_id)
 		parts.append("%s %d" % [tr(item.display_name) if item != null else String(item_id), InventoryState.get_quantity(item_id)])
 	summary_label.text = " · ".join(parts)
 	for housing_id: StringName in _feed_buttons:
@@ -137,7 +137,7 @@ func _refresh_selected() -> void:
 		rename_button.disabled = true
 		sell_button.disabled = true
 		return
-	var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+	var data := FarmAnimalData.find(StringName(String(record.get("animal_id", ""))))
 	if data == null:
 		return
 	var custom_name := String(record.get("custom_name", ""))
@@ -151,7 +151,7 @@ func _refresh_selected() -> void:
 	var fed_today := int(state.get("last_fed_day", 0)) >= WorldClock.day
 	var last_product_day := int(state.get("last_product_day", WorldClock.day))
 	var product_ready := fed_today and WorldClock.day - last_product_day >= data.product_interval_days
-	var product := ContentDB.get_item(data.product_item_id)
+	var product := ItemData.find(data.product_item_id)
 	var product_name := tr(product.display_name) if product != null else tr("None")
 	details_label.text = tr("[b]%s[/b]\nSpecies: %s\nHousing: %s\nHappiness: %d/100\nFed today: %s\nProduct: %s%s") % [
 		details_name,
@@ -182,7 +182,7 @@ func _request_sell() -> void:
 	var record := AnimalState.get_record(_selected_instance_id)
 	if record.is_empty():
 		return
-	var data := ContentDB.get_farm_animal(StringName(String(record.get("animal_id", ""))))
+	var data := FarmAnimalData.find(StringName(String(record.get("animal_id", ""))))
 	if data == null:
 		return
 	var display_name := String(record.get("custom_name", ""))
@@ -213,7 +213,7 @@ func _refresh_expansion_button(button: Button, housing_id: StringName) -> void:
 	var requirements := PackedStringArray()
 	for raw_id: Variant in expansion.materials.keys():
 		var item_id := StringName(String(raw_id))
-		var item := ContentDB.get_item(item_id)
+		var item := ItemData.find(item_id)
 		requirements.append("%s x%d" % [tr(item.display_name) if item != null else tr(String(item_id).capitalize()), int(expansion.materials[raw_id])])
 	button.tooltip_text = "%s\n%s" % [tr(expansion.description), " · ".join(requirements)]
 	button.disabled = not FarmExpansionState.can_purchase(expansion.id)

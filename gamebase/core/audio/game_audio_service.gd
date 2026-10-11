@@ -23,7 +23,7 @@ func play_cue(cue_id: StringName) -> bool:
 	if cue_id == &"":
 		return false
 	cue_requested.emit(cue_id)
-	var cue := ContentDB.get_audio_cue(cue_id)
+	var cue := AudioCueData.find(cue_id)
 	if cue == null or cue.stream == null:
 		return false
 	if cue.is_music():
@@ -111,7 +111,7 @@ func _sync_location_music() -> void:
 	if location == null or location.music_cue_id == &"":
 		stop_music()
 		return
-	var cue := ContentDB.get_audio_cue(location.music_cue_id)
+	var cue := AudioCueData.find(location.music_cue_id)
 	if cue == null or cue.stream == null:
 		stop_music()
 		return

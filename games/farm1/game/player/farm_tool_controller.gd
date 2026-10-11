@@ -155,7 +155,7 @@ func _place_selected_internal(item: ItemData) -> void:
 	if location == null:
 		GameEvents.toast("You cannot build here")
 		return
-	var data := ContentDB.get_placeable(item.placeable_id)
+	var data := PlaceableData.find(item.placeable_id)
 	if data == null or not data.is_allowed_in(location):
 		GameEvents.toastf("%s cannot be placed here", [item.display_name])
 		return

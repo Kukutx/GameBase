@@ -296,7 +296,7 @@ Expected:
 
 ## A25: an implementation that exists is not a public product capability
 
-Context: the repository already has a complete system and a debug-only screen for it, but the entry cannot be reached in a release build and its content is not registered in `games/farm1/game/data/content_manifest.tres`.
+Context: the repository already has a complete system and a debug-only screen for it, but the entry cannot be reached in a release build and its content is not registered in `games/farm1/game/data/content.tres`.
 
 Input:
 > The system is all written. Add its entry to the game menu while you are at it.
@@ -369,7 +369,7 @@ Expected:
 ## A31: what the machine can do is not handed to the user to do by hand
 
 Input:
-> Confirm for me that the content manifest, the ids that saves refer to and the related tests agree.
+> Confirm for me that the content pack, the ids that saves refer to and the related tests agree.
 
 Premise: the repository already has read-only checks and test entry points, and running them changes no external state.
 

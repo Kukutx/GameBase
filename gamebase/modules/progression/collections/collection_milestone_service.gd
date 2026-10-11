@@ -15,10 +15,10 @@ func _ready() -> void:
 	_check_ready_milestones()
 
 func get_milestone(id: StringName) -> CollectionMilestoneData:
-	return ContentDB.get_collection_milestone(id)
+	return CollectionMilestoneData.find(id)
 
 func get_all_milestones() -> Array[CollectionMilestoneData]:
-	return ContentDB.get_all_collection_milestones()
+	return CollectionMilestoneData.find_all()
 
 func get_progress(milestone: CollectionMilestoneData) -> int:
 	if milestone == null:

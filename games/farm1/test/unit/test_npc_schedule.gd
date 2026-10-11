@@ -136,7 +136,7 @@ func test_core_npcs_have_real_cross_town_routes_for_every_seasonal_festival() ->
 		&"event:winter_lantern_night:active": &"starter_town",
 	}
 	for npc_id: StringName in [&"mira", &"rowan", &"neri"]:
-		var profile := ContentDB.get_npc(npc_id)
+		var profile := NpcProfileData.find(npc_id)
 		assert_not_null(profile)
 		if profile == null:
 			continue

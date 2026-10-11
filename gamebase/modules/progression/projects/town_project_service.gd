@@ -11,11 +11,11 @@ var _contributing_projects: Dictionary = {}
 var _claiming_projects: Dictionary = {}
 
 func get_project(project_id: StringName) -> TownProjectData:
-	return ContentDB.get_town_project(project_id)
+	return TownProjectData.find(project_id)
 
 func get_projects_for_location(location_id: StringName) -> Array[TownProjectData]:
 	var result: Array[TownProjectData] = []
-	for project: TownProjectData in ContentDB.get_all_town_projects():
+	for project: TownProjectData in TownProjectData.find_all():
 		if project != null and (location_id == &"" or project.location_id == location_id):
 			result.append(project)
 	return result
@@ -136,7 +136,7 @@ func claim_reward(project_id: StringName) -> bool:
 	if reward_items is Dictionary:
 		for raw_id: Variant in (reward_items as Dictionary).keys():
 			var item_id := StringName(String(raw_id))
-			var item := ContentDB.get_item(item_id)
+			var item := ItemData.find(item_id)
 			if item != null and item.is_placeable():
 				Hotbar.ensure_item(item_id)
 	var reward_money := DeferredRewardSnapshot.get_money(reward)
@@ -178,7 +178,7 @@ func get_location_summary(location_id: StringName) -> String:
 ## Every project's state as plain data, for an NPC's conversation context.
 func get_context_entries() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for project: TownProjectData in ContentDB.get_all_town_projects():
+	for project: TownProjectData in TownProjectData.find_all():
 		if project == null:
 			continue
 		var progress: Dictionary = {}
@@ -231,7 +231,7 @@ func _safe_nonnegative_int(value: Variant) -> int:
 	return maxi(int(value), 0)
 
 func _item_name(item_id: StringName) -> String:
-	var item := ContentDB.get_item(item_id)
+	var item := ItemData.find(item_id)
 	return item.display_name if item != null else String(item_id).capitalize()
 
 func _get_all_state() -> Dictionary:

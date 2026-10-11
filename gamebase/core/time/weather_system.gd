@@ -9,6 +9,9 @@ enum Weather {
 
 signal weather_changed(day: int, weather: Weather)
 
+## The name of each `Weather`, in its order, as content names weather.
+const WEATHER_NAMES: Array[String] = ["Clear", "Rain", "Storm"]
+
 var world_seed := 93017
 var current_weather: Weather = Weather.CLEAR
 
@@ -49,13 +52,7 @@ func is_raining(day: int = -1) -> bool:
 	return weather == Weather.RAIN or weather == Weather.STORM
 
 func get_weather_name(weather: Weather = current_weather) -> String:
-	match weather:
-		Weather.RAIN:
-			return "Rain"
-		Weather.STORM:
-			return "Storm"
-		_:
-			return "Clear"
+	return WEATHER_NAMES[weather]
 
 func to_save_data() -> Dictionary:
 	return {"world_seed": world_seed}

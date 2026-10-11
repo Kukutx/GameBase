@@ -4,6 +4,11 @@ extends GameModule
 ## Wires the progression module into the core (see `GameModule`).
 
 func install() -> void:
+	for kind_script: Script in [CollectionMilestoneData, MailData, QuestData, ToolUpgradeData, TownProjectData]:
+		ContentDB.register_kind(kind_script.KIND, kind_script)
+	ContentDB.register_check(QuestData.find_chain_problems)
+	ContentDB.register_check(TownProjectData.find_cycle_problems)
+	ContentDB.register_check(CollectionMilestoneData.find_cycle_problems)
 	ProgressionRules.register(GameRules)
 	SaveManager.register_section(SaveSection.new(&"quests", 1000,
 		QuestState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: QuestState.load_save_data(section)))

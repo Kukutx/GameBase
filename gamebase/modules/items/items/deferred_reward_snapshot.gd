@@ -36,7 +36,7 @@ static func grant_items(snapshot: Dictionary) -> bool:
 		return false
 	var items: Dictionary = {}
 	for raw_id: Variant in (raw_items as Dictionary).keys():
-		if ContentDB.get_item(StringName(String(raw_id))) != null:
+		if ItemData.find(StringName(String(raw_id))) != null:
 			items[raw_id] = _safe_nonnegative_int((raw_items as Dictionary)[raw_id])
 	return InventoryState.add_items_atomic(items)
 

@@ -33,7 +33,7 @@ func test_loaded_mining_and_enemy_state_clamps_future_respawn_markers() -> void:
 	WorldClock.set_time(10, 8 * 60)
 	var mining_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node := mining_scene.instantiate() as MiningNode
-	node.data = ContentDB.get_mining_node(&"stone_rock")
+	node.data = MiningNodeData.find(&"stone_rock")
 	node.persistent_id = &""
 	add_child_autofree(node)
 	node.load_state_data({
@@ -56,7 +56,7 @@ func test_loaded_mining_and_enemy_state_clamps_future_respawn_markers() -> void:
 
 	var enemy_scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var enemy := enemy_scene.instantiate() as HostileCreature
-	enemy.data = ContentDB.get_enemy(&"green_slime")
+	enemy.data = EnemyData.find(&"green_slime")
 	enemy.persistent_id = &""
 	add_child_autofree(enemy)
 	enemy.load_state_data({"health": 999, "defeated": true, "defeated_day": 999999, "pending_drop_quantity": 999999}, false)
@@ -73,7 +73,7 @@ func test_loaded_mining_and_enemy_state_clamps_future_respawn_markers() -> void:
 func test_pickaxe_breaks_stone_and_awards_mining_xp() -> void:
 	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node = scene.instantiate()
-	node.data = ContentDB.get_mining_node(&"stone_rock")
+	node.data = MiningNodeData.find(&"stone_rock")
 	node.persistent_id = &""
 	add_child_autofree(node)
 
@@ -87,7 +87,7 @@ func test_pickaxe_breaks_stone_and_awards_mining_xp() -> void:
 func test_mining_node_blocks_energy_and_drop_signal_reentrancy() -> void:
 	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node := scene.instantiate() as MiningNode
-	node.data = ContentDB.get_mining_node(&"stone_rock")
+	node.data = MiningNodeData.find(&"stone_rock")
 	node.persistent_id = &""
 	add_child_autofree(node)
 	await get_tree().process_frame
@@ -126,10 +126,10 @@ func test_mining_and_enemy_ground_drops_do_not_count_as_forage() -> void:
 	InventoryState.clear()
 	var mining_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node = mining_scene.instantiate()
-	node.data = ContentDB.get_mining_node(&"stone_rock")
+	node.data = MiningNodeData.find(&"stone_rock")
 	node.persistent_id = &""
 	add_child_autofree(node)
-	var stone := ContentDB.get_item(&"stone")
+	var stone := ItemData.find(&"stone")
 	var mining_drop := node.call("_make_drop_pickup", stone, 2) as WorldItemPickup
 	assert_not_null(mining_drop)
 	if mining_drop != null:
@@ -145,10 +145,10 @@ func test_mining_and_enemy_ground_drops_do_not_count_as_forage() -> void:
 	InventoryState.clear()
 	var creature_scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var slime = creature_scene.instantiate()
-	slime.data = ContentDB.get_enemy(&"green_slime")
+	slime.data = EnemyData.find(&"green_slime")
 	slime.persistent_id = &""
 	add_child_autofree(slime)
-	var gel := ContentDB.get_item(&"slime_gel")
+	var gel := ItemData.find(&"slime_gel")
 	var enemy_drop := slime.call("_make_drop_pickup", gel, 1) as WorldItemPickup
 	assert_not_null(enemy_drop)
 	if enemy_drop != null:
@@ -158,14 +158,14 @@ func test_mining_and_enemy_ground_drops_do_not_count_as_forage() -> void:
 func test_pending_ground_loot_survives_partial_collection_and_source_reload() -> void:
 	InventoryState.clear()
 	InventoryState.max_slots = 1
-	var stone := ContentDB.get_item(&"stone")
+	var stone := ItemData.find(&"stone")
 	assert_not_null(stone)
 	if stone == null:
 		return
 	InventoryState.add_item(stone, stone.max_stack - 1)
 	var mining_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node = mining_scene.instantiate() as MiningNode
-	node.data = ContentDB.get_mining_node(&"stone_rock")
+	node.data = MiningNodeData.find(&"stone_rock")
 	node.persistent_id = &"pending_mining_test"
 	add_child_autofree(node)
 	await get_tree().process_frame
@@ -191,7 +191,7 @@ func test_pending_ground_loot_survives_partial_collection_and_source_reload() ->
 	assert_eq(int(saved_state.get("pending_drop_quantity", 0)), 1)
 
 	var restored = mining_scene.instantiate() as MiningNode
-	restored.data = ContentDB.get_mining_node(&"stone_rock")
+	restored.data = MiningNodeData.find(&"stone_rock")
 	restored.persistent_id = &"pending_mining_test"
 	add_child_autofree(restored)
 	await get_tree().process_frame
@@ -199,7 +199,7 @@ func test_pending_ground_loot_survives_partial_collection_and_source_reload() ->
 
 	var enemy_scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var enemy = enemy_scene.instantiate() as HostileCreature
-	enemy.data = ContentDB.get_enemy(&"green_slime")
+	enemy.data = EnemyData.find(&"green_slime")
 	enemy.persistent_id = &"pending_enemy_test"
 	add_child_autofree(enemy)
 	await get_tree().process_frame
@@ -237,7 +237,7 @@ func test_melee_attack_blocks_energy_changed_reentrancy() -> void:
 func test_slime_takes_melee_damage_drops_loot_and_awards_combat_xp() -> void:
 	var scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var slime = scene.instantiate()
-	slime.data = ContentDB.get_enemy(&"green_slime")
+	slime.data = EnemyData.find(&"green_slime")
 	slime.persistent_id = &""
 	slime.global_position = Vector2(10000, 10000)
 	add_child_autofree(slime)

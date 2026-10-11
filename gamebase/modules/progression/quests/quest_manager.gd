@@ -26,7 +26,7 @@ func _ready() -> void:
 	MineState.deepest_floor_changed.connect(_on_deepest_mine_floor_changed)
 
 func get_quest(quest_id: StringName) -> QuestData:
-	return ContentDB.get_quest(quest_id)
+	return QuestData.find(quest_id)
 
 func start_quest(quest_id: StringName) -> bool:
 	var quest := get_quest(quest_id)
@@ -44,7 +44,7 @@ func start_quest(quest_id: StringName) -> bool:
 
 func reset_new_game() -> void:
 	_states.clear()
-	for quest: QuestData in ContentDB.get_all_quests():
+	for quest: QuestData in QuestData.find_all():
 		if quest != null and quest.auto_start:
 			start_quest(quest.id)
 

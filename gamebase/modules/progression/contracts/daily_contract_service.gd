@@ -84,7 +84,7 @@ func get_summary() -> String:
 # The title is built from the stored objective when it is shown, so it follows
 # the current language and the current name of the item.
 func get_display_title(state: Dictionary) -> String:
-	var item := ContentDB.get_item(StringName(String(state.get("target_item_id", ""))))
+	var item := ItemData.find(StringName(String(state.get("target_item_id", ""))))
 	if item == null:
 		return tr("Daily contract")
 	var amount := maxi(int(state.get("required", 1)), 1)
@@ -124,26 +124,26 @@ func _ensure_contract() -> void:
 func _is_contract_content_valid(state: Dictionary) -> bool:
 	var objective := StringName(String(state.get("objective_type", "")))
 	var target := StringName(String(state.get("target_item_id", "")))
-	if objective == &"" or target == &"" or ContentDB.get_item(target) == null:
+	if objective == &"" or target == &"" or ItemData.find(target) == null:
 		return false
 	match objective:
 		FORAGE:
-			for entry: ForageEntryData in ContentDB.get_all_forage_entries():
+			for entry: ForageEntryData in ForageEntryData.find_all():
 				if entry != null and entry.item_id == target:
 					return true
 			return false
 		FISH:
-			for fish: FishData in ContentDB.get_all_fish():
+			for fish: FishData in FishData.find_all():
 				if fish != null and fish.item_id == target:
 					return true
 			return false
 		MINE:
-			for node: MiningNodeData in ContentDB.get_all_mining_nodes():
+			for node: MiningNodeData in MiningNodeData.find_all():
 				if node != null and node.drop_item_id == target:
 					return true
 			return false
 		HARVEST:
-			for crop: CropData in ContentDB.get_all_crops():
+			for crop: CropData in CropData.find_all():
 				if crop != null and crop.harvest_item_id == target:
 					return true
 			return false
@@ -158,7 +158,7 @@ func _build_candidates(day: int) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var season := GameClock.get_season_name_for_day(day)
 	var unique_forage: Dictionary = {}
-	for entry: ForageEntryData in ContentDB.get_all_forage_entries():
+	for entry: ForageEntryData in ForageEntryData.find_all():
 		if entry == null or (not entry.seasons.is_empty() and not entry.seasons.has(season)):
 			continue
 		# Forage/ship contracts last through generated_day + 2. Seasonal forage
@@ -171,7 +171,7 @@ func _build_candidates(day: int) -> Array[Dictionary]:
 		_add_candidate(result, FORAGE, StringName(String(raw_id)), 3, 90, 2)
 		_add_candidate(result, SHIP, StringName(String(raw_id)), 2, 110, 2)
 
-	for fish: FishData in ContentDB.get_all_fish():
+	for fish: FishData in FishData.find_all():
 		if fish == null or (not fish.seasons.is_empty() and not fish.seasons.has(season)):
 			continue
 		if not _fish_has_contract_window(fish, day, 2):
@@ -179,7 +179,7 @@ func _build_candidates(day: int) -> Array[Dictionary]:
 		_add_candidate(result, FISH, fish.item_id, 1, 140 + fish.difficulty * 20, 1)
 
 	var deepest_mine_floor := MineState.get_deepest_floor()
-	for node: MiningNodeData in ContentDB.get_all_mining_nodes():
+	for node: MiningNodeData in MiningNodeData.find_all():
 		if node == null or node.drop_item_id == &"":
 			continue
 		if deepest_mine_floor < node.minimum_mine_floor:
@@ -188,7 +188,7 @@ func _build_candidates(day: int) -> Array[Dictionary]:
 
 	var day_of_season := posmod(maxi(day, 1) - 1, GameClock.DAYS_PER_SEASON) + 1
 	var growth_days_left := GameClock.DAYS_PER_SEASON - day_of_season + 1
-	for crop: CropData in ContentDB.get_all_crops():
+	for crop: CropData in CropData.find_all():
 		if crop == null or not crop.can_grow_in(season):
 			continue
 		if crop.days_to_mature > growth_days_left:
@@ -197,7 +197,7 @@ func _build_candidates(day: int) -> Array[Dictionary]:
 	return result
 
 func _add_candidate(result: Array[Dictionary], objective_type: StringName, item_id: StringName, required: int, base_reward: int, value_multiplier: int, duration_days: int = 2) -> void:
-	var item := ContentDB.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null:
 		return
 	var amount := maxi(required, 1)

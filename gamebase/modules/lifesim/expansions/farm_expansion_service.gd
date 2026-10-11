@@ -8,7 +8,7 @@ const STATE_KEY := &"farm_expansions:completed"
 var _purchasing: Dictionary = {}
 
 func get_expansion(expansion_id: StringName) -> FarmExpansionData:
-	return ContentDB.get_farm_expansion(expansion_id)
+	return FarmExpansionData.find(expansion_id)
 
 func is_completed(expansion_id: StringName) -> bool:
 	return bool(_get_state().get(String(expansion_id), false))
@@ -63,7 +63,7 @@ func purchase(expansion_id: StringName) -> bool:
 
 func get_capacity(housing_id: StringName, base_capacity: int) -> int:
 	var result := maxi(base_capacity, 1)
-	for data: FarmExpansionData in ContentDB.get_all_farm_expansions():
+	for data: FarmExpansionData in FarmExpansionData.find_all():
 		if data == null or data.housing_id != housing_id or not is_completed(data.id):
 			continue
 		result = maxi(result, data.capacity_after)
@@ -71,7 +71,7 @@ func get_capacity(housing_id: StringName, base_capacity: int) -> int:
 
 func get_next_expansion_for_housing(housing_id: StringName) -> FarmExpansionData:
 	var candidates: Array[FarmExpansionData] = []
-	for data: FarmExpansionData in ContentDB.get_all_farm_expansions():
+	for data: FarmExpansionData in FarmExpansionData.find_all():
 		if data != null and data.housing_id == housing_id and not is_completed(data.id):
 			candidates.append(data)
 	candidates.sort_custom(func(a: FarmExpansionData, b: FarmExpansionData) -> bool: return a.capacity_after < b.capacity_after)

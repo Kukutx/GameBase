@@ -53,7 +53,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	plot.persistent_id = &""
 	plot.hoe_energy_cost = 10
 	add_child_autofree(plot)
-	var hoe := ContentDB.get_item(&"hoe")
+	var hoe := ItemData.find(&"hoe")
 	assert_eq(plot.get_tool_energy_cost(hoe), 10)
 	Skills.add_xp(SkillManager.FARMING, 700)
 	assert_eq(plot.get_tool_energy_cost(hoe), 9)
@@ -65,7 +65,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	PlayerState.energy = 100
 	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var rock1 := scene.instantiate() as MiningNode
-	rock1.data = ContentDB.get_mining_node(&"iridium_rock")
+	rock1.data = MiningNodeData.find(&"iridium_rock")
 	rock1.persistent_id = &""
 	add_child_autofree(rock1)
 	assert_true(rock1.use_item(&"gold_pickaxe"))
@@ -74,7 +74,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	Skills.add_xp(SkillManager.MINING, 700)
 	PlayerState.energy = 100
 	var rock5 := scene.instantiate() as MiningNode
-	rock5.data = ContentDB.get_mining_node(&"iridium_rock")
+	rock5.data = MiningNodeData.find(&"iridium_rock")
 	rock5.persistent_id = &""
 	add_child_autofree(rock5)
 	assert_true(rock5.use_item(&"gold_pickaxe"))
@@ -83,7 +83,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	Skills.add_xp(SkillManager.MINING, 2500)
 	PlayerState.energy = 100
 	var rock10 := scene.instantiate() as MiningNode
-	rock10.data = ContentDB.get_mining_node(&"iridium_rock")
+	rock10.data = MiningNodeData.find(&"iridium_rock")
 	rock10.persistent_id = &""
 	add_child_autofree(rock10)
 	assert_true(rock10.use_item(&"gold_pickaxe"))
@@ -92,7 +92,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 func test_combat_and_fishing_perks_change_real_action_values() -> void:
 	var melee := MeleeController.new()
 	add_child_autofree(melee)
-	var sword := ContentDB.get_item(&"copper_sword")
+	var sword := ItemData.find(&"copper_sword")
 	assert_eq(melee.get_attack_damage(sword), 24)
 	Skills.add_xp(SkillManager.COMBAT, 700)
 	assert_eq(melee.get_attack_damage(sword), 26)
@@ -113,7 +113,7 @@ func test_combat_and_fishing_perks_change_real_action_values() -> void:
 	assert_almost_eq(fishing.get_effective_bite_window(), 1.3, 0.001)
 
 func test_social_and_foraging_perks_improve_rewards_without_changing_rng_plan() -> void:
-	var profile := ContentDB.get_npc(&"mira")
+	var profile := NpcProfileData.find(&"mira")
 	assert_not_null(profile)
 	var state := RelationshipManager.new()
 	add_child_autofree(state)

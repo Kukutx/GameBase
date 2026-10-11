@@ -17,7 +17,7 @@ func register_section(key: StringName, provider: Callable) -> void:
 	_sections[String(key)] = provider
 
 func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
-	var profile := ContentDB.get_npc(npc_id)
+	var profile := NpcProfileData.find(npc_id)
 	if profile == null:
 		return {}
 	var location := ContentDB.get_current_location(get_tree())

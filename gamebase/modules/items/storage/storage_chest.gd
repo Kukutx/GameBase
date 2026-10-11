@@ -50,3 +50,15 @@ func _refresh() -> void:
 	var used := StorageState.get_used_slots(container_id)
 	label.text = tr("%s\n%d/%d slots") % [tr(display_name), used, max_slots]
 	interactable.set_prompt("Open %s", [display_name])
+
+## The container the chest shows, for `ContentRegistry`'s check that no two
+## nodes share it.
+func get_persistent_keys() -> PackedStringArray:
+	return PackedStringArray(["storage:%s" % String(container_id)]) if container_id != &"" else PackedStringArray()
+
+## A chest built into a location needs its container id; a placed one gets it
+## from its record.
+func find_scene_problems(_registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	if location != null and container_id == &"":
+		return PackedStringArray(["storage chest '%s' has no container id" % name])
+	return PackedStringArray()

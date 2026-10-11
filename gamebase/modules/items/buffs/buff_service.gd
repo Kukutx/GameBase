@@ -11,7 +11,7 @@ func _ready() -> void:
 	WorldClock.minute_changed.connect(_on_minute_changed)
 
 func apply_buff(buff_id: StringName) -> bool:
-	var data := ContentDB.get_food_buff(buff_id)
+	var data := FoodBuffData.find(buff_id)
 	if data == null:
 		return false
 	var expires_at := get_absolute_minute() + data.duration_minutes
@@ -33,7 +33,7 @@ func get_multiplier(stat: StringName) -> float:
 	_prune_expired()
 	var result := 1.0
 	for raw_id: Variant in _active.keys():
-		var data := ContentDB.get_food_buff(StringName(String(raw_id)))
+		var data := FoodBuffData.find(StringName(String(raw_id)))
 		if data != null:
 			result *= data.get_multiplier(stat)
 	return result
@@ -43,7 +43,7 @@ func get_active_entries() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for raw_id: Variant in _active.keys():
 		var buff_id := StringName(String(raw_id))
-		var data := ContentDB.get_food_buff(buff_id)
+		var data := FoodBuffData.find(buff_id)
 		if data == null:
 			continue
 		result.append({
@@ -77,7 +77,7 @@ func load_save_data(data: Dictionary) -> void:
 	_active.clear()
 	for raw_id: Variant in data.keys():
 		var buff_id := StringName(String(raw_id))
-		if ContentDB.get_food_buff(buff_id) == null:
+		if FoodBuffData.find(buff_id) == null:
 			continue
 		var now := get_absolute_minute()
 		var raw_expiry: Variant = data[raw_id]

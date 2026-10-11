@@ -9,20 +9,18 @@
       "GameRules": "res://gamebase/core/rules/game_rules.gd",
       "WorldClock": "res://gamebase/core/time/game_clock.gd",
       "WeatherState": "res://gamebase/core/time/weather_system.gd",
-      "ContentDB": "res://game/content/game_content_database.gd",
+      "ContentDB": "res://gamebase/core/content/content_registry.gd",
+      "GameModules": "res://gamebase/core/modules/game_modules.gd",
       "PlayerState": "res://gamebase/core/player/player_state.gd",
       "WorldState": "res://gamebase/core/world/world_state.gd"
     },
     "after_modules": {
-      "LocationCatalog": "res://gamebase/core/world/world_location_catalog.gd",
       "WorldTravel": "res://gamebase/core/world/world_travel.gd",
       "GameAudio": "res://gamebase/core/audio/game_audio_service.gd",
       "SaveManager": "res://gamebase/core/save/game_save_manager.gd",
       "AutoSave": "res://gamebase/core/save/auto_save_service.gd",
       "GameSession": "res://gamebase/core/session/game_session.gd",
       "MiniGameHost": "res://gamebase/core/minigames/minigame_host.gd",
-      "GameModules": "res://gamebase/core/modules/game_modules.gd",
-      "GameSetup": "res://game/game_setup.gd",
       "GameDiagnostics": "res://gamebase/core/diagnostics/game_diagnostics.gd",
       "SupportBundle": "res://gamebase/core/diagnostics/support_bundle_service.gd"
     }
@@ -34,7 +32,6 @@
     "items": {
       "requires": [],
       "autoloads": {
-        "ItemCatalog": "res://gamebase/modules/items/items/item_catalog.gd",
         "InventoryState": "res://gamebase/modules/items/items/inventory_store.gd",
         "Hotbar": "res://gamebase/modules/items/hotbar/hotbar_service.gd",
         "BuffState": "res://gamebase/modules/items/buffs/buff_service.gd",
@@ -47,7 +44,6 @@
     "lifesim": {
       "requires": ["combat", "items", "skills"],
       "autoloads": {
-        "CropCatalog": "res://gamebase/modules/lifesim/farming/crop_catalog.gd",
         "EventState": "res://gamebase/modules/lifesim/calendar/calendar_event_manager.gd",
         "ShippingState": "res://gamebase/modules/lifesim/economy/shipping_service.gd",
         "FarmExpansionState": "res://gamebase/modules/lifesim/expansions/farm_expansion_service.gd",
@@ -61,7 +57,6 @@
       "addons": ["dialogue_manager"],
       "autoloads": {
         "DialogueManager": "res://addons/dialogue_manager/dialogue_manager.gd",
-        "NpcCatalog": "res://gamebase/modules/npc_social/npc/npc_catalog.gd",
         "RelationshipState": "res://gamebase/modules/npc_social/npc/relationship_manager.gd",
         "HeartEvents": "res://gamebase/modules/npc_social/npc/heart_event_service.gd",
         "NpcMemory": "res://gamebase/modules/npc_social/npc/npc_memory_store.gd",
@@ -70,7 +65,7 @@
       }
     },
     "progression": {
-      "requires": ["items", "lifesim", "npc_social", "skills"],
+      "requires": ["combat", "items", "lifesim", "npc_social", "skills"],
       "autoloads": {
         "QuestState": "res://gamebase/modules/progression/quests/quest_manager.gd",
         "MailState": "res://gamebase/modules/progression/mail/mail_service.gd",

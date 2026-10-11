@@ -8,11 +8,11 @@ func test_invalid_travel_target_never_locks_world_travel() -> void:
 		failures.append({"scene": scene_path, "spawn": String(spawn_id), "reason": reason})
 	)
 
-	assert_false(bool(travel.call("_travel_scene", "res://game/data/content_manifest.tres", &"bad_spawn")))
+	assert_false(bool(travel.call("_travel_scene", "res://game/data/content.tres", &"bad_spawn")))
 	assert_false(travel.is_traveling())
 	assert_eq(travel.get_pending_spawn_id(), &"")
 	assert_eq(failures.size(), 1)
-	assert_eq(String(failures[0].get("scene", "")), "res://game/data/content_manifest.tres")
+	assert_eq(String(failures[0].get("scene", "")), "res://game/data/content.tres")
 	assert_string_contains(String(failures[0].get("reason", "")), "not a PackedScene")
 
 	assert_false(bool(travel.call("_travel_scene", "res://game/world/definitely_missing_scene.tscn", &"missing")))

@@ -15,7 +15,7 @@ func after_each() -> void:
 func test_audio_cues_and_location_music_are_registered() -> void:
 	var errors := ContentDB.rebuild()
 	assert_eq(errors.size(), 0)
-	var cues := ContentDB.get_all_audio_cues()
+	var cues := AudioCueData.find_all()
 	assert_eq(cues.size(), 13)
 
 	var expected_sfx: Array[StringName] = [
@@ -29,7 +29,7 @@ func test_audio_cues_and_location_music_are_registered() -> void:
 		&"sfx_tool_upgraded",
 	]
 	for cue_id: StringName in expected_sfx:
-		var cue := ContentDB.get_audio_cue(cue_id)
+		var cue := AudioCueData.find(cue_id)
 		assert_not_null(cue, "Missing SFX cue %s" % cue_id)
 		if cue != null:
 			assert_false(cue.is_music())
@@ -45,8 +45,8 @@ func test_audio_cues_and_location_music_are_registered() -> void:
 	for raw_location_id: Variant in expected_music.keys():
 		var location_id := raw_location_id as StringName
 		var cue_id := expected_music[raw_location_id] as StringName
-		var location := ContentDB.get_location(location_id)
-		var cue := ContentDB.get_audio_cue(cue_id)
+		var location := WorldLocationData.find(location_id)
+		var cue := AudioCueData.find(cue_id)
 		assert_not_null(location)
 		assert_not_null(cue)
 		if location != null and cue != null:
@@ -62,7 +62,7 @@ func test_audio_buses_and_autoload_are_available() -> void:
 	assert_not_null(GameAudio.get_node_or_null("Sfx0"))
 
 func test_placeholder_cue_is_safe_silent_request() -> void:
-	var cue := ContentDB.get_audio_cue(&"sfx_pickup")
+	var cue := AudioCueData.find(&"sfx_pickup")
 	assert_not_null(cue)
 	if cue == null:
 		return
@@ -78,8 +78,8 @@ func test_placeholder_cue_is_safe_silent_request() -> void:
 	cue.stream = original
 
 func test_sfx_and_music_route_to_expected_buses() -> void:
-	var sfx := ContentDB.get_audio_cue(&"sfx_fish_caught")
-	var music := ContentDB.get_audio_cue(&"music_old_mine")
+	var sfx := AudioCueData.find(&"sfx_fish_caught")
+	var music := AudioCueData.find(&"music_old_mine")
 	assert_not_null(sfx)
 	assert_not_null(music)
 	if sfx == null or music == null:

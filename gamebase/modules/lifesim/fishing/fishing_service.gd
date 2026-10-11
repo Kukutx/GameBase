@@ -74,7 +74,7 @@ func get_available_fish(location_id: StringName, day: int = -1, minute_of_day: i
 	var resolved_minute := WorldClock.minute_of_day if minute_of_day < 0 else minute_of_day
 	var weather_name := WeatherState.get_weather_name(WeatherState.get_weather_for_day(resolved_day))
 	var result: Array[FishData] = []
-	for fish: FishData in ContentDB.get_all_fish():
+	for fish: FishData in FishData.find_all():
 		if fish != null and fish.is_available(location_id, resolved_day, resolved_minute, weather_name):
 			result.append(fish)
 	return result
@@ -147,7 +147,7 @@ func _reel_in_internal() -> bool:
 		return false
 	var fish := _pending_fish
 	var caught := _award_fish(fish)
-	var item := ContentDB.get_item(fish.item_id)
+	var item := ItemData.find(fish.item_id)
 	var caught_name := tr(item.display_name) if item != null else String(fish.id).capitalize()
 	_finish_session(caught, tr("Caught %s") % caught_name if caught else tr("The fish got away"))
 	return caught
@@ -215,7 +215,7 @@ func load_save_data(data: Dictionary) -> void:
 func _award_fish(fish: FishData) -> bool:
 	if fish == null:
 		return false
-	var item := ContentDB.get_item(fish.item_id)
+	var item := ItemData.find(fish.item_id)
 	if item == null:
 		return false
 	var remaining := InventoryState.add_item(item, 1)

@@ -11,10 +11,7 @@
 // and no foundation file may name a content id of any game: an id a game gives
 // to `id` or to a `*_id` property in its data and scenes. A script "uses" a
 // layer when it names one of its autoloads or class_names, or a res:// path in
-// it; a game's project.godot uses the scripts and plugins it registers. An
-// autoload whose script lives in a game but extends a core class (ContentDB
-// extends ContentRegistry) is that core contract, implemented by the game:
-// every method the foundation or the game calls on it must exist there.
+// it; a game's project.godot uses the scripts and plugins it registers.
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -143,18 +140,9 @@ function collectModel(root) {
       if (name) game.classes.set(name, rel(root, file));
     }
     game.autoloads = new Map(); // name -> { file, layer }
-    game.contracts = new Map(); // name -> implementation file
     for (const match of game.project.matchAll(/^(\w+)="\*res:\/\/([^"]+\.gd)"$/gm)) {
       const [, name, resPath] = match;
-      const file = repoPath(game, resPath);
-      let layer = resLayer(resPath, game.id);
-      const absolute = path.join(root, file);
-      const base = fs.existsSync(absolute) ? (fs.readFileSync(absolute, "utf8").match(/^extends\s+(\w+)/m) || [])[1] : null;
-      if (layer === `game:${game.id}` && base && classes.has(base) && layerOf(classes.get(base)) === "core") {
-        game.contracts.set(name, file);
-        layer = "core";
-      }
-      game.autoloads.set(name, { file, layer });
+      game.autoloads.set(name, { file: repoPath(game, resPath), layer: resLayer(resPath, game.id) });
     }
   }
   return { foundation, games, classes };
@@ -308,42 +296,12 @@ function checkGame(root, model, game, problems) {
   for (const use of usesOf(game.project, false, () => [], game.id)) checkUse(`${game.dir}/project.godot`, use);
 }
 
-function definedMethods(root, file, classes, seen = new Set()) {
-  if (seen.has(file) || !fs.existsSync(path.join(root, file))) return new Set();
-  seen.add(file);
-  const source = fs.readFileSync(path.join(root, file), "utf8");
-  const methods = new Set([...source.matchAll(/^(?:static\s+)?func\s+(\w+)/gm)].map((m) => m[1]));
-  const base = (source.match(/^extends\s+(\w+)/m) || [])[1];
-  if (base && classes.has(base)) for (const m of definedMethods(root, classes.get(base), classes, seen)) methods.add(m);
-  return methods;
-}
-
-// Every method the foundation a game links or the game itself calls on one of
-// its contract autoloads must exist in the game's implementation.
-function checkContracts(root, model, game, problems) {
-  if (game.contracts.size === 0) return;
-  const classes = new Map([...model.classes, ...game.classes]);
-  const files = walk(path.join(root, "gamebase", "core"), [".gd"])
-    .concat(...[...game.modules].map((module) => walk(path.join(root, "gamebase", "modules", module), [".gd"])))
-    .concat(walk(path.join(root, game.dir, "game"), [".gd"]));
-  for (const [name, impl] of game.contracts) {
-    const methods = definedMethods(root, impl, classes);
-    const pattern = new RegExp(`\\b${name}\\.(\\w+)\\s*\\(`, "g");
-    for (const file of files) {
-      for (const match of stripComments(fs.readFileSync(file, "utf8")).matchAll(pattern)) {
-        if (!methods.has(match[1])) problems.add(`${rel(root, file)} calls ${name}.${match[1]}(), which ${impl} does not define`);
-      }
-    }
-  }
-}
-
 function checkLayers(root = ROOT) {
   const model = collectModel(root);
   const problems = new Set();
   checkFoundation(root, model, problems);
   for (const game of model.games) {
     checkGame(root, model, game, problems);
-    checkContracts(root, model, game, problems);
   }
   return [...problems];
 }

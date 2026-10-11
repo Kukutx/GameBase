@@ -19,7 +19,7 @@ func buy(shop: ShopData, item_id: StringName, quantity: int = 1) -> int:
 func _buy_internal(shop: ShopData, item_id: StringName, quantity: int = 1) -> int:
 	if shop == null or quantity <= 0 or not shop.has_item(item_id):
 		return 0
-	var item := ItemCatalog.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null:
 		return 0
 	var unit_price := shop.get_buy_price(item)
@@ -62,7 +62,7 @@ func sell(item_id: StringName, quantity: int = 1) -> int:
 func _sell_internal(item_id: StringName, quantity: int = 1) -> int:
 	if quantity <= 0:
 		return 0
-	var item := ItemCatalog.get_item(item_id)
+	var item := ItemData.find(item_id)
 	if item == null or item.sell_price <= 0:
 		GameEvents.toast("That item cannot be sold")
 		return 0

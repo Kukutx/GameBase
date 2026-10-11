@@ -16,7 +16,7 @@ func _ready() -> void:
 
 func refresh_deliveries() -> Array[StringName]:
 	var delivered: Array[StringName] = []
-	for mail: MailData in ContentDB.get_all_mail():
+	for mail: MailData in MailData.find_all():
 		if mail == null:
 			continue
 		if is_received(mail.id) or not mail.is_available():
@@ -33,7 +33,7 @@ func refresh_deliveries() -> Array[StringName]:
 func get_received_mail() -> Array[MailData]:
 	refresh_deliveries()
 	var result: Array[MailData] = []
-	for mail: MailData in ContentDB.get_all_mail():
+	for mail: MailData in MailData.find_all():
 		if mail != null and is_received(mail.id):
 			result.append(mail)
 	result.sort_custom(func(a: MailData, b: MailData) -> bool:
@@ -67,7 +67,7 @@ func claim_rewards(mail_id: StringName) -> bool:
 	var claim_key := String(mail_id)
 	if _claiming.has(claim_key):
 		return false
-	var mail := ContentDB.get_mail(mail_id)
+	var mail := MailData.find(mail_id)
 	if mail == null or not is_received(mail_id) or is_claimed(mail_id):
 		return false
 	_claiming[claim_key] = true
@@ -123,7 +123,7 @@ func _on_friendship_changed(_npc_id: StringName, _points: int, _delta: int) -> v
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
 	if key == &"" or String(key).begins_with("mail:"):
 		return
-	for mail: MailData in ContentDB.get_all_mail():
+	for mail: MailData in MailData.find_all():
 		if mail != null and not is_received(mail.id) and mail.required_world_flag == key:
 			refresh_deliveries()
 			return

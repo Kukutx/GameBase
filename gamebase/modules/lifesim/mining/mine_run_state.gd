@@ -70,7 +70,7 @@ func generate_floor_layout(floor: int) -> Dictionary:
 	var tiers: Array[Dictionary] = []
 	if floor_table != null:
 		for tier: MineRockTier in floor_table.rock_tiers:
-			var node: MiningNodeData = ContentDB.get_mining_node(tier.rock_id) if tier != null else null
+			var node: MiningNodeData = MiningNodeData.find(tier.rock_id) if tier != null else null
 			if node != null:
 				var unlocked := resolved >= node.minimum_mine_floor
 				tiers.append({"id": tier.rock_id, "unlocked": unlocked, "chance": tier.get_chance(resolved, node.minimum_mine_floor)})

@@ -61,6 +61,23 @@ func _refresh() -> void:
 func _feed_names(needs: Dictionary[StringName, int]) -> String:
 	var names := PackedStringArray()
 	for item_id: StringName in needs:
-		var item := ContentDB.get_item(item_id)
+		var item := ItemData.find(item_id)
 		names.append(tr(item.display_name) if item != null else String(item_id))
 	return ", ".join(names)
+
+## A trough feeds a housing of its own scene.
+func find_scene_problems(_registry: ContentRegistry, _location: WorldLocationData) -> PackedStringArray:
+	var root: Node = self
+	while root.get_parent() != null:
+		root = root.get_parent()
+	if housing_id == &"" or not _scene_has_housing(root):
+		return PackedStringArray(["feed trough '%s' references unknown housing '%s'" % [name, housing_id]])
+	return PackedStringArray()
+
+func _scene_has_housing(node: Node) -> bool:
+	if node is AnimalHousing and (node as AnimalHousing).housing_id == housing_id:
+		return true
+	for child: Node in node.get_children():
+		if _scene_has_housing(child):
+			return true
+	return false

@@ -94,7 +94,7 @@ func _spawn_dynamic_floor(floor: int) -> void:
 		if not raw is Dictionary:
 			continue
 		var entry: Dictionary = raw
-		var rock_data := ContentDB.get_mining_node(StringName(String(entry.get("kind", ""))))
+		var rock_data := MiningNodeData.find(StringName(String(entry.get("kind", ""))))
 		if rock_data == null:
 			continue
 		var rock := MINING_SCENE.instantiate() as MiningNode
@@ -112,7 +112,7 @@ func _spawn_dynamic_floor(floor: int) -> void:
 		if not raw is Dictionary:
 			continue
 		var entry: Dictionary = raw
-		var enemy_data := ContentDB.get_enemy(StringName(String(entry.get("kind", ""))))
+		var enemy_data := EnemyData.find(StringName(String(entry.get("kind", ""))))
 		if enemy_data == null:
 			continue
 		var enemy := ENEMY_SCENE.instantiate() as HostileCreature
@@ -155,3 +155,14 @@ func _refresh_label() -> void:
 		var location := ContentDB.get_current_location(get_tree())
 		var mine_name := tr(location.display_name) if location != null else ""
 		mine_label.text = tr("%s · Floor %d · Deepest %d") % [mine_name, current_floor, MineState.get_deepest_floor()]
+
+func find_scene_problems(registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if location == null:
+		return problems
+	if entrance_spawn_ids.is_empty():
+		problems.append("mine '%s' has no entrance spawn" % name)
+	for spawn_id: StringName in entrance_spawn_ids + [floor_spawn_id]:
+		if not registry.has_location_spawn(location.id, spawn_id):
+			problems.append("mine '%s' names spawn '%s', which its scene does not have" % [name, spawn_id])
+	return problems

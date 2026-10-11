@@ -24,3 +24,8 @@ func interact(actor: Node) -> void:
 	else:
 		FishingState.start_cast(location_id, energy_cost)
 	super.interact(actor)
+
+func find_scene_problems(_registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
+	if location != null and location_id != &"" and location_id != location.id:
+		return PackedStringArray(["fishing spot '%s' references different location '%s'" % [name, location_id]])
+	return PackedStringArray()

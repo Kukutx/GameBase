@@ -122,9 +122,9 @@ func test_mine_bottom_mail_delivers_from_live_quest_completion() -> void:
 	assert_true(QuestState.is_completed(&"reach_mine_bottom"))
 	assert_true(MailState.is_received(&"rowan_mine_bottom"))
 
-func test_content_manifest_contains_progression_mail_entries() -> void:
+func test_content_contains_progression_mail_entries() -> void:
 	var ids: Array[String] = []
-	for mail: MailData in ContentDB.get_all_mail():
+	for mail: MailData in MailData.find_all():
 		ids.append(String(mail.id))
 	ids.sort()
 	assert_eq(ids, [

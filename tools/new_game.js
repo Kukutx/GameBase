@@ -5,10 +5,11 @@
 //
 // It copies gamebase/templates/new_game into games/<id>/: a project.godot with
 // the core autoloads and the core and game translation catalogs, the Windows,
-// Linux and Web export presets, a game definition, an empty game/game_setup.gd
-// a content database, one start location, a unit test and a new-game smoke
-// script. It names the project, its log, its catalog and its export paths,
-// writes games/<id>/game.json with no module, and links the foundation in.
+// Linux and Web export presets, a game definition, the game's own empty
+// GameSetup module (game/game_setup.gd), a content pack with one start
+// location, a unit test and a new-game smoke script. It names the project, its
+// log, its catalog and its export paths, writes games/<id>/game.json with no
+// module, and links the foundation in.
 // Enable a module by listing it (and the modules it requires) in game.json,
 // then run node tools/link.js: it links the module and registers its autoloads
 // and catalogs in project.godot, and the module installs itself (its

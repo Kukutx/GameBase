@@ -6,7 +6,7 @@ const path = require("node:path");
 const test = require("node:test");
 const { checkLocalization } = require("./check_localization");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
-const { checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, readFoundation, releaseTag, resolveGames } = require("./lib/games");
+const { checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
 const { desiredAutoloads, moduleOrder, projectInSync, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
@@ -126,6 +126,7 @@ test("a resource's player-facing field needs a translation, such as a control's 
 
 test("every game's project.godot holds the autoloads, catalogs and plugins of its manifests", () => {
   for (const id of listGameIds()) assert.ok(projectInSync(loadGame(id)), `games/${id}/project.godot: run node tools/link.js`);
+  assert.ok(projectInSync(templateGame()), "gamebase/templates/new_game/project.godot: run node tools/link.js");
 });
 
 test("a module's autoloads follow the modules it requires, between the core's", () => {
@@ -133,7 +134,7 @@ test("a module's autoloads follow the modules it requires, between the core's", 
   assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "combat"]), ["items", "combat", "skills", "lifesim", "npc_social", "progression"]);
   const game = { id: "probe", root: rootPath("games", "probe"), modules: ["skills", "items"], addons: ["gut"], manifest: { autoloads: { ProbeTools: "res://game/probe_tools.gd" } } };
   const names = desiredAutoloads(game, foundation).map(([name]) => name);
-  assert.deepEqual(names.slice(names.indexOf("WorldState") + 1, names.indexOf("LocationCatalog")), [...Object.keys(foundation.modules.items.autoloads), "Skills"]);
+  assert.deepEqual(names.slice(names.indexOf("WorldState") + 1, names.indexOf("WorldTravel")), [...Object.keys(foundation.modules.items.autoloads), "Skills"]);
   assert.equal(names[0], "Transition");
   assert.equal(names[names.length - 1], "ProbeTools");
   const project = syncedProject('config_version=5\n\n[autoload]\n\nStale="*res://old.gd"\n\n[application]\n\nconfig/name="Probe"\n', game, foundation);

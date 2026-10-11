@@ -6,15 +6,15 @@ func test_profile_scores_loved_liked_and_disliked_gifts() -> void:
 	profile.liked_items = [&"turnip"]
 	profile.disliked_items = [&"wood"]
 
-	assert_eq(profile.friendship_for_gift(ItemCatalog.get_item(&"berry")), 80)
-	assert_eq(profile.friendship_for_gift(ItemCatalog.get_item(&"turnip")), 45)
-	assert_eq(profile.friendship_for_gift(ItemCatalog.get_item(&"wood")), -20)
+	assert_eq(profile.friendship_for_gift(ItemData.find(&"berry")), 80)
+	assert_eq(profile.friendship_for_gift(ItemData.find(&"turnip")), 45)
+	assert_eq(profile.friendship_for_gift(ItemData.find(&"wood")), -20)
 
 func test_birthdays_are_calendar_based_and_double_gift_friendship() -> void:
 	var inventory_snapshot := InventoryState.to_save_data()
 	var clock_snapshot := WorldClock.to_save_data()
 	InventoryState.clear()
-	var profile := ContentDB.get_npc(&"mira")
+	var profile := NpcProfileData.find(&"mira")
 	assert_not_null(profile)
 	assert_true(profile.is_birthday(14))
 	assert_false(profile.is_birthday(13))
@@ -33,7 +33,7 @@ func test_gift_daily_limit_blocks_item_removed_reentrancy() -> void:
 	InventoryState.clear()
 	WorldClock.set_time(1, 10 * 60)
 	InventoryState.add_item_by_id(&"berry", 2)
-	var profile := ContentDB.get_npc(&"mira")
+	var profile := NpcProfileData.find(&"mira")
 	assert_not_null(profile)
 	if profile == null:
 		WorldClock.load_save_data(clock_snapshot)
@@ -51,7 +51,7 @@ func test_gift_daily_limit_blocks_item_removed_reentrancy() -> void:
 	var outer_delta := state.give_gift(profile, &"berry")
 	if InventoryState.item_removed.is_connected(reenter):
 		InventoryState.item_removed.disconnect(reenter)
-	assert_eq(outer_delta, profile.friendship_for_gift(ContentDB.get_item(&"berry")))
+	assert_eq(outer_delta, profile.friendship_for_gift(ItemData.find(&"berry")))
 	assert_eq(int(observed["inner_delta"]), 0)
 	assert_eq(InventoryState.get_quantity(&"berry"), 1)
 	assert_eq(state.get_points(&"mira"), outer_delta)

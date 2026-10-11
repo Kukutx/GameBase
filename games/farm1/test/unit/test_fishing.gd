@@ -1,7 +1,7 @@
 extends GutTest
 
 func test_fish_data_filters_location_season_and_time() -> void:
-	var trout := ContentDB.get_fish(&"river_trout")
+	var trout := FishData.find(&"river_trout")
 	assert_not_null(trout)
 	assert_true(trout.is_available(&"riverside_town", 1, 8 * 60, "Clear"))
 	assert_false(trout.is_available(&"harbor_town", 1, 8 * 60, "Clear"))
@@ -23,7 +23,7 @@ func test_fishing_service_uses_location_specific_pools() -> void:
 	WorldClock.set_time(previous_day, previous_minute)
 
 func test_storm_eel_requires_storm_weather() -> void:
-	var eel := ContentDB.get_fish(&"storm_eel")
+	var eel := FishData.find(&"storm_eel")
 	assert_not_null(eel)
 	assert_true(eel.is_available(&"harbor_town", 1, 12 * 60, "Storm"))
 	assert_false(eel.is_available(&"harbor_town", 1, 12 * 60, "Clear"))

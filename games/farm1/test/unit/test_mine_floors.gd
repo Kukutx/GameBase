@@ -43,7 +43,7 @@ func test_floor_layout_is_deterministic_unique_and_scales_with_depth() -> void:
 
 func test_the_game_mine_floor_table_names_real_content() -> void:
 	assert_not_null(MineState.floor_table)
-	assert_eq(MineState.floor_table.validate(ContentDB), PackedStringArray())
+	assert_eq(MineState.floor_table.find_problems(ContentDB), PackedStringArray())
 	assert_eq(MineState.floor_table.get_enemy_id(1), &"green_slime")
 	assert_eq(MineState.floor_table.get_enemy_id(59), &"red_slime")
 
@@ -97,9 +97,9 @@ func test_deep_floors_guarantee_iron_and_cave_slime_progression() -> void:
 	for entry: Dictionary in floor10["enemies"]:
 		floor10_enemies.append(String(entry["kind"]))
 	assert_true(floor10_enemies.has("cave_slime"))
-	assert_eq(ContentDB.get_mining_node(&"iron_rock").required_tool_power, 2)
-	assert_eq(ContentDB.get_mining_node(&"iron_rock").drop_item_id, &"iron_ore")
-	assert_eq(ContentDB.get_enemy(&"cave_slime").contact_damage, 12)
+	assert_eq(MiningNodeData.find(&"iron_rock").required_tool_power, 2)
+	assert_eq(MiningNodeData.find(&"iron_rock").drop_item_id, &"iron_ore")
+	assert_eq(EnemyData.find(&"cave_slime").contact_damage, 12)
 
 func test_floor_six_scene_maps_generated_iron_to_real_iron_node_data() -> void:
 	MineState.set_floor(6)
@@ -205,15 +205,15 @@ func test_failed_mine_travel_does_not_commit_floor_change() -> void:
 
 func test_mine_progression_content_is_registered() -> void:
 	for item_id: StringName in [&"iron_ore", &"iron_bar", &"iron_hoe", &"iron_watering_can", &"iron_pickaxe", &"iron_sword", &"gold_ore", &"gold_bar", &"gold_hoe", &"gold_watering_can", &"gold_pickaxe", &"gold_sword", &"iridium_ore", &"iridium_bar", &"iridium_hoe", &"iridium_watering_can", &"iridium_pickaxe", &"iridium_sword"]:
-		assert_not_null(ContentDB.get_item(item_id), "Missing mine progression item %s" % item_id)
+		assert_not_null(ItemData.find(item_id), "Missing mine progression item %s" % item_id)
 	for node_id: StringName in [&"iron_rock", &"gold_rock", &"iridium_rock"]:
-		assert_not_null(ContentDB.get_mining_node(node_id), "Missing mine node %s" % node_id)
+		assert_not_null(MiningNodeData.find(node_id), "Missing mine node %s" % node_id)
 	for enemy_id: StringName in [&"cave_slime", &"blue_slime", &"red_slime", &"shadow_slime", &"void_slime", &"ancient_slime"]:
-		assert_not_null(ContentDB.get_enemy(enemy_id), "Missing mine enemy %s" % enemy_id)
+		assert_not_null(EnemyData.find(enemy_id), "Missing mine enemy %s" % enemy_id)
 	for recipe_id: StringName in [&"smelt_iron_bar", &"smelt_gold_bar", &"smelt_iridium_bar"]:
-		assert_not_null(ContentDB.get_processing_recipe(recipe_id), "Missing metal recipe %s" % recipe_id)
+		assert_not_null(ProcessingRecipeData.find(recipe_id), "Missing metal recipe %s" % recipe_id)
 	for upgrade_id: StringName in [&"iron_hoe_upgrade", &"iron_watering_can_upgrade", &"iron_pickaxe_upgrade", &"iron_sword_upgrade", &"gold_hoe_upgrade", &"gold_watering_can_upgrade", &"gold_pickaxe_upgrade", &"gold_sword_upgrade", &"iridium_hoe_upgrade", &"iridium_watering_can_upgrade", &"iridium_pickaxe_upgrade", &"iridium_sword_upgrade"]:
-		assert_not_null(ContentDB.get_tool_upgrade(upgrade_id), "Missing mine progression upgrade %s" % upgrade_id)
+		assert_not_null(ToolUpgradeData.find(upgrade_id), "Missing mine progression upgrade %s" % upgrade_id)
 
 func test_max_floor_never_unlocks_deeper_ladder() -> void:
 	MineState.set_floor(MineRunState.MAX_FLOOR)
@@ -236,9 +236,9 @@ func test_gold_and_deep_slime_tiers_unlock_at_defined_floors() -> void:
 		assert_eq(String(entry["kind"]), "blue_slime")
 	for entry: Dictionary in floor40["enemies"]:
 		assert_eq(String(entry["kind"]), "red_slime")
-	assert_eq(ContentDB.get_mining_node(&"gold_rock").required_tool_power, 3)
-	assert_eq(ContentDB.get_mining_node(&"gold_rock").drop_item_id, &"gold_ore")
-	assert_gt(ContentDB.get_enemy(&"red_slime").max_health, ContentDB.get_enemy(&"blue_slime").max_health)
+	assert_eq(MiningNodeData.find(&"gold_rock").required_tool_power, 3)
+	assert_eq(MiningNodeData.find(&"gold_rock").drop_item_id, &"gold_ore")
+	assert_gt(EnemyData.find(&"red_slime").max_health, EnemyData.find(&"blue_slime").max_health)
 
 func test_floor_twenty_scene_maps_gold_and_blue_slime_to_real_data() -> void:
 	MineState.set_floor(20)
@@ -287,9 +287,9 @@ func test_iridium_and_endgame_enemy_tiers_unlock_at_floors_sixty_ninety_and_one_
 		assert_eq(String(entry["kind"]), "void_slime")
 	for entry: Dictionary in floor120["enemies"]:
 		assert_eq(String(entry["kind"]), "ancient_slime")
-	assert_eq(ContentDB.get_mining_node(&"iridium_rock").required_tool_power, 4)
-	assert_eq(ContentDB.get_mining_node(&"iridium_rock").drop_item_id, &"iridium_ore")
-	assert_gt(ContentDB.get_enemy(&"ancient_slime").max_health, ContentDB.get_enemy(&"void_slime").max_health)
+	assert_eq(MiningNodeData.find(&"iridium_rock").required_tool_power, 4)
+	assert_eq(MiningNodeData.find(&"iridium_rock").drop_item_id, &"iridium_ore")
+	assert_gt(EnemyData.find(&"ancient_slime").max_health, EnemyData.find(&"void_slime").max_health)
 
 func test_floor_sixty_scene_maps_iridium_and_shadow_slime_to_real_data() -> void:
 	MineState.set_floor(60)

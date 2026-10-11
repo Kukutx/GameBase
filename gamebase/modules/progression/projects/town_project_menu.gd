@@ -36,7 +36,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _rebuild() -> void:
 	for child: Node in projects_container.get_children():
 		child.queue_free()
-	var location := ContentDB.get_location(_location_id)
+	var location := WorldLocationData.find(_location_id)
 	title_label.text = tr("%s Projects") % (tr(location.display_name) if location != null else tr("Town"))
 	var projects := TownProjects.get_projects_for_location(_location_id)
 	var first_button: Button
@@ -71,7 +71,7 @@ func _project_text(project: TownProjectData) -> String:
 	var lines := PackedStringArray([tr(project.description), "", "[b]%s[/b]" % tr("Materials")])
 	for raw_id: Variant in project.requirements.keys():
 		var item_id := StringName(String(raw_id))
-		var item := ContentDB.get_item(item_id)
+		var item := ItemData.find(item_id)
 		var required := project.get_required_quantity(item_id)
 		var progress := TownProjects.get_progress(project.id, item_id)
 		var carried := InventoryState.get_quantity(item_id)
@@ -81,7 +81,7 @@ func _project_text(project: TownProjectData) -> String:
 	if project.reward_money > 0:
 		lines.append("• %dg" % project.reward_money)
 	for raw_id: Variant in project.reward_items.keys():
-		var item := ContentDB.get_item(StringName(String(raw_id)))
+		var item := ItemData.find(StringName(String(raw_id)))
 		lines.append("• %s x%d" % [tr(item.display_name) if item != null else String(raw_id), int(project.reward_items[raw_id])])
 	if not project.prerequisites.is_empty() and not TownProjects.is_available(project.id):
 		lines.append("")

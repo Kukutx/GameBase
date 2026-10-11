@@ -114,7 +114,7 @@ func test_copper_pickaxe_breaks_starter_stone_in_one_hit() -> void:
 	InventoryState.add_item_by_id(&"copper_pickaxe", 1)
 	var node_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var rock := node_scene.instantiate() as MiningNode
-	rock.data = ContentDB.get_mining_node(&"stone_rock")
+	rock.data = MiningNodeData.find(&"stone_rock")
 	rock.persistent_id = &""
 	add_child_autofree(rock)
 	await get_tree().process_frame
@@ -152,7 +152,7 @@ func test_iron_bar_smelt_and_pickaxe_upgrade_extend_mining_progression() -> void
 	assert_eq(InventoryState.get_quantity(&"iron_bar"), 0)
 	assert_eq(PlayerState.money, 0)
 	assert_eq(Hotbar.slots[2], &"iron_pickaxe")
-	assert_eq(ContentDB.get_item(&"iron_pickaxe").tool_power, 3)
+	assert_eq(ItemData.find(&"iron_pickaxe").tool_power, 3)
 
 func test_oil_maker_crafts_and_processes_truffle_into_artisan_oil() -> void:
 	Skills.add_xp(SkillManager.FARMING, 100)
@@ -161,7 +161,7 @@ func test_oil_maker_crafts_and_processes_truffle_into_artisan_oil() -> void:
 	InventoryState.add_item_by_id(&"wood", 12)
 	assert_true(CraftingState.craft(&"oil_maker"))
 	assert_eq(InventoryState.get_quantity(&"oil_maker"), 1)
-	var placeable := ContentDB.get_placeable(&"oil_maker")
+	var placeable := PlaceableData.find(&"oil_maker")
 	assert_not_null(placeable)
 	assert_eq(placeable.item_id, &"oil_maker")
 	assert_true(ResourceLoader.exists(placeable.scene_path))
@@ -180,7 +180,7 @@ func test_oil_maker_crafts_and_processes_truffle_into_artisan_oil() -> void:
 	assert_true(machine.output_ready)
 	assert_true(machine.collect_output())
 	assert_eq(InventoryState.get_quantity(&"truffle_oil"), 1)
-	assert_gt(ContentDB.get_item(&"truffle_oil").sell_price, ContentDB.get_item(&"truffle").sell_price)
+	assert_gt(ItemData.find(&"truffle_oil").sell_price, ItemData.find(&"truffle").sell_price)
 
 func test_gold_bar_smelt_and_pickaxe_upgrade_complete_deep_mining_chain() -> void:
 	Skills.add_xp(SkillManager.MINING, 700)
@@ -212,7 +212,7 @@ func test_gold_bar_smelt_and_pickaxe_upgrade_complete_deep_mining_chain() -> voi
 	assert_eq(InventoryState.get_quantity(&"gold_bar"), 0)
 	assert_eq(PlayerState.money, 0)
 	assert_eq(Hotbar.slots[2], &"gold_pickaxe")
-	assert_eq(ContentDB.get_item(&"gold_pickaxe").tool_power, 4)
+	assert_eq(ItemData.find(&"gold_pickaxe").tool_power, 4)
 
 func test_full_metal_tool_upgrade_catalog_is_chained_without_weapon_damage_regression() -> void:
 	var expected := {
@@ -232,18 +232,18 @@ func test_full_metal_tool_upgrade_catalog_is_chained_without_weapon_damage_regre
 	for raw_id: Variant in expected.keys():
 		var upgrade_id := StringName(String(raw_id))
 		var values: Array = expected[raw_id]
-		var upgrade := ContentDB.get_tool_upgrade(upgrade_id)
+		var upgrade := ToolUpgradeData.find(upgrade_id)
 		assert_not_null(upgrade)
 		if upgrade == null:
 			continue
 		assert_eq(upgrade.source_item_id, values[0])
 		assert_eq(upgrade.result_item_id, values[1])
-		assert_eq(ContentDB.get_item(upgrade.result_item_id).tool_power, int(values[2]))
+		assert_eq(ItemData.find(upgrade.result_item_id).tool_power, int(values[2]))
 
 func test_weapon_damage_increases_at_every_upgrade_tier() -> void:
 	var damages := []
 	for item_id: StringName in [&"rusty_sword", &"copper_sword", &"iron_sword", &"gold_sword", &"iridium_sword"]:
-		var item := ContentDB.get_item(item_id)
+		var item := ItemData.find(item_id)
 		assert_not_null(item)
 		if item != null:
 			damages.append(item.tool_power)
@@ -281,7 +281,7 @@ func test_iridium_bar_smelt_and_pickaxe_upgrade_complete_late_mining_chain() -> 
 	assert_eq(InventoryState.get_quantity(&"iridium_bar"), 0)
 	assert_eq(PlayerState.money, 0)
 	assert_eq(Hotbar.slots[2], &"iridium_pickaxe")
-	assert_eq(ContentDB.get_item(&"iridium_pickaxe").tool_power, 5)
+	assert_eq(ItemData.find(&"iridium_pickaxe").tool_power, 5)
 
 func test_furnace_entry_points_expose_all_metal_recipes() -> void:
 	var packed := load("res://game/world/placeables/copper_furnace.tscn") as PackedScene

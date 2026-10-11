@@ -28,7 +28,7 @@ func after_each() -> void:
 
 func test_all_core_npcs_have_friendship_dialogue_stages_through_ten_hearts() -> void:
 	for npc_id: StringName in [&"mira", &"rowan", &"neri"]:
-		var profile := ContentDB.get_npc(npc_id)
+		var profile := NpcProfileData.find(npc_id)
 		assert_not_null(profile)
 		assert_eq(profile.get_dialogue_title("start", 0), "start")
 		assert_eq(profile.get_dialogue_title("start", 2), "friend_2")
@@ -97,7 +97,7 @@ func test_authored_daily_and_heart_event_titles_exist_in_dialogue_resources() ->
 		"neri": load("res://game/dialogue/neri.dialogue") as DialogueResource,
 	}
 	for npc_id: StringName in [&"mira", &"rowan", &"neri"]:
-		var profile := ContentDB.get_npc(npc_id)
+		var profile := NpcProfileData.find(npc_id)
 		var dialogue: DialogueResource = dialogue_by_npc[String(npc_id)]
 		assert_not_null(profile)
 		assert_not_null(dialogue)
@@ -106,7 +106,7 @@ func test_authored_daily_and_heart_event_titles_exist_in_dialogue_resources() ->
 		for hearts: int in [0, 2, 4, 6, 8, 10]:
 			var title := profile.get_dialogue_title("start", hearts)
 			assert_true(dialogue.cues.has(title), "%s daily dialogue cue '%s' is missing" % [String(npc_id), title])
-	for event: HeartEventData in ContentDB.get_all_heart_events():
+	for event: HeartEventData in HeartEventData.find_all():
 		var dialogue: DialogueResource = dialogue_by_npc.get(String(event.npc_id))
 		assert_not_null(dialogue)
 		if dialogue != null:
@@ -136,7 +136,7 @@ func test_heart_event_priority_disables_ai_and_daily_title_falls_back_safely() -
 		assert_false(bool(service.call("_dialogue_has_key", dialogue, "definitely_missing_title")))
 
 func test_heart_event_seen_commits_on_dialogue_end_not_interrupted_balloon_exit() -> void:
-	var event := ContentDB.get_heart_event(&"mira_two_hearts")
+	var event := HeartEventData.find(&"mira_two_hearts")
 	var dialogue := load("res://game/dialogue/intro.dialogue") as DialogueResource
 	assert_not_null(event)
 	assert_not_null(dialogue)
@@ -160,7 +160,7 @@ func test_heart_event_seen_commits_on_dialogue_end_not_interrupted_balloon_exit(
 	assert_true(bool(NpcMemory.get_facts(&"mira").get("heart_event:mira_two_hearts", false)))
 
 func test_two_heart_events_match_only_correct_npc_location_time_and_hearts() -> void:
-	var event := ContentDB.get_heart_event(&"mira_two_hearts")
+	var event := HeartEventData.find(&"mira_two_hearts")
 	assert_not_null(event)
 	assert_true(event.matches(&"mira", 2, &"starter_town", 1, 10 * 60))
 	assert_false(event.matches(&"mira", 1, &"starter_town", 1, 10 * 60))
@@ -169,7 +169,7 @@ func test_two_heart_events_match_only_correct_npc_location_time_and_hearts() -> 
 	assert_false(event.matches(&"mira", 2, &"starter_town", 1, 19 * 60))
 
 func test_heart_event_seen_state_uses_world_state_and_npc_memory() -> void:
-	var event := ContentDB.get_heart_event(&"mira_two_hearts")
+	var event := HeartEventData.find(&"mira_two_hearts")
 	assert_not_null(event)
 	assert_false(HeartEvents.is_seen(event.id))
 	HeartEvents.mark_seen(event)
@@ -184,22 +184,22 @@ func test_heart_event_seen_state_uses_world_state_and_npc_memory() -> void:
 
 func test_manifest_contains_five_heart_events_for_each_core_npc() -> void:
 	var by_npc: Dictionary = {}
-	for event: HeartEventData in ContentDB.get_all_heart_events():
+	for event: HeartEventData in HeartEventData.find_all():
 		var key := String(event.npc_id)
 		var tiers: Array = by_npc.get(key, [])
 		tiers.append(event.required_hearts)
 		by_npc[key] = tiers
-	assert_eq(ContentDB.get_all_heart_events().size(), 15)
+	assert_eq(HeartEventData.find_all().size(), 15)
 	for npc_id: String in ["mira", "rowan", "neri"]:
 		var tiers: Array = by_npc.get(npc_id, [])
 		tiers.sort()
 		assert_eq(tiers, [2, 4, 6, 8, 10], "%s is missing a friendship event tier" % npc_id)
 
 func test_mid_and_capstone_heart_events_respect_town_progress_flags() -> void:
-	var mira_four := ContentDB.get_heart_event(&"mira_four_hearts")
-	var rowan_four := ContentDB.get_heart_event(&"rowan_four_hearts")
-	var neri_four := ContentDB.get_heart_event(&"neri_four_hearts")
-	var mira_ten := ContentDB.get_heart_event(&"mira_ten_hearts")
+	var mira_four := HeartEventData.find(&"mira_four_hearts")
+	var rowan_four := HeartEventData.find(&"rowan_four_hearts")
+	var neri_four := HeartEventData.find(&"neri_four_hearts")
+	var mira_ten := HeartEventData.find(&"mira_ten_hearts")
 	assert_not_null(mira_four)
 	assert_not_null(rowan_four)
 	assert_not_null(neri_four)

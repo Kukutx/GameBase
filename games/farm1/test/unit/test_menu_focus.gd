@@ -72,7 +72,7 @@ func test_overlay_menus_open_with_a_valid_focus_target() -> void:
 			"crafting":
 				menu.call("open")
 			"shop":
-				menu.call("open", ContentDB.get_shop(&"general_store"))
+				menu.call("open", ShopData.find(&"general_store"))
 			"storage":
 				menu.call("open", &"focus_test_chest", "Storage Chest", 24)
 			"projects":

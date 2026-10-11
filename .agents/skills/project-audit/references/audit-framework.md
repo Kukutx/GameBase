@@ -13,7 +13,7 @@ Read this on demand only in a complex or whole-repository audit under `project-a
 
 Prefer the material closest to the source of truth that proves the problem most directly:
 
-1. Current source code, data contracts, the save schema, migrations, configuration, the content manifest and the inputs of generated output.
+1. Current source code, data contracts, the save schema, migrations, configuration, the content packs and the inputs of generated output.
 2. The direct call chain, consumers and related tests.
 3. Read-only runtime evidence: logs, state, traces, tool output.
 4. The current fact documents the Profile names.
@@ -67,7 +67,7 @@ State machines, roles, eligibility, cancel / fail / retry, re-entrancy, idempote
 
 ### Data contracts and consumers
 
-Whether the save schema and its migrations, stable content ids and the content manifest, exported resource fields, autoload interfaces and their direct consumers are synchronized; whether a second source of truth, hand-written compatibility or a half-finished migration has appeared.
+Whether the save schema and its migrations, stable content ids and the content packs, exported resource fields, autoload interfaces and their direct consumers are synchronized; whether a second source of truth, hand-written compatibility or a half-finished migration has appeared.
 
 ### Stability and bugs
 

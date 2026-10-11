@@ -63,9 +63,8 @@ function readFoundation() {
 }
 
 // The foundation manifest, checked: `owners` maps each autoload name to the
-// part of the manifest that declares it. A module loads its autoloads from
-// its own directory or an addon it uses; the core's come from the core or
-// from the game (its content database and setup).
+// part of the manifest that declares it. The core loads its autoloads from
+// the core, a module from its own directory or an addon it uses.
 function checkFoundation(manifest) {
   assertMap(manifest, "gamebase/gamebase.json");
   const modules = assertMap(manifest.modules ?? {}, "gamebase.json modules");
@@ -77,9 +76,8 @@ function checkFoundation(manifest) {
       owners.set(name, label);
     }
   };
-  const coreRoots = ["res://gamebase/core/", "res://game/"];
-  claim(autoloads.before_modules ?? {}, "gamebase.json autoloads.before_modules", coreRoots);
-  claim(autoloads.after_modules ?? {}, "gamebase.json autoloads.after_modules", coreRoots);
+  claim(autoloads.before_modules ?? {}, "gamebase.json autoloads.before_modules", ["res://gamebase/core/"]);
+  claim(autoloads.after_modules ?? {}, "gamebase.json autoloads.after_modules", ["res://gamebase/core/"]);
   for (const [name, module] of Object.entries(modules)) {
     assertMap(module, `gamebase.json modules.${name}`);
     assertStringList(module.requires ?? [], `gamebase.json modules.${name}.requires`);
@@ -230,6 +228,19 @@ function distPath(game, ...parts) {
   return rootPath("dist", game.id, ...parts);
 }
 
+// The new-game template (gamebase/templates/new_game) in the shape of a loaded
+// game with no module: its project.godot holds the core's managed settings,
+// which tools/link.js writes and tools/validate.js checks like a game's.
+function templateGame(foundation = readFoundation()) {
+  return {
+    id: "new_game",
+    root: rootPath("gamebase", "templates", "new_game"),
+    modules: [],
+    addons: [...foundation.addons].sort(),
+    manifest: { id: "new_game", modules: [] },
+  };
+}
+
 function artifactsPath(game, ...parts) {
   return rootPath("artifacts", game.id, ...parts);
 }
@@ -254,6 +265,7 @@ module.exports = {
   loadGame,
   resolveGame,
   resolveGames,
+  templateGame,
   gamePath,
   readProject,
   projectSetting,

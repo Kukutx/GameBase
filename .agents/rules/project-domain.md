@@ -11,7 +11,7 @@ This file holds the domain invariants of the game base. Generic engineering rule
 
 ## Content and ids
 
-- A game's production content is registered in its `games/<id>/game/data/content_manifest.tres` and resolved through `ContentDB`. Do not add scattered hard-coded resource-path dictionaries.
+- A game's production content is listed in its content pack (`games/<id>/game/data/content.tres`) and resolved through `ContentDB`, by the content classes' `find()`. Do not add scattered hard-coded resource-path dictionaries.
 - Ids are `StringName` values that never change once content has shipped: item, crop, NPC, quest, location, spawn, audio cue and the others. A display name can change; an id cannot. A save that references removed content loads without it.
 - Rewards that were promised (mail attachments, project completion, archive milestones, blocked quest completion) are snapshotted when promised, so a later rebalance cannot change what the player was promised.
 

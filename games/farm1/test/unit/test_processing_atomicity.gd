@@ -11,7 +11,7 @@ func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_slots = InventoryState.max_slots
-	var recipe := ContentDB.get_processing_recipe(&"smelt_copper_bar")
+	var recipe := ProcessingRecipeData.find(&"smelt_copper_bar")
 	if recipe != null:
 		_original_output_quantity = recipe.output_quantity
 	InventoryState.clear()
@@ -19,7 +19,7 @@ func before_each() -> void:
 	WorldClock.set_time(1, 8 * 60)
 
 func after_each() -> void:
-	var recipe := ContentDB.get_processing_recipe(&"smelt_copper_bar")
+	var recipe := ProcessingRecipeData.find(&"smelt_copper_bar")
 	if recipe != null:
 		recipe.output_quantity = _original_output_quantity
 	InventoryState.max_slots = _inventory_slots
@@ -28,8 +28,8 @@ func after_each() -> void:
 	WorldClock.load_save_data(_clock_snapshot)
 
 func test_multi_output_collection_waits_until_the_full_result_fits_without_item_added_side_effects() -> void:
-	var recipe := ContentDB.get_processing_recipe(&"smelt_copper_bar")
-	var output := ContentDB.get_item(&"copper_bar")
+	var recipe := ProcessingRecipeData.find(&"smelt_copper_bar")
+	var output := ItemData.find(&"copper_bar")
 	assert_not_null(recipe)
 	assert_not_null(output)
 	if recipe == null or output == null:
@@ -69,7 +69,7 @@ func test_multi_output_collection_waits_until_the_full_result_fits_without_item_
 		InventoryState.item_added.disconnect(listener)
 
 func test_started_job_keeps_promised_output_when_recipe_balance_changes() -> void:
-	var recipe := ContentDB.get_processing_recipe(&"smelt_copper_bar")
+	var recipe := ProcessingRecipeData.find(&"smelt_copper_bar")
 	assert_not_null(recipe)
 	if recipe == null:
 		return
@@ -95,7 +95,7 @@ func test_started_job_keeps_promised_output_when_recipe_balance_changes() -> voi
 	assert_eq(InventoryState.get_quantity(&"copper_bar"), promised_quantity)
 
 func test_processing_load_sanitizes_job_fields_and_drops_a_job_without_output() -> void:
-	var recipe := ContentDB.get_processing_recipe(&"smelt_copper_bar")
+	var recipe := ProcessingRecipeData.find(&"smelt_copper_bar")
 	assert_not_null(recipe)
 	if recipe == null:
 		return
@@ -155,7 +155,7 @@ func test_started_job_keeps_its_promised_output_when_its_recipe_is_removed() -> 
 	assert_true(station.can_pack_up())
 
 func test_processing_blocks_inventory_signal_reentrancy_for_start_and_collect() -> void:
-	var recipe := ContentDB.get_processing_recipe(&"smelt_copper_bar")
+	var recipe := ProcessingRecipeData.find(&"smelt_copper_bar")
 	assert_not_null(recipe)
 	if recipe == null:
 		return

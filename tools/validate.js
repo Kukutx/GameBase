@@ -32,7 +32,7 @@ const {
   runGodotStep,
   tempFile,
 } = require("./lib/common");
-const { gameName, gamePath, gameVersion, listGameIds, loadGame, resolveGames } = require("./lib/games");
+const { gameName, gamePath, gameVersion, listGameIds, loadGame, resolveGames, templateGame } = require("./lib/games");
 const { projectInSync } = require("./lib/project");
 
 function step(title) {
@@ -123,11 +123,12 @@ async function validateRepository(godot, version) {
   }
 
   step("Game project settings");
-  const stale = listGameIds().filter((id) => !projectInSync(loadGame(id)));
+  const stale = listGameIds().filter((id) => !projectInSync(loadGame(id))).map((id) => `games/${id}/project.godot`);
+  if (!projectInSync(templateGame())) stale.push("gamebase/templates/new_game/project.godot");
   if (stale.length > 0) {
-    fail(`${stale.map((id) => `games/${id}/project.godot`).join(", ")} does not hold the autoloads, translation catalogs and addon plugins its manifests give. Run node tools/link.js and commit the result.`);
+    fail(`${stale.join(", ")} does not hold the autoloads, translation catalogs and addon plugins its manifests give. Run node tools/link.js and commit the result.`);
   }
-  console.log("Every game's autoloads, catalogs and plugins follow gamebase.json and game.json.");
+  console.log("Every game's and the template's autoloads, catalogs and plugins follow gamebase.json and game.json.");
 
   step("Tool tests");
   const toolTests = await run(process.execPath, ["--test", "tools/*.test.js"]);

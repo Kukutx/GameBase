@@ -94,8 +94,12 @@ func test_content_validation_finds_conditions_in_nested_resources() -> void:
 	var mail := MailData.new()
 	mail.id = &"rules_test_mail"
 	mail.condition = "HAS_ITEM berry"
-	registry.register_entries(&"npc", [profile], "npc", PackedStringArray())
-	registry.register_entries(&"mail", [mail], "mail", PackedStringArray())
+	registry.register_kind(NpcProfileData.KIND, NpcProfileData)
+	registry.register_kind(MailData.KIND, MailData)
+	var pack := ContentPack.new()
+	pack.entries = [profile, mail]
+	registry.packs = [pack]
+	assert_eq(registry.index(), PackedStringArray())
 	var problems := GameRules.validate_content(registry)
 	assert_eq(problems.size(), 1)
 	assert_string_contains("\n".join(problems), "npc 'rules_test_npc' schedule_entries condition: unknown condition 'TYPO_KEY'")

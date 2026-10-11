@@ -28,9 +28,9 @@ func after_each() -> void:
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_expansion_catalog_is_registered() -> void:
-	assert_eq(ContentDB.get_all_farm_expansions().size(), 4)
-	assert_not_null(ContentDB.get_farm_expansion(&"big_coop"))
-	assert_not_null(ContentDB.get_farm_expansion(&"deluxe_barn"))
+	assert_eq(FarmExpansionData.find_all().size(), 4)
+	assert_not_null(FarmExpansionData.find(&"big_coop"))
+	assert_not_null(FarmExpansionData.find(&"deluxe_barn"))
 
 func test_animal_ledger_has_a_feed_and_an_expansion_button_per_housing() -> void:
 	var menu_scene := load("res://gamebase/modules/lifesim/animals/animal_management_menu.tscn") as PackedScene

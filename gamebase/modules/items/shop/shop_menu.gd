@@ -53,7 +53,7 @@ func _rebuild() -> void:
 	var first_button: Button
 	for raw_id: String in ids:
 		var item_id := StringName(raw_id)
-		var item := ItemCatalog.get_item(item_id)
+		var item := ItemData.find(item_id)
 		if item == null:
 			continue
 		var price := _shop.get_buy_price(item)
@@ -101,7 +101,7 @@ func _refresh_sell_button() -> void:
 	if sell_button == null:
 		return
 	var item_id := Hotbar.get_selected_item_id()
-	var item := ItemCatalog.get_item(item_id)
+	var item := ItemData.find(item_id)
 	var can_sell := item != null and item.sell_price > 0 and InventoryState.get_quantity(item_id) > 0
 	sell_button.disabled = not can_sell
 	if can_sell:

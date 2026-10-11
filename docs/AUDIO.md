@@ -5,7 +5,7 @@ GameBase has a data-driven audio routing layer, but the repository intentionally
 ## Runtime architecture
 
 - `GameAudio` is the foundation's audio service (`gamebase/core/audio/game_audio_service.gd`), an autoload every game registers.
-- `AudioCueData` resources are registered through `games/farm1/game/data/content_manifest.tres` and resolved through `ContentDB`.
+- `AudioCueData` resources are listed in the game's content pack (`games/farm1/game/data/content.tres`) and resolved with `AudioCueData.find()`.
 - Music routes to the `Music` bus.
 - Sound effects route to the `Sounds` bus.
 - Master/Music/Sounds levels are persisted by `GameSettings` and already exposed in Settings.
@@ -48,7 +48,7 @@ This is deliberate. Do not add generated beeps, temporary music, or unlicensed t
 2. Keep raw purchased/source packs outside the distributable runtime tree unless their license explicitly permits redistribution in the shipped form.
 3. Assign the imported `AudioStream` to the matching `games/farm1/game/data/audio/*.tres` cue.
 4. Reuse an existing stable cue ID whenever the gameplay meaning is unchanged.
-5. Add a new cue resource and register it in `ContentManifest` only when a genuinely new semantic sound event is needed.
+5. Add a new cue resource and list it in the content pack only when a genuinely new semantic sound event is needed.
 6. Run `tools/validate.js` and release export verification.
 
 Do not put audio file paths in farming, fishing, combat, NPC, shop, quest, or UI gameplay code. Those systems should emit game events or call `GameAudio.play_cue(<stable_id>)`.
