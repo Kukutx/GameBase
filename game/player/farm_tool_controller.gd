@@ -10,7 +10,7 @@ var _action_busy := false
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed(action):
 		return
-	var selected := PlayerState.get_selected_item()
+	var selected := Hotbar.get_selected_item()
 	if selected == null:
 		return
 	if selected.is_edible():

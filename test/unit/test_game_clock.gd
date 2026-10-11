@@ -27,6 +27,7 @@ func test_night_boundaries() -> void:
 func test_sleep_spot_blocks_day_changed_reentrancy() -> void:
 	var clock_snapshot := WorldClock.to_save_data()
 	var player_snapshot := PlayerState.to_save_data()
+	var hotbar_snapshot := Hotbar.to_save_data()
 	WorldClock.set_time(10, 22 * 60)
 	PlayerState.energy = 1
 	PlayerState.health = 1
@@ -51,3 +52,4 @@ func test_sleep_spot_blocks_day_changed_reentrancy() -> void:
 	assert_eq(PlayerState.health, PlayerState.max_health)
 	WorldClock.load_save_data(clock_snapshot)
 	PlayerState.load_save_data(player_snapshot)
+	Hotbar.load_save_data(hotbar_snapshot)

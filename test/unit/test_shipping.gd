@@ -4,6 +4,7 @@ var _clock_day := 1
 var _clock_minute := 0
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _shipping_snapshot: Dictionary
 
 func before_each() -> void:
@@ -11,6 +12,7 @@ func before_each() -> void:
 	_clock_minute = WorldClock.minute_of_day
 	_inventory_snapshot = InventoryState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_shipping_snapshot = ShippingState.to_save_data()
 	ShippingState.load_save_data({"pending": {}, "last_day_seen": 1})
 	WorldClock.set_time(1, 12 * 60)
@@ -22,6 +24,7 @@ func after_each() -> void:
 	WorldClock.set_time(_clock_day, _clock_minute)
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_shipping_removes_item_and_pays_on_next_day() -> void:
 	var turnip := ContentDB.get_item(&"turnip")

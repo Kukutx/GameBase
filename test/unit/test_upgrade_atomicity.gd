@@ -2,11 +2,13 @@ extends GutTest
 
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _skills_snapshot: Dictionary
 
 func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_skills_snapshot = Skills.to_save_data()
 	InventoryState.clear()
 	PlayerState.reset_new_game()
@@ -18,6 +20,7 @@ func before_each() -> void:
 func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	Skills.load_save_data(_skills_snapshot)
 
 func test_upgrade_blocks_money_callback_reentrancy() -> void:

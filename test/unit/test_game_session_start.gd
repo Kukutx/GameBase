@@ -8,6 +8,7 @@ var _save_path := ""
 var _temp_path := ""
 var _backup_path := ""
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _world_snapshot: Dictionary
 
@@ -16,6 +17,7 @@ func before_each() -> void:
 	_temp_path = SaveManager.temp_path
 	_backup_path = SaveManager.backup_path
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	SaveManager.save_path = TEST_SAVE
@@ -29,6 +31,7 @@ func after_each() -> void:
 	SaveManager.temp_path = _temp_path
 	SaveManager.backup_path = _backup_path
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	_cleanup()

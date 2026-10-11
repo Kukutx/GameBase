@@ -4,6 +4,7 @@ var _quest_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _inventory_max_slots: int
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 
 func before_each() -> void:
@@ -11,6 +12,7 @@ func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
 	_inventory_max_slots = InventoryState.max_slots
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
@@ -23,6 +25,7 @@ func after_each() -> void:
 	InventoryState.max_slots = _inventory_max_slots
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_loaded_completed_quest_repairs_appended_chain_and_syncs_historical_depth() -> void:
 	MineState.set_floor(25)

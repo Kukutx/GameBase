@@ -486,7 +486,7 @@ func _run() -> void:
 	var upgrade_money_before: int = int(player_state.money)
 	_check(root.get_node("UpgradeState").upgrade(&"copper_pickaxe_upgrade"), "Copper Pickaxe upgrade failed")
 	_check(inventory.get_quantity(&"pickaxe") == 0 and inventory.get_quantity(&"copper_pickaxe") == 1, "Tool upgrade did not replace Pickaxe")
-	_check(player_state.hotbar[2] == &"copper_pickaxe", "Tool upgrade did not update hotbar")
+	_check(root.get_node("Hotbar").slots[2] == &"copper_pickaxe", "Tool upgrade did not update hotbar")
 	_check(player_state.money == upgrade_money_before - 300 + 250, "Tool upgrade money/reward total incorrect")
 	_check(quest_state.is_completed(&"upgrade_pickaxe"), "Tool upgrade quest did not complete")
 
@@ -511,7 +511,7 @@ func _run() -> void:
 	_check(furnace.output_ready and furnace.collect_output(), "Automation Copper Bar did not finish")
 	_check(crafting_state.craft(&"basic_sprinkler"), "Basic Sprinkler crafting failed")
 	_check(inventory.get_quantity(&"basic_sprinkler") == 1, "Crafted Sprinkler missing")
-	_check(player_state.hotbar.has(&"basic_sprinkler"), "Crafted Sprinkler was not assigned to an empty hotbar slot")
+	_check(root.get_node("Hotbar").slots.has(&"basic_sprinkler"), "Crafted Sprinkler was not assigned to an empty hotbar slot")
 
 	world_travel.travel_to(&"starter_town", &"from_riverside")
 	await world_travel.travel_finished

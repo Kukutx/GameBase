@@ -47,9 +47,9 @@ func _upgrade_internal(upgrade_id: StringName) -> bool:
 		GameEvents.toast("Inventory or materials changed before the upgrade completed")
 		return false
 
-	for index in range(PlayerState.hotbar.size()):
-		if PlayerState.hotbar[index] == source.id:
-			PlayerState.set_hotbar_item(index, result.id)
+	for index in range(Hotbar.slots.size()):
+		if Hotbar.slots[index] == source.id:
+			Hotbar.set_slot_item(index, result.id)
 	tool_upgraded.emit(upgrade_data.id, source.id, result.id)
 	GameEvents.tool_upgraded.emit(upgrade_data.id, result.id)
 	GameEvents.toastf("Upgraded to %s", [result.display_name])

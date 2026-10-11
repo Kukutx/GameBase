@@ -4,6 +4,7 @@ var _clock_day: int
 var _clock_minute: int
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _skills_snapshot: Dictionary
 
@@ -12,6 +13,7 @@ func before_each() -> void:
 	_clock_minute = WorldClock.minute_of_day
 	_inventory_snapshot = InventoryState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_skills_snapshot = Skills.to_save_data()
 	InventoryState.clear()
@@ -23,6 +25,7 @@ func before_each() -> void:
 func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	Skills.load_save_data(_skills_snapshot)
 	WorldClock.set_time(_clock_day, _clock_minute)
@@ -83,14 +86,14 @@ func test_copper_pickaxe_upgrade_replaces_inventory_and_hotbar_atomically() -> v
 	InventoryState.add_item_by_id(&"pickaxe", 1)
 	InventoryState.add_item_by_id(&"copper_bar", 2)
 	PlayerState.money = 500
-	PlayerState.set_hotbar_item(2, &"pickaxe")
+	Hotbar.set_slot_item(2, &"pickaxe")
 
 	assert_true(UpgradeState.upgrade(&"copper_pickaxe_upgrade"))
 	assert_eq(InventoryState.get_quantity(&"pickaxe"), 0)
 	assert_eq(InventoryState.get_quantity(&"copper_pickaxe"), 1)
 	assert_eq(InventoryState.get_quantity(&"copper_bar"), 0)
 	assert_eq(PlayerState.money, 200)
-	assert_eq(PlayerState.hotbar[2], &"copper_pickaxe")
+	assert_eq(Hotbar.slots[2], &"copper_pickaxe")
 
 func test_copper_farm_tools_reduce_energy_cost() -> void:
 	InventoryState.add_item_by_id(&"copper_hoe", 1)
@@ -142,13 +145,13 @@ func test_iron_bar_smelt_and_pickaxe_upgrade_extend_mining_progression() -> void
 	InventoryState.add_item_by_id(&"copper_pickaxe", 1)
 	InventoryState.add_item_by_id(&"iron_bar", 2)
 	PlayerState.money = 1400
-	PlayerState.set_hotbar_item(2, &"copper_pickaxe")
+	Hotbar.set_slot_item(2, &"copper_pickaxe")
 	assert_true(UpgradeState.upgrade(&"iron_pickaxe_upgrade"))
 	assert_eq(InventoryState.get_quantity(&"copper_pickaxe"), 0)
 	assert_eq(InventoryState.get_quantity(&"iron_pickaxe"), 1)
 	assert_eq(InventoryState.get_quantity(&"iron_bar"), 0)
 	assert_eq(PlayerState.money, 0)
-	assert_eq(PlayerState.hotbar[2], &"iron_pickaxe")
+	assert_eq(Hotbar.slots[2], &"iron_pickaxe")
 	assert_eq(ContentDB.get_item(&"iron_pickaxe").tool_power, 3)
 
 func test_oil_maker_crafts_and_processes_truffle_into_artisan_oil() -> void:
@@ -202,13 +205,13 @@ func test_gold_bar_smelt_and_pickaxe_upgrade_complete_deep_mining_chain() -> voi
 	InventoryState.add_item_by_id(&"iron_pickaxe", 1)
 	InventoryState.add_item_by_id(&"gold_bar", 4)
 	PlayerState.money = 4000
-	PlayerState.set_hotbar_item(2, &"iron_pickaxe")
+	Hotbar.set_slot_item(2, &"iron_pickaxe")
 	assert_true(UpgradeState.upgrade(&"gold_pickaxe_upgrade"))
 	assert_eq(InventoryState.get_quantity(&"iron_pickaxe"), 0)
 	assert_eq(InventoryState.get_quantity(&"gold_pickaxe"), 1)
 	assert_eq(InventoryState.get_quantity(&"gold_bar"), 0)
 	assert_eq(PlayerState.money, 0)
-	assert_eq(PlayerState.hotbar[2], &"gold_pickaxe")
+	assert_eq(Hotbar.slots[2], &"gold_pickaxe")
 	assert_eq(ContentDB.get_item(&"gold_pickaxe").tool_power, 4)
 
 func test_full_metal_tool_upgrade_catalog_is_chained_without_weapon_damage_regression() -> void:
@@ -271,13 +274,13 @@ func test_iridium_bar_smelt_and_pickaxe_upgrade_complete_late_mining_chain() -> 
 	InventoryState.add_item_by_id(&"gold_pickaxe", 1)
 	InventoryState.add_item_by_id(&"iridium_bar", 4)
 	PlayerState.money = 9000
-	PlayerState.set_hotbar_item(2, &"gold_pickaxe")
+	Hotbar.set_slot_item(2, &"gold_pickaxe")
 	assert_true(UpgradeState.upgrade(&"iridium_pickaxe_upgrade"))
 	assert_eq(InventoryState.get_quantity(&"gold_pickaxe"), 0)
 	assert_eq(InventoryState.get_quantity(&"iridium_pickaxe"), 1)
 	assert_eq(InventoryState.get_quantity(&"iridium_bar"), 0)
 	assert_eq(PlayerState.money, 0)
-	assert_eq(PlayerState.hotbar[2], &"iridium_pickaxe")
+	assert_eq(Hotbar.slots[2], &"iridium_pickaxe")
 	assert_eq(ContentDB.get_item(&"iridium_pickaxe").tool_power, 5)
 
 func test_furnace_entry_points_expose_all_metal_recipes() -> void:

@@ -8,6 +8,9 @@
 // ContentRegistry) is that core contract, implemented by the game; every method
 // called on it must exist in its implementation.
 //
+// A module may only use the modules gamebase/gamebase.json says it requires,
+// so a game that installs a module also gets everything that module uses.
+//
 // Known violations that predate this check live in tools/layer_baseline.json
 // with the reason they remain. A new violation fails; so does a baseline entry
 // that no longer occurs, so the baseline only ever shrinks.
@@ -161,10 +164,46 @@ function findContractGaps(root, contracts) {
   return gaps;
 }
 
+// Every module a module uses must be in its `requires` in gamebase/gamebase.json.
+function findUndeclaredModuleUses(root) {
+  const manifestFile = path.join(root, "gamebase", "gamebase.json");
+  if (!fs.existsSync(manifestFile)) return [];
+  const declared = JSON.parse(fs.readFileSync(manifestFile, "utf8")).modules || {};
+  const { symbols } = collectSymbols(root);
+  const problems = new Set();
+  for (const file of walk(path.join(root, "gamebase", "modules"), [".gd", ".tscn", ".tres"])) {
+    const relative = rel(root, file);
+    const module = layerOf(relative).slice("module:".length);
+    const raw = fs.readFileSync(file, "utf8");
+    const used = [...raw.matchAll(/res:\/\/([\w./-]+)/g)].map((match) => layerOf(match[1]));
+    if (relative.endsWith(".gd")) {
+      for (const word of new Set(stripComments(raw).match(/\b[A-Z]\w*\b/g) || [])) {
+        if (symbols.has(word)) used.push(symbols.get(word).layer);
+      }
+    }
+    if (!declared[module]) {
+      problems.add(`gamebase/modules/${module} is not listed under "modules" in gamebase/gamebase.json`);
+      continue;
+    }
+    const requires = new Set(declared[module].requires || []);
+    for (const layer of used) {
+      if (!layer.startsWith("module:")) continue;
+      const other = layer.slice("module:".length);
+      if (other !== module && !requires.has(other)) {
+        problems.add(`gamebase/modules/${module} uses module ${other}, which gamebase/gamebase.json does not list in its requires (${relative})`);
+      }
+    }
+  }
+  for (const module of Object.keys(declared)) {
+    if (!fs.existsSync(path.join(root, "gamebase", "modules", module))) problems.add(`gamebase/gamebase.json lists module ${module}, which does not exist`);
+  }
+  return [...problems];
+}
+
 function checkLayers(root = ROOT, baselinePath = BASELINE) {
   const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, "utf8")) : { entries: {} };
   const { violations, contracts } = findViolations(root);
-  const problems = findContractGaps(root, contracts);
+  const problems = findContractGaps(root, contracts).concat(findUndeclaredModuleUses(root));
   for (const [file, found] of Object.entries(violations)) {
     const known = new Set((baseline.entries[file] || {}).uses || []);
     for (const what of found) {

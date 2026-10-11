@@ -63,7 +63,7 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 			"energy": PlayerState.energy,
 			"max_energy": PlayerState.max_energy,
 			"money": PlayerState.money,
-			"selected_item_id": String(PlayerState.get_selected_item_id()),
+			"selected_item_id": String(Hotbar.get_selected_item_id()),
 			"inventory": InventoryState.get_entries(),
 			"skills": Skills.to_save_data(),
 			"actor_name": actor.name if actor != null else "Player",

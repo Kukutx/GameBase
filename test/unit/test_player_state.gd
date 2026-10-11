@@ -1,6 +1,6 @@
 extends GutTest
 
-func test_energy_money_and_hotbar_round_trip() -> void:
+func test_energy_and_money_round_trip() -> void:
 	var state := GlobalPlayerState.new()
 	add_child_autofree(state)
 	state.max_energy = 120
@@ -11,7 +11,6 @@ func test_energy_money_and_hotbar_round_trip() -> void:
 	assert_eq(state.energy, 95)
 	assert_true(state.spend_money(80))
 	assert_eq(state.money, 220)
-	state.select_slot(2)
 
 	var restored := GlobalPlayerState.new()
 	add_child_autofree(restored)
@@ -19,23 +18,28 @@ func test_energy_money_and_hotbar_round_trip() -> void:
 	assert_eq(restored.max_energy, 120)
 	assert_eq(restored.energy, 95)
 	assert_eq(restored.money, 220)
+
+func test_hotbar_round_trip() -> void:
+	var hotbar := HotbarService.new()
+	add_child_autofree(hotbar)
+	hotbar.select_slot(2)
+	var restored := HotbarService.new()
+	add_child_autofree(restored)
+	restored.load_save_data(hotbar.to_save_data())
 	assert_eq(restored.selected_slot, 2)
 	assert_eq(restored.get_selected_item_id(), &"pickaxe")
 
 func test_removed_legacy_hotbar_item_is_cleared_without_touching_inventory_payload() -> void:
-	var state := GlobalPlayerState.new()
-	add_child_autofree(state)
-	state.load_save_data({
-		"max_energy": 100,
-		"energy": 80,
-		"money": 500,
+	var hotbar := HotbarService.new()
+	add_child_autofree(hotbar)
+	hotbar.load_save_data({
 		"selected_slot": 0,
-		"hotbar": ["removed_item", "hoe", "", "", "", "", "", "", ""],
+		"slots": ["removed_item", "hoe", "", "", "", "", "", "", ""],
 	})
-	assert_eq(state.hotbar[0], &"")
-	assert_eq(state.hotbar[1], &"hoe")
-	assert_eq(state.get_selected_item_id(), &"")
-	assert_null(state.get_selected_item())
+	assert_eq(hotbar.slots[0], &"")
+	assert_eq(hotbar.slots[1], &"hoe")
+	assert_eq(hotbar.get_selected_item_id(), &"")
+	assert_null(hotbar.get_selected_item())
 
 func test_energy_cannot_go_below_zero() -> void:
 	var state := GlobalPlayerState.new()

@@ -89,6 +89,7 @@ func test_apply_snapshot_sanitizes_malformed_core_section_values_without_crashin
 	var weather_snapshot := WeatherState.to_save_data()
 	var inventory_snapshot := InventoryState.to_save_data()
 	var player_snapshot := PlayerState.to_save_data()
+	var hotbar_snapshot := Hotbar.to_save_data()
 	var world_snapshot := WorldState.to_save_data()
 	var relationship_snapshot := RelationshipState.to_save_data()
 	var memory_snapshot := NpcMemory.to_save_data()
@@ -139,7 +140,7 @@ func test_apply_snapshot_sanitizes_malformed_core_section_values_without_crashin
 	assert_eq(PlayerState.max_health, 100)
 	assert_eq(PlayerState.health, 100)
 	assert_eq(PlayerState.money, 500)
-	assert_eq(PlayerState.selected_slot, 0)
+	assert_eq(Hotbar.selected_slot, 0)
 	assert_eq(InventoryState.get_quantity(&"stone"), 0)
 	assert_eq(RelationshipState.get_points(&"mira"), 0)
 	assert_eq(Skills.get_xp(SkillManager.MINING), 0)
@@ -158,6 +159,7 @@ func test_apply_snapshot_sanitizes_malformed_core_section_values_without_crashin
 	BuffState.load_save_data(buff_snapshot)
 	InventoryState.load_save_data(inventory_snapshot)
 	PlayerState.load_save_data(player_snapshot)
+	Hotbar.load_save_data(hotbar_snapshot)
 	WorldState.load_save_data(world_snapshot)
 	RelationshipState.load_save_data(relationship_snapshot)
 	NpcMemory.load_save_data(memory_snapshot)
@@ -171,6 +173,7 @@ func test_apply_snapshot_does_not_leak_current_session_into_missing_legacy_secti
 	var weather_snapshot := WeatherState.to_save_data()
 	var inventory_snapshot := InventoryState.to_save_data()
 	var player_snapshot := PlayerState.to_save_data()
+	var hotbar_snapshot := Hotbar.to_save_data()
 	var world_snapshot := WorldState.to_save_data()
 	var relationship_snapshot := RelationshipState.to_save_data()
 	var memory_snapshot := NpcMemory.to_save_data()
@@ -181,7 +184,7 @@ func test_apply_snapshot_does_not_leak_current_session_into_missing_legacy_secti
 	var fishing_snapshot := FishingState.to_save_data()
 
 	PlayerState.money = 9999
-	PlayerState.set_hotbar_item(0, &"iridium_pickaxe")
+	Hotbar.set_slot_item(0, &"iridium_pickaxe")
 	Skills.add_xp(SkillManager.MINING, 5000)
 	QuestState.load_save_data({"reach_mine_bottom": {"status": QuestManager.Status.ACTIVE, "progress": 119}})
 	InventoryState.add_item_by_id(&"iridium_bar", 3)
@@ -204,7 +207,7 @@ func test_apply_snapshot_does_not_leak_current_session_into_missing_legacy_secti
 	}
 	assert_true(await SaveManager.apply_snapshot(legacy_like))
 	assert_eq(PlayerState.money, 500)
-	assert_eq(PlayerState.hotbar[0], &"hoe")
+	assert_eq(Hotbar.slots[0], &"hoe")
 	assert_eq(Skills.get_xp(SkillManager.MINING), 0)
 	assert_true(QuestState.is_active(&"meet_mira"))
 	assert_true(QuestState.is_active(&"gather_berries"))
@@ -217,6 +220,7 @@ func test_apply_snapshot_does_not_leak_current_session_into_missing_legacy_secti
 	BuffState.load_save_data(buff_snapshot)
 	InventoryState.load_save_data(inventory_snapshot)
 	PlayerState.load_save_data(player_snapshot)
+	Hotbar.load_save_data(hotbar_snapshot)
 	WorldState.load_save_data(world_snapshot)
 	RelationshipState.load_save_data(relationship_snapshot)
 	NpcMemory.load_save_data(memory_snapshot)
@@ -224,3 +228,19 @@ func test_apply_snapshot_does_not_leak_current_session_into_missing_legacy_secti
 	Skills.load_save_data(skill_snapshot)
 	FishingState.load_save_data(fishing_snapshot)
 	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)
+
+func test_v8_hotbar_moves_out_of_player_state_into_its_own_section() -> void:
+	var v8 := {
+		"version": 8,
+		"location_id": "starter_town",
+		"player_state": {"money": 42, "hotbar": ["hoe", "", "berry"], "selected_slot": 2},
+	}
+	var migrated := SaveMigration.migrate(v8, GameSaveManager.SAVE_VERSION)
+	assert_eq(int(migrated["version"]), GameSaveManager.SAVE_VERSION)
+	assert_eq(migrated["hotbar"], {"slots": ["hoe", "", "berry"], "selected_slot": 2})
+	assert_eq(migrated["player_state"], {"money": 42})
+	var hotbar := HotbarService.new()
+	hotbar.load_save_data(migrated["hotbar"])
+	assert_eq(hotbar.get_selected_item_id(), &"berry")
+	assert_eq(hotbar.slots.size(), HotbarService.SLOT_COUNT)
+	hotbar.free()

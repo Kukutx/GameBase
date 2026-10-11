@@ -4,6 +4,7 @@ var _clock_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _skill_snapshot: Dictionary
 
 func before_each() -> void:
@@ -11,6 +12,7 @@ func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_skill_snapshot = Skills.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
@@ -24,6 +26,7 @@ func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	Skills.load_save_data(_skill_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
 	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)

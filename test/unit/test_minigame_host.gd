@@ -90,6 +90,7 @@ func test_winning_the_reel_lands_the_biting_fish() -> void:
 	var old_minute := WorldClock.minute_of_day
 	var inventory_snapshot := InventoryState.to_save_data()
 	var player_snapshot := PlayerState.to_save_data()
+	var hotbar_snapshot := Hotbar.to_save_data()
 	var quest_snapshot := QuestState.to_save_data()
 	var skill_snapshot := Skills.to_save_data()
 	WorldClock.set_time(1, 13 * 60)
@@ -115,6 +116,7 @@ func test_winning_the_reel_lands_the_biting_fish() -> void:
 	assert_eq(InventoryState.get_quantity(&"river_trout") + InventoryState.get_quantity(&"river_carp"), 1)
 	InventoryState.load_save_data(inventory_snapshot)
 	PlayerState.load_save_data(player_snapshot)
+	Hotbar.load_save_data(hotbar_snapshot)
 	QuestState.load_save_data(quest_snapshot)
 	Skills.load_save_data(skill_snapshot)
 	WorldClock.set_time(old_day, old_minute)

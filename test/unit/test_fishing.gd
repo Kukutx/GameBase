@@ -43,6 +43,7 @@ func test_fishing_state_machine_waits_bites_and_reels() -> void:
 	var old_minute := WorldClock.minute_of_day
 	var inventory_snapshot := InventoryState.to_save_data()
 	var player_snapshot := PlayerState.to_save_data()
+	var hotbar_snapshot := Hotbar.to_save_data()
 	var quest_snapshot := QuestState.to_save_data()
 	var skill_snapshot := Skills.to_save_data()
 	WorldClock.set_time(1, 13 * 60)
@@ -65,6 +66,7 @@ func test_fishing_state_machine_waits_bites_and_reels() -> void:
 
 	InventoryState.load_save_data(inventory_snapshot)
 	PlayerState.load_save_data(player_snapshot)
+	Hotbar.load_save_data(hotbar_snapshot)
 	QuestState.load_save_data(quest_snapshot)
 	Skills.load_save_data(skill_snapshot)
 	WorldClock.set_time(old_day, old_minute)
@@ -74,6 +76,7 @@ func test_fishing_blocks_energy_and_item_signal_reentrancy() -> void:
 	var old_minute := WorldClock.minute_of_day
 	var inventory_snapshot := InventoryState.to_save_data()
 	var player_snapshot := PlayerState.to_save_data()
+	var hotbar_snapshot := Hotbar.to_save_data()
 	var quest_snapshot := QuestState.to_save_data()
 	var skill_snapshot := Skills.to_save_data()
 	WorldClock.set_time(1, 13 * 60)
@@ -122,6 +125,7 @@ func test_fishing_blocks_energy_and_item_signal_reentrancy() -> void:
 
 	InventoryState.load_save_data(inventory_snapshot)
 	PlayerState.load_save_data(player_snapshot)
+	Hotbar.load_save_data(hotbar_snapshot)
 	QuestState.load_save_data(quest_snapshot)
 	Skills.load_save_data(skill_snapshot)
 	WorldClock.set_time(old_day, old_minute)

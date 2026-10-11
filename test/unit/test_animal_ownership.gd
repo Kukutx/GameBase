@@ -2,6 +2,7 @@ extends GutTest
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _clock_day: int
 var _clock_minute: int
@@ -10,6 +11,7 @@ var _inventory_slots: int
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_player_snapshot = PlayerState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
 	_clock_day = WorldClock.day
 	_clock_minute = WorldClock.minute_of_day
@@ -29,6 +31,7 @@ func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	InventoryState.max_slots = _inventory_slots
 	WorldClock.set_time(_clock_day, _clock_minute)
 

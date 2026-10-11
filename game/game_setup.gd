@@ -31,6 +31,8 @@ func _register_save_sections() -> void:
 		BuffState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: BuffState.load_save_data(section)))
 	SaveManager.register_section(SaveSection.new(&"inventory", 500, 1,
 		InventoryState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: InventoryState.load_save_data(section)))
+	SaveManager.register_section(SaveSection.new(&"hotbar", 650, 9,
+		Hotbar.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: Hotbar.load_save_data(section), true))
 	SaveManager.register_section(SaveSection.new(&"relationships", 800, 2,
 		RelationshipState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: RelationshipState.load_save_data(section)))
 	SaveManager.register_section(SaveSection.new(&"npc_memory", 900, 3,
@@ -85,6 +87,7 @@ func _register_load_steps() -> void:
 func _register_new_game_steps() -> void:
 	GameSession.register_new_game_step(&"inventory", 100, InventoryState.clear)
 	GameSession.register_new_game_step(&"animals", 300, AnimalState.reset_new_game)
+	GameSession.register_new_game_step(&"hotbar", 450, Hotbar.reset_new_game)
 	GameSession.register_new_game_step(&"relationships", 500, RelationshipState.clear)
 	GameSession.register_new_game_step(&"npc_memory", 600, NpcMemory.clear)
 	GameSession.register_new_game_step(&"quests_clear", 700, QuestState.load_save_data.bind({}))

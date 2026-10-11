@@ -49,25 +49,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("hotbar_prev"):
-		PlayerState.cycle_slot(-1)
+		Hotbar.cycle_slot(-1)
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("hotbar_next"):
-		PlayerState.cycle_slot(1)
+		Hotbar.cycle_slot(1)
 		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		var slot := _slot_for_key(event.physical_keycode)
 		if slot >= 0:
-			PlayerState.select_slot(slot)
+			Hotbar.select_slot(slot)
 			get_viewport().set_input_as_handled()
 			return
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			PlayerState.cycle_slot(-1)
+			Hotbar.cycle_slot(-1)
 			get_viewport().set_input_as_handled()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			PlayerState.cycle_slot(1)
+			Hotbar.cycle_slot(1)
 			get_viewport().set_input_as_handled()
 
 func _give_selected_gift() -> void:
@@ -79,7 +79,7 @@ func _give_selected_gift() -> void:
 	if npc == null:
 		GameEvents.toast("That is not someone you can gift")
 		return
-	var item_id := PlayerState.get_selected_item_id()
+	var item_id := Hotbar.get_selected_item_id()
 	if item_id == &"":
 		GameEvents.toast("Select a gift in the hotbar")
 		return

@@ -17,7 +17,7 @@ func _ready() -> void:
 	close_button.pressed.connect(close)
 	PlayerState.money_changed.connect(_on_money_changed)
 	InventoryState.changed.connect(_refresh_sell_button)
-	PlayerState.selected_slot_changed.connect(_on_selected_changed)
+	Hotbar.selected_slot_changed.connect(_on_selected_changed)
 
 func open(shop: ShopData) -> void:
 	if shop == null:
@@ -96,7 +96,7 @@ func _buy_animal(animal_id: StringName) -> void:
 	_rebuild()
 
 func _sell_selected() -> void:
-	var item_id := PlayerState.get_selected_item_id()
+	var item_id := Hotbar.get_selected_item_id()
 	ShopState.sell(item_id, 1)
 	money_label.text = tr("Money: %dg") % PlayerState.money
 	_refresh_sell_button()
@@ -104,7 +104,7 @@ func _sell_selected() -> void:
 func _refresh_sell_button() -> void:
 	if sell_button == null:
 		return
-	var item_id := PlayerState.get_selected_item_id()
+	var item_id := Hotbar.get_selected_item_id()
 	var item := ItemCatalog.get_item(item_id)
 	var can_sell := item != null and item.sell_price > 0 and InventoryState.get_quantity(item_id) > 0
 	sell_button.disabled = not can_sell

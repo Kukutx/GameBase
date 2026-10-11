@@ -15,7 +15,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func attack_selected_weapon() -> bool:
 	if _attack_busy:
 		return false
-	var weapon := PlayerState.get_selected_item()
+	var weapon := Hotbar.get_selected_item()
 	if weapon == null or not weapon.is_tool() or weapon.tool_action != &"attack":
 		return false
 	_attack_busy = true

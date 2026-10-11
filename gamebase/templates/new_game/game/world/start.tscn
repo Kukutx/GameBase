@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="1_spawn"]
+
+[node name="Start" type="Node2D"]
+
+[node name="Player" type="Node2D" parent="." groups=["player"]]
+
+[node name="StartSpawn" type="Marker2D" parent="."]
+script = ExtResource("1_spawn")
+spawn_id = &"start"
+
+[node name="Label" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 16.0
+text = "New game on GameBase"

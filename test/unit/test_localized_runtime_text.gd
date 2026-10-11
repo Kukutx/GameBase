@@ -35,7 +35,7 @@ func test_hud_summaries_are_translated() -> void:
 	InventoryState.add_item_by_id(&"hay", 1)
 	_assert_translated(InventoryState.get_summary(2), "inventory summary")
 	_assert_translated(Skills.get_summary(), "skill summary")
-	_assert_translated(PlayerState.get_hotbar_text(), "hotbar")
+	_assert_translated(Hotbar.get_text(), "hotbar")
 	_assert_translated(QuestState.get_active_summary(), "active quest")
 	_assert_translated(CollectionState.get_summary(), "collection summary")
 	assert_true(BuffState.apply_buff(&"hearty_worker"))

@@ -1,14 +1,6 @@
 {
   "//": "Known layer violations that predate tools/check_layers.js. Only remove entries; never add one.",
   "entries": {
-    "gamebase/core/player/player_state.gd": {
-      "reason": "The hotbar belongs to the items module; moving it changes the player_state save section, so it moves together with a save migration.",
-      "uses": [
-        "InventoryState",
-        "ItemCatalog",
-        "ItemData"
-      ]
-    },
     "gamebase/modules/items/shop/shop_stand.tscn": {
       "reason": "The reusable shop stand scene ships with this game's general store as its default shop.",
       "uses": [
