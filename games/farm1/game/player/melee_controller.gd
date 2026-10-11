@@ -1,6 +1,9 @@
 class_name MeleeController
 extends Area2D
 
+## The tool action of Farm1's weapons.
+const TOOL_ACTION := &"attack"
+
 @export var action: StringName = &"use_tool"
 @export_range(0, 100, 1) var energy_cost := 2
 
@@ -16,7 +19,7 @@ func attack_selected_weapon() -> bool:
 	if _attack_busy:
 		return false
 	var weapon := Hotbar.get_selected_item()
-	if weapon == null or not weapon.is_tool() or weapon.tool_action != &"attack":
+	if weapon == null or not weapon.is_tool() or weapon.tool_action != TOOL_ACTION:
 		return false
 	_attack_busy = true
 	var result := _attack(weapon)

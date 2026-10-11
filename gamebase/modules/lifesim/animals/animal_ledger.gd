@@ -1,7 +1,8 @@
 class_name AnimalLedger
 extends Node2D
 
-@export var location_id: StringName = &"starter_town"
+## The location whose animals the ledger manages; empty: the location it is in.
+@export var location_id: StringName
 @onready var interactable: Interactable = $Interactable
 
 func _ready() -> void:
@@ -12,4 +13,8 @@ func _on_interacted(_actor: Node) -> void:
 	if menu == null:
 		GameEvents.toast("Animal ledger UI is unavailable")
 		return
-	menu.open(location_id)
+	var managed := location_id
+	if managed == &"":
+		var location := ContentDB.get_current_location(get_tree())
+		managed = location.id if location != null else &""
+	menu.open(managed)

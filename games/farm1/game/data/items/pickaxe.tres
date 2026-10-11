@@ -10,6 +10,6 @@ description = "Breaks rocks and ore nodes."
 max_stack = 1
 kind = 3
 buy_price = 600
-tool_action = &"pickaxe"
+tool_action = &"mine"
 tool_power = 1
 tags = PackedStringArray("tool", "mining")

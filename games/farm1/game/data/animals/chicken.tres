@@ -21,6 +21,7 @@ collision_size = Vector2(12, 8)
 visual_offset = Vector2(0, -7)
 visual_scale = 1.0
 housing_type = &"coop"
+feed_item_id = &"hay"
 purchase_price = 800
 product_item_id = &"egg"
 premium_product_item_id = &"large_egg"

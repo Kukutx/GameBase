@@ -80,12 +80,6 @@ func get_next_expansion_for_housing(housing_id: StringName) -> FarmExpansionData
 			return data
 	return null
 
-func get_summary() -> String:
-	var parts := PackedStringArray()
-	for housing_id: StringName in [&"starter_coop", &"starter_barn"]:
-		parts.append("%s %d slots" % [String(housing_id).trim_prefix("starter_").capitalize(), get_capacity(housing_id, 4)])
-	return " · ".join(parts)
-
 func _get_state() -> Dictionary:
 	var raw: Variant = WorldState.get_value(STATE_KEY, {})
 	if not raw is Dictionary:

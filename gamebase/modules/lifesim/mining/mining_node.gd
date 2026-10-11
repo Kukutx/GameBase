@@ -40,7 +40,7 @@ func _use_item_internal(item_id: StringName) -> bool:
 		GameEvents.toast("Nothing left to mine here")
 		return false
 	var item := ContentDB.get_item(item_id)
-	if item == null or not item.is_tool() or item.tool_action != &"pickaxe":
+	if item == null or not item.is_tool() or item.tool_action != ItemData.ACTION_MINE:
 		GameEvents.toastf("Use a pickaxe on %s", [data.display_name])
 		return false
 	if item.tool_power < data.required_tool_power:

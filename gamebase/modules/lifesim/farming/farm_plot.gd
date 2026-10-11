@@ -49,9 +49,9 @@ func _use_item_internal(item_id: StringName, consume_energy: bool, show_message:
 		return false
 	if item.is_tool():
 		match item.tool_action:
-			&"hoe":
+			ItemData.ACTION_TILL:
 				return _till(item, consume_energy, show_message)
-			&"water":
+			ItemData.ACTION_WATER:
 				return _water(item, consume_energy, show_message)
 	if item.is_seed():
 		return _plant(item)
@@ -61,9 +61,9 @@ func _use_item_internal(item_id: StringName, consume_energy: bool, show_message:
 
 func can_apply_tool_action(tool_action: StringName) -> bool:
 	match tool_action:
-		&"hoe":
+		ItemData.ACTION_TILL:
 			return not tilled
-		&"water":
+		ItemData.ACTION_WATER:
 			return tilled and not watered
 		_:
 			return false
@@ -72,9 +72,9 @@ func get_tool_energy_cost(tool: ItemData) -> int:
 	if tool == null:
 		return 0
 	match tool.tool_action:
-		&"hoe":
+		ItemData.ACTION_TILL:
 			return _scaled_tool_energy(hoe_energy_cost, tool)
-		&"water":
+		ItemData.ACTION_WATER:
 			return _scaled_tool_energy(water_energy_cost, tool)
 		_:
 			return 0

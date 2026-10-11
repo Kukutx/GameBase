@@ -1,8 +1,8 @@
 class_name FishingSpot
 extends Interactable
 
+## Fishing needs a tool whose action is ItemData.ACTION_FISH in the inventory.
 @export var location_id: StringName
-@export var required_rod_id: StringName = &"fishing_rod"
 @export_range(0, 100, 1) var energy_cost := 4
 
 func _ready() -> void:
@@ -13,7 +13,7 @@ func interact(actor: Node) -> void:
 		var location := ContentDB.get_current_location(get_tree())
 		if location != null:
 			location_id = location.id
-	if required_rod_id != &"" and not InventoryState.has_item(required_rod_id, 1):
+	if not InventoryState.has_tool(ItemData.ACTION_FISH):
 		GameEvents.toast("You need a fishing rod")
 		return
 	if location_id == &"":

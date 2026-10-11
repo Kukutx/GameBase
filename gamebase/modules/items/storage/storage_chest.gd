@@ -1,7 +1,9 @@
 class_name StorageChest
 extends PlacedStructure
 
-@export var container_id: StringName = &"home_chest_01"
+## The storage container it opens. A chest placed in a scene names one; a
+## chest the player places takes its placement id.
+@export var container_id: StringName
 @export var display_name := "Storage Chest"
 @export_range(1, 200, 1) var max_slots := 24
 

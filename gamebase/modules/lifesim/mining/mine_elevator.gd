@@ -4,6 +4,9 @@ extends Node2D
 @onready var interactable: Interactable = $Interactable
 @onready var label: Label = $Label
 
+## The mine the elevator is in; its MineFloorController sets it.
+var mine: MineFloorController
+
 func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	MineState.deepest_floor_changed.connect(_on_deepest_changed)
@@ -16,10 +19,9 @@ func _on_interacted(_actor: Node) -> void:
 	if target == current or not MineState.can_use_elevator_floor(target):
 		GameEvents.toast("No mine elevator checkpoint unlocked yet")
 		return
-	if not WorldTravel.travel_to(&"old_mine", &"floor_entry"):
+	if mine == null or not mine.travel_to_floor(target):
 		GameEvents.toast("Mine elevator is unavailable right now")
 		return
-	MineState.set_floor(target)
 	GameEvents.toastf("Mine elevator → Floor %d", [target])
 
 func _on_deepest_changed(_floor: int) -> void:

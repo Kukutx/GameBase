@@ -23,6 +23,8 @@ size = Vector2(16, 380)
 
 [node name="OldMine" type="Node2D"]
 script = ExtResource("12_floor_controller")
+entrance_spawn_ids = Array[StringName]([&"from_riverside"])
+floor_spawn_id = &"floor_entry"
 
 [node name="NavigationRegion" type="NavigationRegion2D" parent="."]
 script = ExtResource("11_nav")

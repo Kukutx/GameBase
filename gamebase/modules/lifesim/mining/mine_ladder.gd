@@ -4,6 +4,8 @@ extends Node2D
 @onready var interactable: Interactable = $Interactable
 @onready var label: Label = $Label
 
+## The mine the ladder is in; its MineFloorController sets it.
+var mine: MineFloorController
 var unlocked := false
 
 func _ready() -> void:
@@ -29,8 +31,7 @@ func _on_interacted(_actor: Node) -> void:
 	if not unlocked:
 		return
 	var next_floor := mini(MineState.get_current_floor() + 1, MineRunState.MAX_FLOOR)
-	if not WorldTravel.travel_to(&"old_mine", &"floor_entry"):
+	if mine == null or not mine.travel_to_floor(next_floor):
 		GameEvents.toast("Could not descend right now")
 		return
-	MineState.set_floor(next_floor)
 	GameEvents.toastf("Descending to Mine Floor %d", [next_floor])

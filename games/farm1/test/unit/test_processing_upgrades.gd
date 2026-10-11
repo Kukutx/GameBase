@@ -167,7 +167,7 @@ func test_oil_maker_crafts_and_processes_truffle_into_artisan_oil() -> void:
 	assert_true(ResourceLoader.exists(placeable.scene_path))
 
 	InventoryState.add_item_by_id(&"truffle", 1)
-	var machine_scene := load("res://gamebase/modules/lifesim/processing/oil_maker_placeable.tscn") as PackedScene
+	var machine_scene := load("res://game/world/placeables/oil_maker.tscn") as PackedScene
 	var machine := machine_scene.instantiate() as ProcessingStation
 	machine.station_id = &"test_oil_maker"
 	add_child_autofree(machine)
@@ -284,7 +284,7 @@ func test_iridium_bar_smelt_and_pickaxe_upgrade_complete_late_mining_chain() -> 
 	assert_eq(ContentDB.get_item(&"iridium_pickaxe").tool_power, 5)
 
 func test_furnace_entry_points_expose_all_metal_recipes() -> void:
-	var packed := load("res://gamebase/modules/lifesim/processing/copper_furnace_placeable.tscn") as PackedScene
+	var packed := load("res://game/world/placeables/copper_furnace.tscn") as PackedScene
 	var placeable := packed.instantiate() as ProcessingStation
 	add_child_autofree(placeable)
 	await get_tree().process_frame

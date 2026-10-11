@@ -9,6 +9,6 @@ display_name = "Iridium Pickaxe"
 description = "A top-tier pickaxe forged for the final depths of the Old Mine."
 max_stack = 1
 kind = 3
-tool_action = &"pickaxe"
+tool_action = &"mine"
 tool_power = 5
 tags = PackedStringArray("tool", "iridium")

@@ -10,6 +10,6 @@ description = "A stronger pickaxe that breaks early mine nodes faster."
 max_stack = 1
 kind = 3
 buy_price = 0
-tool_action = &"pickaxe"
+tool_action = &"mine"
 tool_power = 2
 tags = PackedStringArray("tool", "copper")

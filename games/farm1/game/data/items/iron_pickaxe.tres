@@ -9,6 +9,6 @@ display_name = "Iron Pickaxe"
 description = "An iron pickaxe capable of breaking Gold Veins."
 max_stack = 1
 kind = 3
-tool_action = &"pickaxe"
+tool_action = &"mine"
 tool_power = 3
 tags = PackedStringArray("tool", "iron")
