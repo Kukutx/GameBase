@@ -1,6 +1,9 @@
 {
   "include_subdirs": true,
-  "dirs": ["res://test/unit/"],
+  "dirs": [
+    "res://gamebase/core/test/",
+    "res://test/unit/"
+  ],
   "pre_run_script": "res://test/gut_pre_run.gd",
   "should_exit": true,
   "should_exit_on_success": true,

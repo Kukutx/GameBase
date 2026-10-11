@@ -15,13 +15,13 @@ func test_prompt_template_translates_at_render_time() -> void:
 	var interactable := Interactable.new()
 	add_child_autofree(interactable)
 	var previous := TranslationServer.get_locale()
-	interactable.set_prompt("Open %s", ["Storage Chest"])
+	interactable.set_prompt("Unknown location: %s", ["Spring"])
 
 	TranslationServer.set_locale("zh_CN")
-	assert_eq(interactable.get_prompt_text(), "打开 储物箱")
+	assert_eq(interactable.get_prompt_text(), "未知地点：春季")
 
 	TranslationServer.set_locale("en")
-	assert_eq(interactable.get_prompt_text(), "Open Storage Chest")
+	assert_eq(interactable.get_prompt_text(), "Unknown location: Spring")
 	TranslationServer.set_locale(previous)
 
 func test_interact_does_not_emit_when_disabled() -> void:

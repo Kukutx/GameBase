@@ -9,7 +9,10 @@
 //   locale/translations    the core's catalogs, each listed module's and the
 //                          game's own (game/i18n/);
 //   [editor_plugins]       the plugin of every addon the game links.
-// Everything else in project.godot belongs to the game.
+// Everything else in project.godot belongs to the game. In the game's
+// .gutconfig.json it writes "dirs": the tests of the core, of each listed
+// module (a module after the modules it requires) and the game's own
+// (test/unit/), so every game runs the tests of the foundation it uses.
 const fs = require("node:fs");
 const path = require("node:path");
 const { fail, rootPath } = require("./common");
@@ -50,6 +53,16 @@ function desiredCatalogs(game) {
     ...catalogsIn(rootPath("gamebase", "core", "i18n"), "res://gamebase/core/i18n"),
     ...[...game.modules].sort().flatMap((module) => catalogsIn(rootPath("gamebase", "modules", module, "i18n"), `res://gamebase/modules/${module}/i18n`)),
     ...catalogsIn(gamePath(game, "game", "i18n"), "res://game/i18n"),
+  ];
+}
+
+// The test directories of the core and of the game's modules that have one,
+// then the game's own.
+function desiredTestDirs(game, foundation = readFoundation()) {
+  const layers = [["core"], ...moduleOrder(foundation, game.modules).map((module) => ["modules", module])];
+  return [
+    ...layers.filter((parts) => fs.existsSync(rootPath("gamebase", ...parts, "test"))).map((parts) => `res://gamebase/${parts.join("/")}/test/`),
+    "res://test/unit/",
   ];
 }
 
@@ -110,20 +123,45 @@ function syncedProject(text, game, foundation = readFoundation()) {
   return formatSections(sections);
 }
 
-// Writes the managed parts of the game's project.godot; returns whether it changed.
+// The .gutconfig.json text with the test directories as the manifests say.
+function syncedGutConfig(text, game, foundation = readFoundation()) {
+  let config;
+  try {
+    config = JSON.parse(text);
+  } catch (error) {
+    fail(`${gamePath(game, ".gutconfig.json")} is not valid JSON: ${error.message}`);
+  }
+  return `${JSON.stringify({ ...config, dirs: desiredTestDirs(game, foundation) }, null, 2)}\n`;
+}
+
+// The managed files of the game, as [file, function of their text].
+function managedFiles(game, foundation) {
+  return [
+    [gamePath(game, "project.godot"), (text) => syncedProject(text, game, foundation)],
+    [gamePath(game, ".gutconfig.json"), (text) => syncedGutConfig(text, game, foundation)],
+  ];
+}
+
+// Writes the managed parts of the game's project.godot and .gutconfig.json;
+// returns whether either changed.
 function syncProject(game, foundation = readFoundation()) {
-  const file = gamePath(game, "project.godot");
-  const text = fs.readFileSync(file, "utf8");
-  const synced = syncedProject(text, game, foundation);
-  if (synced === text) return false;
-  fs.writeFileSync(file, synced, "utf8");
-  return true;
+  let changed = false;
+  for (const [file, sync] of managedFiles(game, foundation)) {
+    const text = fs.readFileSync(file, "utf8");
+    const synced = sync(text);
+    if (synced === text) continue;
+    fs.writeFileSync(file, synced, "utf8");
+    changed = true;
+  }
+  return changed;
 }
 
-// Whether the game's project.godot holds what syncProject() would write.
+// Whether the game's managed files hold what syncProject() would write.
 function projectInSync(game, foundation = readFoundation()) {
-  const text = fs.readFileSync(gamePath(game, "project.godot"), "utf8");
-  return syncedProject(text, game, foundation) === text;
+  return managedFiles(game, foundation).every(([file, sync]) => {
+    const text = fs.readFileSync(file, "utf8");
+    return sync(text) === text;
+  });
 }
 
-module.exports = { formatSections, parseSections, desiredAutoloads, desiredCatalogs, desiredPlugins, moduleOrder, projectInSync, syncProject, syncedProject };
+module.exports = { formatSections, parseSections, desiredAutoloads, desiredCatalogs, desiredPlugins, desiredTestDirs, moduleOrder, projectInSync, syncProject, syncedGutConfig, syncedProject };

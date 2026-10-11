@@ -2,10 +2,15 @@ extends GutTest
 
 const TEST_ZIP := "user://support_bundle_test.zip"
 const TEST_LOG_DIR := "user://support_bundle_test_logs"
-# The bundle takes the logs named after the project log file (user://logs/farm1.log).
-const TEST_LOG := "user://support_bundle_test_logs/farm1-test.log"
+
+# A log the bundle takes: named after the project's log file.
+var _test_log_name: String
+var _test_log: String
 
 func before_each() -> void:
+	var project_log := String(ProjectSettings.get_setting("debug/file_logging/log_path", "user://logs/godot.log"))
+	_test_log_name = "%s-test.log" % project_log.get_file().get_basename().to_lower()
+	_test_log = TEST_LOG_DIR.path_join(_test_log_name)
 	_cleanup()
 
 func after_each() -> void:
@@ -29,7 +34,7 @@ func test_support_summary_uses_privacy_safe_whitelist() -> void:
 func test_support_bundle_contains_only_sanitized_summary_notes_and_logs() -> void:
 	assert_eq(DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(TEST_LOG_DIR)), OK)
 	var fake_path := ProjectSettings.globalize_path("user://")
-	var file := FileAccess.open(TEST_LOG, FileAccess.WRITE)
+	var file := FileAccess.open(_test_log, FileAccess.WRITE)
 	assert_not_null(file)
 	if file == null:
 		return
@@ -48,7 +53,7 @@ func test_support_bundle_contains_only_sanitized_summary_notes_and_logs() -> voi
 	var files := reader.get_files()
 	assert_has(files, "support_summary.json")
 	assert_has(files, "README.txt")
-	assert_has(files, "logs/farm1-test.log")
+	assert_has(files, "logs/" + _test_log_name)
 	for path: String in files:
 		assert_false(path.contains("savegame"), "Raw save must never be bundled: %s" % path)
 		assert_false(path.contains("settings.cfg"), "Raw settings must never be bundled: %s" % path)
@@ -62,7 +67,7 @@ func test_support_bundle_contains_only_sanitized_summary_notes_and_logs() -> voi
 		assert_false(bool(privacy.get("raw_saves_included", true)))
 		assert_true(bool(privacy.get("absolute_paths_redacted", false)))
 
-	var log_text := reader.read_file("logs/farm1-test.log").get_string_from_utf8()
+	var log_text := reader.read_file("logs/" + _test_log_name).get_string_from_utf8()
 	assert_false(log_text.contains(fake_path))
 	assert_true(log_text.contains("<USER_DATA>"))
 	assert_true(log_text.contains("GAMEBASE_DIAGNOSTIC test"))
@@ -73,13 +78,13 @@ func test_truncated_log_tail_starts_at_a_full_line() -> void:
 	var line := "日志日志日志\n"
 	var line_bytes := line.to_utf8_buffer().size()
 	var lines_in_cap := int(SupportBundleService.MAX_LOG_BYTES / line_bytes)
-	var file := FileAccess.open(TEST_LOG, FileAccess.WRITE)
+	var file := FileAccess.open(_test_log, FileAccess.WRITE)
 	assert_not_null(file)
 	if file == null:
 		return
 	file.store_string(line.repeat(lines_in_cap + 2))
 	file.close()
-	var written := FileAccess.open(TEST_LOG, FileAccess.READ)
+	var written := FileAccess.open(_test_log, FileAccess.READ)
 	written.seek(written.get_length() - SupportBundleService.MAX_LOG_BYTES)
 	var first_kept_byte := written.get_8()
 	written.close()
@@ -87,13 +92,13 @@ func test_truncated_log_tail_starts_at_a_full_line() -> void:
 
 	var service := SupportBundleService.new()
 	add_child_autofree(service)
-	var tail := (service.call("_read_log_tail", TEST_LOG) as PackedByteArray).get_string_from_utf8()
+	var tail := (service.call("_read_log_tail", _test_log) as PackedByteArray).get_string_from_utf8()
 	assert_true(tail.begins_with(line), tail.left(40))
 	assert_false(tail.contains(char(0xFFFD)))
 	assert_lte(tail.to_utf8_buffer().size(), SupportBundleService.MAX_LOG_BYTES)
 
 func _cleanup() -> void:
-	for path in [TEST_ZIP, TEST_LOG]:
+	for path in [TEST_ZIP, _test_log]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	var log_dir := ProjectSettings.globalize_path(TEST_LOG_DIR)
