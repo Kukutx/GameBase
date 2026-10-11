@@ -87,7 +87,7 @@ func validate_actions(actions: PackedStringArray) -> PackedStringArray:
 		problems.append_array(_validate(action_text, _actions, "action", false))
 	return problems
 
-## Validates every `condition`, `*_condition` and `actions` property of every
+## Validates every `condition`, `*_condition`, `actions` and `*_actions` property of every
 ## entry in `registry`, including resources nested in arrays.
 func validate_content(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
@@ -108,7 +108,7 @@ func _validate_resource(resource: Resource, context: String, problems: PackedStr
 		if (name == "condition" or name.ends_with("_condition")) and value is String:
 			for problem: String in validate_query(value):
 				problems.append("%s %s: %s" % [context, name, problem])
-		elif name == "actions" and (value is PackedStringArray or value is Array):
+		elif (name == "actions" or name.ends_with("_actions")) and (value is PackedStringArray or value is Array):
 			for problem: String in validate_actions(PackedStringArray(value)):
 				problems.append("%s %s: %s" % [context, name, problem])
 		elif value is Array:

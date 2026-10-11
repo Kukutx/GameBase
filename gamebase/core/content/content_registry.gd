@@ -7,10 +7,12 @@ extends Node
 ## it, registers each kind's entries in `_index_content()` with
 ## `register_entries()` and checks its own references in `_validate_content()`.
 ## The registry itself owns the kinds the foundation needs (locations and audio
-## cues) and validates location scenes: spawn points, portals and the player.
+## cues, minigames) and validates location scenes: spawn points, portals and
+## the player.
 
 const KIND_LOCATION := &"location"
 const KIND_AUDIO_CUE := &"audio_cue"
+const KIND_MINIGAME := &"minigame"
 
 ## kind -> {id -> ContentEntry}. Each inner dictionary is the one
 ## `register_entries()` returned, so a subclass may keep and read it directly.
@@ -33,6 +35,7 @@ func rebuild() -> PackedStringArray:
 	if not _index_content(errors):
 		return errors
 	_validate_audio_cues(errors)
+	_validate_minigames(errors)
 	_validate_locations(errors)
 	_validate_content(errors)
 	for message: String in errors:
@@ -133,6 +136,9 @@ func has_location_spawn(location_id: StringName, spawn_id: StringName) -> bool:
 		return false
 	return int((raw_counts as Dictionary).get(String(spawn_id), 0)) == 1
 
+func get_minigame(id: StringName) -> MiniGameDefinition:
+	return get_entry(KIND_MINIGAME, id) as MiniGameDefinition
+
 func get_audio_cue(id: StringName) -> AudioCueData:
 	return get_entry(KIND_AUDIO_CUE, id) as AudioCueData
 
@@ -143,7 +149,7 @@ func get_all_audio_cues() -> Array[AudioCueData]:
 	return result
 
 ## Overridden by the game: registers every kind with `register_entries()`,
-## including `KIND_LOCATION` and `KIND_AUDIO_CUE`. Returning false stops the
+## including `KIND_LOCATION`, `KIND_AUDIO_CUE` and `KIND_MINIGAME`. Returning false stops the
 ## rebuild before validation.
 func _index_content(_errors: PackedStringArray) -> bool:
 	return true
@@ -168,6 +174,20 @@ func _validate_audio_cues(errors: PackedStringArray) -> void:
 			errors.append("audio cue '%s' has non-positive pitch range" % cue.id)
 		if cue.pitch_min > cue.pitch_max:
 			errors.append("audio cue '%s' has inverted pitch range" % cue.id)
+
+func _validate_minigames(errors: PackedStringArray) -> void:
+	for raw: Variant in get_entries(KIND_MINIGAME):
+		var minigame := raw as MiniGameDefinition
+		if minigame == null:
+			continue
+		if minigame.scene == null:
+			errors.append("minigame '%s' has no scene" % minigame.id)
+			continue
+		var root := minigame.scene.instantiate()
+		if not root is MiniGame:
+			errors.append("minigame '%s' scene root does not extend MiniGame" % minigame.id)
+		if root != null:
+			root.free()
 
 func _validate_locations(errors: PackedStringArray) -> void:
 	# First pass: load every scene once and record its spawn points, so portals

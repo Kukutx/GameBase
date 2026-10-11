@@ -24,3 +24,4 @@ extends Resource
 @export var locations: Array[WorldLocationData] = []
 @export var calendar_events: Array[CalendarEventData] = []
 @export var audio_cues: Array[AudioCueData] = []
+@export var minigames: Array[MiniGameDefinition] = []

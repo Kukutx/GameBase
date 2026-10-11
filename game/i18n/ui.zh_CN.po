@@ -3398,3 +3398,12 @@ msgstr "观看港口大赛"
 
 msgid "Attend Lantern Night"
 msgstr "参加灯笼夜"
+
+msgid "Finish the minigame before saving"
+msgstr "请先完成小游戏再保存"
+
+msgid "Reel it in!"
+msgstr "收线！"
+
+msgid "Press %s in the green zone · tries left: %d"
+msgstr "在绿色区域内按 %s · 剩余次数：%d"

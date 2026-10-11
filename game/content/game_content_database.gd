@@ -81,6 +81,7 @@ func _index_content(errors: PackedStringArray) -> bool:
 	_locations = register_entries(KIND_LOCATION, source.locations, "location", errors)
 	_calendar_events = register_entries(KIND_CALENDAR_EVENT, source.calendar_events, "calendar event", errors)
 	_audio_cues = register_entries(KIND_AUDIO_CUE, source.audio_cues, "audio cue", errors)
+	register_entries(KIND_MINIGAME, source.minigames, "minigame", errors)
 	if manifest == null:
 		errors.append("Content manifest is missing")
 		return false
