@@ -39,20 +39,8 @@ var _earned_levels: Dictionary = {
 	"mining": 1,
 	"combat": 1,
 }
-var _events: Node
-
-func _ready() -> void:
-	_events = get_node_or_null("/root/GameEvents")
-	if _events == null:
-		return
-	_events.connect("crop_harvested", Callable(self, "_on_crop_harvested"))
-	_events.connect("item_foraged", Callable(self, "_on_item_foraged"))
-	_events.connect("gift_given", Callable(self, "_on_gift_given"))
-	_events.connect("npc_talked", Callable(self, "_on_npc_talked"))
-	_events.connect("fish_caught", Callable(self, "_on_fish_caught"))
-	_events.connect("resource_mined", Callable(self, "_on_resource_mined"))
-	_events.connect("enemy_defeated", Callable(self, "_on_enemy_defeated"))
-
+## Adds experience to a skill. What earns experience is the game's to decide:
+## its `GameSetup` grants it for the module events it chooses.
 func add_xp(skill: StringName, amount: int) -> int:
 	if not SKILL_IDS.has(skill):
 		return 0
@@ -68,8 +56,8 @@ func add_xp(skill: StringName, amount: int) -> int:
 	skill_xp_changed.emit(skill, next, level)
 	if level > old_level:
 		skill_leveled_up.emit(skill, level)
-		if _events != null:
-			_events.call("toastf", "%s reached level %d", [SKILL_NAMES[skill], level])
+		if is_inside_tree():
+			GameEvents.toastf("%s reached level %d", [SKILL_NAMES[skill], level])
 	return next
 
 ## The skill's translated name.
@@ -174,28 +162,6 @@ func load_save_data(data: Dictionary) -> void:
 		var key := String(skill)
 		_earned_levels[key] = maxi(int(_earned_levels.get(key, 1)), _get_level_from_xp(get_xp(skill)))
 		skill_xp_changed.emit(skill, get_xp(skill), get_level(skill))
-
-func _on_crop_harvested(_crop_id: StringName, _item_id: StringName, quantity: int) -> void:
-	add_xp(FARMING, 25 * maxi(quantity, 1))
-
-func _on_item_foraged(_item_id: StringName, quantity: int) -> void:
-	add_xp(FORAGING, 10 * maxi(quantity, 1))
-
-func _on_gift_given(_npc_id: StringName, _item_id: StringName, friendship_delta: int) -> void:
-	if friendship_delta > 0:
-		add_xp(SOCIAL, 15)
-
-func _on_npc_talked(_npc_id: StringName) -> void:
-	add_xp(SOCIAL, 2)
-
-func _on_fish_caught(_fish_id: StringName, _item_id: StringName) -> void:
-	add_xp(FISHING, 20)
-
-func _on_resource_mined(_node_id: StringName, _item_id: StringName, quantity: int) -> void:
-	add_xp(MINING, 12 * maxi(quantity, 1))
-
-func _on_enemy_defeated(_enemy_id: StringName, combat_xp: int) -> void:
-	add_xp(COMBAT, maxi(combat_xp, 1))
 
 func _safe_int(value: Variant, fallback: int) -> int:
 	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:

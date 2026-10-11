@@ -221,7 +221,6 @@ func _handle_interaction(_actor: Node) -> void:
 		happiness = clampi(happiness + data.pet_happiness_gain, 0, 100)
 		_persist()
 		happiness_changed.emit(happiness)
-		GameEvents.animal_petted.emit(data.id, happiness)
 		GameEvents.toastf("Petted %s · Happiness %d", [get_display_name(), happiness])
 		_refresh_prompt()
 		return
@@ -240,7 +239,7 @@ func _collect_product() -> void:
 	last_product_day = WorldClock.day
 	_persist()
 	product_collected.emit(product.id, collected)
-	GameEvents.animal_product_collected.emit(data.id, product.id, collected)
+	LifesimEvents.animal_product_collected.emit(data.id, product.id, collected)
 	GameEvents.toastf("Collected %s x%d", [product.display_name, collected])
 	_refresh_prompt()
 

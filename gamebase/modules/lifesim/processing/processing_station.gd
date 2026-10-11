@@ -98,7 +98,7 @@ func _collect_output_internal() -> bool:
 	var collected_quantity := pending_output_quantity
 	_clear_job()
 	output_collected.emit(station_id, collected_id, collected_quantity)
-	GameEvents.item_processed.emit(collected_recipe_id, collected_id, collected_quantity)
+	LifesimEvents.item_processed.emit(collected_recipe_id, collected_id, collected_quantity)
 	GameEvents.toastf("Collected %s x%d", [item.display_name, collected_quantity])
 	return true
 

@@ -42,7 +42,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		used = bool(target.call("use_item", selected.id))
 	if used:
 		_play_use_animation()
-		GameEvents.item_used.emit(selected.id)
 	get_viewport().set_input_as_handled()
 
 func get_nearest_tool_target() -> Node2D:
@@ -132,7 +131,6 @@ func _consume_food_internal(item: ItemData) -> void:
 		PlayerState.heal(item.health_restore)
 	if has_buff:
 		BuffState.apply_buff(item.food_buff_id)
-	GameEvents.item_used.emit(item.id)
 	var parts := PackedStringArray()
 	if item.energy_restore > 0:
 		parts.append(tr("+%d energy") % item.energy_restore)
@@ -164,7 +162,6 @@ func _place_selected_internal(item: ItemData) -> void:
 		GameEvents.toastf("Not enough space to place %s", [item.display_name])
 		return
 	_play_use_animation()
-	GameEvents.item_used.emit(item.id)
 	GameEvents.toastf("Placed %s", [item.display_name])
 
 func _play_use_animation() -> void:

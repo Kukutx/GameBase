@@ -62,3 +62,12 @@ func test_skill_level_entitlement_is_backfilled_and_never_regresses() -> void:
 	rebalanced.add_xp(SkillManager.FARMING, 900)
 	assert_eq(rebalanced.get_level(SkillManager.FARMING), 6)
 	assert_eq(int(rebalanced.to_save_data().get("__level:farming", 0)), 6)
+
+func test_farm1_turns_module_events_into_skill_experience() -> void:
+	var saved := Skills.to_save_data()
+	var social := Skills.get_xp(SkillManager.SOCIAL)
+	NpcSocialEvents.gift_given.emit(&"mira", &"berry", 0)
+	assert_eq(Skills.get_xp(SkillManager.SOCIAL), social, "a gift that changes nothing earns nothing")
+	NpcSocialEvents.gift_given.emit(&"mira", &"berry", 20)
+	assert_eq(Skills.get_xp(SkillManager.SOCIAL), social + 15)
+	Skills.load_save_data(saved)

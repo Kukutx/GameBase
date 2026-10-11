@@ -16,13 +16,13 @@ var _states: Dictionary = {}
 func _ready() -> void:
 	InventoryState.item_added.connect(_on_item_added)
 	InventoryState.item_removed.connect(_on_inventory_item_removed)
-	GameEvents.npc_talked.connect(_on_npc_talked)
-	GameEvents.crop_harvested.connect(_on_crop_harvested)
-	GameEvents.fish_caught.connect(_on_fish_caught)
-	GameEvents.resource_mined.connect(_on_resource_mined)
-	GameEvents.enemy_defeated.connect(_on_enemy_defeated)
-	GameEvents.item_processed.connect(_on_item_processed)
-	GameEvents.tool_upgraded.connect(_on_tool_upgraded)
+	NpcSocialEvents.npc_talked.connect(_on_npc_talked)
+	LifesimEvents.crop_harvested.connect(_on_crop_harvested)
+	LifesimEvents.fish_caught.connect(_on_fish_caught)
+	LifesimEvents.resource_mined.connect(_on_resource_mined)
+	CombatEvents.enemy_defeated.connect(_on_enemy_defeated)
+	LifesimEvents.item_processed.connect(_on_item_processed)
+	ProgressionEvents.tool_upgraded.connect(_on_tool_upgraded)
 	MineState.deepest_floor_changed.connect(_on_deepest_mine_floor_changed)
 
 func get_quest(quest_id: StringName) -> QuestData:

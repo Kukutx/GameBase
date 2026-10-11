@@ -33,8 +33,8 @@ func _ready() -> void:
 	current_floor = MineState.set_floor(MineState.get_current_floor())
 	ladder.mine = self
 	elevator.mine = self
-	GameEvents.resource_mined.connect(_on_floor_progress_event)
-	GameEvents.enemy_defeated.connect(_on_floor_progress_event)
+	LifesimEvents.resource_mined.connect(_on_floor_progress_event)
+	CombatEvents.enemy_defeated.connect(_on_floor_progress_event)
 	WorldClock.day_changed.connect(_on_day_changed)
 	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh_label()

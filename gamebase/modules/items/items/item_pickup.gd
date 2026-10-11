@@ -37,7 +37,7 @@ func _collect(_actor: Node) -> void:
 	var collected := original_quantity - remaining
 	if collected > 0:
 		if counts_as_forage:
-			GameEvents.item_foraged.emit(item.id, collected)
+			ItemsEvents.item_foraged.emit(item.id, collected)
 		items_collected.emit(item.id, collected, remaining)
 	if remaining <= 0:
 		if persistent_id != &"":

@@ -18,13 +18,13 @@ func after_each() -> void:
 	ShippingState.load_save_data(_shipping_snapshot)
 
 func test_collection_records_gameplay_categories_and_accumulates_counts() -> void:
-	GameEvents.crop_harvested.emit(&"turnip", &"turnip", 2)
-	GameEvents.crop_harvested.emit(&"turnip", &"turnip", 1)
-	GameEvents.fish_caught.emit(&"river_trout", &"river_trout")
-	GameEvents.resource_mined.emit(&"stone_rock", &"stone", 3)
-	GameEvents.animal_product_collected.emit(&"chicken", &"egg", 2)
-	GameEvents.item_processed.emit(&"press_truffle_oil", &"truffle_oil", 1)
-	GameEvents.item_foraged.emit(&"berry", 4)
+	LifesimEvents.crop_harvested.emit(&"turnip", &"turnip", 2)
+	LifesimEvents.crop_harvested.emit(&"turnip", &"turnip", 1)
+	LifesimEvents.fish_caught.emit(&"river_trout", &"river_trout")
+	LifesimEvents.resource_mined.emit(&"stone_rock", &"stone", 3)
+	LifesimEvents.animal_product_collected.emit(&"chicken", &"egg", 2)
+	LifesimEvents.item_processed.emit(&"press_truffle_oil", &"truffle_oil", 1)
+	ItemsEvents.item_foraged.emit(&"berry", 4)
 
 	assert_eq(CollectionState.get_count(CollectionService.CROPS, &"turnip"), 3)
 	assert_eq(CollectionState.get_count(CollectionService.FISH, &"river_trout"), 1)

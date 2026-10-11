@@ -143,7 +143,7 @@ func _die() -> void:
 	velocity = Vector2.ZERO
 	_persist()
 	_drop_loot()
-	GameEvents.enemy_defeated.emit(data.id, data.combat_xp)
+	CombatEvents.enemy_defeated.emit(data.id, data.combat_xp)
 	_set_animation(AnimationState.DEATH)
 	_death_time_left = float(data.death_to - data.death_from + 1) / float(maxi(data.animation_fps, 1))
 	_refresh_health_label()
