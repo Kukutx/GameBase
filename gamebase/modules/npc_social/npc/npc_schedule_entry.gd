@@ -11,6 +11,9 @@ extends Resource
 @export var allowed_weather: PackedStringArray = PackedStringArray()
 @export var required_world_flag: StringName
 @export var required_flag_value := true
+## Extra availability check in the `GameQuery` syntax, e.g. `HAS_ITEM berry 3`;
+## empty means no extra check.
+@export var condition: String = ""
 
 func matches_day(day: int) -> bool:
 	if not days_of_week.is_empty() and not days_of_week.has(posmod(maxi(day, 1) - 1, 7)):
@@ -22,5 +25,7 @@ func matches_day(day: int) -> bool:
 		if not allowed_weather.has(weather_name):
 			return false
 	if required_world_flag != &"" and WorldState.get_bool(required_world_flag) != required_flag_value:
+		return false
+	if not condition.is_empty() and not GameRules.check(condition, {"day": day}):
 		return false
 	return true
