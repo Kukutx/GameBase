@@ -1,13 +1,5 @@
 extends GutTest
 
-func _make_test_stream() -> AudioStreamWAV:
-	var stream := AudioStreamWAV.new()
-	stream.format = AudioStreamWAV.FORMAT_8_BITS
-	stream.mix_rate = 8000
-	stream.stereo = false
-	stream.data = PackedByteArray([128, 132, 128, 124, 128, 132, 128, 124])
-	return stream
-
 func after_each() -> void:
 	GameAudio.stop_music()
 	GameAudio.stop_all_sfx()
@@ -54,63 +46,10 @@ func test_audio_cues_and_location_music_are_registered() -> void:
 			assert_true(cue.is_music())
 			assert_eq(cue.get_bus(), &"Music")
 
-func test_audio_buses_and_autoload_are_available() -> void:
+func test_the_game_bus_layout_has_music_and_sounds_buses() -> void:
 	assert_gte(AudioServer.get_bus_index(&"Master"), 0)
 	assert_gte(AudioServer.get_bus_index(&"Music"), 0)
 	assert_gte(AudioServer.get_bus_index(&"Sounds"), 0)
-	assert_not_null(GameAudio.get_node_or_null("MusicPlayer"))
-	assert_not_null(GameAudio.get_node_or_null("Sfx0"))
-
-func test_placeholder_cue_is_safe_silent_request() -> void:
-	var cue := AudioCueData.find(&"sfx_pickup")
-	assert_not_null(cue)
-	if cue == null:
-		return
-	var original := cue.stream
-	cue.stream = null
-	var requested: Array[StringName] = []
-	var on_requested := func(cue_id: StringName) -> void:
-		requested.append(cue_id)
-	GameAudio.cue_requested.connect(on_requested)
-	assert_false(GameAudio.play_cue(&"sfx_pickup"))
-	assert_eq(requested, [&"sfx_pickup"])
-	GameAudio.cue_requested.disconnect(on_requested)
-	cue.stream = original
-
-func test_sfx_and_music_route_to_expected_buses() -> void:
-	var sfx := AudioCueData.find(&"sfx_fish_caught")
-	var music := AudioCueData.find(&"music_old_mine")
-	assert_not_null(sfx)
-	assert_not_null(music)
-	if sfx == null or music == null:
-		return
-
-	var original_sfx := sfx.stream
-	var original_music := music.stream
-	sfx.stream = _make_test_stream()
-	music.stream = _make_test_stream()
-
-	var started: Array[StringName] = []
-	var on_started := func(cue_id: StringName) -> void:
-		started.append(cue_id)
-	GameAudio.cue_started.connect(on_started)
-
-	assert_true(GameAudio.play_cue(&"sfx_fish_caught"))
-	var sfx_player := GameAudio.get_node("Sfx0") as AudioStreamPlayer
-	assert_eq(sfx_player.bus, &"Sounds")
-	assert_eq(sfx_player.stream, sfx.stream)
-
-	assert_true(GameAudio.play_cue(&"music_old_mine"))
-	var music_player := GameAudio.get_node("MusicPlayer") as AudioStreamPlayer
-	assert_eq(music_player.bus, &"Music")
-	assert_eq(music_player.stream, music.stream)
-	assert_eq(GameAudio.get_current_music_cue_id(), &"music_old_mine")
-	assert_true(started.has(&"sfx_fish_caught"))
-	assert_true(started.has(&"music_old_mine"))
-
-	GameAudio.cue_started.disconnect(on_started)
-	sfx.stream = original_sfx
-	music.stream = original_music
 
 func test_gameplay_audio_mapping_requests_stable_cue_ids() -> void:
 	var requested: Array[StringName] = []

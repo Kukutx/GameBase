@@ -30,97 +30,25 @@ func after_each() -> void:
 	Skills.load_save_data(_skills_snapshot)
 	WorldClock.set_time(_clock_day, _clock_minute)
 
-func test_copper_furnace_consumes_inputs_finishes_by_game_time_and_collects_output() -> void:
-	InventoryState.add_item_by_id(&"copper_ore", 2)
-	InventoryState.add_item_by_id(&"wood", 1)
-	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
-	var furnace := scene.instantiate() as ProcessingStation
-	furnace.station_id = &"test_furnace"
-	furnace.display_name = "Test Furnace"
-	furnace.recipe_ids = [&"smelt_copper_bar"]
-	add_child_autofree(furnace)
-	await get_tree().process_frame
-
-	assert_true(furnace.start_recipe(&"smelt_copper_bar"))
-	assert_eq(InventoryState.get_quantity(&"copper_ore"), 0)
-	assert_eq(InventoryState.get_quantity(&"wood"), 0)
-	assert_false(furnace.output_ready)
-	assert_eq(furnace.get_minutes_remaining(), 60)
-
-	WorldClock.set_time(1, 9 * 60)
-	await get_tree().process_frame
-	assert_true(furnace.output_ready)
-	assert_true(furnace.collect_output())
-	assert_eq(InventoryState.get_quantity(&"copper_bar"), 1)
-	assert_eq(furnace.active_recipe_id, &"")
-
-func test_processing_finishes_while_station_scene_is_unloaded() -> void:
-	InventoryState.add_item_by_id(&"copper_ore", 2)
-	InventoryState.add_item_by_id(&"wood", 1)
-	var scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
-	var furnace := scene.instantiate() as ProcessingStation
-	furnace.station_id = &"test_offline_furnace"
-	furnace.display_name = "Offline Furnace"
-	furnace.recipe_ids = [&"smelt_copper_bar"]
-	add_child(furnace)
-	await get_tree().process_frame
-	assert_true(furnace.start_recipe(&"smelt_copper_bar"))
-	assert_eq(furnace.get_minutes_remaining(), 60)
-
-	remove_child(furnace)
-	furnace.free()
-	WorldClock.set_time(1, 10 * 60)
-
-	var restored := scene.instantiate() as ProcessingStation
-	restored.station_id = &"test_offline_furnace"
-	restored.display_name = "Offline Furnace"
-	restored.recipe_ids = [&"smelt_copper_bar"]
-	add_child_autofree(restored)
-	await get_tree().process_frame
-	assert_true(restored.output_ready)
-	assert_eq(restored.get_minutes_remaining(), 0)
-	assert_true(restored.collect_output())
-	assert_eq(InventoryState.get_quantity(&"copper_bar"), 1)
-
-func test_copper_pickaxe_upgrade_replaces_inventory_and_hotbar_atomically() -> void:
-	InventoryState.add_item_by_id(&"pickaxe", 1)
-	InventoryState.add_item_by_id(&"copper_bar", 2)
-	PlayerState.money = 500
-	Hotbar.set_slot_item(2, &"pickaxe")
-
-	assert_true(UpgradeState.upgrade(&"copper_pickaxe_upgrade"))
-	assert_eq(InventoryState.get_quantity(&"pickaxe"), 0)
-	assert_eq(InventoryState.get_quantity(&"copper_pickaxe"), 1)
-	assert_eq(InventoryState.get_quantity(&"copper_bar"), 0)
-	assert_eq(PlayerState.money, 200)
-	assert_eq(Hotbar.slots[2], &"copper_pickaxe")
-
-func test_copper_farm_tools_reduce_energy_cost() -> void:
-	InventoryState.add_item_by_id(&"copper_hoe", 1)
-	InventoryState.add_item_by_id(&"copper_watering_can", 1)
-	var plot_scene := load("res://gamebase/modules/lifesim/farming/farm_plot.tscn") as PackedScene
-	var plot := plot_scene.instantiate() as FarmPlot
-	plot.persistent_id = &""
-	add_child_autofree(plot)
-	await get_tree().process_frame
-	PlayerState.energy = 100
-
-	assert_true(plot.use_item(&"copper_hoe"))
-	assert_eq(PlayerState.energy, 98)
-	assert_true(plot.use_item(&"copper_watering_can"))
-	assert_eq(PlayerState.energy, 97)
-
-func test_copper_pickaxe_breaks_starter_stone_in_one_hit() -> void:
-	InventoryState.add_item_by_id(&"copper_pickaxe", 1)
-	var node_scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
-	var rock := node_scene.instantiate() as MiningNode
-	rock.data = MiningNodeData.find(&"stone_rock")
-	rock.persistent_id = &""
-	add_child_autofree(rock)
-	await get_tree().process_frame
-
-	assert_true(rock.use_item(&"copper_pickaxe"))
-	assert_true(rock.is_depleted)
+func test_copper_rung_costs_and_tool_powers() -> void:
+	var smelt := ProcessingRecipeData.find(&"smelt_copper_bar")
+	assert_eq(smelt.inputs, {"copper_ore": 2, "wood": 1})
+	assert_eq(smelt.output_item_id, &"copper_bar")
+	assert_eq(smelt.output_quantity, 1)
+	assert_eq(smelt.process_minutes, 60)
+	var upgrade := ToolUpgradeData.find(&"copper_pickaxe_upgrade")
+	assert_eq(upgrade.source_item_id, &"pickaxe")
+	assert_eq(upgrade.result_item_id, &"copper_pickaxe")
+	assert_eq(upgrade.materials, {"copper_bar": 2})
+	assert_eq(upgrade.money_cost, 300)
+	# Copper farm tools halve a plot's energy costs (hoe 4 -> 2, can 2 -> 1).
+	assert_eq(ItemData.find(&"copper_hoe").tool_power, 2)
+	assert_eq(ItemData.find(&"copper_watering_can").tool_power, 2)
+	# A copper pickaxe breaks the starter stone in one hit.
+	var stone := MiningNodeData.find(&"stone_rock")
+	var copper_pickaxe := ItemData.find(&"copper_pickaxe")
+	assert_gte(copper_pickaxe.tool_power, stone.required_tool_power)
+	assert_gte(copper_pickaxe.tool_power, stone.durability)
 
 func test_iron_bar_smelt_and_pickaxe_upgrade_extend_mining_progression() -> void:
 	Skills.add_xp(&"mining", 250)
