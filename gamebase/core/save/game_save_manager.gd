@@ -182,12 +182,10 @@ func delete_slot(slot: int) -> bool:
 func delete_save() -> bool:
 	return _delete_paths([save_path, temp_path, backup_path])
 
+# Quick load asks first, in the pause menu (`PauseMenu`).
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("quick_save"):
 		save_game()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("quick_load"):
-		load_game()
 		get_viewport().set_input_as_handled()
 
 func get_save_block_reason() -> String:

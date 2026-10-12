@@ -89,9 +89,16 @@ func create_bundle(custom_output_path: String = "") -> String:
 	return output_path
 
 func build_summary() -> Dictionary:
+	# The settings as their file holds them, with each binding by name.
+	var settings := GameSettings.to_data()
 	var controls: Dictionary = {}
+	var gamepad: Dictionary = {}
 	for action: StringName in GameSettings.get_rebindable_actions():
 		controls[String(action)] = GameSettings.get_key_binding_text(action)
+		if GameSettings.has_gamepad_binding(action):
+			gamepad[String(action)] = GameSettings.get_gamepad_binding_text(action)
+	settings["controls"] = controls
+	settings["gamepad"] = gamepad
 
 	var slots: Array[Dictionary] = []
 	for slot in range(1, GameSaveManager.SLOT_COUNT + 1):
@@ -101,18 +108,7 @@ func build_summary() -> Dictionary:
 		"schema": BUNDLE_SCHEMA,
 		"generated_unix": int(Time.get_unix_time_from_system()),
 		"runtime": GameDiagnostics.get_runtime_context(),
-		"settings": {
-			"master_volume": GameSettings.master_volume,
-			"music_volume": GameSettings.music_volume,
-			"sounds_volume": GameSettings.sounds_volume,
-			"fullscreen": GameSettings.fullscreen,
-			"vsync": GameSettings.vsync,
-			"autosave": GameSettings.autosave,
-			"weather_effects": GameSettings.weather_effects,
-			"reduced_motion": GameSettings.reduced_motion,
-			"locale": GameSettings.locale,
-			"controls": controls,
-		},
+		"settings": settings,
 		"save_slots": slots,
 		"privacy": {
 			"raw_saves_included": false,

@@ -8,7 +8,7 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 
 func test_the_title_screen_shows_the_slot_summary_by_the_calendar() -> void:
 	var title: Node = autofree((load("res://gamebase/core/ui/title_screen.tscn") as PackedScene).instantiate())
-	for path: String in ["Center/Menu/SaveSlot", "Center/Menu/SlotInfo", "Center/Menu/DeleteSave", "ConfirmDelete"]:
+	for path: String in ["Center/Menu/SaveSlot", "Center/Menu/SlotInfo", "Center/Menu/Actions/DeleteSave", "ConfirmDelete"]:
 		assert_not_null(title.get_node_or_null(path), path)
 	var summary := {"day": 68, "minute_of_day": 600, "money": 4321, "recoverable": true, "recovery_source": "backup"}
 	ContentFixture.use_calendar(self, GameCalendar.new())
@@ -25,7 +25,7 @@ func test_a_new_game_that_fails_after_it_started_gives_the_menu_back() -> void:
 	title.call("_set_buttons_disabled", true)
 	# The start location's scene failed to load after the travel started.
 	GameSession.new_game_failed.emit()
-	assert_false((title.get_node("Center/Menu/NewGame") as Button).disabled)
+	assert_false(title.new_game_button.disabled)
 	assert_eq((title.get("status_label") as Label).text, "Could not open the starting location")
 
 func test_a_slot_this_version_cannot_open_is_shown_and_replaced_only_after_asking() -> void:
@@ -39,9 +39,9 @@ func test_a_slot_this_version_cannot_open_is_shown_and_replaced_only_after_askin
 	unreadable.close()
 	var title := (load("res://gamebase/core/ui/title_screen.tscn") as PackedScene).instantiate()
 	add_child_autofree(title)
-	assert_eq((title.get_node("Center/Menu/SlotInfo") as Label).text, "Holds a save this version cannot open")
-	assert_true((title.get_node("Center/Menu/Continue") as Button).disabled)
-	assert_false((title.get_node("Center/Menu/DeleteSave") as Button).disabled, "it can be deleted")
+	assert_eq(title.slot_info.text, "Holds a save this version cannot open")
+	assert_true(title.continue_button.disabled)
+	assert_false(title.delete_button.disabled, "it can be deleted")
 	title.call("_new_game")
 	var confirm := title.get_node("ConfirmNewGame") as ConfirmationDialog
 	assert_true(confirm.visible, "a new game asks before replacing it")

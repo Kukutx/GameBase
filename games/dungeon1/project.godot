@@ -80,6 +80,10 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 
 game_definition="res://game/game_definition.tres"
 
+[gui]
+
+theme/custom="res://gamebase/core/ui/default_theme.tres"
+
 [input]
 
 ui_accept={

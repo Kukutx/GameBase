@@ -2,14 +2,17 @@ extends GutHookScript
 
 ## What every game's test run sets up before its first test (each game's
 ## `.gutconfig.json` names this hook): a run does not inherit the developer's
-## language, and does not touch their profile.
+## language or settings, and does not touch their settings or profile.
 
+const TEST_SETTINGS_PATH := "user://test_run/settings.json"
 const TEST_PROFILE_PATH := "user://test_run/profile.json"
 
 func run() -> void:
-	# Tests compare text against the English source strings.
+	# Tests compare text against the English source strings, and start from
+	# the default settings, which they write to a file of the run's own.
+	GameSettings.settings_path = TEST_SETTINGS_PATH
 	GameSettings.locale = "en"
-	TranslationServer.set_locale("en")
+	GameSettings.reset_all()
 	# Triggers on real content unlock achievements while tests play; they go
 	# to a profile of the run's own, which starts empty.
 	for path: String in [TEST_PROFILE_PATH, TEST_PROFILE_PATH + ".tmp"]:

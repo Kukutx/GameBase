@@ -8,24 +8,34 @@ layer = 70
 script = ExtResource("1_pause")
 
 [node name="Dim" type="ColorRect" parent="."]
-offset_right = 480.0
-offset_bottom = 270.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0, 0, 0, 0.62)
 
 [node name="Panel" type="PanelContainer" parent="Dim"]
-layout_mode = 0
-offset_left = 130.0
-offset_top = 38.0
-offset_right = 350.0
-offset_bottom = 232.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -110.0
+offset_top = -105.0
+offset_right = 110.0
+offset_bottom = 105.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Layout" type="VBoxContainer" parent="Dim/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 7
+theme_override_constants/separation = 5
 
 [node name="Header" type="Label" parent="Dim/Panel/Layout"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Paused"
 horizontal_alignment = 1
 
@@ -49,16 +59,37 @@ text = "Settings"
 layout_mode = 2
 text = "Return to Title"
 
+[node name="Quit" type="Button" parent="Dim/Panel/Layout"]
+layout_mode = 2
+text = "Quit to Desktop"
+
 [node name="Status" type="Label" parent="Dim/Panel/Layout"]
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 14)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.88, 0.74, 0.52, 1)
 theme_override_font_sizes/font_size = 9
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="SettingsMenu" parent="." instance=ExtResource("2_settings")]
 
+[node name="ConfirmLoad" type="ConfirmationDialog" parent="."]
+size = Vector2i(300, 100)
+dialog_autowrap = true
+title = "Load Game"
+dialog_text = "Unsaved progress will be lost. Load the last save?"
+ok_button_text = "Load"
+
 [node name="ConfirmTitle" type="ConfirmationDialog" parent="."]
+size = Vector2i(300, 100)
+dialog_autowrap = true
 title = "Return to Title"
 dialog_text = "Unsaved progress will be lost. Return to the title screen?"
 ok_button_text = "Return to Title"
+
+[node name="ConfirmQuit" type="ConfirmationDialog" parent="."]
+size = Vector2i(300, 100)
+dialog_autowrap = true
+title = "Quit to Desktop"
+dialog_text = "Unsaved progress will be lost. Quit the game?"
+ok_button_text = "Quit"

@@ -102,6 +102,10 @@ enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://add
 
 game_definition="res://game/game_definition.tres"
 
+[gui]
+
+theme/custom="res://game/ui/game_theme.tres"
+
 [input]
 
 ui_accept={

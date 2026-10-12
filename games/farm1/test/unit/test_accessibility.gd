@@ -39,12 +39,12 @@ func test_accessibility_page_opens_with_controller_focus() -> void:
 	add_child_autofree(menu)
 	await get_tree().process_frame
 	menu.open()
-	menu.call("_show_accessibility", true)
+	menu.show_page(SettingsMenu.Page.ACCESSIBILITY)
 	await get_tree().process_frame
 
-	var weather := menu.get_node("Dim/Panel/Layout/AccessibilityPage/WeatherEffects") as CheckButton
-	var motion := menu.get_node("Dim/Panel/Layout/AccessibilityPage/ReducedMotion") as CheckButton
-	assert_true(menu.get_node("Dim/Panel/Layout/AccessibilityPage").visible)
+	var weather := menu.weather_effects_check
+	var motion := menu.reduced_motion_check
+	assert_true(menu.accessibility_page.visible)
 	assert_eq(get_viewport().gui_get_focus_owner(), weather)
 	assert_eq(weather.button_pressed, GameSettings.weather_effects)
 	assert_eq(motion.button_pressed, GameSettings.reduced_motion)

@@ -2,7 +2,7 @@ class_name ToolUpgradeMenu
 extends CanvasLayer
 
 @onready var money_label: Label = $Panel/VBox/Money
-@onready var items_container: VBoxContainer = $Panel/VBox/Items
+@onready var items_container: VBoxContainer = $Panel/VBox/Scroll/Items
 @onready var close_button: Button = $Panel/VBox/Close
 
 func _ready() -> void:

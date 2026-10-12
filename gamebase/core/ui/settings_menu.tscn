@@ -7,16 +7,26 @@ layer = 80
 script = ExtResource("1_settings")
 
 [node name="Dim" type="ColorRect" parent="."]
-offset_right = 480.0
-offset_bottom = 270.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0, 0, 0, 0.7)
 
 [node name="Panel" type="PanelContainer" parent="Dim"]
-layout_mode = 0
-offset_left = 102.0
-offset_top = 4.0
-offset_right = 378.0
-offset_bottom = 266.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -131.0
+offset_right = 150.0
+offset_bottom = 131.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Layout" type="VBoxContainer" parent="Dim/Panel"]
 layout_mode = 2
@@ -24,170 +34,191 @@ theme_override_constants/separation = 4
 
 [node name="Title" type="Label" parent="Dim/Panel/Layout"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Settings"
 horizontal_alignment = 1
 
-[node name="Master" type="HBoxContainer" parent="Dim/Panel/Layout"]
+[node name="Pages" type="ScrollContainer" parent="Dim/Panel/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="Page" type="VBoxContainer" parent="Dim/Panel/Layout/Pages"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Main" type="VBoxContainer" parent="Dim/Panel/Layout/Pages/Page"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Master" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Dim/Panel/Layout/Master"]
+[node name="Label" type="Label" parent="Dim/Panel/Layout/Pages/Page/Main/Master"]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 text = "Master"
 
-[node name="Slider" type="HSlider" parent="Dim/Panel/Layout/Master"]
+[node name="Slider" type="HSlider" parent="Dim/Panel/Layout/Pages/Page/Main/Master"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 max_value = 100.0
 step = 1.0
 value = 100.0
 
-[node name="Music" type="HBoxContainer" parent="Dim/Panel/Layout"]
+[node name="Music" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Dim/Panel/Layout/Music"]
+[node name="Label" type="Label" parent="Dim/Panel/Layout/Pages/Page/Main/Music"]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 text = "Music"
 
-[node name="Slider" type="HSlider" parent="Dim/Panel/Layout/Music"]
+[node name="Slider" type="HSlider" parent="Dim/Panel/Layout/Pages/Page/Main/Music"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 max_value = 100.0
 step = 1.0
 value = 80.0
 
-[node name="Sounds" type="HBoxContainer" parent="Dim/Panel/Layout"]
+[node name="Sounds" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Dim/Panel/Layout/Sounds"]
+[node name="Label" type="Label" parent="Dim/Panel/Layout/Pages/Page/Main/Sounds"]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 text = "Sounds"
 
-[node name="Slider" type="HSlider" parent="Dim/Panel/Layout/Sounds"]
+[node name="Slider" type="HSlider" parent="Dim/Panel/Layout/Pages/Page/Main/Sounds"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 max_value = 100.0
 step = 1.0
 value = 90.0
 
-[node name="Fullscreen" type="CheckButton" parent="Dim/Panel/Layout"]
+[node name="Fullscreen" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 text = "Fullscreen"
 
-[node name="VSync" type="CheckButton" parent="Dim/Panel/Layout"]
+[node name="VSync" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 text = "VSync"
-button_pressed = true
 
-[node name="Autosave" type="CheckButton" parent="Dim/Panel/Layout"]
+[node name="IntegerScaling" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
+layout_mode = 2
+text = "Integer Scaling"
+
+[node name="Autosave" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 text = "Autosave"
-button_pressed = true
 
-[node name="Language" type="HBoxContainer" parent="Dim/Panel/Layout"]
+[node name="PauseOnFocusLoss" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
+layout_mode = 2
+text = "Pause When Unfocused"
+
+[node name="Language" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Dim/Panel/Layout/Language"]
+[node name="Label" type="Label" parent="Dim/Panel/Layout/Pages/Page/Main/Language"]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 text = "Language"
 
-[node name="Select" type="OptionButton" parent="Dim/Panel/Layout/Language"]
+[node name="Select" type="OptionButton" parent="Dim/Panel/Layout/Pages/Page/Main/Language"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AccessibilityButton" type="Button" parent="Dim/Panel/Layout"]
+[node name="AccessibilityButton" type="Button" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 text = "Accessibility..."
 
-[node name="ControlsButton" type="Button" parent="Dim/Panel/Layout"]
+[node name="ControlsButton" type="Button" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 text = "Controls..."
 
-[node name="AccessibilityPage" type="VBoxContainer" parent="Dim/Panel/Layout"]
+[node name="ResetAll" type="Button" parent="Dim/Panel/Layout/Pages/Page/Main"]
+layout_mode = 2
+text = "Reset All Settings"
+
+[node name="Accessibility" type="VBoxContainer" parent="Dim/Panel/Layout/Pages/Page"]
 visible = false
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 5
+theme_override_constants/separation = 4
 
-[node name="Title" type="Label" parent="Dim/Panel/Layout/AccessibilityPage"]
-layout_mode = 2
-text = "Accessibility"
-horizontal_alignment = 1
-
-[node name="WeatherEffects" type="CheckButton" parent="Dim/Panel/Layout/AccessibilityPage"]
+[node name="WeatherEffects" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
 layout_mode = 2
 text = "Weather Effects"
-button_pressed = true
 
-[node name="ReducedMotion" type="CheckButton" parent="Dim/Panel/Layout/AccessibilityPage"]
+[node name="ReducedMotion" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
 layout_mode = 2
 text = "Reduce Motion"
 
-[node name="Description" type="Label" parent="Dim/Panel/Layout/AccessibilityPage"]
+[node name="Description" type="Label" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
-autowrap_mode = 2
-text = "Reduce Motion removes scene fades and animated rain/lightning while preserving weather gameplay."
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 3
+text = "Reduce Motion turns off scene fades and animated effects such as rain; gameplay stays the same."
 
-[node name="SupportTitle" type="Label" parent="Dim/Panel/Layout/AccessibilityPage"]
+[node name="SupportTitle" type="Label" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
 layout_mode = 2
 text = "Support"
 horizontal_alignment = 1
 
-[node name="SupportDescription" type="Label" parent="Dim/Panel/Layout/AccessibilityPage"]
+[node name="SupportDescription" type="Label" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
-autowrap_mode = 2
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 3
 text = "Support bundles contain technical logs and save summaries, never raw saves."
 
-[node name="ExportSupportBundle" type="Button" parent="Dim/Panel/Layout/AccessibilityPage"]
+[node name="ExportSupportBundle" type="Button" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
 layout_mode = 2
 text = "Export Support Bundle"
 
-[node name="OpenSupportFolder" type="Button" parent="Dim/Panel/Layout/AccessibilityPage"]
+[node name="OpenSupportFolder" type="Button" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
 layout_mode = 2
 text = "Open Support Folder"
 
-[node name="Back" type="Button" parent="Dim/Panel/Layout/AccessibilityPage"]
-layout_mode = 2
-text = "Back"
-
-[node name="ControlsPage" type="VBoxContainer" parent="Dim/Panel/Layout"]
+[node name="Controls" type="VBoxContainer" parent="Dim/Panel/Layout/Pages/Page"]
 visible = false
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 5
-
-[node name="Title" type="Label" parent="Dim/Panel/Layout/ControlsPage"]
-layout_mode = 2
-text = "Key Bindings"
-horizontal_alignment = 1
-
-[node name="Scroll" type="ScrollContainer" parent="Dim/Panel/Layout/ControlsPage"]
-custom_minimum_size = Vector2(0, 135)
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="List" type="VBoxContainer" parent="Dim/Panel/Layout/ControlsPage/Scroll"]
-layout_mode = 2
-size_flags_horizontal = 3
 theme_override_constants/separation = 3
 
-[node name="Buttons" type="HBoxContainer" parent="Dim/Panel/Layout/ControlsPage"]
+[node name="Header" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Controls"]
 layout_mode = 2
 
-[node name="Reset" type="Button" parent="Dim/Panel/Layout/ControlsPage/Buttons"]
+[node name="Action" type="Label" parent="Dim/Panel/Layout/Pages/Page/Controls/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Reset Defaults"
+theme_override_font_sizes/font_size = 10
+text = "Action"
 
-[node name="Back" type="Button" parent="Dim/Panel/Layout/ControlsPage/Buttons"]
+[node name="Keyboard" type="Label" parent="Dim/Panel/Layout/Pages/Page/Controls/Header"]
+custom_minimum_size = Vector2(76, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-text = "Back"
+theme_override_font_sizes/font_size = 10
+text = "Keyboard"
+horizontal_alignment = 1
+
+[node name="Gamepad" type="Label" parent="Dim/Panel/Layout/Pages/Page/Controls/Header"]
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "Gamepad"
+horizontal_alignment = 1
+
+[node name="List" type="VBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Controls"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Reset" type="Button" parent="Dim/Panel/Layout/Pages/Page/Controls"]
+layout_mode = 2
+text = "Reset Controls"
 
 [node name="Hint" type="Label" parent="Dim/Panel/Layout"]
 layout_mode = 2
@@ -196,6 +227,13 @@ theme_override_font_sizes/font_size = 9
 text = "Settings are saved automatically."
 horizontal_alignment = 1
 
-[node name="Close" type="Button" parent="Dim/Panel/Layout"]
+[node name="Back" type="Button" parent="Dim/Panel/Layout"]
 layout_mode = 2
 text = "Back"
+
+[node name="ConfirmReset" type="ConfirmationDialog" parent="."]
+size = Vector2i(300, 100)
+dialog_autowrap = true
+title = "Reset All Settings"
+dialog_text = "Restore every setting except the language to its default?"
+ok_button_text = "Reset"
