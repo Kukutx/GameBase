@@ -2,17 +2,17 @@ class_name GameSettingsService
 extends Node
 
 ## The player's settings: the volumes, the display, autosave, how fast text
-## types out, accessibility, the language and the key and gamepad bindings of
-## the controls (`ControlAction`).
+## types out, accessibility, the language and the bindings of the controls
+## (`bindings`).
 ## It applies them to the audio buses, the window, the translation server and
 ## the input map, and writes them to `settings_path` (JSON) once the frame of a
 ## change is done: a slider dragged across writes once a frame, not once a step.
 ## The file is replaced whole (`JsonFile`), so a crash never leaves half of it.
 ##
 ## Settings belong to the player, not to a save slot: starting or loading a game
-## leaves them as they are. Binding a key or button that another rebindable
-## control has swaps the two; one a control holds fixed (a second key, or a
-## control the player cannot rebind) is refused. `changed` fires on any change,
+## leaves them as they are. The controls are those of the game, its modules
+## and the core (`GameControls`); binding one follows the rules of
+## `ControlBindings`, which `bindings` reads. `changed` fires on any change,
 ## `controls_changed` when a binding changes and `locale_changed` when the
 ## language does. As the game starts it makes the core's font (`GameFont`)
 ## the font every text shows in.
@@ -26,7 +26,7 @@ signal locale_changed(locale: String)
 ## drops into the player's data folder can only hold values.
 const DEFAULT_SETTINGS_PATH := "user://settings.json"
 ## The layout of the settings file; a file of another version is not read.
-const SETTINGS_VERSION := 1
+const SETTINGS_VERSION := 2
 ## Source text is English; the other locales are those the game registers
 ## translations for.
 const SOURCE_LOCALE := "en"
@@ -77,18 +77,15 @@ var reduced_motion: bool
 ## language model: `register_online_service()`); off until they turn it on.
 var online_services: bool
 var locale := SOURCE_LOCALE
-## Key of each rebindable action (String) the player chose or the default.
-var key_bindings: Dictionary = {}
-## Gamepad button of each rebindable action with one (String), chosen or default.
-var gamepad_bindings: Dictionary = {}
+## The controls of the running game and the player's bindings of them. Read
+## them here; change them with `bind_control()`, `bind_gamepad_button()` and
+## `reset_controls()`, which save and apply the change.
+var bindings: ControlBindings
 
-var _controls: Array[ControlAction] = []
 # Whether a change waits to be written at the end of its frame.
 var _save_pending := false
 # id -> Callable() -> bool: whether the game uses the online service now.
 var _online_services: Dictionary[StringName, Callable] = {}
-## action (String) -> ControlAction
-var _control_by_action: Dictionary = {}
 
 ## Adds each of `AUDIO_BUSES` the project's bus layout lacks, sending to Master.
 static func ensure_audio_buses() -> void:
@@ -103,13 +100,10 @@ static func ensure_audio_buses() -> void:
 func _init() -> void:
 	GameFont.use(load(GameFont.PATH) as Font)
 	_reset_values()
-	for control: ControlAction in GameControls.resolve(GameControls.of_game()):
-		_controls.append(control)
-		_control_by_action[String(control.action)] = control
+	bindings = ControlBindings.new(GameControls.of_running_game())
 
 func _ready() -> void:
 	ensure_audio_buses()
-	_reset_control_values()
 	load_settings()
 	apply()
 
@@ -211,103 +205,25 @@ func get_supported_locales() -> PackedStringArray:
 func get_locale_display_name(value: String) -> String:
 	return String(LOCALE_NAMES.get(value, TranslationServer.get_locale_name(value)))
 
-## Every control of the running game, in settings order.
-func get_controls() -> Array[ControlAction]:
-	return _controls.duplicate()
+## Binds `binding`, a key or mouse button (`ControlBindings`), to the
+## rebindable `action`; false when the rules of `ControlBindings` refuse it.
+func bind_control(action: StringName, binding: Dictionary) -> bool:
+	return _changed_controls(bindings.bind(action, binding))
 
-## The declared control of `action`, or null.
-func get_control(action: StringName) -> ControlAction:
-	return _control_by_action.get(String(action)) as ControlAction
+## Binds gamepad `button` to `action`; false when the rules of
+## `ControlBindings` refuse it.
+func bind_gamepad_button(action: StringName, button: JoyButton) -> bool:
+	return _changed_controls(bindings.bind_gamepad_button(action, button))
 
-## The actions the player can rebind, in settings order.
-func get_rebindable_actions() -> Array[StringName]:
-	var result: Array[StringName] = []
-	for control: ControlAction in _controls:
-		if control.rebindable:
-			result.append(control.action)
-	return result
-
-func get_control_label(action: StringName) -> String:
-	var control := get_control(action)
-	return tr(control.display_name) if control != null and not control.display_name.is_empty() else String(action)
-
-func get_key_binding(action: StringName) -> Key:
-	var control := get_control(action)
-	if control == null:
-		return KEY_NONE
-	return int(key_bindings.get(String(action), int(control.key))) as Key
-
-func get_key_binding_text(action: StringName) -> String:
-	var key := get_key_binding(action)
-	return OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound")
-
-## Whether the player can change the gamepad button of `action`: a rebindable
-## control that declares one.
-func has_gamepad_binding(action: StringName) -> bool:
-	var control := get_control(action)
-	return control != null and control.rebindable and control.gamepad_button != JOY_BUTTON_INVALID
-
-## The gamepad button of `action`: the player's for a rebindable control, else
-## the declared one (`JOY_BUTTON_INVALID` for none).
-func get_gamepad_binding(action: StringName) -> JoyButton:
-	var control := get_control(action)
-	if control == null:
-		return JOY_BUTTON_INVALID
-	return int(gamepad_bindings.get(String(action), int(control.gamepad_button))) as JoyButton
-
-func get_gamepad_binding_text(action: StringName) -> String:
-	return InputPromptService.gamepad_button_name(get_gamepad_binding(action))
-
-## Binds `key` to a rebindable action. The action that had the key takes the
-## old one; a key another control holds fixed cannot be taken.
-func set_key_binding(action: StringName, key: Key) -> bool:
-	var control := get_control(action)
-	if control == null or not control.rebindable or key == KEY_NONE or _is_fixed_key(key, action):
-		return false
-	var old_key := get_key_binding(action)
-	for other: StringName in get_rebindable_actions():
-		if other == action:
-			continue
-		if get_key_binding(other) == key:
-			key_bindings[String(other)] = int(old_key)
-			break
-	key_bindings[String(action)] = int(key)
-	_apply_input_bindings()
-	_request_save()
-	controls_changed.emit()
-	changed.emit()
-	return true
-
-## Binds `button` to the gamepad of a rebindable action that has one. The
-## action that had the button takes the old one; a button another control
-## holds fixed cannot be taken.
-func set_gamepad_binding(action: StringName, button: JoyButton) -> bool:
-	if not has_gamepad_binding(action) or button < 0 or button >= JOY_BUTTON_MAX or _is_fixed_button(button, action):
-		return false
-	var old_button := get_gamepad_binding(action)
-	for other: StringName in get_rebindable_actions():
-		if other != action and has_gamepad_binding(other) and get_gamepad_binding(other) == button:
-			gamepad_bindings[String(other)] = int(old_button)
-			break
-	gamepad_bindings[String(action)] = int(button)
-	_apply_input_bindings()
-	_request_save()
-	controls_changed.emit()
-	changed.emit()
-	return true
-
-## Gives every control its declared key and gamepad button back.
+## Gives every control its declared bindings back.
 func reset_controls() -> void:
-	_reset_control_values()
-	_apply_input_bindings()
-	_request_save()
-	controls_changed.emit()
-	changed.emit()
+	bindings.reset()
+	_changed_controls(true)
 
 ## Restores every setting but the language to its default, controls included.
 func reset_all() -> void:
 	_reset_values()
-	_reset_control_values()
+	bindings.reset()
 	apply()
 	_request_save()
 	controls_changed.emit()
@@ -318,7 +234,7 @@ func apply() -> void:
 	_apply_bus(&"Master", master_volume)
 	_apply_bus(&"Music", music_volume)
 	_apply_bus(&"Sounds", sounds_volume)
-	_apply_input_bindings()
+	bindings.apply_to_input_map()
 	_apply_scaling()
 	if DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)
@@ -326,12 +242,7 @@ func apply() -> void:
 
 ## The settings as the file holds them.
 func to_data() -> Dictionary:
-	var controls := {}
-	var gamepad := {}
-	for action: StringName in get_rebindable_actions():
-		controls[String(action)] = int(get_key_binding(action))
-		if has_gamepad_binding(action):
-			gamepad[String(action)] = int(get_gamepad_binding(action))
+	var controls := bindings.to_data()
 	return {
 		"settings_version": SETTINGS_VERSION,
 		"audio": {"master": master_volume, "music": music_volume, "sounds": sounds_volume},
@@ -340,8 +251,8 @@ func to_data() -> Dictionary:
 		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
 		"privacy": {"online_services": online_services},
 		"localization": {"locale": locale},
-		"controls": controls,
-		"gamepad": gamepad,
+		"controls": controls["controls"],
+		"gamepad": controls["gamepad"],
 	}
 
 ## Writes the settings to `settings_path` now. A change writes them by itself
@@ -355,11 +266,9 @@ func save_settings() -> void:
 ## Reads the settings from `settings_path`. A missing, unreadable or other
 ## version's file changes nothing. In a file that is read, a value of the wrong
 ## type keeps the current one, except that a locale the game does not support
-## reads as the source language and a control without a usable key as its
-## default key, and a gamepad button likewise.
+## reads as the source language, and the controls read as
+## `ControlBindings.read_data()` tells.
 func load_settings() -> void:
-	if key_bindings.is_empty():
-		_reset_control_values()
 	var data: Variant = JsonFile.read(settings_path)
 	if not (data is Dictionary) or _read_number(data, "settings_version", "", 0.0) != SETTINGS_VERSION:
 		return
@@ -380,18 +289,7 @@ func load_settings() -> void:
 	online_services = _read_bool(data, "privacy", "online_services", online_services)
 	var loaded_locale: Variant = _read(data, "localization", "locale")
 	locale = loaded_locale if loaded_locale is String and get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
-	for action: StringName in get_rebindable_actions():
-		var fallback := int(get_control(action).key)
-		var whole: Variant = SaveValues.whole_number(_read(data, "controls", String(action)))
-		var value := int(whole) if whole != null else fallback
-		key_bindings[String(action)] = value if value > 0 and not _is_fixed_key(value as Key, action) else fallback
-		if not has_gamepad_binding(action):
-			continue
-		var default_button := int(get_control(action).gamepad_button)
-		var whole_button: Variant = SaveValues.whole_number(_read(data, "gamepad", String(action)))
-		var button := int(whole_button) if whole_button != null else default_button
-		var usable := button >= 0 and button < JOY_BUTTON_MAX and not _is_fixed_button(button as JoyButton, action)
-		gamepad_bindings[String(action)] = button if usable else default_button
+	bindings.read_data(data.get("controls"), data.get("gamepad"))
 
 # The value under `section` and `key` of the settings file's `data`, or null
 # (`key` "" reads `section` itself).
@@ -409,23 +307,6 @@ static func _read_bool(data: Dictionary, section: String, key: String, fallback:
 	var value: Variant = _read(data, section, key)
 	return value if typeof(value) == TYPE_BOOL else fallback
 
-## Whether a control other than `action`'s holds `key` in a way the player
-## cannot swap: as its second key, or as the key of a control that is not
-## rebindable.
-func _is_fixed_key(key: Key, action: StringName) -> bool:
-	for other: ControlAction in _controls:
-		if other.action != action and (other.secondary_key == key or (not other.rebindable and other.key == key)):
-			return true
-	return false
-
-## Whether a control other than `action`'s that the player cannot rebind
-## holds gamepad `button`.
-func _is_fixed_button(button: JoyButton, action: StringName) -> bool:
-	for other: ControlAction in _controls:
-		if other.action != action and not other.rebindable and other.gamepad_button == button:
-			return true
-	return false
-
 func _reset_values() -> void:
 	master_volume = 1.0
 	music_volume = 0.8
@@ -439,23 +320,6 @@ func _reset_values() -> void:
 	weather_effects = true
 	reduced_motion = false
 	online_services = false
-
-func _reset_control_values() -> void:
-	key_bindings.clear()
-	gamepad_bindings.clear()
-	for action: StringName in get_rebindable_actions():
-		var control := get_control(action)
-		key_bindings[String(action)] = int(control.key)
-		if has_gamepad_binding(action):
-			gamepad_bindings[String(action)] = int(control.gamepad_button)
-
-func _apply_input_bindings() -> void:
-	for control: ControlAction in _controls:
-		if not InputMap.has_action(control.action):
-			InputMap.add_action(control.action)
-		InputMap.action_erase_events(control.action)
-		for event: InputEvent in control.build_events(get_key_binding(control.action), get_gamepad_binding(control.action)):
-			InputMap.action_add_event(control.action, event)
 
 # Set only on a change: each change lays out every embedded window again.
 func _apply_scaling() -> void:
@@ -471,6 +335,16 @@ func _apply_bus(bus_name: StringName, linear: float) -> void:
 		return
 	AudioServer.set_bus_volume_db(index, linear_to_db(maxf(linear, 0.0001)))
 	AudioServer.set_bus_mute(index, linear <= 0.0001)
+
+# Applies, saves and tells a change of the bindings when `bound`; gives
+# `bound` back.
+func _changed_controls(bound: bool) -> bool:
+	if bound:
+		bindings.apply_to_input_map()
+		_request_save()
+		controls_changed.emit()
+		changed.emit()
+	return bound
 
 func _save_and_emit() -> void:
 	_request_save()

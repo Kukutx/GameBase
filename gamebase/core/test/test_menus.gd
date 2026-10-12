@@ -46,7 +46,7 @@ func test_the_settings_pages_open_from_the_main_page_and_lead_back() -> void:
 	assert_true(menu.controls_page.visible)
 	assert_false(menu.main_page.visible)
 	assert_eq(menu.title_label.text, "Controls")
-	assert_eq(menu.controls_list.get_child_count(), GameSettings.get_rebindable_actions().size())
+	assert_eq(_rows(menu).size(), GameSettings.bindings.get_rebindable_actions().size())
 	menu.go_back()
 	assert_true(menu.main_page.visible)
 	assert_eq(menu.title_label.text, "Settings")
@@ -60,36 +60,64 @@ func test_a_key_and_a_gamepad_button_are_rebound_on_the_controls_page() -> void:
 	var menu := _settings()
 	menu.open()
 	menu.show_page(SettingsMenu.Page.CONTROLS)
-	var row := GameSettings.get_rebindable_actions().find(&"interact")
-	var key_button := _binding(menu, row, 1)
+	var key_button := _binding(menu, &"interact", 1)
 	key_button.pressed.emit()
 	assert_eq(key_button.text, "Press a key...")
 	menu._input(_key(KEY_O))
-	assert_eq(GameSettings.get_key_binding(&"interact"), KEY_O)
-	key_button = _binding(menu, row, 1)
+	assert_eq(GameSettings.bindings.get_binding(&"interact"), {"key": int(KEY_O)})
+	key_button = _binding(menu, &"interact", 1)
 	assert_eq(key_button.text, "O")
 	assert_eq(_focus(), key_button, "the rebound button keeps the focus")
 
-	_binding(menu, row, 2).pressed.emit()
+	_binding(menu, &"interact", 2).pressed.emit()
 	menu._input(_key(KEY_P))
-	assert_eq(GameSettings.get_key_binding(&"interact"), KEY_O, "a key does not bind a gamepad button")
-	_binding(menu, row, 2).pressed.emit()
+	assert_eq(GameSettings.bindings.get_binding(&"interact"), {"key": int(KEY_O)}, "a key does not bind a gamepad button")
+	_binding(menu, &"interact", 2).pressed.emit()
 	menu._input(_pad(JOY_BUTTON_Y))
-	assert_eq(GameSettings.get_gamepad_binding(&"interact"), JOY_BUTTON_Y)
-	assert_eq(_binding(menu, row, 2).text, "Y")
+	assert_eq(GameSettings.bindings.get_gamepad_button(&"interact"), JOY_BUTTON_Y)
+	assert_eq(_binding(menu, &"interact", 2).text, "Y")
 	assert_true(_has_button_event(&"interact", JOY_BUTTON_Y))
-	assert_false(_has_button_event(&"interact", GameSettings.get_control(&"interact").gamepad_button))
+	assert_false(_has_button_event(&"interact", GameSettings.bindings.get_control(&"interact").gamepad_button))
+
+func test_a_mouse_button_is_bound_and_a_left_click_cancels() -> void:
+	var menu := _settings()
+	menu.open()
+	menu.show_page(SettingsMenu.Page.CONTROLS)
+	var bound := GameSettings.bindings.get_binding(&"interact")
+	_binding(menu, &"interact", 1).pressed.emit()
+	menu._input(_click(MOUSE_BUTTON_LEFT))
+	assert_eq(GameSettings.bindings.get_binding(&"interact"), bound, "the left button stays the pointer's")
+	assert_eq(_binding(menu, &"interact", 1).text, ControlBindings.binding_text(bound))
+	_binding(menu, &"interact", 1).pressed.emit()
+	assert_eq(menu.hint_label.text, SettingsMenu.KEY_REBIND_HINT)
+	menu._input(_click(MOUSE_BUTTON_XBUTTON1))
+	assert_eq(GameSettings.bindings.get_binding(&"interact"), {"mouse": int(MOUSE_BUTTON_XBUTTON1)})
+	assert_eq(_binding(menu, &"interact", 1).text, "Mouse Back")
+	assert_eq(InputPrompts.get_action_prompt(&"interact"), "Mouse Back")
+	var pressed := InputEventMouseButton.new()
+	pressed.button_index = MOUSE_BUTTON_XBUTTON1
+	pressed.pressed = true
+	assert_true(pressed.is_action_pressed(&"interact"), "the input map takes the mouse button")
+
+func test_each_group_of_controls_shows_under_its_heading() -> void:
+	var menu := _settings()
+	var heading := ""
+	for child: Node in menu.controls_list.get_children():
+		if child.has_meta(&"action"):
+			assert_eq(GameSettings.bindings.get_control(child.get_meta(&"action")).group, heading, "%s under its group" % child.get_meta(&"action"))
+		else:
+			heading = (child as Label).text
+			assert_ne(heading, "", "a heading names its group")
 
 func test_escape_cancels_a_rebind() -> void:
 	var menu := _settings()
 	menu.open()
 	menu.show_page(SettingsMenu.Page.CONTROLS)
-	var row := GameSettings.get_rebindable_actions().find(&"interact")
-	var bound := GameSettings.get_key_binding_text(&"interact")
-	_binding(menu, row, 1).pressed.emit()
+	var bound := GameSettings.bindings.get_binding_text(&"interact")
+	_binding(menu, &"interact", 1).pressed.emit()
 	menu._input(_key(KEY_ESCAPE))
-	assert_eq(_binding(menu, row, 1).text, bound)
-	assert_eq(GameSettings.get_key_binding_text(&"interact"), bound)
+	assert_eq(_binding(menu, &"interact", 1).text, bound)
+	assert_eq(GameSettings.bindings.get_binding_text(&"interact"), bound)
 	assert_true(menu.visible, "Escape ends the rebind, not the menu")
 
 func test_reset_all_asks_then_restores_every_setting_but_the_language() -> void:
@@ -100,8 +128,8 @@ func test_reset_all_asks_then_restores_every_setting_but_the_language() -> void:
 	GameSettings.set_master_volume(0.2)
 	GameSettings.set_integer_scaling(true)
 	GameSettings.set_pause_on_focus_loss(false)
-	GameSettings.set_key_binding(&"interact", KEY_O)
-	GameSettings.set_gamepad_binding(&"interact", JOY_BUTTON_Y)
+	GameSettings.bind_control(&"interact", {"key": int(KEY_O)})
+	GameSettings.bind_gamepad_button(&"interact", JOY_BUTTON_Y)
 	GameSettings.set_locale(language)
 	assert_eq(get_tree().root.content_scale_stretch, Window.CONTENT_SCALE_STRETCH_INTEGER)
 	menu.reset_all_button.pressed.emit()
@@ -115,9 +143,9 @@ func test_reset_all_asks_then_restores_every_setting_but_the_language() -> void:
 	assert_false(GameSettings.integer_scaling)
 	assert_eq(get_tree().root.content_scale_stretch, Window.CONTENT_SCALE_STRETCH_FRACTIONAL)
 	assert_true(GameSettings.pause_on_focus_loss)
-	var interact := GameSettings.get_control(&"interact")
-	assert_eq(GameSettings.get_key_binding(&"interact"), interact.key)
-	assert_eq(GameSettings.get_gamepad_binding(&"interact"), interact.gamepad_button)
+	var interact := GameSettings.bindings.get_control(&"interact")
+	assert_eq(GameSettings.bindings.get_binding(&"interact"), interact.get_default_binding())
+	assert_eq(GameSettings.bindings.get_gamepad_button(&"interact"), interact.gamepad_button)
 	assert_eq(GameSettings.locale, language, "the language stays")
 	GameSettings.set_locale(GameSettingsService.SOURCE_LOCALE)
 
@@ -231,8 +259,21 @@ func _pause() -> PauseMenu:
 func _focus() -> Control:
 	return get_viewport().gui_get_focus_owner()
 
-static func _binding(menu: SettingsMenu, row: int, column: int) -> Button:
-	return menu.controls_list.get_child(row).get_child(column) as Button
+# The rows of the controls page, one per rebindable control.
+static func _rows(menu: SettingsMenu) -> Array[Node]:
+	return menu.controls_list.get_children().filter(func(child: Node) -> bool: return child.has_meta(&"action"))
+
+static func _binding(menu: SettingsMenu, action: StringName, column: int) -> Button:
+	for row: Node in _rows(menu):
+		if row.get_meta(&"action") == action:
+			return row.get_child(column) as Button
+	return null
+
+static func _click(button: MouseButton) -> InputEventMouseButton:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = true
+	return event
 
 static func _key(key: Key) -> InputEventKey:
 	var event := InputEventKey.new()

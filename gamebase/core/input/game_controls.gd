@@ -2,8 +2,10 @@ class_name GameControls
 extends RefCounted
 
 ## The controls of the running game: the game's `ControlAction`s
-## (`GameDefinition.controls`) followed by the core's own (`CORE`), and what is
-## wrong with them. `GameSettings` binds the player's keys and buttons to them.
+## (`GameDefinition.controls`), then those its modules declare
+## (`GameModule.get_controls()`), then the core's own (`CORE`), and what is
+## wrong with them. `GameSettings` binds the player's keys and buttons to them
+## (`ControlBindings`).
 
 ## The controls the core's own systems read, as `ControlAction` paths: the
 ## moves a `TopDownPlayer` walks with, interacting and the quick save and load.
@@ -26,57 +28,91 @@ static func of_game() -> Array[ControlAction]:
 		result.append(entry as ControlAction)
 	return result
 
-## The game's controls followed by the core's; a game control replaces the
-## core's control of the same action.
-static func resolve(controls: Array[ControlAction]) -> Array[ControlAction]:
+## The controls the game's modules declare, in the order they install.
+static func of_modules() -> Array[ControlAction]:
 	var result: Array[ControlAction] = []
-	var listed: Dictionary = {}
-	for control: ControlAction in controls:
-		if control != null:
-			result.append(control)
-			listed[control.action] = true
-	for path: String in CORE:
-		var control := load(path) as ControlAction
-		if not listed.has(control.action):
-			result.append(control)
+	for script: Script in GameModulesService.find_module_scripts():
+		result.append_array((script.new() as GameModule).get_controls())
 	return result
 
-## What is wrong with a game's controls once the core's are added.
-static func find_problems(controls: Array[ControlAction]) -> PackedStringArray:
+## The running game's controls, in settings order (`resolve()`).
+static func of_running_game() -> Array[ControlAction]:
+	return resolve(of_game(), of_modules())
+
+## The game's controls, then its modules', then the core's; the first control
+## of an action replaces the later ones, so a game replaces a module's control
+## or the core's by listing its action.
+static func resolve(game_controls: Array[ControlAction], module_controls: Array[ControlAction]) -> Array[ControlAction]:
+	var result: Array[ControlAction] = []
+	var listed: Dictionary[StringName, bool] = {}
+	var core_controls: Array[ControlAction] = []
+	for path: String in CORE:
+		core_controls.append(load(path) as ControlAction)
+	for control: ControlAction in game_controls + module_controls + core_controls:
+		if control != null and not listed.has(control.action):
+			result.append(control)
+			listed[control.action] = true
+	return result
+
+## What is wrong with a game's controls once its modules' and the core's are
+## added.
+static func find_problems(game_controls: Array[ControlAction], module_controls: Array[ControlAction]) -> PackedStringArray:
 	var problems := PackedStringArray()
-	if controls.has(null):
+	if game_controls.has(null):
 		problems.append("GameDefinition.controls has an entry that is not a ControlAction")
-	var actions: Dictionary = {}
-	var key_owners: Dictionary = {}
-	var button_owners: Dictionary = {}
-	for control: ControlAction in resolve(controls):
+	if module_controls.has(null):
+		problems.append("a module declares a control that is not a ControlAction")
+	for action: StringName in _find_repeated(game_controls):
+		problems.append("control '%s' is listed twice" % action)
+	for action: StringName in _find_repeated(module_controls):
+		problems.append("two modules declare control '%s'" % action)
+	# group|binding -> the action that holds it by default.
+	var owners: Dictionary[String, String] = {}
+	for control: ControlAction in resolve(game_controls, module_controls):
 		var action := String(control.action)
 		if action.is_empty():
 			problems.append("a control has no action")
 			continue
-		if actions.has(action):
-			problems.append("control '%s' is listed twice" % action)
-			continue
-		actions[action] = true
-		var bound := control.key != KEY_NONE or control.secondary_key != KEY_NONE
-		if not bound and control.gamepad_button == JOY_BUTTON_INVALID and control.gamepad_axis == JOY_AXIS_INVALID:
-			problems.append("control '%s' has no key, button or axis" % action)
+		problems.append_array(_find_control_problems(control))
+		var held: Dictionary[String, String] = {}
 		for default_key: Key in [control.key, control.secondary_key]:
-			if default_key == KEY_NONE or key_owners.get(default_key, "") == action:
-				continue
-			if key_owners.has(default_key):
-				problems.append("controls '%s' and '%s' share the default key %s" % [key_owners[default_key], action, OS.get_keycode_string(default_key)])
-			else:
-				key_owners[default_key] = action
+			if default_key != KEY_NONE:
+				held["key %d" % default_key] = "key " + OS.get_keycode_string(default_key)
+		if control.mouse_button != MOUSE_BUTTON_NONE:
+			held["mouse %d" % control.mouse_button] = "mouse button %s" % ControlBindings.MOUSE_BUTTON_NAMES.get(control.mouse_button, control.mouse_button)
 		if control.gamepad_button != JOY_BUTTON_INVALID:
-			if button_owners.has(control.gamepad_button):
-				problems.append("controls '%s' and '%s' share the default gamepad button %s" % [button_owners[control.gamepad_button], action, InputPromptService.gamepad_button_name(control.gamepad_button)])
+			held["pad %d" % control.gamepad_button] = "gamepad button " + InputPromptService.gamepad_button_name(control.gamepad_button)
+		for input: String in held:
+			var mark := "%s|%s" % [control.group, input]
+			if owners.has(mark):
+				problems.append("controls '%s' and '%s' share the default %s" % [owners[mark], action, held[input]])
 			else:
-				button_owners[control.gamepad_button] = action
-		if not control.rebindable:
+				owners[mark] = action
+	return problems
+
+# The actions that more than one of `controls` has.
+static func _find_repeated(controls: Array[ControlAction]) -> Array[StringName]:
+	var seen: Dictionary[StringName, bool] = {}
+	var repeated: Array[StringName] = []
+	for control: ControlAction in controls:
+		if control == null or control.action == &"":
 			continue
-		if control.display_name.is_empty():
-			problems.append("rebindable control '%s' has no display name" % action)
-		if control.key == KEY_NONE:
-			problems.append("rebindable control '%s' has no default key" % action)
+		if seen.has(control.action) and not repeated.has(control.action):
+			repeated.append(control.action)
+		seen[control.action] = true
+	return repeated
+
+static func _find_control_problems(control: ControlAction) -> PackedStringArray:
+	var problems := PackedStringArray()
+	var action := String(control.action)
+	if control.key != KEY_NONE and control.mouse_button != MOUSE_BUTTON_NONE:
+		problems.append("control '%s' has both a default key and a default mouse button" % action)
+	if control.get_default_binding().is_empty() and control.secondary_key == KEY_NONE and control.gamepad_button == JOY_BUTTON_INVALID and control.gamepad_axis == JOY_AXIS_INVALID:
+		problems.append("control '%s' has no key, mouse button, gamepad button or axis" % action)
+	if not control.rebindable:
+		return problems
+	if control.display_name.is_empty():
+		problems.append("rebindable control '%s' has no display name" % action)
+	if control.get_default_binding().is_empty():
+		problems.append("rebindable control '%s' has no default key or mouse button" % action)
 	return problems

@@ -12,14 +12,14 @@ msgstr "已选 %d：%s"
 msgid "%s falls."
 msgstr "%s 倒下了。"
 
-msgid "All"
-msgstr "全选"
-
 msgid "Attack-Move"
 msgstr "攻击移动"
 
 msgid "Click or drag a box to select your units."
 msgstr "点击或拖框来选中你的部队。"
+
+msgid "Command Battle"
+msgstr "指挥战斗"
 
 msgid "Group %d kept."
 msgstr "已编为第 %d 队。"
@@ -29,6 +29,9 @@ msgstr "坚守"
 
 msgid "Pick where they attack-move. Cancel drops it."
 msgstr "选择攻击移动的目的地。按取消放弃。"
+
+msgid "Select All"
+msgstr "全选"
 
 msgid "Stop"
 msgstr "停止"

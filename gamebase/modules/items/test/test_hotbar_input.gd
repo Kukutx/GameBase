@@ -57,6 +57,18 @@ func test_a_number_key_bound_to_a_control_stays_with_it() -> void:
 	input._unhandled_input(_key(KEY_5))
 	assert_eq(Hotbar.selected_slot, 4, "the other number keys still pick their slot")
 
+func test_a_wheel_turn_bound_to_a_control_stays_with_it() -> void:
+	InputMap.add_action(&"fixture_zoom")
+	InputMap.action_add_event(&"fixture_zoom", _wheel(MOUSE_BUTTON_WHEEL_UP))
+	var holder := Node.new()
+	add_child_autofree(holder)
+	holder.tree_exiting.connect(func() -> void: InputMap.erase_action(&"fixture_zoom"))
+	var input := _hotbar_input()
+	input._unhandled_input(_wheel(MOUSE_BUTTON_WHEEL_DOWN))
+	assert_eq(Hotbar.selected_slot, 1)
+	input._unhandled_input(_wheel(MOUSE_BUTTON_WHEEL_UP))
+	assert_eq(Hotbar.selected_slot, 1, "the wheel up zooms rather than stepping back")
+
 func test_nothing_moves_while_the_player_acts() -> void:
 	var player := TopDownPlayer.new()
 	var visual := DirectionalActorVisual.new()

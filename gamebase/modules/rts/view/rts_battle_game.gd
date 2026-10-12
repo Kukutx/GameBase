@@ -10,9 +10,11 @@ extends MiniGame
 ## a second click on the only unit selected, or a double click, selects every
 ## unit of its kind. A right click sends the selection after the foe under it,
 ## else to that place, each unit to its own spot. The commands, on the bar and
-## on keys that keep their place on any layout: Attack-Move (A, then where),
-## Stop (S), Hold (H) and All (Tab); Ctrl and a digit keeps the selection as a
-## group that the digit selects again. With the keys or a gamepad, the arrows
+## on controls the player can rebind (`COMMAND_ACTIONS`, declared by
+## `RtsModule`): Attack-Move (A, then where), Stop (S), Hold (H) and All
+## (Tab), or X, LB, Y and RB on a gamepad; Ctrl and a digit keeps the
+## selection as a group that the digit selects again. With the keys or a
+## gamepad, the arrows
 ## or the stick move a cursor, and accept or interact at it does what fits:
 ## selects the player's unit there, or sends the selection there. Cancel drops
 ## an armed attack-move, then the selection, and pressed twice gives the battle
@@ -32,9 +34,8 @@ enum Command {
 const END_SECONDS := 1.2
 ## How far, in pixels of the field, a click may miss a unit and still take it.
 const PICK_SLACK := 2.0
-## The keys of the commands, in the order of `Command`, by where they lie on
-## the keyboard.
-const COMMAND_KEYS: Array[Key] = [KEY_A, KEY_S, KEY_H, KEY_TAB]
+## The actions of the commands, in the order of `Command`.
+const COMMAND_ACTIONS: Array[StringName] = [&"rts_attack_move", &"rts_stop", &"rts_hold", &"rts_select_all"]
 ## The keys of the groups, 1 to 9.
 const GROUP_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
 const CONFIRM_ACTIONS: Array[StringName] = [&"ui_accept", &"interact"]
@@ -172,6 +173,17 @@ func _process(delta: float) -> void:
 			_field.cursor = (_field.cursor + direction * _cursor_speed * delta).clamp(Vector2.ZERO, battle.size)
 	battle.advance(delta * _speed)
 
+# A command comes before the field takes a click, so one the player bound to
+# a mouse button works over the field too.
+func _input(event: InputEvent) -> void:
+	if not has_input() or battle == null or battle.is_over():
+		return
+	for which: int in COMMAND_ACTIONS.size():
+		if InputMap.has_action(COMMAND_ACTIONS[which]) and event.is_action_pressed(COMMAND_ACTIONS[which]):
+			get_viewport().set_input_as_handled()
+			command(which as Command)
+			return
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not has_input() or battle == null or battle.is_over():
 		return
@@ -186,11 +198,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			_use_group(group, key.is_command_or_control_pressed())
 			return
-		var which := COMMAND_KEYS.find(key.physical_keycode)
-		if which >= 0:
-			get_viewport().set_input_as_handled()
-			command(which as Command)
-			return
 	for action: StringName in CONFIRM_ACTIONS:
 		if InputMap.has_action(action) and event.is_action_pressed(action):
 			get_viewport().set_input_as_handled()
@@ -198,19 +205,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			_confirm(_field.cursor)
 			return
 
-# Where the arrows, the stick or the pad push the cursor. A command key that
-# also steers, as A and S do where the letters move too, gives its command
-# and, while held, moves nothing.
+# Where the arrows, the stick or the pad push the cursor. A command's key
+# that also steers, as A and S do where the letters move too, gives its
+# command and, while held, moves nothing.
 func _get_cursor_direction() -> Vector2:
-	for key: Key in COMMAND_KEYS:
-		if Input.is_physical_key_pressed(key) and _steers(key):
-			return Vector2.ZERO
+	for action: StringName in COMMAND_ACTIONS:
+		for event: InputEvent in InputMap.action_get_events(action) if InputMap.has_action(action) else []:
+			var key := event as InputEventKey
+			if key != null and Input.is_physical_key_pressed(key.physical_keycode) and _steers(key):
+				return Vector2.ZERO
 	return Input.get_vector(DIRECTION_ACTIONS[0], DIRECTION_ACTIONS[1], DIRECTION_ACTIONS[2], DIRECTION_ACTIONS[3])
 
-static func _steers(key: Key) -> bool:
-	var event := InputEventKey.new()
-	event.physical_keycode = key
-	return DIRECTION_ACTIONS.any(func(action: StringName) -> bool: return InputMap.has_action(action) and event.is_action(action, true))
+static func _steers(key: InputEventKey) -> bool:
+	return DIRECTION_ACTIONS.any(func(action: StringName) -> bool: return InputMap.has_action(action) and key.is_action(action, true))
 
 func _cancel() -> void:
 	if _armed:
@@ -314,10 +321,8 @@ func _build() -> void:
 	_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_info.clip_text = true
 	bar.add_child(_info)
-	var names: Array[String] = [tr("Attack-Move"), tr("Stop"), tr("Hold"), tr("All")]
-	for which in names.size():
+	for which in COMMAND_ACTIONS.size():
 		var button := Button.new()
-		button.text = "%s [%s]" % [names[which], OS.get_keycode_string(COMMAND_KEYS[which])]
 		# The arrows move the cursor, never the focus.
 		button.focus_mode = Control.FOCUS_NONE
 		button.pressed.connect(func() -> void:
@@ -325,6 +330,16 @@ func _build() -> void:
 				command(which as Command))
 		bar.add_child(button)
 		_buttons.append(button)
+	_show_command_names()
+	InputPrompts.input_method_changed.connect(_show_command_names.unbind(1))
+	GameSettings.controls_changed.connect(_show_command_names)
+	GameSettings.locale_changed.connect(_show_command_names.unbind(1))
 	_message = Label.new()
 	_message.clip_text = true
 	rows.add_child(_message)
+
+# Each command's button names it and its key or button on the device in use.
+func _show_command_names() -> void:
+	for which: int in _buttons.size():
+		var action := COMMAND_ACTIONS[which]
+		_buttons[which].text = "%s [%s]" % [GameSettings.bindings.get_label(action), InputPrompts.get_action_prompt(action)]

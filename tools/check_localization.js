@@ -80,7 +80,7 @@ function registeredCatalogs(game, layers) {
 const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\s*/g;
 
 // Player-facing fields of data resources.
-const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|role|activity) = "((?:[^"\\]|\\.)*)"$/gm;
+const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|role|activity|group) = "((?:[^"\\]|\\.)*)"$/gm;
 
 // Player-facing lists of text in data resources, such as a calendar's seasons
 // or what an NPC answers a chat topic, and the exported defaults of those lists.

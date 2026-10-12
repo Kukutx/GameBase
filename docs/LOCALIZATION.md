@@ -40,7 +40,7 @@ The check also keeps every entry in the right catalog. An entry has to translate
 - in `.gd` scripts: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional;
 - in `.gd` scripts: the default of an exported text property (`@export var display_name := "..."`) or text list (`@export var season_names := PackedStringArray([...])`) and a literal assigned to a text property from code (`interactable.prompt_text = "..."`);
 - in `.tscn` scenes: the properties `text`, `display_name`, `station_name`, `idle_text`, `dialog_text`, `prompt_text`, `title`, `ok_button_text`, `cancel_button_text`, `placeholder_text`, `tooltip_text`, `pending_text` and `completed_text`;
-- in `.tres` resources, such as a game's data and the controls and calendar of its `game_definition.tres`: `display_name`, `short_name`, `title`, `description`, `subject`, `body`, `role` and `activity`, and each name in `season_names`;
+- in `.tres` resources, such as a game's data and the controls and calendar of its `game_definition.tres`: `display_name`, `short_name`, `title`, `description`, `subject`, `body`, `role`, `activity` and a control's `group`, and each name in `season_names`;
 - authored lines and responses in the game's `.dialogue` files.
 
 A player-visible string anywhere else passes the gate without a translation. The usual ways to end up there:

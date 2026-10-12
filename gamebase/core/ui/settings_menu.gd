@@ -2,9 +2,12 @@ class_name SettingsMenu
 extends CanvasLayer
 
 ## The settings every game shares (`GameSettings`): volume, display, autosave,
-## text speed, language, accessibility and the game's controls, whose key and gamepad
-## button the player can rebind. Its pages scroll inside one panel that fits
-## the game's view; `ui_cancel` or Back leaves a page, then the menu.
+## text speed, language, accessibility and the game's controls, whose key or
+## mouse button and gamepad button the player can rebind, under a heading for
+## each group of controls a minigame reads (`ControlAction.group`). The left
+## mouse button stays the pointer's: a click cancels a rebind. Its pages
+## scroll inside one panel that fits the game's view; `ui_cancel` or Back
+## leaves a page, then the menu.
 
 signal closed
 
@@ -16,6 +19,7 @@ const PAGE_TITLES := {
 	Page.CONTROLS: "Controls",
 }
 const HINT := "Settings are saved automatically."
+const KEY_REBIND_HINT := "Press a key or mouse button. Esc or a left click cancels."
 const BINDING_WIDTH := 76.0
 
 @onready var title_label: Label = $Dim/Panel/Layout/Title
@@ -50,7 +54,7 @@ const BINDING_WIDTH := 76.0
 var page := Page.MAIN
 var _syncing := false
 # The rebind under way: the action, whether it waits for a gamepad button
-# rather than a key, and the button that shows it.
+# rather than a key or mouse button, and the button that shows it.
 var _waiting_action: StringName
 var _waiting_gamepad := false
 var _waiting_button: Button
@@ -131,32 +135,30 @@ func show_page(next: Page) -> void:
 			var first := _first_binding_button()
 			(first if first != null else controls_reset).grab_focus()
 
-# A rebind reads the next key or gamepad button before the focused button can
-# take it as a press.
+# A rebind reads the next key, mouse button or gamepad button before the
+# focused button can take it as a press.
 func _input(event: InputEvent) -> void:
 	if not visible or _waiting_action == &"":
 		return
-	if event is InputEventKey:
-		var key_event := event as InputEventKey
-		if not key_event.pressed or key_event.echo:
+	if event is InputEventKey or event is InputEventMouseButton:
+		if not event.is_pressed() or event.is_echo():
 			return
-		var key := key_event.physical_keycode if key_event.physical_keycode != KEY_NONE else key_event.keycode
-		if key == KEY_ESCAPE or _waiting_gamepad:
+		var binding := ControlBindings.binding_of(event)
+		var cancels: bool = binding == {"key": int(KEY_ESCAPE)} or binding == {"mouse": int(MOUSE_BUTTON_LEFT)}
+		if cancels or _waiting_gamepad or binding.is_empty():
 			_cancel_rebind()
 		else:
-			_finish_rebind(GameSettings.set_key_binding(_waiting_action, key), OS.get_keycode_string(key))
+			_finish_rebind(GameSettings.bind_control(_waiting_action, binding), ControlBindings.binding_text(binding))
 		get_viewport().set_input_as_handled()
 	elif event is InputEventJoypadButton or event is InputEventJoypadMotion:
 		if event is InputEventJoypadButton and event.pressed:
 			var button := (event as InputEventJoypadButton).button_index
 			if _waiting_gamepad:
-				_finish_rebind(GameSettings.set_gamepad_binding(_waiting_action, button), InputPromptService.gamepad_button_name(button))
+				_finish_rebind(GameSettings.bind_gamepad_button(_waiting_action, button), InputPromptService.gamepad_button_name(button))
 			else:
 				_cancel_rebind()
 		# No stick or button moves the focus off the rebind.
 		get_viewport().set_input_as_handled()
-	elif event is InputEventMouseButton and event.pressed:
-		_cancel_rebind()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel") and not confirm_reset.visible:
@@ -209,29 +211,49 @@ func _on_language_selected(index: int) -> void:
 		return
 	GameSettings.set_locale(String(language_select.get_item_metadata(index)))
 
-# One row per rebindable control: its name, its key and, when it has one, its
-# gamepad button. The controls are the game's, so the rows are built once.
+# One row per rebindable control: its name, its key or mouse button and, when
+# it has one, its gamepad button. The world's controls come first, then each
+# group's under its heading. The controls are the game's, so the rows are
+# built once.
 func _build_controls() -> void:
-	for action: StringName in GameSettings.get_rebindable_actions():
-		var row := HBoxContainer.new()
-		row.set_meta(&"action", action)
-		var label := Label.new()
-		label.text = GameSettings.get_control_label(action)
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.clip_text = true
-		row.add_child(label)
-		row.add_child(_binding_button(action, false))
-		if GameSettings.has_gamepad_binding(action):
-			row.add_child(_binding_button(action, true))
-		else:
-			var spacer := Control.new()
-			spacer.custom_minimum_size = Vector2(BINDING_WIDTH, 0)
-			row.add_child(spacer)
-		controls_list.add_child(row)
+	var bindings := GameSettings.bindings
+	var groups: Array[String] = [""]
+	for action: StringName in bindings.get_rebindable_actions():
+		if not groups.has(bindings.get_control(action).group):
+			groups.append(bindings.get_control(action).group)
+	for group: String in groups:
+		if not group.is_empty():
+			var heading := Label.new()
+			# Labels translate their own text, now and when the language changes.
+			heading.text = group
+			heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			controls_list.add_child(heading)
+		for action: StringName in bindings.get_rebindable_actions():
+			if bindings.get_control(action).group == group:
+				controls_list.add_child(_control_row(action))
+
+func _control_row(action: StringName) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.set_meta(&"action", action)
+	var label := Label.new()
+	label.text = GameSettings.bindings.get_label(action)
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.clip_text = true
+	row.add_child(label)
+	row.add_child(_binding_button(action, false))
+	if GameSettings.bindings.has_gamepad_binding(action):
+		row.add_child(_binding_button(action, true))
+	else:
+		var spacer := Control.new()
+		spacer.custom_minimum_size = Vector2(BINDING_WIDTH, 0)
+		row.add_child(spacer)
+	return row
 
 # Shows each control's current bindings.
 func _refresh_controls() -> void:
 	for row: Node in controls_list.get_children():
+		if not row.has_meta(&"action"):
+			continue
 		var action: StringName = row.get_meta(&"action")
 		(row.get_child(1) as Button).text = _binding_text(action, false)
 		var gamepad := row.get_child(2) as Button
@@ -247,7 +269,8 @@ func _binding_button(action: StringName, gamepad: bool) -> Button:
 	return button
 
 func _binding_text(action: StringName, gamepad: bool) -> String:
-	return GameSettings.get_gamepad_binding_text(action) if gamepad else GameSettings.get_key_binding_text(action)
+	var bindings := GameSettings.bindings
+	return InputPromptService.gamepad_button_name(bindings.get_gamepad_button(action)) if gamepad else bindings.get_binding_text(action)
 
 func _first_binding_button() -> Button:
 	for row: Node in controls_list.get_children():
@@ -262,7 +285,7 @@ func _begin_rebind(action: StringName, gamepad: bool, button: Button) -> void:
 	_waiting_gamepad = gamepad
 	_waiting_button = button
 	button.text = "Press a button..." if gamepad else "Press a key..."
-	hint_label.text = "Esc cancels"
+	hint_label.text = "Esc cancels" if gamepad else KEY_REBIND_HINT
 	button.grab_focus()
 
 func _finish_rebind(bound: bool, input_name: String) -> void:

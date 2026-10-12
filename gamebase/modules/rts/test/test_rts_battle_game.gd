@@ -3,7 +3,8 @@ extends GutTest
 ## The rts module's minigame (`RtsBattleGame`) run by `MiniGameHost`: the
 ## player selects their units with clicks and a box and sends them after a
 ## foe with a right click, wins, and the battle's end is told; the keys give
-## the commands and keep groups; the cursor selects and orders with accept and
+## the commands, as the player rebinds them, and keep groups; the cursor
+## selects and orders with accept and
 ## interact, and a command key that also steers leaves it be; cancel drops an
 ## armed attack-move, then the selection, and twice gives the battle up; an
 ## unknown map ends it at once, and a definition that names one is a content
@@ -31,6 +32,7 @@ func before_each() -> void:
 	RtsEvents.foe_defeated.connect(_on_foe_defeated)
 
 func after_each() -> void:
+	GameSettings.reset_controls()
 	RtsEvents.battle_ended.disconnect(_on_battle_ended)
 	RtsEvents.foe_defeated.disconnect(_on_foe_defeated)
 	MiniGameHost.cancel()
@@ -91,6 +93,29 @@ func test_the_keys_give_the_commands_and_keep_groups() -> void:
 	game.click(first.position)
 	game.click(first.position)
 	assert_eq(game.get_selection(), [first, second] as Array[RtsUnit], "a second click on the only one selected takes its kind")
+
+func test_the_player_rebinds_a_command_and_its_button_names_the_new_key() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	var first := game.battle.units[0]
+	game.command(RtsBattleGame.Command.SELECT_ALL)
+	assert_eq(GameSettings.bindings.get_binding(&"rts_attack_move"), {"key": int(KEY_A)})
+	assert_eq(GameSettings.bindings.get_binding(&"move_left"), {"key": int(KEY_A)}, "the battle's commands are read apart from the world's moves")
+	assert_true(GameSettings.bind_control(&"rts_hold", {"key": int(KEY_J)}))
+	assert_string_contains(_command_button(game, RtsBattleGame.Command.HOLD).text, "[J]")
+	_key(game, KEY_H)
+	assert_eq(first.order, RtsUnit.Order.IDLE, "H holds no more")
+	_key(game, KEY_J)
+	assert_eq(first.order, RtsUnit.Order.HOLD)
+	assert_true(GameSettings.bind_control(&"rts_stop", {"mouse": int(MOUSE_BUTTON_MIDDLE)}))
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_MIDDLE
+	click.pressed = true
+	game._input(click)
+	assert_eq(first.order, RtsUnit.Order.IDLE, "a command bound to a mouse button")
+	InputPrompts.call("_set_using_gamepad", true)
+	assert_string_contains(_command_button(game, RtsBattleGame.Command.HOLD).text, "[Y]", "the buttons name the gamepad's in use")
+	InputPrompts.call("_set_using_gamepad", false)
 
 func test_the_cursor_selects_and_orders_with_accept_and_interact() -> void:
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
@@ -171,13 +196,19 @@ func _press(game: RtsBattleGame, action: StringName) -> void:
 	event.pressed = true
 	game._unhandled_input(event)
 
+# A key press as the tree hands it to the minigame, first as input, then as
+# unhandled input; no key here is read by both.
 func _key(game: RtsBattleGame, key: Key, control := false) -> void:
 	var event := InputEventKey.new()
 	event.physical_keycode = key
 	event.keycode = key
 	event.ctrl_pressed = control
 	event.pressed = true
+	game._input(event)
 	game._unhandled_input(event)
+
+func _command_button(game: RtsBattleGame, which: RtsBattleGame.Command) -> Button:
+	return game.get("_buttons")[which] as Button
 
 func _physical_key(key: Key, pressed: bool) -> InputEventKey:
 	var event := InputEventKey.new()
