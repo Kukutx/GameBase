@@ -10,6 +10,9 @@ var _scene_path := SCENE_DIRECTORY.path_join("fixture_cellar.tscn")
 func after_each() -> void:
 	# GUT frees the fixture content only after this hook.
 	ContentRegistry.active = ContentDB
+	var current := get_tree().current_scene
+	if current != null and current.scene_file_path == _scene_path:
+		get_tree().unload_current_scene()
 	if FileAccess.file_exists(_scene_path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(_scene_path))
 	if DirAccess.dir_exists_absolute(SCENE_DIRECTORY):
@@ -79,6 +82,30 @@ func test_stable_location_travel_rejects_unknown_spawn_before_scene_change() -> 
 	assert_eq(int(observed["count"]), 1)
 	assert_string_contains(String(observed["reason"]), "Unknown spawn")
 
+func test_going_to_a_location_waits_until_the_player_stands_in_it() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
+	assert_eq(ResourceSaver.save(_location_scene(), _scene_path), OK)
+	var location := WorldLocationData.new()
+	location.id = LOCATION
+	location.display_name = "Cellar"
+	location.scene_path = _scene_path
+	location.default_spawn_id = ENTRY
+	ContentFixture.use(self, [location]).find_problems()
+	var travel := WorldTravelService.new()
+	add_child_autofree(travel)
+	var ended: Array[bool] = []
+	travel.travel_ended.connect(func(arrived: bool) -> void: ended.append(arrived))
+
+	assert_true(await travel.go_to(LOCATION))
+	# The wait ends inside the arrival's signal; let it return first.
+	await get_tree().process_frame
+	assert_false(travel.is_traveling())
+	assert_eq(get_tree().current_scene.scene_file_path, _scene_path)
+	var player := get_tree().get_first_node_in_group(&"player") as Node2D
+	assert_eq(player.global_position, Vector2(40, 24), "the player stands at the spawn point")
+	assert_false(await travel.go_to(&"removed_future_location"), "a travel that cannot start")
+	assert_eq(ended, [true], "only a travel that started ends")
+
 func test_portal_reenables_itself_when_travel_cannot_start() -> void:
 	ContentFixture.use(self, [])
 	var portal := ScenePortal.new()
@@ -103,6 +130,7 @@ static func _location_scene() -> PackedScene:
 	var spawn := WorldSpawnPoint.new()
 	spawn.name = "Entry"
 	spawn.spawn_id = ENTRY
+	spawn.position = Vector2(40, 24)
 	root.add_child(spawn)
 	spawn.owner = root
 	var scene := PackedScene.new()

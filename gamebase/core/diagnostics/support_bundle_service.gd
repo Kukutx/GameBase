@@ -132,6 +132,7 @@ func _sanitize_slot_summary(summary: Dictionary) -> Dictionary:
 		"slot": int(summary.get("slot", 0)),
 		"exists": bool(summary.get("exists", false)),
 		"recoverable": bool(summary.get("recoverable", false)),
+		"unreadable": bool(summary.get("unreadable", false)),
 	}
 	if not result["exists"]:
 		return result

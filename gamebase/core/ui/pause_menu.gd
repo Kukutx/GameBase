@@ -14,6 +14,9 @@ extends CanvasLayer
 @onready var settings_menu: SettingsMenu = $SettingsMenu
 @onready var confirm_title: ConfirmationDialog = $ConfirmTitle
 
+# Whether the load this menu started is under way.
+var _loading := false
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
@@ -65,9 +68,9 @@ func _load_game() -> void:
 		return
 	visible = false
 	InputLock.unlock(&"pause_menu")
-	var success: bool = await SaveManager.load_game()
-	if not success and is_inside_tree():
-		open()
+	# Not awaited: a load that succeeds frees this menu with its location.
+	_loading = true
+	SaveManager.load_game()
 
 func _open_settings() -> void:
 	_set_main_buttons_disabled(true)
@@ -82,15 +85,17 @@ func _confirm_return_to_title() -> void:
 	confirm_title.popup_centered()
 
 func _return_to_title() -> void:
-	# Nothing of the session holds the controls on the title screen.
-	InputLock.clear()
-	get_tree().change_scene_to_file(String(ProjectSettings.get_setting("application/run/main_scene")))
+	GameSession.return_to_title()
 
 func _on_save_completed(success: bool, message: String) -> void:
 	if visible:
 		status_label.text = message if success else tr("Save failed: %s") % message
 
 func _on_load_completed(success: bool, message: String) -> void:
+	if _loading:
+		_loading = false
+		if not success:
+			open()
 	if visible:
 		status_label.text = message if success else tr("Load failed: %s") % message
 

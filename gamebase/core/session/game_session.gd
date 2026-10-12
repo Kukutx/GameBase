@@ -21,6 +21,7 @@ var _handling_defeat := false
 var _handling_late_night := false
 var _new_game_steps: Array[Dictionary] = []
 var _starting_new_game := false
+var _activity_ends: Array[Callable] = []
 
 func _ready() -> void:
 	register_new_game_step(&"random", NEW_GAME_ORDER_RANDOM, GameRandom.reset_new_game)
@@ -39,6 +40,27 @@ func register_new_game_step(id: StringName, order: int, step: Callable) -> void:
 			_new_game_steps.remove_at(index)
 	_new_game_steps.append({"id": id, "order": order, "step": step})
 	_new_game_steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["order"]) < int(b["order"]))
+
+## Registers `end`, which ends an activity the player may be in (fishing, a
+## minigame) without its outcome. `end_activities()` calls it before something
+## takes the player out of play: a collapse, a defeat, a load, the title.
+func register_activity_end(end: Callable) -> void:
+	if not _activity_ends.has(end):
+		_activity_ends.append(end)
+
+## Ends every activity the player is in (see `register_activity_end`).
+func end_activities() -> void:
+	for end: Callable in _activity_ends:
+		if end.is_valid():
+			end.call()
+
+## Leaves the session for the title screen (the game's main scene): ends the
+## player's activities and gives back every lock first.
+func return_to_title() -> void:
+	end_activities()
+	# Nothing of the session holds the controls on the title screen.
+	InputLock.clear()
+	get_tree().change_scene_to_file(String(ProjectSettings.get_setting("application/run/main_scene")))
 
 func initialize_new_game_state() -> void:
 	var starting := _starting_new_game
@@ -69,7 +91,9 @@ func start_new_game() -> bool:
 	if not WorldTravel.can_travel_to(definition.start_location_id):
 		GameEvents.toast("Could not open the starting location")
 		return false
-	if SaveManager.has_save() and not SaveManager.delete_save():
+	# The slot may hold a save this build cannot read; the title screen asked
+	# before replacing it.
+	if SaveManager.has_files() and not SaveManager.delete_save():
 		GameEvents.toast("Could not replace the selected save slot")
 		return false
 	_starting_new_game = true
@@ -112,7 +136,6 @@ func _on_minute_changed(day: int, minute_of_day: int) -> void:
 	_handle_late_night.call_deferred(day)
 
 func _handle_late_night(day: int) -> void:
-	var definition := GameDefinition.current()
 	if _handling_late_night or _handling_defeat:
 		return
 	var calendar := GameCalendar.current()
@@ -127,23 +150,32 @@ func _handle_late_night(day: int) -> void:
 	if get_tree().get_first_node_in_group("player") == null:
 		return
 	_handling_late_night = true
+	end_activities()
 	WorldClock.set_time(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
 	PlayerState.set_energy(maxi(PlayerState.max_energy / 2, 1))
 	PlayerState.restore_full_health()
-	var current_location := WorldLocationData.find_current(get_tree())
-	var returned_home := current_location != null and current_location.id == definition.home_location_id
+	var returned_home := await _return_home()
 	if not returned_home:
-		if WorldTravel.travel_to(definition.home_location_id, definition.home_spawn_id):
-			await WorldTravel.travel_finished
-			await get_tree().process_frame
-			var arrived_location := WorldLocationData.find_current(get_tree())
-			returned_home = arrived_location != null and arrived_location.id == definition.home_location_id
-		else:
-			GameEvents.toast("Could not return home after staying up late")
+		GameEvents.toast("Could not return home after staying up late")
 	SaveManager.save_game()
 	_handling_late_night = false
 	late_night_collapse.emit()
 	GameEvents.toast("You stayed up too late and woke at home with reduced energy" if returned_home else "You stayed up too late and recovered with reduced energy")
+
+# Takes the player to the game's home spawn unless they are home already.
+# True when they stand at home after it.
+func _return_home() -> bool:
+	if _is_home():
+		return true
+	var definition := GameDefinition.current()
+	if not await WorldTravel.go_to(definition.home_location_id, definition.home_spawn_id):
+		return false
+	await get_tree().process_frame
+	return _is_home()
+
+func _is_home() -> bool:
+	var location := WorldLocationData.find_current(get_tree())
+	return location != null and location.id == GameDefinition.current().home_location_id
 
 # Minutes from the start of day 1 to `minute_of_day` of `day`.
 static func _minute_count(day: int, minute_of_day: int) -> int:
@@ -159,6 +191,7 @@ func _handle_player_defeat() -> void:
 	if _handling_defeat or PlayerState.health > 0:
 		return
 	_handling_defeat = true
+	end_activities()
 	var loss := 0
 	if definition.defeat_money_loss_percent > 0 and PlayerState.money > 0:
 		loss = PlayerState.lose_money(maxi(ceili(PlayerState.money * definition.defeat_money_loss_percent / 100.0), 1))
@@ -166,16 +199,9 @@ func _handle_player_defeat() -> void:
 	WorldClock.set_time(calendar.get_wake_day(WorldClock.day, WorldClock.minute_of_day), calendar.wake_minute)
 	PlayerState.restore_full_energy()
 	PlayerState.restore_full_health()
-	var current_location := WorldLocationData.find_current(get_tree())
-	var returned_home := current_location != null and current_location.id == definition.home_location_id
+	var returned_home := await _return_home()
 	if not returned_home:
-		if WorldTravel.travel_to(definition.home_location_id, definition.home_spawn_id):
-			await WorldTravel.travel_finished
-			await get_tree().process_frame
-			var arrived_location := WorldLocationData.find_current(get_tree())
-			returned_home = arrived_location != null and arrived_location.id == definition.home_location_id
-		else:
-			GameEvents.toast("Could not return home after collapse")
+		GameEvents.toast("Could not return home after collapse")
 	SaveManager.save_game()
 	_handling_defeat = false
 	player_collapsed.emit(loss)

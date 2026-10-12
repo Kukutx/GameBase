@@ -27,6 +27,7 @@ func install() -> void:
 	SaveManager.register_load_step(&"calendar_events", 200,
 		func() -> void: EventState.refresh(WorldClock.day, WorldClock.minute_of_day))
 	SaveManager.register_save_blocker(_fishing_save_block_reason)
+	GameSession.register_activity_end(FishingState.cancel_cast.bind(false))
 	GameSession.register_new_game_step(&"animals", 300, AnimalState.reset_new_game)
 	GameSession.register_new_game_step(&"shipping", 1000, ShippingState.reset_new_game)
 	GameSession.register_new_game_step(&"fishing_state", 1100, FishingState.reset_new_game)
