@@ -68,7 +68,7 @@ func test_settings_controls_page_builds_all_rebindable_actions() -> void:
 	menu.open()
 	menu.show_page(SettingsMenu.Page.CONTROLS)
 	await get_tree().process_frame
-	assert_eq(menu.controls_list.get_child_count(), GameSettings.get_rebindable_actions().size())
+	assert_eq(menu.controls_list.get_child_count(), GameSettings.bindings.get_rebindable_actions().size(), "Farm1's controls are all the world's: no group heading")
 	menu.close()
 
 func test_farm1_default_keys_and_their_swap() -> void:
@@ -76,19 +76,19 @@ func test_farm1_default_keys_and_their_swap() -> void:
 	settings.settings_path = TEST_PATH
 	add_child_autofree(settings)
 	settings.reset_controls()
-	assert_eq(settings.get_key_binding(&"interact"), KEY_E)
-	assert_eq(settings.get_key_binding(&"use_tool"), KEY_F)
-	assert_eq(settings.get_control(&"move_up").secondary_key, KEY_UP)
-	assert_false(settings.set_key_binding(&"interact", KEY_UP), "the up arrow stays with moving up")
-	assert_true(settings.set_key_binding(&"interact", KEY_F))
-	assert_eq(settings.get_key_binding(&"use_tool"), KEY_E)
+	assert_eq(settings.bindings.get_binding(&"interact"), {"key": int(KEY_E)})
+	assert_eq(settings.bindings.get_binding(&"use_tool"), {"key": int(KEY_F)})
+	assert_eq(settings.bindings.get_control(&"move_up").secondary_key, KEY_UP)
+	assert_false(settings.bind_control(&"interact", {"key": int(KEY_UP)}), "the up arrow stays with moving up")
+	assert_true(settings.bind_control(&"interact", {"key": int(KEY_F)}))
+	assert_eq(settings.bindings.get_binding(&"use_tool"), {"key": int(KEY_E)})
 
 func test_keyboard_rebinding_preserves_gamepad_core_actions() -> void:
 	var settings := GameSettingsService.new()
 	settings.settings_path = TEST_PATH
 	add_child_autofree(settings)
 	settings.reset_controls()
-	assert_true(settings.set_key_binding(&"interact", KEY_Q))
+	assert_true(settings.bind_control(&"interact", {"key": int(KEY_Q)}))
 
 	var expected_buttons := {
 		&"interact": JOY_BUTTON_A,

@@ -43,7 +43,7 @@ func test_hud_summaries_are_translated() -> void:
 
 func test_foundation_names_are_translated_by_the_foundation() -> void:
 	_assert_translated(WorldClock.get_calendar_text(), "calendar text")
-	_assert_translated(GameSettings.get_control_label(&"give_gift"), "control label")
+	_assert_translated(GameSettings.bindings.get_label(&"give_gift"), "control label")
 	for skill: SkillData in SkillData.find_all():
 		_assert_translated(Skills.get_skill_name(skill.id), "skill %s" % skill.id)
 

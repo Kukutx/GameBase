@@ -386,3 +386,36 @@ msgstr "胜利！"
 
 msgid "Defeat."
 msgstr "战败。"
+
+msgid "Mouse Left"
+msgstr "鼠标左键"
+
+msgid "Mouse Right"
+msgstr "鼠标右键"
+
+msgid "Mouse Middle"
+msgstr "鼠标中键"
+
+msgid "Wheel Up"
+msgstr "滚轮向上"
+
+msgid "Wheel Down"
+msgstr "滚轮向下"
+
+msgid "Wheel Left"
+msgstr "滚轮向左"
+
+msgid "Wheel Right"
+msgstr "滚轮向右"
+
+msgid "Mouse Back"
+msgstr "鼠标后退键"
+
+msgid "Mouse Forward"
+msgstr "鼠标前进键"
+
+msgid "Mouse %d"
+msgstr "鼠标键 %d"
+
+msgid "Press a key or mouse button. Esc or a left click cancels."
+msgstr "请按一个按键或鼠标键。按 Esc 或单击左键取消。"

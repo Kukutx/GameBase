@@ -4,7 +4,7 @@ extends Node
 ## Which device the player is using, keyboard and mouse or a gamepad, and the
 ## text that names the key, button or stick of a control on it ("E", "A",
 ## "Left Stick") for the HUD and the interaction prompts. The bindings come from
-## `GameSettings`; this service reads them and never changes them.
+## `GameSettings.bindings`; this service reads them and never changes them.
 ##
 ## The device switches on the last input: a gamepad button, or a stick or
 ## trigger pushed more than half way, picks the gamepad; a key or a mouse button
@@ -71,16 +71,17 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		_set_using_gamepad(false)
 
-## The key, button or axis that performs `action` on the device in use.
+## The key, mouse button, gamepad button or axis that performs `action` on
+## the device in use.
 func get_action_prompt(action: StringName) -> String:
-	var control := GameSettings.get_control(action)
+	var bindings := GameSettings.bindings
+	var control := bindings.get_control(action)
 	if using_gamepad and control != null:
 		if control.gamepad_button != JOY_BUTTON_INVALID:
-			return gamepad_button_name(GameSettings.get_gamepad_binding(action))
+			return gamepad_button_name(bindings.get_gamepad_button(action))
 		if control.gamepad_axis != JOY_AXIS_INVALID:
 			return String(GAMEPAD_AXIS_LABELS.get(control.gamepad_axis, "Pad"))
-	var key := GameSettings.get_key_binding(action)
-	return OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound")
+	return bindings.get_binding_text(action)
 
 ## The prompts of `actions` on the device in use, joined by "/".
 func get_actions_prompt(actions: Array[StringName]) -> String:
@@ -90,21 +91,21 @@ func get_actions_prompt(actions: Array[StringName]) -> String:
 	return "/".join(prompts)
 
 ## How the player moves on the device in use: the stick on a gamepad, else the
-## key bound to each of `actions`, then each one's fixed second key (the
-## arrows) where it differs. The keys are those of `settings` (`GameSettings`
-## when null).
-func get_move_prompt(actions: Array[StringName] = MOVE_ACTIONS, settings: GameSettingsService = null) -> String:
+## key or mouse button bound to each of `actions`, then each one's fixed second
+## key (the arrows) where it differs. The bindings are `bindings`
+## (`GameSettings.bindings` when null).
+func get_move_prompt(actions: Array[StringName] = MOVE_ACTIONS, bindings: ControlBindings = null) -> String:
 	if using_gamepad:
 		return tr("Left Stick / D-Pad")
-	if settings == null:
-		settings = GameSettings
+	if bindings == null:
+		bindings = GameSettings.bindings
 	var bound := PackedStringArray()
 	var second_keys := PackedStringArray()
 	for action: StringName in actions:
-		var key := settings.get_key_binding(action)
-		bound.append(OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound"))
-		var control := settings.get_control(action)
-		if control != null and control.secondary_key != KEY_NONE and control.secondary_key != key:
+		var binding := bindings.get_binding(action)
+		bound.append(ControlBindings.binding_text(binding))
+		var control := bindings.get_control(action)
+		if control != null and control.secondary_key != KEY_NONE and int(control.secondary_key) != int(binding.get("key", KEY_NONE)):
 			second_keys.append(OS.get_keycode_string(control.secondary_key))
 	var prompt := "/".join(bound)
 	return prompt if second_keys.is_empty() else "%s / %s" % [prompt, "/".join(second_keys)]

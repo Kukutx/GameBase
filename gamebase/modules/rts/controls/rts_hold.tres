@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ControlAction" format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/input/control_action.gd" id="1_control"]
+
+[resource]
+script = ExtResource("1_control")
+action = &"rts_hold"
+display_name = "Hold"
+group = "Command Battle"
+key = 72
+gamepad_button = 3

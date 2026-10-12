@@ -102,12 +102,13 @@ func create_bundle(custom_output_path: String = "") -> String:
 func build_summary() -> Dictionary:
 	# The settings as their file holds them, with each binding by name.
 	var settings := GameSettings.to_data()
+	var bindings := GameSettings.bindings
 	var controls: Dictionary = {}
 	var gamepad: Dictionary = {}
-	for action: StringName in GameSettings.get_rebindable_actions():
-		controls[String(action)] = GameSettings.get_key_binding_text(action)
-		if GameSettings.has_gamepad_binding(action):
-			gamepad[String(action)] = GameSettings.get_gamepad_binding_text(action)
+	for action: StringName in bindings.get_rebindable_actions():
+		controls[String(action)] = ControlBindings.binding_name(bindings.get_binding(action))
+		if bindings.has_gamepad_binding(action):
+			gamepad[String(action)] = InputPromptService.gamepad_button_name(bindings.get_gamepad_button(action))
 	settings["controls"] = controls
 	settings["gamepad"] = gamepad
 

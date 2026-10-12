@@ -3,8 +3,9 @@ extends Node
 
 ## Picks the hotbar's slot from the player's input, as a child of the player:
 ## the number keys pick a slot, `next_action` and `previous_action` step
-## through the slots, and so does the mouse wheel. A number key the player
-## bound to a control is that control's, never a slot's. It does nothing while
+## through the slots, and so does the mouse wheel. A number key or a wheel
+## turn the player bound to a control is that control's, never the hotbar's.
+## It does nothing while
 ## the player cannot act (`TopDownPlayer.is_input_locked()`, or `InputLock` for
 ## another parent).
 
@@ -43,7 +44,7 @@ func _slot_for(event: InputEvent) -> int:
 	return slot
 
 # Whether an action of the game (not one of the engine's `ui_` actions) takes
-# `event`: a control the player bound to that key.
+# `event`: a control the player bound to that key or mouse button.
 static func _is_bound(event: InputEvent) -> bool:
 	for action: StringName in InputMap.get_actions():
 		if not String(action).begins_with("ui_") and InputMap.event_is_action(event, action, true):
@@ -57,7 +58,7 @@ func _step_for(event: InputEvent) -> int:
 	if _pressed(event, previous_action):
 		return -1
 	var button := event as InputEventMouseButton
-	if mouse_wheel and button != null and button.pressed:
+	if mouse_wheel and button != null and button.pressed and not _is_bound(event):
 		if button.button_index == MOUSE_BUTTON_WHEEL_UP:
 			return -1
 		if button.button_index == MOUSE_BUTTON_WHEEL_DOWN:
