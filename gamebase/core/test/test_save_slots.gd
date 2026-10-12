@@ -65,7 +65,7 @@ func test_write_save_writes_the_slot_without_emitting_a_status() -> void:
 	assert_eq(int(saved.get("version", 0)), GameSaveManager.SAVE_VERSION)
 	assert_eq(String(saved.get("game_version", "")), String(ProjectSettings.get_setting("application/config/version", "")))
 	assert_false(String(saved.get("engine_version", "")).is_empty())
-	assert_eq(String(saved.get("location_id", "")), String(LOCATION))
+	assert_eq(saved["place"], {"location_id": String(LOCATION), "player": {"x": 48.0, "y": 32.0}}, "where the game was, and where the player stood")
 	for section_id: String in _manager.get_section_ids():
 		assert_true(saved.get(section_id) is Dictionary, "section %s is saved" % section_id)
 	assert_eq(saved["world"]["fixture:ratio"], 0.1 + 0.2, "a float comes back with every digit")
@@ -77,8 +77,125 @@ func test_each_slot_has_its_own_files_in_the_save_directory() -> void:
 	assert_eq(String(slot1["temp"]), TEST_DIRECTORY + "/slot_1.tmp")
 	assert_eq(String(slot1["backup"]), TEST_DIRECTORY + "/slot_1.bak")
 	assert_eq(String(slot2["save"]), TEST_DIRECTORY + "/slot_2.json")
+	assert_eq(_manager.get_slot_paths(2, true), {"save": TEST_DIRECTORY + "/slot_2_auto.json", "temp": TEST_DIRECTORY + "/slot_2_auto.tmp", "backup": TEST_DIRECTORY + "/slot_2_auto.bak"}, "the autosave's files are its own")
 	_manager.select_slot(2)
 	assert_eq(_manager.save_path, String(slot2["save"]))
+
+func test_the_game_sets_how_many_slots_it_has() -> void:
+	var definition := GameDefinition.new()
+	definition.save_slots = 5
+	var count: int = ContentFixture.with_definition(definition, GameSaveManager.get_slot_count)
+	assert_eq(count, 5)
+	assert_eq(GameDefinition.new().save_slots, 3, "three by default")
+	_manager.select_slot(99)
+	assert_eq(_manager.active_slot, GameSaveManager.get_slot_count(), "a slot past the last is the last")
+	_manager.select_slot(1)
+
+func test_an_autosave_leaves_the_player_s_save_as_it_was() -> void:
+	await _enter_fixture_location()
+	WorldState.set_value(MARK, 111)
+	assert_eq(_manager.write_save(), "")
+	# Saves are told apart by the millisecond.
+	OS.delay_msec(2)
+	WorldState.set_value(MARK, 222)
+	assert_eq(_manager.write_save(true), "")
+	assert_eq(_mark(_read(_manager.save_path)), 111, "the player's save stays")
+	assert_false(FileAccess.file_exists(_manager.backup_path), "and keeps no backup of an autosave")
+	assert_eq(_mark(_read(String(_manager.get_slot_paths(1, true)["save"]))), 222)
+	var summary := _manager.get_slot_summary(1)
+	assert_true(bool(summary["autosave"]), "the slot continues from the newer autosave")
+	WorldState.set_value(MARK, 999)
+	assert_true(await _manager.load_game())
+	assert_eq(WorldState.get_int(MARK), 222, "continuing loads the newer of the two")
+	assert_true(_manager.has_save(-1, GameSaveManager.SaveKind.MANUAL), "continuing from the newer keeps the older")
+	assert_true(await _manager.load_game(GameSaveManager.SaveKind.MANUAL))
+	assert_eq(WorldState.get_int(MARK), 111, "the player's own save loads as it was")
+	assert_false(_manager.has_save(-1, GameSaveManager.SaveKind.AUTO), "the newer autosave the player went back from is gone")
+	assert_false(bool(_manager.get_slot_summary(1)["autosave"]), "so the slot goes on from the save loaded")
+	assert_eq(_manager.write_save(true), "")
+	assert_true(_manager.delete_save())
+	assert_false(_manager.has_files(), "deleting a slot deletes both")
+
+func test_autosave_writes_the_slot_s_autosave() -> void:
+	await _enter_fixture_location()
+	var directory := SaveManager.save_directory
+	var slot := SaveManager.active_slot
+	var setting := GameSettings.autosave
+	SaveManager.save_directory = TEST_DIRECTORY
+	SaveManager.select_slot(2)
+	GameSettings.autosave = true
+	var service := AutoSaveService.new()
+	add_child_autofree(service)
+	WorldState.set_value(MARK, 444)
+	var saved := service.request_autosave("test")
+	SaveManager.save_directory = directory
+	SaveManager.select_slot(slot)
+	GameSettings.autosave = setting
+	assert_true(saved)
+	assert_eq(_mark(_read(TEST_DIRECTORY + "/slot_2_auto.json")), 444)
+	assert_false(FileAccess.file_exists(TEST_DIRECTORY + "/slot_2.json"), "the player's save is theirs to write")
+
+func test_a_tie_continues_from_the_player_s_save() -> void:
+	await _enter_fixture_location()
+	WorldState.set_value(MARK, 111)
+	var own := _manager.build_snapshot()
+	WorldState.set_value(MARK, 222)
+	var auto := _manager.build_snapshot()
+	auto["saved_at_unix_msec"] = own["saved_at_unix_msec"]
+	_write(_manager.save_path, own)
+	_write(String(_manager.get_slot_paths(1, true)["save"]), auto)
+	assert_eq(_mark((_manager.call("_read_slot") as Dictionary)["data"]), 111)
+	assert_false(bool(_manager.get_slot_summary(1)["autosave"]))
+
+func test_a_damaged_save_of_one_kind_leaves_the_slot_to_the_other() -> void:
+	await _enter_fixture_location()
+	var auto := _manager.get_slot_paths(1, true)
+	WorldState.set_value(MARK, 111)
+	assert_eq(_manager.write_save(), "")
+	OS.delay_msec(2)
+	WorldState.set_value(MARK, 222)
+	assert_eq(_manager.write_save(true), "")
+	_damage(String(auto["save"]))
+	assert_eq(_mark((_manager.call("_read_slot") as Dictionary)["data"]), 111, "a damaged autosave leaves the player's save")
+	assert_false(bool(_manager.get_slot_summary(1)["autosave"]))
+	assert_eq(_manager.write_save(true), "")
+	_damage(_manager.save_path)
+	assert_false(_manager.has_save(-1, GameSaveManager.SaveKind.MANUAL))
+	assert_eq(_mark((_manager.call("_read_slot") as Dictionary)["data"]), 222, "a damaged save of the player's leaves the autosave")
+	assert_true(bool(_manager.get_slot_summary(1)["autosave"]))
+
+func test_an_autosave_recovers_from_its_own_backup_and_temp() -> void:
+	await _enter_fixture_location()
+	var auto := _manager.get_slot_paths(1, true)
+	WorldState.set_value(MARK, 111)
+	assert_eq(_manager.write_save(true), "")
+	WorldState.set_value(MARK, 222)
+	assert_eq(_manager.write_save(true), "")
+	assert_eq(_mark(_read(String(auto["backup"]))), 111)
+	_damage(String(auto["save"]))
+	WorldState.set_value(MARK, 999)
+	assert_true(await _manager.load_game())
+	assert_eq(WorldState.get_int(MARK), 111, "a damaged autosave falls back to its own backup")
+	assert_eq(_mark(_read(String(auto["save"]))), 111, "which becomes the autosave again")
+	WorldState.set_value(MARK, 333)
+	var temp := _manager.build_snapshot()
+	temp["saved_at_unix_msec"] = int(_read(String(auto["save"]))["saved_at_unix_msec"]) + 100
+	_write(String(auto["temp"]), temp)
+	WorldState.set_value(MARK, 999)
+	assert_true(await _manager.load_game(GameSaveManager.SaveKind.AUTO))
+	assert_eq(WorldState.get_int(MARK), 333, "an interrupted autosave finishes")
+	assert_eq(_mark(_read(String(auto["save"]))), 333)
+	assert_eq(_mark(_read(String(auto["backup"]))), 111)
+	assert_false(FileAccess.file_exists(String(auto["temp"])))
+	for path: String in [_manager.save_path, _manager.temp_path, _manager.backup_path]:
+		assert_false(FileAccess.file_exists(path), "the player's own files stay untouched: %s" % path)
+
+func test_the_core_sections_outlive_the_save_manager_that_registered_them() -> void:
+	await _enter_fixture_location()
+	var other := GameSaveManager.new()
+	add_child(other)
+	other.free()
+	assert_eq(_manager.build_snapshot()["place"], {"location_id": String(LOCATION), "player": {"x": 48.0, "y": 32.0}})
 
 func test_slot_summary_describes_the_save() -> void:
 	await _enter_fixture_location()
@@ -106,7 +223,7 @@ func test_a_slot_summary_reads_the_time_played_and_what_the_game_adds() -> void:
 	saved[String(GameSessionService.SAVE_SECTION)] = {"play_seconds": 3725.0}
 	_write(_manager.save_path, saved)
 	_manager.register_slot_detail(&"fixture_mark", 20, func(snapshot: Dictionary) -> String: return "Mark %d" % _mark(snapshot))
-	_manager.register_slot_detail(&"fixture_place", 10, func(snapshot: Dictionary) -> String: return String(snapshot["location_id"]))
+	_manager.register_slot_detail(&"fixture_place", 10, func(snapshot: Dictionary) -> String: return String(snapshot["place"]["location_id"]))
 	_manager.register_slot_detail(&"fixture_nothing", 15, func(_snapshot: Dictionary) -> String: return "")
 	var summary := _manager.get_slot_summary(_manager.active_slot)
 	assert_eq(int(summary["play_seconds"]), 3725, "the time played comes back as whole seconds")
@@ -178,7 +295,7 @@ func test_a_save_of_another_format_or_without_a_section_is_not_a_save() -> void:
 	_write(_manager.save_path, missing_section)
 	assert_false(_manager.has_save())
 	var unknown_location := snapshot.duplicate(true)
-	unknown_location["location_id"] = "removed_location"
+	unknown_location["place"]["location_id"] = "removed_location"
 	_write(_manager.save_path, unknown_location)
 	assert_false(_manager.has_save())
 	_write(_manager.save_path, snapshot)
@@ -222,7 +339,7 @@ func test_nothing_saves_and_no_second_load_starts_while_a_save_loads() -> void:
 func test_a_snapshot_whose_location_cannot_open_changes_nothing() -> void:
 	await _enter_fixture_location()
 	var snapshot := _manager.build_snapshot()
-	snapshot["location_id"] = "removed_location"
+	snapshot["place"]["location_id"] = "removed_location"
 	(snapshot["world"] as Dictionary)[String(MARK)] = 1
 	WorldState.set_value(MARK, 987)
 	var scene_before := get_tree().current_scene
@@ -259,7 +376,7 @@ func test_a_slot_is_read_once_until_its_file_changes() -> void:
 	WorldState.set_value(MARK, 111)
 	assert_eq(_manager.write_save(), "")
 	assert_true(_manager.has_save())
-	var read_files: Dictionary = _manager.get("_read_files")
+	var read_files: Dictionary = (_manager.get("_files") as SaveFiles).get("_read")
 	var first: Dictionary = read_files[_manager.save_path]["data"]
 	assert_true(_manager.has_save())
 	assert_eq(_manager.get_slot_summary(1)["location_id"], String(LOCATION))
@@ -360,6 +477,18 @@ func test_save_guard_rejects_unregistered_scene_and_active_travel() -> void:
 	get_tree().current_scene = original_scene
 	fake_scene.queue_free()
 
+func test_a_game_with_no_one_walking_its_world_saves_and_loads_its_place() -> void:
+	await _enter_fixture_location()
+	var player := get_tree().get_first_node_in_group(&"player")
+	player.remove_from_group(&"player")
+	WorldState.set_value(MARK, 555)
+	assert_eq(_manager.get_save_block_reason(), "", "a card table or a visual novel saves as well")
+	assert_eq(_manager.write_save(), "")
+	assert_eq(_read(_manager.save_path)["place"], {"location_id": String(LOCATION)}, "a place without a player's position")
+	WorldState.set_value(MARK, 0)
+	assert_true(await _manager.load_game())
+	assert_eq(WorldState.get_int(MARK), 555)
+
 ## Opens the fixture location, with the player in it, as the current scene.
 func _enter_fixture_location() -> void:
 	assert_eq(get_tree().change_scene_to_file(_scene_path), OK)
@@ -394,14 +523,19 @@ static func _game_entries() -> Array:
 	return entries
 
 func _read(path: String) -> Dictionary:
-	return _manager.call("_read_dictionary", path) as Dictionary
+	return SaveFiles._read_dictionary(path)
 
 func _write(path: String, data: Dictionary) -> void:
-	assert_true(bool(_manager.call("_write_dictionary", path, data)))
+	assert_true((_manager.get("_files") as SaveFiles).write(path, data))
+
+func _damage(path: String) -> void:
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_string("{ definitely not valid json")
+	file.close()
 
 func _mark(snapshot: Dictionary) -> int:
 	return SaveValues.whole_number_or(WorldState.read_saved(snapshot, MARK), 0)
 
 func _delete_test_slots() -> void:
-	for slot in range(1, GameSaveManager.SLOT_COUNT + 1):
+	for slot in range(1, GameSaveManager.get_slot_count() + 1):
 		_manager.delete_slot(slot)

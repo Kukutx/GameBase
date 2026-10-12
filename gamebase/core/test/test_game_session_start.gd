@@ -131,7 +131,7 @@ func test_the_title_opens_behind_the_transition() -> void:
 	get_tree().unload_current_scene()
 
 func _cleanup() -> void:
-	for slot in range(1, GameSaveManager.SLOT_COUNT + 1):
+	for slot in range(1, GameSaveManager.get_slot_count() + 1):
 		SaveManager.delete_slot(slot)
 
 ## A location scene with the player and one spawn point.

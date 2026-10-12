@@ -113,7 +113,7 @@ func build_summary() -> Dictionary:
 	settings["gamepad"] = gamepad
 
 	var slots: Array[Dictionary] = []
-	for slot in range(1, GameSaveManager.SLOT_COUNT + 1):
+	for slot in range(1, GameSaveManager.get_slot_count() + 1):
 		slots.append(_sanitize_slot_summary(SaveManager.get_slot_summary(slot)))
 
 	return {
@@ -146,6 +146,7 @@ func _sanitize_slot_summary(summary: Dictionary) -> Dictionary:
 		return result
 
 	for key: String in [
+		"autosave",
 		"recovery_source",
 		"version",
 		"game_version",

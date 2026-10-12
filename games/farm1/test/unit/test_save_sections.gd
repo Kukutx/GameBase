@@ -3,10 +3,11 @@ extends GutTest
 const PLAYER_HOME := &"player_home"
 
 func test_registered_sections_restore_in_the_documented_order() -> void:
-	# Shipping before the clock (no double payout), the clock before the world
+	# The place first (the save manager's own: where the game was),
+	# shipping before the clock (no double payout), the clock before the world
 	# (saved day markers), quests after the world they read.
 	assert_eq(SaveManager.get_section_ids(), PackedStringArray([
-		"random", "session", "playthrough", "shipping", "clock", "buffs", "inventory", "wallet", "vitals", "hotbar", "world",
+		"place", "random", "session", "playthrough", "shipping", "clock", "buffs", "inventory", "wallet", "vitals", "hotbar", "world",
 		"relationships", "npc_memory", "quests", "skills", "fishing_state",
 	]))
 

@@ -41,6 +41,9 @@ static func current() -> GameDefinition:
 ## Clock at the start of a new game.
 @export_range(1, 100000) var start_day := 1
 @export_range(0, 1439) var start_minute_of_day := 8 * 60
+## How many save slots the title screen offers, each with the player's save
+## and an autosave (`SaveManager`).
+@export_range(1, 9) var save_slots := 3
 ## Seed of a new game's world randomness (`GameRandom`): the weather, catches,
 ## mine floors and more. 0 gives each new game a fresh seed.
 @export var world_seed := 0

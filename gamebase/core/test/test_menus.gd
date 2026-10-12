@@ -204,6 +204,20 @@ func test_loading_from_the_pause_menu_asks_first() -> void:
 	menu.confirm_load.canceled.emit()
 	assert_eq(_focus(), menu.load_button)
 
+func test_the_pause_menu_loads_the_player_s_own_save_before_an_autosave() -> void:
+	var menu := _pause()
+	menu.open()
+	_write_usable_save(true)
+	assert_eq(PauseMenu.get_load_kind(), GameSaveManager.SaveKind.AUTO, "with no save of their own, the autosave")
+	menu.request_load()
+	assert_eq(menu.confirm_load.dialog_text, "Unsaved progress will be lost. Load the autosave?", "the question names what loads")
+	menu.confirm_load.hide()
+	_write_usable_save()
+	assert_eq(PauseMenu.get_load_kind(), GameSaveManager.SaveKind.MANUAL)
+	menu.request_load()
+	assert_eq(menu.confirm_load.dialog_text, "Unsaved progress will be lost. Load your last save?")
+	menu.confirm_load.hide()
+
 func test_quick_load_opens_the_pause_menu_and_asks() -> void:
 	_write_usable_save()
 	var menu := _pause()
@@ -343,19 +357,19 @@ static func _has_button_event(action: StringName, button: JoyButton) -> bool:
 			return true
 	return false
 
-# A save of this build the slot can load: every section, the clock, and the
-# game's start location.
-func _write_usable_save() -> void:
+# A save of this build the slot can load, its own or its autosave: every
+# section, the clock, and the game's start location.
+func _write_usable_save(autosave := false) -> void:
 	var data := {
 		"version": GameSaveManager.SAVE_VERSION,
-		"location_id": String(GameDefinition.current().start_location_id),
 		"saved_at_unix_msec": Time.get_unix_time_from_system() * 1000.0,
 	}
 	for section: SaveSection in SaveManager.get("_sections"):
 		data[String(section.id)] = {}
+	data["place"] = {"location_id": String(GameDefinition.current().start_location_id)}
 	data["clock"] = {"day": 1, "minute_of_day": 6 * 60}
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(TEST_DIRECTORY))
-	var file := FileAccess.open(SaveManager.save_path, FileAccess.WRITE)
+	var file := FileAccess.open(String(SaveManager.get_slot_paths(SaveManager.active_slot, autosave)["save"]), FileAccess.WRITE)
 	file.store_string(JSON.stringify(data))
 	file.close()
 	assert_true(SaveManager.has_save(), "the fixture save is one this build can load")

@@ -41,11 +41,11 @@ Desktop builds expose **Settings → Accessibility → Export Support Bundle**. 
 The bundle is opt-in and contains:
 
 - a whitelisted runtime/settings summary;
-- summaries for all three save slots, without raw save payloads;
+- a summary of each save slot the game has (`GameDefinition.save_slots`), without raw save payloads;
 - up to five recent game logs, capped at 2 MiB each;
 - a README describing the bundle contents.
 
-Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw slot files (`user://saves/slot_<n>.json/.tmp/.bak`), `settings.json`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
+Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw slot files (`user://saves/slot_<n>.json/.tmp/.bak` and the autosave's `slot_<n>_auto.json/.tmp/.bak`), `settings.json`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
 
 ## When investigating a report
 
@@ -66,7 +66,7 @@ Save snapshots record both `game_version` and `engine_version` at the top level,
 
 The numeric save `version` field is the save-format version and is independent from the game version in `config/version` of `games/<id>/project.godot`. Only a save of the current format loads; there are no migrations. A slot whose files this build cannot read is shown as such on the title screen, and a new game asks before replacing it.
 
-Manual saves and autosaves share one path: the new save is written to a temporary file, the previous save is renamed to the backup, and the temporary file then replaces the save. A write interrupted at any point leaves an intact file of the three, and loading takes the newest one.
+Each slot keeps the player's own save (`slot_<n>.json`) and its autosave (`slot_<n>_auto.json`) apart, so an autosave never replaces a save the player made; the title screen continues from the newer of the two and marks an autosave, and the pause menu loads the player's own save (the autosave while there is none). Loading one deletes the other when it is newer, so the slot goes on from the save the player chose. Both are written the same way: the new save is written to a temporary file, the previous save is renamed to the backup, and the temporary file then replaces the save. A write interrupted at any point leaves an intact file of the three, and loading takes the newest one. A game sets how many slots it has (`GameDefinition.save_slots`, three by default).
 
 Nothing saves while a save loads, a new game starts, or the player travels.
 
@@ -75,7 +75,7 @@ Autosave is enabled by default and:
 - attempts a periodic save every 5 real minutes;
 - attempts a save after successful world travel;
 - attempts a save when the window closes;
-- skips unsafe states such as active travel, fishing, missing player, or unregistered scenes;
+- skips unsafe states such as active travel, fishing, or unregistered scenes;
 - shows "Autosaved" for a moment on the HUD (`SaveIndicator`) when it saved, instead of a toast;
 - tells the player why with a toast when the save could not be written. The log has a `WARNING:` line naming the file and an `autosave_failed` diagnostic.
 

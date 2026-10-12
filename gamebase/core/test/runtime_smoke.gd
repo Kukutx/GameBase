@@ -60,8 +60,7 @@ func _use(interactable: Node) -> void:
 ## Deletes the smoke's saves and profile.
 func _cleanup() -> void:
 	var save_manager := root.get_node("SaveManager")
-	var slot_count := int((save_manager.get_script() as Script).get_script_constant_map().get("SLOT_COUNT", 1))
-	for slot in range(1, slot_count + 1):
+	for slot in range(1, int(save_manager.call("get_slot_count")) + 1):
 		save_manager.delete_slot(slot)
 	# Written first, so nothing waits to be written when the smoke quits.
 	var profile := root.get_node("GameProfile")

@@ -8,7 +8,9 @@ extends MenuLayer
 ## (`GameSettings.pause_on_focus_loss`) or the gamepad in use disconnects
 ## (`InputPrompts.gamepad_disconnected`), over the world or over a minigame,
 ## which stands still under it, and `quick_load` asks here before a load
-## throws away the progress since the last save.
+## throws away the progress since the last save. A load here takes the
+## player's own save, not a newer autosave, so going back to what they saved
+## stays one step; with no save of their own, it takes the autosave.
 
 ## The menu's id: its group and the reason of its lock, held while the game
 ## is paused for the player (`GameSession` counts no time played then).
@@ -106,11 +108,14 @@ func close() -> void:
 		dialog.hide()
 	super()
 
-## Asks before loading the last save over the progress since.
+## Asks before loading the player's save (or the autosave, with none of their
+## own) over the progress since.
 func request_load() -> void:
 	if not SaveManager.has_save():
 		status_label.text = tr("No save available")
 		return
+	var autosave := get_load_kind() == GameSaveManager.SaveKind.AUTO
+	confirm_load.dialog_text = tr("Unsaved progress will be lost. Load the autosave?") if autosave else tr("Unsaved progress will be lost. Load your last save?")
 	confirm_load.popup_centered()
 
 func _is_dialog_open() -> bool:
@@ -124,7 +129,12 @@ func _load_game() -> void:
 	close()
 	# Not awaited: a load that succeeds frees this menu with its location.
 	_loading = true
-	SaveManager.load_game()
+	SaveManager.load_game(get_load_kind())
+
+## Which of the slot's saves a load here takes: the player's own, else the
+## autosave.
+static func get_load_kind() -> GameSaveManager.SaveKind:
+	return GameSaveManager.SaveKind.MANUAL if SaveManager.has_save(-1, GameSaveManager.SaveKind.MANUAL) else GameSaveManager.SaveKind.AUTO
 
 func _open_settings() -> void:
 	_set_main_buttons_disabled(true)

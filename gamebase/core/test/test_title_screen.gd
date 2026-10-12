@@ -28,6 +28,8 @@ func test_a_slot_shows_where_the_player_stands_how_long_they_played_and_what_the
 		"details": PackedStringArray(["50g", "Deepest 4", "Run 2"]),
 	}
 	assert_eq(String(title.call("_format_slot_summary", summary)), "Spring 3 · 06:15\nMeadow · Played 2:07\n50g · Deepest 4 · Run 2")
+	summary["autosave"] = true
+	assert_eq(String(title.call("_format_slot_summary", summary)), "Autosave · Spring 3 · 06:15\nMeadow · Played 2:07\n50g · Deepest 4 · Run 2", "a slot that continues from its autosave says so")
 
 func test_a_new_game_that_fails_after_it_started_gives_the_menu_back() -> void:
 	var title := (load("res://gamebase/core/ui/title_screen.tscn") as PackedScene).instantiate()
@@ -69,3 +71,13 @@ func test_a_slot_this_version_cannot_open_is_shown_and_replaced_only_after_askin
 	SaveManager.delete_slot(1)
 	SaveManager.save_directory = save_directory
 	SaveManager.select_slot(active_slot)
+
+func test_the_title_offers_as_many_slots_as_the_game_sets() -> void:
+	var definition := GameDefinition.new()
+	definition.save_slots = 5
+	var title: Node = ContentFixture.with_definition(definition, func() -> Node:
+		var screen := (load("res://gamebase/core/ui/title_screen.tscn") as PackedScene).instantiate()
+		add_child_autofree(screen)
+		return screen
+	)
+	assert_eq((title.get("slot_select") as OptionButton).item_count, 5)

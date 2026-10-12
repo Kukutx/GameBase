@@ -77,7 +77,7 @@ autowrap_mode = 3
 size = Vector2i(300, 100)
 dialog_autowrap = true
 title = "Load Game"
-dialog_text = "Unsaved progress will be lost. Load the last save?"
+dialog_text = "Unsaved progress will be lost. Load your last save?"
 ok_button_text = "Load"
 
 [node name="ConfirmTitle" type="ConfirmationDialog" parent="."]
