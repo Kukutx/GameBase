@@ -1,6 +1,15 @@
 class_name ToolUpgradeService
 extends Node
 
+## Upgrading a tool into a better one (`ToolUpgradeData`): when the upgrade's
+## condition holds and the player has the tool, the materials and the money, it
+## takes them and gives the new tool, all together or not at all, and puts the
+## new tool in the old one's `Hotbar` slots.
+##
+## The service keeps no state and saves nothing; what the player owns is in the
+## inventory. `tool_upgraded`, and `ProgressionEvents.tool_upgraded` for quests,
+## announce each upgrade.
+
 signal tool_upgraded(upgrade_id: StringName, source_item_id: StringName, result_item_id: StringName)
 
 var _upgrade_busy := false

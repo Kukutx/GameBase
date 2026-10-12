@@ -5,9 +5,9 @@
 //
 // Repository steps run once: agent rules, layer dependencies, code guardrails
 // (tools/check_code.js), each game's project settings against the manifests,
-// tool tests, the engine baseline and its legal bundle, the release packaging
-// self-test, and a game freshly created from the new-game template (the core
-// on its own). Game
+// the reference pages (tools/generate_reference.js), tool tests, the engine
+// baseline and its legal bundle, the release packaging self-test, and a game
+// freshly created from the new-game template (the core on its own). Game
 // steps run for each selected game, all registered games by default: links,
 // version, import, localization, GUT, every runtime script under test/runtime/
 // (the *_soak.gd ones are skipped by --skip-soak) and a boot of the main scene.
@@ -19,6 +19,7 @@ const { runSelfTest } = require("./package_release");
 const { runCli: runRulesCheck } = require("./validate_rules");
 const { runCli: runLayerCheck } = require("./check_layers");
 const { runCli: runCodeCheck } = require("./check_code");
+const { stalePages } = require("./generate_reference");
 const { linkGame } = require("./link");
 const {
   ENGINE_VERSION_RE,
@@ -136,6 +137,13 @@ async function validateRepository(godot, version) {
     fail(`${stale.join(", ")}: project.godot or .gutconfig.json does not hold the autoloads, translation catalogs, addon plugins and test directories its manifests give. Run node tools/link.js and commit the result.`);
   }
   console.log("Every game's and the template's autoloads, catalogs and plugins follow gamebase.json and game.json.");
+
+  step("Reference pages");
+  const staleReference = stalePages();
+  if (staleReference.length > 0) {
+    fail(`${staleReference.join(", ")} no longer match the code. Run node tools/generate_reference.js and commit the result.`);
+  }
+  console.log("docs/reference/ matches the autoloads, signals and rule keys of the code.");
 
   step("Tool tests");
   const toolTests = await run(process.execPath, ["--test", "tools/*.test.js"]);

@@ -1,6 +1,18 @@
 class_name RelationshipManager
 extends Node
 
+## The player's friendship with each NPC, in points (`POINTS_PER_HEART` make a
+## heart, up to `MAX_HEARTS`), and the daily limits on raising it: the first
+## talk of the day with an NPC gives 10 points, and each NPC takes one gift a
+## day.
+##
+## A gift's points come from the NPC's `NpcProfileData`, doubled on its
+## birthday, and the `gift_friendship` stat (`GameStats`) scales a gift it
+## likes; tools and seeds are not gifts. Points stay between 0 and the maximum.
+## They are saved with the game, with the day of each NPC's last talk and gift,
+## and a new game starts at 0. `friendship_changed` fires on every change, and
+## for each NPC when a save loads.
+
 signal friendship_changed(npc_id: StringName, points: int, delta: int)
 
 const POINTS_PER_HEART := 250

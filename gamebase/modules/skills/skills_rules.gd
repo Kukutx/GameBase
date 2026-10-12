@@ -29,7 +29,9 @@ static func _skill_level(args: PackedStringArray, _context: Dictionary) -> bool:
 static func _describe_skill_level(args: PackedStringArray) -> String:
 	return "%s Lv%d" % [Skills.get_skill_name(StringName(args[0])), int(args[1])]
 
-## ADD_SKILL_XP <skill> <amount>
+## ADD_SKILL_XP <skill> <amount>: gives the skill that much experience, which can
+## raise its level; an amount of 0 or less gives none, and the action still
+## succeeds.
 static func _add_skill_xp(args: PackedStringArray, _context: Dictionary) -> bool:
 	Skills.add_xp(StringName(args[0]), int(args[1]))
 	return true

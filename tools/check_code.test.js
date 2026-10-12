@@ -1,4 +1,7 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 const test = require("node:test");
 const { checkCode, checkScript, MAX_LINES, MAX_TEST_LINES } = require("./check_code");
 
@@ -89,4 +92,26 @@ test("only the input lock pauses the world", () => {
   const problems = checkScript("gamebase/modules/items/shop/shop_menu.gd", source);
   assert.deepEqual(problems.map((problem) => problem.match(/shop_menu\.gd:(\d+)/)[1]), ["1", "4", "5", "6", "7", "8", "9", "10", "12", "14"]);
   assert.match(problems[0], /sets SceneTree\.paused; take a lock with InputLock/);
+});
+
+test("every script keeps its .uid file, and no .uid file outlives its script", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "check-code-"));
+  try {
+    const write = (file, text) => {
+      fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+      fs.writeFileSync(path.join(root, file), text, "utf8");
+    };
+    write("gamebase/core/a.gd", "extends Node\n");
+    write("gamebase/core/b.gd", "extends Node\n");
+    write("gamebase/core/b.gd.uid", "uid://b\n");
+    write("gamebase/core/moved.gd.uid", "uid://moved\n");
+    write("games/probe/game/c.gd", "extends Node\n");
+    write("games/probe/game/c.gd.uid", "uid://c\n");
+    assert.deepEqual(checkCode(root), [
+      "gamebase/core/a.gd has no a.gd.uid; import the project in Godot and commit the file it writes",
+      "gamebase/core/moved.gd.uid belongs to no script; delete it, or move it with its script",
+    ]);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });

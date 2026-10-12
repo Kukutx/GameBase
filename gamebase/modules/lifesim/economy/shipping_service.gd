@@ -1,6 +1,16 @@
 class_name ShippingService
 extends Node
 
+## The shipping bin: items the player ships leave the inventory at once and are
+## paid for overnight, at their `sell_price`, when the world clock's day
+## changes. It holds what waits in the bin and the last day it paid out.
+##
+## Tools, quest items and items without a sell price cannot be shipped. The bin
+## and its day marker are saved with the game and restored before the clock, so
+## loading a save never pays a day twice; a new game starts with an empty bin.
+## `item_shipped` fires for each shipment and `payout_completed` for each
+## night's pay.
+
 signal shipment_changed
 signal item_shipped(item_id: StringName, quantity: int, value: int)
 signal payout_completed(amount: int)

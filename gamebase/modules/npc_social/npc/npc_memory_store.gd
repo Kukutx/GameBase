@@ -1,6 +1,15 @@
 class_name NpcMemoryStore
 extends Node
 
+## What each NPC remembers of the player: the latest messages of their
+## conversations (up to `max_recent_messages` per NPC, each with its day, time
+## and place) and named facts, such as the last day they talked or a heart event
+## seen. `NpcContext` puts this memory in what an NPC knows when it talks.
+##
+## The memory is saved with the game, and a new game starts with none.
+## `memory_changed` fires with the NPC whose memory changed, or with an empty id
+## when all of it was cleared or loaded.
+
 signal memory_changed(npc_id: StringName)
 
 @export_range(4, 100, 1) var max_recent_messages := 24

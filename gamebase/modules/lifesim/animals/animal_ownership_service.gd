@@ -1,6 +1,19 @@
 class_name AnimalOwnershipService
 extends Node
 
+## The farm animals the player owns (`FarmAnimalData`): which housing each lives
+## in and in which slot, its name, and its daily state (when it was last fed,
+## petted or gave a product). It buys, sells, renames and feeds them, and knows
+## how many more each housing holds.
+##
+## The animals live in `WorldState` (`animal:ownership` and
+## `animal:<instance id>`), so they are saved with the world and a new game
+## starts with none. Housings are not saved: each `AnimalHousing` in the open
+## scene registers itself, with a capacity that bought expansions
+## (`FarmExpansionState`) raise. Buying needs the price and a free slot of the
+## animal's housing type at the location; selling refunds half the price.
+## `ownership_changed` fires whenever an animal is added, sold or renamed.
+
 signal ownership_changed(location_id: StringName)
 signal animal_purchased(instance_id: StringName, animal_id: StringName, price: int)
 signal animal_renamed(instance_id: StringName, custom_name: String)

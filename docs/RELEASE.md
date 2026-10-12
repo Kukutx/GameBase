@@ -15,7 +15,7 @@ Install the export templates for the current shared baseline with:
 node tools/install_export_templates.js
 ```
 
-Every tool below takes `--game <id>`, else `GAMEBASE_GAME`, else the only registered game.
+Every tool below that works on one game takes `--game <id>`, else `GAMEBASE_GAME`, else the only registered game (`npm run --prefix tools/web_smoke smoke:web -- --game <id>` for the browser smoke). `node tools/validate.js` takes `--game <id>` as often as needed and validates every registered game without it.
 
 ## One-command local release check
 
@@ -28,7 +28,7 @@ node tools/release_readiness.js --game <id>
 It performs:
 
 1. repository, instruction and licensed-asset safety checks and `git diff --check` on project-owned files;
-2. the repository checks of `tools/validate.js`: the agent rules and routing check (`tools/validate_rules.js --strict`), the layer dependency check (`tools/check_layers.js`), the tool tests (`node --test "tools/*.test.js"`), the deterministic packaging self-test, and a game freshly created from `gamebase/templates/new_game/` that must import, boot and run its runtime smoke;
+2. the repository checks of `tools/validate.js`: the agent rules and routing check (`tools/validate_rules.js --strict`), the layer dependency check (`tools/check_layers.js`), the code guardrails (`tools/check_code.js`), each game's project settings against the manifests, the reference pages (`tools/generate_reference.js --check`), the tool tests (`node --test "tools/*.test.js"`), the engine baseline and its legal bundle, the deterministic packaging self-test, and a game freshly created from `gamebase/templates/new_game/` that must import, boot and run its runtime smoke;
 3. the game checks of `tools/validate.js`: its links, its version, Simplified Chinese localization coverage, a clean Godot import from a regenerated `.godot/` cache, GUT unit tests (which also load every script and scene under its `res://game` and `res://gamebase`), every runtime script under its `test/runtime/` (for Farm1 the life-simulation smoke and a three-year long-horizon soak with 336 day transitions, 12 real disk save and load round trips and the Year 4 boundary) and a main-scene boot;
 4. Windows, Linux and Web release exports;
 5. resource-pack content verification: the main scene, the game definition, every autoload script, every translation and the runtime files of its addons must be present, while tests, GUT, `game.json`, `.gutconfig.json`, local licensed raw art, addon editor files and repository-only files must be absent;
@@ -54,15 +54,16 @@ Generated build, browser and diagnostic artifacts are ignored by Git. Dialogue M
 
 The workflow:
 
-1. picks the games the run covers (`node tools/ci.js games`): every game, except on a pull request that changes nothing but some games' own `games/<id>/` directories, which covers only those games;
+1. picks the games the run covers (`node tools/ci.js games`): every game, except on a pull request that changes nothing but some games' own `games/<id>/` directories, which covers only those games, and on one that changes only documentation (`*.md` files and `docs/`), which covers none and runs the repository checks alone;
 2. runs the repository checks once (`node tools/validate.js --no-games`);
 3. validates each covered game from a clean import (`node tools/validate.js --no-repository --game <id> --clean-import`);
 4. exports each covered game for Windows, Linux and Web;
 5. checks the Web payload, launches it in Chromium and uploads the browser diagnostics;
 6. launches the exported Windows build on a Windows runner and the Linux build on a Linux runner;
-7. treats Godot `ERROR:` and `SCRIPT ERROR:` log lines as failures even when the engine process returns exit code 0.
+7. treats Godot `ERROR:` and `SCRIPT ERROR:` log lines as failures even when the engine process returns exit code 0;
+8. ends with `CI result` (`node tools/ci.js result`), which fails when any job above failed or was cancelled and passes when the jobs a documentation change skips had nothing to do.
 
-A change should not be merged while any of these checks fail.
+Every job has a time limit (`timeout-minutes`), so a hung engine or browser fails its job instead of holding the run. `CI result` is the one check for branch protection to require; a change should not be merged while it fails.
 
 ## Publishing a release
 
@@ -78,7 +79,7 @@ git push origin game/farm1/v0.2.0
 
 The Release workflow rejects a tag unless it is exactly `game/<id>/v` plus the version committed in that game's `project.godot`.
 
-`.github/workflows/release.yml` validates the source (the repository checks and that game), exports all three targets, packages them with the repository-owned deterministic packager, performs Web browser smoke plus Windows and Linux packaged-build smoke, validates package-internal identity, and only then publishes the GitHub Release `<Name> <version>` for that tag. The packager derives archive timestamps from `SOURCE_DATE_EPOCH` when set or from the Git commit timestamp, sorts every member path and normalizes modes and ownership, so repackaging the same payload is byte-for-byte stable.
+`.github/workflows/release.yml` validates the source (the repository checks and that game), exports all three targets, packages them with the repository-owned deterministic packager, performs Web browser smoke plus Windows and Linux packaged-build smoke, validates package-internal identity, and only then publishes the GitHub Release `<config/name> <version>` (the game's `application/config/name`) for that tag. Its notes list the commits since that game's previous release tag, those that change the game first and then those that change the foundation it is built on (the core, its modules, its addons and the tools). A version with a pre-release suffix (`0.2.0-beta.1`) is published as a pre-release and never as the latest release. The packager derives archive timestamps from `SOURCE_DATE_EPOCH` when set or from the Git commit timestamp, sorts every member path and normalizes modes and ownership, so repackaging the same payload is byte-for-byte stable.
 
 Published assets, from `dist/<id>/`:
 

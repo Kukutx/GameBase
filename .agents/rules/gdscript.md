@@ -25,7 +25,7 @@ Each statement below was confirmed either by running Godot 4.7.2 headless or by 
 ## P1
 
 - **A script has at most 500 lines, a test at most 1000**: past that, split it by responsibility (a rules file, a menu of its own). `tools/check_code.js` enforces the limit.
-- **Gameplay randomness comes from `GameRandom`**: a roll that decides what the player gets or meets (weather, a catch, a drop, a layout) takes a stream keyed by what it rolls, `GameRandom.stream("forage:%d:%s" % [day, spawner])`, never `randf()`, `randi()` or a `RandomNumberGenerator` (its algorithm may change with the engine), so a load replays it on any engine version and a test pins it by the seed. The global generator is only for cosmetic jitter such as a sound's pitch.
+- **Gameplay randomness comes from `GameRandom`**: a roll that decides what the player gets or meets (weather, a catch, a drop, a layout) takes a stream keyed by what it rolls, `GameRandom.stream("forage:%d:%s:%s" % [day, spawner_id, location_id])`, never `randf()`, `randi()` or a `RandomNumberGenerator` (its algorithm may change with the engine), so a load replays it on any engine version and a test pins it by the seed. The global generator is only for cosmetic jitter such as a sound's pitch.
 - **Nothing required goes behind `await tween.finished`**: code after it never runs when the node the tween is bound to is freed first. Do not put a required cleanup, state reset or signal emission behind such an `await`.
 - **Re-check state after every `await`**: state can change while a coroutine is suspended, and the same function can be entered again before the first call resumes. `GameSession` (`_handling_defeat`, `_handling_late_night`) and `GameSceneTransition` (`_covering`) show the guard this project uses.
 - **A new tween does not stop the earlier one**: `create_tween()` leaves an earlier tween running, and two tweens on the same property fight over the value. Keep the reference and `kill()` it before starting another, or serialise the calls with a guard.
@@ -39,7 +39,7 @@ Each statement below was confirmed either by running Godot 4.7.2 headless or by 
 
 ## P2
 
-- Scripts are statically typed: typed variables, parameters and return values, typed arrays, `:=` where the type is obvious.
+- Scripts are statically typed: typed variables, parameters and return values, typed arrays, `:=` where the type is obvious. Every project makes a declaration without a type an error (`gdscript/warnings/untyped_declaration=2`, written by `node tools/link.js`), a `for` variable whose type the engine cannot infer included (`for path: String in [...]`); a runtime script under `test/runtime/`, which names no class, types such values `Variant`.
 - A script that other code refers to declares `class_name`; signals are declared at the top and carry typed parameters.
 - Ids are `StringName` literals (`&"turnip"`). A value that arrived from a save, a dictionary or a signal with a looser type is converted with `StringName(String(value))` before it is used as an id.
 - Player-visible text never appears as a bare literal assigned to a control; see `.agents/rules/localization.md`.

@@ -9,9 +9,10 @@
 //                         game.json lists (the addons of gamebase.json and of
 //                         those modules come with them);
 // and no foundation file may name a content id of any game: an id a game gives
-// to `id` or to a `*_id` property in its data and scenes. A script "uses" a
-// layer when it names one of its autoloads or class_names, or a res:// path in
-// it; a game's project.godot uses the scripts and plugins it registers.
+// to `id` or to a `*_id` property in its data and scenes. A script "uses" the
+// core, a module or a game when it names one of its autoloads or class_names
+// or a res:// path in it, and an addon when it names a res://addons/<addon>/
+// path; a game's project.godot uses the scripts and plugins it registers.
 
 const fs = require("node:fs");
 const path = require("node:path");

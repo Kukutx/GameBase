@@ -1,6 +1,17 @@
 class_name SupportBundleService
 extends Node
 
+## Makes a support bundle the player can send with a bug report: a zip file,
+## in `user://support` unless a path is given, with a summary (versions,
+## settings and bindings, and an outline of each save slot) and the end of the
+## newest game logs.
+##
+## It makes one only when asked (the settings menu has a button), and never in
+## a web build. It leaves out the save files and the settings file themselves,
+## and replaces the player's folder paths in the logs with placeholders. At most
+## `MAX_LOG_FILES` logs go in, the last `MAX_LOG_BYTES` of each. `bundle_created`
+## gives the zip's path, and `bundle_failed` says why it could not be made.
+
 signal bundle_created(path: String)
 signal bundle_failed(message: String)
 

@@ -1,6 +1,18 @@
 class_name GameSettingsService
 extends Node
 
+## The player's settings: the volumes, the display, autosave, accessibility, the
+## language and the key and gamepad bindings of the controls (`ControlAction`).
+## It applies them to the audio buses, the window, the translation server and
+## the input map, and writes them to `settings_path` (JSON) after every change.
+##
+## Settings belong to the player, not to a save slot: starting or loading a game
+## leaves them as they are. Binding a key or button that another rebindable
+## control has swaps the two; one a control holds fixed (a second key, or a
+## control the player cannot rebind) is refused. `changed` fires on any change,
+## `controls_changed` when a binding changes and `locale_changed` when the
+## language does.
+
 signal changed
 signal controls_changed
 signal locale_changed(locale: String)

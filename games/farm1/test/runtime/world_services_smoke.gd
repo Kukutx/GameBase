@@ -147,11 +147,11 @@ func _run() -> void:
 	# Relationship stages and one-shot Heart Events are data-driven and visible to future AI context.
 	relationship_state.add_friendship(&"mira", 410)
 	_check(relationship_state.get_hearts(&"mira") == 2, "Mira did not reach two hearts")
-	var pending_heart_event = heart_events.call("get_pending_event", &"mira")
+	var pending_heart_event: Variant = heart_events.call("get_pending_event", &"mira")
 	_check(pending_heart_event != null and String(pending_heart_event.id) == "mira_two_hearts", "Mira two-heart event did not become pending")
 	var heart_context: Dictionary = npc_context.build_context(&"mira", player)
 	_check(String(heart_context["relationship"]["pending_heart_event"]) == "mira_two_hearts", "AI context did not expose pending Heart Event")
-	var consumed_heart_event = heart_events.call("consume_pending_event", &"mira")
+	var consumed_heart_event: Variant = heart_events.call("consume_pending_event", &"mira")
 	_check(consumed_heart_event != null and String(consumed_heart_event.id) == "mira_two_hearts", "Mira two-heart event could not be consumed")
 	_check(heart_events.call("is_seen", &"mira_two_hearts"), "Heart Event seen flag was not persisted to WorldState")
 	_check(bool(npc_memory.get_facts(&"mira").get("heart_event:mira_two_hearts", false)), "Heart Event was not recorded in NPC memory")
@@ -174,7 +174,7 @@ func _run() -> void:
 	var plots: Array = farm_field.get_all_plots()
 	_check(plots.size() == 3, "Starter farm did not generate three plots")
 	for index in plots.size():
-		var plot = plots[index]
+		var plot: Variant = plots[index]
 		var plot_name := "Plot %d" % (index + 1)
 		_check(plot.use_item(&"hoe"), "%s could not be tilled" % plot_name)
 		_check(plot.use_item(&"turnip_seeds"), "%s could not be planted" % plot_name)
@@ -189,12 +189,12 @@ func _run() -> void:
 		_check(inventory.get_quantity(&"hay") == hay_before_feed - 3, "Daily animal feeding did not consume one Hay per animal")
 		_check(animal_state.get_unfed_count(&"starter_coop") == 0 and animal_state.get_unfed_count(&"starter_barn") == 0, "Daily animal feeding left animals unfed")
 		if day < 5:
-			for plot in plots:
+			for plot: Variant in plots:
 				if not plot.watered:
 					_check(plot.use_item(&"watering_can"), "Plot could not be watered for next day")
 	_check(inventory.get_quantity(&"hay") == 8, "Hay balance after four feeding days is incorrect")
 
-	for plot in plots:
+	for plot: Variant in plots:
 		_check(plot.can_harvest(), "Crop did not mature after four watered days")
 		plot.interact(player)
 	_check(inventory.get_quantity(&"turnip") == 3, "Harvest output incorrect")
@@ -323,7 +323,7 @@ func _run() -> void:
 	await process_frame
 	_check(restored_coop.get_spawned_animals().size() == 2, "Purchased chicken did not respawn after Continue")
 	var restored_live_purchase := false
-	for restored_animal in restored_coop.get_spawned_animals():
+	for restored_animal: Variant in restored_coop.get_spawned_animals():
 		if restored_animal != null and restored_animal.persistent_id == purchased_chicken_id:
 			restored_live_purchase = true
 			break
@@ -540,7 +540,7 @@ func _run() -> void:
 
 	# Plant a crop, leave the farm unloaded for two days, then verify catch-up growth.
 	var automation_field := current_scene.get_node("FarmField")
-	var automation_plot = automation_field.call("get_plot", Vector2i(1, 0))
+	var automation_plot: Variant = automation_field.call("get_plot", Vector2i(1, 0))
 	_check(automation_plot != null, "Automation test plot missing")
 	_check(automation_plot.use_item(&"turnip_seeds"), "Could not plant automation test crop")
 	if not automation_plot.watered:
@@ -592,7 +592,7 @@ func _run() -> void:
 	_check(current_scene.get_node("WorldHud/WeatherOverlay").visible, "Outdoor storm overlay did not activate")
 	_check(current_scene.get_node("Neri/Schedule").current_activity == "Secure the shed during the storm", "Storm NPC schedule did not override normal Harbor route")
 	var storm_eel_available := false
-	for fish in root.get_node("FishingState").get_available_fish(&"harbor_town"):
+	for fish: Variant in root.get_node("FishingState").get_available_fish(&"harbor_town"):
 		if String(fish.id) == "storm_eel":
 			storm_eel_available = true
 			break
@@ -895,7 +895,7 @@ func _clear_current_mine_floor(mine: Node) -> void:
 	var rocks: Array = mine.call("get_generated_rocks") if floor > 1 else []
 	var enemies: Array = mine.call("get_generated_enemies") if floor > 1 else []
 	if floor == 1:
-		for node_name in ["StoneRockA", "StoneRockB", "CopperRock"]:
+		for node_name: String in ["StoneRockA", "StoneRockB", "CopperRock"]:
 			var rock := mine.get_node_or_null(node_name)
 			if rock != null:
 				rocks.append(rock)

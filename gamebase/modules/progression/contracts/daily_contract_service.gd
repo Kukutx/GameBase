@@ -1,6 +1,20 @@
 class_name DailyContractService
 extends Node
 
+## The town's daily contract on the notice board: one request at a time to
+## forage, catch, mine, harvest or ship a number of one item, for money. An
+## offer is picked with the world's seed for its day (`GameRandom`) among the
+## items the player can still get before it is due: in season, in the coming
+## weather, on a mine floor they have reached.
+##
+## The player accepts the offer, makes progress by doing what it asks, and claims
+## the money once it is complete. An offer not accepted is replaced the next day,
+## and so is a claimed one; an accepted one not complete by its due day expires,
+## while a complete one waits until it is claimed. The contract lives in
+## `WorldState` (`daily_contract:state`), so it is saved with the world.
+## `contract_changed`, `contract_completed` and `contract_claimed` announce each
+## step.
+
 signal contract_changed(contract: Dictionary)
 signal contract_completed(contract: Dictionary)
 signal contract_claimed(contract: Dictionary)

@@ -1,6 +1,19 @@
 class_name GameSessionService
 extends Node
 
+## The game from the title screen to play and back: it starts a new game (each
+## service's new-game step in order, then the start location), continues the
+## selected slot's save through `SaveManager`, and returns to the title. It also
+## counts the time played and handles the player collapsing, from staying up too
+## late or from losing all their health.
+##
+## A late-night collapse wakes the player at home in the morning with half their
+## energy. A defeat wakes them at home in the morning with full health and
+## energy, less `GameDefinition.defeat_money_loss_percent` of their money. Both
+## end the player's activities (fishing, a minigame) and save the game. While
+## the session changes (`is_changing()`: a new game is set up or a save loads),
+## what the services announce is not play; `play_started` marks the end of it.
+
 const NEW_GAME_FLAG := &"system:new_game_initialized"
 ## The session's section of a save: the time played.
 const SAVE_SECTION := &"session"

@@ -1,6 +1,18 @@
 class_name CollectionMilestoneService
 extends Node
 
+## The collection milestones (`CollectionMilestoneData`): rewards for discovering
+## a number of a category's items in `CollectionState`, or for claiming a set of
+## other milestones. It tells the player when one is ready and pays its reward
+## (items and money) when they claim it.
+##
+## A milestone needs the milestones it requires claimed first. Once ready it
+## stays ready, and its reward is fixed at that moment, even if the content
+## changes later; claiming is refused while the items do not fit in the
+## inventory. What is ready and claimed lives in `WorldState`
+## (`collection:milestone...`), so it is saved with the world. `milestone_ready`
+## and `milestone_claimed` announce each step.
+
 signal milestone_ready(milestone_id: StringName)
 signal milestone_claimed(milestone_id: StringName)
 

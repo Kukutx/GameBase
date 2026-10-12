@@ -1,6 +1,17 @@
 class_name CalendarEventManager
 extends Node
 
+## Which calendar events (`CalendarEventData`, such as a fair or a market) are
+## on at the world clock's day and minute, and the yearly reward for taking part
+## in one. It checks every event again each minute and announces each start and
+## end (`event_started`, `event_ended`).
+##
+## Which events are on is not saved: it is worked out again from the clock once
+## a save loads. A participation reward (items, money, skill experience) can be
+## claimed once per event in each in-game year, while the event is on; it is
+## refused while the items do not fit in the inventory, and the claim is kept in
+## `WorldState`.
+
 signal event_started(event_id: StringName)
 signal event_ended(event_id: StringName)
 signal active_events_changed

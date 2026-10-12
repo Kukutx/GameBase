@@ -1,6 +1,19 @@
 class_name FishingService
 extends Node
 
+## A fishing cast from start to catch: the player casts at a location, waits for
+## a bite and reels in during the bite window, by pressing interact or by winning
+## the game's reel minigame (`reel_minigame_id`). The fish that bites is rolled
+## from the fish (`FishData`) available at that location, day, time and weather.
+##
+## Casting costs energy (`PlayerState`) and holds the player's controls
+## (`InputLock`) until the cast ends; a bite that is not reeled in, or a fish
+## that does not fit in the inventory, gets away. The wait and the window follow
+## the `fishing_wait` and `fishing_window` stats (`GameStats`). Rolls come from
+## the world's seed (`GameRandom`) and the count of casts, which is all that is
+## saved: loading a save ends a cast, and the game cannot be saved while one
+## runs. `fish_caught` announces each catch.
+
 enum CastState {
 	IDLE,
 	WAITING,

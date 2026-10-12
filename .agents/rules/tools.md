@@ -7,7 +7,7 @@ path: tools/**
 ## P0
 
 - Tool scripts use Node; do not add Python, PowerShell or scripts in another language under `tools/`.
-- Every tool is one plain Node 24 script run as `node tools/<name>.js [options]`. There is no tool registry, no package-manager wrapper and no categories; one capability has one script, and no historical alias or second entry point (a wrapper script, a package `scripts` entry or a `bin`) is kept for it. `tools/web_smoke/` is the only tool with its own `tools/web_smoke/package.json`, and it is run as `npm run --prefix tools/web_smoke smoke:web`.
+- Every tool is one plain Node 24 script run as `node tools/<name>.js [options]`. There is no tool registry, no package-manager wrapper and no categories; one capability has one script, and no historical alias or second entry point (a wrapper script, a package `scripts` entry or a `bin`) is kept for it. `tools/web_smoke/` is the only tool with its own `tools/web_smoke/package.json`, and it is run as `npm run --prefix tools/web_smoke smoke:web -- [--game <id>]`.
 - Know the largest side effect of a tool before running it, from its source: none, a local write (generated output, the game links, the import cache, a game's version, the legal bundle) or an external write (GitHub issues, releases, tags, uploads). There is no read-only switch, so a read-only task runs only a tool, with only the options, whose source confirms that it writes nothing the task must not change; do not understate a side effect in order to run something inside a read-only task.
 - Build output, structured reports, logs, temporary JSON, screenshots and diagnostic output go to `build/<id>/`, `dist/<id>/` and `artifacts/<id>/` at the repository root (per game), which are all Git-ignored; do not put a temporary report in the root of `tools/` and do not commit one.
 - `build/`, `dist/` and `artifacts/` are a **fully disposable temporary and evidence area** and may be deleted whole; no unique fact that a build, a release, signing or the running game needs in order to keep working may exist only there. Long-lived non-sensitive identity and configuration belongs in tracked files (`.godot-version`, `gamebase/gamebase.json`, each game's `game.json`, `project.godot` and `export_presets.cfg`); long-lived keys, signing material and credentials belong in the protected repository or environment secret store and never in the repository. A report from a bootstrap step means "to be moved" until it is promoted, and does not become a second source of truth.
@@ -16,7 +16,7 @@ path: tools/**
 - Do not assume that `--help` or a trial run of a writing tool has no side effect (`export`, `package_release`, `generate_release_manifest`, `release_readiness`, `update_engine_baseline`, `update_game_version`, `validate --clean-import`); first read the implementation to see how its arguments are handled, and do not run it without the matching write authorization.
 - A tool does not print secret values; arguments, logs, reports and error output mask tokens, passwords, secrets, private keys and similar sensitive values.
 - Do not add a second entry point for validation, export, packaging, the release manifest, the version bump, the engine baseline update or cleanup; reuse the existing scripts and `tools/lib/` first.
-- Do not edit by hand what a tool generates: the Godot legal bundle under `licenses/`, a game's version in `config/version` of its `project.godot`, the links inside each game, `BUILD_INFO.json`, `RELEASE_MANIFEST.json` and `SHA256SUMS.txt` are produced only by their tools.
+- Do not edit by hand what a tool generates: the Godot legal bundle under `licenses/`, a game's version in `config/version` of its `project.godot`, the links inside each game, `BUILD_INFO.json`, `RELEASE_MANIFEST.json`, `SHA256SUMS.txt` and the pages under `docs/reference/` are produced only by their tools.
 
 ## P1
 
@@ -52,6 +52,7 @@ node --test "tools/*.test.js"
 node tools/check_layers.js
 node tools/check_code.js
 node tools/check_localization.js [--game <id>]...
+node tools/generate_reference.js [--check]
 node tools/export.js [--game <id> | --all] [--preset "Windows Desktop"|Linux|Web] [--skip-validation] [--allow-engine-drift]
 node tools/smoke_export.js [--game <id>]
 node tools/release_readiness.js [--game <id>]
@@ -61,5 +62,5 @@ node tools/sync_licensed_assets.js [--game <id>]
 node tools/update_engine_baseline.js --version <x.y.z>
 node tools/update_game_version.js [--game <id>] --version <semver>
 node tools/check_addon_updates.js
-npm run --prefix tools/web_smoke smoke:web
+npm run --prefix tools/web_smoke smoke:web -- [--game <id>]
 ```

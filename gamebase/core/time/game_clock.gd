@@ -1,13 +1,20 @@
 class_name GameClock
 extends Node
 
+## The world's date and time: the day, counted from 1, and the minute of that
+## day. It runs on real time while the world is not paused, and other systems
+## follow it through `day_changed`, `hour_changed` and `minute_changed` (crops,
+## shipping, mail, NPC schedules). How the days group into seasons and weeks,
+## how fast minutes pass and when night falls is the game's `GameCalendar`.
+##
+## The day and minute are saved with the game. `set_time()` jumps to a moment
+## and announces it once, without the minutes between; `advance_minutes()` and
+## `advance_until()` run the clock on minute by minute, so every listener sees
+## each minute pass. Setting `paused` stops the clock without pausing the world.
+
 signal minute_changed(day: int, minute_of_day: int)
 signal hour_changed(day: int, hour: int)
 signal day_changed(day: int)
-
-## The world's clock: the day and the minute of the day, run by real time
-## while not paused. How the days group into seasons and weeks, how fast
-## minutes pass and when night falls is the game's `GameCalendar`.
 
 const MINUTES_PER_DAY := 24 * 60
 

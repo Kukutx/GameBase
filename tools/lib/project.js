@@ -8,7 +8,10 @@
 //                          game.json "autoloads");
 //   locale/translations    the core's catalogs, each listed module's and the
 //                          game's own (game/i18n/);
-//   [editor_plugins]       the plugin of every addon the game links.
+//   [editor_plugins]       the plugin of every addon the game links;
+//   untyped_declaration    a declaration without a type is an error
+//                          ([debug] gdscript/warnings), in the game's code
+//                          and the foundation's alike.
 // Everything else in project.godot belongs to the game. In the game's
 // .gutconfig.json it writes "dirs": the tests of the core, of each listed
 // module (a module after the modules it requires) and the game's own
@@ -108,11 +111,21 @@ function sectionOf(sections, name) {
   return section;
 }
 
+// Sets `key` in the section; a new key goes where the editor would write it,
+// among the section's keys in alphabetical order.
 function setValue(sections, name, key, value) {
   const section = sectionOf(sections, name);
   const index = section.lines.findIndex((line) => line.startsWith(`${key}=`));
-  if (index >= 0) section.lines[index] = `${key}=${value}`;
-  else section.lines.push(`${key}=${value}`);
+  if (index >= 0) {
+    section.lines[index] = `${key}=${value}`;
+    return;
+  }
+  let at = section.lines.findIndex((line) => /^[^=\s]+=/.test(line) && line.split("=")[0] > key);
+  if (at < 0) {
+    at = section.lines.length;
+    while (at > 0 && section.lines[at - 1] === "") at -= 1;
+  }
+  section.lines.splice(at, 0, `${key}=${value}`);
 }
 
 // The project.godot text with the managed parts as the manifests say.
@@ -121,6 +134,7 @@ function syncedProject(text, game, foundation = readFoundation()) {
   sectionOf(sections, "autoload").lines = desiredAutoloads(game, foundation).map(([name, script]) => `${name}="*${script}"`);
   setValue(sections, "internationalization", "locale/translations", packedStrings(desiredCatalogs(game)));
   setValue(sections, "editor_plugins", "enabled", packedStrings(desiredPlugins(game)));
+  setValue(sections, "debug", "gdscript/warnings/untyped_declaration", "2");
   return formatSections(sections);
 }
 

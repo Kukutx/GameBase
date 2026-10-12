@@ -28,7 +28,7 @@ func after_each() -> void:
 
 func test_pickaxe_breaks_stone_and_awards_mining_xp() -> void:
 	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
-	var node = scene.instantiate()
+	var node := scene.instantiate() as MiningNode
 	node.data = MiningNodeData.find(&"stone_rock")
 	node.persistent_id = &""
 	add_child_autofree(node)
@@ -42,7 +42,7 @@ func test_pickaxe_breaks_stone_and_awards_mining_xp() -> void:
 
 func test_slime_takes_melee_damage_drops_loot_and_awards_combat_xp() -> void:
 	var scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
-	var slime = scene.instantiate()
+	var slime := scene.instantiate() as HostileCreature
 	slime.data = EnemyData.find(&"green_slime")
 	slime.persistent_id = &""
 	slime.global_position = Vector2(10000, 10000)

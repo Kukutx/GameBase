@@ -34,7 +34,7 @@ Current location music slots:
 - `music_player_home`
 - `music_old_mine`
 
-Each playable `WorldLocationData` stores a stable `music_cue_id`; scene filenames are not used as music keys.
+A `WorldLocationData` may store a stable `music_cue_id` (each Farm1 location does; a location without one plays no music); scene filenames are not used as music keys.
 
 ## Current content status
 
@@ -55,11 +55,14 @@ Do not put audio file paths in farming, fishing, combat, NPC, shop, quest, or UI
 
 ## Testing
 
+`gamebase/core/test/test_audio_service.gd`, which every game runs, verifies:
+
+- a cue without a stream is a safe, silent request;
+- injected in-memory WAV streams play on the correct bus.
+
 `games/farm1/test/unit/test_audio.gd` verifies:
 
 - all current cue IDs are indexed;
 - every playable location resolves a MUSIC cue;
 - `Master`, `Music`, and `Sounds` buses exist;
-- empty streams fail safely;
-- injected in-memory WAV streams route to the correct bus;
 - gameplay event mappings request stable cue IDs.

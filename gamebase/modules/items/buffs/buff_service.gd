@@ -1,6 +1,15 @@
 class_name BuffService
 extends Node
 
+## The food buffs (`FoodBuffData`) the player has active and the world minute
+## each one ends. While a buff runs, its multipliers and bonuses change the
+## game's stats: this service is a `GameStats` source.
+##
+## Applying a buff that is already active starts its full duration again rather
+## than adding to it. A buff ends when `WorldClock` reaches its end, with
+## `buff_expired`; `buffs_changed` fires on any change. The active buffs are
+## saved with the game, and a new game starts with none.
+
 signal buff_applied(buff_id: StringName, expires_at: int)
 signal buff_expired(buff_id: StringName)
 signal buffs_changed

@@ -54,25 +54,50 @@ async function engineVersion({ latest }) {
   console.log(`Using Godot ${version} (shared baseline ${baseline})`);
 }
 
+// Documentation, which no game reads: the repository checks, which hold the
+// documentation's own rules, cover a change to it.
+function isDocumentation(file) {
+  return file.endsWith(".md") || file.startsWith("docs/");
+}
+
 // The games a CI run covers. A push or a manual run covers every game; a pull
 // request covers only the games whose own directory it changes, unless it also
 // changes anything shared (the foundation, addons, tools, workflows), which
-// can affect every game.
+// can affect every game, and none when it changes documentation alone.
+function selectGames(all, changed) {
+  const code = changed.filter((file) => !isDocumentation(file));
+  if (changed.length > 0 && code.length === 0) return [];
+  const owners = code.map((file) => {
+    const match = /^games\/([^/]+)\//.exec(file);
+    return match && all.includes(match[1]) ? match[1] : null;
+  });
+  return code.length > 0 && owners.every(Boolean) ? all.filter((id) => owners.includes(id)) : all;
+}
+
 function games({ changedFrom }) {
   const all = listGameIds();
-  let selected = all;
-  if (changedFrom) {
-    const changed = git(["diff", "--name-only", changedFrom, "HEAD"]).split(/\r?\n/).filter(Boolean);
-    const owners = changed.map((file) => {
-      const match = /^games\/([^/]+)\//.exec(file);
-      return match && all.includes(match[1]) ? match[1] : null;
-    });
-    if (changed.length > 0 && owners.every(Boolean)) {
-      selected = all.filter((id) => owners.includes(id));
-    }
-  }
+  const changed = changedFrom ? git(["diff", "--name-only", changedFrom, "HEAD"]).split(/\r?\n/).filter(Boolean) : [];
+  const selected = selectGames(all, changed);
   setOutput("games", JSON.stringify(selected));
-  console.log(`Games: ${selected.join(", ")}`);
+  console.log(`Games: ${selected.join(", ") || "none (documentation only)"}`);
+}
+
+// The verdict of a CI run, from the results of the jobs it needs (NEEDS, the
+// workflow's `needs` context as JSON): a job that failed or was cancelled
+// fails it; one skipped because the run covers no game does not. Branch
+// protection requires this one check rather than every job of the matrix.
+function result() {
+  const needs = JSON.parse(process.env.NEEDS || "{}");
+  const lines = ["## CI result", "", "| Job | Result |", "| --- | --- |"];
+  const failed = [];
+  for (const [job, { result: outcome }] of Object.entries(needs)) {
+    lines.push(`| ${job} | ${outcome} |`);
+    if (outcome !== "success" && outcome !== "skipped") failed.push(`${job} (${outcome})`);
+  }
+  appendSummary(`${lines.join("\n")}\n`);
+  if (Object.keys(needs).length === 0) fail("NEEDS holds no job results.");
+  if (failed.length > 0) fail(`CI failed: ${failed.join(", ")}.`);
+  console.log("Every job the run needs passed or had nothing to do.");
 }
 
 // The game and version a release builds: from a game/<id>/v<version> tag, or
@@ -157,20 +182,50 @@ async function publishRelease({ game: requested }) {
     fail(`dist/${game.id}/ contains no release assets.`);
   }
   const title = `${gameName(game)} ${tag.version}`;
+  const notes = rootPath("artifacts", `${game.id}-release-notes.md`);
+  fs.mkdirSync(path.dirname(notes), { recursive: true });
+  fs.writeFileSync(notes, releaseNotes(game, process.env.GITHUB_REF_NAME), "utf8");
+  // A pre-release (0.2.0-beta.1) is marked as one and never as the latest.
+  const prerelease = tag.version.includes("-") ? ["--prerelease", "--latest=false"] : [];
   console.log(
-    await gh(["release", "create", process.env.GITHUB_REF_NAME, ...assets, "--repo", process.env.GITHUB_REPOSITORY, "--title", title, "--generate-notes", "--verify-tag"]),
+    await gh(["release", "create", process.env.GITHUB_REF_NAME, ...assets, "--repo", process.env.GITHUB_REPOSITORY, "--title", title, "--notes-file", notes, ...prerelease, "--verify-tag"]),
   );
+}
+
+// The notes of a game's release: the commits since the game's previous
+// release that change the game, then those that change what it is built on
+// (the core, its modules, its addons and the tools). The repository holds
+// several games, so notes generated from every pull request would mix them.
+function releaseNotes(game, tag) {
+  const previous = git(["describe", "--tags", "--abbrev=0", "--match", `game/${game.id}/v*`, `${tag}^`], { optional: true });
+  const range = previous ? `${previous.trim()}..${tag}` : tag;
+  const commits = (paths) => git(["log", "--no-merges", "--format=- %s (%h)", range, "--", ...paths]).split(/\r?\n/).filter(Boolean);
+  const own = commits([`games/${game.id}`]);
+  const foundation = commits([
+    "gamebase/core",
+    ...game.modules.map((module) => `gamebase/modules/${module}`),
+    ...game.addons.map((addon) => `addons/${addon}`),
+    "tools",
+    ".godot-version",
+  ]).filter((line) => !own.includes(line));
+  const lines = [`Changes since ${previous ? previous.trim() : "the start of the project"}.`, ""];
+  lines.push(`## ${gameName(game)}`, "", ...(own.length > 0 ? own : ["- No change of its own."]), "");
+  lines.push("## GameBase foundation", "", ...(foundation.length > 0 ? foundation : ["- No change."]), "");
+  return lines.join("\n");
 }
 
 const COMMANDS = {
   "engine-version": (values) => engineVersion({ latest: values.latest }),
   games: (values) => games({ changedFrom: values["changed-from"] }),
+  result: () => result(),
   release: (values) => release({ game: values.game }),
   "addon-issue": (values) => addonIssue({ updatesAvailable: values["updates-available"] === "true" }),
   "compat-summary": (values) => compatSummary({ baseline: values.baseline, version: values.version }),
   "append-summary": (values) => appendSummary(fs.readFileSync(path.resolve(values.file), "utf8")),
   "publish-release": (values) => publishRelease({ game: values.game }),
 };
+
+module.exports = { releaseNotes, selectGames };
 
 if (require.main === module) {
   main(async () => {

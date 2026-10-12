@@ -1,6 +1,6 @@
 # Farm1
 
-The first-generation game built on GameBase: a farming life-sim across several connected towns. It uses every foundation module (`items`, `npc_social`, `progression`, `lifesim`, `combat`) and Dialogue Manager.
+The first-generation game built on GameBase: a farming life-sim across several connected towns. It uses every foundation module (`items`, `skills`, `combat`, `lifesim`, `npc_social`, `progression`) and Dialogue Manager.
 
 ## Run
 
@@ -21,7 +21,7 @@ game/world/        Playable locations and the shared world HUD
 game/npc/          NPC scenes and presentation
 game/player/       Player scene and controller
 game/ui/           The game menu and the UI theme (title, pause and settings come from the core)
-game/i18n/         English and Simplified Chinese UI catalogs
+game/i18n/         The Simplified Chinese catalog of the game's own text (English is the source)
 game/game_setup.gd The game's own module: what only Farm1 adds to the foundation
 test/unit/         Focused GUT regression tests
 test/runtime/      End-to-end life-simulation smoke and soak scripts

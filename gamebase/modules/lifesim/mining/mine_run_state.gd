@@ -1,6 +1,17 @@
 class_name MineRunState
 extends Node
 
+## The mine: the floor the player is on and the deepest floor they reached, from
+## 1 to `MAX_FLOOR`. It also lays out each generated floor's rocks and enemies
+## from the game's `floor_table` (`MineFloorTable`), and gives the elevator its
+## stops: floor 1 and every `CHECKPOINT_STEP`th floor down to the deepest.
+##
+## Both floors live in `WorldState` (`mine:current_floor`, `mine:deepest_floor`),
+## so they are saved with the world and a new game starts on floor 1. A floor's
+## layout comes from the world's seed (`GameRandom`), so the same floor of the
+## same world always has the same rocks and enemies. `deepest_floor_changed`
+## fires when the player goes deeper than ever before, which quests follow.
+
 signal floor_changed(floor: int)
 signal deepest_floor_changed(floor: int)
 
