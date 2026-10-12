@@ -120,6 +120,16 @@ func test_nothing_leaves_for_the_title_while_a_travel_changes_the_scene() -> voi
 	assert_false(menu.visible, "the pause menu waits for the arrival")
 	assert_eq(get_tree().current_scene, scene)
 
+func test_the_title_opens_behind_the_transition() -> void:
+	var title_path := String(ProjectSettings.get_setting("application/run/main_scene"))
+	assert_true(GameSession.return_to_title())
+	assert_true(Transition.is_covering(), "the screen covers while the title loads")
+	assert_false(GameSession.return_to_title(), "one change at a time")
+	await get_tree().scene_changed
+	assert_eq(get_tree().current_scene.scene_file_path, title_path)
+	await Transition.wait_until_clear()
+	get_tree().unload_current_scene()
+
 func _cleanup() -> void:
 	for slot in range(1, GameSaveManager.SLOT_COUNT + 1):
 		SaveManager.delete_slot(slot)

@@ -65,6 +65,13 @@ func change_scene(path: String) -> bool:
 	_run(path)
 	return true
 
+## The scene at `path`, loaded as `change_scene()` loads one while the game
+## goes on; null when there is none or it is no scene.
+func load_scene(path: String) -> PackedScene:
+	if not ResourceLoader.exists(path) or ResourceLoader.load_threaded_request(path) != OK:
+		return null
+	return await _finish_loading(path)
+
 ## Whether a change covers the screen: from its request until its scene opens.
 func is_covering() -> bool:
 	return _covering
