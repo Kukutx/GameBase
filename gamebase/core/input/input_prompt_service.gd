@@ -179,7 +179,7 @@ func get_move_prompt(actions: Array[StringName] = MOVE_ACTIONS, bindings: Contro
 		bound.append(ControlBindings.binding_text(binding))
 		var control := bindings.get_control(action)
 		if control != null and control.secondary_key != KEY_NONE and int(control.secondary_key) != int(binding.get("key", KEY_NONE)):
-			second_keys.append(OS.get_keycode_string(control.secondary_key))
+			second_keys.append(ControlBindings.key_text(control.secondary_key))
 	var prompt := "/".join(bound)
 	return prompt if second_keys.is_empty() else "%s / %s" % [prompt, "/".join(second_keys)]
 

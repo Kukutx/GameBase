@@ -99,6 +99,20 @@ func test_a_mouse_button_is_bound_and_a_left_click_cancels() -> void:
 	pressed.pressed = true
 	assert_true(pressed.is_action_pressed(&"interact"), "the input map takes the mouse button")
 
+func test_the_controls_page_follows_a_change_of_language() -> void:
+	var menu := _settings()
+	menu.open()
+	menu.show_page(SettingsMenu.Page.CONTROLS)
+	var label := _binding(menu, &"interact", 1).get_parent().get_child(0) as Label
+	assert_eq(label.text, "Interact")
+	GameSettings.set_locale("zh_CN")
+	var translated := label.text
+	var expected := TranslationServer.translate("Interact")
+	GameSettings.set_locale(GameSettingsService.SOURCE_LOCALE)
+	assert_eq(translated, expected)
+	assert_ne(translated, "Interact")
+	assert_eq(label.text, "Interact", "and back")
+
 func test_each_group_of_controls_shows_under_its_heading() -> void:
 	var menu := _settings()
 	var heading := ""

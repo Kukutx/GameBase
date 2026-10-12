@@ -15,6 +15,10 @@ extends RefCounted
 ## cannot rebind) is refused. Controls of two groups, the world's and a
 ## battle's, may share one.
 
+## The display servers that read the keyboard's layout
+## (`DisplayServer.keyboard_get_label_from_physical()`); the others name a key
+## as QWERTY prints it.
+const LAYOUT_DISPLAY_SERVERS: PackedStringArray = ["Windows", "macOS", "X11", "Wayland"]
 ## Each mouse button's name in prompts and the settings.
 const MOUSE_BUTTON_NAMES := {
 	MOUSE_BUTTON_LEFT: "Mouse Left",
@@ -64,16 +68,27 @@ static func is_binding(binding: Dictionary) -> bool:
 	return (kind == "key" or kind == "mouse") and typeof(code) == TYPE_INT and int(code) > 0
 
 ## The name of `binding` in prompts and the settings, in the player's
-## language: "E", "Mouse Right".
+## language and as the player's keyboard prints the key: "E", "Mouse Right".
 static func binding_text(binding: Dictionary) -> String:
 	if binding.has("mouse"):
 		var button := int(binding["mouse"])
 		if MOUSE_BUTTON_NAMES.has(button):
 			return TranslationServer.translate(MOUSE_BUTTON_NAMES[button])
 		return TranslationServer.translate("Mouse %d") % button
-	return binding_name(binding) if binding.has("key") else TranslationServer.translate("Unbound")
+	return key_text(int(binding["key"]) as Key) if binding.has("key") else TranslationServer.translate("Unbound")
 
-## The name of `binding` in English, for logs and support bundles.
+## The name of the key at physical position `key` as the player's keyboard
+## layout prints it: where QWERTY has A, AZERTY has Q, and a prompt names Q.
+## A display server that cannot read the layout names the QWERTY key.
+static func key_text(key: Key) -> String:
+	if DisplayServer.get_name() in LAYOUT_DISPLAY_SERVERS:
+		var label := DisplayServer.keyboard_get_label_from_physical(key)
+		if label != KEY_NONE:
+			return OS.get_keycode_string(label)
+	return OS.get_keycode_string(key)
+
+## The name of `binding` in English, its key by position on a QWERTY
+## keyboard, for logs and support bundles.
 static func binding_name(binding: Dictionary) -> String:
 	if binding.has("key"):
 		return OS.get_keycode_string(int(binding["key"]) as Key)

@@ -42,7 +42,8 @@ func receive_gift(item_id: StringName) -> int:
 	return RelationshipState.give_gift(profile, item_id)
 
 func get_relationship_text() -> String:
-	return tr("%d hearts") % RelationshipState.get_hearts(get_npc_id())
+	var hearts := RelationshipState.get_hearts(get_npc_id())
+	return tr_n("%d heart", "%d hearts", hearts) % hearts
 
 func _on_interacted(actor: Node) -> void:
 	var npc_id := get_npc_id()

@@ -11,6 +11,7 @@ func run() -> void:
 	# Tests compare text against the English source strings, and start from
 	# the default settings, which they write to a file of the run's own.
 	GameSettings.settings_path = TEST_SETTINGS_PATH
+	GameSettingsService.system_locale = GameSettingsService.SOURCE_LOCALE
 	GameSettings.locale = "en"
 	GameSettings.reset_all()
 	# Triggers on real content unlock achievements while tests play; they go

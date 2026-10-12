@@ -238,6 +238,9 @@ func _control_row(action: StringName) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.set_meta(&"action", action)
 	var label := Label.new()
+	# The name is translated by the layer that declares the control, and set
+	# again when the language changes.
+	label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	label.text = GameSettings.bindings.get_label(action)
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.clip_text = true
@@ -251,12 +254,13 @@ func _control_row(action: StringName) -> HBoxContainer:
 		row.add_child(spacer)
 	return row
 
-# Shows each control's current bindings.
+# Shows each control's name and current bindings, in the current language.
 func _refresh_controls() -> void:
 	for row: Node in controls_list.get_children():
 		if not row.has_meta(&"action"):
 			continue
 		var action: StringName = row.get_meta(&"action")
+		(row.get_child(0) as Label).text = GameSettings.bindings.get_label(action)
 		(row.get_child(1) as Button).text = _binding_text(action, false)
 		var gamepad := row.get_child(2) as Button
 		if gamepad != null:

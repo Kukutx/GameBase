@@ -9,7 +9,7 @@ Source text is English (`en`). A game supports English and every locale it regis
 - `en` — English
 - `zh_CN` — Simplified Chinese
 
-The selected locale is stored in `user://settings.json` by `GameSettings` and applied through Godot's `TranslationServer`. Runtime-created HUD/menu/interact text must pass through `tr(...)`; input prompts also update when the active input device changes.
+The selected locale is stored in `user://settings.json` by `GameSettings` and applied through Godot's `TranslationServer`. The first launch, before there is a settings file, speaks the supported locale nearest the system's language (`GameSettingsService.nearest_locale()`: the same locale, else one of the same language, so a Traditional Chinese system reads Simplified Chinese, else English); a test run sets `GameSettingsService.system_locale` to English. Runtime-created HUD/menu/interact text must pass through `tr(...)`; input prompts also update when the active input device changes, and name a key as the player's keyboard layout prints it (`ControlBindings.key_text()`: on AZERTY the key where QWERTY has A is named Q), where the display server can read the layout (Windows, macOS, X11, Wayland).
 
 The settings menu exposes the locale selector and persists changes automatically.
 
@@ -37,7 +37,7 @@ The check also keeps every entry in the right catalog. An entry has to translate
 
 `tools/check_localization.js` reads a game's own `games/<id>/game/`, `gamebase/core/` and the modules the game uses (`gamebase/modules/<module>/`), and finds a string only in these positions:
 
-- in `.gd` scripts: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional;
+- in `.gd` scripts: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional, and the singular and plural literals of `tr_n("...", "...", count)`;
 - in `.gd` scripts: the default of an exported text property (`@export var display_name := "..."`) or text list (`@export var season_names := PackedStringArray([...])`) and a literal assigned to a text property from code (`interactable.prompt_text = "..."`);
 - in `.tscn` scenes: the properties `text`, `display_name`, `station_name`, `idle_text`, `dialog_text`, `prompt_text`, `title`, `ok_button_text`, `cancel_button_text`, `placeholder_text`, `tooltip_text`, `pending_text` and `completed_text`;
 - in `.tres` resources, such as a game's data and the controls and calendar of its `game_definition.tres`: `display_name`, `short_name`, `title`, `description`, `subject`, `body`, `role`, `activity` and a control's `group`, and each name in `season_names`;
@@ -61,6 +61,18 @@ The gate proves that an entry exists, not that the text is shown translated. `ga
 - A service that produces text for the UI translates its own template (`tr("Game saved · Slot %d") % slot`), or hands over the template and its arguments, instead of returning a finished English sentence. `GameEvents.toastf(template, args)` and `Interactable.set_prompt(template, args)` translate the template and every `String` argument, then format. The summaries, save and load results and status lines that services return are already in the current language; a caller shows them as they are.
 - Text typed by the player is data and is not passed to `tr()`; that includes handing it to `toastf` as an argument.
 - Build a sentence from one template with placeholders rather than joining translated fragments, so the word order can differ between languages.
+
+## Counts
+
+Text with a count that changes the words uses `tr_n(singular, plural, count)` and is formatted after it: `tr_n("%d heart", "%d hearts", hearts) % hearts`. Its catalog entry names both and has every plural form the language has, as the catalog's `Plural-Forms` header counts them (one form for Chinese):
+
+```text
+msgid "%d heart"
+msgid_plural "%d hearts"
+msgstr[0] "%d 颗心"
+```
+
+Every catalog's header carries `Plural-Forms`; Godot reads no plural entry without it. The check reports a count without such an entry, an entry with another plural, and one with a form missing.
 
 ## Text set from code and switching the locale
 

@@ -62,16 +62,6 @@ func get_pending_quantity(item_id: StringName) -> int:
 	var entry: Dictionary = _pending.get(String(item_id), {})
 	return int(entry.get("quantity", 0))
 
-func get_summary() -> String:
-	var total := get_pending_total()
-	if total <= 0:
-		return "Shipping bin: empty"
-	var count := 0
-	for raw: Variant in _pending.values():
-		if raw is Dictionary:
-			count += int(raw.get("quantity", 0))
-	return "Shipping bin: %d item%s · %dg overnight" % [count, "" if count == 1 else "s", total]
-
 func payout_pending() -> int:
 	var amount := get_pending_total()
 	if amount <= 0:

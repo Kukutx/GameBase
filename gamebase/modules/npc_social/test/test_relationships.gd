@@ -100,6 +100,14 @@ func test_relationship_points_are_bounded_and_persist() -> void:
 	restored.load_save_data(state.to_save_data())
 	assert_eq(restored.get_points(&"fixture_npc"), 600)
 
+func test_the_hearts_are_counted_in_the_players_language() -> void:
+	assert_eq(tr_n("%d heart", "%d hearts", 1) % 1, "1 heart")
+	assert_eq(tr_n("%d heart", "%d hearts", 3) % 3, "3 hearts")
+	TranslationServer.set_locale("zh_CN")
+	var chinese := tr_n("%d heart", "%d hearts", 3) % 3
+	TranslationServer.set_locale(GameSettingsService.SOURCE_LOCALE)
+	assert_eq(chinese, "3 颗心", "Chinese has one form for every count")
+
 ## A giftable item (a gift is no tool or seed).
 func _item(id: StringName) -> ItemData:
 	var item := ItemData.new()

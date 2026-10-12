@@ -314,6 +314,33 @@ func test_the_menus_move_with_the_keys_and_buttons_the_player_walks_with() -> vo
 	settings.reset_controls()
 	assert_eq(InputMap.action_get_events(&"ui_up").size(), own_events, "a reset lends what was lent at first, no more")
 
+func test_the_first_launch_speaks_the_supported_language_nearest_the_systems() -> void:
+	var supported := PackedStringArray(["en", "zh_CN"])
+	assert_eq(GameSettingsService.nearest_locale("zh_CN", supported), "zh_CN")
+	assert_eq(GameSettingsService.nearest_locale("zh_TW", supported), "zh_CN", "Simplified Chinese before English for a Traditional Chinese system")
+	assert_eq(GameSettingsService.nearest_locale("en_GB", supported), "en")
+	assert_eq(GameSettingsService.nearest_locale("fr_FR", supported), "en", "a language the game does not ship falls back to the source")
+	JsonFile.remove(TEST_PATH)
+	var system := GameSettingsService.system_locale
+	GameSettingsService.system_locale = "zh_CN"
+	var first := GameSettingsService.new()
+	first.settings_path = TEST_PATH
+	add_child_autofree(first)
+	var spoken := first.locale
+	first.set_locale("en")
+	await _frame_done()
+	var later := GameSettingsService.new()
+	later.settings_path = TEST_PATH
+	add_child_autofree(later)
+	GameSettingsService.system_locale = system
+	assert_eq(spoken, "zh_CN", "no settings file yet")
+	assert_eq(later.locale, "en", "once the player chose, the file's language holds")
+
+func test_a_key_is_named_as_qwerty_prints_it_where_the_layout_is_unknown() -> void:
+	assert_eq(DisplayServer.get_name(), "headless", "a test run reads no keyboard layout")
+	assert_eq(ControlBindings.key_text(KEY_A), "A")
+	assert_eq(ControlBindings.binding_text({"key": int(KEY_SEMICOLON)}), OS.get_keycode_string(KEY_SEMICOLON))
+
 func test_languages_are_the_source_and_every_registered_translation() -> void:
 	var locales := GameSettings.get_supported_locales()
 	assert_eq(locales[0], "en", "the source language comes first")
