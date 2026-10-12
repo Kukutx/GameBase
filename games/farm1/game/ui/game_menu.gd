@@ -55,11 +55,14 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("open_menu"):
 		if visible:
+			if not InputLock.is_top(self):
+				# A menu over this one has the keys.
+				return
 			close()
 		elif not get_tree().paused:
 			open()
 		get_viewport().set_input_as_handled()
-	elif visible and event.is_action_pressed("ui_cancel"):
+	elif visible and InputLock.is_top(self) and event.is_action_pressed("ui_cancel"):
 		close()
 		get_viewport().set_input_as_handled()
 

@@ -29,6 +29,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `PROJECT_COMPLETED` | progression | 1 | `PROJECT_COMPLETED <town_project>` | the town gathered everything the project needs. |
 | `QUEST_ACTIVE` | progression | 1 | `QUEST_ACTIVE <quest>` | the quest has started and is not completed yet. |
 | `QUEST_COMPLETED` | progression | 1 | `QUEST_COMPLETED <quest>` | the quest is completed and its reward was given. |
+| `REGION` | core | 1 or more | `REGION <region>...` | the player (or the context's "location_id") is in a location of one of the regions. |
 | `RUN_ACTIVE` | roguelite | 0 | `RUN_ACTIVE` | a run goes on. |
 | `RUNS_AT_LEAST` | roguelite | 1 | `RUNS_AT_LEAST <count>` | this world started at least that many runs. |
 | `SEASON` | core | 1 or more | `SEASON <name>...` | the season is one of the names (the calendar's seasons). |

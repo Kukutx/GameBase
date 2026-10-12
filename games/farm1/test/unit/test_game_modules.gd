@@ -9,5 +9,5 @@ func test_each_module_registered_its_kinds_of_content() -> void:
 	assert_eq(ContentDB.get_kinds(), [
 		&"achievement", &"audio_cue", &"calendar_event", &"collection_milestone", &"crop", &"enemy", &"farm_animal", &"farm_expansion",
 		&"fish", &"food_buff", &"forage_entry", &"heart_event", &"item", &"location", &"mail", &"minigame", &"mining_node",
-		&"npc", &"placeable", &"processing_recipe", &"quest", &"recipe", &"shop", &"skill", &"tool_upgrade", &"town_project", &"trigger",
+		&"npc", &"placeable", &"processing_recipe", &"quest", &"recipe", &"region", &"shop", &"skill", &"tool_upgrade", &"town_project", &"trigger",
 	])

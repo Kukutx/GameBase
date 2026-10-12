@@ -55,10 +55,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if settings_menu.visible or _is_dialog_open():
 		return
 	if not visible:
-		# Something else that paused the world has the input.
-		if get_tree().paused:
+		# Something else holds the input (a menu, a minigame, a travel).
+		if InputLock.is_locked():
 			return
 		open()
+	elif not InputLock.is_top(self):
+		return
 	elif cancel:
 		close()
 	if quick_load and visible:

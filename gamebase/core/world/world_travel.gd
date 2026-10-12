@@ -12,6 +12,12 @@ extends Node
 ## unknown location or spawn fails with `travel_failed` and a toast.
 ## `travel_finished` fires on arrival, which `AutoSave` follows. The service
 ## saves nothing; the save records the location itself.
+##
+## A travel may carry parameters for the place it leads to (`travel_to(...,
+## {"floor": 12})`): its scene reads them with `get_params()` from its
+## `_ready()` on. Arriving in a location of another region (`RegionData`)
+## fires `region_changed` first, also when a scene changes without a travel
+## (a load). A load and the title forget the last travel (`reset()`).
 
 signal travel_started(scene_path: String, spawn_id: StringName)
 signal travel_finished(scene_path: String, spawn_id: StringName)
@@ -19,9 +25,16 @@ signal travel_failed(scene_path: String, spawn_id: StringName, reason: String)
 ## Emitted when a travel that started ends: `arrived` after `travel_finished`,
 ## not after `travel_failed`.
 signal travel_ended(arrived: bool)
+## Emitted on arrival in a location of another region than the last one (an
+## empty id for a location of none).
+signal region_changed(region_id: StringName, previous_region_id: StringName)
 
 var _pending_spawn_id: StringName = &""
 var _pending_scene_path := ""
+var _params: Dictionary = {}
+# The parameters of the last travel that arrived, back in place when one fails.
+var _arrived_params: Dictionary = {}
+var _region_id: StringName = &""
 var _traveling := false
 var _portal_grace_until_msec := 0
 # Travels that started, and that ended, so far; `go_to` waits for its own.
@@ -46,6 +59,25 @@ func is_traveling() -> bool:
 func get_pending_spawn_id() -> StringName:
 	return _pending_spawn_id
 
+## The parameters of the travel under way, or else of the last one that
+## arrived: a copy, empty for a travel that carried none.
+func get_params() -> Dictionary:
+	return _params.duplicate(true)
+
+## The region of the location the player is in; empty for none.
+func get_region_id() -> StringName:
+	return _region_id
+
+## Forgets the last travel's parameters and region, before a scene change that
+## is no travel (a load, the title): the scene that opens reads no parameters,
+## and its region is entered from none.
+func reset() -> void:
+	if _traveling:
+		return
+	_params = {}
+	_arrived_params = {}
+	_region_id = &""
+
 func can_travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 	if _traveling:
 		return false
@@ -57,11 +89,11 @@ func can_travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 		return false
 	if DisplayServer.get_name() != "headless":
 		var transition := get_node_or_null("/root/Transition")
-		if transition == null or not transition.has_method("change_scene"):
+		if transition == null or not transition.has_method("change_scene") or bool(transition.call("is_covering")):
 			return false
 	return true
 
-func travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
+func travel_to(location_id: StringName, spawn_id: StringName = &"", params: Dictionary = {}) -> bool:
 	if _traveling:
 		return false
 	var location := WorldLocationData.find(location_id)
@@ -74,24 +106,35 @@ func travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 		travel_failed.emit(location.scene_path, target_spawn, "Unknown spawn '%s' for location '%s'" % [target_spawn, location_id])
 		GameEvents.toast("Travel spawn is unavailable")
 		return false
-	return _travel_scene(location.scene_path, target_spawn)
+	return _travel_scene(location.scene_path, target_spawn, params)
 
 ## Travels as `travel_to` does and waits until this travel ends: true once
 ## the player stands in the location, false when it could not start or failed.
-func go_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
-	if not travel_to(location_id, spawn_id):
+## The screen may still clear after it (`Transition.wait_until_clear()`).
+func go_to(location_id: StringName, spawn_id: StringName = &"", params: Dictionary = {}) -> bool:
+	if not travel_to(location_id, spawn_id, params):
 		return false
 	var travel := _travels_started
 	while _travels_ended < travel:
 		await travel_ended
-	return _last_arrived
+	var arrived := _last_arrived
+	await _leave_signal()
+	return arrived
 
 ## Waits until the travel under way, if any, ends.
 func wait_until_arrived() -> void:
+	if not _traveling:
+		return
 	while _traveling:
 		await travel_ended
+	await _leave_signal()
 
-func _travel_scene(scene_path: String, spawn_id: StringName = &"") -> bool:
+# Waits a frame, so that a wait resumes after the signal that ended it rather
+# than inside it: what waited may then free nodes or travel on freely.
+func _leave_signal() -> void:
+	await get_tree().process_frame
+
+func _travel_scene(scene_path: String, spawn_id: StringName = &"", params: Dictionary = {}) -> bool:
 	if _traveling:
 		return false
 	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
@@ -113,6 +156,7 @@ func _travel_scene(scene_path: String, spawn_id: StringName = &"") -> bool:
 	var travel := _travels_started
 	_pending_scene_path = scene_path
 	_pending_spawn_id = spawn_id
+	_params = params.duplicate(true)
 	travel_started.emit(scene_path, spawn_id)
 	if headless:
 		var change_error := get_tree().change_scene_to_packed(packed)
@@ -132,6 +176,7 @@ func _travel_scene(scene_path: String, spawn_id: StringName = &"") -> bool:
 
 func _on_scene_changed() -> void:
 	if not _traveling:
+		_enter_region()
 		return
 	await get_tree().process_frame
 	_apply_pending_spawn()
@@ -141,7 +186,9 @@ func _on_scene_changed() -> void:
 	_pending_spawn_id = &""
 	_traveling = false
 	_portal_grace_until_msec = Time.get_ticks_msec() + ARRIVAL_PORTAL_GRACE_MSEC
+	_arrived_params = _params
 	_end_travel(true)
+	_enter_region()
 	travel_finished.emit(scene_path, spawn_id)
 	travel_ended.emit(true)
 
@@ -155,10 +202,20 @@ func _fail_pending_travel(reason: String) -> void:
 	_pending_scene_path = ""
 	_pending_spawn_id = &""
 	_traveling = false
+	_params = _arrived_params
 	_end_travel(false)
 	travel_failed.emit(scene_path, spawn_id, reason)
 	travel_ended.emit(false)
 	GameEvents.toast("Travel failed")
+
+func _enter_region() -> void:
+	var location := WorldLocationData.find_current(get_tree())
+	var region_id := location.region_id if location != null else &""
+	if region_id == _region_id:
+		return
+	var previous := _region_id
+	_region_id = region_id
+	region_changed.emit(region_id, previous)
 
 func _end_travel(arrived: bool) -> void:
 	InputLock.unlock(&"travel")

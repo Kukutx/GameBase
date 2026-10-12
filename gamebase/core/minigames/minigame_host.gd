@@ -48,12 +48,13 @@ func run(minigame_id: StringName, context: Dictionary = {}) -> MiniGameResult:
 		return MiniGameResult.lost()
 	var settings := definition.settings.duplicate(true)
 	settings.merge(context, true)
-	InputLock.lock(&"minigame", definition.pause_world)
 	_active = minigame
 	_active_id = definition.id
 	minigame.process_mode = Node.PROCESS_MODE_ALWAYS
 	minigame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layer.add_child(minigame)
+	# Its lock is on top while it runs, so it reads input until a menu opens over it.
+	InputLock.lock(&"minigame", definition.pause_world, minigame)
 	minigame.setup(settings)
 	minigame_started.emit(definition.id)
 	var result: MiniGameResult = await minigame.finished

@@ -25,7 +25,12 @@ func finish(result: MiniGameResult) -> void:
 func is_finished() -> bool:
 	return _finished
 
+## Whether the minigame reads input now: it runs and nothing opened over it
+## (`InputLock.is_top()`).
+func has_input() -> bool:
+	return not _finished and InputLock.is_top(self)
+
 func _unhandled_input(event: InputEvent) -> void:
-	if not _finished and event.is_action_pressed("ui_cancel"):
+	if has_input() and event.is_action_pressed("ui_cancel"):
 		finish(MiniGameResult.cancelled_result())
 		get_viewport().set_input_as_handled()

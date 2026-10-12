@@ -7,6 +7,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 ## Transition (core)
 
 - `Transition.scene_change_failed(path: String)`: Emitted when the scene of an accepted change could not open; the screen clears again.
+- `Transition.cleared()`: Emitted when the screen is clear again after a change or a cover.
 
 ## GameSettings (core)
 
@@ -226,6 +227,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `WorldTravel.travel_finished(scene_path: String, spawn_id: StringName)`
 - `WorldTravel.travel_failed(scene_path: String, spawn_id: StringName, reason: String)`
 - `WorldTravel.travel_ended(arrived: bool)`: Emitted when a travel that started ends: `arrived` after `travel_finished`, not after `travel_failed`.
+- `WorldTravel.region_changed(region_id: StringName, previous_region_id: StringName)`: Emitted on arrival in a location of another region than the last one (an empty id for a location of none).
 
 ## GameAudio (core)
 

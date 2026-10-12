@@ -97,14 +97,59 @@ func test_going_to_a_location_waits_until_the_player_stands_in_it() -> void:
 	travel.travel_ended.connect(func(arrived: bool) -> void: ended.append(arrived))
 
 	assert_true(await travel.go_to(LOCATION))
-	# The wait ends inside the arrival's signal; let it return first.
-	await get_tree().process_frame
 	assert_false(travel.is_traveling())
 	assert_eq(get_tree().current_scene.scene_file_path, _scene_path)
 	var player := get_tree().get_first_node_in_group(&"player") as Node2D
 	assert_eq(player.global_position, Vector2(40, 24), "the player stands at the spawn point")
 	assert_false(await travel.go_to(&"removed_future_location"), "a travel that cannot start")
 	assert_eq(ended, [true], "only a travel that started ends")
+
+func test_a_travel_carries_its_parameters_and_enters_the_region() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
+	assert_eq(ResourceSaver.save(_location_scene(), _scene_path), OK)
+	var region := RegionData.new()
+	region.id = &"fixture_valley"
+	region.display_name = "Valley"
+	var location := WorldLocationData.new()
+	location.id = LOCATION
+	location.scene_path = _scene_path
+	location.default_spawn_id = ENTRY
+	location.region_id = &"fixture_missing_region"
+	var registry := ContentFixture.use(self, [region, location])
+	assert_eq(registry.find_problems(), PackedStringArray(["location '%s' belongs to unknown region 'fixture_missing_region'" % LOCATION]))
+	location.region_id = region.id
+	assert_eq(registry.find_problems(), PackedStringArray())
+	var travel := WorldTravelService.new()
+	add_child_autofree(travel)
+	watch_signals(travel)
+
+	var params := {"floor": 12}
+	assert_true(await travel.go_to(LOCATION, &"", params))
+	params["floor"] = 1
+	assert_eq(travel.get_params(), {"floor": 12}, "what the travel carried, as it was")
+	assert_eq(travel.get_region_id(), &"fixture_valley")
+	assert_signal_emitted_with_parameters(travel, "region_changed", [&"fixture_valley", &""])
+	assert_true(GameRules.check("REGION fixture_valley"))
+	assert_false(GameRules.check("REGION fixture_valley", {"location_id": "removed_future_location"}))
+	assert_eq(GameRules.validate_query("REGION fixture_valley"), PackedStringArray())
+	assert_string_contains("\n".join(GameRules.validate_query("REGION fixture_coast")), "unknown region 'fixture_coast'")
+	assert_true(travel.travel_to(LOCATION, &"", {"floor": 13}))
+	assert_eq(travel.get_params(), {"floor": 13}, "the travel under way")
+	# The scene of the travel could not open.
+	travel.call("_on_scene_change_failed", _scene_path)
+	assert_eq(travel.get_params(), {"floor": 12}, "a failed travel leaves those of the last arrival")
+	await get_tree().scene_changed
+	assert_true(await travel.go_to(LOCATION))
+	assert_eq(travel.get_params(), {}, "a travel that carried nothing")
+	assert_signal_emit_count(travel, "region_changed", 1, "the player stayed in the region")
+
+	# A load opens its scene without a travel.
+	travel.reset()
+	assert_eq(travel.get_region_id(), &"")
+	get_tree().change_scene_to_file(_scene_path)
+	await get_tree().scene_changed
+	assert_eq(travel.get_region_id(), &"fixture_valley", "the loaded scene's region is entered")
+	assert_signal_emit_count(travel, "region_changed", 2)
 
 func test_a_travel_started_as_the_last_one_arrives_waits_for_its_own_arrival() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
@@ -128,6 +173,7 @@ func test_a_travel_started_as_the_last_one_arrives_waits_for_its_own_arrival() -
 	assert_true(travel.is_traveling(), "the second travel is under way")
 	assert_eq(results, [] as Array[bool], "its wait did not end with the first travel")
 	await travel.wait_until_arrived()
+	# The second travel's own wait may resume after this one.
 	await get_tree().process_frame
 	assert_eq(results, [true] as Array[bool])
 	assert_false(travel.is_traveling())

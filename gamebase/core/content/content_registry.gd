@@ -58,6 +58,7 @@ var _locations_by_scene: Dictionary = {}
 func _init() -> void:
 	packs.assign(GameDefinition.current().content)
 	register_kind(WorldLocationData.KIND, WorldLocationData)
+	register_kind(RegionData.KIND, RegionData)
 	register_kind(AudioCueData.KIND, AudioCueData)
 	register_kind(MiniGameDefinition.KIND, MiniGameDefinition)
 	register_kind(TriggerData.KIND, TriggerData)

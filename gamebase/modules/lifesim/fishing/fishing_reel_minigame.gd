@@ -64,7 +64,7 @@ func press() -> bool:
 	return false
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not is_finished() and event.is_action_pressed("interact"):
+	if has_input() and event.is_action_pressed("interact"):
 		press()
 		get_viewport().set_input_as_handled()
 		return
