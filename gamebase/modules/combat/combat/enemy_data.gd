@@ -5,6 +5,8 @@ const KIND := &"enemy"
 
 @export var display_name: String = "Enemy"
 @export var sprite_path: String
+## The colour of the shape an enemy is drawn as while it has no `sprite_path` art.
+@export var fallback_color := Color(0.35, 0.75, 0.38)
 @export var frame_size := Vector2i(32, 32)
 @export_range(1, 60, 1) var animation_fps := 12
 @export_range(0, 999, 1) var idle_from := 0

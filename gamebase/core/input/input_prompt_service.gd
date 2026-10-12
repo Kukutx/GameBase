@@ -27,6 +27,9 @@ const GAMEPAD_AXIS_LABELS := {
 	JOY_AXIS_TRIGGER_LEFT: "LT",
 	JOY_AXIS_TRIGGER_RIGHT: "RT",
 }
+## The actions of the movement controls the core ships for games to list
+## (`controls/move_*.tres`): up, left, down, right.
+const MOVE_ACTIONS: Array[StringName] = [&"move_up", &"move_left", &"move_down", &"move_right"]
 
 var using_gamepad := false
 
@@ -56,6 +59,33 @@ func get_action_prompt(action: StringName) -> String:
 			return String(GAMEPAD_AXIS_LABELS.get(control.gamepad_axis, "Pad"))
 	var key := GameSettings.get_key_binding(action)
 	return OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound")
+
+## The prompts of `actions` on the device in use, joined by "/".
+func get_actions_prompt(actions: Array[StringName]) -> String:
+	var prompts := PackedStringArray()
+	for action: StringName in actions:
+		prompts.append(get_action_prompt(action))
+	return "/".join(prompts)
+
+## How the player moves on the device in use: the stick on a gamepad, else the
+## key bound to each of `actions`, then each one's fixed second key (the
+## arrows) where it differs. The keys are those of `settings` (`GameSettings`
+## when null).
+func get_move_prompt(actions: Array[StringName] = MOVE_ACTIONS, settings: GameSettingsService = null) -> String:
+	if using_gamepad:
+		return tr("Left Stick / D-Pad")
+	if settings == null:
+		settings = GameSettings
+	var bound := PackedStringArray()
+	var second_keys := PackedStringArray()
+	for action: StringName in actions:
+		var key := settings.get_key_binding(action)
+		bound.append(OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound"))
+		var control := settings.get_control(action)
+		if control != null and control.secondary_key != KEY_NONE and control.secondary_key != key:
+			second_keys.append(OS.get_keycode_string(control.secondary_key))
+	var prompt := "/".join(bound)
+	return prompt if second_keys.is_empty() else "%s / %s" % [prompt, "/".join(second_keys)]
 
 func _set_using_gamepad(value: bool) -> void:
 	if using_gamepad == value:

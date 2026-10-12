@@ -24,11 +24,11 @@ msgstr "金钱：%dg"
 msgid "Buy %s — %dg"
 msgstr "购买 %s — %dg"
 
-msgid "Sell selected: %s — %dg"
-msgstr "出售当前物品：%s — %dg"
+msgid "Sell"
+msgstr "出售"
 
-msgid "Sell selected"
-msgstr "出售当前物品"
+msgid "Sell %s (%d) — %dg"
+msgstr "出售 %s（%d）— %dg"
 
 msgid "%s\n%d/%d slots"
 msgstr "%s\n%d/%d 格"
@@ -143,3 +143,24 @@ msgstr "收起该建筑前请先腾出背包空间"
 
 msgid "Inventory changed before the structure could be packed up"
 msgstr "收起建筑前背包内容发生了变化"
+
+msgid "You do not need that right now"
+msgstr "现在不需要使用它"
+
+msgid "+%d energy"
+msgstr "+%d 体力"
+
+msgid "+%d HP"
+msgstr "+%d 生命"
+
+msgid "food"
+msgstr "食物"
+
+msgid "No %s available"
+msgstr "没有可用的%s"
+
+msgid "Ate %s%s"
+msgstr "吃了%s%s"
+
+msgid "Drank %s%s"
+msgstr "喝了%s%s"

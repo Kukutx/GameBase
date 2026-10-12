@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { fail, main, rootPath } = require("./lib/common");
-const { gamePath, projectSetting, readFoundation, resolveGames } = require("./lib/games");
+const { gamePath, projectSetting, projectString, readFoundation, resolveGames } = require("./lib/games");
 
 // Player-visible text is translated in the layer that owns it: the core and
 // each module ship their own catalogs under <layer>/i18n/<name>.<locale>.po,
@@ -31,7 +31,16 @@ function textLayers(game) {
     res: `res://gamebase/modules/${module}/`,
     below: [core.name, ...[...required(module)].sort().map((name) => `gamebase/modules/${name}`)],
   }));
-  const own = { name: `games/${game.id}`, root: gamePath(game, "game"), res: "res://game/", below: [core.name, ...modules.map((layer) => layer.name)], game: true };
+  // The title screen shows the game's description from its project.godot.
+  const description = projectString(game, "application", "config/description");
+  const own = {
+    name: `games/${game.id}`,
+    root: gamePath(game, "game"),
+    res: "res://game/",
+    below: [core.name, ...modules.map((layer) => layer.name)],
+    game: true,
+    projectText: description ? [description] : [],
+  };
   return [core, ...modules, own];
 }
 
@@ -202,7 +211,7 @@ function collectDialogueKeys(layer) {
 // as data, such as a season name or a fallback label, is found here although the
 // translation calls never name it.
 function layerLiterals(layer) {
-  const literals = new Set(collectDialogueKeys(layer));
+  const literals = new Set([...collectDialogueKeys(layer), ...(layer.projectText || [])]);
   const add = (raw) => {
     const value = decodeString(raw);
     if (value && !/^(?:res|uid|user):\/\//.test(value)) literals.add(value);
@@ -236,7 +245,7 @@ function layerLiterals(layer) {
 // text and the player-facing fields of its resources, such as a location's or
 // a control's name.
 function collectNonDialogueKeys(layer) {
-  const keys = new Set();
+  const keys = new Set(layer.projectText || []);
   const add = (raw) => {
     const value = decodeString(raw);
     if (value) {

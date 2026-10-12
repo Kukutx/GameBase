@@ -18,6 +18,7 @@ var _items: Dictionary = {}
 ## item id (String) -> ItemData of every held item, so an item added directly
 ## (not from the catalog) keeps its stack size and name.
 var _definitions: Dictionary = {}
+var _consume_busy := false
 
 func add_item(item: ItemData, quantity: int = 1) -> int:
 	if item == null or item.id == &"" or quantity <= 0:
@@ -92,6 +93,18 @@ func has_tool(action: StringName) -> bool:
 			return true
 	return false
 
+## Eats one `item` the inventory holds, or drinks it when it is a potion: it
+## restores the player's energy and health and starts its food buff. False,
+## with a toast, when the inventory holds none or the item would do nothing now
+## (the player is rested and unhurt and it has no buff).
+func consume(item: ItemData) -> bool:
+	if _consume_busy:
+		return false
+	_consume_busy = true
+	var consumed := _consume(item)
+	_consume_busy = false
+	return consumed
+
 func get_quantity(item_id: StringName) -> int:
 	return int(_items.get(String(item_id), 0))
 
@@ -156,19 +169,45 @@ func to_save_data() -> Dictionary:
 	return _items.duplicate()
 
 ## Loads `{item_id: quantity}`. Entries that are not current items or not
-## positive numbers are dropped.
+## positive whole numbers are dropped.
 func load_save_data(data: Dictionary) -> void:
 	_items.clear()
 	_definitions.clear()
 	for raw_key: Variant in data.keys():
-		var raw_quantity: Variant = data[raw_key]
-		if typeof(raw_quantity) != TYPE_INT and typeof(raw_quantity) != TYPE_FLOAT:
+		var quantity: Variant = SaveValues.whole_number(data[raw_key])
+		if quantity == null:
 			continue
 		var item := ItemData.find(StringName(String(raw_key)))
-		var quantity := int(raw_quantity)
-		if item != null and quantity > 0:
-			_put(_items, _definitions, item, quantity)
+		if item != null and int(quantity) > 0:
+			_put(_items, _definitions, item, int(quantity))
 	changed.emit()
+
+func _consume(item: ItemData) -> bool:
+	if item == null or not item.is_edible() or not has_item(item.id):
+		GameEvents.toastf("No %s available", [item.display_name if item != null else "food"])
+		return false
+	var restores_energy := item.energy_restore > 0 and PlayerState.energy < PlayerState.max_energy
+	var restores_health := item.health_restore > 0 and PlayerState.health < PlayerState.max_health
+	if not restores_energy and not restores_health and item.food_buff_id == &"":
+		GameEvents.toast("You do not need that right now")
+		return false
+	if not remove_item(item.id, 1):
+		return false
+	var effects := PackedStringArray()
+	if item.energy_restore > 0:
+		PlayerState.restore_energy(item.energy_restore)
+		effects.append(tr("+%d energy") % item.energy_restore)
+	if item.health_restore > 0:
+		PlayerState.heal(item.health_restore)
+		effects.append(tr("+%d HP") % item.health_restore)
+	if item.food_buff_id != &"":
+		BuffState.apply_buff(item.food_buff_id)
+	var gave := " (%s)" % ", ".join(effects) if not effects.is_empty() else ""
+	if item.kind == ItemData.Kind.POTION:
+		GameEvents.toastf("Drank %s%s", [item.display_name, gave])
+	else:
+		GameEvents.toastf("Ate %s%s", [item.display_name, gave])
+	return true
 
 ## The state after a transaction, as {"items", "definitions", "removed",
 ## "added"} with removed/added as [id, quantity] pairs, or {} when it fails.

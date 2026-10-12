@@ -118,6 +118,21 @@ func test_input_prompts_follow_the_active_device() -> void:
 	assert_eq(InputPrompts.get_action_prompt(&"interact"), String(InputPromptService.GAMEPAD_BUTTON_LABELS[button]))
 	InputPrompts.using_gamepad = previous_gamepad
 
+func test_the_move_prompt_names_each_move_key_then_the_arrows() -> void:
+	var moves: Array[ControlAction] = []
+	for direction: String in ["up", "left", "down", "right"]:
+		moves.append(load("res://gamebase/core/input/controls/move_%s.tres" % direction) as ControlAction)
+	var settings := _settings_with_controls(moves)
+	var previous_gamepad := InputPrompts.using_gamepad
+	InputPrompts.using_gamepad = false
+	# The core's move controls keep the arrows as their fixed second keys.
+	assert_eq(InputPrompts.get_move_prompt(InputPromptService.MOVE_ACTIONS, settings), "W/A/S/D / Up/Left/Down/Right")
+	assert_true(settings.set_key_binding(&"move_up", KEY_UP))
+	assert_eq(InputPrompts.get_move_prompt(InputPromptService.MOVE_ACTIONS, settings), "Up/A/S/D / Left/Down/Right", "an arrow bound as the key is named once")
+	InputPrompts.using_gamepad = true
+	assert_eq(InputPrompts.get_move_prompt(InputPromptService.MOVE_ACTIONS, settings), "Left Stick / D-Pad")
+	InputPrompts.using_gamepad = previous_gamepad
+
 func test_languages_are_the_source_and_every_registered_translation() -> void:
 	var locales := GameSettings.get_supported_locales()
 	assert_eq(locales[0], "en", "the source language comes first")

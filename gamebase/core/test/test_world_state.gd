@@ -46,3 +46,19 @@ func test_world_state_erases_values() -> void:
 	state.erase(&"door:opened")
 
 	assert_false(state.get_bool(&"door:opened"))
+
+func test_a_counter_reads_only_a_whole_number() -> void:
+	var state := PersistentWorldState.new()
+	add_child_autofree(state)
+	state.load_save_data({
+		"count:saved": 12.0,
+		"count:half": 2.5,
+		"count:huge": 1.0e300,
+		"count:text": "7",
+		"count:negative": -3.0,
+	})
+	assert_eq(state.get_int(&"count:saved"), 12, "JSON gives a saved counter back as a float")
+	assert_eq(state.get_int(&"count:half", -1), -1)
+	assert_eq(state.get_int(&"count:huge", -1), -1)
+	assert_eq(state.get_int(&"count:text", -1), -1)
+	assert_eq(state.get_int(&"count:negative"), -3)

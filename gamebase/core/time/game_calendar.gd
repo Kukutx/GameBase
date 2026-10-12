@@ -14,8 +14,10 @@ extends Resource
 @export_range(1, 1000) var days_per_season := 28
 ## Days in a week (`WEEKDAY` counts 0 to this minus one; day 1 is weekday 0).
 @export_range(1, 100) var days_per_week := 7
-## Real seconds one game minute lasts while the clock runs.
-@export_range(0.01, 60.0, 0.01) var real_seconds_per_game_minute := 0.7
+## Real seconds one game minute lasts while the clock runs. 0: the clock
+## stands still, and time passes only when the game runs it on
+## (`GameClock.advance_minutes()`, `advance_until()`, `set_time()`).
+@export_range(0.0, 60.0, 0.01) var real_seconds_per_game_minute := 0.7
 ## Night lasts from this minute of the day (`DayNightModulate` darkens the
 ## screen around it)...
 @export_range(0, 1439) var night_starts_at := 20 * 60
@@ -48,6 +50,18 @@ func get_day_of_season(day: int) -> int:
 ## The year `day` falls in, from 1.
 func get_year(day: int) -> int:
 	return (maxi(day, 1) - 1) / get_days_per_year() + 1
+
+## The date of `day` as the player reads it, translated: the season and its
+## day ("Spring 3"), with the year from the second on ("Spring 3, Year 2"). A
+## calendar of one season counts the days alone ("Day 31").
+func get_date_text(day: int) -> String:
+	if season_names.size() <= 1:
+		return tr("Day %d") % maxi(day, 1)
+	var season := tr(get_season_name(day))
+	var year := get_year(day)
+	if year > 1:
+		return tr("%s %d, Year %d") % [season, get_day_of_season(day), year]
+	return tr("%s %d") % [season, get_day_of_season(day)]
 
 ## The weekday of `day`, from 0 (day 1 is weekday 0).
 func get_weekday(day: int) -> int:
@@ -82,8 +96,8 @@ func find_problems() -> PackedStringArray:
 		seen[season] = true
 	if days_per_season < 1 or days_per_week < 1:
 		problems.append("calendar seasons and weeks need at least one day")
-	if real_seconds_per_game_minute <= 0.0:
-		problems.append("calendar game minutes need to last some real time")
+	if real_seconds_per_game_minute < 0.0:
+		problems.append("calendar game minutes cannot last a negative time")
 	for minute: int in [night_starts_at, night_ends_at, wake_minute]:
 		if minute < 0 or minute >= GameClock.MINUTES_PER_DAY:
 			problems.append("calendar minute %d is not a minute of the day (0-%d)" % [minute, GameClock.MINUTES_PER_DAY - 1])

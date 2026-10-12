@@ -1,0 +1,73 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://game/ui/hud.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/items/shop/shop_menu.tscn" id="2_shop"]
+[ext_resource type="PackedScene" path="res://gamebase/core/ui/pause_menu.tscn" id="3_pause"]
+[ext_resource type="Script" path="res://gamebase/core/events/status_line.gd" id="4_status_line"]
+
+[node name="HUD" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1_hud")
+
+[node name="Stats" type="Label" parent="."]
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 260.0
+offset_bottom = 22.0
+theme_override_colors/font_color = Color(0.96, 0.86, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = ""
+
+[node name="Run" type="Label" parent="."]
+offset_left = 260.0
+offset_top = 6.0
+offset_right = 472.0
+offset_bottom = 22.0
+theme_override_colors/font_color = Color(0.98, 0.62, 0.36, 1)
+theme_override_font_sizes/font_size = 11
+text = ""
+horizontal_alignment = 2
+
+[node name="Status" type="Label" parent="."]
+script = ExtResource("4_status_line")
+seconds_per_message = 3.0
+offset_left = 8.0
+offset_top = 24.0
+offset_right = 472.0
+offset_bottom = 40.0
+theme_override_font_sizes/font_size = 10
+text = ""
+horizontal_alignment = 1
+
+[node name="Prompt" type="Label" parent="."]
+visible = false
+offset_left = 8.0
+offset_top = 212.0
+offset_right = 472.0
+offset_bottom = 228.0
+theme_override_font_sizes/font_size = 11
+text = ""
+horizontal_alignment = 1
+
+[node name="Hotbar" type="Label" parent="."]
+offset_left = 8.0
+offset_top = 232.0
+offset_right = 472.0
+offset_bottom = 248.0
+theme_override_font_sizes/font_size = 10
+text = ""
+horizontal_alignment = 1
+
+[node name="Controls" type="Label" parent="."]
+offset_left = 8.0
+offset_top = 251.0
+offset_right = 472.0
+offset_bottom = 266.0
+theme_override_colors/font_color = Color(0.72, 0.7, 0.66, 1)
+theme_override_font_sizes/font_size = 8
+text = ""
+horizontal_alignment = 1
+
+[node name="ShopMenu" parent="." instance=ExtResource("2_shop")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("3_pause")]

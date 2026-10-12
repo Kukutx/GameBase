@@ -1,0 +1,108 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="2_spawn"]
+[ext_resource type="PackedScene" path="res://gamebase/core/player/sleep_spot.tscn" id="3_sleep"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/items/shop/shop_stand.tscn" id="4_stand"]
+[ext_resource type="Resource" path="res://game/data/shops/camp_merchant.tres" id="5_merchant"]
+[ext_resource type="Script" path="res://game/depths/depth_entrance.gd" id="6_entrance"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="7_interactable"]
+
+[sub_resource type="RectangleShape2D" id="Rect_horizontal"]
+size = Vector2(480, 20)
+
+[sub_resource type="RectangleShape2D" id="Rect_vertical"]
+size = Vector2(20, 280)
+
+[sub_resource type="RectangleShape2D" id="Rect_entrance"]
+size = Vector2(44, 30)
+
+[node name="Camp" type="Node2D"]
+
+[node name="Background" type="ColorRect" parent="."]
+offset_left = -400.0
+offset_top = -260.0
+offset_right = 400.0
+offset_bottom = 260.0
+color = Color(0.07, 0.06, 0.08, 1)
+
+[node name="Ground" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-220, -130, 220, -130, 220, 130, -220, 130)
+color = Color(0.25, 0.21, 0.17, 1)
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -140)
+shape = SubResource("Rect_horizontal")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 140)
+shape = SubResource("Rect_horizontal")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-230, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(230, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="StartSpawn" type="Marker2D" parent="."]
+script = ExtResource("2_spawn")
+spawn_id = &"camp_start"
+
+[node name="FromDepthsSpawn" type="Marker2D" parent="."]
+position = Vector2(0, 56)
+script = ExtResource("2_spawn")
+spawn_id = &"from_depths"
+
+[node name="Campfire" parent="." instance=ExtResource("3_sleep")]
+position = Vector2(-110, -50)
+
+[node name="Bed" parent="Campfire"]
+polygon = PackedVector2Array(-12, 10, 0, -14, 12, 10)
+color = Color(0.95, 0.48, 0.18, 1)
+
+[node name="Label" parent="Campfire"]
+text = "Campfire"
+
+[node name="Interactable" parent="Campfire"]
+prompt_text = "Rest until tomorrow"
+
+[node name="Merchant" parent="." instance=ExtResource("4_stand")]
+position = Vector2(110, -50)
+shop = ExtResource("5_merchant")
+
+[node name="DepthEntrance" type="Node2D" parent="."]
+position = Vector2(0, 100)
+script = ExtResource("6_entrance")
+depths_location_id = &"depths"
+arrival_spawn_id = &"arrival"
+
+[node name="Visual" type="Polygon2D" parent="DepthEntrance"]
+polygon = PackedVector2Array(-20, -12, 20, -12, 24, 0, 20, 12, -20, 12, -24, 0)
+color = Color(0.02, 0.02, 0.03, 1)
+
+[node name="Label" type="Label" parent="DepthEntrance"]
+offset_left = -52.0
+offset_top = -30.0
+offset_right = 52.0
+offset_bottom = -15.0
+theme_override_font_sizes/font_size = 9
+text = "The Depths"
+horizontal_alignment = 1
+
+[node name="Interactable" type="Area2D" parent="DepthEntrance"]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("7_interactable")
+prompt_text = "Descend into the depths"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DepthEntrance/Interactable"]
+shape = SubResource("Rect_entrance")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]

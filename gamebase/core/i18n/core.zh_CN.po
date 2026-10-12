@@ -60,9 +60,6 @@ msgstr "你倒下了，并在原地恢复"
 msgid "Portal target is unavailable"
 msgstr "传送目标不可用"
 
-msgid "Slept until %s %d"
-msgstr "睡到了%s %d日"
-
 msgid "Bed"
 msgstr "床"
 
@@ -117,9 +114,6 @@ msgstr "快速保存"
 msgid "Quick Load"
 msgstr "快速读取"
 
-msgid "%s %d  %02d:%02d"
-msgstr "%s %d日  %02d:%02d"
-
 msgid "Spring"
 msgstr "春季"
 
@@ -146,3 +140,189 @@ msgstr "成就解锁：%s"
 
 msgid "Could not save your achievements"
 msgstr "无法保存成就"
+
+msgid "Empty slot"
+msgstr "空存档位"
+
+msgid "Continue"
+msgstr "继续游戏"
+
+msgid "New Game"
+msgstr "新游戏"
+
+msgid "Delete Save"
+msgstr "删除存档"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Quit"
+msgstr "退出"
+
+msgid "Start New Game"
+msgstr "开始新游戏"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Paused"
+msgstr "已暂停"
+
+msgid "Resume"
+msgstr "继续"
+
+msgid "Save Game"
+msgstr "保存游戏"
+
+msgid "Load Game"
+msgstr "读取游戏"
+
+msgid "Return to Title"
+msgstr "返回标题画面"
+
+msgid "Unsaved progress will be lost. Return to the title screen?"
+msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
+
+msgid "Master"
+msgstr "主音量"
+
+msgid "Music"
+msgstr "音乐"
+
+msgid "Sounds"
+msgstr "音效"
+
+msgid "Fullscreen"
+msgstr "全屏"
+
+msgid "VSync"
+msgstr "垂直同步"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Controls..."
+msgstr "按键设置..."
+
+msgid "Key Bindings"
+msgstr "按键绑定"
+
+msgid "Reset Defaults"
+msgstr "恢复默认"
+
+msgid "Settings are saved automatically."
+msgstr "设置会自动保存。"
+
+msgid "Press a key..."
+msgstr "请按一个按键..."
+
+msgid "Autosave"
+msgstr "自动保存"
+
+msgid "Save Slot %d"
+msgstr "存档位 %d"
+
+msgid " · temporary save recovery"
+msgstr " · 可从临时存档恢复"
+
+msgid " · backup available"
+msgstr " · 有可用备份"
+
+msgid "Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?"
+msgstr "存档位 %d 已有游戏。开始新游戏会覆盖该存档，是否继续？"
+
+msgid "Loading Slot %d..."
+msgstr "正在读取存档位 %d..."
+
+msgid "No valid save found"
+msgstr "没有找到有效存档"
+
+msgid "Delete Save Slot %d? This removes the primary save and its backup."
+msgstr "删除存档位 %d？主存档及其备份都会被删除。"
+
+msgid "Deleted Slot %d"
+msgstr "已删除存档位 %d"
+
+msgid "Could not delete Slot %d"
+msgstr "无法删除存档位 %d"
+
+msgid "No save available"
+msgstr "没有可用存档"
+
+msgid "Save failed: %s"
+msgstr "保存失败：%s"
+
+msgid "Load failed: %s"
+msgstr "读取失败：%s"
+
+msgid "Delete this save slot and its backup?"
+msgstr "删除这个存档位及其备份？"
+
+msgid "This save slot already contains a game. Starting a new game will replace it. Continue?"
+msgstr "这个存档位已经有游戏。开始新游戏会覆盖它，是否继续？"
+
+msgid "Accessibility..."
+msgstr "无障碍设置..."
+
+msgid "Accessibility"
+msgstr "无障碍设置"
+
+msgid "Weather Effects"
+msgstr "天气视觉效果"
+
+msgid "Reduce Motion"
+msgstr "减少动态效果"
+
+msgid "Reduce Motion removes scene fades and animated rain/lightning while preserving weather gameplay."
+msgstr "减少动态效果会关闭场景淡入淡出和动态雨/闪电，同时保留天气玩法。"
+
+msgid "Support"
+msgstr "支持"
+
+msgid "Support bundles contain technical logs and save summaries, never raw saves."
+msgstr "支持诊断包包含技术日志和存档摘要，不包含原始存档。"
+
+msgid "Export Support Bundle"
+msgstr "导出支持诊断包"
+
+msgid "Open Support Folder"
+msgstr "打开支持文件夹"
+
+msgid "Support bundle could not be created"
+msgstr "无法创建支持诊断包"
+
+msgid "Support bundle created: %s"
+msgstr "已创建支持诊断包：%s"
+
+msgid "Left Stick / D-Pad"
+msgstr "左摇杆 / 十字键"
+
+msgid "Move Up"
+msgstr "向上移动"
+
+msgid "Move Down"
+msgstr "向下移动"
+
+msgid "Move Left"
+msgstr "向左移动"
+
+msgid "Move Right"
+msgstr "向右移动"
+
+msgid "Game"
+msgstr "游戏"
+
+msgid "Slept until %s"
+msgstr "睡到了%s"
+
+msgid "Day %d"
+msgstr "第%d天"
+
+msgid "%s %d"
+msgstr "%s%d日"
+
+msgid "%s %d, Year %d"
+msgstr "%s%d日（第%d年）"
+
+msgid "%s · %02d:%02d · %dg%s"
+msgstr "%s · %02d:%02d · %dg%s"

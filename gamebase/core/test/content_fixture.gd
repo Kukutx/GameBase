@@ -5,7 +5,8 @@ extends RefCounted
 ## only the entries the test builds. `use()` makes it what the content classes'
 ## `find()` and `find_all()` read for the rest of the test; when the test ends
 ## and GUT frees it, `ContentDB` is the active registry again. `add_stat()`
-## lets fixture content change a stat no module registers, and
+## lets fixture content change a stat no module registers, `use_calendar()`
+## counts the days by a calendar whatever the game's is, and
 ## `with_definition()` starts a service on a fixture `GameDefinition`.
 ##
 ## GUT runs `after_each()` before it frees the registry, so a test that
@@ -22,6 +23,9 @@ extends RefCounted
 ##     func after_each() -> void:
 ##         ContentRegistry.active = ContentDB
 ##         WorldState.load_save_data(_saved)
+
+# The game's definition while `use_calendar()` stands in for it.
+static var _running_definition: GameDefinition
 
 ## Makes `entries` the running game's only content until the test ends;
 ## returns their registry.
@@ -54,6 +58,20 @@ static func add_stat(test: GutTest, stat: StringName) -> void:
 	test.add_child_autofree(holder)
 	holder.tree_exiting.connect(func() -> void: GameStats._stats.erase(stat))
 
+## Makes `calendar` the running game's calendar (`GameCalendar.current()`)
+## until the test ends, for a test that counts by its seasons whatever calendar
+## the game it runs in has.
+## A test may call it again for another calendar.
+static func use_calendar(test: GutTest, calendar: GameCalendar) -> void:
+	if _running_definition == null:
+		_running_definition = GameDefinition.current()
+	var definition := _running_definition.duplicate() as GameDefinition
+	definition.calendar = calendar
+	GameDefinition._current = definition
+	var holder := Node.new()
+	test.add_child_autofree(holder)
+	holder.tree_exiting.connect(_restore_definition)
+
 ## Calls `create` while `definition` is the running game's definition
 ## (`GameDefinition.current()`) and returns what it returns: for a service
 ## that reads the definition when it is created or enters the tree.
@@ -63,3 +81,8 @@ static func with_definition(definition: GameDefinition, create: Callable) -> Var
 	var result: Variant = create.call()
 	GameDefinition._current = running
 	return result
+
+static func _restore_definition() -> void:
+	if _running_definition != null:
+		GameDefinition._current = _running_definition
+		_running_definition = null

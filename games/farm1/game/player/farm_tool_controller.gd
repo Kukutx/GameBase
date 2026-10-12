@@ -8,7 +8,7 @@ const SUPPORTED_TOOL_ACTIONS: Array[StringName] = [ItemData.ACTION_TILL, ItemDat
 var _action_busy := false
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed(action) or InputLock.is_locked():
+	if not InputLock.is_player_press(event, action):
 		return
 	var selected := Hotbar.get_selected_item()
 	if selected == null:
@@ -16,7 +16,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if selected.is_edible():
 		var target := get_nearest_tool_target()
 		if target == null:
-			_consume_food(selected)
+			InventoryState.consume(selected)
 			get_viewport().set_input_as_handled()
 		return
 	if selected.is_placeable():
@@ -105,39 +105,6 @@ func _use_multi_plot_tool_internal(tool: ItemData, target: FarmPlot) -> bool:
 	else:
 		GameEvents.toastf("Watered %d plots", [affected])
 	return true
-
-func _consume_food(item: ItemData) -> void:
-	if _action_busy:
-		return
-	_action_busy = true
-	_consume_food_internal(item)
-	_action_busy = false
-
-func _consume_food_internal(item: ItemData) -> void:
-	if item == null or not item.is_edible() or not InventoryState.has_item(item.id):
-		GameEvents.toastf("No %s available", [item.display_name if item != null else "food"])
-		return
-	var can_restore_energy := item.energy_restore > 0 and PlayerState.energy < PlayerState.max_energy
-	var can_restore_health := item.health_restore > 0 and PlayerState.health < PlayerState.max_health
-	var has_buff := item.food_buff_id != &""
-	if not can_restore_energy and not can_restore_health and not has_buff:
-		GameEvents.toast("You do not need that right now")
-		return
-	if not InventoryState.remove_item(item.id, 1):
-		return
-	if item.energy_restore > 0:
-		PlayerState.restore_energy(item.energy_restore)
-	if item.health_restore > 0:
-		PlayerState.heal(item.health_restore)
-	if has_buff:
-		BuffState.apply_buff(item.food_buff_id)
-	var parts := PackedStringArray()
-	if item.energy_restore > 0:
-		parts.append(tr("+%d energy") % item.energy_restore)
-	if item.health_restore > 0:
-		parts.append(tr("+%d HP") % item.health_restore)
-	var suffix := " (" + ", ".join(parts) + ")" if not parts.is_empty() else ""
-	GameEvents.toastf("Ate %s%s", [item.display_name, suffix])
 
 func _place_selected(item: ItemData) -> void:
 	if _action_busy:

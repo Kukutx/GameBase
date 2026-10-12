@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat/enemy_data.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"skeleton"
+display_name = "Skeleton"
+fallback_color = Color(0.86, 0.83, 0.72, 1)
+max_health = 36
+move_speed = 44.0
+chase_radius = 140.0
+attack_range = 16.0
+contact_damage = 9
+attack_cooldown = 1.0
+drop_item_id = &"bone_shard"
+drop_quantity = 1
+combat_xp = 18

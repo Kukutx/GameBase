@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat/enemy_data.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"ember_wisp"
+display_name = "Ember Wisp"
+fallback_color = Color(0.96, 0.5, 0.2, 1)
+max_health = 55
+move_speed = 62.0
+chase_radius = 170.0
+attack_range = 16.0
+contact_damage = 13
+attack_cooldown = 0.9
+drop_item_id = &"ember_core"
+drop_quantity = 1
+combat_xp = 32

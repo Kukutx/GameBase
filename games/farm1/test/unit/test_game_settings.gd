@@ -24,7 +24,7 @@ func test_supported_locale_translation_and_selector() -> void:
 	assert_eq(TranslationServer.translate("BITE! Press %s"), "上钩了！按 %s")
 	TranslationServer.set_locale(previous)
 
-	var scene := load("res://game/ui/settings_menu.tscn") as PackedScene
+	var scene := load("res://gamebase/core/ui/settings_menu.tscn") as PackedScene
 	var menu := scene.instantiate() as SettingsMenu
 	add_child_autofree(menu)
 	await get_tree().process_frame
@@ -51,7 +51,7 @@ func test_supported_locale_translation_and_selector() -> void:
 func test_title_screen_static_and_dynamic_labels_translate_in_runtime() -> void:
 	var previous := TranslationServer.get_locale()
 	TranslationServer.set_locale("zh_CN")
-	var scene := load("res://game/ui/title_screen.tscn") as PackedScene
+	var scene := load("res://gamebase/core/ui/title_screen.tscn") as PackedScene
 	var title := scene.instantiate() as GameTitleScreen
 	add_child_autofree(title)
 	await get_tree().process_frame
@@ -66,7 +66,7 @@ func test_title_screen_static_and_dynamic_labels_translate_in_runtime() -> void:
 	TranslationServer.set_locale(previous)
 
 func test_settings_controls_page_builds_all_rebindable_actions() -> void:
-	var scene := load("res://game/ui/settings_menu.tscn") as PackedScene
+	var scene := load("res://gamebase/core/ui/settings_menu.tscn") as PackedScene
 	var menu := scene.instantiate() as SettingsMenu
 	add_child_autofree(menu)
 	await get_tree().process_frame

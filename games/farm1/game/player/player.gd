@@ -6,7 +6,7 @@ extends CharacterBody2D
 
 @onready var interaction_controller: InteractionController = $InteractionController
 @onready var farm_tool_controller: FarmToolController = $FarmToolController
-@onready var melee_controller: MeleeController = $MeleeController
+@onready var melee_attack: MeleeAttack = $MeleeAttack
 @onready var actor_visual: DirectionalActorVisual = $ActorVisual
 
 var _previous_health := 0
@@ -32,7 +32,7 @@ func _physics_process(_delta: float) -> void:
 		var target_offset := direction.normalized() * interaction_offset
 		interaction_controller.position = target_offset
 		farm_tool_controller.position = target_offset
-		melee_controller.position = target_offset
+		melee_attack.position = target_offset
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_input_locked():

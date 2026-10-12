@@ -251,8 +251,7 @@ func _run() -> void:
 	_check(inventory.get_quantity(&"vegetable_stew") == 1, "Vegetable Stew output missing")
 	player_state.energy = 40
 	player_state.health = 60
-	var food_controller := player.get_node("FarmToolController")
-	food_controller.call("_consume_food", content_db.get_entry(&"item", &"vegetable_stew"))
+	inventory.call("consume", content_db.get_entry(&"item", &"vegetable_stew"))
 	_check(inventory.get_quantity(&"vegetable_stew") == 0, "Cooked meal was not consumed")
 	_check(player_state.energy == 85 and player_state.health == 80, "Cooked meal did not restore player stats")
 	_check(buff_state.call("has_buff", &"hearty_worker"), "Cooked meal did not apply Hearty Worker buff")
@@ -285,7 +284,7 @@ func _run() -> void:
 	player.global_position = Vector2.ZERO
 
 	# Exercise the real Continue path: leave gameplay, then load from title.
-	change_error = change_scene_to_file("res://game/ui/title_screen.tscn")
+	change_error = change_scene_to_file("res://gamebase/core/ui/title_screen.tscn")
 	_check(change_error == OK, "Could not return to title before Continue test")
 	await scene_changed
 	await process_frame

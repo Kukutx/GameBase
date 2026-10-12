@@ -6,83 +6,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "A living-world RPG foundation"
-msgstr "一个持续运转的世界 RPG 基础"
-
-msgid "Empty slot"
-msgstr "空存档位"
-
-msgid "Continue"
-msgstr "继续游戏"
-
-msgid "New Game"
-msgstr "新游戏"
-
-msgid "Delete Save"
-msgstr "删除存档"
-
-msgid "Settings"
-msgstr "设置"
-
-msgid "Quit"
-msgstr "退出"
-
-msgid "Start New Game"
-msgstr "开始新游戏"
-
-msgid "Delete"
-msgstr "删除"
-
-msgid "Paused"
-msgstr "已暂停"
-
-msgid "Resume"
-msgstr "继续"
-
-msgid "Save Game"
-msgstr "保存游戏"
-
-msgid "Load Game"
-msgstr "读取游戏"
-
-msgid "Return to Title"
-msgstr "返回标题画面"
-
-msgid "Unsaved progress will be lost. Return to the title screen?"
-msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
-
-msgid "Master"
-msgstr "主音量"
-
-msgid "Music"
-msgstr "音乐"
-
-msgid "Sounds"
-msgstr "音效"
-
-msgid "Fullscreen"
-msgstr "全屏"
-
-msgid "VSync"
-msgstr "垂直同步"
-
-msgid "Language"
-msgstr "语言"
-
-msgid "Controls..."
-msgstr "按键设置..."
-
-msgid "Key Bindings"
-msgstr "按键绑定"
-
-msgid "Reset Defaults"
-msgstr "恢复默认"
-
-msgid "Settings are saved automatically."
-msgstr "设置会自动保存。"
-
-msgid "Press a key..."
-msgstr "请按一个按键..."
+msgid "A farming life-sim on GameBase"
+msgstr "基于 GameBase 的农场生活模拟"
 
 msgid "Items"
 msgstr "物品"
@@ -107,48 +32,6 @@ msgstr "分配"
 
 msgid "Claim Archive Reward"
 msgstr "领取收藏奖励"
-
-msgid "Autosave"
-msgstr "自动保存"
-
-msgid "Save Slot %d"
-msgstr "存档位 %d"
-
-msgid " · temporary save recovery"
-msgstr " · 可从临时存档恢复"
-
-msgid " · backup available"
-msgstr " · 有可用备份"
-
-msgid "%s %d · Day %d · %02d:%02d · %dg%s"
-msgstr "%s %d日 · 第%d天 · %02d:%02d · %dg%s"
-
-msgid "Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?"
-msgstr "存档位 %d 已有游戏。开始新游戏会覆盖该存档，是否继续？"
-
-msgid "Loading Slot %d..."
-msgstr "正在读取存档位 %d..."
-
-msgid "No valid save found"
-msgstr "没有找到有效存档"
-
-msgid "Delete Save Slot %d? This removes the primary save and its backup."
-msgstr "删除存档位 %d？主存档及其备份都会被删除。"
-
-msgid "Deleted Slot %d"
-msgstr "已删除存档位 %d"
-
-msgid "Could not delete Slot %d"
-msgstr "无法删除存档位 %d"
-
-msgid "No save available"
-msgstr "没有可用存档"
-
-msgid "Save failed: %s"
-msgstr "保存失败：%s"
-
-msgid "Load failed: %s"
-msgstr "读取失败：%s"
 
 msgid "HP %d/%d   ·   Energy %d/%d   ·   %dg"
 msgstr "生命 %d/%d   ·   体力 %d/%d   ·   %dg"
@@ -570,9 +453,6 @@ msgstr "交谈"
 msgid "Nothing to use %s on"
 msgstr "没有可使用%s的目标"
 
-msgid "You do not need that right now"
-msgstr "现在不需要使用它"
-
 msgid "You cannot build here"
 msgstr "这里不能建造"
 
@@ -587,9 +467,6 @@ msgstr "已放置%s"
 
 msgid "New game initialized"
 msgstr "新游戏已初始化"
-
-msgid "Swung %s"
-msgstr "挥动了%s"
 
 msgid "Stand near someone to give a gift"
 msgstr "靠近某人后才能送礼"
@@ -771,29 +648,11 @@ msgstr "修复荒废的社区农地，让城镇居民再次共享收成。"
 msgid "Supply Rowan with enough materials to expand the riverside workshop and local processing tools."
 msgstr "为罗文提供足够材料，扩建河畔工坊和当地加工设施。"
 
-msgid "+%d energy"
-msgstr "+%d 体力"
-
-msgid "+%d HP"
-msgstr "+%d 生命"
-
-msgid "Ate %s%s"
-msgstr "吃了%s%s"
-
-msgid "food"
-msgstr "食物"
-
 msgid "Community Garden · overgrown"
 msgstr "社区花园 · 杂草丛生"
 
 msgid "Community Garden · restored"
 msgstr "社区花园 · 已修复"
-
-msgid "Delete this save slot and its backup?"
-msgstr "删除这个存档位及其备份？"
-
-msgid "GAMEBASE"
-msgstr "GAMEBASE"
 
 msgid "Harbor stores · depleted"
 msgstr "港口储备 · 已耗尽"
@@ -809,9 +668,6 @@ msgstr "NPC"
 
 msgid "Starter Farm"
 msgstr "起始农场"
-
-msgid "This save slot already contains a game. Starting a new game will replace it. Continue?"
-msgstr "这个存档位已经有游戏。开始新游戏会覆盖它，是否继续？"
 
 msgid "Workshop · cramped"
 msgstr "工坊 · 拥挤"
@@ -1494,21 +1350,6 @@ msgstr "为已耕土地浇水，让作物能在夜间生长。"
 msgid "Kitchen"
 msgstr "厨房"
 
-msgid "Accessibility..."
-msgstr "无障碍设置..."
-
-msgid "Accessibility"
-msgstr "无障碍设置"
-
-msgid "Weather Effects"
-msgstr "天气视觉效果"
-
-msgid "Reduce Motion"
-msgstr "减少动态效果"
-
-msgid "Reduce Motion removes scene fades and animated rain/lightning while preserving weather gameplay."
-msgstr "减少动态效果会关闭场景淡入淡出和动态雨/闪电，同时保留天气玩法。"
-
 msgctxt "dialogue"
 msgid "Welcome to Starter Town. It is good to see the old farm active again."
 msgstr "欢迎来到起始镇。看到那座老农场重新有了动静，真不错。"
@@ -2082,24 +1923,6 @@ msgstr "奈莉"
 msgid "Rowan"
 msgstr "罗文"
 
-msgid "Support"
-msgstr "支持"
-
-msgid "Support bundles contain technical logs and save summaries, never raw saves."
-msgstr "支持诊断包包含技术日志和存档摘要，不包含原始存档。"
-
-msgid "Export Support Bundle"
-msgstr "导出支持诊断包"
-
-msgid "Open Support Folder"
-msgstr "打开支持文件夹"
-
-msgid "Support bundle could not be created"
-msgstr "无法创建支持诊断包"
-
-msgid "Support bundle created: %s"
-msgstr "已创建支持诊断包：%s"
-
 msgid "Advanced time by 1 hour"
 msgstr "时间已推进 1 小时"
 
@@ -2178,26 +2001,11 @@ msgstr "铜制熔炉"
 msgid "Oil Maker"
 msgstr "榨油机"
 
-msgid "Left Stick / D-Pad"
-msgstr "左摇杆 / 十字键"
-
 msgid "1–9"
 msgstr "1–9"
 
 msgid "%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load"
 msgstr "%s 移动 · %s 互动/收线 · %s 工具/物品 · %s 送礼 · %s 收起建筑 · %s 菜单 · %s 热栏 · %s/%s 保存/读取"
-
-msgid "Move Up"
-msgstr "向上移动"
-
-msgid "Move Down"
-msgstr "向下移动"
-
-msgid "Move Left"
-msgstr "向左移动"
-
-msgid "Move Right"
-msgstr "向右移动"
 
 msgid "Use Tool / Item"
 msgstr "使用工具 / 物品"

@@ -57,9 +57,9 @@ func test_vegetable_stew_crafts_restores_stats_and_applies_work_buff() -> void:
 
 	PlayerState.energy = 40
 	PlayerState.health = 50
-	var controller := FarmToolController.new()
-	add_child_autofree(controller)
-	controller._consume_food(ItemData.find(&"vegetable_stew"))
+	watch_signals(GameEvents)
+	assert_true(InventoryState.consume(ItemData.find(&"vegetable_stew")))
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Ate Vegetable Stew (+45 energy, +20 HP)"])
 
 	assert_eq(InventoryState.get_quantity(&"vegetable_stew"), 0)
 	assert_eq(PlayerState.energy, 85)
@@ -72,19 +72,18 @@ func test_food_use_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"vegetable_stew", 2)
 	PlayerState.energy = 40
 	PlayerState.health = 50
-	var controller := FarmToolController.new()
-	add_child_autofree(controller)
-	var observed := {"entered": false}
+	var observed := {"entered": false, "inner_result": true}
 	var listener := func(item_id: StringName, _quantity: int) -> void:
 		if item_id != &"vegetable_stew" or bool(observed["entered"]):
 			return
 		observed["entered"] = true
-		controller._consume_food(ItemData.find(&"vegetable_stew"))
+		observed["inner_result"] = InventoryState.consume(ItemData.find(&"vegetable_stew"))
 	InventoryState.item_removed.connect(listener)
-	controller._consume_food(ItemData.find(&"vegetable_stew"))
+	assert_true(InventoryState.consume(ItemData.find(&"vegetable_stew")))
 	if InventoryState.item_removed.is_connected(listener):
 		InventoryState.item_removed.disconnect(listener)
 	assert_true(bool(observed["entered"]))
+	assert_false(bool(observed["inner_result"]))
 	assert_eq(InventoryState.get_quantity(&"vegetable_stew"), 1)
 	assert_eq(PlayerState.energy, 85)
 	assert_eq(PlayerState.health, 70)

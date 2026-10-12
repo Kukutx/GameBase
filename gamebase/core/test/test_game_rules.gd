@@ -43,6 +43,7 @@ func test_conditions_combine_with_and_not_and_any() -> void:
 	assert_false(GameRules.check("NO_SUCH_KEY"), "unknown keys never match")
 
 func test_time_conditions_read_the_day_from_the_context() -> void:
+	ContentFixture.use_calendar(self, GameCalendar.new())
 	assert_true(GameRules.check("DAY_AT_LEAST 30, SEASON Summer, DAY_OF_SEASON 2, WEEKDAY 1", {"day": 30}))
 	assert_false(GameRules.check("SEASON Spring", {"day": 30}))
 	assert_true(GameRules.check("TIME_BETWEEN 600 720", {"minute_of_day": 600}))

@@ -133,6 +133,7 @@ func _apply_data() -> void:
 	if not _has_art:
 		visual.visible = false
 		fallback.visible = true
+		fallback.color = data.fallback_color
 
 func _die() -> void:
 	is_defeated = true

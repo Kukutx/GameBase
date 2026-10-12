@@ -17,5 +17,5 @@ func _on_interacted(_actor: Node) -> void:
 	PlayerState.restore_full_energy()
 	PlayerState.restore_full_health()
 	SaveManager.save_game()
-	GameEvents.toastf("Slept until %s %d", [WorldClock.get_season_name(), WorldClock.get_day_of_season()])
+	GameEvents.toastf("Slept until %s", [calendar.get_date_text(WorldClock.day)])
 	_sleeping = false

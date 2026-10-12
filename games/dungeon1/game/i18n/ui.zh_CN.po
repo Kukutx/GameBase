@@ -1,0 +1,154 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Ember Depths\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "A dungeon delve on GameBase"
+msgstr "基于 GameBase 的地城探险"
+
+msgid "Ember Camp"
+msgstr "余烬营地"
+
+msgid "The Depths"
+msgstr "深渊"
+
+msgid "Campfire"
+msgstr "篝火"
+
+msgid "Rest until tomorrow"
+msgstr "休息到明天"
+
+msgid "Descend into the depths"
+msgstr "进入深渊"
+
+msgid "Stairs Down"
+msgstr "下行阶梯"
+
+msgid "Descend deeper"
+msgstr "继续深入"
+
+msgid "Rope"
+msgstr "绳索"
+
+msgid "Climb back to camp"
+msgstr "爬回营地"
+
+msgid "Camp Merchant"
+msgstr "营地商人"
+
+msgid "Attack"
+msgstr "攻击"
+
+msgid "Drink Potion"
+msgstr "喝药水"
+
+msgid "Next Item"
+msgstr "下一个物品"
+
+msgid "HP %d/%d · %dg · Combat Lv %d"
+msgstr "生命 %d/%d · %dg · 战斗 %d 级"
+
+msgid "%s · Depth %d"
+msgstr "%s · 第 %d 层"
+
+msgid "%s · Deepest %d"
+msgstr "%s · 最深 %d 层"
+
+msgid "%s move · %s attack · %s potion · %s use · %s next item"
+msgstr "%s 移动 · %s 攻击 · %s 药水 · %s 使用 · %s 下一个物品"
+
+msgid "Depth %d · Deepest %d"
+msgstr "第 %d 层 · 最深 %d 层"
+
+msgid "The way on is open"
+msgstr "前路已开"
+
+msgid "Return to camp to save"
+msgstr "回到营地才能存档"
+
+msgid "No potion at hand"
+msgstr "手头没有药水"
+
+msgid "Rusty Sword"
+msgstr "生锈的剑"
+
+msgid "The blade you came down with. It still cuts."
+msgstr "你带下来的那把剑，还算锋利。"
+
+msgid "Iron Sword"
+msgstr "铁剑"
+
+msgid "A sound blade from the camp's forge."
+msgstr "营地铁匠铺打造的结实长剑。"
+
+msgid "Ember Blade"
+msgstr "余烬之刃"
+
+msgid "Forged from ember cores; it burns what it strikes."
+msgstr "以余烬核心锻成，所击之处皆被灼烧。"
+
+msgid "Health Potion"
+msgstr "生命药水"
+
+msgid "Restores 35 health."
+msgstr "恢复 35 点生命。"
+
+msgid "Slime Gel"
+msgstr "史莱姆凝胶"
+
+msgid "Sticky remains of a cave slime."
+msgstr "洞穴史莱姆留下的黏糊残渣。"
+
+msgid "Bone Shard"
+msgstr "骨片"
+
+msgid "A splinter of an old skeleton."
+msgstr "一块古老骷髅的碎骨。"
+
+msgid "Ember Core"
+msgstr "余烬核心"
+
+msgid "The still-warm heart of an ember wisp."
+msgstr "余烬幽火尚有余温的核心。"
+
+msgid "Cave Slime"
+msgstr "洞穴史莱姆"
+
+msgid "Skeleton"
+msgstr "骷髅"
+
+msgid "Ember Wisp"
+msgstr "余烬幽火"
+
+msgid "Combat"
+msgstr "战斗"
+
+msgid "Veteran · attack +10%"
+msgstr "老兵 · 攻击 +10%"
+
+msgid "Champion · attack +25%"
+msgstr "勇者 · 攻击 +25%"
+
+msgid "First Blood"
+msgstr "初次见血"
+
+msgid "Defeat a creature of the depths."
+msgstr "击败一只深渊生物。"
+
+msgid "Delver"
+msgstr "深入者"
+
+msgid "Reach depth 5."
+msgstr "抵达第 5 层。"
+
+msgid "Ember Heart"
+msgstr "余烬之心"
+
+msgid "Reach depth 10."
+msgstr "抵达第 10 层。"
+
+msgid "Day"
+msgstr "白昼"

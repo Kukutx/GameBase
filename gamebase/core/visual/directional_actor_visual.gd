@@ -168,12 +168,13 @@ func _build_frames_from_directional_strips(root: String) -> SpriteFrames:
 	_mirror_left = side_idle_loaded or side_walk_loaded
 	loaded_any = loaded_any or side_idle_loaded or side_walk_loaded
 
-	loaded_any = _add_directional_action(frames, root, "Attack", &"attack", action_fps) or loaded_any
-	loaded_any = _add_directional_action(frames, root, "Hurt", &"hurt", action_fps) or loaded_any
-	loaded_any = _add_directional_action(frames, root, "Death", &"death", maxf(action_fps * 0.75, 1.0)) or loaded_any
+	loaded_any = _add_directional_action(frames, root, &"Attack", &"attack", action_fps) or loaded_any
+	loaded_any = _add_directional_action(frames, root, &"Hurt", &"hurt", action_fps) or loaded_any
+	loaded_any = _add_directional_action(frames, root, &"Death", &"death", maxf(action_fps * 0.75, 1.0)) or loaded_any
 	return frames if loaded_any else null
 
-func _add_directional_action(frames: SpriteFrames, root: String, file_suffix: String, action: StringName, fps: float) -> bool:
+## `file_suffix` names the strips of `action`: D_<suffix>.png, U_ and S_.
+func _add_directional_action(frames: SpriteFrames, root: String, file_suffix: StringName, action: StringName, fps: float) -> bool:
 	var down := StringName("%s_down" % String(action))
 	var up := StringName("%s_up" % String(action))
 	var right := StringName("%s_right" % String(action))

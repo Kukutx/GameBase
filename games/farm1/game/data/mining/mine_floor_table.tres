@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_floor_table.gd" id="1_table"]
 [ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_rock_tier.gd" id="2_rock"]
-[ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_enemy_tier.gd" id="3_enemy"]
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat/enemy_tier.gd" id="3_enemy"]
 
 [sub_resource type="Resource" id="rock_iridium_rock"]
 script = ExtResource("2_rock")
@@ -39,37 +39,37 @@ growth_start_floor = 0
 [sub_resource type="Resource" id="enemy_green_slime"]
 script = ExtResource("3_enemy")
 enemy_id = &"green_slime"
-minimum_floor = 1
+minimum_depth = 1
 
 [sub_resource type="Resource" id="enemy_cave_slime"]
 script = ExtResource("3_enemy")
 enemy_id = &"cave_slime"
-minimum_floor = 10
+minimum_depth = 10
 
 [sub_resource type="Resource" id="enemy_blue_slime"]
 script = ExtResource("3_enemy")
 enemy_id = &"blue_slime"
-minimum_floor = 20
+minimum_depth = 20
 
 [sub_resource type="Resource" id="enemy_red_slime"]
 script = ExtResource("3_enemy")
 enemy_id = &"red_slime"
-minimum_floor = 40
+minimum_depth = 40
 
 [sub_resource type="Resource" id="enemy_shadow_slime"]
 script = ExtResource("3_enemy")
 enemy_id = &"shadow_slime"
-minimum_floor = 60
+minimum_depth = 60
 
 [sub_resource type="Resource" id="enemy_void_slime"]
 script = ExtResource("3_enemy")
 enemy_id = &"void_slime"
-minimum_floor = 90
+minimum_depth = 90
 
 [sub_resource type="Resource" id="enemy_ancient_slime"]
 script = ExtResource("3_enemy")
 enemy_id = &"ancient_slime"
-minimum_floor = 120
+minimum_depth = 120
 
 [resource]
 script = ExtResource("1_table")

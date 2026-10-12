@@ -9,44 +9,10 @@
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/quick_load.tres" id="7_quick_load"]
 [ext_resource type="Script" path="res://gamebase/core/time/weather_odds.gd" id="8_weather_odds"]
 [ext_resource type="Script" path="res://gamebase/core/time/game_calendar.gd" id="9_calendar"]
-
-[sub_resource type="Resource" id="Control_move_up"]
-script = ExtResource("4_control")
-action = &"move_up"
-display_name = "Move Up"
-key = 87
-secondary_key = 4194320
-gamepad_button = 11
-gamepad_axis = 1
-gamepad_axis_value = -1.0
-
-[sub_resource type="Resource" id="Control_move_down"]
-script = ExtResource("4_control")
-action = &"move_down"
-display_name = "Move Down"
-key = 83
-secondary_key = 4194322
-gamepad_button = 12
-gamepad_axis = 1
-
-[sub_resource type="Resource" id="Control_move_left"]
-script = ExtResource("4_control")
-action = &"move_left"
-display_name = "Move Left"
-key = 65
-secondary_key = 4194319
-gamepad_button = 13
-gamepad_axis = 0
-gamepad_axis_value = -1.0
-
-[sub_resource type="Resource" id="Control_move_right"]
-script = ExtResource("4_control")
-action = &"move_right"
-display_name = "Move Right"
-key = 68
-secondary_key = 4194321
-gamepad_button = 14
-gamepad_axis = 0
+[ext_resource type="Resource" path="res://gamebase/core/input/controls/move_up.tres" id="10_move_up"]
+[ext_resource type="Resource" path="res://gamebase/core/input/controls/move_down.tres" id="11_move_down"]
+[ext_resource type="Resource" path="res://gamebase/core/input/controls/move_left.tres" id="12_move_left"]
+[ext_resource type="Resource" path="res://gamebase/core/input/controls/move_right.tres" id="13_move_right"]
 
 [sub_resource type="Resource" id="Control_use_tool"]
 script = ExtResource("4_control")
@@ -129,6 +95,7 @@ content = [ExtResource("2_content")]
 start_location_id = &"starter_town"
 home_location_id = &"player_home"
 home_spawn_id = &"from_town"
+defeat_money_loss_percent = 10
 calendar = SubResource("Calendar")
 start_day = 1
 start_minute_of_day = 480
@@ -157,4 +124,4 @@ event_cues = Dictionary[StringName, StringName]({
 start_money = 500
 start_hotbar = Array[StringName]([&"hoe", &"watering_can", &"pickaxe", &"rusty_sword", &"turnip_seeds", &"fishing_rod", &"berry"])
 ui_theme = ExtResource("3_theme")
-controls = Array[Resource]([SubResource("Control_move_up"), SubResource("Control_move_down"), SubResource("Control_move_left"), SubResource("Control_move_right"), ExtResource("5_interact"), SubResource("Control_use_tool"), SubResource("Control_give_gift"), SubResource("Control_remove_building"), SubResource("Control_open_menu"), ExtResource("6_quick_save"), ExtResource("7_quick_load"), SubResource("Control_hotbar_prev"), SubResource("Control_hotbar_next")])
+controls = Array[Resource]([ExtResource("10_move_up"), ExtResource("11_move_down"), ExtResource("12_move_left"), ExtResource("13_move_right"), ExtResource("5_interact"), SubResource("Control_use_tool"), SubResource("Control_give_gift"), SubResource("Control_remove_building"), SubResource("Control_open_menu"), ExtResource("6_quick_save"), ExtResource("7_quick_load"), SubResource("Control_hotbar_prev"), SubResource("Control_hotbar_next")])

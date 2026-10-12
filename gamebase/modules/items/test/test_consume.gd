@@ -1,0 +1,81 @@
+extends GutTest
+
+## Eating and drinking (`InventoryStore.consume`): what an item restores, the
+## buff it gives and what the player is told.
+
+const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+
+var _inventory_snapshot: Dictionary
+var _player_snapshot: Dictionary
+var _buff_snapshot: Dictionary
+var _clock_snapshot: Dictionary
+
+func before_each() -> void:
+	_inventory_snapshot = InventoryState.to_save_data()
+	_player_snapshot = PlayerState.to_save_data()
+	_buff_snapshot = BuffState.to_save_data()
+	_clock_snapshot = WorldClock.to_save_data()
+	var steady := FoodBuffData.new()
+	steady.id = &"fixture_steady"
+	steady.display_name = "Steady"
+	steady.duration_minutes = 60
+	steady.multipliers[&"fixture_speed"] = 1.1
+	ContentFixture.use(self, [
+		_edible(&"fixture_bread", "Bread", ItemData.Kind.FOOD, 20, 0, &""),
+		_edible(&"fixture_tonic", "Tonic", ItemData.Kind.POTION, 0, 15, steady.id),
+		steady,
+	])
+	InventoryState.clear()
+	PlayerState.reset_new_game()
+	BuffState.clear()
+
+func after_each() -> void:
+	# GUT frees the fixture content only after this hook.
+	ContentRegistry.active = ContentDB
+	InventoryState.load_save_data(_inventory_snapshot)
+	PlayerState.load_save_data(_player_snapshot)
+	BuffState.load_save_data(_buff_snapshot)
+	WorldClock.load_save_data(_clock_snapshot)
+
+func test_food_restores_and_is_eaten() -> void:
+	InventoryState.add_item_by_id(&"fixture_bread", 1)
+	PlayerState.energy = PlayerState.max_energy - 30
+	watch_signals(GameEvents)
+	assert_true(InventoryState.consume(ItemData.find(&"fixture_bread")))
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Ate Bread (+20 energy)"])
+	assert_eq(PlayerState.energy, PlayerState.max_energy - 10)
+	assert_eq(InventoryState.get_quantity(&"fixture_bread"), 0)
+
+func test_a_potion_is_drunk_and_gives_its_buff() -> void:
+	InventoryState.add_item_by_id(&"fixture_tonic", 1)
+	PlayerState.health = PlayerState.max_health - 20
+	watch_signals(GameEvents)
+	assert_true(InventoryState.consume(ItemData.find(&"fixture_tonic")))
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Drank Tonic (+15 HP)"])
+	assert_eq(PlayerState.health, PlayerState.max_health - 5)
+	assert_true(BuffState.has_buff(&"fixture_steady"))
+
+func test_what_would_do_nothing_is_not_used_up() -> void:
+	InventoryState.add_item_by_id(&"fixture_bread", 1)
+	PlayerState.energy = PlayerState.max_energy
+	watch_signals(GameEvents)
+	assert_false(InventoryState.consume(ItemData.find(&"fixture_bread")))
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["You do not need that right now"])
+	assert_eq(InventoryState.get_quantity(&"fixture_bread"), 1)
+
+func test_an_item_the_player_does_not_hold_is_not_eaten() -> void:
+	PlayerState.energy = 10
+	watch_signals(GameEvents)
+	assert_false(InventoryState.consume(ItemData.find(&"fixture_bread")))
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["No Bread available"])
+	assert_eq(PlayerState.energy, 10)
+
+static func _edible(id: StringName, display_name: String, kind: ItemData.Kind, energy: int, health: int, buff_id: StringName) -> ItemData:
+	var item := ItemData.new()
+	item.id = id
+	item.display_name = display_name
+	item.kind = kind
+	item.energy_restore = energy
+	item.health_restore = health
+	item.food_buff_id = buff_id
+	return item

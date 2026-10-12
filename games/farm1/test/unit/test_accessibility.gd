@@ -34,7 +34,7 @@ func test_weather_effects_and_reduced_motion_apply_live() -> void:
 	assert_false(overlay.is_processing())
 
 func test_accessibility_page_opens_with_controller_focus() -> void:
-	var scene := load("res://game/ui/settings_menu.tscn") as PackedScene
+	var scene := load("res://gamebase/core/ui/settings_menu.tscn") as PackedScene
 	var menu := scene.instantiate() as SettingsMenu
 	add_child_autofree(menu)
 	await get_tree().process_frame

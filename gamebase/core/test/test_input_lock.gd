@@ -53,6 +53,15 @@ func test_one_owner_s_locks_are_each_given_back() -> void:
 	assert_eq(InputLock.get_reasons(), [], "leaving the tree gives back both")
 	assert_false(get_tree().paused)
 
+func test_a_press_is_the_player_s_only_while_nothing_holds_the_controls() -> void:
+	var press := InputEventAction.new()
+	press.action = &"interact"
+	press.pressed = true
+	assert_true(InputLock.is_player_press(press, &"interact"))
+	assert_false(InputLock.is_player_press(press, &"fixture_unmapped"), "an action the input map does not have")
+	InputLock.lock(&"fixture_cast")
+	assert_false(InputLock.is_player_press(press, &"interact"), "the cast holds the press")
+
 func test_clearing_gives_back_every_lock() -> void:
 	InputLock.lock(&"fixture_menu", true)
 	InputLock.lock(&"fixture_dialogue")

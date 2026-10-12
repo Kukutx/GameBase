@@ -168,6 +168,7 @@ func test_crafting_reuses_consumed_ingredient_slot_when_inventory_is_full() -> v
 	assert_eq(InventoryState.get_used_slots(), 1)
 
 func test_seasonal_stock_changes_with_calendar() -> void:
+	ContentFixture.use_calendar(self, GameCalendar.new())
 	var spring := _shop.get_stock("Spring")
 	var summer := _shop.get_stock("Summer")
 	assert_true(spring.has("fixture_seeds") and spring.has("fixture_spring_seeds"))

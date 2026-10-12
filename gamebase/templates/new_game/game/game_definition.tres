@@ -6,9 +6,9 @@
 [resource]
 script = ExtResource("1_definition")
 content = [ExtResource("2_content")]
-start_location_id = &"start"
-home_location_id = &"start"
-home_spawn_id = &"start"
+start_location_id = &"starting_point"
+home_location_id = &"starting_point"
+home_spawn_id = &"arrival"
 start_day = 1
 start_minute_of_day = 480
 world_seed = 1

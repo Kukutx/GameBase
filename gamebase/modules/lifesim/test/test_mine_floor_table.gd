@@ -164,13 +164,13 @@ func _rock_tier(rock_id: StringName, base_chance: float, max_chance: float) -> M
 	tier.max_chance = max_chance
 	return tier
 
-func _enemy_tier(enemy_id: StringName, minimum_floor: int) -> MineEnemyTier:
-	var tier := MineEnemyTier.new()
+func _enemy_tier(enemy_id: StringName, minimum_floor: int) -> EnemyTier:
+	var tier := EnemyTier.new()
 	tier.enemy_id = enemy_id
-	tier.minimum_floor = minimum_floor
+	tier.minimum_depth = minimum_floor
 	return tier
 
-func _table(default_rock_id: StringName, rock_tiers: Array[MineRockTier], enemy_tiers: Array[MineEnemyTier]) -> MineFloorTable:
+func _table(default_rock_id: StringName, rock_tiers: Array[MineRockTier], enemy_tiers: Array[EnemyTier]) -> MineFloorTable:
 	var table := MineFloorTable.new()
 	table.default_rock_id = default_rock_id
 	table.rock_tiers = rock_tiers

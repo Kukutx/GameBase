@@ -6,9 +6,9 @@
 
 [node name="Player" type="Node2D" parent="." groups=["player"]]
 
-[node name="StartSpawn" type="Marker2D" parent="."]
+[node name="ArrivalSpawn" type="Marker2D" parent="."]
 script = ExtResource("1_spawn")
-spawn_id = &"start"
+spawn_id = &"arrival"
 
 [node name="Label" type="Label" parent="."]
 offset_left = 16.0
