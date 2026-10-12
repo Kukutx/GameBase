@@ -292,6 +292,28 @@ func test_the_move_prompt_names_each_move_key_then_the_arrows() -> void:
 	assert_eq(InputPrompts.get_move_prompt(InputPromptService.MOVE_ACTIONS, settings.bindings), "Left Stick / D-Pad")
 	InputPrompts.using_gamepad = previous_gamepad
 
+func test_the_menus_move_with_the_keys_and_buttons_the_player_walks_with() -> void:
+	var moves: Array[ControlAction] = []
+	for direction: String in ["up", "left", "down", "right"]:
+		moves.append(load("res://gamebase/core/input/controls/move_%s.tres" % direction) as ControlAction)
+	var settings := _settings_with_controls(moves)
+	settings.reset_controls()
+	assert_true(_has_key_event(&"ui_up", KEY_W), "W moves the focus up as it walks up")
+	assert_true(_has_key_event(&"ui_left", KEY_A))
+	var own_events := InputMap.action_get_events(&"ui_up").size()
+	assert_true(settings.bind_control(&"move_up", {"key": int(KEY_I)}))
+	assert_true(_has_key_event(&"ui_up", KEY_I))
+	assert_false(_has_key_event(&"ui_up", KEY_W), "the key lent before goes back")
+	assert_true(settings.bind_gamepad_button(&"move_up", JOY_BUTTON_Y))
+	assert_true(_has_button_event(&"ui_up", JOY_BUTTON_Y))
+	assert_true(_has_button_event(&"ui_up", JOY_BUTTON_DPAD_UP), "the project's own D-pad stays")
+	var arrow := InputEventKey.new()
+	arrow.keycode = KEY_UP
+	arrow.pressed = true
+	assert_true(arrow.is_action_pressed(&"ui_up"), "and so do its arrows")
+	settings.reset_controls()
+	assert_eq(InputMap.action_get_events(&"ui_up").size(), own_events, "a reset lends what was lent at first, no more")
+
 func test_languages_are_the_source_and_every_registered_translation() -> void:
 	var locales := GameSettings.get_supported_locales()
 	assert_eq(locales[0], "en", "the source language comes first")
@@ -318,7 +340,7 @@ func test_the_modules_controls_come_between_the_games_and_the_cores_and_the_game
 	var actions: Array[StringName] = []
 	for control: ControlAction in resolved:
 		actions.append(control.action)
-	var expected: Array[StringName] = [&"jump", &"quick_save", &"cast", &"reel", &"move_up", &"move_down", &"move_left", &"move_right", &"interact", &"quick_load"]
+	var expected: Array[StringName] = [&"jump", &"quick_save", &"cast", &"reel", &"move_up", &"move_down", &"move_left", &"move_right", &"interact", &"quick_load", &"pause"]
 	assert_eq(actions, expected)
 	assert_true(resolved.has(game_cast) and not resolved.has(module_cast), "the game's control of an action replaces the module's")
 	assert_eq(GameControls.find_problems(controls, module_controls), PackedStringArray())

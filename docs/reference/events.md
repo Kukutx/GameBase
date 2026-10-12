@@ -18,6 +18,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 ## InputPrompts (core)
 
 - `InputPrompts.input_method_changed(using_gamepad: bool)`
+- `InputPrompts.gamepad_disconnected()`
 
 ## InputLock (core)
 

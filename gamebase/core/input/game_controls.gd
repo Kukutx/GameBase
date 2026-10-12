@@ -8,7 +8,8 @@ extends RefCounted
 ## (`ControlBindings`).
 
 ## The controls the core's own systems read, as `ControlAction` paths: the
-## moves a `TopDownPlayer` walks with, interacting and the quick save and load.
+## moves a `TopDownPlayer` walks with (which the menus move with too),
+## interacting, the quick save and load, and the pause menu's.
 ## A game lists them in `GameDefinition.controls` only to place or replace them.
 const CORE: Array[String] = [
 	"res://gamebase/core/input/controls/move_up.tres",
@@ -18,6 +19,7 @@ const CORE: Array[String] = [
 	"res://gamebase/core/input/controls/interact.tres",
 	"res://gamebase/core/input/controls/quick_save.tres",
 	"res://gamebase/core/input/controls/quick_load.tres",
+	"res://gamebase/core/input/controls/pause.tres",
 ]
 
 ## The running game's `GameDefinition.controls`; an entry that is not a

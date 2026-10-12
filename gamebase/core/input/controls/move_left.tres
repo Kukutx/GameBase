@@ -11,3 +11,4 @@ secondary_key = 4194319
 gamepad_button = 13
 gamepad_axis = 0
 gamepad_axis_value = -1.0
+ui_action = &"ui_left"

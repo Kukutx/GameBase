@@ -201,6 +201,36 @@ func test_quick_load_opens_the_pause_menu_and_asks() -> void:
 	assert_true(menu.confirm_load.visible)
 	assert_false(SaveManager.is_restoring())
 
+func test_the_pause_control_opens_and_closes_the_pause_menu_and_cancel_only_closes_it() -> void:
+	var menu := _pause()
+	menu._unhandled_input(_action(&"ui_cancel"))
+	assert_false(menu.visible, "B or Esc as cancel leaves the world be")
+	menu._unhandled_input(_action(&"pause"))
+	assert_true(menu.visible)
+	assert_true(get_tree().paused)
+	menu._unhandled_input(_action(&"pause"))
+	assert_false(menu.visible, "pause again resumes")
+	menu._unhandled_input(_action(&"pause"))
+	menu._unhandled_input(_action(&"ui_cancel"))
+	assert_false(menu.visible, "and so does cancel")
+	assert_true(GameSettings.bind_control(&"pause", {"key": int(KEY_P)}))
+	var key := _key(KEY_P)
+	assert_true(key.is_action_pressed(&"pause"), "the player rebinds the pause key")
+	assert_false(_key(KEY_ESCAPE).is_action_pressed(&"pause"))
+
+func test_the_pause_menu_opens_when_the_gamepad_in_use_disconnects() -> void:
+	var menu := _pause()
+	InputPrompts.call("_use_gamepad", 4)
+	Input.joy_connection_changed.emit(4, false)
+	assert_true(menu.visible, "the world waits for the player to take up a pad again")
+	assert_false(InputPrompts.using_gamepad)
+	menu.close()
+	InputLock.lock(&"fixture_menu", true)
+	InputPrompts.call("_use_gamepad", 4)
+	Input.joy_connection_changed.emit(4, false)
+	assert_false(menu.visible, "a menu on top already waits for the player")
+	InputLock.unlock(&"fixture_menu")
+
 func test_quitting_from_the_pause_menu_asks_first() -> void:
 	var menu := _pause()
 	menu.open()
@@ -268,6 +298,12 @@ static func _binding(menu: SettingsMenu, action: StringName, column: int) -> But
 		if row.get_meta(&"action") == action:
 			return row.get_child(column) as Button
 	return null
+
+static func _action(action: StringName) -> InputEventAction:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = true
+	return event
 
 static func _click(button: MouseButton) -> InputEventMouseButton:
 	var event := InputEventMouseButton.new()

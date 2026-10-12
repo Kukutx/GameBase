@@ -1,16 +1,20 @@
 class_name PauseMenu
 extends MenuLayer
 
-## The pause menu every game's locations share: `ui_cancel` opens it over the
-## paused world, to resume, save, load, change the settings, return to the
-## title screen (the game's main scene) or quit. It also opens when the window
-## loses focus (`GameSettings.pause_on_focus_loss`), over the world or over a
-## minigame, which stands still under it, and `quick_load` asks here before a
-## load throws away the progress since the last save.
+## The pause menu every game's locations share: the core's `pause` control
+## (Esc, Start) opens it over the paused world, to resume, save, load, change
+## the settings, return to the title screen (the game's main scene) or quit;
+## `pause` or `ui_cancel` closes it. It also opens when the window loses focus
+## (`GameSettings.pause_on_focus_loss`) or the gamepad in use disconnects
+## (`InputPrompts.gamepad_disconnected`), over the world or over a minigame,
+## which stands still under it, and `quick_load` asks here before a load
+## throws away the progress since the last save.
 
 ## The menu's id: its group and the reason of its lock, held while the game
 ## is paused for the player (`GameSession` counts no time played then).
 const MENU_ID := &"pause_menu"
+## The control that opens and closes the menu (`core/input/controls/pause.tres`).
+const PAUSE_ACTION := &"pause"
 
 @onready var resume_button: Button = $Dim/Panel/Layout/Resume
 @onready var save_button: Button = $Dim/Panel/Layout/Save
@@ -47,9 +51,14 @@ func _ready() -> void:
 		dialog.canceled.connect(_on_dialog_canceled.bind(dialog))
 	SaveManager.save_completed.connect(_on_save_completed)
 	SaveManager.load_completed.connect(_on_load_completed)
+	InputPrompts.gamepad_disconnected.connect(_on_gamepad_disconnected)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and GameSettings.pause_on_focus_loss and _runs_unwatched():
+		open()
+
+func _on_gamepad_disconnected() -> void:
+	if _runs_unwatched():
 		open()
 
 # Whether play goes on while the player looks away: the world runs, or a
@@ -58,20 +67,22 @@ func _runs_unwatched() -> bool:
 	return not get_tree().paused or InputLock.get_top_reason() == MiniGameHostService.LOCK_REASON
 
 func _unhandled_input(event: InputEvent) -> void:
+	var pause := InputMap.has_action(PAUSE_ACTION) and event.is_action_pressed(PAUSE_ACTION)
 	var cancel := event.is_action_pressed("ui_cancel")
 	var quick_load := event.is_action_pressed("quick_load")
-	if not cancel and not quick_load:
+	if not pause and not cancel and not quick_load:
 		return
 	if settings_menu.visible or _is_dialog_open():
 		return
 	if not visible:
-		# Something else holds the input (a menu, a minigame, a travel).
-		if InputLock.is_locked():
+		# Cancel only leaves the menu; something else may hold the input (a
+		# menu, a minigame, a travel).
+		if (cancel and not pause and not quick_load) or InputLock.is_locked():
 			return
 		open()
 	elif not InputLock.is_top(self):
 		return
-	elif cancel:
+	elif pause or cancel:
 		close()
 	if quick_load and visible:
 		request_load()

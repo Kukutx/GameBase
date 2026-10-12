@@ -10,7 +10,9 @@ extends Resource
 ## rebindable control appears in the settings and keeps the player's key or
 ## mouse button and gamepad button; its second key and stick direction stay as
 ## declared. Its events answer every device (`ALL_DEVICES`), so any gamepad
-## plays, not only the first.
+## plays, not only the first. A control that names a `ui_action` lends that
+## engine action its key or mouse button and its gamepad button, so the menus
+## move with the keys the player walks with.
 
 ## The device of an event that matches input from any device.
 const ALL_DEVICES := -1
@@ -38,6 +40,12 @@ const ALL_DEVICES := -1
 ## A gamepad axis that triggers the action when pushed toward `gamepad_axis_value`.
 @export var gamepad_axis: JoyAxis = JOY_AXIS_INVALID
 @export_range(-1.0, 1.0, 2.0) var gamepad_axis_value := 1.0
+## The engine's `ui_*` action that also takes this control's key or mouse
+## button and its gamepad button, as the player binds them (the core's moves
+## lend theirs to `ui_up` and the other directions); none when empty. The
+## project's own events of that action (the arrows, the D-pad, the stick)
+## stay.
+@export var ui_action: StringName = &""
 
 ## The declared key or mouse button, as `ControlBindings` holds a binding:
 ## `{"key": key}`, `{"mouse": button}` or {} for neither.
@@ -51,24 +59,9 @@ func get_default_binding() -> Dictionary:
 ## The input events of this control with `binding` (a key or mouse button, as
 ## `get_default_binding()` gives one) and `bound_button` as its gamepad button.
 func build_events(binding: Dictionary, bound_button: JoyButton) -> Array[InputEvent]:
-	var events: Array[InputEvent] = []
-	var bound_key := int(binding.get("key", KEY_NONE)) as Key
-	for event_key: Key in [bound_key, secondary_key if secondary_key != bound_key else KEY_NONE]:
-		if event_key != KEY_NONE:
-			var key_event := InputEventKey.new()
-			key_event.device = ALL_DEVICES
-			key_event.physical_keycode = event_key
-			events.append(key_event)
-	if binding.has("mouse"):
-		var click := InputEventMouseButton.new()
-		click.device = ALL_DEVICES
-		click.button_index = int(binding["mouse"]) as MouseButton
-		events.append(click)
-	if bound_button != JOY_BUTTON_INVALID:
-		var button := InputEventJoypadButton.new()
-		button.device = ALL_DEVICES
-		button.button_index = bound_button
-		events.append(button)
+	var events := bound_events(binding, bound_button)
+	if secondary_key != KEY_NONE and int(secondary_key) != int(binding.get("key", KEY_NONE)):
+		events.append(_key_event(secondary_key))
 	if gamepad_axis != JOY_AXIS_INVALID:
 		var motion := InputEventJoypadMotion.new()
 		motion.device = ALL_DEVICES
@@ -76,3 +69,26 @@ func build_events(binding: Dictionary, bound_button: JoyButton) -> Array[InputEv
 		motion.axis_value = gamepad_axis_value
 		events.append(motion)
 	return events
+
+## The events of `binding` (a key or mouse button) and gamepad `button` alone.
+static func bound_events(binding: Dictionary, button: JoyButton) -> Array[InputEvent]:
+	var events: Array[InputEvent] = []
+	if binding.has("key"):
+		events.append(_key_event(int(binding["key"]) as Key))
+	elif binding.has("mouse"):
+		var click := InputEventMouseButton.new()
+		click.device = ALL_DEVICES
+		click.button_index = int(binding["mouse"]) as MouseButton
+		events.append(click)
+	if button != JOY_BUTTON_INVALID:
+		var press := InputEventJoypadButton.new()
+		press.device = ALL_DEVICES
+		press.button_index = button
+		events.append(press)
+	return events
+
+static func _key_event(key: Key) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.device = ALL_DEVICES
+	event.physical_keycode = key
+	return event

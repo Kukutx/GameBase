@@ -419,3 +419,6 @@ msgstr "鼠标键 %d"
 
 msgid "Press a key or mouse button. Esc or a left click cancels."
 msgstr "请按一个按键或鼠标键。按 Esc 或单击左键取消。"
+
+msgid "Pause"
+msgstr "暂停"
