@@ -66,7 +66,7 @@ Save snapshots record both `game_version` and `engine_version` at the top level,
 
 The numeric save `version` field is the save-format version and is independent from the game version in `config/version` of `games/<id>/project.godot`. Only a save of the current format loads; there are no migrations. A slot whose files this build cannot read is shown as such on the title screen, and a new game asks before replacing it.
 
-Manual saves and autosaves share one path: the new save is written to a temporary file, the previous save becomes the backup, and the temporary file then replaces the save. A write interrupted at any point leaves an intact file of the three, and loading takes the newest one.
+Manual saves and autosaves share one path: the new save is written to a temporary file, the previous save is renamed to the backup, and the temporary file then replaces the save. A write interrupted at any point leaves an intact file of the three, and loading takes the newest one.
 
 Nothing saves while a save loads, a new game starts, or the player travels.
 

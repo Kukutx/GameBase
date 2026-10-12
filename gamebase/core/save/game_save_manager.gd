@@ -7,8 +7,12 @@ extends Node
 ## position) and one dictionary per registered `SaveSection`. Only a save of the
 ## current `SAVE_VERSION` that contains every registered section loads; anything
 ## else is not a save of this build. Writing goes through a temporary file and
-## keeps the previous save as a backup, so an interrupted write never loses the
-## slot: loading takes the newest intact file of the three.
+## keeps the previous save as a backup (renamed, not copied), so an interrupted
+## write never loses the slot: loading takes the newest intact file of the
+## three. What a file holds is read once and kept until the file changes, so a
+## menu that asks whether a slot has a save reads no file again. A load
+## covers the screen (`Transition`) while the world holds still, and clears it
+## once the player stands where they saved.
 
 signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
@@ -16,6 +20,8 @@ signal active_slot_changed(slot: int)
 
 const SAVE_VERSION := 10
 const SLOT_COUNT := 3
+## The reason of the lock that holds the world still while a save loads.
+const LOAD_LOCK := &"load"
 
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
 const HEADER_KEYS: Array[String] = [
@@ -49,8 +55,13 @@ static var _save_blockers: Array[Callable] = []
 static var _slot_details: Array[Dictionary] = []
 # Whether a save is being restored; shared like the sections.
 static var _restoring := false
+# Counts the changes to the registered sections, which decide what is usable.
+static var _sections_changed := 0
 # Whether this manager is the one restoring a save.
 var _restoring_here := false
+# What each save file read holds: path -> {"stamp", "sections", "registry",
+# "data"}, `data` the usable snapshot or {} (`_read_usable()`).
+var _read_files: Dictionary[String, Dictionary] = {}
 
 func _ready() -> void:
 	_register_core_sections()
@@ -89,11 +100,13 @@ func register_section(section: SaveSection) -> void:
 	unregister_section(section.id)
 	_sections.append(section)
 	_sections.sort_custom(func(a: SaveSection, b: SaveSection) -> bool: return a.order < b.order)
+	_sections_changed += 1
 
 func unregister_section(id: StringName) -> void:
 	for index: int in range(_sections.size() - 1, -1, -1):
 		if _sections[index].id == id:
 			_sections.remove_at(index)
+	_sections_changed += 1
 
 func get_section_ids() -> PackedStringArray:
 	var ids := PackedStringArray()
@@ -256,12 +269,11 @@ func write_save() -> String:
 	if not _write_dictionary(temp_path, build_snapshot()):
 		return _write_failed("the save", temp_path)
 	# The last intact save becomes the backup before the new one replaces it.
-	var previous := _read_dictionary(save_path)
-	if _is_snapshot_usable(previous) and not _write_dictionary(backup_path, previous):
-		return _write_failed("the backup", backup_path)
-	if FileAccess.file_exists(save_path):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
-	var rename_error := DirAccess.rename_absolute(ProjectSettings.globalize_path(temp_path), ProjectSettings.globalize_path(save_path))
+	if not _read_usable(save_path).is_empty():
+		var backup_error := _move(save_path, backup_path)
+		if backup_error != OK:
+			return _write_failed("the backup (%s)" % error_string(backup_error), backup_path)
+	var rename_error := _move(temp_path, save_path)
 	if rename_error != OK:
 		return _write_failed("the save (%s)" % error_string(rename_error), save_path)
 	return ""
@@ -282,7 +294,9 @@ func load_game() -> bool:
 	if candidate.is_empty():
 		load_completed.emit(false, tr("Slot %d has no save to load") % active_slot)
 		return false
-	var data: Dictionary = candidate["data"]
+	var saved: Dictionary = candidate["data"]
+	# The services may keep what they read; what was read of the file stays.
+	var data := saved.duplicate(true)
 	# Whatever the player is doing belongs to the session the save replaces.
 	GameSession.end_activities()
 	if not await apply_snapshot(data):
@@ -296,14 +310,12 @@ func load_game() -> bool:
 	# interrupted before its commit, so the commit finishes: the previous primary
 	# becomes the backup first.
 	if source == "temp":
-		var previous := _read_usable(save_path)
-		if not previous.is_empty():
-			_write_dictionary(backup_path, previous)
-	if _write_dictionary(save_path, data) and source == "temp":
-		_delete_paths([temp_path])
-	if source == "temp":
+		if not _read_usable(save_path).is_empty():
+			_move(save_path, backup_path)
+		_move(temp_path, save_path)
 		load_completed.emit(true, tr("Recovered Slot %d from temporary save") % active_slot)
 	else:
+		_write_dictionary(save_path, saved)
 		load_completed.emit(true, tr("Recovered Slot %d from backup") % active_slot)
 	return true
 
@@ -327,21 +339,29 @@ func _write_sections(snapshot: Dictionary) -> void:
 		snapshot[String(section.id)] = section.write.call()
 
 ## Restores `data`, a usable snapshot: every section, then the load steps, then
-## the saved location with the player where they stood.
+## the saved location with the player where they stood. The screen covers
+## first and the world holds still (`LOAD_LOCK`) while the location loads in
+## the background; the screen clears once the player stands there.
 func apply_snapshot(data: Dictionary) -> bool:
-	# Resolve and load the destination before changing any service, so a save
-	# whose location cannot open leaves the running session untouched.
 	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
 	if location == null or not ResourceLoader.exists(location.scene_path):
 		return false
-	var packed := ResourceLoader.load(location.scene_path) as PackedScene
-	if packed == null:
-		return false
 	_restoring = true
 	_restoring_here = true
-	var restored: bool = await _restore(data, location, packed)
+	InputLock.lock(LOAD_LOCK, true)
+	# A cutscene's cover is the last scene's, which leaves nothing to uncover it.
+	Transition.reset()
+	await Transition.cover()
+	# The destination loads before any service changes, so a save whose
+	# location cannot open leaves the running session untouched.
+	var packed := await Transition.load_scene(location.scene_path)
+	var restored := false
+	if packed != null:
+		restored = await _restore(data, location, packed)
 	_restoring = false
 	_restoring_here = false
+	InputLock.unlock(LOAD_LOCK)
+	Transition.uncover()
 	return restored
 
 func _restore(data: Dictionary, location: WorldLocationData, packed: PackedScene) -> bool:
@@ -351,9 +371,7 @@ func _restore(data: Dictionary, location: WorldLocationData, packed: PackedScene
 		section.read.call(data[String(section.id)], data)
 	for step: Dictionary in _load_steps:
 		(step["step"] as Callable).call()
-	# The loaded scene is no travel's, and nothing of the last scene remains to
-	# uncover the screen.
-	Transition.reset()
+	# The loaded scene is no travel's.
 	WorldTravel.reset()
 	if get_tree().change_scene_to_packed(packed) != OK:
 		return false
@@ -392,9 +410,39 @@ func _read_slot(slot: int = -1) -> Dictionary:
 func _paths(slot: int) -> Dictionary:
 	return get_slot_paths(slot) if slot > 0 else {"save": save_path, "temp": temp_path, "backup": backup_path}
 
+# The save at `path` when it is one this build loads, else {}: read again only
+# when the file, the registered sections or the content changed since.
 func _read_usable(path: String) -> Dictionary:
-	var data := _read_dictionary(path)
-	return data if _is_snapshot_usable(data) else {}
+	var stamp := _file_stamp(path)
+	var registry := ContentRegistry.active.get_instance_id()
+	var known: Dictionary = _read_files.get(path, {})
+	if not known.is_empty() and known["stamp"] == stamp and known["sections"] == _sections_changed and known["registry"] == registry:
+		return known["data"]
+	var data := _read_dictionary(path) if not stamp.is_empty() else {}
+	if not _is_snapshot_usable(data):
+		data = {}
+	_read_files[path] = {"stamp": stamp, "sections": _sections_changed, "registry": registry, "data": data}
+	return data
+
+# When the file at `path` last changed and how long it is, which tell a file
+# changed outside the game; empty for no file.
+static func _file_stamp(path: String) -> Array[int]:
+	var file := FileAccess.open(path, FileAccess.READ) if not path.is_empty() and FileAccess.file_exists(path) else null
+	if file == null:
+		return []
+	return [FileAccess.get_modified_time(path), file.get_length()]
+
+# Renames the file at `from` over the one at `to`; what was read of it moves
+# along.
+func _move(from: String, to: String) -> Error:
+	if FileAccess.file_exists(to):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(to))
+	_read_files.erase(to)
+	var error := DirAccess.rename_absolute(ProjectSettings.globalize_path(from), ProjectSettings.globalize_path(to))
+	if error == OK and _read_files.has(from):
+		_read_files[to] = _read_files[from]
+	_read_files.erase(from)
+	return error
 
 func _snapshot_timestamp(data: Dictionary) -> int:
 	return SaveValues.count(data.get("saved_at_unix_msec", 0))
@@ -427,17 +475,19 @@ func _write_dictionary(path: String, data: Dictionary) -> bool:
 	if path.is_empty():
 		return false
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path.get_base_dir()))
+	_read_files.erase(path)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		return false
-	# Every digit, so a float comes back as it was saved.
-	var stored := file.store_string(JSON.stringify(data, "\t", true, true))
+	# Compact, with every digit, so a float comes back as it was saved.
+	var stored := file.store_string(JSON.stringify(data, "", false, true))
 	file.close()
 	return stored
 
 func _delete_paths(paths: Array[String]) -> bool:
 	var ok := true
 	for path: String in paths:
+		_read_files.erase(path)
 		if path.is_empty() or not FileAccess.file_exists(path):
 			continue
 		ok = DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK and ok

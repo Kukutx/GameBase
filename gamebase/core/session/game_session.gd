@@ -114,11 +114,12 @@ func end_activities() -> void:
 		if end.is_valid():
 			end.call()
 
-## Leaves the session for the title screen (the game's main scene): ends the
-## player's activities and gives back every lock first. False while a travel,
-## a load or a new game changes the scene: that change would replace the title.
+## Leaves the session for the title screen (the game's main scene) behind the
+## transition's fade: ends the player's activities and gives back every lock
+## first. False while a travel, a load or a new game changes the scene: that
+## change would replace the title.
 func return_to_title() -> bool:
-	if is_changing() or WorldTravel.is_traveling():
+	if is_changing() or WorldTravel.is_traveling() or Transition.is_covering():
 		return false
 	end_activities()
 	_playing = false
@@ -127,8 +128,7 @@ func return_to_title() -> bool:
 	InputLock.clear()
 	Transition.reset()
 	WorldTravel.reset()
-	get_tree().change_scene_to_file(String(ProjectSettings.get_setting("application/run/main_scene")))
-	return true
+	return Transition.change_scene(String(ProjectSettings.get_setting("application/run/main_scene")))
 
 func initialize_new_game_state() -> void:
 	var starting := _starting_new_game

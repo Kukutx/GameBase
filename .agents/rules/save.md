@@ -4,7 +4,7 @@ path: "gamebase/core/save/**"
 
 # Save data (`gamebase/core/save/**`)
 
-`GameSaveManager` (`gamebase/core/save/`) writes each slot as JSON under `save_directory`: a temp file is promoted to the primary and the previous primary is kept as a backup. `SAVE_VERSION` is the format version. The engine behaviour described here was confirmed on Godot 4.7.2.
+`GameSaveManager` (`gamebase/core/save/`) writes each slot as compact JSON under `save_directory`: a temp file is promoted to the primary and the previous primary, when it is a save this build loads, is renamed to the backup. What a file holds is read once and kept until the file changes (its modified time and length), the registered sections change or the content does, so a menu asking `has_save()` reads nothing again. A load covers the screen (`Transition.cover()`), holds the world still (`LOAD_LOCK`) and loads the location in the background before any service changes; the return to the title changes the scene behind the transition too. `SAVE_VERSION` is the format version. The engine behaviour described here was confirmed on Godot 4.7.2.
 
 ## P0
 

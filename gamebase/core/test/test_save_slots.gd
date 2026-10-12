@@ -239,6 +239,7 @@ func test_saving_keeps_the_previous_save_as_backup_and_a_damaged_save_falls_back
 	assert_eq(_manager.write_save(), "")
 	assert_eq(_mark(_read(_manager.save_path)), 222)
 	assert_eq(_mark(_read(_manager.backup_path)), 111)
+	assert_false(FileAccess.get_file_as_string(_manager.save_path).contains("\n"), "a save is compact")
 
 	var corrupt := FileAccess.open(_manager.save_path, FileAccess.WRITE)
 	corrupt.store_string("{ definitely not valid json")
@@ -253,6 +254,24 @@ func test_saving_keeps_the_previous_save_as_backup_and_a_damaged_save_falls_back
 	assert_eq(_mark(_read(_manager.save_path)), 333)
 	assert_eq(_mark(_read(_manager.backup_path)), 111)
 
+func test_a_slot_is_read_once_until_its_file_changes() -> void:
+	await _enter_fixture_location()
+	WorldState.set_value(MARK, 111)
+	assert_eq(_manager.write_save(), "")
+	assert_true(_manager.has_save())
+	var read_files: Dictionary = _manager.get("_read_files")
+	var first: Dictionary = read_files[_manager.save_path]["data"]
+	assert_true(_manager.has_save())
+	assert_eq(_manager.get_slot_summary(1)["location_id"], String(LOCATION))
+	assert_true(is_same(read_files[_manager.save_path]["data"], first), "asked again, the file is not read again")
+	# Something outside the game changes the file.
+	WorldState.set_value(MARK, 4444)
+	var changed := _manager.build_snapshot()
+	var file := FileAccess.open(_manager.save_path, FileAccess.WRITE)
+	file.store_string(JSON.stringify(changed))
+	file.close()
+	assert_eq(_mark((_manager.call("_read_slot") as Dictionary)["data"]), 4444)
+
 func test_loading_a_backup_makes_it_the_save_again() -> void:
 	await _enter_fixture_location()
 	WorldState.set_value(MARK, 111)
@@ -265,16 +284,22 @@ func test_loading_a_backup_makes_it_the_save_again() -> void:
 	assert_eq(WorldState.get_int(MARK), 111)
 	assert_eq(_mark(_read(_manager.save_path)), 111)
 
-func test_a_save_is_restoring_until_the_player_stands_where_they_saved() -> void:
+func test_a_save_is_restoring_and_covered_until_the_player_stands_where_they_saved() -> void:
 	await _enter_fixture_location()
 	assert_eq(_manager.write_save(), "")
 	var seen := {}
-	var on_scene_changed := func() -> void: seen["scene_changed"] = GameSaveManager.is_restoring()
+	var on_scene_changed := func() -> void:
+		seen["restoring"] = GameSaveManager.is_restoring()
+		seen["covered"] = Transition.is_covered()
+		seen["paused"] = get_tree().paused
 	get_tree().scene_changed.connect(on_scene_changed)
 	assert_true(await _manager.load_game())
 	get_tree().scene_changed.disconnect(on_scene_changed)
-	assert_eq(seen, {"scene_changed": true}, "the saved location's scene loads during the restore")
+	assert_eq(seen, {"restoring": true, "covered": true, "paused": true}, "the saved location's scene loads during the restore, behind the cover, with the world still")
 	assert_false(GameSaveManager.is_restoring())
+	assert_false(get_tree().paused)
+	await Transition.wait_until_clear()
+	assert_true(Transition.is_clear())
 
 func test_a_newer_complete_temp_finishes_an_interrupted_save() -> void:
 	await _enter_fixture_location()
