@@ -1,0 +1,34 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase modules/npc_ai\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Back again? What's on your mind?"
+msgstr "又来啦？有什么想聊的？"
+
+msgid "Good afternoon!"
+msgstr "下午好！"
+
+msgid "Good evening!"
+msgstr "晚上好！"
+
+msgid "Good morning!"
+msgstr "早上好！"
+
+msgid "Goodbye"
+msgstr "再见"
+
+msgid "Hello! I'm {npc}. Nice to meet you."
+msgstr "你好！我是{npc}，很高兴认识你。"
+
+msgid "Hmm, I couldn't say."
+msgstr "嗯……这我也说不好。"
+
+msgid "It's been a while! Good to see you."
+msgstr "好久不见！见到你真好。"
+
+msgid "It's my birthday today! Thanks for stopping by."
+msgstr "今天是我的生日！谢谢你来看我。"

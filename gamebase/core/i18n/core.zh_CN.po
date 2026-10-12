@@ -371,3 +371,6 @@ msgstr "已自动保存"
 
 msgid "That way is closed for now"
 msgstr "这条路暂时走不通"
+
+msgid "Online Services"
+msgstr "联网服务"

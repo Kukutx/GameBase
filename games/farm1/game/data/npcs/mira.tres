@@ -99,7 +99,6 @@ home_location_id = &"starter_town"
 default_location_id = &"starter_town"
 birthday_season = "Spring"
 birthday_day = 14
-ai_enabled = true
 dialogue_titles_by_hearts = {0: "start", 2: "friend_2", 4: "friend_4", 6: "friend_6", 8: "friend_8", 10: "friend_10"}
 visual_strip_root = "res://game/art/licensed/craftpix_roguelike/character2"
 schedule_entries = Array[ExtResource("2_entry")]([SubResource("Schedule_morning"), SubResource("Schedule_market"), SubResource("Schedule_midday"), SubResource("Schedule_evening"), SubResource("Schedule_sunday_riverside"), SubResource("Schedule_storm"), SubResource("Schedule_festival_spring_seed_fair"), SubResource("Schedule_festival_summer_river_fair"), SubResource("Schedule_festival_fall_harbor_derby"), SubResource("Schedule_festival_winter_lantern_night")])

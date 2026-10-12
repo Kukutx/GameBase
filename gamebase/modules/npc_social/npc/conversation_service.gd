@@ -3,14 +3,14 @@ extends Node
 
 ## Starts a conversation with an NPC: it notes the talk in the NPC's memory
 ## (`NpcMemory`), builds what the NPC knows (`NpcContext`) and shows the dialogue:
-## a due heart event (`HeartEvents`) first, else an AI conversation when the game
-## set an `ai_provider`, turned on `prefer_ai` and the NPC allows it, else the
-## NPC's lines for its hearts.
+## a due heart event (`HeartEvents`) first, else, for an NPC that chats
+## (`NpcProfileData.ai_enabled`) in a game with a module that makes chats
+## (`chat_maker`: npc_ai), its chat, else the NPC's lines for its hearts.
 ##
-## Only one scripted conversation runs at a time. The `DialogueManager` addon
-## runs it in a `DialogueBalloon`, which holds the player's controls and pauses
-## the world (`InputLock`, reason `dialogue`) until it closes, so the clock
-## stands still while the player reads. The addon runs while the world is
+## Only one conversation runs at a time, in a `DialogueBalloon` (the
+## `DialogueManager` addon runs a scripted one), which holds the player's
+## controls and pauses the world (`InputLock`, reason `dialogue`) until it
+## closes, so the clock stands still while the player reads. The addon runs while the world is
 ## paused, so its mutations and their waits do too; a node a mutation waits on
 ## (a tween, an animation) has to run while paused as well (`process_mode`).
 ## The service saves nothing of its own.
@@ -23,8 +23,10 @@ const DIALOGUE_LOCK := &"dialogue"
 ## The balloon a scripted conversation shows in.
 const BALLOON_SCENE := preload("res://gamebase/modules/npc_social/dialogue/dialogue_balloon.tscn")
 
-var ai_provider: Node
-var prefer_ai := false
+## Makes the chat of an NPC that chats, in place of its lines: Callable(npc:
+## GameNpc, actor: Node) -> NpcChat, null to leave the NPC to its lines. A
+## module that makes chats sets it (npc_ai); empty: NPCs say their lines.
+var chat_maker: Callable
 var _starting := false
 var _active_balloon: Node
 var _active_balloon_id := 0
@@ -49,6 +51,10 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 		return
 	var npc_id := npc.get_npc_id()
 	conversation_requested.emit(npc_id, actor)
+	# The talk before this one, which a chat greets by (`previous_talk_day`).
+	var facts := NpcMemory.get_facts(npc_id)
+	if facts.has("last_talk_day"):
+		NpcMemory.remember_fact(npc_id, &"previous_talk_day", facts["last_talk_day"])
 	NpcMemory.remember_fact(npc_id, &"last_talk_day", WorldClock.day)
 	NpcMemory.remember_fact(npc_id, &"last_relationship_points", RelationshipState.get_points(npc_id))
 	var context := NpcContext.build_context(npc_id, actor)
@@ -58,9 +64,11 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 	# priority over optional AI chatter. The event is only marked seen after a
 	# valid scripted balloon has actually been created.
 	var heart_event := HeartEvents.get_pending_event(npc_id)
-	if _can_use_ai(npc.profile, heart_event):
-		ai_provider.call("start_conversation", npc, actor, context)
-		return
+	if heart_event == null and chats(npc.profile):
+		var chat := chat_maker.call(npc, actor) as NpcChat
+		if chat != null:
+			_show_chat(chat)
+			return
 	if dialogue == null:
 		GameEvents.toastf("%s has nothing to say yet", [npc.display_name])
 		return
@@ -95,6 +103,16 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 		_active_heart_event = heart_event
 		_active_heart_dialogue = dialogue
 
+func _show_chat(chat: NpcChat) -> void:
+	if is_instance_valid(_active_balloon):
+		GameEvents.toast("Finish the current conversation first")
+		return
+	var balloon := BALLOON_SCENE.instantiate() as DialogueBalloon
+	var scene := get_tree().current_scene
+	(scene if scene != null else get_tree().root).add_child(balloon)
+	_hold_controls(balloon, null)
+	balloon.start_chat(chat)
+
 # The player stays put and the world waits while `balloon` shows `dialogue`:
 # the lock is given back when the dialogue ends or the balloon leaves the tree,
 # whichever comes first.
@@ -127,8 +145,10 @@ func _on_scripted_balloon_exited(balloon_id: int) -> void:
 	_active_heart_event = null
 	_active_heart_dialogue = null
 
-func _can_use_ai(profile: NpcProfileData, heart_event: HeartEventData) -> bool:
-	return heart_event == null and prefer_ai and profile != null and profile.ai_enabled and ai_provider != null and ai_provider.has_method("start_conversation")
+## Whether the NPC with `profile` chats rather than says its lines: it allows
+## it and a module makes chats.
+func chats(profile: NpcProfileData) -> bool:
+	return profile != null and profile.ai_enabled and chat_maker.is_valid()
 
 func _resolve_daily_title(dialogue: DialogueResource, profile: NpcProfileData, base_title: String, hearts: int) -> String:
 	var preferred := profile.get_dialogue_title(base_title, hearts) if profile != null else base_title

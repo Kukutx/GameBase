@@ -66,6 +66,13 @@
         "LateNight": "res://gamebase/modules/lifesim/rest/late_night_service.gd"
       }
     },
+    "npc_ai": {
+      "requires": ["npc_social"],
+      "addons": ["dialogue_manager"],
+      "autoloads": {
+        "NpcAi": "res://gamebase/modules/npc_ai/ai/npc_ai_service.gd"
+      }
+    },
     "npc_social": {
       "requires": ["items", "lifesim", "skills"],
       "addons": ["dialogue_manager"],

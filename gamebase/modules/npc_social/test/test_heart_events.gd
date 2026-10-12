@@ -1,10 +1,5 @@
 extends GutTest
 
-class FakeAiProvider:
-	extends Node
-	func start_conversation(_npc: GameNpc, _actor: Node, _context: Dictionary) -> void:
-		pass
-
 const DIALOGUE_TEXT := """~ start
 Fixture: Good morning.
 => END
@@ -44,21 +39,16 @@ func test_daily_dialogue_title_follows_the_highest_heart_threshold_reached() -> 
 	assert_eq(profile.get_dialogue_title("start", 5), "friend_2", "an empty title is skipped")
 	assert_eq(profile.get_dialogue_title("start", 10), "friend_6", "a threshold above ten hearts is ignored")
 
-func test_heart_event_priority_disables_ai_and_daily_title_falls_back_safely() -> void:
+func test_an_npc_chats_only_when_it_allows_it_and_a_module_makes_chats_and_titles_fall_back_safely() -> void:
 	var service := GameConversationService.new()
-	var provider := FakeAiProvider.new()
 	add_child_autofree(service)
-	add_child_autofree(provider)
-	service.prefer_ai = true
-	service.ai_provider = provider
 	var profile := NpcProfileData.new()
-	profile.ai_enabled = true
 	profile.dialogue_titles_by_hearts = {2: "missing_friend_title"}
-	var event := HeartEventData.new()
-	event.id = &"test_heart_event"
-	event.dialogue_title = "heart_2"
-	assert_true(bool(service.call("_can_use_ai", profile, null)))
-	assert_false(bool(service.call("_can_use_ai", profile, event)))
+	assert_false(service.chats(profile), "no module makes chats")
+	service.chat_maker = func(_npc: GameNpc, _actor: Node) -> NpcChat: return NpcChat.new()
+	assert_false(service.chats(profile), "the NPC does not chat")
+	profile.ai_enabled = true
+	assert_true(service.chats(profile))
 
 	var dialogue := _dialogue()
 	assert_eq(String(service.call("_resolve_daily_title", dialogue, profile, "start", 2)), "start")
