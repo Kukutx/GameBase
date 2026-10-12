@@ -1,5 +1,7 @@
 extends GutTest
 
+const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+
 const DIALOGUE_TEXT := """~ start
 Fixture: Good morning.
 => END
@@ -25,6 +27,8 @@ func before_each() -> void:
 	WorldClock.set_time(1, 10 * 60)
 
 func after_each() -> void:
+	for balloon: Node in get_tree().root.find_children("*", "DialogueBalloon", true, false):
+		balloon.free()
 	InputLock.unlock(DialogueService.LOCK)
 	WorldState.load_save_data(_world_snapshot)
 	RelationshipState.load_save_data(_relationship_snapshot)
@@ -74,6 +78,29 @@ func test_a_heart_event_is_seen_once_its_dialogue_ends_not_when_its_balloon_goes
 	assert_true(HeartEvents.is_seen(event.id))
 	assert_true(bool(NpcMemory.get_facts(&"fixture_npc").get("heart_event:fixture_npc_two_hearts", false)))
 	assert_null(service.get("_heart_event"))
+
+func test_a_heart_event_whose_title_shows_no_line_is_seen_as_it_starts() -> void:
+	var profile := NpcProfileData.new()
+	profile.id = &"fixture_npc"
+	profile.display_name = "Fixture"
+	var event := _two_hearts_event()
+	event.required_hearts = 0
+	event.location_id = &""
+	event.dialogue_title = "quiet"
+	ContentFixture.use(self, [profile, event])
+	var npc := GameNpc.new()
+	npc.profile = profile
+	npc.display_name = profile.display_name
+	autofree(npc)
+	var dialogue := DialogueManager.create_resource_from_text(DIALOGUE_TEXT + "\n~ quiet\nif false\n\tFixture: Never said.\n=> END\n") as DialogueResource
+	ConversationService.start_conversation(npc, null, dialogue)
+	# The tree's frames go on while a conversation pauses the world.
+	for frame in 10:
+		if HeartEvents.is_seen(event.id):
+			break
+		await get_tree().process_frame
+	assert_true(HeartEvents.is_seen(event.id), "a dialogue that ends as it starts is read to its end")
+	assert_null(ConversationService.get("_heart_event"))
 
 func test_heart_events_match_only_their_npc_location_time_hearts_and_condition() -> void:
 	var event := _two_hearts_event()

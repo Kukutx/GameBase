@@ -8,7 +8,7 @@ const { checkLocalization, repeatProblem } = require("./check_localization");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
 const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
-const { desiredAutoloads, desiredTestDirs, moduleOrder, projectInSync, syncedGutConfig, syncedProject } = require("./lib/project");
+const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, projectInSync, syncedExportPresets, syncedGutConfig, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
 const { selectGames } = require("./ci");
 const { callArguments, pages, ruleKeys, signalsOf, stalePages } = require("./generate_reference");
@@ -194,7 +194,7 @@ test("a resource's player-facing text needs a translation, such as a control's n
   assert.ok(!lines.some((line) => line.includes("missing Spring")), "the core translates its own seasons");
 });
 
-test("every game's project.godot and .gutconfig.json hold what its manifests give", () => {
+test("every game's project.godot, .gutconfig.json and export filters hold what its manifests give", () => {
   for (const id of listGameIds()) assert.ok(projectInSync(loadGame(id)), `games/${id}: run node tools/link.js`);
   assert.ok(projectInSync(templateGame()), "gamebase/templates/new_game: run node tools/link.js");
 });
@@ -208,6 +208,19 @@ test("a game runs the tests of the core, of each of its modules and its own", ()
   for (const dir of dirs.slice(1, -1)) assert.match(dir, /^res:\/\/gamebase\/modules\/(items|skills)\/test\/$/);
   const config = JSON.parse(syncedGutConfig('{"dirs": ["res://stale/"], "should_exit": true}', game, foundation));
   assert.deepEqual(config, { dirs, should_exit: true, pre_run_script: "res://gamebase/core/test/gut_pre_run.gd" });
+});
+
+test("a game's exports keep out the editor files of the addons it links, and only those", () => {
+  const talking = { id: "probe", addons: ["gut", "dialogue_manager"] };
+  const editorFiles = desiredAddonExcludes(talking);
+  assert.ok(editorFiles.includes("addons/dialogue_manager/plugin.gd*"));
+  const presets = 'name="Linux"\nexclude_filter="test/*,game.json"\n\nname="Web"\nexclude_filter="test/*,game.json"\n';
+  const synced = syncedExportPresets(presets, talking);
+  for (const filter of synced.matchAll(/^exclude_filter="([^"]*)"$/gm)) {
+    assert.deepEqual(filter[1].split(","), ["test/*", "game.json", ...editorFiles]);
+  }
+  assert.equal(syncedExportPresets(synced, talking), synced, "a synced file stays as it is");
+  assert.equal(syncedExportPresets(synced, { id: "probe", addons: ["gut"] }), presets, "an addon the game no longer links takes its filters along");
 });
 
 test("a battle on a grid or an open field needs no items", () => {

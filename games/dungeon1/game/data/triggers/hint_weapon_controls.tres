@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_trigger")
 id = &"hint_weapon_controls"
-event = &"DepthRun.depth_reached"
+event = &"WorldTravel.travel_finished"
+condition = "LOCATION depths"
 actions = PackedStringArray("SHOW_HINT weapon_controls")

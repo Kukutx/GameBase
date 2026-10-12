@@ -12,8 +12,10 @@ extends Node
 ## player reads. The addon runs while the world is paused, so its mutations and
 ## their waits do too; a node a mutation waits on (a tween, an animation) has to
 ## run while paused as well (`process_mode`). `finished` says a dialogue file was
-## read to its end; a balloon that leaves first (a load, the title) gives the
-## controls back without it. The service saves nothing.
+## read to its end, at once within `show_dialogue()` for a title that shows no
+## line, so a caller that waits for it listens first; a balloon that leaves
+## first (a load, the title) gives the controls back without it. The service
+## saves nothing.
 
 ## The dialogue file `resource` was read to its end.
 signal finished(resource: DialogueResource)

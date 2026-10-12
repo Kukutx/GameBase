@@ -75,6 +75,8 @@ func _run_smoke() -> void:
 	# The checks compare text with the English source strings.
 	root.get_node("GameSettings").set("locale", "en")
 	TranslationServer.set_locale("en")
+	# The smokes read the first hint, whatever the player's own settings say.
+	root.get_node("GameSettings").set("hints", true)
 	# Travels change scenes behind the transition as in play, without its fades.
 	root.get_node("Transition").set("fade_seconds", 0.0)
 	var save_manager := root.get_node("SaveManager")

@@ -69,10 +69,20 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 			GameEvents.toastf("%s has nothing to say yet", [npc.display_name])
 			return
 
-	var balloon := Dialogue.show_dialogue(dialogue, resolved_title, [actor, npc])
-	if balloon != null and heart_event != null:
+	if heart_event == null:
+		Dialogue.show_dialogue(dialogue, resolved_title, [actor, npc])
+		return
+	# Known before the dialogue starts, as one whose title shows no line ends
+	# within `show_dialogue()`; a conversation that shows already refuses it and
+	# keeps its own.
+	var refused := Dialogue.is_showing()
+	if not refused:
 		_heart_event = heart_event
 		_heart_dialogue = dialogue
+	var balloon := Dialogue.show_dialogue(dialogue, resolved_title, [actor, npc])
+	if balloon == null and not refused:
+		_forget_heart_event()
+	elif balloon != null and _heart_event == heart_event:
 		balloon.tree_exited.connect(_forget_heart_event, CONNECT_ONE_SHOT)
 
 func _on_dialogue_finished(resource: DialogueResource) -> void:
