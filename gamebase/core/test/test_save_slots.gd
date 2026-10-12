@@ -45,6 +45,7 @@ func after_each() -> void:
 
 func test_silent_save_writes_the_slot_without_emitting_a_status() -> void:
 	await _enter_fixture_location()
+	WorldState.set_value(&"fixture:ratio", 0.1 + 0.2)
 	var emitted := {"count": 0}
 	_manager.save_completed.connect(func(_success: bool, _message: String) -> void:
 		emitted["count"] = int(emitted["count"]) + 1
@@ -60,6 +61,7 @@ func test_silent_save_writes_the_slot_without_emitting_a_status() -> void:
 	assert_eq(String(saved.get("location_id", "")), String(LOCATION))
 	for section_id: String in _manager.get_section_ids():
 		assert_true(saved.get(section_id) is Dictionary, "section %s is saved" % section_id)
+	assert_eq(saved["world"]["fixture:ratio"], 0.1 + 0.2, "a float comes back with every digit")
 
 func test_each_slot_has_its_own_files_in_the_save_directory() -> void:
 	var slot1 := _manager.get_slot_paths(1)
@@ -152,6 +154,17 @@ func test_loading_a_backup_makes_it_the_save_again() -> void:
 	assert_true(await _manager.load_game())
 	assert_eq(PlayerState.money, 111)
 	assert_eq(_money(_read(_manager.save_path)), 111)
+
+func test_a_save_is_restoring_until_the_player_stands_where_they_saved() -> void:
+	await _enter_fixture_location()
+	assert_true(_manager.save_game_silent())
+	var seen := {}
+	var on_scene_changed := func() -> void: seen["scene_changed"] = GameSaveManager.is_restoring()
+	get_tree().scene_changed.connect(on_scene_changed)
+	assert_true(await _manager.load_game())
+	get_tree().scene_changed.disconnect(on_scene_changed)
+	assert_eq(seen, {"scene_changed": true}, "the saved location's scene loads during the restore")
+	assert_false(GameSaveManager.is_restoring())
 
 func test_a_newer_complete_temp_finishes_an_interrupted_save() -> void:
 	await _enter_fixture_location()

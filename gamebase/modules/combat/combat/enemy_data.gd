@@ -25,6 +25,8 @@ const KIND := &"enemy"
 @export var drop_item_id: StringName
 @export_range(0, 99, 1) var drop_quantity := 1
 @export_range(1, 28, 1) var respawn_days := 1
+## Combat experience a defeat is worth, which `CombatEvents.enemy_defeated`
+## passes on for the game to award (0: none).
 @export_range(0, 9999, 1) var combat_xp := 20
 
 ## The enemy with `entry_id` in the running game's content, or null.

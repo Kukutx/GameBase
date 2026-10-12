@@ -23,6 +23,7 @@
       "AutoSave": "res://gamebase/core/save/auto_save_service.gd",
       "GameSession": "res://gamebase/core/session/game_session.gd",
       "MiniGameHost": "res://gamebase/core/minigames/minigame_host.gd",
+      "GameTriggers": "res://gamebase/core/rules/game_triggers.gd",
       "GameDiagnostics": "res://gamebase/core/diagnostics/game_diagnostics.gd",
       "SupportBundle": "res://gamebase/core/diagnostics/support_bundle_service.gd"
     }

@@ -19,6 +19,10 @@ func set_value(key: StringName, value: Variant) -> void:
 	_flags[string_key] = value
 	changed.emit(key, value)
 
+## Whether the world holds a value under `key`, null included.
+func has_value(key: StringName) -> bool:
+	return _flags.has(String(key))
+
 func get_value(key: StringName, default_value: Variant = null) -> Variant:
 	return _flags.get(String(key), default_value)
 

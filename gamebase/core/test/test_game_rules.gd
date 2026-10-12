@@ -58,6 +58,17 @@ func test_actions_change_flags_counters_and_money() -> void:
 	assert_true(GameRules.run_actions(PackedStringArray(["CLEAR_FLAG %s" % FLAG])))
 	assert_false(WorldState.get_bool(FLAG))
 
+func test_an_action_list_that_cannot_run_as_written_runs_none() -> void:
+	var money := PlayerState.money
+	# An unterminated quote parses to no clause, as many as an empty list has.
+	assert_eq(GameRules.run_actions_from(PackedStringArray(['ADD_MONEY "5']), 0), -1)
+	assert_false(GameRules.run_actions(PackedStringArray(["ADD_MONEY 5", 'ADD_MONEY "5'])))
+	assert_false(GameRules.can_run_actions_from(PackedStringArray(['ADD_MONEY "5']), 0))
+	assert_push_warning_count(3)
+	assert_eq(PlayerState.money, money, "not even the actions before it")
+	assert_true(GameRules.can_run_actions_from(PackedStringArray(["ADD_MONEY 5"]), 0))
+	assert_eq(PlayerState.money, money, "asking runs nothing")
+
 func test_validation_reports_unknown_keys_argument_counts_kinds_and_negated_actions() -> void:
 	for key: String in ["TRUE", "WORLD_FLAG", "SEASON", "LOCATION", "MONEY_AT_LEAST"]:
 		assert_true(GameRules.has_condition(StringName(key)), key)

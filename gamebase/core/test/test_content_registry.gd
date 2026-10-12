@@ -11,7 +11,7 @@ class _UnregisteredEntry extends ContentEntry:
 	pass
 
 func test_the_core_registers_its_own_kinds_of_content() -> void:
-	for kind: StringName in [WorldLocationData.KIND, AudioCueData.KIND, MiniGameDefinition.KIND]:
+	for kind: StringName in [WorldLocationData.KIND, AudioCueData.KIND, MiniGameDefinition.KIND, TriggerData.KIND]:
 		assert_true(ContentDB.get_kinds().has(kind), "the core registers kind '%s'" % kind)
 
 func test_unknown_ids_return_null() -> void:

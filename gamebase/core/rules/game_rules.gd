@@ -17,6 +17,14 @@ extends Node
 ## A condition may also register a `describer`, `func(args: PackedStringArray) -> String`:
 ## the requirement in words a player reads, which `describe()` collects so a
 ## menu can say what a locked entry needs.
+##
+## In a trigger's condition and actions an argument written `$name` is the
+## argument `name` of the event that set the trigger off (the context's
+## "event"; see `TriggerData`): `ADD_SKILL_XP combat $combat_xp`. Validation
+## checks what it can before the event has a value: the event argument's type,
+## and a cross-argument check that no value of an id could pass. When the event
+## fires, its values are checked as written ones are, and a clause whose value
+## fails holds false or fails to run.
 
 ## Argument checks for `register_condition`/`register_action` `arg_kinds`: a
 ## content kind (checked against the running game's content,
@@ -26,6 +34,11 @@ const ARG_INT := &"int"
 const ARG_NUMBER := &"number"
 const ARG_BOOL := &"bool"
 const ARG_TEXT := &"text"
+## A whole number of at least 1 (how many items).
+const ARG_COUNT := &"count"
+## How many values of its event arguments a clause's cross-argument check is
+## tried with at most; one with more is checked when the event fires.
+const MAX_EVENT_ARG_VALUES := 256
 
 var _conditions: Dictionary = {}
 var _actions: Dictionary = {}
@@ -67,14 +80,12 @@ func get_action_keys() -> PackedStringArray:
 
 ## True when every clause of `query` holds. An empty query is true; a query
 ## that does not parse or names an unknown key is false.
+## A value an event gave that does not pass its argument's check makes the
+## query false, whatever negates the clause or the other clauses and `ANY`
+## branches hold.
 func check(query: String, context: Dictionary = {}) -> bool:
-	var parsed := _parse(query)
-	if not String(parsed["error"]).is_empty():
-		return false
-	for clause: Dictionary in parsed["clauses"]:
-		if _evaluate_clause(clause, context) == bool(clause["negate"]):
-			return false
-	return true
+	var holds: Variant = _holds(query, context)
+	return holds is bool and holds
 
 ## What `query` requires, in words a player reads: the description of each
 ## clause whose condition registered one. Negated clauses and conditions
@@ -93,19 +104,62 @@ func describe(query: String) -> PackedStringArray:
 ## Runs each action in order and stops at the first one that fails. Returns
 ## whether all succeeded.
 func run_actions(actions: PackedStringArray, context: Dictionary = {}) -> bool:
+	return run_actions_from(actions, 0, context) == count_actions(actions)
+
+## How many actions `actions` holds: each clause of each text is one.
+func count_actions(actions: PackedStringArray) -> int:
+	var count := 0
+	for action_text: String in actions:
+		count += (_parse(action_text)["clauses"] as Array).size()
+	return count
+
+## Runs the actions from the one at `first` (each clause of each text counts,
+## from 0) in order and stops at the first one that fails. Returns how many,
+## from the start, have run then: `count_actions()` when every one did. The
+## actions are looked up and the values an event gives them checked before
+## any runs: an action list that cannot run as written (a parse error, an
+## unknown action, an event value that fails its check) runs none and returns
+## -1, which no count equals.
+func run_actions_from(actions: PackedStringArray, first: int, context: Dictionary = {}) -> int:
+	var calls: Variant = _prepare_actions(actions, first, context)
+	if calls == null:
+		return -1
+	var done := mini(first, count_actions(actions))
+	for action_call: Array in calls:
+		if not bool((action_call[0] as Callable).call(action_call[1], context)):
+			return done
+		done += 1
+	return done
+
+## Whether `run_actions_from()` would run the actions from `first` as written:
+## each parses, is a known action and takes the values the context's event
+## gives it. Runs nothing.
+func can_run_actions_from(actions: PackedStringArray, first: int, context: Dictionary = {}) -> bool:
+	return _prepare_actions(actions, first, context) != null
+
+# The actions from `first` as [callable, resolved args] pairs, or null, with a
+# warning, when they cannot run as written. Validation reports such content
+# at startup; here it only runs none of it.
+func _prepare_actions(actions: PackedStringArray, first: int, context: Dictionary) -> Variant:
+	var calls: Array[Array] = []
+	var index := 0
 	for action_text: String in actions:
 		var parsed := _parse(action_text)
 		if not String(parsed["error"]).is_empty():
-			push_error("GameRules: %s" % parsed["error"])
-			return false
+			push_warning("GameRules: %s" % parsed["error"])
+			return null
 		for clause: Dictionary in parsed["clauses"]:
-			var entry: Dictionary = _actions.get(clause["key"], {})
-			if entry.is_empty():
-				push_error("GameRules: unknown action '%s'" % clause["key"])
-				return false
-			if not bool((entry["call"] as Callable).call(clause["args"], context)):
-				return false
-	return true
+			if index >= first:
+				var entry: Dictionary = _actions.get(clause["key"], {})
+				if entry.is_empty():
+					push_warning("GameRules: unknown action '%s'" % clause["key"])
+					return null
+				var args: Variant = _resolve_clause_args(entry, clause, context)
+				if args == null:
+					return null
+				calls.append([entry["call"], args])
+			index += 1
+	return calls
 
 ## Problems with `query`: parse errors, unknown keys, argument counts and kinds.
 func validate_query(query: String) -> PackedStringArray:
@@ -138,9 +192,13 @@ func _validate_resource(resource: Resource, context: String, problems: PackedStr
 		if (name == "condition" or name.ends_with("_condition")) and value is String:
 			for problem: String in validate_query(value):
 				problems.append("%s %s: %s" % [context, name, problem])
+			if not resource is TriggerData and not find_event_arg_uses(PackedStringArray([value])).is_empty():
+				problems.append("%s %s: only a trigger's conditions and actions name event arguments ($name)" % [context, name])
 		elif (name == "actions" or name.ends_with("_actions")) and (value is PackedStringArray or value is Array):
 			for problem: String in validate_actions(PackedStringArray(value)):
 				problems.append("%s %s: %s" % [context, name, problem])
+			if not resource is TriggerData and not find_event_arg_uses(PackedStringArray(value)).is_empty():
+				problems.append("%s %s: only a trigger's conditions and actions name event arguments ($name)" % [context, name])
 		elif value is Array:
 			for item: Variant in value:
 				if item is Resource and not (item as Resource).resource_path.ends_with(".tres"):
@@ -179,17 +237,82 @@ func _validate(text: String, registry: Dictionary, label: String, allow_negate: 
 				problems.append("%s '%s' argument %d: %s" % [label, key, index + 1, problem])
 		var args_check: Callable = entry["args_check"]
 		if problems.size() == found and args_check.is_valid():
-			var problem := String(args_check.call(args))
-			if not problem.is_empty():
-				problems.append("%s '%s': %s" % [label, key, problem])
+			if not _names_event_arg(args):
+				var problem := String(args_check.call(args))
+				if not problem.is_empty():
+					problems.append("%s '%s': %s" % [label, key, problem])
+			else:
+				var problem := _check_with_any_event_values(args_check, args, kinds)
+				if not problem.is_empty():
+					problems.append("%s '%s': %s, whatever the event's arguments are" % [label, key, problem])
 	return problems
 
+# What `args_check` finds wrong with `args` for every value their event
+# arguments can take, or "" when one passes. An argument whose values cannot
+# be listed (a number, text) or too many values leave the check to the event.
+func _check_with_any_event_values(args_check: Callable, args: PackedStringArray, kinds: Array[StringName]) -> String:
+	var choices: Array[PackedStringArray] = []
+	var combinations := 1
+	for index: int in args.size():
+		if not args[index].begins_with("$"):
+			choices.append(PackedStringArray([args[index]]))
+			continue
+		var values := _arg_values(kinds[mini(index, kinds.size() - 1)] if not kinds.is_empty() else &"")
+		combinations *= values.size()
+		if values.is_empty() or combinations > MAX_EVENT_ARG_VALUES:
+			return ""
+		choices.append(values)
+	var first_problem := ""
+	var picked: Array[int] = []
+	picked.resize(choices.size())
+	picked.fill(0)
+	for _combination: int in combinations:
+		var candidate := PackedStringArray()
+		for index: int in choices.size():
+			candidate.append(choices[index][picked[index]])
+		var problem := String(args_check.call(candidate))
+		if problem.is_empty():
+			return ""
+		if first_problem.is_empty():
+			first_problem = problem
+		# The next combination, the last argument turning fastest.
+		for index: int in range(choices.size() - 1, -1, -1):
+			picked[index] += 1
+			if picked[index] < choices[index].size():
+				break
+			picked[index] = 0
+	return first_problem
+
+# Every value an argument of `kind` can take, when they can be listed: true and
+# false, or the ids of a content kind; empty when they cannot.
+func _arg_values(kind: StringName) -> PackedStringArray:
+	var values := PackedStringArray()
+	if kind == ARG_BOOL:
+		return PackedStringArray(["true", "false"])
+	if kind in [&"", ARG_INT, ARG_NUMBER, ARG_TEXT, ARG_COUNT]:
+		return values
+	# A kind registered with its own check may still name content (a skill):
+	# its values are the entries that pass that check.
+	for entry: Variant in ContentRegistry.active.get_entries(kind):
+		if entry is ContentEntry:
+			var id := String((entry as ContentEntry).id)
+			if _check_value(id, kind).is_empty():
+				values.append(id)
+	return values
+
 func _check_arg(value: String, kind: StringName) -> String:
+	if value.begins_with("$"):
+		return "" if value.substr(1).is_valid_ascii_identifier() else "'%s' is not an event argument ($name)" % value
+	return _check_value(value, kind)
+
+func _check_value(value: String, kind: StringName) -> String:
 	match kind:
 		ARG_INT:
 			return "" if value.is_valid_int() else "'%s' is not an integer" % value
 		ARG_NUMBER:
 			return "" if value.is_valid_float() else "'%s' is not a number" % value
+		ARG_COUNT:
+			return "" if value.is_valid_int() and int(value) >= 1 else "'%s' is not a count (a whole number of at least 1)" % value
 		ARG_BOOL:
 			return "" if ["true", "false"].has(value.to_lower()) else "'%s' is not true or false" % value
 		ARG_TEXT:
@@ -198,18 +321,42 @@ func _check_arg(value: String, kind: StringName) -> String:
 		return String((_arg_kinds[kind] as Callable).call(value))
 	return "" if ContentRegistry.active.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
 
-func _evaluate_clause(clause: Dictionary, context: Dictionary) -> bool:
+# Whether every clause of `query` holds: true or false, or null when a value
+# an event gave any clause does not pass its check, which no negation, other
+# clause or `ANY` branch turns into a pass. Every clause is evaluated, so the
+# result does not depend on their order.
+func _holds(query: String, context: Dictionary) -> Variant:
+	var parsed := _parse(query)
+	if not String(parsed["error"]).is_empty():
+		return false
+	var result := true
+	for clause: Dictionary in parsed["clauses"]:
+		var holds: Variant = _evaluate_clause(clause, context)
+		if holds == null:
+			return null
+		if holds == bool(clause["negate"]):
+			result = false
+	return result
+
+# Whether the clause holds, before its negation; null as `_holds()` says.
+func _evaluate_clause(clause: Dictionary, context: Dictionary) -> Variant:
 	var key: StringName = clause["key"]
 	var args: PackedStringArray = clause["args"]
 	if key == &"ANY":
+		var any := false
 		for sub_query: String in args:
-			if check(sub_query, context):
-				return true
-		return false
+			var holds: Variant = _holds(sub_query, context)
+			if holds == null:
+				return null
+			any = any or holds
+		return any
 	var entry: Dictionary = _conditions.get(key, {})
 	if entry.is_empty():
 		return false
-	return bool((entry["call"] as Callable).call(args, context))
+	var resolved: Variant = _resolve_clause_args(entry, clause, context)
+	if resolved == null:
+		return null
+	return bool((entry["call"] as Callable).call(resolved, context))
 
 func _parse(text: String) -> Dictionary:
 	if not _parsed.has(text):
@@ -240,6 +387,85 @@ func _sorted_keys(source: Dictionary) -> PackedStringArray:
 	keys.sort()
 	return keys
 
+## Each place `texts`, conditions or actions, read an argument of the event
+## that set off a trigger, as {"name", "key", "index"}: `index` is where the
+## `$name` stands among the key's arguments, or -1 for the name `EVENT_ARG` and
+## `EVENT_ARG_AT_LEAST` read. The clauses inside `ANY` count too.
+static func find_event_arg_uses(texts: PackedStringArray) -> Array[Dictionary]:
+	var uses: Array[Dictionary] = []
+	for text: String in texts:
+		for clause: Dictionary in GameQuery.parse(text)["clauses"]:
+			var key := StringName(String(clause["key"]).to_upper())
+			var args: PackedStringArray = clause["args"]
+			if key == &"ANY":
+				uses.append_array(find_event_arg_uses(args))
+				continue
+			if (key == &"EVENT_ARG" or key == &"EVENT_ARG_AT_LEAST") and not args.is_empty():
+				uses.append({"name": args[0], "key": key, "index": -1})
+			for index: int in args.size():
+				if args[index].begins_with("$"):
+					uses.append({"name": args[index].substr(1), "key": key, "index": index})
+	return uses
+
+## The kind of argument `key` takes at `index` (see `register_condition`), or
+## &"" when nothing checks it.
+func get_arg_kind(key: StringName, index: int) -> StringName:
+	var entry: Dictionary = _conditions.get(_normalize(key), _actions.get(_normalize(key), {}))
+	var kinds: Array = entry.get("kinds", [])
+	return &"" if kinds.is_empty() else StringName(kinds[mini(index, kinds.size() - 1)])
+
+## Whether an event argument of the Variant `type` can stand for an argument
+## of `kind`: a number for a number, text or an id for text or an id. An
+## untyped event argument can stand for any.
+static func takes_type(kind: StringName, type: int) -> bool:
+	if type == TYPE_NIL or kind == &"" or kind == ARG_TEXT:
+		return true
+	match kind:
+		ARG_INT, ARG_COUNT:
+			return type == TYPE_INT
+		ARG_NUMBER:
+			return type == TYPE_INT or type == TYPE_FLOAT
+		ARG_BOOL:
+			return type == TYPE_BOOL
+	return type == TYPE_STRING_NAME or type == TYPE_STRING
+
+static func _names_event_arg(args: PackedStringArray) -> bool:
+	for arg: String in args:
+		if arg.begins_with("$"):
+			return true
+	return false
+
+# The clause's arguments with each `$name` replaced by that argument of the
+# context's event, checked as written arguments are; null, with a warning,
+# when a value the event gave does not pass (an id the content does not have).
+func _resolve_clause_args(entry: Dictionary, clause: Dictionary, context: Dictionary) -> Variant:
+	var args: PackedStringArray = clause["args"]
+	if not _names_event_arg(args):
+		return args
+	var event: Dictionary = context.get("event", {})
+	var kinds: Array[StringName] = entry["kinds"]
+	var resolved := args.duplicate()
+	var problem := ""
+	for index: int in resolved.size():
+		if not args[index].begins_with("$"):
+			continue
+		var name := args[index].substr(1)
+		if not event.has(name):
+			problem = "the event has no argument '%s'" % name
+			break
+		resolved[index] = str(event[name])
+		if not kinds.is_empty():
+			problem = _check_value(resolved[index], kinds[mini(index, kinds.size() - 1)])
+			if not problem.is_empty():
+				break
+	var args_check: Callable = entry["args_check"]
+	if problem.is_empty() and args_check.is_valid():
+		problem = String(args_check.call(resolved))
+	if problem.is_empty():
+		return resolved
+	push_warning("GameRules: %s %s: %s" % [clause["key"], " ".join(args), problem])
+	return null
+
 ## The day a condition is asked about: the context's "day", or today.
 static func context_day(context: Dictionary) -> int:
 	return int(context.get("day", WorldClock.day))
@@ -266,6 +492,8 @@ func _register_core_rules() -> void:
 	register_condition(&"WEATHER", _weather, 1, -1, [ARG_TEXT])
 	register_condition(&"LOCATION", _location, 1, -1, [WorldLocationData.KIND])
 	register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [ARG_INT])
+	register_condition(&"EVENT_ARG", _event_arg, 2, -1, [ARG_TEXT])
+	register_condition(&"EVENT_ARG_AT_LEAST", _event_arg_at_least, 2, 2, [ARG_TEXT, ARG_NUMBER])
 	register_action(&"SET_FLAG", _set_flag, 1, 2, [ARG_TEXT])
 	register_action(&"CLEAR_FLAG", _clear_flag, 1, 1, [ARG_TEXT])
 	register_action(&"ADD_FLAG", _add_flag, 1, 2, [ARG_TEXT, ARG_INT])
@@ -322,6 +550,17 @@ func _location(args: PackedStringArray, context: Dictionary) -> bool:
 ## MONEY_AT_LEAST <n>
 func _money_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
 	return PlayerState.money >= int(args[0])
+
+## EVENT_ARG <name> <value>...: the argument of the event that set off the
+## trigger is one of the values (see `TriggerData`).
+func _event_arg(args: PackedStringArray, context: Dictionary) -> bool:
+	var event: Dictionary = context.get("event", {})
+	return event.has(args[0]) and args.slice(1).has(str(event[args[0]]))
+
+## EVENT_ARG_AT_LEAST <name> <n>: that argument is a number of at least n.
+func _event_arg_at_least(args: PackedStringArray, context: Dictionary) -> bool:
+	var value: Variant = (context.get("event", {}) as Dictionary).get(args[0])
+	return (value is int or value is float) and float(value) >= float(args[1])
 
 ## SET_FLAG <key> [value]: value is true, false or an integer (default true).
 func _set_flag(args: PackedStringArray, _context: Dictionary) -> bool:

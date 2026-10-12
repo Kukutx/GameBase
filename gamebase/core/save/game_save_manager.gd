@@ -14,7 +14,7 @@ signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 4
+const SAVE_VERSION := 5
 const SLOT_COUNT := 3
 
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
@@ -42,12 +42,20 @@ var backup_path := ""
 static var _sections: Array[SaveSection] = []
 static var _load_steps: Array[Dictionary] = []
 static var _save_blockers: Array[Callable] = []
+# Whether a save is being restored; shared like the sections.
+static var _restoring := false
+# Whether this manager is the one restoring a save.
+var _restoring_here := false
 
 func _ready() -> void:
 	_register_core_sections()
 	select_slot(active_slot)
 
 func _exit_tree() -> void:
+	# A manager freed while it restores never resumes to end the restore.
+	if _restoring_here:
+		_restoring = false
+		_restoring_here = false
 	# The registrations hold callables of other autoloads. Release them while
 	# those still exist when the autoload itself leaves, instead of when the
 	# script's static variables are torn down at engine shutdown.
@@ -114,6 +122,13 @@ func select_slot(slot: int) -> void:
 func get_slot_paths(slot: int) -> Dictionary:
 	var stem := "%s/slot_%d" % [save_directory, clampi(slot, 1, SLOT_COUNT)]
 	return {"save": stem + ".json", "temp": stem + ".tmp", "backup": stem + ".bak"}
+
+## Whether a save is being restored: from reading its sections into the
+## services until the player stands where they saved. What the services and
+## the saved location announce meanwhile is the save coming back, not play
+## (`GameTriggers` ignores it).
+static func is_restoring() -> bool:
+	return _restoring
 
 func has_save(slot: int = -1) -> bool:
 	return not _read_slot(slot).is_empty()
@@ -269,6 +284,14 @@ func apply_snapshot(data: Dictionary) -> bool:
 	var packed := ResourceLoader.load(location.scene_path) as PackedScene
 	if packed == null:
 		return false
+	_restoring = true
+	_restoring_here = true
+	var restored: bool = await _restore(data, location, packed)
+	_restoring = false
+	_restoring_here = false
+	return restored
+
+func _restore(data: Dictionary, location: WorldLocationData, packed: PackedScene) -> bool:
 	# Services are restored before the scene is instantiated: scene components
 	# read them in _ready().
 	for section: SaveSection in _sections:
@@ -358,7 +381,8 @@ func _write_dictionary(path: String, data: Dictionary) -> bool:
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		return false
-	var stored := file.store_string(JSON.stringify(data, "\t"))
+	# Every digit, so a float comes back as it was saved.
+	var stored := file.store_string(JSON.stringify(data, "\t", true, true))
 	file.close()
 	return stored
 
