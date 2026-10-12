@@ -262,13 +262,13 @@ func _get_state() -> Dictionary:
 	var state: Dictionary = source.duplicate(true)
 	state["objective_type"] = _safe_string(source.get("objective_type", ""))
 	state["target_item_id"] = _safe_string(source.get("target_item_id", ""))
-	var generated_day := maxi(SaveValues.whole_number_or(source.get("generated_day", 0), 0), 0)
+	var generated_day := SaveValues.count(source.get("generated_day", 0))
 	state["generated_day"] = generated_day
 	state["expires_day"] = maxi(SaveValues.whole_number_or(source.get("expires_day", generated_day), generated_day), generated_day)
 	var required := maxi(SaveValues.whole_number_or(source.get("required", 1), 1), 1)
 	state["required"] = required
 	state["progress"] = clampi(SaveValues.whole_number_or(source.get("progress", 0), 0), 0, required)
-	state["reward_money"] = maxi(SaveValues.whole_number_or(source.get("reward_money", 0), 0), 0)
+	state["reward_money"] = SaveValues.count(source.get("reward_money", 0))
 	var claimed := source.get("claimed", false) is bool and bool(source.get("claimed", false))
 	var completed := claimed or (source.get("completed", false) is bool and bool(source.get("completed", false)))
 	var accepted := completed or (source.get("accepted", false) is bool and bool(source.get("accepted", false)))

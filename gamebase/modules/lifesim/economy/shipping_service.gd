@@ -94,8 +94,8 @@ func load_save_data(data: Dictionary) -> void:
 			if not raw_entry is Dictionary:
 				continue
 			var entry: Dictionary = raw_entry
-			var quantity := maxi(SaveValues.whole_number_or(entry.get("quantity", 0), 0), 0)
-			var value := maxi(SaveValues.whole_number_or(entry.get("value", 0), 0), 0)
+			var quantity := SaveValues.count(entry.get("quantity", 0))
+			var value := SaveValues.count(entry.get("value", 0))
 			if quantity <= 0 or value <= 0:
 				continue
 			_pending[String(raw_key)] = {"quantity": quantity, "value": value}

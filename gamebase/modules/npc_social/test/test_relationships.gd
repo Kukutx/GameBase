@@ -41,6 +41,16 @@ func test_birthdays_are_calendar_based_and_double_gift_friendship() -> void:
 	assert_eq(state.give_gift(_profile, &"fixture_berry"), 160)
 	assert_eq(state.get_points(&"fixture_npc"), 160)
 
+func test_only_the_first_talk_of_a_day_counts() -> void:
+	WorldClock.set_time(3, 10 * 60)
+	var state := RelationshipManager.new()
+	add_child_autofree(state)
+	assert_true(state.record_talk(&"fixture_npc"), "the first talk today")
+	assert_false(state.record_talk(&"fixture_npc"), "a second talk the same day")
+	assert_eq(state.get_points(&"fixture_npc"), 10, "only the first adds friendship")
+	WorldClock.set_time(4, 10 * 60)
+	assert_true(state.record_talk(&"fixture_npc"), "the next day's first talk")
+
 func test_gift_daily_limit_blocks_item_removed_reentrancy() -> void:
 	WorldClock.set_time(1, 10 * 60)
 	InventoryState.add_item_by_id(&"fixture_berry", 2)

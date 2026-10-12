@@ -18,8 +18,10 @@ signal new_game_started
 ## stays where they started it (the title screen).
 signal new_game_failed
 ## Emitted when play starts after the session changed: a new game is ready, or
-## a save finished loading. A service that ignores what is announced while the
-## session changes (`is_changing()`) catches up here.
+## a save finished loading. Mail checks its deliveries again here. What is
+## announced while the session changes (`is_changing()`) is not replayed:
+## `GameTriggers` drops it, since a load or a new game's steps set the state
+## those events stand for.
 signal play_started
 signal continue_started(success: bool)
 signal player_collapsed(money_lost: int)

@@ -84,7 +84,7 @@ func load_state_data(state: Dictionary, persist := true) -> void:
 		depleted_day = 0
 		if durability_left <= 0:
 			durability_left = default_durability
-	pending_drop_quantity = maxi(SaveValues.whole_number_or(state.get("pending_drop_quantity", 0), 0), 0)
+	pending_drop_quantity = SaveValues.count(state.get("pending_drop_quantity", 0))
 	if persist:
 		_persist()
 	_refresh_visual()

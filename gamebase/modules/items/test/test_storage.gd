@@ -102,6 +102,10 @@ func test_storage_sanitizes_malformed_quantities_without_dropping_legacy_numeric
 	assert_eq(int(normalized_raw.get("fixture_plank", 0)), 1)
 	assert_false(normalized_raw.has("fixture_stone"))
 
+	WorldState.set_value(state_key, {"fixture_snack": 2.5, "fixture_stone": 1.0e18})
+	assert_eq(StorageState.get_quantity(CONTAINER, &"fixture_snack"), 0, "a fraction is no quantity")
+	assert_eq(StorageState.get_quantity(CONTAINER, &"fixture_stone"), 0, "nor a number past what JSON keeps exactly")
+
 func test_storage_persists_through_world_state_snapshot() -> void:
 	InventoryState.add_item(_plank, 12)
 	assert_eq(StorageState.store_item(CONTAINER, &"fixture_plank", 8, 24), 8)

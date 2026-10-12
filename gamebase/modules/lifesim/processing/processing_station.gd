@@ -120,11 +120,11 @@ func get_state_data() -> Dictionary:
 ## current item, is dropped and the station is left idle.
 func load_state_data(data: Dictionary, persist := true) -> void:
 	active_recipe_id = _safe_string_name(data.get("recipe_id", ""))
-	finish_at = _safe_nonnegative_int(data.get("finish_at", 0))
+	finish_at = SaveValues.count(data.get("finish_at", 0))
 	var raw_ready: Variant = data.get("output_ready", false)
 	output_ready = raw_ready is bool and bool(raw_ready)
 	pending_output_item_id = _safe_string_name(data.get("output_item_id", ""))
-	pending_output_quantity = _safe_nonnegative_int(data.get("output_quantity", 0))
+	pending_output_quantity = SaveValues.count(data.get("output_quantity", 0))
 	var valid := active_recipe_id != &"" and pending_output_quantity > 0 and ItemData.find(pending_output_item_id) != null
 	if not valid:
 		var had_job := active_recipe_id != &""
@@ -221,11 +221,6 @@ func _load_state() -> void:
 
 func _state_key() -> StringName:
 	return StringName("processing:%s" % String(station_id))
-
-func _safe_nonnegative_int(value: Variant) -> int:
-	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
-		return 0
-	return maxi(int(value), 0)
 
 func _safe_string_name(value: Variant) -> StringName:
 	if value is String or value is StringName:

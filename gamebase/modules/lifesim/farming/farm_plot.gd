@@ -114,7 +114,7 @@ func load_state_data(data: Dictionary, persist := true) -> void:
 	tilled = raw_tilled is bool and bool(raw_tilled)
 	watered = raw_watered is bool and bool(raw_watered)
 	crop_id = StringName(String(data.get("crop_id", "")))
-	growth_days = maxi(SaveValues.whole_number_or(data.get("growth_days", 0), 0), 0)
+	growth_days = SaveValues.count(data.get("growth_days", 0))
 	last_processed_day = clampi(SaveValues.whole_number_or(data.get("last_processed_day", WorldClock.day), WorldClock.day), 1, maxi(WorldClock.day, 1))
 	# A crop that is not content is dropped.
 	var crop := CropData.find(crop_id)

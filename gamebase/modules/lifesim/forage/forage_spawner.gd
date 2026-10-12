@@ -110,7 +110,7 @@ func _get_state() -> Dictionary:
 	if not raw is Dictionary:
 		return {"day": 0, "left": {}}
 	var source: Dictionary = raw
-	var day := maxi(SaveValues.whole_number_or(source.get("day", 0), 0), 0)
+	var day := SaveValues.count(source.get("day", 0))
 	# Spawn index (as text) -> what is left of it today.
 	var left := {}
 	var raw_left: Variant = source.get("left", {})

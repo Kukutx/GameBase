@@ -208,7 +208,7 @@ func to_save_data() -> Dictionary:
 
 func load_save_data(data: Dictionary) -> void:
 	var raw_cast_count: Variant = data.get("cast_count", 0)
-	cast_count = maxi(SaveValues.whole_number_or(raw_cast_count, 0), 0)
+	cast_count = SaveValues.count(raw_cast_count)
 	_reset_session()
 
 func _award_fish(fish: FishData) -> bool:

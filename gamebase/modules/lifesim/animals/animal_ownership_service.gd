@@ -271,7 +271,7 @@ func _next_unique_sequence(animal_id: StringName) -> int:
 	var used_ids: Dictionary = {}
 	for record: Dictionary in _get_records():
 		used_ids[String(record["instance_id"])] = true
-	var sequence := maxi(SaveValues.whole_number_or(WorldState.get_value(SEQUENCE_KEY, 0), 0), 0) + 1
+	var sequence := SaveValues.count(WorldState.get_value(SEQUENCE_KEY, 0)) + 1
 	while used_ids.has("owned_%s_%04d" % [String(animal_id), sequence]):
 		sequence += 1
 	return sequence
@@ -331,7 +331,7 @@ func _get_records() -> Array[Dictionary]:
 			"animal_id": String(source.get("animal_id", "")),
 			"location_id": String(source.get("location_id", "")),
 			"housing_id": String(source.get("housing_id", "")),
-			"slot_index": maxi(SaveValues.whole_number_or(source.get("slot_index", 0), 0), 0),
+			"slot_index": SaveValues.count(source.get("slot_index", 0)),
 			"node_name": String(source.get("node_name", "")),
 		}
 		if source.has("custom_name"):

@@ -104,7 +104,7 @@ func load_save_data(data: Dictionary) -> void:
 			continue
 		var saved_state: Dictionary = raw_state
 		var status := SaveValues.whole_number_or(saved_state.get("status", -1), -1)
-		var progress := maxi(SaveValues.whole_number_or(saved_state.get("progress", 0), 0), 0)
+		var progress := SaveValues.count(saved_state.get("progress", 0))
 		match status:
 			Status.INACTIVE:
 				progress = 0

@@ -172,7 +172,7 @@ func get_slot_summary(slot: int) -> Dictionary:
 		"season": GameCalendar.current().get_season_name(day),
 		"day_of_season": GameCalendar.current().get_day_of_season(day),
 		"minute_of_day": clampi(SaveValues.whole_number_or(clock.get("minute_of_day", 0), 0), 0, GameClock.MINUTES_PER_DAY - 1),
-		"money": maxi(SaveValues.whole_number_or(player_state.get("money", 0), 0), 0),
+		"money": SaveValues.count(player_state.get("money", 0)),
 	}
 
 func delete_slot(slot: int) -> bool:
@@ -369,7 +369,7 @@ func _read_usable(path: String) -> Dictionary:
 	return data if _is_snapshot_usable(data) else {}
 
 func _snapshot_timestamp(data: Dictionary) -> int:
-	return maxi(SaveValues.whole_number_or(data.get("saved_at_unix_msec", 0), 0), 0)
+	return SaveValues.count(data.get("saved_at_unix_msec", 0))
 
 ## Whether `data` is a complete save of this build that can be loaded.
 func _is_snapshot_usable(data: Dictionary) -> bool:

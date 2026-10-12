@@ -8,6 +8,7 @@ var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _shipping_snapshot: Dictionary
+var _world_snapshot: Dictionary
 
 func before_each() -> void:
 	_clock_day = WorldClock.day
@@ -16,6 +17,8 @@ func before_each() -> void:
 	_player_snapshot = PlayerState.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_shipping_snapshot = ShippingState.to_save_data()
+	# A new day makes its listeners (contracts, mail) write to the world.
+	_world_snapshot = WorldState.to_save_data()
 	ContentFixture.use(self, [_item(&"fixture_turnip", 35), _item(&"fixture_carrot", 50)])
 	ShippingState.load_save_data({"pending": {}, "last_day_seen": 1})
 	WorldClock.set_time(1, 12 * 60)
@@ -31,6 +34,7 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
+	WorldState.load_save_data(_world_snapshot)
 
 func test_shipping_removes_item_and_pays_on_next_day() -> void:
 	var turnip := ItemData.find(&"fixture_turnip")

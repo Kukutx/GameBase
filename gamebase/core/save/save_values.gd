@@ -24,3 +24,8 @@ static func whole_number(value: Variant) -> Variant:
 static func whole_number_or(value: Variant, fallback: int) -> int:
 	var whole: Variant = whole_number(value)
 	return fallback if whole == null else int(whole)
+
+## `value` as a count: a whole number of 0 or more (see `whole_number`);
+## anything else reads as 0.
+static func count(value: Variant) -> int:
+	return maxi(whole_number_or(value, 0), 0)

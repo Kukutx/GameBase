@@ -30,9 +30,9 @@ func before_each() -> void:
 	WorldClock.set_time(1, 8 * 60)
 
 func after_each() -> void:
-	GameSession.set("_starting_new_game", false)
 	# The game's content is active again before the stores load their state.
 	ContentRegistry.active = ContentDB
+	GameSession.set("_starting_new_game", false)
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
@@ -67,6 +67,17 @@ func test_letters_wait_while_the_session_changes_and_arrive_when_play_starts() -
 	GameSession.set("_starting_new_game", false)
 	GameSession.play_started.emit()
 	assert_true(MailState.is_received(WELCOME))
+
+func test_a_change_that_never_reaches_play_does_not_hold_back_later_letters() -> void:
+	# A new game whose start location fails: its steps wrote to the world, and
+	# play never starts.
+	GameSession.set("_starting_new_game", true)
+	WorldState.set_value(&"fixture_unrelated", 1)
+	await get_tree().process_frame
+	GameSession.set("_starting_new_game", false)
+	WorldState.set_value(GARDEN_FLAG, true)
+	await get_tree().process_frame
+	assert_true(WorldState.get_bool(&"mail:fixture_garden_restored:received"), "the next write is checked")
 
 func test_mail_claim_blocks_item_added_reentrancy() -> void:
 	WorldClock.set_time(2, 8 * 60)

@@ -291,8 +291,15 @@ func _run() -> void:
 	# The title screen selects a slot on ready; the slot stays inside the smoke
 	# save directory, so this test never reads or writes the user's real saves.
 	_check(save_manager.save_path.begins_with(SMOKE_SAVE_DIRECTORY), "Title screen left the smoke save directory")
+	var plays := {"count": 0, "changing": true}
+	var on_play := func() -> void:
+		plays["count"] = int(plays["count"]) + 1
+		plays["changing"] = game_session.call("is_changing")
+	game_session.connect("play_started", on_play)
 	var loaded: bool = await save_manager.load_game()
+	game_session.disconnect("play_started", on_play)
 	_check(loaded, "SaveManager.load_game failed")
+	_check(int(plays["count"]) == 1 and not bool(plays["changing"]), "Play did not start once, after the load")
 	_check(profile.call("is_unlocked", &"green_thumb"), "Loading a save took back an achievement of the profile")
 	player = get_first_node_in_group("player") as Node2D
 	_check(world_clock.day == 5, "Clock did not restore")
