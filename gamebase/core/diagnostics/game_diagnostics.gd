@@ -37,6 +37,8 @@ func _connect_runtime_signals() -> void:
 	if is_instance_valid(SaveManager):
 		SaveManager.save_completed.connect(_on_save_completed)
 		SaveManager.load_completed.connect(_on_load_completed)
+	if is_instance_valid(AutoSave):
+		AutoSave.autosave_failed.connect(_on_autosave_failed)
 	if is_instance_valid(WorldTravel):
 		WorldTravel.travel_failed.connect(_on_travel_failed)
 
@@ -47,6 +49,9 @@ func _on_save_completed(success: bool, message: String) -> void:
 func _on_load_completed(success: bool, message: String) -> void:
 	if not success:
 		record("load_failed", message)
+
+func _on_autosave_failed(reason: String, problem: String) -> void:
+	record("autosave_failed", "%s | %s" % [reason, problem])
 
 func _on_travel_failed(scene_path: String, spawn_id: StringName, reason: String) -> void:
 	var details := "%s | spawn=%s | scene=%s" % [reason, String(spawn_id), scene_path.get_file()]

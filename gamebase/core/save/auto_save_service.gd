@@ -1,7 +1,15 @@
 class_name AutoSaveService
 extends Node
 
+## Saves the game on its own: every `interval_seconds`, after each travel and
+## when the window closes, while `GameSettings.autosave` is on and the game can
+## be saved. A save that works shows on the game's `SaveIndicator`; one that
+## fails tells the player why with a toast.
+
 signal autosave_completed(success: bool, reason: String)
+## Emitted before `autosave_completed` when the save could not be written:
+## `problem` is the reason, in the player's language.
+signal autosave_failed(reason: String, problem: String)
 signal autosave_skipped(reason: String, block_reason: String)
 
 const DEFAULT_INTERVAL_SECONDS := 300.0
@@ -39,12 +47,16 @@ func request_autosave(reason: String = "interval") -> bool:
 		autosave_skipped.emit(reason, block_reason)
 		return false
 	_busy = true
-	var success := SaveManager.save_game_silent()
+	var problem := SaveManager.write_save()
 	_busy = false
+	var success := problem.is_empty()
 	if success:
 		_last_save_msec = Time.get_ticks_msec()
 	else:
-		push_warning("Autosave failed: %s" % reason)
+		# The save manager logged what could not be written. The reason is
+		# already in the player's language, so it is not translated again.
+		autosave_failed.emit(reason, problem)
+		GameEvents.toast_requested.emit(problem)
 	autosave_completed.emit(success, reason)
 	return success
 

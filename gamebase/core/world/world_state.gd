@@ -66,6 +66,12 @@ func clear() -> void:
 func to_save_data() -> Dictionary:
 	return _flags.duplicate(true)
 
+## The value under `key` that `snapshot`, a save, holds in its world (as the
+## save holds it: read whole numbers with `SaveValues`), or null.
+static func read_saved(snapshot: Dictionary, key: StringName) -> Variant:
+	var world: Variant = snapshot.get("world", {})
+	return (world as Dictionary).get(String(key)) if world is Dictionary else null
+
 func load_save_data(data: Dictionary) -> void:
 	_flags = data.duplicate(true)
 	changed.emit(&"", null)

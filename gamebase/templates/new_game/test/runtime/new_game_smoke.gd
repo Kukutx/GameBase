@@ -35,7 +35,8 @@ func _run() -> void:
 
 	player_state.money = 42
 	world_state.set_value(FLAG, true)
-	_check(bool(save_manager.save_game()), "Save failed: %s" % save_manager.get_save_block_reason())
+	var problem: String = save_manager.write_save()
+	_check(problem.is_empty(), "Save failed: %s" % problem)
 	player_state.money = 7
 	world_state.set_value(FLAG, false)
 	var loaded: bool = await save_manager.load_game()

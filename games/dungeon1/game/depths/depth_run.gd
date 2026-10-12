@@ -23,6 +23,12 @@ func get_depth() -> int:
 func get_deepest() -> int:
 	return maxi(WorldState.get_int(DEEPEST_KEY), 0)
 
+## What a save's slot shows of the depths: the deepest depth its world
+## reached, or nothing before the first run (`SaveManager.register_slot_detail`).
+func describe_save(snapshot: Dictionary) -> String:
+	var deepest := SaveValues.count(PersistentWorldState.read_saved(snapshot, DEEPEST_KEY))
+	return tr("Deepest %d") % deepest if deepest > 0 else ""
+
 ## How many runs this world started.
 func get_run() -> int:
 	return maxi(WorldState.get_int(RUN_KEY), 0)

@@ -14,7 +14,7 @@ signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 6
+const SAVE_VERSION := 7
 const SLOT_COUNT := 3
 
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
@@ -25,6 +25,8 @@ const HEADER_KEYS: Array[String] = [
 ## Restore orders of the sections the foundation owns. A game places its own
 ## sections between them (see `.agents/rules/save.md`).
 const SECTION_ORDER_RANDOM := 100
+## `GameSession`'s own section (the time played), registered by the session.
+const SECTION_ORDER_SESSION := 150
 const SECTION_ORDER_CLOCK := 300
 const SECTION_ORDER_PLAYER_STATE := 600
 const SECTION_ORDER_WORLD := 700
@@ -42,6 +44,7 @@ var backup_path := ""
 static var _sections: Array[SaveSection] = []
 static var _load_steps: Array[Dictionary] = []
 static var _save_blockers: Array[Callable] = []
+static var _slot_details: Array[Dictionary] = []
 # Whether a save is being restored; shared like the sections.
 static var _restoring := false
 # Whether this manager is the one restoring a save.
@@ -63,6 +66,7 @@ func _exit_tree() -> void:
 		_sections.clear()
 		_load_steps.clear()
 		_save_blockers.clear()
+		_slot_details.clear()
 
 func _register_core_sections() -> void:
 	register_section(SaveSection.new(&"random", SECTION_ORDER_RANDOM,
@@ -111,6 +115,21 @@ func register_save_blocker(blocker: Callable) -> void:
 	if not _save_blockers.has(blocker):
 		_save_blockers.append(blocker)
 
+## Registers `describe`, `func(snapshot: Dictionary) -> String`, which tells
+## from a save what the game adds to its slot's summary (`details` of
+## `get_slot_summary()`): translated text, or an empty string for nothing.
+## The snapshot is a save this build loads, read and never changed. Details
+## show by ascending `order`; registering the same id again replaces it.
+func register_slot_detail(id: StringName, order: int, describe: Callable) -> void:
+	unregister_slot_detail(id)
+	_slot_details.append({"id": id, "order": order, "describe": describe})
+	_slot_details.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["order"]) < int(b["order"]))
+
+func unregister_slot_detail(id: StringName) -> void:
+	for index: int in range(_slot_details.size() - 1, -1, -1):
+		if _slot_details[index]["id"] == id:
+			_slot_details.remove_at(index)
+
 func select_slot(slot: int) -> void:
 	active_slot = clampi(slot, 1, SLOT_COUNT)
 	var paths := get_slot_paths(active_slot)
@@ -146,7 +165,10 @@ func has_files(slot: int = -1) -> bool:
 
 ## What a slot holds, for slot pickers and support bundles. `exists` is false
 ## when the slot has no save of this build; `unreadable` is true when it has
-## files all the same (a save of another version, or damaged).
+## files all the same (a save of another version, or damaged). A save's
+## summary names its location (`location_name`, to translate when shown),
+## the seconds played (`play_seconds`) and what the game adds (`details`, see
+## `register_slot_detail()`).
 func get_slot_summary(slot: int) -> Dictionary:
 	var resolved := clampi(slot, 1, SLOT_COUNT)
 	var candidate := _read_slot(resolved)
@@ -157,6 +179,7 @@ func get_slot_summary(slot: int) -> Dictionary:
 	var player_state: Dictionary = data.get("player_state", {})
 	var day := maxi(SaveValues.whole_number_or(clock.get("day", 1), 1), 1)
 	var source := String(candidate["source"])
+	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
 	return {
 		"slot": resolved,
 		"exists": true,
@@ -168,12 +191,23 @@ func get_slot_summary(slot: int) -> Dictionary:
 		"engine_version": String(data.get("engine_version", "")),
 		"saved_at_unix": _snapshot_timestamp(data) / 1000,
 		"location_id": String(data.get("location_id", "")),
+		"location_name": location.display_name if location != null else "",
+		"play_seconds": GameSessionService.read_play_seconds(data),
 		"day": day,
 		"season": GameCalendar.current().get_season_name(day),
 		"day_of_season": GameCalendar.current().get_day_of_season(day),
 		"minute_of_day": clampi(SaveValues.whole_number_or(clock.get("minute_of_day", 0), 0), 0, GameClock.MINUTES_PER_DAY - 1),
 		"money": SaveValues.count(player_state.get("money", 0)),
+		"details": _describe_slot(data),
 	}
+
+func _describe_slot(data: Dictionary) -> PackedStringArray:
+	var details := PackedStringArray()
+	for detail: Dictionary in _slot_details:
+		var text := String((detail["describe"] as Callable).call(data))
+		if not text.is_empty():
+			details.append(text)
+	return details
 
 func delete_slot(slot: int) -> bool:
 	var paths := get_slot_paths(slot)
@@ -206,37 +240,36 @@ func get_save_block_reason() -> String:
 			return reason
 	return ""
 
+## Saves the game in the active slot and says how it went with
+## `save_completed`.
 func save_game() -> bool:
-	return _save(true)
+	var problem := write_save()
+	save_completed.emit(problem.is_empty(), tr("Game saved · Slot %d") % active_slot if problem.is_empty() else problem)
+	return problem.is_empty()
 
-func save_game_silent() -> bool:
-	return _save(false)
-
-func _save(emit_result: bool) -> bool:
+## Saves the game in the active slot without a word: an empty string when it
+## is saved, else why not, in words for the player (the log has the details).
+func write_save() -> String:
 	var block_reason := get_save_block_reason()
 	if not block_reason.is_empty():
-		_emit_save_result(emit_result, false, block_reason)
-		return false
+		return block_reason
 	if not _write_dictionary(temp_path, build_snapshot()):
-		_emit_save_result(emit_result, false, tr("Could not write temporary save file"))
-		return false
+		return _write_failed("the save", temp_path)
 	# The last intact save becomes the backup before the new one replaces it.
 	var previous := _read_dictionary(save_path)
 	if _is_snapshot_usable(previous) and not _write_dictionary(backup_path, previous):
-		_emit_save_result(emit_result, false, tr("Could not create save backup"))
-		return false
+		return _write_failed("the backup", backup_path)
 	if FileAccess.file_exists(save_path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
 	var rename_error := DirAccess.rename_absolute(ProjectSettings.globalize_path(temp_path), ProjectSettings.globalize_path(save_path))
 	if rename_error != OK:
-		_emit_save_result(emit_result, false, tr("Could not finalize save file (%d)") % rename_error)
-		return false
-	_emit_save_result(emit_result, true, tr("Game saved · Slot %d") % active_slot)
-	return true
+		return _write_failed("the save (%s)" % error_string(rename_error), save_path)
+	return ""
 
-func _emit_save_result(enabled: bool, success: bool, message: String) -> void:
-	if enabled:
-		save_completed.emit(success, message)
+# Logs which file could not be written and tells the player what to check.
+func _write_failed(what: String, path: String) -> String:
+	push_warning("SaveManager: could not write %s to %s" % [what, path])
+	return tr("Couldn't save: the save folder can't be written to. Check that the disk has free space.")
 
 func load_game() -> bool:
 	if _restoring:
@@ -247,13 +280,13 @@ func load_game() -> bool:
 		return false
 	var candidate := _read_slot()
 	if candidate.is_empty():
-		load_completed.emit(false, tr("No save file yet"))
+		load_completed.emit(false, tr("Slot %d has no save to load") % active_slot)
 		return false
 	var data: Dictionary = candidate["data"]
 	# Whatever the player is doing belongs to the session the save replaces.
 	GameSession.end_activities()
 	if not await apply_snapshot(data):
-		load_completed.emit(false, tr("Save references an unavailable scene"))
+		load_completed.emit(false, tr("This save can't be opened: a place it needs is missing from this version"))
 		return false
 	var source := String(candidate["source"])
 	if source == "primary":
