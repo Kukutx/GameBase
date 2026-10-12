@@ -38,11 +38,15 @@ func test_loaded_enemy_state_clamps_future_respawn_markers() -> void:
 	assert_eq(enemy.defeated_day, 10)
 	assert_eq(enemy.health, 0)
 	assert_eq(enemy.pending_drop_quantity, 999999)
+	assert_eq(enemy.collision_layer, 0, "a creature loaded as defeated blocks nothing")
+	assert_false(enemy.is_physics_processing())
 	enemy.load_state_data({"health": 0, "defeated": false, "defeated_day": 999999, "pending_drop_quantity": -10}, false)
 	assert_false(enemy.is_defeated)
 	assert_eq(enemy.defeated_day, 0)
 	assert_eq(enemy.health, enemy.data.max_health)
 	assert_eq(enemy.pending_drop_quantity, 0)
+	assert_ne(enemy.collision_layer, 0, "and one loaded alive does")
+	assert_true(enemy.is_physics_processing())
 
 func test_creature_takes_damage_drops_loot_and_reports_its_defeat() -> void:
 	var slime := HOSTILE_CREATURE_SCENE.instantiate() as HostileCreature
@@ -59,6 +63,22 @@ func test_creature_takes_damage_drops_loot_and_reports_its_defeat() -> void:
 	assert_eq(InventoryState.get_quantity(&"fixture_gel"), 1)
 	assert_signal_emit_count(CombatEvents, "enemy_defeated", 1)
 	assert_signal_emitted_with_parameters(CombatEvents, "enemy_defeated", [&"fixture_slime", 20])
+
+func test_a_defeated_creature_rests_until_it_comes_back() -> void:
+	WorldClock.set_time(3, 8 * 60)
+	var slime := _add_slime(&"")
+	slime.global_position = Vector2(10000, 10000)
+	assert_true(slime.is_physics_processing())
+	assert_true(slime.take_damage(30))
+	# Its death plays out, then nothing of it runs.
+	for frame in range(120):
+		if not slime.is_physics_processing():
+			break
+		await get_tree().physics_frame
+	assert_false(slime.is_physics_processing())
+	WorldClock.set_time(4, 8 * 60)
+	assert_false(slime.is_defeated)
+	assert_true(slime.is_physics_processing())
 
 func test_enemy_ground_drops_do_not_count_as_forage() -> void:
 	var slime := _add_slime(&"")

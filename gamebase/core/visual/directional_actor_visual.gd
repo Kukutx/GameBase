@@ -24,6 +24,10 @@ signal action_finished(action: StringName)
 @export var walk_left: StringName = &"walk_left"
 @export var walk_right: StringName = &"walk_right"
 
+# Frames built from strips, shared by every actor drawn from the same strips
+# the same way: key -> [SpriteFrames, whether its left side is mirrored].
+static var _strip_frames: Dictionary = {}
+
 var facing := Vector2.DOWN
 var _mirror_left := false
 var _action_playing := false
@@ -38,7 +42,7 @@ func _ready() -> void:
 	facing = default_facing.normalized() if default_facing.length_squared() > 0.0 else Vector2.DOWN
 	_apply_parent_profile_presentation()
 	if sprite_frames == null and not strip_root.is_empty():
-		sprite_frames = _build_frames_from_directional_strips(strip_root)
+		sprite_frames = _get_strip_frames(strip_root)
 	if sprite != null:
 		if sprite_frames != null:
 			sprite.sprite_frames = sprite_frames
@@ -147,6 +151,17 @@ func _animation_name(direction: Vector2, moving: bool) -> StringName:
 			return walk_right if moving else idle_right
 		_:
 			return walk_down if moving else idle_down
+
+func _get_strip_frames(root: String) -> SpriteFrames:
+	var key := "|".join(PackedStringArray([root, str(strip_frame_size), str(idle_fps), str(walk_fps), str(action_fps),
+		idle_down, idle_up, idle_left, idle_right, walk_down, walk_up, walk_left, walk_right]))
+	if not _strip_frames.has(key):
+		_mirror_left = false
+		var built := _build_frames_from_directional_strips(root)
+		_strip_frames[key] = [built, _mirror_left]
+	var cached: Array = _strip_frames[key]
+	_mirror_left = bool(cached[1])
+	return cached[0] as SpriteFrames
 
 func _build_frames_from_directional_strips(root: String) -> SpriteFrames:
 	if strip_frame_size.x <= 0 or strip_frame_size.y <= 0:

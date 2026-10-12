@@ -23,8 +23,18 @@ func set_value(key: StringName, value: Variant) -> void:
 func has_value(key: StringName) -> bool:
 	return _flags.has(String(key))
 
+## The value under `key`, as the world holds it: a dictionary or an array is
+## not a copy, so read it and set a new one rather than changing it in place.
 func get_value(key: StringName, default_value: Variant = null) -> Variant:
 	return _flags.get(String(key), default_value)
+
+## The keys the world holds a value under that begin with `prefix`.
+func get_keys(prefix := "") -> Array[StringName]:
+	var result: Array[StringName] = []
+	for key: String in _flags:
+		if key.begins_with(prefix):
+			result.append(StringName(key))
+	return result
 
 func get_bool(key: StringName, default_value := false) -> bool:
 	var raw: Variant = get_value(key, default_value)

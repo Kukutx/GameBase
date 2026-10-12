@@ -43,8 +43,6 @@ func can_travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 	var target_spawn := spawn_id if spawn_id != &"" else location.default_spawn_id
 	if target_spawn == &"" or not ContentRegistry.active.has_location_spawn(location_id, target_spawn):
 		return false
-	if not ResourceLoader.load(location.scene_path) is PackedScene:
-		return false
 	if DisplayServer.get_name() != "headless":
 		var transition := get_node_or_null("/root/Transition")
 		if transition == null or not transition.has_method("change_scene"):
@@ -87,18 +85,24 @@ func _travel_scene(scene_path: String, spawn_id: StringName = &"") -> bool:
 	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
 		travel_failed.emit(scene_path, spawn_id, "Travel scene is unavailable")
 		return false
-	var packed := ResourceLoader.load(scene_path) as PackedScene
-	if packed == null:
-		travel_failed.emit(scene_path, spawn_id, "Travel target is not a PackedScene")
-		return false
+	# Without a screen there is no fade to load behind, so the scene loads now.
+	var headless := DisplayServer.get_name() == "headless"
+	var packed: PackedScene = null
+	if headless:
+		packed = ResourceLoader.load(scene_path) as PackedScene
+		if packed == null:
+			travel_failed.emit(scene_path, spawn_id, "Travel target is not a PackedScene")
+			return false
 
 	_traveling = true
+	# The player stays put while the scene changes under them.
+	InputLock.lock(&"travel")
 	_travels_started += 1
 	var travel := _travels_started
 	_pending_scene_path = scene_path
 	_pending_spawn_id = spawn_id
 	travel_started.emit(scene_path, spawn_id)
-	if DisplayServer.get_name() == "headless":
+	if headless:
 		var change_error := get_tree().change_scene_to_packed(packed)
 		if change_error != OK:
 			_fail_pending_travel("Scene change failed (%d)" % change_error)
@@ -145,6 +149,7 @@ func _fail_pending_travel(reason: String) -> void:
 	GameEvents.toast("Travel failed")
 
 func _end_travel(arrived: bool) -> void:
+	InputLock.unlock(&"travel")
 	_travels_ended = _travels_started
 	_last_arrived = arrived
 

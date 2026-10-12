@@ -26,7 +26,7 @@ func get_required_count() -> int:
 		return prerequisites.size()
 	if required_discovered > 0:
 		return required_discovered
-	return CollectionState.get_total_ids(category).size()
+	return CollectionState.get_total_count(category)
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()

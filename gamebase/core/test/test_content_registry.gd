@@ -6,9 +6,18 @@ extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 
+const SCENE_DIRECTORY := "user://test_content_registry"
+
 ## An entry of a class no module registers as a kind of content.
 class _UnregisteredEntry extends ContentEntry:
 	pass
+
+func after_each() -> void:
+	if not DirAccess.dir_exists_absolute(SCENE_DIRECTORY):
+		return
+	for file: String in DirAccess.get_files_at(SCENE_DIRECTORY):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY.path_join(file)))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
 
 func test_the_core_registers_its_own_kinds_of_content() -> void:
 	for kind: StringName in [WorldLocationData.KIND, AudioCueData.KIND, MiniGameDefinition.KIND, TriggerData.KIND, AchievementData.KIND]:
@@ -43,6 +52,101 @@ func test_an_entry_of_no_registered_kind_is_not_indexed() -> void:
 	assert_eq(registry.get_kind_of(orphan), &"")
 	for kind: StringName in registry.get_kinds():
 		assert_eq(registry.get_entries(kind), [], "nothing is indexed as kind '%s'" % kind)
+
+func test_entries_are_sorted_once_and_shared_until_the_content_is_indexed_again() -> void:
+	var second := WorldLocationData.new()
+	second.id = &"fixture_second"
+	var first := WorldLocationData.new()
+	first.id = &"fixture_first"
+	var registry := ContentFixture.use(self, [second, first])
+	var entries := registry.get_entries(WorldLocationData.KIND)
+	assert_eq(entries, [first, second])
+	assert_true(entries.is_read_only(), "every caller shares it")
+	assert_true(is_same(entries, registry.get_entries(WorldLocationData.KIND)))
+	var revision := registry.revision
+	registry.index()
+	assert_ne(registry.revision, revision, "indexing again names new content")
+	assert_false(is_same(entries, registry.get_entries(WorldLocationData.KIND)))
+
+func test_a_location_is_found_by_its_scene() -> void:
+	var meadow := WorldLocationData.new()
+	meadow.id = &"fixture_meadow"
+	meadow.scene_path = "res://fixture/meadow.tscn"
+	ContentFixture.use(self, [meadow])
+	assert_eq(WorldLocationData.find_for_scene("res://fixture/meadow.tscn"), meadow)
+	assert_null(WorldLocationData.find_for_scene("res://fixture/elsewhere.tscn"))
+	assert_null(WorldLocationData.find_for_scene(""))
+
+func test_spawn_points_are_read_from_a_scene_without_instancing_it() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
+	# A spawn point scene with one more spawn point inside it.
+	var pier := WorldSpawnPoint.new()
+	pier.name = "Pier"
+	pier.spawn_id = &"pier"
+	var nested := WorldSpawnPoint.new()
+	nested.name = "Nested"
+	nested.spawn_id = &"nested"
+	pier.add_child(nested)
+	nested.owner = pier
+	var pier_scene := PackedScene.new()
+	assert_eq(pier_scene.pack(pier), OK)
+	pier.free()
+	var pier_path := SCENE_DIRECTORY.path_join("pier.tscn")
+	assert_eq(ResourceSaver.save(pier_scene, pier_path), OK)
+	# A harbor with a gate, and the pier scene placed as the dock.
+	var harbor := Node2D.new()
+	harbor.name = "Harbor"
+	var gate := WorldSpawnPoint.new()
+	gate.name = "Gate"
+	gate.spawn_id = &"gate"
+	harbor.add_child(gate)
+	gate.owner = harbor
+	var dock := (load(pier_path) as PackedScene).instantiate() as WorldSpawnPoint
+	dock.name = "Dock"
+	dock.spawn_id = &"dock"
+	harbor.add_child(dock)
+	dock.owner = harbor
+	var harbor_scene := PackedScene.new()
+	assert_eq(harbor_scene.pack(harbor), OK)
+	harbor.free()
+	var harbor_path := SCENE_DIRECTORY.path_join("harbor.tscn")
+	assert_eq(ResourceSaver.save(harbor_scene, harbor_path), OK)
+
+	var harbor_scene_loaded := load(harbor_path) as PackedScene
+	assert_eq(ContentRegistry.count_scene_spawns(harbor_scene_loaded), {"gate": 1, "dock": 1, "nested": 1})
+	var location := WorldLocationData.new()
+	location.id = &"fixture_harbor"
+	location.scene_path = harbor_path
+	location.default_spawn_id = &"gate"
+	var registry := ContentFixture.use(self, [location])
+	# Indexed but not checked: travel reads the spawn points when it needs them.
+	assert_true(registry.has_location_spawn(&"fixture_harbor", &"dock"))
+	assert_true(registry.has_location_spawn(&"fixture_harbor", &"nested"))
+	assert_false(registry.has_location_spawn(&"fixture_harbor", &"pier"), "the dock renames the pier")
+	assert_false(registry.has_location_spawn(&"fixture_harbor", &"missing"))
+	registry.checked_before_export = true
+	assert_true(registry.has_location_spawn(&"fixture_harbor", &"missing"), "a release build takes its checked content at its word")
+	assert_false(registry.has_location_spawn(&"fixture_nowhere", &"gate"))
+
+func test_a_spawn_point_the_node_list_does_not_show_is_a_problem() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
+	# A root whose script adds the spawn point when it is created: the scene's
+	# node list holds the root alone.
+	var field := Node2D.new()
+	field.name = "Field"
+	field.set_script(load("res://gamebase/core/test/fixtures/spawn_from_code.gd"))
+	var scene := PackedScene.new()
+	assert_eq(scene.pack(field), OK)
+	field.free()
+	var path := SCENE_DIRECTORY.path_join("field.tscn")
+	assert_eq(ResourceSaver.save(scene, path), OK)
+	var location := WorldLocationData.new()
+	location.id = &"fixture_field"
+	location.scene_path = path
+	location.default_spawn_id = &"gate"
+	var registry := ContentFixture.use(self, [location])
+	var problems := registry.find_problems()
+	assert_true(Array(problems).any(func(problem: String) -> bool: return problem.begins_with("location 'fixture_field'") and problem.contains("node list does not show")), str(problems))
 
 func test_dependency_cycle_detector_accepts_acyclic_graph_and_ignores_unknown_edges() -> void:
 	var graph := {

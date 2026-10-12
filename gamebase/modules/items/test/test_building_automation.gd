@@ -43,7 +43,13 @@ func test_placeable_is_craftable_placeable_and_refundable() -> void:
 
 	assert_true(BuildingState.remove_placement(&"fixture_farm", StringName(String(record["id"])), true))
 	assert_eq(BuildingState.get_placements(&"fixture_farm").size(), 0)
+	assert_false(BuildingState.is_point_affected(&"fixture_farm", &"fixture_glow", Vector2(40, 0)), "the beacon's glow left with it")
 	assert_eq(InventoryState.get_quantity(&"fixture_beacon"), 1)
+	# A load brings the placement back.
+	var saved := WorldState.to_save_data()
+	saved[String(BuildingPlacementService.PLACEMENTS_PREFIX + "fixture_farm")] = [record]
+	WorldState.load_save_data(saved)
+	assert_true(BuildingState.is_point_affected(&"fixture_farm", &"fixture_glow", Vector2(40, 0)))
 
 func test_placement_from_inventory_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"fixture_beacon", 2)

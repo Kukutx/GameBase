@@ -11,7 +11,9 @@ const QUALIFIED_PREFIX := "collection:milestone_qualified:"
 var _claiming: Dictionary = {}
 
 func _ready() -> void:
-	CollectionState.collection_changed.connect(_on_collection_changed)
+	# Progress counts discovered items, so only a discovery can make a
+	# milestone ready.
+	CollectionState.item_discovered.connect(_on_item_discovered)
 	_check_ready_milestones()
 
 func get_milestone(id: StringName) -> CollectionMilestoneData:
@@ -99,7 +101,7 @@ func get_ready_count() -> int:
 			count += 1
 	return count
 
-func _on_collection_changed(_category: StringName, _item_id: StringName, _count: int) -> void:
+func _on_item_discovered(_category: StringName, _item_id: StringName) -> void:
 	_check_ready_milestones()
 
 func _check_ready_milestones() -> void:

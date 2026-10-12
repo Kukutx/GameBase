@@ -30,6 +30,7 @@ var _animation_initialized := false
 var _frame_accumulator := 0.0
 var _frame_index := 0
 var _has_art := false
+var _player: Node2D
 
 func _ready() -> void:
 	_load_state()
@@ -37,6 +38,8 @@ func _ready() -> void:
 	WorldClock.day_changed.connect(_on_day_changed)
 	if is_defeated:
 		_set_defeated_visual()
+		# Nothing of a defeated creature moves until it comes back.
+		set_physics_process(false)
 	else:
 		_set_animation(AnimationState.IDLE)
 	_refresh_health_label()
@@ -45,16 +48,16 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	_advance_animation(delta)
 	if is_defeated:
-		if _death_time_left > 0.0:
-			_death_time_left -= delta
-			if _death_time_left <= 0.0:
-				visual.visible = false
-				fallback.visible = false
+		_death_time_left -= delta
+		if _death_time_left <= 0.0:
+			visual.visible = false
+			fallback.visible = false
+			set_physics_process(false)
 		return
 	if data == null:
 		return
 	_attack_time_left = maxf(_attack_time_left - delta, 0.0)
-	var player := get_tree().get_first_node_in_group("player") as Node2D
+	var player := _find_player()
 	if player == null:
 		velocity = Vector2.ZERO
 		_set_animation(AnimationState.IDLE)
@@ -73,6 +76,12 @@ func _physics_process(delta: float) -> void:
 	if distance <= data.attack_range and _attack_time_left <= 0.0 and PlayerState.health > 0:
 		PlayerState.take_damage(data.contact_damage)
 		_attack_time_left = data.attack_cooldown
+
+# The location's player, looked up again only when it left the tree.
+func _find_player() -> Node2D:
+	if not is_instance_valid(_player) or not _player.is_inside_tree():
+		_player = get_tree().get_first_node_in_group("player") as Node2D
+	return _player
 
 func take_damage(amount: int) -> bool:
 	if is_defeated or data == null or amount <= 0:
@@ -106,6 +115,13 @@ func load_state_data(state: Dictionary, persist := true) -> void:
 		if health <= 0:
 			health = max_health
 	pending_drop_quantity = SaveValues.count(state.get("pending_drop_quantity", 0))
+	# `_ready` sets up a creature that loads as it enters the tree.
+	if is_node_ready():
+		if is_defeated:
+			_set_defeated_visual()
+		else:
+			_set_alive_visual()
+		set_physics_process(not is_defeated)
 	if persist:
 		_persist()
 	_refresh_health_label()
@@ -209,11 +225,8 @@ func _on_day_changed(day: int) -> void:
 	is_defeated = false
 	defeated_day = 0
 	health = data.max_health
-	collision_layer = 4
-	collision_mask = 3
-	visual.visible = _has_art
-	fallback.visible = not _has_art
-	_set_animation(AnimationState.IDLE)
+	_set_alive_visual()
+	set_physics_process(true)
 	_persist()
 	_refresh_health_label()
 
@@ -222,6 +235,13 @@ func _set_defeated_visual() -> void:
 	collision_mask = 0
 	visual.visible = false
 	fallback.visible = false
+
+func _set_alive_visual() -> void:
+	collision_layer = 4
+	collision_mask = 3
+	visual.visible = _has_art
+	fallback.visible = not _has_art
+	_set_animation(AnimationState.IDLE)
 
 func _set_animation(next: AnimationState) -> void:
 	if data == null:
@@ -246,22 +266,11 @@ func _get_frame_range_for(state: AnimationState) -> Vector2i:
 		_:
 			return Vector2i(data.idle_from, data.idle_to)
 
-func _get_frame_range() -> Vector2i:
-	if data == null:
-		return Vector2i.ZERO
-	match _animation_state:
-		AnimationState.MOVE:
-			return Vector2i(data.move_from, data.move_to)
-		AnimationState.DEATH:
-			return Vector2i(data.death_from, data.death_to)
-		_:
-			return Vector2i(data.idle_from, data.idle_to)
-
 func _advance_animation(delta: float) -> void:
 	if not _has_art or data == null or (is_defeated and _death_time_left <= 0.0):
 		return
 	_frame_accumulator += delta * float(data.animation_fps)
-	var frame_range := _get_frame_range()
+	var frame_range := _get_frame_range_for(_animation_state)
 	while _frame_accumulator >= 1.0:
 		_frame_accumulator -= 1.0
 		_frame_index += 1

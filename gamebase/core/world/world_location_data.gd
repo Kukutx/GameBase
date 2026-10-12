@@ -30,12 +30,7 @@ static func find_all() -> Array[WorldLocationData]:
 ## The location whose scene is `scene_path` in the running game's content, or
 ## null.
 static func find_for_scene(scene_path: String) -> WorldLocationData:
-	if scene_path.is_empty():
-		return null
-	for location: WorldLocationData in find_all():
-		if location.scene_path == scene_path:
-			return location
-	return null
+	return ContentRegistry.active.get_location_for_scene(scene_path)
 
 ## The location whose scene is `tree`'s current scene, or null.
 static func find_current(tree: SceneTree) -> WorldLocationData:

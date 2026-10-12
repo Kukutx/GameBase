@@ -48,6 +48,18 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	ShippingState.load_save_data(_shipping_snapshot)
 
+func test_an_item_is_discovered_once() -> void:
+	var discovered: Array[StringName] = []
+	var on_discovered := func(_category: StringName, item_id: StringName) -> void: discovered.append(item_id)
+	CollectionState.item_discovered.connect(on_discovered)
+	CollectionState.record(CollectionService.CROPS, &"fixture_radish", 2)
+	CollectionState.record(CollectionService.CROPS, &"fixture_radish", 1)
+	CollectionState.record(CollectionService.FISH, &"fixture_trout", 1)
+	CollectionState.item_discovered.disconnect(on_discovered)
+	assert_eq(discovered, [&"fixture_radish", &"fixture_trout"] as Array[StringName])
+	assert_eq(CollectionState.get_discovered_count(CollectionService.CROPS), 1)
+	assert_eq(CollectionState.get_total_count(CollectionService.CROPS), 1)
+
 func test_collection_records_gameplay_categories_and_accumulates_counts() -> void:
 	LifesimEvents.crop_harvested.emit(&"fixture_radish_crop", &"fixture_radish", 2)
 	LifesimEvents.crop_harvested.emit(&"fixture_radish_crop", &"fixture_radish", 1)
