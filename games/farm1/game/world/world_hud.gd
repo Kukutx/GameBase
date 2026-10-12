@@ -84,11 +84,11 @@ func _on_skill_changed(_skill: StringName, _xp: int, _level: int) -> void:
 func _on_fishing_state_changed(_state: FishingService.CastState, _message: String) -> void:
 	_refresh_fishing()
 
-func _on_save_completed(success: bool, message: String) -> void:
-	_show_status(message if success else tr("Save failed: %s") % message)
+func _on_save_completed(_success: bool, message: String) -> void:
+	_show_status(message)
 
 func _on_load_completed(success: bool, message: String) -> void:
-	_show_status(message if success else tr("Load failed: %s") % message)
+	_show_status(message)
 	if success:
 		_refresh_all()
 		_refresh_fishing()

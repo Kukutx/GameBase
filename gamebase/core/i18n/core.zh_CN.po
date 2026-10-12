@@ -78,14 +78,8 @@ msgstr "请在可游玩的地点保存"
 msgid "Cannot save without the player"
 msgstr "找不到玩家角色，无法保存"
 
-msgid "Could not write temporary save file"
-msgstr "无法写入临时存档文件"
-
-msgid "Could not create save backup"
-msgstr "无法创建存档备份"
-
-msgid "Could not finalize save file (%d)"
-msgstr "无法完成存档写入（%d）"
+msgid "Couldn't save: the save folder can't be written to. Check that the disk has free space."
+msgstr "无法保存：存档文件夹无法写入。请检查磁盘是否还有空间。"
 
 msgid "Game saved · Slot %d"
 msgstr "已保存 · 存档位 %d"
@@ -96,11 +90,11 @@ msgstr "旅行途中无法读取"
 msgid "A save is already loading"
 msgstr "正在读取存档"
 
-msgid "No save file yet"
-msgstr "还没有存档"
+msgid "Slot %d has no save to load"
+msgstr "存档位 %d 没有可读取的存档"
 
-msgid "Save references an unavailable scene"
-msgstr "存档指向的场景不可用"
+msgid "This save can't be opened: a place it needs is missing from this version"
+msgstr "无法打开这个存档：当前版本缺少它所需的地点"
 
 msgid "Recovered Slot %d from temporary save"
 msgstr "已从临时存档恢复存档位 %d"
@@ -300,9 +294,6 @@ msgstr "存档位 %d 存有当前版本无法读取的存档。开始新游戏�
 msgid "Loading Slot %d..."
 msgstr "正在读取存档位 %d..."
 
-msgid "No valid save found"
-msgstr "没有找到有效存档"
-
 msgid "Delete Save Slot %d? This removes the primary save and its backup."
 msgstr "删除存档位 %d？主存档及其备份都会被删除。"
 
@@ -314,12 +305,6 @@ msgstr "无法删除存档位 %d"
 
 msgid "No save available"
 msgstr "没有可用存档"
-
-msgid "Save failed: %s"
-msgstr "保存失败：%s"
-
-msgid "Load failed: %s"
-msgstr "读取失败：%s"
 
 msgid "Delete this save slot and its backup?"
 msgstr "删除这个存档位及其备份？"
@@ -392,3 +377,9 @@ msgstr "%s%d日（第%d年）"
 
 msgid "%s · %02d:%02d · %dg%s"
 msgstr "%s · %02d:%02d · %dg%s"
+
+msgid "Played %d:%02d"
+msgstr "游玩 %d:%02d"
+
+msgid "Autosaved"
+msgstr "已自动保存"

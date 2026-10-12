@@ -9,11 +9,15 @@ var _manager: GameSaveManager
 var _player_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _clock_snapshot: Dictionary
+var _slot_details: Array[Dictionary]
 
 func before_each() -> void:
 	_player_snapshot = PlayerState.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
+	# What these tests read of a slot leaves out the lines the game adds.
+	_slot_details = GameSaveManager._slot_details.duplicate()
+	GameSaveManager._slot_details.clear()
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(TEST_DIRECTORY))
 	assert_eq(ResourceSaver.save(_location_scene(), _scene_path), OK)
 	var location := WorldLocationData.new()
@@ -42,15 +46,16 @@ func after_each() -> void:
 	PlayerState.load_save_data(_player_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
+	GameSaveManager._slot_details = _slot_details
 
-func test_silent_save_writes_the_slot_without_emitting_a_status() -> void:
+func test_write_save_writes_the_slot_without_emitting_a_status() -> void:
 	await _enter_fixture_location()
 	WorldState.set_value(&"fixture:ratio", 0.1 + 0.2)
 	var emitted := {"count": 0}
 	_manager.save_completed.connect(func(_success: bool, _message: String) -> void:
 		emitted["count"] = int(emitted["count"]) + 1
 	)
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	assert_eq(int(emitted["count"]), 0)
 	assert_true(FileAccess.file_exists(_manager.save_path))
 	assert_false(FileAccess.file_exists(_manager.temp_path))
@@ -78,7 +83,7 @@ func test_slot_summary_describes_the_save() -> void:
 	_manager.select_slot(2)
 	PlayerState.money = 4321
 	WorldClock.set_time(68, 600)
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	var summary := _manager.get_slot_summary(2)
 	assert_true(bool(summary["exists"]))
 	assert_false(bool(summary["recoverable"]))
@@ -89,7 +94,77 @@ func test_slot_summary_describes_the_save() -> void:
 	assert_eq(String(summary["season"]), GameCalendar.current().get_season_name(68))
 	assert_eq(int(summary["minute_of_day"]), 600)
 	assert_eq(int(summary["money"]), 4321)
+	assert_eq(String(summary["location_name"]), "Meadow")
+	assert_eq(int(summary["play_seconds"]), GameSession.get_play_seconds())
+	assert_eq(Array(summary["details"]), [])
 	assert_false(bool(_manager.get_slot_summary(3)["exists"]))
+
+func test_a_slot_summary_reads_the_time_played_and_what_the_game_adds() -> void:
+	await _enter_fixture_location()
+	assert_eq(_manager.write_save(), "")
+	var saved := _read(_manager.save_path)
+	saved[String(GameSessionService.SAVE_SECTION)] = {"play_seconds": 3725.0}
+	_write(_manager.save_path, saved)
+	_manager.register_slot_detail(&"fixture_money", 20, func(snapshot: Dictionary) -> String: return "Purse %d" % _money(snapshot))
+	_manager.register_slot_detail(&"fixture_place", 10, func(snapshot: Dictionary) -> String: return String(snapshot["location_id"]))
+	_manager.register_slot_detail(&"fixture_nothing", 15, func(_snapshot: Dictionary) -> String: return "")
+	var summary := _manager.get_slot_summary(_manager.active_slot)
+	assert_eq(int(summary["play_seconds"]), 3725, "the time played comes back as whole seconds")
+	assert_eq(Array(summary["details"]), [String(LOCATION), "Purse %d" % PlayerState.money], "by order, without the empty ones")
+	saved[String(GameSessionService.SAVE_SECTION)] = {"play_seconds": 12.5}
+	_write(_manager.save_path, saved)
+	assert_eq(int(_manager.get_slot_summary(_manager.active_slot)["play_seconds"]), 0, "a damaged value reads as none")
+
+func test_a_save_that_cannot_be_written_says_so_in_words_for_the_player() -> void:
+	await _enter_fixture_location()
+	# A file stands where the save folder would be.
+	var blocked := TEST_DIRECTORY.path_join("blocked")
+	var file := FileAccess.open(blocked, FileAccess.WRITE)
+	file.store_string("not a folder")
+	file.close()
+	_manager.save_directory = blocked
+	_manager.select_slot(1)
+	var results: Array = []
+	_manager.save_completed.connect(func(success: bool, message: String) -> void: results.append([success, message]))
+	assert_false(_manager.save_game())
+	_manager.save_directory = TEST_DIRECTORY
+	_manager.select_slot(1)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(blocked))
+	assert_eq(results.size(), 1)
+	assert_false(bool(results[0][0]))
+	assert_string_contains(String(results[0][1]), "Couldn't save")
+	assert_push_warning("could not write the save")
+
+func test_an_autosave_that_cannot_be_written_tells_the_player_why() -> void:
+	await _enter_fixture_location()
+	var blocked := TEST_DIRECTORY.path_join("blocked")
+	var file := FileAccess.open(blocked, FileAccess.WRITE)
+	file.store_string("not a folder")
+	file.close()
+	var save_directory := SaveManager.save_directory
+	var active_slot := SaveManager.active_slot
+	var autosave := GameSettings.autosave
+	GameSettings.autosave = true
+	SaveManager.save_directory = blocked
+	SaveManager.select_slot(1)
+	var service := AutoSaveService.new()
+	add_child_autofree(service)
+	var toasts: Array[String] = []
+	var record := func(message: String) -> void: toasts.append(message)
+	GameEvents.toast_requested.connect(record)
+	var results: Array = []
+	service.autosave_failed.connect(func(reason: String, _problem: String) -> void: results.append(["failed", reason]))
+	service.autosave_completed.connect(func(success: bool, reason: String) -> void: results.append([success, reason]))
+	assert_false(service.request_autosave("interval"))
+	GameEvents.toast_requested.disconnect(record)
+	SaveManager.save_directory = save_directory
+	SaveManager.select_slot(active_slot)
+	GameSettings.autosave = autosave
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(blocked))
+	assert_eq(results, [["failed", "interval"], [false, "interval"]])
+	assert_eq(toasts.size(), 1)
+	assert_string_contains(toasts[0], "Couldn't save")
+	assert_push_warning("could not write the save")
 
 func test_a_save_of_another_format_or_without_a_section_is_not_a_save() -> void:
 	await _enter_fixture_location()
@@ -124,13 +199,13 @@ func test_a_slot_with_files_this_build_cannot_read_is_unreadable_not_empty() -> 
 
 func test_nothing_saves_and_no_second_load_starts_while_a_save_loads() -> void:
 	await _enter_fixture_location()
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	var first := {}
 	var loading := func() -> void: first["loaded"] = await _manager.load_game()
 	loading.call()
 	assert_true(GameSaveManager.is_restoring())
 	assert_eq(_manager.get_save_block_reason(), "Cannot save while a save loads")
-	assert_false(_manager.save_game_silent())
+	assert_ne(_manager.write_save(), "")
 	var refusals: Array[String] = []
 	_manager.load_completed.connect(func(success: bool, message: String) -> void:
 		if not success:
@@ -158,10 +233,10 @@ func test_a_snapshot_whose_location_cannot_open_changes_nothing() -> void:
 func test_saving_keeps_the_previous_save_as_backup_and_a_damaged_save_falls_back_to_it() -> void:
 	await _enter_fixture_location()
 	PlayerState.money = 111
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	assert_false(FileAccess.file_exists(_manager.backup_path))
 	PlayerState.money = 222
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	assert_eq(_money(_read(_manager.save_path)), 222)
 	assert_eq(_money(_read(_manager.backup_path)), 111)
 
@@ -174,16 +249,16 @@ func test_saving_keeps_the_previous_save_as_backup_and_a_damaged_save_falls_back
 
 	# A damaged save is not rotated into the backup.
 	PlayerState.money = 333
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	assert_eq(_money(_read(_manager.save_path)), 333)
 	assert_eq(_money(_read(_manager.backup_path)), 111)
 
 func test_loading_a_backup_makes_it_the_save_again() -> void:
 	await _enter_fixture_location()
 	PlayerState.money = 111
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	PlayerState.money = 222
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_manager.save_path))
 	PlayerState.money = 999
 	assert_true(await _manager.load_game())
@@ -192,7 +267,7 @@ func test_loading_a_backup_makes_it_the_save_again() -> void:
 
 func test_a_save_is_restoring_until_the_player_stands_where_they_saved() -> void:
 	await _enter_fixture_location()
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	var seen := {}
 	var on_scene_changed := func() -> void: seen["scene_changed"] = GameSaveManager.is_restoring()
 	get_tree().scene_changed.connect(on_scene_changed)
@@ -204,7 +279,7 @@ func test_a_save_is_restoring_until_the_player_stands_where_they_saved() -> void
 func test_a_newer_complete_temp_finishes_an_interrupted_save() -> void:
 	await _enter_fixture_location()
 	PlayerState.money = 111
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	var primary_time := int(_read(_manager.save_path)["saved_at_unix_msec"])
 	PlayerState.money = 222
 	var temp := _manager.build_snapshot()
@@ -226,9 +301,9 @@ func test_a_newer_complete_temp_finishes_an_interrupted_save() -> void:
 func test_without_a_save_a_temp_wins_only_when_newer_than_the_backup() -> void:
 	await _enter_fixture_location()
 	PlayerState.money = 111
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	PlayerState.money = 222
-	assert_true(_manager.save_game_silent())
+	assert_eq(_manager.write_save(), "")
 	var backup_time := int(_read(_manager.backup_path)["saved_at_unix_msec"])
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_manager.save_path))
 	PlayerState.money = 333

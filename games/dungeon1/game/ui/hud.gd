@@ -70,11 +70,11 @@ func _on_hotbar_selected(_index: int, _item_id: StringName) -> void:
 func _on_depth_reached(_depth: int) -> void:
 	_refresh_run()
 
-func _on_save_completed(success: bool, message: String) -> void:
-	show_status(message if success else tr("Save failed: %s") % message)
+func _on_save_completed(_success: bool, message: String) -> void:
+	show_status(message)
 
-func _on_load_completed(success: bool, message: String) -> void:
-	show_status(message if success else tr("Load failed: %s") % message)
+func _on_load_completed(_success: bool, message: String) -> void:
+	show_status(message)
 
 func _on_input_method_changed(_using_gamepad: bool) -> void:
 	_refresh_controls()

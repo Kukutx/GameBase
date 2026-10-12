@@ -152,3 +152,6 @@ msgstr "抵达第 10 层。"
 
 msgid "Day"
 msgstr "白昼"
+
+msgid "Deepest %d"
+msgstr "最深 %d 层"

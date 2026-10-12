@@ -2,8 +2,11 @@ class_name GameSessionService
 extends Node
 
 const NEW_GAME_FLAG := &"system:new_game_initialized"
+## The session's section of a save: the time played.
+const SAVE_SECTION := &"session"
 ## Orders of the new-game steps the session runs itself. A game registers its own
 ## steps between them with `register_new_game_step()`.
+const NEW_GAME_ORDER_SESSION := 50
 const NEW_GAME_ORDER_RANDOM := 100
 const NEW_GAME_ORDER_WORLD := 200
 const NEW_GAME_ORDER_PLAYER := 400
@@ -23,7 +26,6 @@ signal new_game_failed
 ## `GameTriggers` drops it, since a load or a new game's steps set the state
 ## those events stand for.
 signal play_started
-signal continue_started(success: bool)
 signal player_collapsed(money_lost: int)
 signal late_night_collapse
 
@@ -32,8 +34,14 @@ var _handling_late_night := false
 var _new_game_steps: Array[Dictionary] = []
 var _starting_new_game := false
 var _activity_ends: Array[Callable] = []
+# Seconds played in the running game, and whether play runs: from
+# `play_started` until the title.
+var _play_seconds := 0.0
+var _playing := false
 
 func _ready() -> void:
+	SaveManager.register_section(SaveSection.new(SAVE_SECTION, GameSaveManager.SECTION_ORDER_SESSION, _to_save_data, _load_save_data))
+	register_new_game_step(SAVE_SECTION, NEW_GAME_ORDER_SESSION, _reset_play_time)
 	register_new_game_step(&"random", NEW_GAME_ORDER_RANDOM, GameRandom.reset_new_game)
 	register_new_game_step(&"world", NEW_GAME_ORDER_WORLD, WorldState.clear)
 	register_new_game_step(&"player", NEW_GAME_ORDER_PLAYER, PlayerState.reset_new_game)
@@ -42,6 +50,31 @@ func _ready() -> void:
 	PlayerState.health_changed.connect(_on_health_changed)
 	WorldClock.minute_changed.connect(_on_minute_changed)
 	SaveManager.load_completed.connect(_on_load_completed)
+
+func _process(delta: float) -> void:
+	# The session pauses with the world, so a paused game adds no time.
+	if _playing and not is_changing():
+		_play_seconds += delta
+
+## Whole seconds played in the running game: counted while play runs (from
+## `play_started` until the title), not while the world is paused or the
+## session changes. A save keeps them, and a new game starts at 0.
+func get_play_seconds() -> int:
+	return floori(_play_seconds)
+
+## The seconds played that `snapshot`, a save, holds.
+static func read_play_seconds(snapshot: Dictionary) -> int:
+	var section: Variant = snapshot.get(String(SAVE_SECTION), {})
+	return SaveValues.count((section as Dictionary).get("play_seconds", 0)) if section is Dictionary else 0
+
+func _to_save_data() -> Dictionary:
+	return {"play_seconds": get_play_seconds()}
+
+func _load_save_data(_section: Dictionary, snapshot: Dictionary) -> void:
+	_play_seconds = float(read_play_seconds(snapshot))
+
+func _reset_play_time() -> void:
+	_play_seconds = 0.0
 
 ## Registers a step that resets or seeds a service when a new game starts. Steps
 ## run by ascending `order`; registering the same id again replaces the step.
@@ -72,6 +105,7 @@ func return_to_title() -> bool:
 	if is_changing() or WorldTravel.is_traveling():
 		return false
 	end_activities()
+	_playing = false
 	# Nothing of the session holds the controls on the title screen.
 	InputLock.clear()
 	get_tree().change_scene_to_file(String(ProjectSettings.get_setting("application/run/main_scene")))
@@ -131,24 +165,25 @@ func start_new_game() -> bool:
 
 func _on_load_completed(success: bool, _message: String) -> void:
 	if success:
-		play_started.emit()
+		_start_play()
+
+func _start_play() -> void:
+	_playing = true
+	play_started.emit()
 
 func _on_start_travel_ended(arrived: bool) -> void:
 	_starting_new_game = false
 	if arrived:
 		new_game_started.emit()
-		play_started.emit()
+		_start_play()
 	else:
 		GameEvents.toast("Could not start the new game location")
 		new_game_failed.emit()
 
+## Loads the selected slot's save; `SaveManager.load_completed` says how it
+## went, also when the slot holds none.
 func continue_game() -> bool:
-	if not SaveManager.has_save():
-		continue_started.emit(false)
-		return false
-	var success: bool = await SaveManager.load_game()
-	continue_started.emit(success)
-	return success
+	return await SaveManager.load_game()
 
 func _on_minute_changed(day: int, minute_of_day: int) -> void:
 	if minute_of_day != GameCalendar.current().collapse_minute or _handling_late_night or _handling_defeat:

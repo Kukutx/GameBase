@@ -19,7 +19,7 @@ The Web build uses the browser console instead of desktop file logging.
 
 ## Diagnostic context
 
-`GameDiagnostics` writes `GAMEBASE_DIAGNOSTIC` JSON lines at startup and when save/load/travel operations fail.
+`GameDiagnostics` writes `GAMEBASE_DIAGNOSTIC` JSON lines at startup and when a save (an autosave included), a load or a travel fails.
 
 The diagnostic payload contains only technical game context:
 
@@ -76,6 +76,7 @@ Autosave is enabled by default and:
 - attempts a save after successful world travel;
 - attempts a save when the window closes;
 - skips unsafe states such as active travel, fishing, missing player, or unregistered scenes;
-- suppresses normal success toasts.
+- shows "Autosaved" for a moment on the HUD (`SaveIndicator`) when it saved, instead of a toast;
+- tells the player why with a toast when the save could not be written. The log has a `WARNING:` line naming the file and an `autosave_failed` diagnostic.
 
 Players can disable autosave in Settings.

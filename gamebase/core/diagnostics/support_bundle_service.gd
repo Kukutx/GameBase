@@ -140,6 +140,7 @@ func _sanitize_slot_summary(summary: Dictionary) -> Dictionary:
 		"engine_version",
 		"saved_at_unix",
 		"location_id",
+		"play_seconds",
 		"day",
 		"season",
 		"day_of_season",

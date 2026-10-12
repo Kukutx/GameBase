@@ -57,7 +57,10 @@ func _run() -> void:
 	_check(bool(profile.is_unlocked(&"first_blood")), "Defeating an enemy did not unlock First Blood")
 	_check(int(profile.get_int(&"deepest_depth")) == 2, "The profile did not keep the deepest depth")
 
-	_check(bool(save_manager.save_game()), "Saving at camp failed: %s" % save_manager.get_save_block_reason())
+	var problem: String = save_manager.write_save()
+	_check(problem.is_empty(), "Saving at camp failed: %s" % problem)
+	var details := Array(save_manager.get_slot_summary(1)["details"])
+	_check(details.has("Deepest 2"), "The slot does not show the deepest depth: %s" % [details])
 	player_state.money = 1
 	_use(current_scene.get_node("DepthEntrance/Interactable"))
 	await _arrive(DEPTHS_SCENE)

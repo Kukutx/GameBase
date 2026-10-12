@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://game/world/world_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://game/ui/game_menu.tscn" id="2_menu"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://gamebase/modules/lifesim/animals/animal_management_menu.tscn" id="8_animal_menu"]
 [ext_resource type="PackedScene" path="res://gamebase/modules/progression/projects/town_project_menu.tscn" id="9_project_menu"]
 [ext_resource type="Script" path="res://gamebase/core/events/status_line.gd" id="10_status_line"]
+[ext_resource type="Script" path="res://gamebase/core/ui/save_indicator.gd" id="11_save_indicator"]
 
 [node name="WorldHud" type="CanvasLayer"]
 layer = 5
@@ -70,6 +71,16 @@ offset_right = 464.0
 offset_bottom = 70.0
 theme_override_colors/font_color = Color(0.94, 0.78, 0.48, 1)
 theme_override_font_sizes/font_size = 10
+horizontal_alignment = 2
+
+[node name="SaveIndicator" type="Label" parent="."]
+script = ExtResource("11_save_indicator")
+offset_left = 344.0
+offset_top = 92.0
+offset_right = 464.0
+offset_bottom = 108.0
+theme_override_colors/font_color = Color(0.65, 0.70, 0.67, 1)
+theme_override_font_sizes/font_size = 9
 horizontal_alignment = 2
 
 [node name="Buffs" type="Label" parent="."]

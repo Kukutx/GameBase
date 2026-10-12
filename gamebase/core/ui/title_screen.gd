@@ -38,7 +38,7 @@ func _ready() -> void:
 	settings_menu.closed.connect(_on_settings_closed)
 	confirm_new_game.confirmed.connect(_start_new_game)
 	confirm_delete.confirmed.connect(_confirm_delete_save)
-	GameSession.continue_started.connect(_on_continue_started)
+	SaveManager.load_completed.connect(_on_load_completed)
 	GameSession.new_game_failed.connect(_on_new_game_failed)
 	_refresh_slot_ui()
 	(new_game_button if continue_button.disabled else continue_button).grab_focus()
@@ -66,18 +66,28 @@ func _refresh_slot_ui() -> void:
 	else:
 		slot_info.text = tr("Holds a save this version cannot open") if unreadable else tr("Empty slot")
 
+## A save's summary as the slot shows it: the date, time and money; where the
+## player stands and how long they played; then what the game adds.
 func _format_slot_summary(summary: Dictionary) -> String:
 	var minute := int(summary["minute_of_day"])
 	var recovery := ""
 	if bool(summary["recoverable"]):
 		recovery = tr(" · temporary save recovery") if String(summary["recovery_source"]) == "temp" else tr(" · backup available")
-	return tr("%s · %02d:%02d · %dg%s") % [
+	var lines := PackedStringArray([tr("%s · %02d:%02d · %dg%s") % [
 		GameCalendar.current().get_date_text(int(summary["day"])),
 		minute / 60,
 		minute % 60,
 		int(summary["money"]),
 		recovery,
-	]
+	]])
+	var played_minutes := int(summary.get("play_seconds", 0)) / 60
+	var played := tr("Played %d:%02d") % [played_minutes / 60, played_minutes % 60]
+	var place := String(summary.get("location_name", ""))
+	lines.append("%s · %s" % [tr(place), played] if not place.is_empty() else played)
+	var details: PackedStringArray = summary.get("details", PackedStringArray())
+	if not details.is_empty():
+		lines.append(" · ".join(details))
+	return "\n".join(lines)
 
 func _new_game() -> void:
 	if SaveManager.has_save():
@@ -109,10 +119,11 @@ func _continue_game() -> void:
 	# Not awaited: a load that succeeds frees the title screen.
 	GameSession.continue_game()
 
-func _on_continue_started(success: bool) -> void:
+# A load that succeeds frees the title screen with its scene.
+func _on_load_completed(success: bool, message: String) -> void:
 	if success:
 		return
-	status_label.text = tr("No valid save found")
+	status_label.text = message
 	_set_buttons_disabled(false)
 	_refresh_slot_ui()
 

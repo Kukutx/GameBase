@@ -132,9 +132,9 @@ func _return_to_title() -> void:
 func _quit() -> void:
 	get_tree().quit()
 
-func _on_save_completed(success: bool, message: String) -> void:
+func _on_save_completed(_success: bool, message: String) -> void:
 	if visible:
-		status_label.text = message if success else tr("Save failed: %s") % message
+		status_label.text = message
 
 func _on_load_completed(success: bool, message: String) -> void:
 	if _loading:
@@ -142,7 +142,7 @@ func _on_load_completed(success: bool, message: String) -> void:
 		if not success:
 			open()
 	if visible:
-		status_label.text = message if success else tr("Load failed: %s") % message
+		status_label.text = message
 
 func _set_main_buttons_disabled(value: bool) -> void:
 	resume_button.disabled = value

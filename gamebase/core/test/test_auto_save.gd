@@ -61,3 +61,24 @@ func test_window_close_request_does_nothing_when_autosave_is_off() -> void:
 	service.autosave_completed.connect(func(_success: bool, reason: String) -> void: requests.append(reason))
 	service.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
 	assert_eq(requests.size(), 0)
+
+func test_the_save_indicator_shows_each_autosave_and_then_goes() -> void:
+	var reduced_motion := GameSettings.reduced_motion
+	var indicator := SaveIndicator.new()
+	indicator.seconds_shown = 0.05
+	indicator.fade_seconds = 0.05
+	add_child_autofree(indicator)
+	assert_false(indicator.visible)
+	AutoSave.autosave_completed.emit(false, "interval")
+	assert_false(indicator.visible, "a failed autosave is a toast instead")
+	AutoSave.autosave_completed.emit(true, "travel")
+	assert_true(indicator.visible)
+	assert_eq(indicator.text, "Autosaved")
+	await wait_until(func() -> bool: return not indicator.visible, 1.0)
+	assert_false(indicator.visible)
+	GameSettings.reduced_motion = true
+	indicator.show_saved()
+	await wait_until(func() -> bool: return not indicator.visible, 1.0)
+	assert_false(indicator.visible)
+	assert_eq(indicator.modulate.a, 1.0, "with reduced motion it goes without a fade")
+	GameSettings.reduced_motion = reduced_motion
