@@ -10,6 +10,6 @@ locations = Array[StringName]([&"riverside_town"])
 seasons = PackedStringArray("Spring", "Autumn")
 start_minute = 360
 end_minute = 1200
-allowed_weather = PackedStringArray("Clear", "Rain")
+allowed_weather = Array[StringName]([&"clear", &"rain"])
 catch_weight = 1.2
 difficulty = 3

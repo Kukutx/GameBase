@@ -129,15 +129,6 @@ msgstr "秋季"
 msgid "Winter"
 msgstr "冬季"
 
-msgid "Clear"
-msgstr "晴朗"
-
-msgid "Rain"
-msgstr "下雨"
-
-msgid "Storm"
-msgstr "暴风雨"
-
 msgid "Achievement unlocked: %s"
 msgstr "成就解锁：%s"
 

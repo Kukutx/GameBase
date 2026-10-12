@@ -46,9 +46,12 @@ static func current() -> GameDefinition:
 ## Seed of a new game's world randomness (`GameRandom`): the weather, catches,
 ## mine floors and more. 0 gives each new game a fresh seed.
 @export var world_seed := 0
-## The odds of rain and storms in each season (`GameWeatherSystem`); a season
-## missing here is always clear.
+## The chances of each weather in each season (`GameWeatherSystem`); a day
+## they give no other weather has `clear_weather_id`.
 @export var weather_odds: Array[WeatherOdds] = []
+## The weather (`WeatherData`) of a day the odds give no other; empty, with no
+## odds, for a game without weather.
+@export var clear_weather_id: StringName = &""
 ## Items granted at the start of a new game, as item id → amount.
 @export var start_items: Dictionary[StringName, int] = {}
 ## Audio cue played for an event, as `<Autoload>.<signal>`

@@ -123,7 +123,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		for season: String in entry.seasons:
 			if not GameCalendar.current().has_season(season):
 				problems.append("schedule has unknown season '%s'" % season)
-		for weather_name: String in entry.allowed_weather:
-			if not GameWeatherSystem.WEATHER_NAMES.has(weather_name):
-				problems.append("schedule has unknown weather '%s'" % weather_name)
+		for weather_id: StringName in entry.allowed_weather:
+			if not registry.has_entry(WeatherData.KIND, weather_id):
+				problems.append("schedule has unknown weather '%s'" % weather_id)
 	return problems

@@ -161,7 +161,10 @@ func test_season_checks_of_content_follow_the_calendar() -> void:
 	odds.season = "Spring"
 	var all_odds: Array[WeatherOdds] = [odds]
 	var definition := _definition(_calendar(PackedStringArray(["Dry", "Wet"]), 10, 5))
-	var problems: PackedStringArray = ContentFixture.with_definition(definition, GameWeatherSystem.find_odds_problems.bind(all_odds))
+	definition.weather_odds = all_odds
+	definition.clear_weather_id = &"fixture_clear"
+	var registry := ContentFixture.use(self, [])
+	var problems: PackedStringArray = ContentFixture.with_definition(definition, GameWeatherSystem.find_problems.bind(definition, registry))
 	assert_string_contains("\n".join(problems), "unknown season 'Spring'")
 
 func _calendar(seasons: PackedStringArray, days_per_season: int, days_per_week: int) -> GameCalendar:

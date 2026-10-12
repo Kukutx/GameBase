@@ -262,7 +262,7 @@ func _process_day_transition(day: int) -> void:
 	watered = tilled and _is_watered_by_environment(day)
 
 func _is_watered_by_environment(day: int) -> bool:
-	if WeatherState.is_raining(day):
+	if WeatherState.is_ground_wet(day):
 		return true
 	var resolved_location := location_id
 	if resolved_location == &"":

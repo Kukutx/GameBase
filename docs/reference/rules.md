@@ -36,7 +36,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `SKILL_LEVEL` | skills | 2 | `SKILL_LEVEL <skill> <level>` | the skill has reached at least the level. |
 | `TIME_BETWEEN` | core | 2 | `TIME_BETWEEN <from> <to>` | the minute of the day is in [from, to). |
 | `TRUE` | core | 0 | `TRUE` | always holds. |
-| `WEATHER` | core | 1 or more | `WEATHER <name>...` | the day's weather is one of the names (Clear, Rain, Storm). |
+| `WEATHER` | core | 1 or more | `WEATHER <weather>...` | the day's weather is one of them (`WeatherData`). |
 | `WEEKDAY` | core | 1 or more | `WEEKDAY <n>...` | the weekday is one of the numbers; day 1 is weekday 0. |
 | `WORLD_FLAG` | core | 1 to 2 | `WORLD_FLAG <key> [true\|false]` | the boolean world flag has the value (default true). |
 

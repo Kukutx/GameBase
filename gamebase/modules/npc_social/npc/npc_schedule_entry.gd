@@ -8,7 +8,8 @@ extends Resource
 @export var activity: String = "Idle"
 @export var days_of_week: PackedInt32Array = PackedInt32Array()
 @export var seasons: PackedStringArray = PackedStringArray()
-@export var allowed_weather: PackedStringArray = PackedStringArray()
+## The weather (`WeatherData` ids) the entry holds in; any when empty.
+@export var allowed_weather: Array[StringName] = []
 ## What else must hold for the NPC to follow this entry, in the `GameQuery`
 ## syntax (`EVENT_ACTIVE harvest_fair`); empty means nothing else.
 @export var condition: String = ""
@@ -19,8 +20,6 @@ func matches(day: int, minute_of_day: int) -> bool:
 		return false
 	if not seasons.is_empty() and not seasons.has(GameCalendar.current().get_season_name(day)):
 		return false
-	if not allowed_weather.is_empty():
-		var weather_name := WeatherState.get_weather_name(WeatherState.get_weather_for_day(day))
-		if not allowed_weather.has(weather_name):
-			return false
+	if not allowed_weather.is_empty() and not allowed_weather.has(WeatherState.get_weather_id(day)):
+		return false
 	return GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day})

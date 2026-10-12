@@ -57,7 +57,7 @@ func _on_time_changed(_day: int, _minute_of_day: int) -> void:
 	_refresh_clock()
 	_refresh_buffs()
 
-func _on_weather_changed(_day: int, _weather: GameWeatherSystem.Weather) -> void:
+func _on_weather_changed(_day: int, _weather_id: StringName) -> void:
 	_refresh_clock()
 
 func _on_energy_changed(_current: int, _maximum: int) -> void:

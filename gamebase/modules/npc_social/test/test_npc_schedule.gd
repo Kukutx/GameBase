@@ -132,10 +132,11 @@ func test_high_priority_event_schedule_overrides_normal_schedule() -> void:
 
 	assert_eq(schedule.get_entry_for_minute(12 * 60, 1), event_entry)
 
-func test_weather_specific_schedule_overrides_normal_route_on_storm_days() -> void:
-	var storm_day := _find_weather_day("Storm")
-	var clear_day := _find_weather_day("Clear")
-	assert_gt(storm_day, 0)
+func test_weather_specific_schedule_overrides_normal_route_on_its_weather() -> void:
+	# Two days of the game's year with different weather.
+	var storm_day := 1
+	var storm := WeatherState.get_weather_id(storm_day)
+	var clear_day := _find_day_without(storm)
 	assert_gt(clear_day, 0)
 
 	var schedule := NpcSchedule.new()
@@ -147,15 +148,14 @@ func test_weather_specific_schedule_overrides_normal_route_on_storm_days() -> vo
 	storm_shelter.minute_of_day = 0
 	storm_shelter.priority = 20
 	storm_shelter.activity = "Shelter"
-	storm_shelter.allowed_weather = PackedStringArray(["Storm"])
+	storm_shelter.allowed_weather.assign([storm])
 	schedule.entries = [normal, storm_shelter]
 
 	assert_eq(schedule.get_entry_for_minute(10 * 60, storm_day), storm_shelter)
 	assert_eq(schedule.get_entry_for_minute(10 * 60, clear_day), normal)
 
-func _find_weather_day(weather_name: String) -> int:
+func _find_day_without(weather_id: StringName) -> int:
 	for day in range(1, 366):
-		var name := WeatherState.get_weather_name(WeatherState.get_weather_for_day(day))
-		if name == weather_name:
+		if WeatherState.get_weather_id(day) != weather_id:
 			return day
 	return -1

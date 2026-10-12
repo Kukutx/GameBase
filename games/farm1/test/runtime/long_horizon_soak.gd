@@ -46,7 +46,7 @@ func _run() -> void:
 		_check(world_clock.get_season_index() == expected_season, "Season index drifted on Day %d" % day)
 		_check(world_clock.get_day_of_season() == expected_season_day, "Season day drifted on Day %d" % day)
 		_check(event_state.get_year(day) == expected_year, "Calendar year drifted on Day %d" % day)
-		_check(int(weather_state.current_weather) == int(weather_state.get_weather_for_day(day)), "Weather cache drifted on Day %d" % day)
+		_check(StringName(weather_state.get_weather_id()) == StringName(weather_state.get_weather_id(day)), "Weather cache drifted on Day %d" % day)
 
 		var contract: Dictionary = contract_state.get_contract()
 		_check(not contract.is_empty(), "Daily contract missing on Day %d" % day)
@@ -107,7 +107,7 @@ func _run() -> void:
 			_check(restored_memory.size() == mini(day, npc_memory.max_recent_messages), "Bounded NPC memory size did not restore on Day %d" % day)
 			if not restored_memory.is_empty():
 				_check(int(restored_memory.back().get("day", 0)) == day, "Newest NPC memory did not restore on Day %d" % day)
-			_check(int(weather_state.current_weather) == int(weather_state.get_weather_for_day(day)), "Weather did not reconcile after load on Day %d" % day)
+			_check(StringName(weather_state.get_weather_id()) == StringName(weather_state.get_weather_id(day)), "Weather did not reconcile after load on Day %d" % day)
 			_check(event_state.get_year() == expected_year, "Event year did not reconcile after load on Day %d" % day)
 
 	# Cross the three-year boundary after the final round trip.

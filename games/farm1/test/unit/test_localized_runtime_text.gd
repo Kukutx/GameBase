@@ -43,7 +43,6 @@ func test_hud_summaries_are_translated() -> void:
 
 func test_foundation_names_are_translated_by_the_foundation() -> void:
 	_assert_translated(WorldClock.get_calendar_text(), "calendar text")
-	_assert_translated(tr(WeatherState.get_weather_name(GameWeatherSystem.Weather.STORM)), "weather name")
 	_assert_translated(GameSettings.get_control_label(&"give_gift"), "control label")
 	for skill: SkillData in SkillData.find_all():
 		_assert_translated(Skills.get_skill_name(skill.id), "skill %s" % skill.id)
@@ -110,6 +109,12 @@ func test_npc_schedule_activities_are_translated() -> void:
 			_assert_translated(tr(entry.activity), "activity of %s" % profile.id)
 			checked += 1
 	assert_gt(checked, 0)
+
+func test_weather_names_are_translated() -> void:
+	var weathers := ContentDB.get_entries(WeatherData.KIND)
+	assert_eq(weathers.size(), 3)
+	for weather: WeatherData in weathers:
+		_assert_translated(tr(weather.display_name), "weather %s" % weather.id)
 
 func _contract(objective: StringName) -> Dictionary:
 	return {

@@ -31,10 +31,10 @@ func after_each() -> void:
 
 func test_fish_data_filters_location_season_and_time() -> void:
 	var trout := FishData.find(&"fixture_trout")
-	assert_true(trout.is_available(&"fixture_river", 1, 8 * 60, "Clear"))
-	assert_false(trout.is_available(&"fixture_harbor", 1, 8 * 60, "Clear"))
-	assert_false(trout.is_available(&"fixture_river", 29, 8 * 60, "Clear"))
-	assert_false(trout.is_available(&"fixture_river", 1, 21 * 60, "Clear"))
+	assert_true(trout.is_available(&"fixture_river", 1, 8 * 60, &"fixture_clear"))
+	assert_false(trout.is_available(&"fixture_harbor", 1, 8 * 60, &"fixture_clear"))
+	assert_false(trout.is_available(&"fixture_river", 29, 8 * 60, &"fixture_clear"))
+	assert_false(trout.is_available(&"fixture_river", 1, 21 * 60, &"fixture_clear"))
 
 func test_fishing_service_uses_location_specific_pools() -> void:
 	WorldClock.set_time(1, 13 * 60)
@@ -49,9 +49,9 @@ func test_fishing_service_uses_location_specific_pools() -> void:
 
 func test_storm_fish_requires_storm_weather() -> void:
 	var eel := FishData.find(&"fixture_eel")
-	assert_true(eel.is_available(&"fixture_harbor", 1, 12 * 60, "Storm"))
-	assert_false(eel.is_available(&"fixture_harbor", 1, 12 * 60, "Clear"))
-	assert_false(eel.is_available(&"fixture_river", 1, 12 * 60, "Storm"))
+	assert_true(eel.is_available(&"fixture_harbor", 1, 12 * 60, &"fixture_storm"))
+	assert_false(eel.is_available(&"fixture_harbor", 1, 12 * 60, &"fixture_clear"))
+	assert_false(eel.is_available(&"fixture_river", 1, 12 * 60, &"fixture_storm"))
 
 func test_fishing_sequence_round_trips() -> void:
 	var source := FishingService.new()
@@ -146,11 +146,11 @@ func _fixture_content() -> Array:
 		_item(&"fixture_sardine"),
 		_item(&"fixture_eel"),
 		_fish(&"fixture_trout", &"fixture_river", PackedStringArray(["Spring", "Autumn"]), 6 * 60, 20 * 60,
-			PackedStringArray(["Clear", "Rain"])),
-		_fish(&"fixture_carp", &"fixture_river", PackedStringArray(), 0, 24 * 60, PackedStringArray()),
-		_fish(&"fixture_sardine", &"fixture_harbor", PackedStringArray(), 0, 24 * 60, PackedStringArray()),
+			[&"fixture_clear", &"fixture_rain"]),
+		_fish(&"fixture_carp", &"fixture_river", PackedStringArray(), 0, 24 * 60, []),
+		_fish(&"fixture_sardine", &"fixture_harbor", PackedStringArray(), 0, 24 * 60, []),
 		_fish(&"fixture_eel", &"fixture_harbor", PackedStringArray(["Spring", "Summer", "Autumn"]), 8 * 60, 23 * 60,
-			PackedStringArray(["Storm"])),
+			[&"fixture_storm"]),
 	]
 
 func _item(id: StringName) -> ItemData:
@@ -161,7 +161,7 @@ func _item(id: StringName) -> ItemData:
 	return item
 
 func _fish(id: StringName, location_id: StringName, seasons: PackedStringArray, start_minute: int, end_minute: int,
-		allowed_weather: PackedStringArray) -> FishData:
+		allowed_weather: Array) -> FishData:
 	var fish := FishData.new()
 	fish.id = id
 	fish.item_id = id
@@ -169,5 +169,5 @@ func _fish(id: StringName, location_id: StringName, seasons: PackedStringArray, 
 	fish.seasons = seasons
 	fish.start_minute = start_minute
 	fish.end_minute = end_minute
-	fish.allowed_weather = allowed_weather
+	fish.allowed_weather.assign(allowed_weather)
 	return fish
