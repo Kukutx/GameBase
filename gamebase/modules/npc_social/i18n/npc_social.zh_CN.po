@@ -13,9 +13,6 @@ msgstr "%s现在没有更多话可说"
 msgid "This heart event dialogue is unavailable"
 msgstr "该好感事件对话不可用"
 
-msgid "Finish the current conversation first"
-msgstr "请先结束当前对话"
-
 msgid "You already gave %s a gift today"
 msgstr "你今天已经给%s送过礼物"
 

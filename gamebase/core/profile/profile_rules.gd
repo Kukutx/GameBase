@@ -2,15 +2,18 @@ class_name ProfileRules
 extends RefCounted
 
 ## Condition and action keys of the player's profile (`GameProfile`), which
-## outlives every save (see `GameRulesService`).
+## outlives every save (see `GameRulesService`): its achievements, its flags
+## and the hints the player read (`HintData`).
 
 static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"ACHIEVEMENT_UNLOCKED", _achievement_unlocked, 1, 1, [AchievementData.KIND])
 	rules.register_condition(&"PROFILE_FLAG", _profile_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_BOOL])
 	rules.register_condition(&"PROFILE_FLAG_AT_LEAST", _profile_flag_at_least, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_INT])
+	rules.register_condition(&"HINT_SHOWN", _hint_shown, 1, 1, [HintData.KIND])
 	rules.register_action(&"UNLOCK_ACHIEVEMENT", _unlock_achievement, 1, 1, [AchievementData.KIND])
 	rules.register_action(&"SET_PROFILE_FLAG", _set_profile_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_FLAG_VALUE])
 	rules.register_action(&"ADD_PROFILE_FLAG", _add_profile_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_INT])
+	rules.register_action(&"SHOW_HINT", _show_hint, 1, 1, [HintData.KIND])
 
 ## ACHIEVEMENT_UNLOCKED <achievement>: the player unlocked it, in any save.
 static func _achievement_unlocked(args: PackedStringArray, _context: Dictionary) -> bool:
@@ -24,6 +27,10 @@ static func _profile_flag(args: PackedStringArray, _context: Dictionary) -> bool
 ## PROFILE_FLAG_AT_LEAST <key> <n>: the profile's counter is at least n.
 static func _profile_flag_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
 	return GameProfile.get_int(StringName(args[0])) >= int(args[1])
+
+## HINT_SHOWN <hint>: the hint showed, in any save.
+static func _hint_shown(args: PackedStringArray, _context: Dictionary) -> bool:
+	return GameProfile.get_bool(HintData.get_shown_flag(StringName(args[0])))
 
 ## UNLOCK_ACHIEVEMENT <achievement>: unlocks the achievement in the player's
 ## profile, for every save; one already unlocked stays so and the action still
@@ -42,4 +49,18 @@ static func _set_profile_flag(args: PackedStringArray, _context: Dictionary) -> 
 ## ADD_PROFILE_FLAG <key> [n]: adds n (default 1) to the profile's counter.
 static func _add_profile_flag(args: PackedStringArray, _context: Dictionary) -> bool:
 	GameProfile.add_int(StringName(args[0]), int(args[1]) if args.size() > 1 else 1)
+	return true
+
+## SHOW_HINT <hint>: shows the hint (`GameEvents.hint_requested`) unless it
+## showed before, in any save, or the player turned hints off; a hint passed
+## over while they were off shows the next time, once they are back on. Fails
+## only when the id is not a hint.
+static func _show_hint(args: PackedStringArray, _context: Dictionary) -> bool:
+	var hint := HintData.find(StringName(args[0]))
+	if hint == null:
+		return false
+	var shown := HintData.get_shown_flag(hint.id)
+	if GameSettings.hints and not GameProfile.get_bool(shown):
+		GameProfile.set_flag(shown, true)
+		GameEvents.hint_requested.emit(hint.get_message())
 	return true

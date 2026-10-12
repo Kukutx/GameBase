@@ -42,6 +42,14 @@
     "damage": {
       "requires": []
     },
+    "dialogue": {
+      "requires": [],
+      "addons": ["dialogue_manager"],
+      "autoloads": {
+        "DialogueManager": "res://addons/dialogue_manager/dialogue_manager.gd",
+        "Dialogue": "res://gamebase/modules/dialogue/dialogue_service.gd"
+      }
+    },
     "items": {
       "requires": [],
       "autoloads": {
@@ -73,18 +81,17 @@
       }
     },
     "npc_ai": {
-      "requires": ["npc_social"],
+      "requires": ["dialogue", "npc_social"],
       "addons": ["dialogue_manager"],
       "autoloads": {
         "NpcAi": "res://gamebase/modules/npc_ai/ai/npc_ai_service.gd"
       }
     },
     "npc_social": {
-      "requires": ["items"],
+      "requires": ["dialogue", "items"],
       "addons": ["dialogue_manager"],
       "autoloads": {
         "NpcSocialEvents": "res://gamebase/modules/npc_social/npc_social_events.gd",
-        "DialogueManager": "res://addons/dialogue_manager/dialogue_manager.gd",
         "RelationshipState": "res://gamebase/modules/npc_social/npc/relationship_manager.gd",
         "HeartEvents": "res://gamebase/modules/npc_social/npc/heart_event_service.gd",
         "NpcMemory": "res://gamebase/modules/npc_social/npc/npc_memory_store.gd",

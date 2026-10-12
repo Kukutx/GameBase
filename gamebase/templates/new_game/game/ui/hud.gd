@@ -1,9 +1,9 @@
 extends CanvasLayer
 
 ## What the player sees over the world: where they are and the time, the
-## status messages (the toasts and what a save or a load says), a word when
-## the game saved itself, what is near to use and the controls. It holds the
-## pause menu. Add the game's own lines here (health, money, a hotbar), as
+## status messages (the toasts, hints and what a save or a load says), a word
+## when the game saved itself, what is near to use and the controls. It holds
+## the pause menu. Add the game's own lines here (health, money, a hotbar), as
 ## games/dungeon1/game/ui/hud.gd does.
 
 @onready var place_label: Label = $Place

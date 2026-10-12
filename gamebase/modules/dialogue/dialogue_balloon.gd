@@ -1,12 +1,11 @@
 class_name DialogueBalloon
 extends CanvasLayer
 
-## The box a conversation shows in (`ConversationService`): the lines of a
-## dialogue file, through the `DialogueManager` addon (`start()`), or of a
-## chat made while it runs (`start_chat()`), in a panel along the bottom of
-## the game's view,
-## whatever the view's size, in the game's theme, with the speaker's name, the
-## line typing out at the player's text speed
+## The box a conversation shows in (`Dialogue`): the lines of a dialogue
+## file, read by the `DialogueManager` addon (`start()`), or of a chat made
+## while it runs (`start_chat()`), in a panel along the bottom of the game's
+## view, whatever the view's size, in the game's theme, with the speaker's
+## name, the line typing out at the player's text speed
 ## (`GameSettings.get_seconds_per_character()`) and the responses to choose
 ## from. Interact, accept or a click shows the rest of a line that is still
 ## typing, then moves on; a line with a `time` moves on by itself. Interact
@@ -37,7 +36,7 @@ const PENDING_TEXT := "…"
 
 var _resource: DialogueResource
 var _game_states: Array = []
-var _chat: NpcChat
+var _chat: DialogueChat
 # Gives the line with an id: Callable(id: String) -> DialogueLine; it may await.
 var _next_line: Callable
 var _line: DialogueLine
@@ -65,20 +64,20 @@ func _ready() -> void:
 	_mutation_timer.timeout.connect(_panel.hide)
 	_pending_timer.timeout.connect(_show_pending)
 
-## Shows `resource` from `cue` on (`DialogueManager` calls it once the balloon
-## is in the tree); `extra_game_states` are what its lines may read.
+## Shows `resource` from `cue` on (`Dialogue.show_dialogue()` calls it once
+## the balloon is in the tree); `extra_game_states` are what its lines may read.
 func start(resource: DialogueResource, cue: String = "", extra_game_states: Array = []) -> void:
 	_resource = resource
 	_game_states = [self] + extra_game_states
 	_next_line = func(id: String) -> DialogueLine: return await _resource.get_next_dialogue_line(id, _game_states)
 	_go_to(cue)
 
-## Shows `chat`'s lines from its first on (`ConversationService` calls it for
-## an NPC that chats, once the balloon is in the tree).
-func start_chat(chat: NpcChat) -> void:
+## Shows `chat`'s lines from its first on (`Dialogue.show_chat()` calls it once
+## the balloon is in the tree).
+func start_chat(chat: DialogueChat) -> void:
 	_chat = chat
 	_next_line = chat.get_line
-	_go_to(NpcChat.FIRST)
+	_go_to(DialogueChat.FIRST)
 
 ## The line on show, or null before the first one.
 func get_line() -> DialogueLine:

@@ -2,8 +2,8 @@ class_name GameSettingsService
 extends Node
 
 ## The player's settings: the volumes, the display, autosave, how fast text
-## types out, accessibility, the language and the bindings of the controls
-## (`bindings`).
+## types out, hints, accessibility, the language and the bindings of the
+## controls (`bindings`).
 ## It applies them to the audio buses, the window, the translation server and
 ## the input map, and writes them to `settings_path` (JSON) once the frame of a
 ## change is done: a slider dragged across writes once a frame, not once a step.
@@ -78,6 +78,8 @@ var autosave: bool
 ## Whether the pause menu opens when the game window loses focus.
 var pause_on_focus_loss: bool
 var text_speed: TextSpeed
+## Whether the hints a game shows once show (`HintData`).
+var hints: bool
 var weather_effects: bool
 var reduced_motion: bool
 ## Whether the player lets the game reach online services (an NPC chat's
@@ -175,6 +177,10 @@ func register_online_service(id: StringName, is_used: Callable) -> void:
 func uses_online_services() -> bool:
 	return _online_services.values().any(func(is_used: Callable) -> bool: return is_used.is_valid() and bool(is_used.call()))
 
+func set_hints(value: bool) -> void:
+	hints = value
+	_save_and_emit()
+
 func set_text_speed(value: TextSpeed) -> void:
 	text_speed = clampi(value, 0, TextSpeed.size() - 1) as TextSpeed
 	_save_and_emit()
@@ -268,7 +274,7 @@ func to_data() -> Dictionary:
 		"settings_version": SETTINGS_VERSION,
 		"audio": {"master": master_volume, "music": music_volume, "sounds": sounds_volume},
 		"display": {"fullscreen": fullscreen, "vsync": vsync, "integer_scaling": integer_scaling},
-		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss, "text_speed": TEXT_SPEED_NAMES[text_speed].to_lower()},
+		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss, "text_speed": TEXT_SPEED_NAMES[text_speed].to_lower(), "hints": hints},
 		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
 		"privacy": {"online_services": online_services},
 		"localization": {"locale": locale},
@@ -305,6 +311,7 @@ func load_settings() -> void:
 	for index: int in TEXT_SPEED_NAMES.size():
 		if speed is String and speed == TEXT_SPEED_NAMES[index].to_lower():
 			text_speed = index as TextSpeed
+	hints = _read_bool(data, "gameplay", "hints", hints)
 	weather_effects = _read_bool(data, "accessibility", "weather_effects", weather_effects)
 	reduced_motion = _read_bool(data, "accessibility", "reduced_motion", reduced_motion)
 	online_services = _read_bool(data, "privacy", "online_services", online_services)
@@ -338,6 +345,7 @@ func _reset_values() -> void:
 	autosave = true
 	pause_on_focus_loss = true
 	text_speed = TextSpeed.NORMAL
+	hints = true
 	weather_effects = true
 	reduced_motion = false
 	online_services = false

@@ -65,6 +65,7 @@ text = ""
 
 [node name="Status" type="Label" parent="."]
 script = ExtResource("10_status_line")
+shows_hints = true
 offset_left = 120.0
 offset_top = 52.0
 offset_right = 464.0

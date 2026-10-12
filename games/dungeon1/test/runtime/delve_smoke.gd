@@ -1,6 +1,7 @@
 extends "res://gamebase/core/test/runtime_smoke.gd"
 
-## Plays Ember Depths' loop through its scenes: a new game at camp, down into
+## Plays Ember Depths' loop through its scenes: a new game at camp with its
+## first hint and a word with the Old Delver, down into
 ## the depths and one depth further, each floor cleared with the player's own
 ## swings, saving refused in the depths and kept at camp, the save loaded back,
 ## and a defeat that returns the player to camp a quarter poorer. As a main
@@ -26,6 +27,9 @@ func _run() -> void:
 	_check(bool(session.start_new_game()), "New game did not start")
 	await _arrive(CAMP_SCENE)
 	_check(int(wallet.money) == 30 and int(inventory.get_quantity(&"rusty_sword")) == 1, "New game did not start with the camp's kit")
+	var status := current_scene.get_node("Player/HUD/Status") as Label
+	_check(status.text.begins_with("Move with "), "The HUD did not show the first hint: '%s'" % status.text)
+	await _talk(current_scene.get_node("OldDelver/Interactable"), "Old Delver")
 
 	_use(current_scene.get_node("DepthEntrance/Interactable"))
 	await _arrive(DEPTHS_SCENE)
@@ -89,3 +93,21 @@ func _clear_floor() -> void:
 		_check(bool(enemy.get("is_defeated")), "%s survived twenty swings" % enemy.name)
 	await process_frame
 	_check(bool(current_scene.call("is_cleared")), "The floor was not cleared")
+
+# Talks to the spot `interactable` belongs to: its balloon shows `character`'s
+# first line and pauses the world; once it goes, play goes on.
+func _talk(interactable: Node, character: String) -> void:
+	_use(interactable)
+	var dialogue := root.get_node("Dialogue")
+	var balloons := root.find_children("*", "DialogueBalloon", true, false)
+	_check(bool(dialogue.is_showing()) and balloons.size() == 1 and paused, "Using the %s did not start a conversation" % character)
+	if balloons.is_empty():
+		return
+	for _frame: int in 60:
+		if balloons[0].call("get_line") != null:
+			break
+		await process_frame
+	var line: Variant = balloons[0].call("get_line")
+	_check(line != null and String(line.get("character")) == character, "The %s did not speak first" % character)
+	balloons[0].free()
+	_check(not bool(dialogue.is_showing()) and not paused, "The conversation with the %s did not end" % character)

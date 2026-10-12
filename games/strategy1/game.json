@@ -2,6 +2,7 @@
   "id": "strategy1",
   "modules": [
     "damage",
+    "dialogue",
     "rts",
     "tactics"
   ]

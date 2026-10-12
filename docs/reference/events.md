@@ -27,6 +27,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 ## GameEvents (core)
 
 - `GameEvents.toast_requested(message: String)`
+- `GameEvents.hint_requested(message: String)`: A hint for the player, translated and its controls named (`HintData.get_message()`); the rule action `SHOW_HINT` sends it.
 
 ## GameRandom (core)
 
@@ -64,6 +65,10 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `CombatEvents.enemy_hurt(enemy_id: StringName, amount: int)`: A hostile creature was hurt for `amount`.
 - `CombatEvents.player_hurt(amount: int)`: The player was hurt for `amount`.
 - `CombatEvents.player_defeated(money_lost: int)`: The player lost all their health and woke up again; `money_lost` is what the defeat cost (`CombatSettings.defeat_money_loss_percent`).
+
+## Dialogue (dialogue)
+
+- `Dialogue.finished(resource: DialogueResource)`: The dialogue file `resource` was read to its end.
 
 ## ItemsEvents (items)
 

@@ -10,3 +10,4 @@ scene = ExtResource("2_scene")
 settings = {
 "map": "hill_pass"
 }
+failure_actions = PackedStringArray("SHOW_HINT lost_battle")

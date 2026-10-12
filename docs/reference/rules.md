@@ -19,6 +19,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `FLAG_AT_LEAST` | core | 2 | `FLAG_AT_LEAST <key> <n>` | the counter stored under the key is at least n. |
 | `HAS_ITEM` | items | 1 to 2 | `HAS_ITEM <item> [count]` | the inventory holds at least count (default 1). |
 | `HEARTS` | npc_social | 2 | `HEARTS <npc> <n>` | the friendship with the NPC has at least n hearts. |
+| `HINT_SHOWN` | core | 1 | `HINT_SHOWN <hint>` | the hint showed, in any save. |
 | `ITEM_TAG` | items | 2 | `ITEM_TAG <item> <tag>` | the item has the tag, as an objective that counts every fish caught asks of the event's item (`ITEM_TAG $item_id fish`). |
 | `LOCATION` | core | 1 or more | `LOCATION <id>...` | the player is in one of the locations. |
 | `MILESTONE_CLAIMED` | lifesim | 1 | `MILESTONE_CLAIMED <collection_milestone>` | the player claimed the milestone's reward. |
@@ -56,5 +57,6 @@ The condition and action keys the core and the modules register with `GameRules`
 | `RESTORE_VITAL` | core | 2 | `RESTORE_VITAL <vital> <n>` | restores n of the vital, up to its maximum; an n of 0 or less restores nothing, and the action still succeeds. |
 | `SET_FLAG` | core | 1 to 2 | `SET_FLAG <key> [value]` | value is true, false or an integer (default true). |
 | `SET_PROFILE_FLAG` | core | 1 to 2 | `SET_PROFILE_FLAG <key> [value]` | value is true, false or an integer (default true). |
+| `SHOW_HINT` | core | 1 | `SHOW_HINT <hint>` | shows the hint (`GameEvents.hint_requested`) unless it showed before, in any save, or the player turned hints off; a hint passed over while they were off shows the next time, once they are back on. Fails only when the id is not a hint. |
 | `START_QUEST` | progression | 1 | `START_QUEST <quest>` | fails when the quest already started. |
 | `UNLOCK_ACHIEVEMENT` | core | 1 | `UNLOCK_ACHIEVEMENT <achievement>` | unlocks the achievement in the player's profile, for every save; one already unlocked stays so and the action still succeeds. Fails only when the id is not an achievement. |

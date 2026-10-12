@@ -453,9 +453,6 @@ msgstr "冬季灯笼夜"
 msgid "Village Market"
 msgstr "村庄集市"
 
-msgid "Talk"
-msgstr "交谈"
-
 msgid "Nothing to use %s on"
 msgstr "没有可使用%s的目标"
 
@@ -2147,3 +2144,12 @@ msgstr "说说你的工作吧。"
 
 msgid "Well enough, thanks for asking."
 msgstr "还不错，谢谢关心。"
+
+msgid "Press {use_tool} to use the tool in hand."
+msgstr "按 {use_tool} 使用手中的工具。"
+
+msgid "Hold an item and press {give_gift} to give it."
+msgstr "拿着物品时按 {give_gift} 把它送出去。"
+
+msgid "Press {open_menu} to open your bag."
+msgstr "按 {open_menu} 打开背包。"

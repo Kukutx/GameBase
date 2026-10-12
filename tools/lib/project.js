@@ -16,7 +16,10 @@
 // .gutconfig.json it writes "dirs": the tests of the core, of each listed
 // module (a module after the modules it requires) and the game's own
 // (test/unit/), so every game runs the tests of the foundation it uses; and
-// "pre_run_script", the core's hook that sets up every test run.
+// "pre_run_script", the core's hook that sets up every test run. In its
+// export_presets.cfg it writes each preset's exclude_filter: the game's own
+// filters, then the editor files of every addon it links, which its exported
+// packs must not carry (tools/verify_export_contents.js).
 const fs = require("node:fs");
 const path = require("node:path");
 const { fail, rootPath } = require("./common");
@@ -153,11 +156,55 @@ function syncedGutConfig(text, game, foundation = readFoundation()) {
   return `${JSON.stringify({ ...config, dirs: desiredTestDirs(game, foundation), pre_run_script: GUT_PRE_RUN_SCRIPT }, null, 2)}\n`;
 }
 
+// The export filters that keep each addon's editor-only files out of a pack.
+const ADDON_EXPORT_EXCLUDES = {
+  dialogue_manager: [
+    "addons/dialogue_manager/assets/*",
+    "addons/dialogue_manager/components/*",
+    "addons/dialogue_manager/views/*",
+    "addons/dialogue_manager/plugin.gd*",
+    "addons/dialogue_manager/plugin.cfg*",
+    "addons/dialogue_manager/debugger_plugin.gd*",
+    "addons/dialogue_manager/inspector_plugin.gd*",
+    "addons/dialogue_manager/import_plugin.gd*",
+    "addons/dialogue_manager/export_plugin.gd*",
+    "addons/dialogue_manager/editor_translation_parser_plugin.gd*",
+    "addons/dialogue_manager/*.cs*",
+    "addons/dialogue_manager/example_balloon/*.cs*",
+    "addons/dialogue_manager/example_balloon/ExampleBalloon.tscn",
+    "addons/dialogue_manager/example_balloon/SmallExampleBalloon.tscn",
+    "addons/dialogue_manager/nodes/actionable/*.cs*",
+    "addons/dialogue_manager/nodes/context/*.cs*",
+    "addons/dialogue_manager/nodes/dialogue_label/*.cs*",
+    "addons/dialogue_manager/nodes/dialogue_label/DialogueLabel.tscn",
+    "addons/dialogue_manager/nodes/marker/*.cs*",
+    "addons/dialogue_manager/nodes/responses_menu/*.cs*",
+  ],
+};
+
+// The filters of the game's addons, in the order the game links them.
+function desiredAddonExcludes(game) {
+  return game.addons.flatMap((addon) => ADDON_EXPORT_EXCLUDES[addon] || []);
+}
+
+// The export_presets.cfg text with every preset's exclude_filter as the
+// manifests say: the game's own filters, then its addons'; the filters of an
+// addon the game no longer links go.
+function syncedExportPresets(text, game) {
+  const managed = new Set(Object.values(ADDON_EXPORT_EXCLUDES).flat());
+  const addons = desiredAddonExcludes(game);
+  return text.replace(/^exclude_filter="([^"]*)"$/gm, (_line, filters) => {
+    const own = filters.split(",").filter((filter) => filter !== "" && !managed.has(filter));
+    return `exclude_filter="${[...own, ...addons].join(",")}"`;
+  });
+}
+
 // The managed files of the game, as [file, function of their text].
 function managedFiles(game, foundation) {
   return [
     [gamePath(game, "project.godot"), (text) => syncedProject(text, game, foundation)],
     [gamePath(game, ".gutconfig.json"), (text) => syncedGutConfig(text, game, foundation)],
+    [gamePath(game, "export_presets.cfg"), (text) => syncedExportPresets(text, game)],
   ];
 }
 
@@ -183,4 +230,4 @@ function projectInSync(game, foundation = readFoundation()) {
   });
 }
 
-module.exports = { formatSections, parseSections, desiredAutoloads, desiredCatalogs, desiredPlugins, desiredTestDirs, moduleOrder, projectInSync, syncProject, syncedGutConfig, syncedProject };
+module.exports = { formatSections, parseSections, desiredAddonExcludes, desiredAutoloads, desiredCatalogs, desiredPlugins, desiredTestDirs, moduleOrder, projectInSync, syncProject, syncedExportPresets, syncedGutConfig, syncedProject };

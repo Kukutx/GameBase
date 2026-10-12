@@ -1,0 +1,11 @@
+~ start
+Captain Aldis: Welcome to camp. Raiders hold the ford and the hill pass, and we take both back.
+- How do we fight at the ford?
+	Captain Aldis: Plan it on the war table. Each soldier moves and acts in turn; keep the cleric close to mend the wounded.
+	=> start
+- And the pass?
+	Captain Aldis: Lead the troops from the muster. Pick out soldiers, send them where they are needed, and they fight on their own.
+	=> start
+- To work, then.
+	Captain Aldis: Good luck out there.
+	=> END

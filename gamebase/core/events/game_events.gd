@@ -2,10 +2,14 @@ class_name GlobalGameEvents
 extends Node
 
 ## The core's notifications: the short status line (toast) the game's HUD
-## shows. What happens in a module's systems is announced on that module's own
-## `<Module>Events` autoload (`LifesimEvents.crop_harvested`).
+## shows, and the hints the player reads once (`HintData`). What happens in a
+## module's systems is announced on that module's own `<Module>Events`
+## autoload (`LifesimEvents.crop_harvested`).
 
 signal toast_requested(message: String)
+## A hint for the player, translated and its controls named
+## (`HintData.get_message()`); the rule action `SHOW_HINT` sends it.
+signal hint_requested(message: String)
 
 func toast(message: String) -> void:
 	if message.is_empty():

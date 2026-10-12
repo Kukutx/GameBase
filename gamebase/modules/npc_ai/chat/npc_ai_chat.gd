@@ -1,5 +1,5 @@
 class_name NpcAiChat
-extends NpcChat
+extends DialogueChat
 
 ## A chat with an NPC (`NpcAi`): its greeting, then, for each topic the player
 ## brings up (`ChatTopicData.find_open()`), what the player says and the NPC's

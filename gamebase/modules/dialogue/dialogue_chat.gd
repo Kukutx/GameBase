@@ -1,10 +1,10 @@
-class_name NpcChat
+class_name DialogueChat
 extends RefCounted
 
-## A conversation made while it runs rather than written in a dialogue file: a
-## module that lets NPCs chat (npc_ai) makes one when the player talks to an
-## NPC that chats (`ConversationService.chat_maker`), and the balloon shows its
-## lines (`DialogueBalloon.start_chat()`), each with the responses that lead on.
+## A conversation made while it runs rather than written in a dialogue file,
+## such as an NPC's chat with a language model (npc_ai): `Dialogue.show_chat()`
+## shows its lines in the balloon (`DialogueBalloon.start_chat()`), each with
+## the responses that lead on.
 
 ## The id of a chat's first line.
 const FIRST := ""

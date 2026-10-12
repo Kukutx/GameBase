@@ -3,6 +3,7 @@
   "dirs": [
     "res://gamebase/core/test/",
     "res://gamebase/modules/damage/test/",
+    "res://gamebase/modules/dialogue/test/",
     "res://gamebase/modules/items/test/",
     "res://gamebase/modules/combat/test/",
     "res://gamebase/modules/npc_social/test/",
