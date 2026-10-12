@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/player/top_down_player.gd" id="1_player"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="3_hud"]
+
+[sub_resource type="CapsuleShape2D" id="Capsule_player"]
+radius = 6.0
+height = 16.0
+
+[sub_resource type="CircleShape2D" id="Circle_interaction"]
+radius = 20.0
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+z_index = 10
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+reach_nodes = Array[NodePath]([NodePath("InteractionController")])
+
+[node name="Body" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-7, -9, 7, -9, 7, 9, -7, 9)
+color = Color(0.36, 0.58, 0.86, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 2)
+shape = SubResource("Capsule_player")
+
+[node name="InteractionController" type="Area2D" parent="." node_paths=PackedStringArray("actor", "prompt_label")]
+collision_layer = 0
+collision_mask = 16
+monitoring = true
+monitorable = false
+script = ExtResource("2_interaction")
+actor = NodePath("..")
+prompt_label = NodePath("../HUD/Prompt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionController"]
+shape = SubResource("Circle_interaction")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+enabled = true
+position_smoothing_enabled = true
+position_smoothing_speed = 7.0
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]

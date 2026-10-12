@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"raider"
+display_name = "Raider"
+color = Color(0.72, 0.32, 0.26, 1)
+max_health = 18
+attack = 4
+defense = 1
+speed = 30.0
+move = 4
+action_ids = Array[StringName]([&"strike"])

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ContentPack" load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/content/content_pack.gd" id="1_pack"]
+[ext_resource type="Resource" path="res://game/data/start_location.tres" id="2_start"]
+[ext_resource type="Resource" path="res://game/data/lookout_location.tres" id="3_lookout"]
+[ext_resource type="Resource" path="res://game/data/tactics/action_firepot.tres" id="tactics_action_firepot"]
+[ext_resource type="Resource" path="res://game/data/tactics/action_mend.tres" id="tactics_action_mend"]
+[ext_resource type="Resource" path="res://game/data/tactics/action_shoot.tres" id="tactics_action_shoot"]
+[ext_resource type="Resource" path="res://game/data/tactics/action_smash.tres" id="tactics_action_smash"]
+[ext_resource type="Resource" path="res://game/data/tactics/action_strike.tres" id="tactics_action_strike"]
+[ext_resource type="Resource" path="res://game/data/tactics/ford_battle.tres" id="tactics_ford_battle"]
+[ext_resource type="Resource" path="res://game/data/tactics/map_border_ford.tres" id="tactics_map_border_ford"]
+[ext_resource type="Resource" path="res://game/data/tactics/unit_archer.tres" id="tactics_unit_archer"]
+[ext_resource type="Resource" path="res://game/data/tactics/unit_brute.tres" id="tactics_unit_brute"]
+[ext_resource type="Resource" path="res://game/data/tactics/unit_cleric.tres" id="tactics_unit_cleric"]
+[ext_resource type="Resource" path="res://game/data/tactics/unit_raider.tres" id="tactics_unit_raider"]
+[ext_resource type="Resource" path="res://game/data/tactics/unit_slinger.tres" id="tactics_unit_slinger"]
+[ext_resource type="Resource" path="res://game/data/tactics/unit_swordsman.tres" id="tactics_unit_swordsman"]
+
+[resource]
+script = ExtResource("1_pack")
+entries = [ExtResource("2_start"), ExtResource("3_lookout"), ExtResource("tactics_action_firepot"), ExtResource("tactics_action_mend"), ExtResource("tactics_action_shoot"), ExtResource("tactics_action_smash"), ExtResource("tactics_action_strike"), ExtResource("tactics_ford_battle"), ExtResource("tactics_map_border_ford"), ExtResource("tactics_unit_archer"), ExtResource("tactics_unit_brute"), ExtResource("tactics_unit_cleric"), ExtResource("tactics_unit_raider"), ExtResource("tactics_unit_slinger"), ExtResource("tactics_unit_swordsman")]

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BattleActionData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_action_data.gd" id="1_action"]
+
+[resource]
+script = ExtResource("1_action")
+id = &"strike"
+display_name = "Strike"
+effect = 0
+power = 4
+min_range = 1
+max_range = 1
+area = 0

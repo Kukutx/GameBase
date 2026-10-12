@@ -62,6 +62,8 @@ func test_instant_text_shows_a_line_at_once_and_waits_for_a_press() -> void:
 func test_the_chosen_response_leads_on_and_the_end_frees_the_balloon() -> void:
 	GameSettings.text_speed = GameSettingsService.TextSpeed.INSTANT
 	var balloon := await _start("start")
+	# Shown in full, so the press moves on rather than ends the typing.
+	await wait_until(func() -> bool: return balloon.get_node("%More").visible, 1.0)
 	balloon.advance()
 	await wait_until(func() -> bool: return balloon.get_node("%Responses").visible, 1.0)
 	var line := balloon.get_line()
@@ -126,6 +128,8 @@ func test_a_response_is_picked_once_even_while_its_branch_waits() -> void:
 func test_interact_picks_the_response_in_focus() -> void:
 	GameSettings.text_speed = GameSettingsService.TextSpeed.INSTANT
 	var balloon := await _start("start")
+	# Shown in full, so the press moves on rather than ends the typing.
+	await wait_until(func() -> bool: return balloon.get_node("%More").visible, 1.0)
 	balloon.advance()
 	await wait_until(func() -> bool: return balloon.get_node("%Responses").visible, 1.0)
 	InputLock.lock(GameConversationService.DIALOGUE_LOCK, false, balloon)

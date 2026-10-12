@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="BattleMapData" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_map_data.gd" id="1_map"]
+[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_placement.gd" id="2_placement"]
+
+[sub_resource type="Resource" id="Placement_1"]
+script = ExtResource("2_placement")
+unit_id = &"swordsman"
+faction_id = &"banners"
+cell = Vector2i(1, 2)
+
+[sub_resource type="Resource" id="Placement_2"]
+script = ExtResource("2_placement")
+unit_id = &"swordsman"
+faction_id = &"banners"
+cell = Vector2i(1, 4)
+
+[sub_resource type="Resource" id="Placement_3"]
+script = ExtResource("2_placement")
+unit_id = &"archer"
+faction_id = &"banners"
+cell = Vector2i(0, 3)
+
+[sub_resource type="Resource" id="Placement_4"]
+script = ExtResource("2_placement")
+unit_id = &"cleric"
+faction_id = &"banners"
+cell = Vector2i(0, 5)
+
+[sub_resource type="Resource" id="Placement_5"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+cell = Vector2i(8, 2)
+
+[sub_resource type="Resource" id="Placement_6"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+cell = Vector2i(8, 4)
+
+[sub_resource type="Resource" id="Placement_7"]
+script = ExtResource("2_placement")
+unit_id = &"brute"
+faction_id = &"raiders"
+cell = Vector2i(9, 3)
+
+[sub_resource type="Resource" id="Placement_8"]
+script = ExtResource("2_placement")
+unit_id = &"slinger"
+faction_id = &"raiders"
+cell = Vector2i(9, 5)
+
+[resource]
+script = ExtResource("1_map")
+id = &"border_ford"
+display_name = "Border Ford"
+size = Vector2i(10, 7)
+blocked_cells = Array[Vector2i]([Vector2i(5, 0), Vector2i(5, 1), Vector2i(5, 2), Vector2i(5, 4), Vector2i(5, 5), Vector2i(5, 6), Vector2i(4, 0), Vector2i(6, 6), Vector2i(2, 1), Vector2i(7, 5)])
+player_faction_id = &"banners"
+placements = Array[ExtResource("2_placement")]([SubResource("Placement_1"), SubResource("Placement_2"), SubResource("Placement_3"), SubResource("Placement_4"), SubResource("Placement_5"), SubResource("Placement_6"), SubResource("Placement_7"), SubResource("Placement_8")])

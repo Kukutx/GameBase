@@ -1,6 +1,6 @@
 # Writing a module
 
-A module is an optional piece of gameplay under `gamebase/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `combat`, `lifesim`, `npc_social`, `npc_ai`, `progression` and `roguelite` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `gamebase/core/`.
+A module is an optional piece of gameplay under `gamebase/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `combat`, `lifesim`, `npc_social`, `npc_ai`, `progression`, `roguelite` and `tactics` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `gamebase/core/`.
 
 The reference pages list what the foundation already offers: [autoloads](reference/autoloads.md), [events](reference/events.md) and [rule keys](reference/rules.md).
 

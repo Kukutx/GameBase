@@ -1,0 +1,8 @@
+{
+  "id": "strategy1",
+  "modules": [
+    "combat",
+    "items",
+    "tactics"
+  ]
+}

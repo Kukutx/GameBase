@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"slinger"
+display_name = "Slinger"
+color = Color(0.78, 0.52, 0.26, 1)
+max_health = 12
+attack = 3
+defense = 0
+speed = 26.0
+move = 3
+action_ids = Array[StringName]([&"firepot"])

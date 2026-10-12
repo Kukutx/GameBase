@@ -374,3 +374,6 @@ msgstr "这条路暂时走不通"
 
 msgid "Online Services"
 msgstr "联网服务"
+
+msgid "Play"
+msgstr "开始"

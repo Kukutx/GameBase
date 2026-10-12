@@ -13,6 +13,7 @@ const KIND := &"minigame"
 @export var success_actions: PackedStringArray = PackedStringArray()
 @export var failure_actions: PackedStringArray = PackedStringArray()
 ## Tuning passed to the minigame's `setup()`; the caller's context overrides it.
+## The minigame checks it (`MiniGame.find_settings_problems()`).
 @export var settings: Dictionary = {}
 
 ## The minigame with `entry_id` in the running game's content, or null.
@@ -25,11 +26,16 @@ static func find_all() -> Array[MiniGameDefinition]:
 	result.assign(ContentRegistry.active.get_entries(KIND))
 	return result
 
-func find_problems(_registry: ContentRegistry) -> PackedStringArray:
+func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	if scene == null:
 		return PackedStringArray(["has no scene"])
 	var root := scene.instantiate()
-	var is_minigame := root is MiniGame
+	var minigame := root as MiniGame
+	var problems := PackedStringArray()
+	if minigame == null:
+		problems.append("scene root does not extend MiniGame")
+	else:
+		problems.append_array(minigame.find_settings_problems(settings, registry))
 	if root != null:
 		root.free()
-	return PackedStringArray() if is_minigame else PackedStringArray(["scene root does not extend MiniGame"])
+	return problems

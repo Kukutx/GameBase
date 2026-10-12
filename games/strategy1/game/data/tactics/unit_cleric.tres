@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"cleric"
+display_name = "Cleric"
+color = Color(0.86, 0.84, 0.66, 1)
+max_health = 14
+attack = 1
+defense = 1
+speed = 26.0
+move = 3
+action_ids = Array[StringName]([&"mend", &"strike"])

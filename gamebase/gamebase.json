@@ -110,6 +110,12 @@
       "autoloads": {
         "Skills": "res://gamebase/modules/skills/skill_manager.gd"
       }
+    },
+    "tactics": {
+      "requires": ["combat"],
+      "autoloads": {
+        "TacticsEvents": "res://gamebase/modules/tactics/tactics_events.gd"
+      }
     }
   }
 }
