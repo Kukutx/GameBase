@@ -78,6 +78,8 @@ func _clear_floor() -> void:
 		for _swing: int in 20:
 			if bool(enemy.get("is_defeated")):
 				break
+			while bool(melee.call("is_cooling_down")):
+				await physics_frame
 			player.global_position = enemy.global_position + Vector2(0, 12)
 			await physics_frame
 			await physics_frame

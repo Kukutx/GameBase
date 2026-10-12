@@ -49,7 +49,7 @@ func test_slime_takes_melee_damage_drops_loot_and_awards_combat_xp() -> void:
 	add_child_autofree(slime)
 
 	assert_true(slime.take_damage(15))
-	assert_eq(slime.health, 15)
+	assert_eq(slime.health.current, 15)
 	assert_true(slime.take_damage(15))
 	assert_true(slime.is_defeated)
 	assert_eq(InventoryState.get_quantity(&"slime_gel"), 1)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://gamebase/modules/combat/combat/melee_attack.gd" id="4_melee"]
 [ext_resource type="Script" path="res://gamebase/core/visual/directional_actor_visual.gd" id="5_visual"]
 [ext_resource type="Script" path="res://gamebase/modules/items/hotbar/hotbar_input.gd" id="6_hotbar_input"]
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat/player_hurtbox.gd" id="7_hurtbox"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 6.0
@@ -76,6 +77,16 @@ action = &"use_tool"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack"]
 shape = SubResource("Circle_interaction")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+script = ExtResource("7_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, 2)
+shape = SubResource("Capsule_player")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = true

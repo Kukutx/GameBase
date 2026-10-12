@@ -8,7 +8,7 @@ func test_audio_cues_and_location_music_are_registered() -> void:
 	var errors := ContentDB.rebuild()
 	assert_eq(errors.size(), 0)
 	var cues := AudioCueData.find_all()
-	assert_eq(cues.size(), 13)
+	assert_eq(cues.size(), 18)
 
 	var expected_sfx: Array[StringName] = [
 		&"sfx_pickup",
@@ -19,6 +19,11 @@ func test_audio_cues_and_location_music_are_registered() -> void:
 		&"sfx_enemy_defeated",
 		&"sfx_processing_complete",
 		&"sfx_tool_upgraded",
+		&"sfx_swing",
+		&"sfx_hit",
+		&"sfx_hurt",
+		&"sfx_purchase",
+		&"sfx_sale",
 	]
 	for cue_id: StringName in expected_sfx:
 		var cue := AudioCueData.find(cue_id)

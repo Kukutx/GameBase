@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ContentPack" load_steps=23 format=3]
+[gd_resource type="Resource" script_class="ContentPack" load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://gamebase/core/content/content_pack.gd" id="1_pack"]
 [ext_resource type="Resource" path="res://game/data/locations/camp.tres" id="2_camp"]
@@ -22,7 +22,13 @@
 [ext_resource type="Resource" path="res://game/data/achievements/delver.tres" id="20_delver"]
 [ext_resource type="Resource" path="res://game/data/achievements/ember_heart.tres" id="21_ember_heart"]
 [ext_resource type="Resource" path="res://game/data/achievements/first_blood.tres" id="22_first_blood"]
+[ext_resource type="Resource" path="res://game/data/audio/sfx_swing.tres" id="sfx_swing"]
+[ext_resource type="Resource" path="res://game/data/audio/sfx_hit.tres" id="sfx_hit"]
+[ext_resource type="Resource" path="res://game/data/audio/sfx_hurt.tres" id="sfx_hurt"]
+[ext_resource type="Resource" path="res://game/data/audio/sfx_purchase.tres" id="sfx_purchase"]
+[ext_resource type="Resource" path="res://game/data/audio/sfx_sale.tres" id="sfx_sale"]
+[ext_resource type="Resource" path="res://game/data/audio/sfx_enemy_defeated.tres" id="sfx_enemy_defeated"]
 
 [resource]
 script = ExtResource("1_pack")
-entries = [ExtResource("2_camp"), ExtResource("3_depths"), ExtResource("4_bone_shard"), ExtResource("5_ember_blade"), ExtResource("6_ember_core"), ExtResource("7_health_potion"), ExtResource("8_iron_sword"), ExtResource("9_rusty_sword"), ExtResource("10_slime_gel"), ExtResource("11_cave_slime"), ExtResource("12_ember_wisp"), ExtResource("13_skeleton"), ExtResource("14_camp_merchant"), ExtResource("15_combat"), ExtResource("16_achievement_delver"), ExtResource("17_achievement_ember_heart"), ExtResource("18_achievement_first_blood"), ExtResource("19_combat_xp"), ExtResource("20_delver"), ExtResource("21_ember_heart"), ExtResource("22_first_blood")]
+entries = [ExtResource("2_camp"), ExtResource("3_depths"), ExtResource("4_bone_shard"), ExtResource("5_ember_blade"), ExtResource("6_ember_core"), ExtResource("7_health_potion"), ExtResource("8_iron_sword"), ExtResource("9_rusty_sword"), ExtResource("10_slime_gel"), ExtResource("11_cave_slime"), ExtResource("12_ember_wisp"), ExtResource("13_skeleton"), ExtResource("14_camp_merchant"), ExtResource("15_combat"), ExtResource("16_achievement_delver"), ExtResource("17_achievement_ember_heart"), ExtResource("18_achievement_first_blood"), ExtResource("19_combat_xp"), ExtResource("20_delver"), ExtResource("21_ember_heart"), ExtResource("22_first_blood"), ExtResource("sfx_swing"), ExtResource("sfx_hit"), ExtResource("sfx_hurt"), ExtResource("sfx_purchase"), ExtResource("sfx_sale"), ExtResource("sfx_enemy_defeated")]

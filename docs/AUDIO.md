@@ -5,7 +5,7 @@ GameBase has a data-driven audio routing layer, but the repository intentionally
 ## Runtime architecture
 
 - `GameAudio` is the foundation's audio service (`gamebase/core/audio/game_audio_service.gd`), an autoload every game registers.
-- `AudioCueData` resources are listed in the game's content pack (`games/farm1/game/data/content.tres`) and resolved with `AudioCueData.find()`.
+- `AudioCueData` resources are listed in each game's content pack (`games/<id>/game/data/content.tres`) and resolved with `AudioCueData.find()`. A game maps events to cues in `GameDefinition.event_cues`.
 - Music routes to the `Music` bus.
 - Sound effects route to the `Sounds` bus.
 - Master/Music/Sounds levels are persisted by `GameSettings` and already exposed in Settings.
@@ -15,7 +15,7 @@ Gameplay systems should request stable cue IDs. They must not load audio files d
 
 ## Stable cue IDs
 
-Current SFX slots:
+Current SFX slots (Farm1; Ember Depths has the combat and shop ones: `sfx_enemy_defeated`, `sfx_swing`, `sfx_hit`, `sfx_hurt`, `sfx_purchase` and `sfx_sale`):
 
 - `sfx_pickup`
 - `sfx_harvest`
@@ -25,6 +25,11 @@ Current SFX slots:
 - `sfx_enemy_defeated`
 - `sfx_processing_complete`
 - `sfx_tool_upgraded`
+- `sfx_swing` (`CombatEvents.attack_swung`)
+- `sfx_hit` (`CombatEvents.enemy_hurt`)
+- `sfx_hurt` (`CombatEvents.player_hurt`)
+- `sfx_purchase` (`ShopState.purchase_completed`)
+- `sfx_sale` (`ShopState.sale_completed`)
 
 Current location music slots:
 

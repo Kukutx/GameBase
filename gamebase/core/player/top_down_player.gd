@@ -31,12 +31,17 @@ const MOVE_SPEED_STAT := &"move_speed"
 var facing := Vector2.DOWN
 
 var _previous_health := 0
+var _stagger_left := 0.0
 
 func _ready() -> void:
 	_previous_health = PlayerState.health
 	PlayerState.health_changed.connect(_on_health_changed)
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	if _stagger_left > 0.0:
+		_stagger_left = maxf(_stagger_left - delta, 0.0)
+		velocity = Vector2.ZERO
+		return
 	if is_input_locked():
 		velocity = Vector2.ZERO
 		return
@@ -45,6 +50,15 @@ func _physics_process(_delta: float) -> void:
 	move_and_slide()
 	if direction.length_squared() > 0.01:
 		face(direction)
+
+## Stops the player walking for `seconds`, while a hit's knockback carries
+## them (combat's `PlayerHurtbox`). A longer stagger under way stays.
+func stagger(seconds: float) -> void:
+	_stagger_left = maxf(_stagger_left, seconds)
+
+## Whether the player is staggered (`stagger()`) and does not walk.
+func is_staggered() -> bool:
+	return _stagger_left > 0.0
 
 ## Turns the player to face `direction`, and its reach with it.
 func face(direction: Vector2) -> void:

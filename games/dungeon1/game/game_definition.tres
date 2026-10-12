@@ -54,6 +54,14 @@ start_items = Dictionary[StringName, int]({
 &"rusty_sword": 1,
 &"health_potion": 2
 })
+event_cues = Dictionary[StringName, StringName]({
+&"CombatEvents.attack_swung": &"sfx_swing",
+&"CombatEvents.enemy_hurt": &"sfx_hit",
+&"CombatEvents.enemy_defeated": &"sfx_enemy_defeated",
+&"CombatEvents.player_hurt": &"sfx_hurt",
+&"ShopState.purchase_completed": &"sfx_purchase",
+&"ShopState.sale_completed": &"sfx_sale"
+})
 start_money = 30
 start_hotbar = Array[StringName]([&"rusty_sword", &"health_potion"])
 controls = Array[Resource]([ExtResource("6_move_up"), ExtResource("7_move_down"), ExtResource("8_move_left"), ExtResource("9_move_right"), ExtResource("4_interact"), SubResource("Control_attack"), SubResource("Control_drink"), SubResource("Control_next_item")])

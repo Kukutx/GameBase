@@ -118,7 +118,12 @@ event_cues = Dictionary[StringName, StringName]({
 &"LifesimEvents.resource_mined": &"sfx_resource_mined",
 &"CombatEvents.enemy_defeated": &"sfx_enemy_defeated",
 &"LifesimEvents.item_processed": &"sfx_processing_complete",
-&"ProgressionEvents.tool_upgraded": &"sfx_tool_upgraded"
+&"ProgressionEvents.tool_upgraded": &"sfx_tool_upgraded",
+&"CombatEvents.attack_swung": &"sfx_swing",
+&"CombatEvents.enemy_hurt": &"sfx_hit",
+&"CombatEvents.player_hurt": &"sfx_hurt",
+&"ShopState.purchase_completed": &"sfx_purchase",
+&"ShopState.sale_completed": &"sfx_sale"
 })
 start_money = 500
 start_hotbar = Array[StringName]([&"hoe", &"watering_can", &"pickaxe", &"rusty_sword", &"turnip_seeds", &"fishing_rod", &"berry"])
