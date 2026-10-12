@@ -4,8 +4,9 @@ The reusable foundation every game in this repository shares. Each game under `g
 
 ```text
 gamebase/core/                Genre-agnostic services: content, save, session, rules, settings,
-                              input, audio, world travel, time, randomness, triggers, player profile,
-                              interactions, diagnostics, and the title, pause and settings menus
+                              input, audio, world travel, depth tracks, time, randomness, triggers,
+                              player profile, playthroughs and what carries over, interactions,
+                              diagnostics, and the title, pause and settings menus
 gamebase/modules/items/       Items, inventory, storage, shops, crafting, food buffs, building placement
 gamebase/modules/skills/      Skill levels, experience and perks
 gamebase/modules/combat/      Hostile creatures, enemy data, the melee       (requires items)
@@ -16,6 +17,7 @@ gamebase/modules/npc_social/  NPC actor, conversations, schedules,             (
                               relationships, heart events, memory
 gamebase/modules/progression/ Quests, mail, collections, contracts,            (requires items, skills, combat, lifesim, npc_social)
                               town projects, tool upgrades
+gamebase/modules/roguelite/   Runs: their count, outcomes, run-long values and random streams
 gamebase/templates/new_game/  The project a new game starts from
 gamebase/gamebase.json        Each module's required modules, addons and autoloads, the core's autoloads,
                               and the addons every game links
@@ -42,6 +44,10 @@ Triggers: what content does when something happens is a trigger (`core/rules/tri
 Quests: a quest (`modules/progression/quests/quest_data.gd`) asks for one or more `objectives` (`QuestObjective`), each counted from an event of any module the way a trigger listens to one: its `event`, a `condition` on the event's arguments (`EVENT_ARG crop_id turnip`, or `ITEM_TAG $item_id fish` for every item tagged fish), `count_per` an integer argument (`quantity`) and the `required_amount`; with a `measure`, an autoload's method returning an int (`MineState.get_deepest_floor`), it follows that number instead of counting. `QuestState` listens only to the events of the active quests' objectives, pays the reward once every objective is met and saves each objective's progress, so no quest code names the modules whose events its quests count.
 
 Player profile: the core's `GameProfile` autoload (`core/profile/game_profile.gd`) keeps what outlives every save of a game in `user://profile.json`: the achievements the player unlocked (`AchievementData`, a kind of content) and profile flags, booleans and counters as `WorldState` keeps a world's. A new game, a load or a deleted slot leave it alone. Reading the file keeps only what is well formed and names current content; a change that could not be written is written with the next one or at quit, and the player is told once. Content reaches it through rule keys (`UNLOCK_ACHIEVEMENT`, `ACHIEVEMENT_UNLOCKED`, `SET_PROFILE_FLAG`, `ADD_PROFILE_FLAG`, `PROFILE_FLAG`, `PROFILE_FLAG_AT_LEAST`), usually from triggers: Farm1 unlocks Green Thumb on its first harvest and counts every save's crops toward Seasoned Farmer with a trigger on `GameProfile.flag_changed`. A storefront's achievements follow `GameProfile.achievement_unlocked`. A game's HUD shows the unlock, as every toast, on a `StatusLine` (`core/events/status_line.gd`), which shows messages sent together one after another rather than only the last.
+
+Playthroughs and what carries over: the core's `Playthrough` autoload (`core/playthrough/playthrough_service.gd`) numbers the playthrough a save belongs to, and `PLAYTHROUGH_AT_LEAST` lets content ask for it. A game lists what a new playthrough carries over in `GameDefinition.inheritance`, each an `InheritanceRule` with a key: `MoneyInheritance` (a share of the money), `WorldValueInheritance` (world values under some prefixes), the items module's `ItemInheritance` (items with some tags) and the skills module's `SkillInheritance` (a share of each skill's experience). `Playthrough.start_next()` takes each rule's part of the game as it is and starts a new game that begins with it. A sequel carries a game over the same way: `write_legacy()` writes the parts by key to `user://legacy.json`, and the sequel reads it (`PlaythroughService.find_legacy("<the game's name>")`) and starts from it (`start_from_legacy()`), each of its rules taking the part with its key.
+
+Depths and runs: a place that goes down depth by depth keeps its depth and the deepest one reached in a `DepthTrack` (`core/world/depth_track.gd`), in the world under its key, with an optional bottom, checkpoints to return to and a random stream per depth: Farm1's mine (`MineState`) and Ember Depths' depths both use one. The roguelite module's `RunState` (`modules/roguelite/runs/run_service.gd`) counts the runs a world started, keeps values that last one run and a random stream per run, and ends a run with an outcome: back at camp (the game says so), defeated, or abandoned when a late-night collapse, a load, a new game or the title takes the player out of play (a collapse saves what the run brought). While a run goes on the game cannot be saved, unless the game lets it (`RunState.blocks_saves`); `RunState.run_started` and `run_ended` are events triggers follow, and `RUN_ACTIVE` and `RUNS_AT_LEAST` are its rule keys.
 
 Combat: the combat module's `MeleeAttack` (`modules/combat/combat/melee_attack.gd`), a child of the player, swings the weapon selected in the hotbar (an item whose tool action is `attack`) at every body it overlaps that takes damage, for the weapon's power changed by `attack_damage`. A place generated by depth lists its enemies as `EnemyTier` entries, each from its minimum depth on: Farm1's mine floors and Ember Depths' floors. A defeat brings the player home with full health and costs `GameDefinition.defeat_money_loss_percent` of their money. An item that restores energy or health is used with `InventoryState.consume()`, which says what it gave.
 

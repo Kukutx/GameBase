@@ -210,6 +210,11 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `TownProjects.project_completed(town_project_id: StringName)`
 - `TownProjects.project_claimed(town_project_id: StringName)`
 
+## RunState (roguelite)
+
+- `RunState.run_started(run: int)`
+- `RunState.run_ended(run: int, outcome: StringName)`
+
 ## Skills (skills)
 
 - `Skills.skill_xp_changed(skill_id: StringName, xp: int, level: int)`
@@ -247,6 +252,10 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `GameSession.play_started()`: Emitted when play starts after the session changed: a new game is ready, or a save finished loading. Mail checks its deliveries again here. What is announced while the session changes (`is_changing()`) is not replayed: `GameTriggers` and the quests drop it, since a load or a new game's steps set the state those events stand for.
 - `GameSession.player_collapsed(money_lost: int)`
 - `GameSession.late_night_collapse()`
+
+## Playthrough (core)
+
+- `Playthrough.playthrough_started(playthrough: int)`: A new game was set up as playthrough `playthrough`, with what carried over. It fires while the session changes, so content follows the playthrough with `PLAYTHROUGH_AT_LEAST` rather than with this signal.
 
 ## MiniGameHost (core)
 

@@ -88,12 +88,12 @@ func _descend(_actor: Node) -> void:
 	var location := WorldLocationData.find_for_scene(scene_file_path)
 	if location == null or not is_cleared() or not WorldTravel.can_travel_to(location.id, arrival_spawn_id):
 		return
-	DepthRun.descend()
-	WorldTravel.travel_to(location.id, arrival_spawn_id)
+	if DepthRun.descend():
+		WorldTravel.travel_to(location.id, arrival_spawn_id)
 
 func _climb(_actor: Node) -> void:
-	if is_cleared():
-		WorldTravel.travel_to(camp_location_id, camp_spawn_id)
+	if is_cleared() and WorldTravel.travel_to(camp_location_id, camp_spawn_id):
+		DepthRun.return_to_camp()
 
 func _on_enemy_defeated(_enemy_id: StringName, _combat_xp: int) -> void:
 	_refresh.call_deferred()

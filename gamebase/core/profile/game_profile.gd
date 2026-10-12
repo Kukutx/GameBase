@@ -102,11 +102,8 @@ func reset_profile() -> void:
 ## Reads the profile from `profile_path`; a missing, unreadable or other
 ## version's file leaves an empty profile.
 func load_profile() -> void:
-	# Without the profile, the written copy a crash kept from replacing it.
-	var path := profile_path if FileAccess.file_exists(profile_path) else profile_path + ".tmp"
-	var json := JSON.new()
-	var readable := FileAccess.file_exists(path) and json.parse(FileAccess.get_file_as_string(path)) == OK
-	load_save_data(json.data if readable and json.data is Dictionary else {})
+	var data: Variant = JsonFile.read(profile_path)
+	load_save_data(data if data is Dictionary else {})
 
 ## Writes what changed since the file was last written now. False when the
 ## file could not be written: the change is kept for the next write.
@@ -127,20 +124,7 @@ func write_now() -> bool:
 
 # Writes the profile to `profile_path`; what went wrong, or "".
 func _write_file() -> String:
-	var temp_path := profile_path + ".tmp"
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(profile_path.get_base_dir()))
-	var file := FileAccess.open(temp_path, FileAccess.WRITE)
-	if file == null:
-		return "could not write '%s' (%d)" % [temp_path, FileAccess.get_open_error()]
-	var stored := file.store_string(JSON.stringify(to_save_data(), "\t"))
-	file.close()
-	if not stored:
-		return "could not write '%s'" % temp_path
-	# The profile is replaced whole, so a crash never leaves half a file.
-	if FileAccess.file_exists(profile_path):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(profile_path))
-	var renamed := DirAccess.rename_absolute(ProjectSettings.globalize_path(temp_path), ProjectSettings.globalize_path(profile_path))
-	return "" if renamed == OK else "could not replace '%s' (%d)" % [profile_path, renamed]
+	return JsonFile.write(profile_path, to_save_data())
 
 func to_save_data() -> Dictionary:
 	var achievements := {}

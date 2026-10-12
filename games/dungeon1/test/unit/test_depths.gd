@@ -1,8 +1,8 @@
 extends GutTest
 
 ## Ember Depths' runs: the depth a run reaches and what it raises in the
-## profile, how a floor lays out its enemies from the run's random stream, and
-## when the way on opens.
+## profile, how long a run lasts, how a floor lays out its enemies from the
+## run's random stream, and when the way on opens.
 
 const DEPTHS_SCENE := preload("res://game/world/depths.tscn")
 const TEST_PROFILE := "user://test_dungeon1_depths/profile.json"
@@ -58,8 +58,27 @@ func test_a_run_goes_down_one_depth_at_a_time() -> void:
 	assert_eq(DepthRun.get_deepest(), 3, "the world keeps its deepest depth")
 	assert_eq(GameProfile.get_int(DepthRunService.PROFILE_DEEPEST), 3, "the profile keeps the deepest depth of any save")
 
+func test_a_run_lasts_from_the_entrance_to_camp_and_blocks_saving() -> void:
+	DepthRun.start_run()
+	assert_true(RunState.is_active())
+	assert_eq(RunState.get_save_block_reason(), "Return to camp to save")
+	watch_signals(RunState)
+	DepthRun.return_to_camp()
+	assert_false(RunState.is_active())
+	assert_signal_emitted_with_parameters(RunState, "run_ended", [1, RunService.OUTCOME_RETURNED])
+	assert_eq(RunState.get_save_block_reason(), "", "the game saves at camp")
+
+func test_without_a_run_the_way_leads_no_deeper() -> void:
+	# A defeat whose way home failed leaves the player on a floor with no run.
+	assert_false(DepthRun.descend())
+	assert_eq(DepthRun.get_depth(), 1)
+	assert_eq(DepthRun.get_deepest(), 0)
+	DepthRun.start_run()
+	assert_true(DepthRun.descend())
+	assert_eq(DepthRun.get_depth(), 2)
+
 func test_a_hand_edited_run_reads_as_a_run_that_has_not_started() -> void:
-	WorldState.load_save_data({"depths:depth": -4.0, "depths:deepest": -9.0, "depths:run": 2.5})
+	WorldState.load_save_data({"depths:depth": -4.0, "depths:deepest": -9.0, "run:count": 2.5})
 	assert_eq(DepthRun.get_depth(), 1)
 	assert_eq(DepthRun.get_deepest(), 0)
 	assert_eq(DepthRun.get_run(), 0)
@@ -97,7 +116,7 @@ func test_a_floor_spawns_only_the_tiers_its_depth_reaches() -> void:
 	assert_eq(EnemyTier.reached(tiers, 3), [&"cave_slime", &"skeleton"], "skeletons from the third depth")
 	assert_eq(EnemyTier.reached(tiers, 5), [&"cave_slime", &"skeleton"], "no wisps before the sixth")
 	assert_eq(EnemyTier.reached(tiers, 6), [&"cave_slime", &"skeleton", &"ember_wisp"])
-	WorldState.set_value(DepthRunService.DEPTH_KEY, 5)
+	DepthRun.track.set_depth(5)
 	for enemy: HostileCreature in _enter_floor().get_enemies():
 		assert_ne(enemy.data.id, &"ember_wisp", "the fifth depth holds no wisps")
 

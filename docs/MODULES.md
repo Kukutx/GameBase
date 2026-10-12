@@ -1,6 +1,6 @@
 # Writing a module
 
-A module is an optional piece of gameplay under `gamebase/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `combat`, `lifesim`, `npc_social` and `progression` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `gamebase/core/`.
+A module is an optional piece of gameplay under `gamebase/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `combat`, `lifesim`, `npc_social`, `progression` and `roguelite` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `gamebase/core/`.
 
 The reference pages list what the foundation already offers: [autoloads](reference/autoloads.md), [events](reference/events.md) and [rule keys](reference/rules.md).
 
@@ -58,7 +58,7 @@ What a module can register:
 | `GameRules` | `register_condition()`, `register_action()`, `register_arg_kind()` | the keys content can name in conditions and actions |
 | `GameStats` | `register_stat()`, `register_source()` | the numbers it reads and what changes them |
 | `SaveManager` | `register_section()`, `register_load_step()`, `register_save_blocker()`, `register_slot_detail()` | what it saves, what runs after a load, when it cannot save, and a line on the title screen's slot |
-| `GameSession` | `register_new_game_step()`, `register_activity_end()` | how a new game resets it, and how a collapse, a load or the title ends what it holds the player in |
+| `GameSession` | `register_new_game_step()`, `register_activity_end()` | how a new game resets it, and how a collapse, a load, a new game or the title ends what it holds the player in |
 
 Each registration that takes an order interleaves with the core's own (`GameSaveManager.SECTION_ORDER_*`, `GameSessionService.NEW_GAME_ORDER_*`) and the other modules'; read the comments on the existing ones before choosing one.
 

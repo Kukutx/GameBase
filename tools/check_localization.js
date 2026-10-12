@@ -103,6 +103,7 @@ const SCENE_PROPERTIES = [
   "tooltip_text",
   "pending_text",
   "completed_text",
+  "save_block_reason",
 ];
 const SCENE_RE = new RegExp(`^(?:${SCENE_PROPERTIES.join("|")}) = "((?:[^"\\\\]|\\\\.)*)"$`, "gm");
 

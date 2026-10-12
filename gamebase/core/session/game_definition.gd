@@ -54,6 +54,9 @@ static func current() -> GameDefinition:
 ## Audio cue played for an event, as `<Autoload>.<signal>`
 ## (`LifesimEvents.crop_harvested`) → cue id.
 @export var event_cues: Dictionary[StringName, StringName] = {}
+## What a new playthrough or a sequel carries over from the game before it
+## (`Playthrough`, `InheritanceRule`); empty carries nothing.
+@export var inheritance: Array[InheritanceRule] = []
 ## Starting money and hotbar of a new game (item ids; empty for a free slot).
 @export_range(0, 999999) var start_money := 500
 @export var start_hotbar: Array[StringName] = []
