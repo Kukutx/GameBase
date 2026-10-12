@@ -15,7 +15,7 @@ extends Node
 ## `ownership_changed` fires whenever an animal is added, sold or renamed.
 
 signal ownership_changed(location_id: StringName)
-signal animal_purchased(instance_id: StringName, animal_id: StringName, price: int)
+signal animal_purchased(instance_id: StringName, farm_animal_id: StringName, price: int)
 signal animal_renamed(instance_id: StringName, custom_name: String)
 signal animal_sold(instance_id: StringName, refund: int)
 signal animal_fed(instance_id: StringName)

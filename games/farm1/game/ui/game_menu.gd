@@ -115,9 +115,18 @@ func _quest_text() -> String:
 	if entries.is_empty():
 		lines.append(tr("No quests yet."))
 	for entry: Dictionary in entries:
-		var status := tr("Complete") if bool(entry["completed"]) else "%d/%d" % [entry["progress"], entry["required"]]
+		var objectives: Array = entry["objectives"]
+		var status := tr("Complete")
+		if not bool(entry["completed"]) and objectives.size() == 1:
+			status = "%d/%d" % [objectives[0]["progress"], objectives[0]["required"]]
+		elif not bool(entry["completed"]):
+			var met := objectives.filter(func(objective: Dictionary) -> bool: return int(objective["progress"]) >= int(objective["required"])).size()
+			status = tr("%d of %d done") % [met, objectives.size()]
 		lines.append("[b]%s[/b] — %s" % [tr(String(entry["title"])), status])
 		lines.append(tr(String(entry["description"])))
+		if not bool(entry["completed"]) and objectives.size() > 1:
+			for objective: Dictionary in objectives:
+				lines.append("· %s  %d/%d" % [tr(String(objective["description"])), objective["progress"], objective["required"]])
 		lines.append("")
 	lines.append("[b]%s[/b]" % tr("Town Contract"))
 	lines.append(DailyContractState.get_summary())
@@ -326,7 +335,7 @@ func _on_selected_changed(_index: int, _item_id: StringName) -> void:
 func _on_quest_changed(_quest_id: StringName) -> void:
 	_refresh_if_open()
 
-func _on_quest_progress(_quest_id: StringName, _progress: int, _required: int) -> void:
+func _on_quest_progress(_quest_id: StringName, _objective: int, _progress: int, _required: int) -> void:
 	_refresh_if_open()
 
 func _on_friendship_changed(_npc_id: StringName, _points: int, _delta: int) -> void:

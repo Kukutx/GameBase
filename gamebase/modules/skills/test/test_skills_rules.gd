@@ -29,8 +29,8 @@ func test_a_skill_level_is_checked_against_that_skill_s_own_levels() -> void:
 		PackedStringArray(["condition 'SKILL_LEVEL': skill 'fixture_whistling' has no level 0 (1-3)"]))
 
 func test_a_skill_an_event_names_is_checked_against_every_skill() -> void:
-	var never := _xp_trigger(&"fixture_never", "SKILL_LEVEL $skill 11")
-	var fine := _xp_trigger(&"fixture_fine", "SKILL_LEVEL $skill 10")
+	var never := _xp_trigger(&"fixture_never", "SKILL_LEVEL $skill_id 11")
+	var fine := _xp_trigger(&"fixture_fine", "SKILL_LEVEL $skill_id 10")
 	var registry := ContentFixture.use(self, [_skill(&"fixture_digging", "Digging"), _skill(&"fixture_tilling", "Tilling"), never, fine])
 	var problems := "\n".join(GameRules.validate_content(registry))
 	assert_string_contains(problems, "condition 'SKILL_LEVEL': skill 'fixture_digging' has no level 11 (1-10), whatever the event's arguments are")

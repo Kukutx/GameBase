@@ -19,6 +19,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `FLAG_AT_LEAST` | core | 2 | `FLAG_AT_LEAST <key> <n>` | the counter stored under the key is at least n. |
 | `HAS_ITEM` | items | 1 to 2 | `HAS_ITEM <item> [count]` | the inventory holds at least count (default 1). |
 | `HEARTS` | npc_social | 2 | `HEARTS <npc> <n>` | the friendship with the NPC has at least n hearts. |
+| `ITEM_TAG` | items | 2 | `ITEM_TAG <item> <tag>` | the item has the tag, as an objective that counts every fish caught asks of the event's item (`ITEM_TAG $item_id fish`). |
 | `LOCATION` | core | 1 or more | `LOCATION <id>...` | the player is in one of the locations. |
 | `MILESTONE_CLAIMED` | progression | 1 | `MILESTONE_CLAIMED <collection_milestone>` | the player claimed the milestone's reward. |
 | `MONEY_AT_LEAST` | core | 1 | `MONEY_AT_LEAST <n>` | the player has at least n money. |

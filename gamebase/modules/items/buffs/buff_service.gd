@@ -10,8 +10,8 @@ extends Node
 ## `buff_expired`; `buffs_changed` fires on any change. The active buffs are
 ## saved with the game, and a new game starts with none.
 
-signal buff_applied(buff_id: StringName, expires_at: int)
-signal buff_expired(buff_id: StringName)
+signal buff_applied(food_buff_id: StringName, expires_at: int)
+signal buff_expired(food_buff_id: StringName)
 signal buffs_changed
 
 var _active: Dictionary = {}

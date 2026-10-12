@@ -121,5 +121,5 @@ func _item(id: StringName, kind: ItemData.Kind, sell_price: int) -> ItemData:
 	item.sell_price = sell_price
 	if kind == ItemData.Kind.TOOL:
 		item.max_stack = 1
-		item.tool_action = ItemData.ACTION_FISH
+		item.tool_action = FishingSpot.TOOL_ACTION
 	return item

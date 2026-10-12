@@ -1,17 +1,9 @@
 class_name QuestData
 extends ContentEntry
 
-enum ObjectiveType {
-	COLLECT,
-	TALK,
-	HARVEST,
-	FISH,
-	MINE,
-	DEFEAT,
-	PROCESS,
-	UPGRADE,
-	REACH_MINE_FLOOR,
-}
+## A quest: what it asks of the player (`objectives`, each counted from an
+## event of any module), what it gives when every objective is met, and the
+## quest it leads to. `QuestState` runs them.
 
 const KIND := &"quest"
 
@@ -20,10 +12,10 @@ const KIND := &"quest"
 @export_group("Start")
 @export var entry_point := false
 @export var auto_start := false
-@export_group("Objective")
-@export var objective_type: ObjectiveType = ObjectiveType.COLLECT
-@export var target_id: StringName
-@export_range(1, 999, 1) var required_amount := 1
+@export_group("Objectives")
+## What the quest asks, all of which must be met; at least one.
+@export var objectives: Array[QuestObjective] = []
+@export_group("Reward")
 @export_range(0, 999999, 1) var reward_money := 0
 @export var reward_items: Dictionary = {}
 @export var next_quest_id: StringName
@@ -42,40 +34,25 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if title.is_empty():
 		problems.append("has an empty title")
-	if required_amount <= 0:
-		problems.append("has invalid required amount %d" % required_amount)
+	if objectives.is_empty():
+		problems.append("has no objectives")
+	for index: int in objectives.size():
+		var objective := objectives[index]
+		if objective == null:
+			problems.append("has an empty objective %d" % (index + 1))
+			continue
+		if objectives.size() > 1 and objective.description.is_empty():
+			problems.append("objective %d has no description; each of several objectives says what it asks" % (index + 1))
+		for problem: String in objective.find_problems(registry):
+			problems.append("objective %d %s" % [index + 1, problem])
 	if reward_money < 0:
 		problems.append("has negative reward money")
-	var target_kind := get_target_kind()
-	if target_kind != &"" and target_id != &"" and not registry.has_entry(target_kind, target_id):
-		problems.append("references unknown %s target '%s'" % [ContentRegistry.get_kind_label(target_kind), target_id])
 	problems.append_array(ItemData.find_amount_problems(reward_items, registry, "rewards", "reward quantity"))
 	if next_quest_id != &"" and not registry.has_entry(KIND, next_quest_id):
 		problems.append("references unknown next quest '%s'" % next_quest_id)
 	if auto_start and not entry_point:
 		problems.append("auto-starts but is not marked as an entry point")
 	return problems
-
-## The kind of content `target_id` names for the objective, or an empty name.
-func get_target_kind() -> StringName:
-	match objective_type:
-		ObjectiveType.COLLECT:
-			return ItemData.KIND
-		ObjectiveType.TALK:
-			return NpcProfileData.KIND
-		ObjectiveType.HARVEST:
-			return CropData.KIND
-		ObjectiveType.FISH:
-			return FishData.KIND
-		ObjectiveType.MINE:
-			return MiningNodeData.KIND
-		ObjectiveType.DEFEAT:
-			return EnemyData.KIND
-		ObjectiveType.PROCESS:
-			return ProcessingRecipeData.KIND
-		ObjectiveType.UPGRADE:
-			return ToolUpgradeData.KIND
-	return &""
 
 ## Problems of the quest chain of `registry`: cycles of `next_quest_id`, and
 ## quests no entry point leads to. Registered by the progression module as a

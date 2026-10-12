@@ -13,7 +13,12 @@ func before_each() -> void:
 	var item := ItemData.new()
 	item.id = &"fixture_berry"
 	item.display_name = "Fixture Berry"
-	ContentFixture.use(self, [item])
+	item.tags = PackedStringArray(["fruit", "forage"])
+	var stone := ItemData.new()
+	stone.id = &"fixture_stone"
+	stone.display_name = "Fixture Stone"
+	stone.tags = PackedStringArray(["mined"])
+	ContentFixture.use(self, [item, stone])
 
 func after_each() -> void:
 	ContentRegistry.active = ContentDB
@@ -21,7 +26,8 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory)
 
 func test_item_keys_are_registered_and_checked_against_content() -> void:
-	assert_true(GameRules.has_condition(&"HAS_ITEM"))
+	for key: String in ["HAS_ITEM", "ITEM_TAG"]:
+		assert_true(GameRules.has_condition(StringName(key)), key)
 	for key: String in ["ADD_ITEM", "REMOVE_ITEM"]:
 		assert_true(GameRules.has_action(StringName(key)), key)
 	assert_eq(GameRules.validate_query("HAS_ITEM fixture_berry 2"), PackedStringArray())
@@ -41,3 +47,12 @@ func test_adding_items_that_do_not_all_fit_adds_none() -> void:
 	assert_true(GameRules.run_actions(PackedStringArray(["ADD_ITEM fixture_berry %d" % (berry.max_stack - 1)])))
 	assert_false(GameRules.run_actions(PackedStringArray(["ADD_ITEM fixture_berry 2"])), "only one more fits")
 	assert_eq(InventoryState.get_quantity(&"fixture_berry"), berry.max_stack - 1, "and none was added")
+
+func test_an_item_tag_asks_whether_the_item_has_the_tag() -> void:
+	assert_true(GameRules.check("ITEM_TAG fixture_berry fruit"))
+	assert_false(GameRules.check("ITEM_TAG fixture_stone fruit"))
+	assert_true(GameRules.check("ITEM_TAG $item_id mined", {"event": {"item_id": &"fixture_stone"}}), "the item an event names")
+	assert_eq(GameRules.validate_query("ITEM_TAG fixture_stone mined"), PackedStringArray())
+	var problems := "\n".join(GameRules.validate_query("ITEM_TAG fixture_berry frut, ITEM_TAG no_such_item fruit"))
+	assert_string_contains(problems, "no item has tag 'frut'")
+	assert_string_contains(problems, "unknown item 'no_such_item'")

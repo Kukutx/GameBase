@@ -18,7 +18,7 @@ func before_each() -> void:
 	hoe.display_name = "Hoe"
 	hoe.kind = ItemData.Kind.TOOL
 	hoe.max_stack = 1
-	hoe.tool_action = ItemData.ACTION_TILL
+	hoe.tool_action = FarmPlot.TILL_ACTION
 	hoe.tool_power = 1
 	var buff := FoodBuffData.new()
 	buff.id = &"fixture_vigor"

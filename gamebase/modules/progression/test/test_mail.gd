@@ -118,8 +118,8 @@ func test_quest_mail_unlocks_from_completed_quest_conditions() -> void:
 	assert_false(MailState.is_received(&"fixture_after_slime"))
 	assert_false(MailState.is_received(&"fixture_after_catch"))
 	QuestState.load_save_data({
-		"fixture_slime_quest": {"status": QuestManager.Status.COMPLETED, "progress": 1},
-		"fixture_catch_quest": {"status": QuestManager.Status.COMPLETED, "progress": 1},
+		"fixture_slime_quest": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
+		"fixture_catch_quest": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
 	})
 	var delivered := MailState.refresh_deliveries()
 	assert_true(delivered.has(&"fixture_after_slime"))
@@ -200,12 +200,13 @@ func _content() -> Array:
 	garden.condition = "WORLD_FLAG %s" % GARDEN_FLAG
 	var friend := _mail(&"fixture_friend")
 	friend.condition = "HEARTS fixture_npc 2"
-	var dive := _quest(&"fixture_dive_quest", QuestData.ObjectiveType.REACH_MINE_FLOOR)
-	dive.required_amount = 3
+	var dive := _quest(&"fixture_dive_quest", &"MineState.deepest_floor_changed")
+	dive.objectives[0].measure = &"MineState.get_deepest_floor"
+	dive.objectives[0].required_amount = 3
 	return [
 		npc, welcome, after_slime, after_catch, after_dive, garden, friend,
-		_quest(&"fixture_slime_quest", QuestData.ObjectiveType.DEFEAT),
-		_quest(&"fixture_catch_quest", QuestData.ObjectiveType.FISH),
+		_quest(&"fixture_slime_quest", &"CombatEvents.enemy_defeated"),
+		_quest(&"fixture_catch_quest", &"LifesimEvents.fish_caught"),
 		dive,
 		_item(&"fixture_seeds"),
 		_item(&"fixture_twig"),
@@ -219,11 +220,13 @@ func _mail(id: StringName) -> MailData:
 	mail.body = "A letter."
 	return mail
 
-func _quest(id: StringName, objective_type: QuestData.ObjectiveType) -> QuestData:
+func _quest(id: StringName, event: StringName) -> QuestData:
 	var quest := QuestData.new()
 	quest.id = id
 	quest.title = String(id).capitalize()
-	quest.objective_type = objective_type
+	var objective := QuestObjective.new()
+	objective.event = event
+	quest.objectives = [objective]
 	return quest
 
 func _item(id: StringName) -> ItemData:

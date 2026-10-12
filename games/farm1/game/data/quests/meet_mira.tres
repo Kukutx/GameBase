@@ -1,6 +1,12 @@
-[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="QuestData" format=3]
 
 [ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_data.gd" id="1_quest"]
+[ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_objective.gd" id="2_objective"]
+
+[sub_resource type="Resource" id="Resource_objective"]
+script = ExtResource("2_objective")
+event = &"NpcSocialEvents.npc_talked"
+condition = "EVENT_ARG npc_id mira"
 
 [resource]
 script = ExtResource("1_quest")
@@ -9,7 +15,5 @@ entry_point = true
 auto_start = true
 title = "Meet the Neighbour"
 description = "Talk to Mira near the village path."
-objective_type = 1
-target_id = &"mira"
-required_amount = 1
+objectives = [SubResource("Resource_objective")]
 reward_money = 50

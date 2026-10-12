@@ -13,8 +13,8 @@ extends Node
 ## (`collection:milestone...`), so it is saved with the world. `milestone_ready`
 ## and `milestone_claimed` announce each step.
 
-signal milestone_ready(milestone_id: StringName)
-signal milestone_claimed(milestone_id: StringName)
+signal milestone_ready(collection_milestone_id: StringName)
+signal milestone_claimed(collection_milestone_id: StringName)
 
 const CLAIM_PREFIX := "collection:milestone:"
 const NOTIFIED_PREFIX := "collection:milestone_ready:"

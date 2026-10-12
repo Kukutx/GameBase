@@ -63,6 +63,9 @@ msgstr "暂无任务。"
 msgid "Complete"
 msgstr "已完成"
 
+msgid "%d of %d done"
+msgstr "已完成 %d/%d"
+
 msgid "Town Contract"
 msgstr "城镇委托"
 

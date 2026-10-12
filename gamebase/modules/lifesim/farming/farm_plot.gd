@@ -3,6 +3,11 @@ extends Interactable
 
 signal farm_state_changed
 
+## The actions of the tools that work a plot: a hoe tills it, a watering can
+## waters it.
+const TILL_ACTION := &"till"
+const WATER_ACTION := &"water"
+
 @export var persistent_id: StringName
 @export var location_id: StringName
 @export_range(1, 100, 1) var hoe_energy_cost := 4
@@ -49,9 +54,9 @@ func _use_item_internal(item_id: StringName, consume_energy: bool, show_message:
 		return false
 	if item.is_tool():
 		match item.tool_action:
-			ItemData.ACTION_TILL:
+			TILL_ACTION:
 				return _till(item, consume_energy, show_message)
-			ItemData.ACTION_WATER:
+			WATER_ACTION:
 				return _water(item, consume_energy, show_message)
 	if item.is_seed():
 		return _plant(item)
@@ -61,9 +66,9 @@ func _use_item_internal(item_id: StringName, consume_energy: bool, show_message:
 
 func can_apply_tool_action(tool_action: StringName) -> bool:
 	match tool_action:
-		ItemData.ACTION_TILL:
+		TILL_ACTION:
 			return not tilled
-		ItemData.ACTION_WATER:
+		WATER_ACTION:
 			return tilled and not watered
 		_:
 			return false
@@ -72,9 +77,9 @@ func get_tool_energy_cost(tool: ItemData) -> int:
 	if tool == null:
 		return 0
 	match tool.tool_action:
-		ItemData.ACTION_TILL:
+		TILL_ACTION:
 			return _scaled_tool_energy(hoe_energy_cost, tool)
-		ItemData.ACTION_WATER:
+		WATER_ACTION:
 			return _scaled_tool_energy(water_energy_cost, tool)
 		_:
 			return 0

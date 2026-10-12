@@ -4,6 +4,9 @@ extends Interactable
 signal depleted(node_id: StringName)
 signal respawned(node_id: StringName)
 
+## The action of the tools that break a node.
+const TOOL_ACTION := &"mine"
+
 const PICKUP_SCENE := preload("res://gamebase/modules/items/items/item_pickup.tscn")
 
 @export var data: MiningNodeData
@@ -40,7 +43,7 @@ func _use_item_internal(item_id: StringName) -> bool:
 		GameEvents.toast("Nothing left to mine here")
 		return false
 	var item := ItemData.find(item_id)
-	if item == null or not item.is_tool() or item.tool_action != ItemData.ACTION_MINE:
+	if item == null or not item.is_tool() or item.tool_action != TOOL_ACTION:
 		GameEvents.toastf("Use a pickaxe on %s", [data.display_name])
 		return false
 	if item.tool_power < data.required_tool_power:

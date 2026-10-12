@@ -5,8 +5,8 @@ extends Node
 ## (`SkillData`), and the stat changes of the perks those levels unlock: a
 ## source of `GameStats`.
 
-signal skill_xp_changed(skill: StringName, xp: int, level: int)
-signal skill_leveled_up(skill: StringName, level: int)
+signal skill_xp_changed(skill_id: StringName, xp: int, level: int)
+signal skill_leveled_up(skill_id: StringName, level: int)
 
 ## Experience of each skill that has some, as skill id -> amount.
 var _xp: Dictionary[StringName, int] = {}

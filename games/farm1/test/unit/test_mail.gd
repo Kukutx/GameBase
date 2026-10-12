@@ -61,15 +61,15 @@ func test_mira_welcome_arrives_on_day_two_with_three_turnip_seeds() -> void:
 
 func test_rowan_and_neri_write_after_the_slime_and_first_fish_quests() -> void:
 	QuestState.load_save_data({
-		"defeat_green_slime": {"status": QuestManager.Status.COMPLETED, "progress": 1},
+		"defeat_green_slime": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
 	})
 	MailState.refresh_deliveries()
 	assert_true(MailState.is_received(&"rowan_after_slime"))
 	assert_false(MailState.is_received(&"neri_first_catch"))
 
 	QuestState.load_save_data({
-		"defeat_green_slime": {"status": QuestManager.Status.COMPLETED, "progress": 1},
-		"catch_first_fish": {"status": QuestManager.Status.COMPLETED, "progress": 1},
+		"defeat_green_slime": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
+		"catch_first_fish": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
 	})
 	MailState.refresh_deliveries()
 	assert_true(MailState.is_received(&"neri_first_catch"))

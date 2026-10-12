@@ -13,7 +13,7 @@ extends Node
 ## remembers each one (`NpcMemory`). `heart_event_triggered` fires when one is
 ## seen.
 
-signal heart_event_triggered(event_id: StringName, npc_id: StringName)
+signal heart_event_triggered(heart_event_id: StringName, npc_id: StringName)
 
 func get_pending_event(npc_id: StringName) -> HeartEventData:
 	var location := WorldLocationData.find_current(get_tree())

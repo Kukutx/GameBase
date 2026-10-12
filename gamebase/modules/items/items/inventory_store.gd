@@ -101,8 +101,8 @@ func remove_item(item_id: StringName, quantity: int = 1) -> bool:
 func has_item(item_id: StringName, quantity: int = 1) -> bool:
 	return quantity <= 0 or get_quantity(item_id) >= quantity
 
-## Whether the inventory holds a tool that performs `action` (an ItemData.ACTION_ constant
-## or an action of the game's own).
+## Whether the inventory holds a tool that performs `action`
+## (`ItemData.tool_action`).
 func has_tool(action: StringName) -> bool:
 	for key: String in _items.keys():
 		var item: ItemData = _definitions[key]

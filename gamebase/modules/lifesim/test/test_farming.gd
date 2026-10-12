@@ -242,8 +242,8 @@ func _add_plot() -> FarmPlot:
 # six days and regrows in three.
 func _fixture_content() -> Array:
 	return [
-		_tool(&"fixture_hoe", ItemData.ACTION_TILL),
-		_tool(&"fixture_can", ItemData.ACTION_WATER),
+		_tool(&"fixture_hoe", FarmPlot.TILL_ACTION),
+		_tool(&"fixture_can", FarmPlot.WATER_ACTION),
 		_seed(&"fixture_radish_seeds", &"fixture_radish"),
 		_harvest(&"fixture_radish"),
 		_crop(&"fixture_radish", &"fixture_radish", 4, 0, 1, PackedStringArray(["Spring", "Autumn"])),
