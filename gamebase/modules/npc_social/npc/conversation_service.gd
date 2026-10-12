@@ -2,42 +2,26 @@ class_name GameConversationService
 extends Node
 
 ## Starts a conversation with an NPC: it notes the talk in the NPC's memory
-## (`NpcMemory`), builds what the NPC knows (`NpcContext`) and shows the dialogue:
-## a due heart event (`HeartEvents`) first, else, for an NPC that chats
-## (`NpcProfileData.ai_enabled`) in a game with a module that makes chats
-## (`chat_maker`: npc_ai), its chat, else the NPC's lines for its hearts.
-##
-## Only one conversation runs at a time, in a `DialogueBalloon` (the
-## `DialogueManager` addon runs a scripted one), which holds the player's
-## controls and pauses the world (`InputLock`, reason `dialogue`) until it
-## closes, so the clock stands still while the player reads. The addon runs while the world is
-## paused, so its mutations and their waits do too; a node a mutation waits on
-## (a tween, an animation) has to run while paused as well (`process_mode`).
-## The service saves nothing of its own.
+## (`NpcMemory`), builds what the NPC knows (`NpcContext`) and shows the dialogue
+## (`Dialogue`): a due heart event (`HeartEvents`) first, else, for an NPC that
+## chats (`NpcProfileData.ai_enabled`) in a game with a module that makes chats
+## (`chat_maker`: npc_ai), its chat, else the NPC's lines for its hearts. A heart
+## event counts as seen once its dialogue was read to the end. The service
+## saves nothing of its own.
 
 signal conversation_requested(npc_id: StringName, actor: Node)
 signal context_prepared(npc_id: StringName, context: Dictionary)
 
-## The `InputLock` reason a conversation holds the player's controls under.
-const DIALOGUE_LOCK := &"dialogue"
-## The balloon a scripted conversation shows in.
-const BALLOON_SCENE := preload("res://gamebase/modules/npc_social/dialogue/dialogue_balloon.tscn")
-
 ## Makes the chat of an NPC that chats, in place of its lines: Callable(npc:
-## GameNpc, actor: Node) -> NpcChat, null to leave the NPC to its lines. A
+## GameNpc, actor: Node) -> DialogueChat, null to leave the NPC to its lines. A
 ## module that makes chats sets it (npc_ai); empty: NPCs say their lines.
 var chat_maker: Callable
 var _starting := false
-var _active_balloon: Node
-var _active_balloon_id := 0
-var _active_dialogue: DialogueResource
-var _active_heart_event: HeartEventData
-var _active_heart_dialogue: DialogueResource
+var _heart_event: HeartEventData
+var _heart_dialogue: DialogueResource
 
 func _ready() -> void:
-	var manager := get_node_or_null("/root/DialogueManager")
-	if manager != null:
-		manager.process_mode = Node.PROCESS_MODE_ALWAYS
+	Dialogue.finished.connect(_on_dialogue_finished)
 
 func start_conversation(npc: GameNpc, actor: Node, dialogue: DialogueResource, title: String = "start") -> void:
 	if npc == null or _starting:
@@ -61,13 +45,12 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 	context_prepared.emit(npc_id, context)
 
 	# Authored heart events are one-shot progression content and always take
-	# priority over optional AI chatter. The event is only marked seen after a
-	# valid scripted balloon has actually been created.
+	# priority over optional AI chatter.
 	var heart_event := HeartEvents.get_pending_event(npc_id)
 	if heart_event == null and chats(npc.profile):
-		var chat := chat_maker.call(npc, actor) as NpcChat
+		var chat := chat_maker.call(npc, actor) as DialogueChat
 		if chat != null:
-			_show_chat(chat)
+			Dialogue.show_chat(chat)
 			return
 	if dialogue == null:
 		GameEvents.toastf("%s has nothing to say yet", [npc.display_name])
@@ -76,74 +59,34 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 	var resolved_title := title
 	if heart_event != null:
 		resolved_title = heart_event.dialogue_title
-		if not _dialogue_has_key(dialogue, resolved_title):
+		if not DialogueService.has_title(dialogue, resolved_title):
 			push_warning("Heart event %s references missing dialogue title '%s'" % [String(heart_event.id), resolved_title])
 			GameEvents.toast("This heart event dialogue is unavailable")
 			return
 	else:
 		resolved_title = _resolve_daily_title(dialogue, npc.profile, title, RelationshipState.get_hearts(npc_id))
-		if not _dialogue_has_key(dialogue, resolved_title):
+		if not DialogueService.has_title(dialogue, resolved_title):
 			GameEvents.toastf("%s has nothing to say yet", [npc.display_name])
 			return
 
-	if is_instance_valid(_active_balloon):
-		GameEvents.toast("Finish the current conversation first")
-		return
-	var manager := get_node_or_null("/root/DialogueManager")
-	if manager == null or not manager.has_method("show_dialogue_balloon_scene"):
-		return
-	var ended_callback := Callable(self, "_on_dialogue_ended")
-	if manager.has_signal("dialogue_ended") and not manager.is_connected("dialogue_ended", ended_callback):
-		manager.connect("dialogue_ended", ended_callback)
-	var balloon: Variant = manager.call("show_dialogue_balloon_scene", BALLOON_SCENE, dialogue, resolved_title, [actor, npc])
-	if balloon == null or not is_instance_valid(balloon):
-		return
-	_hold_controls(balloon as Node, dialogue)
-	if heart_event != null:
-		_active_heart_event = heart_event
-		_active_heart_dialogue = dialogue
+	var balloon := Dialogue.show_dialogue(dialogue, resolved_title, [actor, npc])
+	if balloon != null and heart_event != null:
+		_heart_event = heart_event
+		_heart_dialogue = dialogue
+		balloon.tree_exited.connect(_forget_heart_event, CONNECT_ONE_SHOT)
 
-func _show_chat(chat: NpcChat) -> void:
-	if is_instance_valid(_active_balloon):
-		GameEvents.toast("Finish the current conversation first")
+func _on_dialogue_finished(resource: DialogueResource) -> void:
+	if _heart_event == null or resource != _heart_dialogue:
 		return
-	var balloon := BALLOON_SCENE.instantiate() as DialogueBalloon
-	var scene := get_tree().current_scene
-	(scene if scene != null else get_tree().root).add_child(balloon)
-	_hold_controls(balloon, null)
-	balloon.start_chat(chat)
+	var event := _heart_event
+	_forget_heart_event()
+	HeartEvents.mark_seen(event)
 
-# The player stays put and the world waits while `balloon` shows `dialogue`:
-# the lock is given back when the dialogue ends or the balloon leaves the tree,
-# whichever comes first.
-func _hold_controls(balloon: Node, dialogue: DialogueResource) -> void:
-	_active_balloon = balloon
-	_active_balloon_id = balloon.get_instance_id()
-	_active_dialogue = dialogue
-	InputLock.lock(DIALOGUE_LOCK, true, balloon)
-	balloon.tree_exited.connect(_on_scripted_balloon_exited.bind(_active_balloon_id), CONNECT_ONE_SHOT)
-
-func _on_dialogue_ended(resource: DialogueResource) -> void:
-	if resource != null and resource == _active_dialogue:
-		_active_dialogue = null
-		InputLock.unlock(DIALOGUE_LOCK)
-	if _active_heart_event == null or resource != _active_heart_dialogue:
-		return
-	var completed_event := _active_heart_event
-	_active_heart_event = null
-	_active_heart_dialogue = null
-	HeartEvents.mark_seen(completed_event)
-
-func _on_scripted_balloon_exited(balloon_id: int) -> void:
-	if _active_balloon_id != balloon_id:
-		return
-	_active_balloon = null
-	_active_balloon_id = 0
-	_active_dialogue = null
-	# If dialogue_ended did not fire first, the balloon was interrupted. Leave the
-	# heart event unseen so the player can trigger the authored scene again.
-	_active_heart_event = null
-	_active_heart_dialogue = null
+# A heart event's balloon that goes before its dialogue ends (a load, the
+# title) leaves the event unseen, so the player can play it again.
+func _forget_heart_event() -> void:
+	_heart_event = null
+	_heart_dialogue = null
 
 ## Whether the NPC with `profile` chats rather than says its lines: it allows
 ## it and a module makes chats.
@@ -152,18 +95,11 @@ func chats(profile: NpcProfileData) -> bool:
 
 func _resolve_daily_title(dialogue: DialogueResource, profile: NpcProfileData, base_title: String, hearts: int) -> String:
 	var preferred := profile.get_dialogue_title(base_title, hearts) if profile != null else base_title
-	if _dialogue_has_key(dialogue, preferred):
+	if DialogueService.has_title(dialogue, preferred):
 		return preferred
-	if preferred != base_title and _dialogue_has_key(dialogue, base_title):
+	if preferred != base_title and DialogueService.has_title(dialogue, base_title):
 		return base_title
-	return "" if _dialogue_has_key(dialogue, "") else preferred
-
-func _dialogue_has_key(dialogue: DialogueResource, key: String) -> bool:
-	if dialogue == null:
-		return false
-	if key.is_empty():
-		return not dialogue.first_cue.is_empty() or not dialogue.lines.is_empty()
-	return dialogue.cues.has(key) or dialogue.lines.has(key)
+	return "" if DialogueService.has_title(dialogue, "") else preferred
 
 func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 	return NpcContext.build_context(npc_id, actor)

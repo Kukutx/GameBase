@@ -3,7 +3,7 @@ extends RefCounted
 
 ## Makes what a provider answers into a line an NPC says: plain text on one
 ## line, without the speaker's name in front or quotes around it, cut at the
-## end of a sentence to fit. `NpcChat.make_line()` shows it as written, not as
+## end of a sentence to fit. `DialogueChat.make_line()` shows it as written, not as
 ## markup.
 
 # Where a sentence ends, in the languages a game shows.

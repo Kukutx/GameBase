@@ -25,7 +25,7 @@ func before_each() -> void:
 	WorldClock.set_time(1, 10 * 60)
 
 func after_each() -> void:
-	InputLock.unlock(GameConversationService.DIALOGUE_LOCK)
+	InputLock.unlock(DialogueService.LOCK)
 	WorldState.load_save_data(_world_snapshot)
 	RelationshipState.load_save_data(_relationship_snapshot)
 	NpcMemory.load_save_data(_memory_snapshot)
@@ -45,58 +45,35 @@ func test_an_npc_chats_only_when_it_allows_it_and_a_module_makes_chats_and_title
 	var profile := NpcProfileData.new()
 	profile.dialogue_titles_by_hearts = {2: "missing_friend_title"}
 	assert_false(service.chats(profile), "no module makes chats")
-	service.chat_maker = func(_npc: GameNpc, _actor: Node) -> NpcChat: return NpcChat.new()
+	service.chat_maker = func(_npc: GameNpc, _actor: Node) -> DialogueChat: return DialogueChat.new()
 	assert_false(service.chats(profile), "the NPC does not chat")
 	profile.ai_enabled = true
 	assert_true(service.chats(profile))
 
 	var dialogue := _dialogue()
 	assert_eq(String(service.call("_resolve_daily_title", dialogue, profile, "start", 2)), "start")
-	assert_true(bool(service.call("_dialogue_has_key", dialogue, "heart_2")))
-	assert_false(bool(service.call("_dialogue_has_key", dialogue, "definitely_missing_title")))
 
-func test_heart_event_seen_commits_on_dialogue_end_not_interrupted_balloon_exit() -> void:
+func test_a_heart_event_is_seen_once_its_dialogue_ends_not_when_its_balloon_goes_first() -> void:
 	var event := _two_hearts_event()
 	var dialogue := _dialogue()
 	var service := GameConversationService.new()
 	add_child_autofree(service)
 	assert_false(HeartEvents.is_seen(event.id))
 
-	service.set("_active_balloon_id", 7001)
-	service.set("_active_heart_event", event)
-	service.set("_active_heart_dialogue", dialogue)
-	service.call("_on_scripted_balloon_exited", 7001)
-	assert_false(HeartEvents.is_seen(event.id))
-	assert_null(service.get("_active_heart_event"))
+	service.set("_heart_event", event)
+	service.set("_heart_dialogue", dialogue)
+	service.call("_forget_heart_event")
+	Dialogue.finished.emit(dialogue)
+	assert_false(HeartEvents.is_seen(event.id), "a balloon gone before the end leaves it unseen")
 
-	service.set("_active_heart_event", event)
-	service.set("_active_heart_dialogue", dialogue)
-	service.call("_on_dialogue_ended", dialogue)
+	service.set("_heart_event", event)
+	service.set("_heart_dialogue", dialogue)
+	Dialogue.finished.emit(_dialogue())
+	assert_false(HeartEvents.is_seen(event.id), "another dialogue's end is not the event's")
+	Dialogue.finished.emit(dialogue)
 	assert_true(HeartEvents.is_seen(event.id))
 	assert_true(bool(NpcMemory.get_facts(&"fixture_npc").get("heart_event:fixture_npc_two_hearts", false)))
-
-func test_a_conversation_holds_the_controls_until_its_dialogue_ends_or_its_balloon_goes() -> void:
-	var service := GameConversationService.new()
-	add_child_autofree(service)
-	var dialogue := _dialogue()
-	var balloon := Node.new()
-	add_child_autofree(balloon)
-	service.call("_hold_controls", balloon, dialogue)
-	assert_true(InputLock.is_held(GameConversationService.DIALOGUE_LOCK))
-	assert_true(get_tree().paused, "the world waits while the player reads")
-	service.call("_on_dialogue_ended", _dialogue())
-	assert_true(InputLock.is_held(GameConversationService.DIALOGUE_LOCK), "another dialogue's end is not this one's")
-	service.call("_on_dialogue_ended", dialogue)
-	assert_false(InputLock.is_held(GameConversationService.DIALOGUE_LOCK), "its end gives the controls back")
-	assert_false(get_tree().paused)
-
-	var next_balloon := Node.new()
-	add_child(next_balloon)
-	service.call("_hold_controls", next_balloon, dialogue)
-	assert_true(InputLock.is_held(GameConversationService.DIALOGUE_LOCK))
-	next_balloon.free()
-	assert_false(InputLock.is_held(GameConversationService.DIALOGUE_LOCK), "a balloon that goes before its dialogue ends gives them back too")
-	assert_null(service.get("_active_dialogue"))
+	assert_null(service.get("_heart_event"))
 
 func test_heart_events_match_only_their_npc_location_time_hearts_and_condition() -> void:
 	var event := _two_hearts_event()

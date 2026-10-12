@@ -120,6 +120,10 @@ text = "Autosave"
 layout_mode = 2
 text = "Pause When Unfocused"
 
+[node name="Hints" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
+layout_mode = 2
+text = "Show Hints"
+
 [node name="TextSpeed" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 

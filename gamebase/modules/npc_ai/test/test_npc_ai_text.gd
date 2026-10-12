@@ -17,9 +17,9 @@ func test_a_long_answer_ends_at_a_sentence_else_a_word_within_the_limit() -> voi
 	assert_eq(cut.length(), 10)
 
 func test_a_chat_line_shows_brackets_as_written() -> void:
-	var line := NpcChat.make_line("chat:x", "Mira", "Try [b]this[/b]", [{"next_id": NpcChat.END, "text": "Bye"}])
+	var line := DialogueChat.make_line("chat:x", "Mira", "Try [b]this[/b]", [{"next_id": DialogueChat.END, "text": "Bye"}])
 	assert_eq(line.text, "Try [lb]b]this[lb]/b]")
 	assert_eq(line.character, "Mira")
 	assert_eq(line.responses.size(), 1)
-	assert_eq((line.responses[0] as DialogueResponse).next_id, NpcChat.END)
+	assert_eq((line.responses[0] as DialogueResponse).next_id, DialogueChat.END)
 	assert_eq((line.responses[0] as DialogueResponse).text, "Bye")

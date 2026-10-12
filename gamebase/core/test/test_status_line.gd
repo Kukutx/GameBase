@@ -41,6 +41,23 @@ func test_a_line_can_leave_toasts_to_another() -> void:
 	GameEvents.toast("Saved")
 	assert_eq(line.text, "")
 
+func test_a_line_that_shows_hints_keeps_each_one_longer() -> void:
+	var line := _line()
+	GameEvents.hint_requested.emit("Fixture hint")
+	assert_eq(line.text, "", "a line shows no hints unless asked to")
+	var hints := StatusLine.new()
+	hints.shows_hints = true
+	hints.seconds_per_hint = 5.0
+	add_child_autofree(hints)
+	hints.set_process(false)
+	GameEvents.hint_requested.emit("Fixture hint")
+	GameEvents.toast("Saved")
+	assert_eq(hints.text, "Fixture hint")
+	hints._process(4.0)
+	assert_eq(hints.text, "Fixture hint", "a hint stays its own time")
+	hints._process(1.0)
+	assert_eq(hints.text, "Saved")
+
 func _line() -> StatusLine:
 	var line := StatusLine.new()
 	line.seconds_per_message = 2.0

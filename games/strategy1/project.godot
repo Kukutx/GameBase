@@ -37,6 +37,8 @@ GameModules="*res://gamebase/core/modules/game_modules.gd"
 Vitals="*res://gamebase/core/player/player_vitals.gd"
 WorldState="*res://gamebase/core/world/world_state.gd"
 GameProfile="*res://gamebase/core/profile/game_profile.gd"
+DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
+Dialogue="*res://gamebase/modules/dialogue/dialogue_service.gd"
 RtsEvents="*res://gamebase/modules/rts/rts_events.gd"
 TacticsEvents="*res://gamebase/modules/tactics/tactics_events.gd"
 WorldTravel="*res://gamebase/core/world/world_travel.gd"
@@ -53,8 +55,8 @@ SupportBundle="*res://gamebase/core/diagnostics/support_bundle_service.gd"
 [debug]
 
 file_logging/log_path="user://logs/strategy1.log"
-gdscript/warnings/untyped_declaration=2
 settings/gdscript/always_track_call_stacks=true
+gdscript/warnings/untyped_declaration=2
 
 [display]
 
@@ -67,7 +69,7 @@ window/stretch/aspect="keep_height"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/gut/plugin.cfg")
 
 [gamebase]
 
@@ -124,7 +126,8 @@ ui_down={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/rts/i18n/rts.zh_CN.po", "res://gamebase/modules/tactics/i18n/tactics.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
+locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/dialogue/i18n/dialogue.zh_CN.po", "res://gamebase/modules/rts/i18n/rts.zh_CN.po", "res://gamebase/modules/tactics/i18n/tactics.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
+locale/translations_pot_files=PackedStringArray("res://game/dialogue/camp.dialogue")
 
 [layer_names]
 

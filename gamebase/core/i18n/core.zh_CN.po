@@ -244,6 +244,9 @@ msgstr "整数倍缩放"
 msgid "Pause When Unfocused"
 msgstr "失去焦点时暂停"
 
+msgid "Show Hints"
+msgstr "显示提示"
+
 msgid "Reset All Settings"
 msgstr "恢复全部默认设置"
 

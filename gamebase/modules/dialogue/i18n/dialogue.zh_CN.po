@@ -1,0 +1,14 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase modules/dialogue\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Finish the current conversation first"
+msgstr "请先结束当前对话"
+
+msgid "Talk"
+msgstr "交谈"

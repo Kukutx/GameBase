@@ -3,7 +3,9 @@
 [ext_resource type="Script" path="res://gamebase/core/content/content_pack.gd" id="1_pack"]
 [ext_resource type="Resource" path="res://game/data/start_location.tres" id="2_start"]
 [ext_resource type="Resource" path="res://game/data/lookout_location.tres" id="3_lookout"]
+[ext_resource type="Resource" path="res://game/data/hints/start_controls.tres" id="4_hint_start"]
+[ext_resource type="Resource" path="res://game/data/triggers/hint_start_controls.tres" id="5_trigger_hint_start"]
 
 [resource]
 script = ExtResource("1_pack")
-entries = [ExtResource("2_start"), ExtResource("3_lookout")]
+entries = [ExtResource("2_start"), ExtResource("3_lookout"), ExtResource("4_hint_start"), ExtResource("5_trigger_hint_start")]

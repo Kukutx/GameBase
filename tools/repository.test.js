@@ -219,7 +219,7 @@ test("a battle on a grid or an open field needs no items", () => {
 
 test("a module's autoloads follow the modules it requires, between the core's", () => {
   const foundation = readFoundation();
-  assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "combat", "damage"]), ["damage", "items", "combat", "npc_social", "skills", "lifesim", "progression"]);
+  assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "dialogue", "combat", "damage"]), ["damage", "dialogue", "items", "combat", "npc_social", "skills", "lifesim", "progression"]);
   const game = { id: "probe", root: rootPath("games", "probe"), modules: ["skills", "items"], addons: ["gut"], manifest: { autoloads: { ProbeTools: "res://game/probe_tools.gd" } } };
   const names = desiredAutoloads(game, foundation).map(([name]) => name);
   const lastBefore = Object.keys(foundation.autoloads.before_modules).at(-1);

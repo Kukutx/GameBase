@@ -67,6 +67,7 @@ func _init() -> void:
 	register_kind(MiniGameDefinition.KIND, MiniGameDefinition)
 	register_kind(TriggerData.KIND, TriggerData)
 	register_kind(AchievementData.KIND, AchievementData)
+	register_kind(HintData.KIND, HintData)
 
 func _enter_tree() -> void:
 	if active == null:

@@ -32,6 +32,7 @@ horizontal_alignment = 2
 [node name="Status" type="Label" parent="."]
 script = ExtResource("4_status_line")
 seconds_per_message = 3.0
+shows_hints = true
 offset_left = 8.0
 offset_top = 24.0
 offset_right = 472.0

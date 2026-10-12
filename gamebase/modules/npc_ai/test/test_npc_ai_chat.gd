@@ -40,7 +40,7 @@ func after_each() -> void:
 	NpcAi.cancel_all()
 	for balloon: Node in _balloons():
 		balloon.free()
-	InputLock.unlock(GameConversationService.DIALOGUE_LOCK)
+	InputLock.unlock(DialogueService.LOCK)
 	ContentRegistry.active = ContentDB
 	NpcMemory.load_save_data(_memory)
 	RelationshipState.load_save_data(_relationships)

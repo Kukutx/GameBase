@@ -37,6 +37,8 @@ GameModules="*res://gamebase/core/modules/game_modules.gd"
 Vitals="*res://gamebase/core/player/player_vitals.gd"
 WorldState="*res://gamebase/core/world/world_state.gd"
 GameProfile="*res://gamebase/core/profile/game_profile.gd"
+DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
+Dialogue="*res://gamebase/modules/dialogue/dialogue_service.gd"
 ItemsEvents="*res://gamebase/modules/items/items_events.gd"
 InventoryState="*res://gamebase/modules/items/items/inventory_store.gd"
 Wallet="*res://gamebase/modules/items/wallet/wallet_service.gd"
@@ -65,8 +67,8 @@ DepthRun="*res://game/depths/depth_run.gd"
 [debug]
 
 file_logging/log_path="user://logs/dungeon1.log"
-gdscript/warnings/untyped_declaration=2
 settings/gdscript/always_track_call_stacks=true
+gdscript/warnings/untyped_declaration=2
 
 [display]
 
@@ -79,7 +81,7 @@ window/stretch/aspect="keep_height"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/gut/plugin.cfg")
 
 [gamebase]
 
@@ -136,7 +138,8 @@ ui_down={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/combat/i18n/combat.zh_CN.po", "res://gamebase/modules/items/i18n/items.zh_CN.po", "res://gamebase/modules/roguelite/i18n/roguelite.zh_CN.po", "res://gamebase/modules/skills/i18n/skills.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
+locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/combat/i18n/combat.zh_CN.po", "res://gamebase/modules/dialogue/i18n/dialogue.zh_CN.po", "res://gamebase/modules/items/i18n/items.zh_CN.po", "res://gamebase/modules/roguelite/i18n/roguelite.zh_CN.po", "res://gamebase/modules/skills/i18n/skills.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
+locale/translations_pot_files=PackedStringArray("res://game/dialogue/camp.dialogue")
 
 [layer_names]
 

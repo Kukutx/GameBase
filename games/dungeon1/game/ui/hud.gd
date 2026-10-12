@@ -3,8 +3,9 @@ extends CanvasLayer
 
 ## What the player of Ember Depths sees over the world: health, money and
 ## combat level, where the run stands, the hotbar, what is near to use, the
-## status messages (toasts and what a save or a load says, one after another
-## on a `StatusLine`) and the controls. It holds the shop and pause menus.
+## status messages (toasts, hints and what a save or a load says, one after
+## another on a `StatusLine`) and the controls. It holds the shop and pause
+## menus.
 
 @onready var stats_label: Label = $Stats
 @onready var run_label: Label = $Run

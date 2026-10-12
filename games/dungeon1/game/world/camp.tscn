@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="2_spawn"]
@@ -7,6 +7,8 @@
 [ext_resource type="Resource" path="res://game/data/shops/camp_merchant.tres" id="5_merchant"]
 [ext_resource type="Script" path="res://game/depths/depth_entrance.gd" id="6_entrance"]
 [ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="7_interactable"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/dialogue/dialogue_spot.tscn" id="8_spot"]
+[ext_resource type="Resource" path="res://game/dialogue/camp.dialogue" id="9_camp_dialogue"]
 [ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
@@ -75,6 +77,24 @@ prompt_text = "Rest until tomorrow"
 [node name="Merchant" parent="." instance=ExtResource("4_stand")]
 position = Vector2(110, -50)
 shop = ExtResource("5_merchant")
+
+[node name="OldDelver" parent="." instance=ExtResource("8_spot")]
+position = Vector2(0, -80)
+dialogue = ExtResource("9_camp_dialogue")
+
+[node name="Figure" type="Polygon2D" parent="OldDelver"]
+z_index = -1
+polygon = PackedVector2Array(-6, 10, -7, -4, -4, -12, 4, -12, 7, -4, 6, 10)
+color = Color(0.55, 0.47, 0.38, 1)
+
+[node name="Label" type="Label" parent="OldDelver"]
+offset_left = -52.0
+offset_top = -30.0
+offset_right = 52.0
+offset_bottom = -15.0
+theme_override_font_sizes/font_size = 9
+text = "Old Delver"
+horizontal_alignment = 1
 
 [node name="DepthEntrance" type="Node2D" parent="."]
 position = Vector2(0, 100)

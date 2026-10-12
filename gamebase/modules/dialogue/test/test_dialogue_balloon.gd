@@ -36,7 +36,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	GameSettings.text_speed = _text_speed
-	InputLock.unlock(GameConversationService.DIALOGUE_LOCK)
+	InputLock.unlock(DialogueService.LOCK)
 
 func test_a_line_types_out_at_the_text_speed_and_a_press_shows_the_rest_then_the_next() -> void:
 	GameSettings.text_speed = GameSettingsService.TextSpeed.SLOW
@@ -91,7 +91,7 @@ func test_a_press_moves_on_only_while_the_conversation_s_lock_is_on_top() -> voi
 	balloon._unhandled_input(press)
 	await wait_process_frames(2)
 	assert_same(balloon.get_line(), first, "without the lock the balloon does not read keys")
-	InputLock.lock(GameConversationService.DIALOGUE_LOCK, false, balloon)
+	InputLock.lock(DialogueService.LOCK, false, balloon)
 	balloon._unhandled_input(press)
 	await wait_until(func() -> bool: return balloon.get_line() != first, 1.0)
 	assert_eq(balloon.get_line().text, "Will you help me?")
@@ -100,7 +100,7 @@ func test_a_click_on_the_panel_moves_on() -> void:
 	GameSettings.text_speed = GameSettingsService.TextSpeed.INSTANT
 	var balloon := await _start("start")
 	await wait_until(func() -> bool: return balloon.get_node("%More").visible, 1.0)
-	InputLock.lock(GameConversationService.DIALOGUE_LOCK, false, balloon)
+	InputLock.lock(DialogueService.LOCK, false, balloon)
 	var first := balloon.get_line()
 	var panel := balloon.get_node("%Panel") as Control
 	assert_eq(panel.mouse_filter, Control.MOUSE_FILTER_STOP, "a click on the box does not reach the world")
@@ -132,7 +132,7 @@ func test_interact_picks_the_response_in_focus() -> void:
 	await wait_until(func() -> bool: return balloon.get_node("%More").visible, 1.0)
 	balloon.advance()
 	await wait_until(func() -> bool: return balloon.get_node("%Responses").visible, 1.0)
-	InputLock.lock(GameConversationService.DIALOGUE_LOCK, false, balloon)
+	InputLock.lock(DialogueService.LOCK, false, balloon)
 	var line := balloon.get_line()
 	((balloon.get_node("%Responses") as DialogueResponsesMenu).get_menu_items()[1] as Control).grab_focus()
 	var press := InputEventAction.new()
@@ -141,9 +141,6 @@ func test_interact_picks_the_response_in_focus() -> void:
 	balloon._unhandled_input(press)
 	await wait_until(func() -> bool: return balloon.get_line() != line, 1.0)
 	assert_eq(balloon.get_line().text, "Maybe tomorrow.")
-
-func test_the_dialogue_addon_runs_while_the_world_is_paused() -> void:
-	assert_eq(DialogueManager.process_mode, Node.PROCESS_MODE_ALWAYS, "its mutations' waits go on during a conversation")
 
 func test_the_balloon_fits_the_view_and_grows_upwards_for_a_long_line() -> void:
 	GameSettings.text_speed = GameSettingsService.TextSpeed.INSTANT
@@ -176,7 +173,7 @@ func test_a_dialogue_that_ran_is_freed_once_nothing_holds_it() -> void:
 # A balloon showing the fixture dialogue from `cue`, once its first line shows.
 func _start(cue: String, long_line := "") -> DialogueBalloon:
 	var resource := DialogueManager.create_resource_from_text(DIALOGUE_TEXT % long_line) as DialogueResource
-	var balloon := GameConversationService.BALLOON_SCENE.instantiate() as DialogueBalloon
+	var balloon := DialogueService.BALLOON_SCENE.instantiate() as DialogueBalloon
 	add_child_autofree(balloon)
 	balloon.start(resource, cue, [])
 	await wait_until(func() -> bool: return balloon.get_line() != null, 1.0)

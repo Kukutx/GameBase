@@ -1,0 +1,11 @@
+~ start
+Old Delver: Back from the dark, or only on your way down?
+- What lies below?
+	Old Delver: Slimes near the top, bones further down, and living embers deepest of all. The deeper you go, the harder they hit.
+	=> start
+- Any advice?
+	Old Delver: Rest by the fire before you go, buy potions from the merchant, and climb back up while you still can.
+	=> start
+- Farewell.
+	Old Delver: Mind the embers.
+	=> END

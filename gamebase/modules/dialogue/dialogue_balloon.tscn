@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://gamebase/modules/npc_social/dialogue/dialogue_balloon.gd" id="1_balloon"]
+[ext_resource type="Script" path="res://gamebase/modules/dialogue/dialogue_balloon.gd" id="1_balloon"]
 [ext_resource type="PackedScene" path="res://addons/dialogue_manager/nodes/dialogue_label/dialogue_label.tscn" id="2_label"]
 [ext_resource type="Script" path="res://addons/dialogue_manager/nodes/responses_menu/dialogue_responses_menu.gd" id="3_responses"]
 

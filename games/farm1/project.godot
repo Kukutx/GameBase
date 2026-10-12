@@ -38,6 +38,8 @@ GameModules="*res://gamebase/core/modules/game_modules.gd"
 Vitals="*res://gamebase/core/player/player_vitals.gd"
 WorldState="*res://gamebase/core/world/world_state.gd"
 GameProfile="*res://gamebase/core/profile/game_profile.gd"
+DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
+Dialogue="*res://gamebase/modules/dialogue/dialogue_service.gd"
 ItemsEvents="*res://gamebase/modules/items/items_events.gd"
 InventoryState="*res://gamebase/modules/items/items/inventory_store.gd"
 Wallet="*res://gamebase/modules/items/wallet/wallet_service.gd"
@@ -50,7 +52,6 @@ BuildingState="*res://gamebase/modules/items/building/building_placement_service
 CombatEvents="*res://gamebase/modules/combat/combat_events.gd"
 PlayerDefeat="*res://gamebase/modules/combat/defeat/player_defeat_service.gd"
 NpcSocialEvents="*res://gamebase/modules/npc_social/npc_social_events.gd"
-DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 RelationshipState="*res://gamebase/modules/npc_social/npc/relationship_manager.gd"
 HeartEvents="*res://gamebase/modules/npc_social/npc/heart_event_service.gd"
 NpcMemory="*res://gamebase/modules/npc_social/npc/npc_memory_store.gd"
@@ -164,7 +165,7 @@ debug_advance_time={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/combat/i18n/combat.zh_CN.po", "res://gamebase/modules/items/i18n/items.zh_CN.po", "res://gamebase/modules/lifesim/i18n/lifesim.zh_CN.po", "res://gamebase/modules/npc_ai/i18n/npc_ai.zh_CN.po", "res://gamebase/modules/npc_social/i18n/npc_social.zh_CN.po", "res://gamebase/modules/progression/i18n/progression.zh_CN.po", "res://gamebase/modules/skills/i18n/skills.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
+locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/combat/i18n/combat.zh_CN.po", "res://gamebase/modules/dialogue/i18n/dialogue.zh_CN.po", "res://gamebase/modules/items/i18n/items.zh_CN.po", "res://gamebase/modules/lifesim/i18n/lifesim.zh_CN.po", "res://gamebase/modules/npc_ai/i18n/npc_ai.zh_CN.po", "res://gamebase/modules/npc_social/i18n/npc_social.zh_CN.po", "res://gamebase/modules/progression/i18n/progression.zh_CN.po", "res://gamebase/modules/skills/i18n/skills.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
 locale/translations_pot_files=PackedStringArray("res://game/dialogue/intro.dialogue", "res://game/dialogue/neri.dialogue", "res://game/dialogue/rowan.dialogue")
 
 [layer_names]

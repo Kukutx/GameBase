@@ -3,6 +3,7 @@
   "dirs": [
     "res://gamebase/core/test/",
     "res://gamebase/modules/damage/test/",
+    "res://gamebase/modules/dialogue/test/",
     "res://gamebase/modules/rts/test/",
     "res://gamebase/modules/tactics/test/",
     "res://test/unit/"

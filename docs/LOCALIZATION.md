@@ -23,7 +23,7 @@ gamebase/modules/<module>/i18n/<module>.<locale>.po each module's text
 games/<id>/game/i18n/ui.<locale>.po                 the game's own text, data and dialogue
 ```
 
-A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own; `node tools/link.js` writes that list from the catalogs under `gamebase/core/i18n/`, each listed module's `i18n/` and the game's `game/i18n/`. A module with no text of its own (`damage`) has no catalog. Farm1 registers the core, its seven module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; Ember Depths the core, `items`, `skills` and `combat` and its own; Iron Banners the core, `rts` and `tactics` and its own; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
+A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own; `node tools/link.js` writes that list from the catalogs under `gamebase/core/i18n/`, each listed module's `i18n/` and the game's `game/i18n/`. A module with no text of its own (`damage`) has no catalog. Farm1 registers the core, its eight module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; Ember Depths the core, `combat`, `dialogue`, `items`, `roguelite` and `skills` and its own; Iron Banners the core, `dialogue`, `rts` and `tactics` and its own; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
 
 Scene-authored Control text participates in Godot translation automatically. Runtime-created text must use `tr(...)` or `TranslationServer.translate(...)` for translatable labels.
 
@@ -82,7 +82,7 @@ Any node that assigns visible text from code connects `GameSettings.locale_chang
 
 ## Dialogue
 
-Dialogue Manager remains the authored-dialogue layer. Dialogue source files under `games/farm1/game/dialogue/` are registered as translation sources in `games/farm1/project.godot`. The current Mira, Neri and Rowan authored dialogue lines and player responses have Simplified Chinese coverage in Farm1's `games/farm1/game/i18n/ui.zh_CN.po`; character names use the `dialogue` PO context that the npc_social module's `DialogueBalloon` translates them with.
+Dialogue Manager remains the authored-dialogue layer. A game's dialogue source files under `games/<id>/game/dialogue/` are registered as translation sources in its `project.godot`. Their lines and player responses are translated in the game's `game/i18n/ui.zh_CN.po` under the `dialogue` PO context, and so are the character names, which the dialogue module's `DialogueBalloon` translates with that context. A hint's text (`HintData.text`) is translated as written, its controls in braces (`{interact}`) kept as they are in the translation, since they are filled in after it.
 
 Keep dialogue translation data separate from gameplay state. Translation changes must not alter dialogue title IDs used by heart events or NPC progression.
 

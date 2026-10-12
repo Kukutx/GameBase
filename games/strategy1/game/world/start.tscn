@@ -1,10 +1,12 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="2_spawn"]
 [ext_resource type="PackedScene" path="res://gamebase/core/player/sleep_spot.tscn" id="3_sleep"]
 [ext_resource type="PackedScene" path="res://gamebase/core/world/scene_portal.tscn" id="4_portal"]
 [ext_resource type="PackedScene" path="res://gamebase/core/minigames/minigame_station.tscn" id="5_station"]
+[ext_resource type="PackedScene" path="res://gamebase/modules/dialogue/dialogue_spot.tscn" id="6_spot"]
+[ext_resource type="Resource" path="res://game/dialogue/camp.dialogue" id="7_camp_dialogue"]
 [ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
@@ -58,15 +60,6 @@ spawn_id = &"arrival"
 position = Vector2(0, -64)
 script = ExtResource("2_spawn")
 spawn_id = &"from_lookout"
-
-[node name="Welcome" type="Label" parent="."]
-offset_left = 30.0
-offset_top = 34.0
-offset_right = 170.0
-offset_bottom = 84.0
-theme_override_font_sizes/font_size = 9
-text = "Welcome to camp! Plan the battle at the ford on the war table, or lead the troops into the pass from the muster."
-autowrap_mode = 3
 
 [node name="Bed" parent="." instance=ExtResource("3_sleep")]
 position = Vector2(-110, -40)
@@ -139,6 +132,24 @@ offset_right = 45.0
 offset_bottom = 26.0
 theme_override_font_sizes/font_size = 8
 text = "Muster"
+horizontal_alignment = 1
+
+[node name="Captain" parent="." instance=ExtResource("6_spot")]
+position = Vector2(110, 50)
+dialogue = ExtResource("7_camp_dialogue")
+
+[node name="Figure" type="Polygon2D" parent="Captain"]
+z_index = -1
+polygon = PackedVector2Array(-6, 10, -7, -4, -4, -12, 4, -12, 7, -4, 6, 10)
+color = Color(0.35, 0.5, 0.8, 1)
+
+[node name="Label" type="Label" parent="Captain"]
+offset_left = -45.0
+offset_top = 12.0
+offset_right = 45.0
+offset_bottom = 26.0
+theme_override_font_sizes/font_size = 8
+text = "Captain Aldis"
 horizontal_alignment = 1
 
 [node name="Player" parent="." instance=ExtResource("1_player")]

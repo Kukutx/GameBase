@@ -28,9 +28,6 @@ msgstr "%s 移动 · %s 使用 · %s 存档 · %s 读档"
 msgid "Camp"
 msgstr "营地"
 
-msgid "Welcome to camp! Plan the battle at the ford on the war table, or lead the troops into the pass from the muster."
-msgstr "欢迎来到营地！在战术桌上筹划渡口之战，或从集结点率军杀入山口。"
-
 msgid "War Table"
 msgstr "战术桌"
 
@@ -90,3 +87,44 @@ msgstr "弓兵"
 
 msgid "Rider"
 msgstr "骑兵"
+
+msgid "Move with {move}. Press {interact} to use what is near."
+msgstr "用 {move} 移动，按 {interact} 使用身旁的东西。"
+
+msgid "A lost battle can be fought again whenever you are ready."
+msgstr "打输的仗，准备好了随时可以再打一次。"
+
+msgid "Captain Aldis"
+msgstr "奥迪斯队长"
+
+msgctxt "dialogue"
+msgid "Captain Aldis"
+msgstr "奥迪斯队长"
+
+msgctxt "dialogue"
+msgid "Welcome to camp. Raiders hold the ford and the hill pass, and we take both back."
+msgstr "欢迎来到营地。掠夺者占着渡口和山口，我们要把两处都夺回来。"
+
+msgctxt "dialogue"
+msgid "How do we fight at the ford?"
+msgstr "渡口那一仗怎么打？"
+
+msgctxt "dialogue"
+msgid "Plan it on the war table. Each soldier moves and acts in turn; keep the cleric close to mend the wounded."
+msgstr "在战术桌上筹划。士兵轮流移动和行动；让牧师跟紧些，好治疗伤员。"
+
+msgctxt "dialogue"
+msgid "And the pass?"
+msgstr "那山口呢？"
+
+msgctxt "dialogue"
+msgid "Lead the troops from the muster. Pick out soldiers, send them where they are needed, and they fight on their own."
+msgstr "从集结点率军出发。选中士兵，派他们去需要的地方，他们会自己作战。"
+
+msgctxt "dialogue"
+msgid "To work, then."
+msgstr "那就开工吧。"
+
+msgctxt "dialogue"
+msgid "Good luck out there."
+msgstr "祝你好运。"

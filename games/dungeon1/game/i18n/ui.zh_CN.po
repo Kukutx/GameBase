@@ -159,3 +159,47 @@ msgstr "白昼"
 
 msgid "Deepest %d"
 msgstr "最深 %d 层"
+
+msgid "Move with {move}. Press {interact} to use what is near."
+msgstr "用 {move} 移动，按 {interact} 使用身旁的东西。"
+
+msgid "Press {attack} to swing, {next_item} to take up the next item."
+msgstr "按 {attack} 挥动武器，按 {next_item} 换下一件物品。"
+
+msgid "Hurt? Press {drink_potion} to drink a health potion."
+msgstr "受伤了？按 {drink_potion} 喝下生命药水。"
+
+msgid "Old Delver"
+msgstr "老探窟人"
+
+msgctxt "dialogue"
+msgid "Old Delver"
+msgstr "老探窟人"
+
+msgctxt "dialogue"
+msgid "Back from the dark, or only on your way down?"
+msgstr "从黑暗里回来了，还是正要下去？"
+
+msgctxt "dialogue"
+msgid "What lies below?"
+msgstr "下面有什么？"
+
+msgctxt "dialogue"
+msgid "Slimes near the top, bones further down, and living embers deepest of all. The deeper you go, the harder they hit."
+msgstr "上层是史莱姆，再往下是白骨，最深处是活着的余烬。越往下走，它们下手越狠。"
+
+msgctxt "dialogue"
+msgid "Any advice?"
+msgstr "有什么忠告吗？"
+
+msgctxt "dialogue"
+msgid "Rest by the fire before you go, buy potions from the merchant, and climb back up while you still can."
+msgstr "下去前在火堆边歇歇，从商人那里买些药水，趁还走得动就爬回来。"
+
+msgctxt "dialogue"
+msgid "Farewell."
+msgstr "再会。"
+
+msgctxt "dialogue"
+msgid "Mind the embers."
+msgstr "小心余烬。"

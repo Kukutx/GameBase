@@ -85,7 +85,7 @@ const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\
 const PLURAL_CALL_RE = /\btr_n\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"/g;
 
 // Player-facing fields of data resources.
-const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|role|activity|group) = "((?:[^"\\]|\\.)*)"$/gm;
+const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|text|role|activity|group) = "((?:[^"\\]|\\.)*)"$/gm;
 
 // Player-facing lists of text in data resources, such as a calendar's seasons
 // or what an NPC answers a chat topic, and the exported defaults of those lists.

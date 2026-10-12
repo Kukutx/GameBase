@@ -14,5 +14,5 @@ func install() -> void:
 	GameSettings.register_online_service(&"npc_ai", func() -> bool: return NpcAiSettings.current().has_endpoint())
 
 ## The chat of `npc` with the player `actor`.
-static func make_chat(npc: GameNpc, actor: Node) -> NpcChat:
+static func make_chat(npc: GameNpc, actor: Node) -> DialogueChat:
 	return NpcAiChat.new(npc.get_npc_id(), TranslationServer.translate(npc.display_name), actor)

@@ -3,6 +3,7 @@
   "modules": [
     "combat",
     "damage",
+    "dialogue",
     "items",
     "lifesim",
     "npc_ai",

@@ -1,9 +1,10 @@
 extends "res://gamebase/core/test/runtime_smoke.gd"
 
-## Plays Iron Banners: starts a new game, opens the battle at the ford on the
-## camp's war table and the battle in the pass from the muster and leaves
-## each, walks to the lookout and back through the portals, sleeps in the bed,
-## saves, changes state and loads it back.
+## Plays Iron Banners: starts a new game with its first hint, talks to the
+## captain, opens the battle at the ford on the camp's war table and the
+## battle in the pass from the muster and leaves each, walks to the lookout
+## and back through the portals, sleeps in the bed, saves, changes state and
+## loads it back.
 
 const START_SCENE := "res://game/world/start.tscn"
 const LOOKOUT_SCENE := "res://game/world/lookout.tscn"
@@ -27,6 +28,9 @@ func _run() -> void:
 	_check(get_first_node_in_group("player") != null, "Start location has no player")
 	var place := current_scene.get_node("Player/HUD/Place") as Label
 	_check(place.text.begins_with("Camp · "), "The HUD does not name the camp: '%s'" % place.text)
+	var status := current_scene.get_node("Player/HUD/Status") as Label
+	_check(status.text.begins_with("Move with "), "The HUD did not show the first hint: '%s'" % status.text)
+	await _talk(current_scene.get_node("Captain/Interactable"), "Captain Aldis")
 
 	var host := root.get_node("MiniGameHost")
 	_use(current_scene.get_node("WarTable/Interactable"))
@@ -75,3 +79,21 @@ func _run() -> void:
 
 func _player_at(spawn: Node2D) -> bool:
 	return (get_first_node_in_group("player") as Node2D).global_position.distance_to(spawn.global_position) < 1.0
+
+# Talks to the spot `interactable` belongs to: its balloon shows `character`'s
+# first line and pauses the world; once it goes, play goes on.
+func _talk(interactable: Node, character: String) -> void:
+	_use(interactable)
+	var dialogue := root.get_node("Dialogue")
+	var balloons := root.find_children("*", "DialogueBalloon", true, false)
+	_check(bool(dialogue.is_showing()) and balloons.size() == 1 and paused, "Using the %s did not start a conversation" % character)
+	if balloons.is_empty():
+		return
+	for _frame: int in 60:
+		if balloons[0].call("get_line") != null:
+			break
+		await process_frame
+	var line: Variant = balloons[0].call("get_line")
+	_check(line != null and String(line.get("character")) == character, "The %s did not speak first" % character)
+	balloons[0].free()
+	_check(not bool(dialogue.is_showing()) and not paused, "The conversation with the %s did not end" % character)
