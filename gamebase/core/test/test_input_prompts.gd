@@ -2,8 +2,8 @@ extends GutTest
 
 ## The names prompts give a gamepad's buttons (`InputPromptService`): as its
 ## maker prints them, told from the pad's name, in characters the game's font
-## draws; and the gamepad in use leaving takes the prompts back to the
-## keyboard.
+## draws; the gamepad in use leaving takes the prompts back to the keyboard;
+## and a control's prompt is a module's, the movement or its actions'.
 
 var _using_gamepad := false
 var _style := InputPromptService.GamepadStyle.XBOX
@@ -53,6 +53,21 @@ func test_the_games_font_draws_every_buttons_name() -> void:
 			for index: int in label_text.length():
 				var code := label_text.unicode_at(index)
 				assert_true(code <= 0x20 or font.has_char(code), "%s of %s" % [label_text[index], label_text])
+
+func test_a_control_s_prompt_is_a_module_s_the_movement_or_its_actions() -> void:
+	var interact := InputPrompts.get_action_prompt(&"interact")
+	assert_eq(InputPrompts.get_prompt(&"interact"), interact)
+	assert_eq(InputPrompts.get_prompt(&"move"), InputPrompts.get_move_prompt())
+	assert_eq(InputPrompts.get_prompt(&"interact/pause"), "%s/%s" % [interact, InputPrompts.get_action_prompt(&"pause")], "actions pressed as one")
+	assert_eq(InputPrompts.get_prompt(&"interact/fixture_no_control"), interact, "an action the game has not is left out")
+	assert_eq(InputPrompts.get_prompt(&"fixture_no_control"), "")
+	var prompt := func() -> String: return "fixture keys"
+	InputPrompts.register_prompt(&"fixture_prompt", prompt)
+	assert_eq(InputPrompts.get_prompt(&"fixture_prompt"), "fixture keys")
+	InputPrompts.unregister_prompt(&"fixture_prompt", func() -> String: return "other keys")
+	assert_eq(InputPrompts.get_prompt(&"fixture_prompt"), "fixture keys", "only its own registration takes it back")
+	InputPrompts.unregister_prompt(&"fixture_prompt", prompt)
+	assert_eq(InputPrompts.get_prompt(&"fixture_prompt"), "")
 
 func test_the_pad_in_use_leaving_takes_the_prompts_to_the_keyboard() -> void:
 	InputPrompts.call("_use_gamepad", 7)

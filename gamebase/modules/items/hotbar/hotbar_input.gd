@@ -5,9 +5,13 @@ extends Node
 ## the number keys pick a slot, `next_action` and `previous_action` step
 ## through the slots, and so does the mouse wheel. A number key or a wheel
 ## turn the player bound to a control is that control's, never the hotbar's.
-## It does nothing while
-## the player cannot act (`TopDownPlayer.is_input_locked()`, or `InputLock` for
-## another parent).
+## It does nothing while the player cannot act
+## (`TopDownPlayer.is_input_locked()`, or `InputLock` for another parent).
+## While it is in the tree, the HUD names how to pick a slot as the control
+## `hotbar` (`InputPrompts.get_prompt()`).
+
+## The name the HUD gives how a slot is picked (`ControlsLine.hints`).
+const PROMPT := &"hotbar"
 
 ## The action that selects the next slot; none when empty.
 @export var next_action := &"hotbar_next"
@@ -15,6 +19,23 @@ extends Node
 @export var previous_action := &"hotbar_prev"
 @export var number_keys := true
 @export var mouse_wheel := true
+
+func _enter_tree() -> void:
+	InputPrompts.register_prompt(PROMPT, get_prompt)
+
+func _exit_tree() -> void:
+	InputPrompts.unregister_prompt(PROMPT, get_prompt)
+
+## How the player picks a slot on the device in use: the number keys on a
+## keyboard ("1–9"), else the controls that step through the slots.
+func get_prompt() -> String:
+	if number_keys and not InputPrompts.using_gamepad:
+		return "1–%d" % mini(HotbarService.SLOT_COUNT, 9)
+	var steps: Array[StringName] = []
+	for action: StringName in [previous_action, next_action]:
+		if action != &"" and InputMap.has_action(action):
+			steps.append(action)
+	return InputPrompts.get_actions_prompt(steps)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_locked():

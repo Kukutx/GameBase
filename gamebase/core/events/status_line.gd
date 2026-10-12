@@ -2,11 +2,12 @@ class_name StatusLine
 extends Label
 
 ## A line of short messages for the player: the toasts `GameEvents` sends, the
-## hints it sends (`HintData`) on a line that shows them, and whatever the game
-## shows with `show_message()`. Each message stays `seconds_per_message`, a
-## hint `seconds_per_hint`, as it asks to be read; one that arrives while
-## another is shown waits its turn, so messages sent together, such as a
-## harvest and the achievement it unlocked, are each read.
+## hints it sends (`HintData`) on a line that shows them, what a save or a load
+## says (`SaveManager`), and whatever the game shows with `show_message()`.
+## Each message stays `seconds_per_message`, a hint `seconds_per_hint`, as it
+## asks to be read; one that arrives while another is shown waits its turn, so
+## messages sent together, such as a harvest and the achievement it unlocked,
+## are each read.
 
 ## How long a message stays.
 @export_range(0.1, 30.0, 0.1) var seconds_per_message := 2.5
@@ -18,6 +19,8 @@ extends Label
 @export var shows_toasts := true
 ## Whether it shows the hints `GameEvents` sends.
 @export var shows_hints := false
+## Whether it shows what a save or a load the player asked for says.
+@export var shows_saves := true
 
 var _waiting: PackedStringArray = []
 # How long each waiting message stays.
@@ -30,6 +33,9 @@ func _ready() -> void:
 		GameEvents.toast_requested.connect(show_message)
 	if shows_hints:
 		GameEvents.hint_requested.connect(_show_hint)
+	if shows_saves:
+		SaveManager.save_completed.connect(_show_save_message)
+		SaveManager.load_completed.connect(_show_save_message)
 
 func _process(delta: float) -> void:
 	if _seconds_left <= 0.0:
@@ -66,6 +72,9 @@ func show_message(message: String, seconds := 0.0) -> void:
 ## The messages waiting their turn, in order.
 func get_waiting() -> PackedStringArray:
 	return _waiting.duplicate()
+
+func _show_save_message(_success: bool, message: String) -> void:
+	show_message(message)
 
 func _show_hint(message: String) -> void:
 	show_message(message, seconds_per_hint)

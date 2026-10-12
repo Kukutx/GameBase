@@ -52,7 +52,7 @@ func _rebuild() -> void:
 		if item == null:
 			continue
 		var price := _shop.get_buy_price(item)
-		var button := Button.new()
+		var button := MenuLayer.list_button()
 		button.text = tr("Buy %s — %dg") % [tr(item.display_name), price]
 		button.pressed.connect(_buy.bind(item_id))
 		items_container.add_child(button)
@@ -60,7 +60,7 @@ func _rebuild() -> void:
 			first_button = button
 	var context := _offer_context()
 	for offer: ShopOffer in _shop.offers:
-		var button := Button.new()
+		var button := MenuLayer.list_button()
 		button.text = offer.get_label(context)
 		button.disabled = not offer.can_buy(context)
 		button.pressed.connect(_buy_offer.bind(offer))
@@ -113,7 +113,7 @@ func _refresh_sell_list() -> void:
 		var item := sellable[index]
 		var button: Button = _sell_buttons.get(item.id)
 		if button == null:
-			button = Button.new()
+			button = MenuLayer.list_button()
 			button.pressed.connect(_sell.bind(item.id))
 			sell_container.add_child(button)
 			_sell_buttons[item.id] = button

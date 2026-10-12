@@ -18,15 +18,6 @@ func _instantiate(path: String) -> Node:
 	await get_tree().process_frame
 	return node
 
-func _assert_valid_focus(owner: Node) -> void:
-	var focus := get_viewport().gui_get_focus_owner()
-	assert_not_null(focus, "%s opened without UI focus" % owner.name)
-	if focus == null:
-		return
-	assert_true(owner == focus or owner.is_ancestor_of(focus), "%s focus escaped menu to %s" % [owner.name, focus.name])
-	if focus is BaseButton:
-		assert_false((focus as BaseButton).disabled, "%s focused a disabled button" % owner.name)
-
 func test_game_menu_keeps_selected_tab_focusable() -> void:
 	var menu := await _instantiate("res://game/ui/game_menu.tscn") as GameMenu
 	assert_not_null(menu)
@@ -91,7 +82,7 @@ func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> voi
 			"pause":
 				menu.call("open")
 		await get_tree().process_frame
-		_assert_valid_focus(menu)
+		assert_eq(MenuFit.find_focus_problem(menu), "", String(data["path"]))
 		# Containers sort their children on the frame after a change.
 		await get_tree().process_frame
 		assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray(), String(data["path"]))

@@ -2004,12 +2004,6 @@ msgstr "铜制熔炉"
 msgid "Oil Maker"
 msgstr "榨油机"
 
-msgid "1–9"
-msgstr "1–9"
-
-msgid "%s move · %s interact/reel · %s tool/item · %s gift · %s pack · %s menu · %s hotbar · %s/%s save/load"
-msgstr "%s 移动 · %s 互动/收线 · %s 工具/物品 · %s 送礼 · %s 收起建筑 · %s 菜单 · %s 热栏 · %s/%s 保存/读取"
-
 msgid "Use Tool / Item"
 msgstr "使用工具 / 物品"
 
@@ -2153,3 +2147,24 @@ msgstr "拿着物品时按 {give_gift} 把它送出去。"
 
 msgid "Press {open_menu} to open your bag."
 msgstr "按 {open_menu} 打开背包。"
+
+msgid "interact/reel"
+msgstr "互动/收线"
+
+msgid "tool/item"
+msgstr "工具/物品"
+
+msgid "gift"
+msgstr "送礼"
+
+msgid "pack"
+msgstr "收起建筑"
+
+msgid "menu"
+msgstr "菜单"
+
+msgid "hotbar"
+msgstr "热栏"
+
+msgid "save/load"
+msgstr "存档/读档"

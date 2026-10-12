@@ -28,7 +28,7 @@ func _rebuild() -> void:
 	for upgrade: ToolUpgradeData in UpgradeState.get_all_upgrades():
 		if upgrade == null:
 			continue
-		var button := Button.new()
+		var button := MenuLayer.list_button()
 		button.text = "%s — %s" % [tr(upgrade.display_name), UpgradeState.get_requirement_text(upgrade)]
 		button.disabled = not UpgradeState.can_upgrade(upgrade)
 		button.pressed.connect(_upgrade.bind(upgrade.id))

@@ -60,12 +60,14 @@ static func find_reference_problems(registry: ContentRegistry, what: String, cue
 		return PackedStringArray(["%s names audio cue '%s', which is no %s" % [what, cue_id, "music" if wanted == CueType.MUSIC else "sound"]])
 	return PackedStringArray()
 
-## Problems with the cues the game's definition names: each event's
-## (`GameDefinition.event_cues`) and each menu sound's must be a sound of the
-## content.
+## Problems with the cues the game's definition names: each event of
+## `GameDefinition.event_cues` must be a signal of an autoload, and its cue and
+## each menu sound's a sound of the content.
 static func find_definition_problems(definition: GameDefinition, registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	for event: StringName in definition.event_cues:
+		if GameEvent.find_source(event) == null:
+			problems.append("the event cues name '%s', which is no signal of an autoload (<Autoload>.<signal>)" % event)
 		problems.append_array(find_reference_problems(registry, "the cue of event %s" % event, definition.event_cues[event], CueType.SFX))
 	var menu_cues := {
 		"menu focus": definition.menu_focus_cue_id,

@@ -44,7 +44,7 @@ func generate_contract_for_day(day: int) -> Dictionary:
 	if candidates.is_empty():
 		return {}
 	var rng := GameRandom.stream("daily_contract:%d" % maxi(day, 1))
-	var base: Dictionary = candidates[rng.randi_range(0, candidates.size() - 1)].duplicate(true)
+	var base: Dictionary = (rng.pick(candidates) as Dictionary).duplicate(true)
 	base["generated_day"] = maxi(day, 1)
 	var duration_days := maxi(int(base.get("duration_days", 2)), 1)
 	base.erase("duration_days")

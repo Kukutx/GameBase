@@ -39,6 +39,7 @@ The check also keeps every entry in the right catalog. An entry has to translate
 
 - in `.gd` scripts: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional, and the singular and plural literals of `tr_n("...", "...", count)`;
 - in `.gd` scripts: the default of an exported text property (`@export var display_name := "..."`) or text list (`@export var season_names := PackedStringArray([...])`) and a literal assigned to a text property from code (`interactable.prompt_text = "..."`);
+- in `.gd` scripts, `.tscn` scenes and `.tres` resources: the texts of a text dictionary (`hints`, what a `ControlsLine` says each control does), as the default of its export (`@export var hints: Dictionary[StringName, String] = {&"jump": "Jump"}`) or as its value in a scene or resource;
 - in `.tscn` scenes: the properties `text`, `display_name`, `station_name`, `idle_text`, `dialog_text`, `prompt_text`, `title`, `ok_button_text`, `cancel_button_text`, `placeholder_text`, `tooltip_text`, `pending_text` and `completed_text`;
 - in `.tres` resources, such as a game's data and the controls and calendar of its `game_definition.tres`: `display_name`, `short_name`, `title`, `description`, `subject`, `body`, `role`, `activity` and a control's `group`, and each name in `season_names`;
 - authored lines and responses in the game's `.dialogue` files.

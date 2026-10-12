@@ -94,6 +94,14 @@ const DATA_LIST_RE = new RegExp(`^(?:${TEXT_LISTS.join("|")}) = PackedStringArra
 const EXPORT_LIST_DEFAULT_RE = new RegExp(`^@export var (?:${TEXT_LISTS.join("|")})\\b[^=\\n]*=\\s*PackedStringArray\\(\\[(.*)\\]\\)`, "gm");
 const STRING_RE = /"((?:[^"\\]|\\.)*)"/g;
 
+// Player-facing dictionaries of text, id -> text, such as what each control on
+// the HUD does (`ControlsLine.hints`): in scenes and resources, and the
+// exported defaults of the scripts that declare them.
+const TEXT_DICTIONARIES = ["hints"];
+const DATA_DICTIONARY_RE = new RegExp(`^(?:${TEXT_DICTIONARIES.join("|")}) = Dictionary\\[StringName, String\\]\\(\\{([\\s\\S]*?)\\}\\)$`, "gm");
+const EXPORT_DICTIONARY_DEFAULT_RE = new RegExp(`^@export var (?:${TEXT_DICTIONARIES.join("|")})\\b[^=\\n]*=\\s*\\{([\\s\\S]*?)\\}`, "gm");
+const DICTIONARY_VALUE_RE = /&"(?:[^"\\]|\\.)*":\s*"((?:[^"\\]|\\.)*)"/g;
+
 const SCENE_PROPERTIES = [
   "text",
   "display_name",
@@ -211,6 +219,15 @@ function collectDialogueKeys(layer) {
   return keys;
 }
 
+// The raw texts of the dictionaries `re` finds in `text` (see TEXT_DICTIONARIES).
+function dictionaryTexts(text, re) {
+  const texts = [];
+  for (const match of text.matchAll(re)) {
+    for (const [, raw] of match[1].matchAll(DICTIONARY_VALUE_RE)) texts.push(raw);
+  }
+  return texts;
+}
+
 // Every string a layer holds, wherever it sits: the literals of its scripts
 // (not StringNames, node paths or comments), the property values of its scenes
 // and resources (not resource paths), and its dialogue lines. Text that travels
@@ -238,9 +255,11 @@ function layerLiterals(layer) {
     }
   }
   for (const file of [...walk(layer.root, ".tscn"), ...walk(layer.root, ".tres")]) {
-    for (const [, value] of readText(file).matchAll(/^[\w/]+ = (.+)$/gm)) {
+    const text = readText(file);
+    for (const [, value] of text.matchAll(/^[\w/]+ = (.+)$/gm)) {
       for (const [, raw] of value.matchAll(/(?<![&^])"((?:[^"\\]|\\.)*)"/g)) add(raw);
     }
+    dictionaryTexts(text, DATA_DICTIONARY_RE).forEach(add);
   }
   return literals;
 }
@@ -269,6 +288,7 @@ function collectNonDialogueKeys(layer) {
     for (const match of text.matchAll(EXPORT_LIST_DEFAULT_RE)) {
       for (const [, raw] of match[1].matchAll(STRING_RE)) add(raw);
     }
+    dictionaryTexts(text, EXPORT_DICTIONARY_DEFAULT_RE).forEach(add);
     for (const match of text.matchAll(ASSIGNED_TEXT_RE)) {
       // A layout of already translated parts ("%s\n%s") carries no words of its own.
       if (/\p{L}/u.test(match[1].replace(/%[-+0-9.]*[a-z]|\\[a-z]/g, ""))) {
@@ -277,15 +297,18 @@ function collectNonDialogueKeys(layer) {
     }
   }
   for (const file of walk(layer.root, ".tscn")) {
-    for (const match of readText(file).matchAll(SCENE_RE)) {
+    const text = readText(file);
+    for (const match of text.matchAll(SCENE_RE)) {
       add(match[1]);
     }
+    dictionaryTexts(text, DATA_DICTIONARY_RE).forEach(add);
   }
   for (const file of walk(layer.root, ".tres")) {
     const text = readText(file);
     for (const match of text.matchAll(DATA_RE)) {
       add(match[1]);
     }
+    dictionaryTexts(text, DATA_DICTIONARY_RE).forEach(add);
     for (const match of text.matchAll(DATA_LIST_RE)) {
       for (const [, raw] of match[1].matchAll(STRING_RE)) add(raw);
     }

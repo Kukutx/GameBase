@@ -4,7 +4,7 @@ path: "gamebase/core/test/**, gamebase/modules/*/test/**, games/*/test/**"
 
 # Testing and verification (`gamebase/core/test/**`, `gamebase/modules/*/test/**`, `games/*/test/**`)
 
-`node tools/validate.js` is the single local entry point (`--game <id>` limits it to one game); `docs/RELEASE.md` lists what it and `node tools/release_readiness.js` run. This page covers how tests are written here and how a result is reported. The engine behaviour described was confirmed on Godot 4.7.2.
+`node tools/validate.js` is the single local entry point (`--game <id>` limits it to one game, and `--test <script>` with an optional `--unit <name>` runs one GUT script or some of its tests while a change is under way); `docs/RELEASE.md` lists what it and `node tools/release_readiness.js` run. This page covers how tests are written here and how a result is reported. The engine behaviour described was confirmed on Godot 4.7.2.
 
 ## P0
 

@@ -2,6 +2,7 @@
 //
 //   node tools/validate.js [--game <id>]... [--no-repository] [--no-games]
 //                          [--godot-bin <godot>] [--clean-import] [--skip-import] [--skip-soak]
+//   node tools/validate.js --test <script> [--unit <name>] [--game <id>]... [--skip-import]
 //
 // Repository steps run once: agent rules, layer dependencies, code guardrails
 // (tools/check_code.js), each game's project settings against the manifests,
@@ -11,6 +12,11 @@
 // steps run for each selected game, all registered games by default: links,
 // version, import, localization, GUT, every runtime script under test/runtime/
 // (the *_soak.gd ones are skipped by --skip-soak) and a boot of the main scene.
+//
+// --test runs one GUT script (test_save_slots, or a res:// path where a
+// module and the game both have a script of that name) and nothing else,
+// after the links and the import of each selected game that runs it; --unit
+// keeps only its tests whose names contain <name>.
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
@@ -112,6 +118,70 @@ async function validateScaffold(godot) {
   }
 }
 
+// The GUT scripts in the test directories of `game`'s .gutconfig.json that
+// `script` names, as res:// paths: those of that file name (test_mail.gd,
+// which a module and a game may both have) or, for a res:// path, that one.
+function findTestScripts(game, script) {
+  const config = JSON.parse(fs.readFileSync(path.join(game.root, ".gutconfig.json"), "utf8"));
+  const roots = (config.dirs || []).map((dir) => (dir.endsWith("/") ? dir : `${dir}/`));
+  const onDisk = (res) => path.join(game.root, res.replace(/^res:\/\//, ""));
+  if (script.startsWith("res://")) {
+    const tested = roots.some((root) => script.startsWith(root) && (config.include_subdirs || !script.slice(root.length).includes("/")));
+    return tested && fs.existsSync(onDisk(script)) ? [script] : [];
+  }
+  const found = [];
+  const search = (res) => {
+    const directory = onDisk(res);
+    if (!fs.existsSync(directory)) return;
+    for (const name of fs.readdirSync(directory).sort()) {
+      if (name === script) {
+        found.push(`${res}${name}`);
+      } else if (config.include_subdirs && fs.statSync(path.join(directory, name)).isDirectory()) {
+        search(`${res}${name}/`);
+      }
+    }
+  };
+  for (const root of roots) search(root);
+  return found;
+}
+
+// Runs the GUT script `test` (a file name with or without .gd, or a res://
+// path) in each of `games` that runs it, `unit` narrowing it to the tests
+// whose names contain it. Fails when no game runs the script, when a game
+// has more than one of that name, or when a game ran none of its tests.
+async function validateTest(godot, games, { test, unit, skipImport }) {
+  const script = `${test.replace(/\.gd$/, "")}.gd`;
+  const ran = [];
+  for (const game of games) {
+    step(`${game.id}: links`);
+    linkGame(game);
+    const found = findTestScripts(game, script);
+    if (found.length === 0) {
+      console.log(`${game.id} runs no ${script}; skipped.`);
+      continue;
+    }
+    if (found.length > 1) {
+      fail(`${game.id} runs ${found.length} scripts named ${script}: ${found.join(", ")}. Name one by its res:// path.`);
+    }
+    if (!skipImport) {
+      await importProject(godot, game.root, `${game.id}: headless import`);
+    }
+    // An empty -gdir leaves out the directories the config names.
+    const args = ["--headless", "--path", game.root, "-s", "addons/gut/gut_cmdln.gd", "-gconfig=.gutconfig.json", "-gdir=", `-gtest=${found[0]}`];
+    if (unit) args.push(`-gunit_test_name=${unit}`);
+    const result = await runGodotStep(godot, `${game.id}: GUT ${found[0]}${unit ? ` (tests named *${unit}*)` : ""}`, args);
+    const count = /^Tests\s+(\d+)\s*$/m.exec(result.output.replace(/\x1b\[[0-9;]*m/g, ""));
+    if (!count || Number(count[1]) === 0) {
+      fail(`${game.id}: no test of ${found[0]}${unit ? ` named *${unit}*` : ""} ran.`);
+    }
+    ran.push(game.id);
+  }
+  if (ran.length === 0) {
+    fail(`No selected game runs ${script}.`);
+  }
+  return ran;
+}
+
 async function validateRepository(godot, version) {
   checkEngine(version);
 
@@ -170,10 +240,16 @@ async function validateGame(godot, game, options) {
   await validateProject(godot, game, { label: game.id, ...options });
 }
 
-async function validate({ godotBin, games = [], repository = true, gameSteps = true, skipImport = false, skipSoak = false, cleanImport = false } = {}) {
+async function validate({ godotBin, games = [], repository = true, gameSteps = true, skipImport = false, skipSoak = false, cleanImport = false, test = null, unit = null } = {}) {
   const godot = resolveGodotBin(godotBin);
   const version = godotVersion(godot);
   console.log(`Godot: ${version}`);
+  if (test) {
+    const ran = await validateTest(godot, resolveGames(games), { test, unit, skipImport });
+    console.log("");
+    console.log(`${test} passed: ${ran.join(", ")}.`);
+    return;
+  }
   const selected = gameSteps ? resolveGames(games) : [];
 
   if (repository) {
@@ -188,7 +264,7 @@ async function validate({ godotBin, games = [], repository = true, gameSteps = t
   console.log(`Validation passed: ${scope.join(", ")}.`);
 }
 
-module.exports = { validate, validateProject };
+module.exports = { findTestScripts, validate, validateProject };
 
 if (require.main === module) {
   main(async () => {
@@ -201,10 +277,18 @@ if (require.main === module) {
         "skip-import": { type: "boolean", default: false },
         "skip-soak": { type: "boolean", default: false },
         "clean-import": { type: "boolean", default: false },
+        test: { type: "string" },
+        unit: { type: "string" },
       },
     });
     if (values["no-repository"] && values["no-games"]) {
       fail("--no-repository and --no-games together leave nothing to validate.");
+    }
+    if (values.unit && !values.test) {
+      fail("--unit names tests of the script --test runs.");
+    }
+    if (values.test && (values["no-games"] || values["no-repository"] || values["skip-soak"] || values["clean-import"])) {
+      fail("--test runs one script of the games' unit tests and takes no other step's switch but --skip-import.");
     }
     await validate({
       godotBin: values["godot-bin"],
@@ -214,6 +298,8 @@ if (require.main === module) {
       skipImport: values["skip-import"],
       skipSoak: values["skip-soak"],
       cleanImport: values["clean-import"],
+      test: values.test || null,
+      unit: values.unit || null,
     });
   });
 }
