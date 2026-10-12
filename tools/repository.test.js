@@ -6,7 +6,7 @@ const path = require("node:path");
 const test = require("node:test");
 const { checkLocalization } = require("./check_localization");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
-const { checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
+const { checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
 const { desiredAutoloads, desiredTestDirs, moduleOrder, projectInSync, syncedGutConfig, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
@@ -83,6 +83,20 @@ test("a new game is complete and translated as it is created", () => {
     const project = gamePath(game, "project.godot");
     fs.writeFileSync(project, fs.readFileSync(project, "utf8").replace('"res://gamebase/core/i18n/core.zh_CN.po", ', ""), "utf8");
     assert.equal(quietly(() => checkLocalization(game)), 1);
+  } finally {
+    removeRecursive(out);
+  }
+});
+
+test("a new game takes its description, with a catalog entry that keeps the English text until it is translated", () => {
+  const out = tempFile("gamebase-description-test");
+  try {
+    const game = createGame({ id: "probe", name: "Probe Game", description: "A probe of the template · 试", out });
+    assert.equal(projectString(game, "application", "config/description"), "A probe of the template · 试");
+    const catalog = fs.readFileSync(gamePath(game, "game", "i18n", "ui.zh_CN.po"), "utf8");
+    assert.ok(catalog.includes('msgid "A probe of the template · 试"\nmsgstr "A probe of the template · 试"\n'));
+    assert.ok(!catalog.includes("New game on GameBase"));
+    assert.equal(quietly(() => checkLocalization(game)), 0);
   } finally {
     removeRecursive(out);
   }

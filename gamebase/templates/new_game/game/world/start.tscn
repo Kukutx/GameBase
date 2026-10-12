@@ -1,16 +1,86 @@
-[gd_scene format=3]
+[gd_scene load_steps=8 format=3]
 
-[ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="1_spawn"]
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="2_spawn"]
+[ext_resource type="PackedScene" path="res://gamebase/core/player/sleep_spot.tscn" id="3_sleep"]
+[ext_resource type="PackedScene" path="res://gamebase/core/world/scene_portal.tscn" id="4_portal"]
+
+[sub_resource type="RectangleShape2D" id="Rect_horizontal"]
+size = Vector2(380, 20)
+
+[sub_resource type="RectangleShape2D" id="Rect_vertical"]
+size = Vector2(20, 260)
 
 [node name="Start" type="Node2D"]
 
-[node name="Player" type="Node2D" parent="." groups=["player"]]
+[node name="Background" type="ColorRect" parent="."]
+offset_left = -400.0
+offset_top = -260.0
+offset_right = 400.0
+offset_bottom = 260.0
+color = Color(0.1, 0.12, 0.1, 1)
+
+[node name="Ground" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-180, -110, 180, -110, 180, 110, -180, 110)
+color = Color(0.27, 0.38, 0.24, 1)
+
+[node name="Path" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-14, -110, 14, -110, 14, 20, -14, 20)
+color = Color(0.45, 0.4, 0.3, 1)
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -120)
+shape = SubResource("Rect_horizontal")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 120)
+shape = SubResource("Rect_horizontal")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-190, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(190, 0)
+shape = SubResource("Rect_vertical")
 
 [node name="ArrivalSpawn" type="Marker2D" parent="."]
-script = ExtResource("1_spawn")
+position = Vector2(0, 40)
+script = ExtResource("2_spawn")
 spawn_id = &"arrival"
 
-[node name="Label" type="Label" parent="."]
-offset_left = 16.0
-offset_top = 16.0
-text = "New game on GameBase"
+[node name="FromLookoutSpawn" type="Marker2D" parent="."]
+position = Vector2(0, -64)
+script = ExtResource("2_spawn")
+spawn_id = &"from_lookout"
+
+[node name="Welcome" type="Label" parent="."]
+offset_left = 30.0
+offset_top = 34.0
+offset_right = 170.0
+offset_bottom = 74.0
+theme_override_font_sizes/font_size = 9
+text = "Welcome! The path north leads to the lookout."
+autowrap_mode = 3
+
+[node name="Bed" parent="." instance=ExtResource("3_sleep")]
+position = Vector2(-110, -40)
+
+[node name="ToLookout" parent="." instance=ExtResource("4_portal")]
+position = Vector2(0, -100)
+target_location_id = &"lookout"
+target_spawn_id = &"from_start"
+
+[node name="Label" type="Label" parent="ToLookout"]
+offset_left = 26.0
+offset_top = -8.0
+offset_right = 126.0
+offset_bottom = 6.0
+theme_override_font_sizes/font_size = 9
+text = "To the lookout"
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(0, 40)

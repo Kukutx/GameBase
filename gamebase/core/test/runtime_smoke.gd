@@ -44,6 +44,15 @@ func _arrive(scene_path: String, frames := 300) -> bool:
 	_fail("Did not arrive at %s" % scene_path)
 	return false
 
+## Puts the player on `portal` (a `ScenePortal`) once portals take the
+## player again after an arrival, so the player walks through it.
+func _walk_into(portal: Node2D) -> void:
+	var travel := root.get_node("WorldTravel")
+	var deadline := Time.get_ticks_msec() + 3000
+	while not bool(travel.call("can_enter_portal")) and Time.get_ticks_msec() < deadline:
+		await process_frame
+	(get_first_node_in_group("player") as Node2D).global_position = portal.global_position
+
 ## Uses `interactable` as the player does.
 func _use(interactable: Node) -> void:
 	interactable.call("interact", get_first_node_in_group("player"))
