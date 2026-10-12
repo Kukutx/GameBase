@@ -27,6 +27,7 @@ func test_settings_round_trip() -> void:
 	source.autosave = false
 	source.weather_effects = false
 	source.reduced_motion = true
+	source.text_speed = GameSettingsService.TextSpeed.FAST
 	source.locale = "zh_CN"
 	source.save_settings()
 
@@ -42,7 +43,28 @@ func test_settings_round_trip() -> void:
 	assert_false(restored.autosave)
 	assert_false(restored.weather_effects)
 	assert_true(restored.reduced_motion)
+	assert_eq(restored.text_speed, GameSettingsService.TextSpeed.FAST)
 	assert_eq(restored.locale, "zh_CN")
+
+func test_text_speed_sets_how_long_each_character_shows() -> void:
+	var settings := GameSettingsService.new()
+	settings.settings_path = TEST_PATH
+	add_child_autofree(settings)
+	assert_eq(settings.text_speed, GameSettingsService.TextSpeed.NORMAL, "the default")
+	var seconds := settings.get_seconds_per_character()
+	settings.set_text_speed(GameSettingsService.TextSpeed.SLOW)
+	assert_gt(settings.get_seconds_per_character(), seconds)
+	settings.set_text_speed(GameSettingsService.TextSpeed.FAST)
+	assert_lt(settings.get_seconds_per_character(), seconds)
+	assert_gt(settings.get_seconds_per_character(), 0.0)
+	settings.set_text_speed(GameSettingsService.TextSpeed.INSTANT)
+	assert_eq(settings.get_seconds_per_character(), 0.0, "a whole line at once")
+
+	var file := FileAccess.open(TEST_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify({"settings_version": GameSettingsService.SETTINGS_VERSION, "gameplay": {"text_speed": "warp"}}))
+	file.close()
+	settings.load_settings()
+	assert_eq(settings.text_speed, GameSettingsService.TextSpeed.INSTANT, "an unknown speed keeps the current one")
 
 func test_key_bindings_round_trip_and_apply_to_input_map() -> void:
 	var source := _settings_with_controls([])
@@ -159,11 +181,11 @@ func test_core_controls_follow_the_game_and_a_game_control_replaces_one() -> voi
 	save.key = KEY_F5
 	var controls: Array[ControlAction] = [jump, save]
 	var actions: Array[StringName] = []
-	for control: ControlAction in GameSettingsService.resolve_controls(controls):
+	for control: ControlAction in GameControls.resolve(controls):
 		actions.append(control.action)
 	var expected: Array[StringName] = [&"jump", &"quick_save", &"move_up", &"move_down", &"move_left", &"move_right", &"interact", &"quick_load"]
 	assert_eq(actions, expected)
-	assert_eq(GameSettingsService.find_control_problems(controls), PackedStringArray())
+	assert_eq(GameControls.find_problems(controls), PackedStringArray())
 
 func test_control_problems_name_the_control() -> void:
 	var nameless := ControlAction.new()
@@ -185,7 +207,7 @@ func test_control_problems_name_the_control() -> void:
 	second.key = KEY_Z
 	second.secondary_key = KEY_K
 	var controls: Array[ControlAction] = [nameless, keyless, clash, unbound, clash, second, null]
-	var problems := GameSettingsService.find_control_problems(controls)
+	var problems := GameControls.find_problems(controls)
 	for expected: String in [
 		"GameDefinition.controls has an entry that is not a ControlAction",
 		"rebindable control 'dash' has no display name",

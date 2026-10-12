@@ -93,10 +93,12 @@ func test_a_conversation_holds_the_controls_until_its_dialogue_ends_or_its_ballo
 	add_child_autofree(balloon)
 	service.call("_hold_controls", balloon, dialogue)
 	assert_true(InputLock.is_held(GameConversationService.DIALOGUE_LOCK))
+	assert_true(get_tree().paused, "the world waits while the player reads")
 	service.call("_on_dialogue_ended", _dialogue())
 	assert_true(InputLock.is_held(GameConversationService.DIALOGUE_LOCK), "another dialogue's end is not this one's")
 	service.call("_on_dialogue_ended", dialogue)
 	assert_false(InputLock.is_held(GameConversationService.DIALOGUE_LOCK), "its end gives the controls back")
+	assert_false(get_tree().paused)
 
 	var next_balloon := Node.new()
 	add_child(next_balloon)

@@ -192,6 +192,21 @@ msgstr "垂直同步"
 msgid "Language"
 msgstr "语言"
 
+msgid "Text Speed"
+msgstr "文字速度"
+
+msgid "Slow"
+msgstr "慢"
+
+msgid "Normal"
+msgstr "中"
+
+msgid "Fast"
+msgstr "快"
+
+msgid "Instant"
+msgstr "立即"
+
 msgid "Controls..."
 msgstr "按键设置..."
 

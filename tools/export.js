@@ -35,6 +35,7 @@ const LICENSE_FILES = [
   "GODOT_LICENSE.txt",
   "GODOT_COPYRIGHT.txt",
   "DIALOGUE_MANAGER_LICENSE.txt",
+  "NOTO_SANS_SC_LICENSE.txt",
   "GAMEBASE_LICENSE.txt",
   "GODOT_VERSION.txt",
 ];
@@ -45,7 +46,7 @@ async function prepareDriftLegalBundle(engineSemVer) {
   const temporaryRoot = rootPath(".dev", `export-legal-${engineSemVer}`);
   removeRecursive(temporaryRoot);
   fs.mkdirSync(temporaryRoot, { recursive: true });
-  for (const name of ["GAMEBASE_LICENSE.txt", "DIALOGUE_MANAGER_LICENSE.txt"]) {
+  for (const name of ["GAMEBASE_LICENSE.txt", "DIALOGUE_MANAGER_LICENSE.txt", "NOTO_SANS_SC_LICENSE.txt"]) {
     fs.copyFileSync(rootPath("licenses", name), path.join(temporaryRoot, name));
   }
   fs.writeFileSync(path.join(temporaryRoot, "GODOT_VERSION.txt"), `${engineSemVer}\n`, "utf8");

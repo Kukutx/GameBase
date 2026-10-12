@@ -350,8 +350,10 @@ func get_line(resource: DialogueResource, key: String, extra_game_states: Array)
 			data.id = key
 
 	# Set up a line object.
-	data.resource = resource
-	var line: DialogueLine = await create_dialogue_line(data, extra_game_states)
+	# GameBase fix: hand the resource over on a copy of the line data. Setting it
+	# on `data`, which is the resource's own `lines` entry, made every dialogue
+	# that ran hold itself and never be freed.
+	var line: DialogueLine = await create_dialogue_line(data.merged({ resource = resource }, true), extra_game_states)
 
 	# If the jump point somehow has no content then just end.
 	if not line: return null

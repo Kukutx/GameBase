@@ -155,7 +155,7 @@ func index() -> PackedStringArray:
 ## Checks the indexed content (see the class description). Returns the
 ## problems and reports nothing itself.
 func find_problems() -> PackedStringArray:
-	var problems := GameSettingsService.find_control_problems(GameSettingsService.game_controls())
+	var problems := GameControls.find_problems(GameControls.of_game())
 	problems.append_array(GameWeatherSystem.find_problems(GameDefinition.current(), self))
 	problems.append_array(GameDefinition.current().find_settings_problems(self, _settings_kinds))
 	problems.append_array(InheritanceRule.find_list_problems(GameDefinition.current().inheritance, self))

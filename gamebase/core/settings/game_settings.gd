@@ -1,8 +1,9 @@
 class_name GameSettingsService
 extends Node
 
-## The player's settings: the volumes, the display, autosave, accessibility, the
-## language and the key and gamepad bindings of the controls (`ControlAction`).
+## The player's settings: the volumes, the display, autosave, how fast text
+## types out, accessibility, the language and the key and gamepad bindings of
+## the controls (`ControlAction`).
 ## It applies them to the audio buses, the window, the translation server and
 ## the input map, and writes them to `settings_path` (JSON) after every change.
 ##
@@ -12,6 +13,14 @@ extends Node
 ## control the player cannot rebind) is refused. `changed` fires on any change,
 ## `controls_changed` when a binding changes and `locale_changed` when the
 ## language does.
+##
+## It also makes the font the core ships (`FONT_PATH`) the font of the engine's
+## default theme (`use_font()`), the one every text shows in unless the game's
+## theme names another: Latin, Chinese punctuation, the characters of GB 2312
+## and those the repository's text uses (`tools/subset_font.js`), since a web
+## build has no system fonts to fall back on. It is loaded when the game starts
+## rather than named by a theme, which the engine reads before a fresh checkout
+## has imported the font.
 
 signal changed
 signal controls_changed
@@ -42,18 +51,16 @@ const LOCALE_NAMES := {
 	"zh_CN": "简体中文",
 	"zh_TW": "繁體中文",
 }
-## The controls the core's own systems read, as `ControlAction` paths: the
-## moves a `TopDownPlayer` walks with, interacting and the quick save and load.
-## A game lists them in `GameDefinition.controls` only to place or replace them.
-const CORE_CONTROLS: Array[String] = [
-	"res://gamebase/core/input/controls/move_up.tres",
-	"res://gamebase/core/input/controls/move_down.tres",
-	"res://gamebase/core/input/controls/move_left.tres",
-	"res://gamebase/core/input/controls/move_right.tres",
-	"res://gamebase/core/input/controls/interact.tres",
-	"res://gamebase/core/input/controls/quick_save.tres",
-	"res://gamebase/core/input/controls/quick_load.tres",
-]
+
+## How fast a dialogue types its lines out (`get_seconds_per_character()`).
+enum TextSpeed { SLOW, NORMAL, FAST, INSTANT }
+## Each text speed's name, as the settings file holds it and the menu shows it.
+const TEXT_SPEED_NAMES: Array[String] = ["Slow", "Normal", "Fast", "Instant"]
+# Characters a second of each text speed; 0 shows a line at once.
+const _CHARACTERS_PER_SECOND: Array[float] = [25.0, 50.0, 100.0, 0.0]
+
+## The font every text falls back to (`ThemeDB.fallback_font`).
+const FONT_PATH := "res://gamebase/core/ui/fonts/noto_sans_sc.woff2"
 
 ## The buses `GameAudio` plays on, each sending to Master. A game's bus
 ## layout may add effects to them; the core adds the ones it lacks.
@@ -71,6 +78,7 @@ var integer_scaling: bool
 var autosave: bool
 ## Whether the pause menu opens when the game window loses focus.
 var pause_on_focus_loss: bool
+var text_speed: TextSpeed
 var weather_effects: bool
 var reduced_motion: bool
 var locale := SOURCE_LOCALE
@@ -83,69 +91,6 @@ var _controls: Array[ControlAction] = []
 ## action (String) -> ControlAction
 var _control_by_action: Dictionary = {}
 
-## The running game's `GameDefinition.controls`; an entry that is not a
-## `ControlAction` becomes null, which `find_control_problems()` reports.
-static func game_controls() -> Array[ControlAction]:
-	var result: Array[ControlAction] = []
-	for entry: Resource in GameDefinition.current().controls:
-		result.append(entry as ControlAction)
-	return result
-
-## The game's controls followed by the core's; a game control replaces the
-## core's control of the same action.
-static func resolve_controls(controls: Array[ControlAction]) -> Array[ControlAction]:
-	var result: Array[ControlAction] = []
-	var listed: Dictionary = {}
-	for control: ControlAction in controls:
-		if control != null:
-			result.append(control)
-			listed[control.action] = true
-	for path: String in CORE_CONTROLS:
-		var control := load(path) as ControlAction
-		if not listed.has(control.action):
-			result.append(control)
-	return result
-
-## What is wrong with a game's controls once the core's are added.
-static func find_control_problems(controls: Array[ControlAction]) -> PackedStringArray:
-	var problems := PackedStringArray()
-	if controls.has(null):
-		problems.append("GameDefinition.controls has an entry that is not a ControlAction")
-	var actions: Dictionary = {}
-	var key_owners: Dictionary = {}
-	var button_owners: Dictionary = {}
-	for control: ControlAction in resolve_controls(controls):
-		var action := String(control.action)
-		if action.is_empty():
-			problems.append("a control has no action")
-			continue
-		if actions.has(action):
-			problems.append("control '%s' is listed twice" % action)
-			continue
-		actions[action] = true
-		var bound := control.key != KEY_NONE or control.secondary_key != KEY_NONE
-		if not bound and control.gamepad_button == JOY_BUTTON_INVALID and control.gamepad_axis == JOY_AXIS_INVALID:
-			problems.append("control '%s' has no key, button or axis" % action)
-		for default_key: Key in [control.key, control.secondary_key]:
-			if default_key == KEY_NONE or key_owners.get(default_key, "") == action:
-				continue
-			if key_owners.has(default_key):
-				problems.append("controls '%s' and '%s' share the default key %s" % [key_owners[default_key], action, OS.get_keycode_string(default_key)])
-			else:
-				key_owners[default_key] = action
-		if control.gamepad_button != JOY_BUTTON_INVALID:
-			if button_owners.has(control.gamepad_button):
-				problems.append("controls '%s' and '%s' share the default gamepad button %s" % [button_owners[control.gamepad_button], action, InputPromptService.gamepad_button_name(control.gamepad_button)])
-			else:
-				button_owners[control.gamepad_button] = action
-		if not control.rebindable:
-			continue
-		if control.display_name.is_empty():
-			problems.append("rebindable control '%s' has no display name" % action)
-		if control.key == KEY_NONE:
-			problems.append("rebindable control '%s' has no default key" % action)
-	return problems
-
 ## Adds each of `AUDIO_BUSES` the project's bus layout lacks, sending to Master.
 static func ensure_audio_buses() -> void:
 	for bus_name: StringName in AUDIO_BUSES:
@@ -156,9 +101,26 @@ static func ensure_audio_buses() -> void:
 		AudioServer.set_bus_name(index, bus_name)
 		AudioServer.set_bus_send(index, &"Master")
 
+## Makes `font` what text shows in unless a theme names another: the default
+## theme's font, the base of the bold and italic fonts it makes of that, and
+## the font of last resort (`ThemeDB.fallback_font`).
+static func use_font(font: Font) -> void:
+	var theme := ThemeDB.get_default_theme()
+	var replaced := theme.default_font
+	theme.default_font = font
+	for type: StringName in theme.get_font_type_list():
+		for font_name: StringName in theme.get_font_list(type):
+			var variation := theme.get_font(font_name, type) as FontVariation
+			if variation != null and variation.base_font == replaced:
+				var based := variation.duplicate() as FontVariation
+				based.base_font = font
+				theme.set_font(font_name, type, based)
+	ThemeDB.fallback_font = font
+
 func _init() -> void:
+	use_font(load(FONT_PATH) as Font)
 	_reset_values()
-	for control: ControlAction in resolve_controls(game_controls()):
+	for control: ControlAction in GameControls.resolve(GameControls.of_game()):
 		_controls.append(control)
 		_control_by_action[String(control.action)] = control
 
@@ -207,6 +169,16 @@ func set_autosave(value: bool) -> void:
 func set_pause_on_focus_loss(value: bool) -> void:
 	pause_on_focus_loss = value
 	_save_and_emit()
+
+func set_text_speed(value: TextSpeed) -> void:
+	text_speed = clampi(value, 0, TextSpeed.size() - 1) as TextSpeed
+	_save_and_emit()
+
+## How long a dialogue shows each character before the next at the player's
+## text speed; 0 shows a whole line at once.
+func get_seconds_per_character() -> float:
+	var per_second := _CHARACTERS_PER_SECOND[text_speed]
+	return 1.0 / per_second if per_second > 0.0 else 0.0
 
 func set_weather_effects(value: bool) -> void:
 	weather_effects = value
@@ -361,7 +333,7 @@ func to_data() -> Dictionary:
 		"settings_version": SETTINGS_VERSION,
 		"audio": {"master": master_volume, "music": music_volume, "sounds": sounds_volume},
 		"display": {"fullscreen": fullscreen, "vsync": vsync, "integer_scaling": integer_scaling},
-		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss},
+		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss, "text_speed": TEXT_SPEED_NAMES[text_speed].to_lower()},
 		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
 		"localization": {"locale": locale},
 		"controls": controls,
@@ -399,6 +371,10 @@ func load_settings() -> void:
 	integer_scaling = _read_bool(data, "display", "integer_scaling", integer_scaling)
 	autosave = _read_bool(data, "gameplay", "autosave", autosave)
 	pause_on_focus_loss = _read_bool(data, "gameplay", "pause_on_focus_loss", pause_on_focus_loss)
+	var speed: Variant = _read(data, "gameplay", "text_speed")
+	for index: int in TEXT_SPEED_NAMES.size():
+		if speed is String and speed == TEXT_SPEED_NAMES[index].to_lower():
+			text_speed = index as TextSpeed
 	weather_effects = _read_bool(data, "accessibility", "weather_effects", weather_effects)
 	reduced_motion = _read_bool(data, "accessibility", "reduced_motion", reduced_motion)
 	var loaded_locale: Variant = _read(data, "localization", "locale")
@@ -458,6 +434,7 @@ func _reset_values() -> void:
 	integer_scaling = false
 	autosave = true
 	pause_on_focus_loss = true
+	text_speed = TextSpeed.NORMAL
 	weather_effects = true
 	reduced_motion = false
 

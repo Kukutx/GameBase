@@ -57,7 +57,7 @@ static func current() -> GameDefinition:
 ## (`Playthrough`, `InheritanceRule`); empty carries nothing.
 @export var inheritance: Array[InheritanceRule] = []
 ## The game's input controls, `ControlAction` resources in the order the
-## settings list them. The core's own controls (`GameSettingsService.CORE_CONTROLS`)
+## settings list them. The core's own controls (`GameControls.CORE`)
 ## follow, except one whose action the game lists: the game's control replaces
 ## it. Typed `Resource` rather than `ControlAction`: on Godot 4.7.2 the typed
 ## array makes GDScript's shutdown skip scripts (a loop upstream has since
