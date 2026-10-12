@@ -129,7 +129,7 @@ func test_a_game_without_weather_shows_no_weather_toggle() -> void:
 	menu.show_page(SettingsMenu.Page.ACCESSIBILITY)
 	assert_eq(_focus(), menu.reduced_motion_check)
 	menu.close()
-	definition.weather_odds.append(WeatherOdds.new())
+	definition.clear_weather_id = &"fixture_clear"
 	var with_weather: SettingsMenu = ContentFixture.with_definition(definition, _settings)
 	assert_true(with_weather.weather_effects_check.visible)
 

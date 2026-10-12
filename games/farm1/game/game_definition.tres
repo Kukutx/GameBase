@@ -56,26 +56,34 @@ gamepad_axis = 5
 [sub_resource type="Resource" id="Weather_spring"]
 script = ExtResource("8_weather_odds")
 season = "Spring"
-rain = 0.25
-storm = 0.05
+chances = Dictionary[StringName, float]({
+&"storm": 0.05,
+&"rain": 0.25
+})
 
 [sub_resource type="Resource" id="Weather_summer"]
 script = ExtResource("8_weather_odds")
 season = "Summer"
-rain = 0.12
-storm = 0.04
+chances = Dictionary[StringName, float]({
+&"storm": 0.04,
+&"rain": 0.12
+})
 
 [sub_resource type="Resource" id="Weather_autumn"]
 script = ExtResource("8_weather_odds")
 season = "Autumn"
-rain = 0.27
-storm = 0.07
+chances = Dictionary[StringName, float]({
+&"storm": 0.07,
+&"rain": 0.27
+})
 
 [sub_resource type="Resource" id="Weather_winter"]
 script = ExtResource("8_weather_odds")
 season = "Winter"
-rain = 0.1
-storm = 0.02
+chances = Dictionary[StringName, float]({
+&"storm": 0.02,
+&"rain": 0.1
+})
 
 [sub_resource type="Resource" id="Calendar"]
 script = ExtResource("9_calendar")
@@ -100,6 +108,7 @@ start_day = 1
 start_minute_of_day = 480
 world_seed = 93017
 weather_odds = Array[ExtResource("8_weather_odds")]([SubResource("Weather_spring"), SubResource("Weather_summer"), SubResource("Weather_autumn"), SubResource("Weather_winter")])
+clear_weather_id = &"clear"
 start_items = Dictionary[StringName, int]({
 &"hoe": 1,
 &"watering_can": 1,

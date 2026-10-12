@@ -2102,3 +2102,12 @@ msgstr "老练农夫"
 
 msgid "Harvest 100 crops, counting every save."
 msgstr "累计收获 100 份作物（所有存档合计）。"
+
+msgid "Clear"
+msgstr "晴朗"
+
+msgid "Rain"
+msgstr "下雨"
+
+msgid "Storm"
+msgstr "暴风雨"

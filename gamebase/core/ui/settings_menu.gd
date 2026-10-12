@@ -67,7 +67,7 @@ func _ready() -> void:
 	weather_effects_check.toggled.connect(_on_weather_effects_toggled)
 	reduced_motion_check.toggled.connect(_on_reduced_motion_toggled)
 	# A game without weather has no weather effects to turn off.
-	weather_effects_check.visible = not GameDefinition.current().weather_odds.is_empty()
+	weather_effects_check.visible = GameWeatherSystem.has_weather()
 	support_export.pressed.connect(_export_support_bundle)
 	support_open.pressed.connect(_open_support_folder)
 	var support_available := SupportBundle.is_supported()

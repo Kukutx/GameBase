@@ -239,7 +239,7 @@ func _fish_has_contract_window(fish: FishData, start_day: int, duration_days: in
 	var location_id: StringName = fish.locations[0] if not fish.locations.is_empty() else &""
 	for offset in range(maxi(duration_days, 0) + 1):
 		var candidate_day: int = maxi(start_day, 1) + offset
-		var weather_name: String = WeatherState.get_weather_name(WeatherState.get_weather_for_day(candidate_day))
+		var weather_id := WeatherState.get_weather_id(candidate_day)
 		var minute: int = fish.start_minute
 		if candidate_day == WorldClock.day:
 			var now: int = WorldClock.minute_of_day
@@ -247,7 +247,7 @@ func _fish_has_contract_window(fish: FishData, start_day: int, duration_days: in
 				minute = maxi(now, fish.start_minute)
 			else:
 				minute = now if now < fish.end_minute or now >= fish.start_minute else fish.start_minute
-		if fish.is_available(location_id, candidate_day, minute, weather_name):
+		if fish.is_available(location_id, candidate_day, minute, weather_id):
 			return true
 	return false
 

@@ -39,7 +39,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 ## WeatherState (core)
 
-- `WeatherState.weather_changed(day: int, weather: Weather)`
+- `WeatherState.weather_changed(day: int, weather_id: StringName)`
 
 ## PlayerState (core)
 

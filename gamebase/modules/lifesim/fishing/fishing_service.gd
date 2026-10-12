@@ -85,10 +85,10 @@ func reel_in_with_minigame() -> bool:
 func get_available_fish(location_id: StringName, day: int = -1, minute_of_day: int = -1) -> Array[FishData]:
 	var resolved_day := WorldClock.day if day < 1 else day
 	var resolved_minute := WorldClock.minute_of_day if minute_of_day < 0 else minute_of_day
-	var weather_name := WeatherState.get_weather_name(WeatherState.get_weather_for_day(resolved_day))
+	var weather_id := WeatherState.get_weather_id(resolved_day)
 	var result: Array[FishData] = []
 	for fish: FishData in FishData.find_all():
-		if fish != null and fish.is_available(location_id, resolved_day, resolved_minute, weather_name):
+		if fish != null and fish.is_available(location_id, resolved_day, resolved_minute, weather_id):
 			result.append(fish)
 	return result
 

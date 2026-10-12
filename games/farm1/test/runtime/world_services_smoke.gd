@@ -40,11 +40,11 @@ func _run() -> void:
 	# world seed, even when the previous session was already on Day 1.
 	world_clock.call("set_time", 1, 8 * 60)
 	game_random.call("set_seed", 93017)
-	var default_day_one_weather := int(weather_state.call("get_weather_for_day", 1))
+	var default_day_one_weather := StringName(weather_state.call("get_weather_id", 1))
 	var alternate_seed := -1
 	for candidate_seed in range(1, 2048):
 		game_random.call("set_seed", candidate_seed)
-		if int(weather_state.get("current_weather")) != default_day_one_weather:
+		if StringName(weather_state.call("get_weather_id")) != default_day_one_weather:
 			alternate_seed = candidate_seed
 			break
 	_check(alternate_seed > 0, "Could not construct alternate Day 1 weather seed")
@@ -56,7 +56,7 @@ func _run() -> void:
 	await scene_changed
 	await process_frame
 	_check(int(game_random.get("world_seed")) == 93017, "New game did not restore the game's world seed")
-	_check(int(weather_state.get("current_weather")) == int(weather_state.call("get_weather_for_day", 1)), "New game kept stale Day 1 weather from the previous seed")
+	_check(StringName(weather_state.call("get_weather_id")) == StringName(weather_state.call("get_weather_id", 1)), "New game kept stale Day 1 weather from the previous seed")
 
 	var player := get_first_node_in_group("player") as Node2D
 	_check(player != null, "Player missing in dev world")
@@ -585,7 +585,7 @@ func _run() -> void:
 
 	# Weather is gameplay, not just HUD text: storm visuals, NPC shelter route, and rare fish pool.
 	# A storm in a season the Storm Eel swims in.
-	var storm_day: int = _find_weather_day_after("Storm", int(world_clock.day) + 1, PackedStringArray(["Spring", "Summer", "Autumn"]))
+	var storm_day: int = _find_weather_day_after(&"storm", int(world_clock.day) + 1, PackedStringArray(["Spring", "Summer", "Autumn"]))
 	_check(storm_day > int(world_clock.day), "Could not find a deterministic future storm day")
 	world_clock.set_time(storm_day, 12 * 60)
 	await process_frame
@@ -913,13 +913,13 @@ func _clear_current_mine_floor(mine: Node) -> void:
 
 ## The first day from `start_day` with `weather_name`, in one of `seasons` when
 ## any are given, or -1.
-func _find_weather_day_after(weather_name: String, start_day: int, seasons := PackedStringArray()) -> int:
+func _find_weather_day_after(weather_id: StringName, start_day: int, seasons := PackedStringArray()) -> int:
 	var weather := root.get_node("WeatherState")
 	# Loaded rather than named: this script compiles before the autoloads exist.
 	var calendar: Resource = load("res://gamebase/core/time/game_calendar.gd").call("current")
 	for day in range(maxi(start_day, 1), maxi(start_day, 1) + 730):
 		if not seasons.is_empty() and not seasons.has(calendar.call("get_season_name", day)):
 			continue
-		if weather.get_weather_name(weather.get_weather_for_day(day)) == weather_name:
+		if StringName(weather.call("get_weather_id", day)) == weather_id:
 			return day
 	return -1

@@ -17,7 +17,7 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"DAY_OF_SEASON", _day_of_season, 1, -1, [GameRulesService.ARG_INT], Callable(), _days_within.bind(&"days_per_season", 1, "day of a season"))
 	rules.register_condition(&"WEEKDAY", _weekday, 1, -1, [GameRulesService.ARG_INT], Callable(), _days_within.bind(&"days_per_week", 0, "weekday"))
 	rules.register_condition(&"TIME_BETWEEN", _time_between, 2, 2, [GameRulesService.ARG_INT])
-	rules.register_condition(&"WEATHER", _weather, 1, -1, [GameRulesService.ARG_TEXT])
+	rules.register_condition(&"WEATHER", _weather, 1, -1, [WeatherData.KIND])
 	rules.register_condition(&"LOCATION", _location.bind(rules), 1, -1, [WorldLocationData.KIND])
 	rules.register_condition(&"REGION", _region.bind(rules), 1, -1, [RegionData.KIND])
 	rules.register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [GameRulesService.ARG_INT])
@@ -77,9 +77,9 @@ static func _time_between(args: PackedStringArray, context: Dictionary) -> bool:
 	var minute := GameRulesService.context_minute(context)
 	return minute >= int(args[0]) and minute < int(args[1])
 
-## WEATHER <name>...: the day's weather is one of the names (Clear, Rain, Storm).
+## WEATHER <weather>...: the day's weather is one of them (`WeatherData`).
 static func _weather(args: PackedStringArray, context: Dictionary) -> bool:
-	return args.has(WeatherState.get_weather_name(WeatherState.get_weather_for_day(GameRulesService.context_day(context))))
+	return args.has(String(WeatherState.get_weather_id(GameRulesService.context_day(context))))
 
 ## LOCATION <id>...: the player is in one of the locations.
 static func _location(args: PackedStringArray, context: Dictionary, rules: GameRulesService) -> bool:

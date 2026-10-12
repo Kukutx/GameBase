@@ -8,7 +8,8 @@ const KIND := &"fish"
 @export var seasons: PackedStringArray = PackedStringArray()
 @export_range(0, 1439, 1) var start_minute := 6 * 60
 @export_range(1, 1440, 1) var end_minute := 22 * 60
-@export var allowed_weather: PackedStringArray = PackedStringArray()
+## The weather (`WeatherData` ids) it bites in; any when empty.
+@export var allowed_weather: Array[StringName] = []
 @export_range(0.01, 100.0, 0.01) var catch_weight := 1.0
 @export_range(1, 10, 1) var difficulty := 1
 
@@ -22,13 +23,13 @@ static func find_all() -> Array[FishData]:
 	result.assign(ContentRegistry.active.get_entries(KIND))
 	return result
 
-func is_available(location_id: StringName, day: int, minute_of_day: int, weather_name: String) -> bool:
+func is_available(location_id: StringName, day: int, minute_of_day: int, weather_id: StringName) -> bool:
 	if not locations.is_empty() and not locations.has(location_id):
 		return false
 	var season := GameCalendar.current().get_season_name(day)
 	if not seasons.is_empty() and not seasons.has(season):
 		return false
-	if not allowed_weather.is_empty() and not allowed_weather.has(weather_name):
+	if not allowed_weather.is_empty() and not allowed_weather.has(weather_id):
 		return false
 	if start_minute <= end_minute:
 		return minute_of_day >= start_minute and minute_of_day < end_minute
@@ -50,7 +51,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	for season: String in seasons:
 		if not GameCalendar.current().has_season(season):
 			problems.append("has unknown season '%s'" % season)
-	for weather_name: String in allowed_weather:
-		if not GameWeatherSystem.WEATHER_NAMES.has(weather_name):
-			problems.append("has unknown weather '%s'" % weather_name)
+	for weather_id: StringName in allowed_weather:
+		if not registry.has_entry(WeatherData.KIND, weather_id):
+			problems.append("has unknown weather '%s'" % weather_id)
 	return problems

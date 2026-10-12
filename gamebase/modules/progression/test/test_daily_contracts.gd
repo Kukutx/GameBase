@@ -102,17 +102,18 @@ func test_seasonal_forage_contracts_do_not_cross_into_an_unavailable_season() ->
 	assert_true(twig_types.has(String(DailyContractService.SHIP)))
 
 func test_weather_locked_fish_contracts_require_a_remaining_window_inside_deadline() -> void:
+	var rare := FishData.find(&"fixture_eel_fish").allowed_weather[0]
 	var storm_day := 0
 	for seed in range(1, 500):
 		GameRandom.set_seed(seed)
 		for day in range(1, 83):
 			if GameCalendar.current().get_season_name(day) == "Winter":
 				continue
-			if WeatherState.get_weather_name(WeatherState.get_weather_for_day(day)) != "Storm":
+			if WeatherState.get_weather_id(day) != rare:
 				continue
-			if WeatherState.get_weather_name(WeatherState.get_weather_for_day(day + 1)) == "Storm":
+			if WeatherState.get_weather_id(day + 1) == rare:
 				continue
-			if WeatherState.get_weather_name(WeatherState.get_weather_for_day(day + 2)) == "Storm":
+			if WeatherState.get_weather_id(day + 2) == rare:
 				continue
 			storm_day = day
 			break
@@ -308,7 +309,8 @@ func _content() -> Array:
 	eel.seasons = PackedStringArray(["Spring", "Summer", "Autumn"])
 	eel.start_minute = 8 * 60
 	eel.end_minute = 23 * 60
-	eel.allowed_weather = PackedStringArray(["Storm"])
+	# It bites in one kind of the game's weather only.
+	eel.allowed_weather.assign([_rare_weather()])
 	eel.difficulty = 7
 	var pebble_rock := MiningNodeData.new()
 	pebble_rock.id = &"fixture_pebble_rock"
@@ -348,3 +350,11 @@ func _item(id: StringName, sell_price: int) -> ItemData:
 	item.display_name = String(id).capitalize()
 	item.sell_price = sell_price
 	return item
+
+# The first weather of the game's year that is not its clear weather.
+static func _rare_weather() -> StringName:
+	var clear := GameDefinition.current().clear_weather_id
+	for day: int in range(1, 366):
+		if WeatherState.get_weather_id(day) != clear:
+			return WeatherState.get_weather_id(day)
+	return &""

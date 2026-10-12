@@ -49,7 +49,7 @@ priority = 20
 location_id = &"starter_town"
 target_position = Vector2(0, -142)
 activity = "Shelter from the storm"
-allowed_weather = PackedStringArray("Storm")
+allowed_weather = Array[StringName]([&"storm"])
 
 [sub_resource type="Resource" id="Schedule_festival_spring_seed_fair"]
 script = ExtResource("2_entry")

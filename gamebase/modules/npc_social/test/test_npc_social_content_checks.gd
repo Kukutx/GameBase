@@ -12,7 +12,7 @@ func test_npcs_and_heart_events_report_malformed_numbers_and_schedules_without_c
 	schedule.location_id = &"fixture_meadow"
 	schedule.days_of_week = PackedInt32Array([8])
 	schedule.seasons = PackedStringArray(["Monsoon"])
-	schedule.allowed_weather = PackedStringArray(["Hail"])
+	schedule.allowed_weather.assign([&"fixture_hail"])
 	var npc := NpcProfileData.new()
 	npc.id = &"fixture_bad_npc"
 	npc.home_location_id = &"fixture_meadow"
@@ -41,7 +41,7 @@ func test_npcs_and_heart_events_report_malformed_numbers_and_schedules_without_c
 	assert_string_contains(joined, "npc 'fixture_bad_npc' dialogue threshold 2 has an invalid title")
 	assert_string_contains(joined, "npc 'fixture_bad_npc' schedule has invalid weekday 8")
 	assert_string_contains(joined, "npc 'fixture_bad_npc' schedule has unknown season 'Monsoon'")
-	assert_string_contains(joined, "npc 'fixture_bad_npc' schedule has unknown weather 'Hail'")
+	assert_string_contains(joined, "npc 'fixture_bad_npc' schedule has unknown weather 'fixture_hail'")
 	assert_string_contains(joined, "npc 'fixture_bad_npc' has unknown birthday season 'Monsoon'")
 	assert_string_contains(joined, "npc 'fixture_bad_npc' has invalid birthday day 40")
 	assert_string_contains(joined, "heart event 'fixture_bad_heart' has invalid heart requirement 99")

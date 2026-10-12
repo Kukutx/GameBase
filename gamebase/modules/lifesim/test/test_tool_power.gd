@@ -34,7 +34,7 @@ func before_each() -> void:
 	WorldState.clear()
 	WorldClock.set_time(1, 8 * 60)
 	# Rain would water the plot as soon as it is tilled.
-	while WeatherState.is_raining(1):
+	while WeatherState.is_ground_wet(1):
 		GameRandom.set_seed(GameRandom.world_seed + 1)
 
 func after_each() -> void:

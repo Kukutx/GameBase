@@ -164,7 +164,7 @@ func _calendar_text() -> String:
 		"[font_size=18][b]%s[/b][/font_size]" % tr("Calendar"),
 		"",
 		tr("Today: [b]%s %d[/b] — %s") % [tr(WorldClock.get_season_name()), WorldClock.get_day_of_season(), tr(WeatherState.get_weather_name())],
-		tr("Tomorrow: %s %d — %s") % [tr(GameCalendar.current().get_season_name(tomorrow)), GameCalendar.current().get_day_of_season(tomorrow), tr(WeatherState.get_weather_name(WeatherState.get_weather_for_day(tomorrow)))],
+		tr("Tomorrow: %s %d — %s") % [tr(GameCalendar.current().get_season_name(tomorrow)), GameCalendar.current().get_day_of_season(tomorrow), tr(WeatherState.get_weather_name(tomorrow))],
 		"",
 		"[b]%s[/b]" % tr("Upcoming events"),
 	])
@@ -351,7 +351,7 @@ func _on_day_changed(_day: int) -> void:
 	if visible and (_tab == "calendar" or _tab == "world"):
 		_show_tab(_tab)
 
-func _on_weather_changed(_day: int, _weather: GameWeatherSystem.Weather) -> void:
+func _on_weather_changed(_day: int, _weather_id: StringName) -> void:
 	if visible and _tab == "calendar":
 		_show_tab(_tab)
 

@@ -85,7 +85,7 @@ func test_empty_plot_catchup_handles_extreme_day_jump_without_per_day_iteration(
 	plot.call("_advance_to_day", 1_000_000)
 	assert_eq(plot.last_processed_day, 1_000_000)
 	assert_eq(plot.crop_id, &"")
-	assert_eq(plot.watered, plot.tilled and bool(WeatherState.is_raining(1_000_000)))
+	assert_eq(plot.watered, plot.tilled and WeatherState.is_ground_wet(1_000_000))
 
 func test_seasonal_crop_catchup_stops_simulating_after_crop_dies() -> void:
 	var plot := _add_plot()

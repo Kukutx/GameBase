@@ -59,6 +59,7 @@ func _init() -> void:
 	packs.assign(GameDefinition.current().content)
 	register_kind(WorldLocationData.KIND, WorldLocationData)
 	register_kind(RegionData.KIND, RegionData)
+	register_kind(WeatherData.KIND, WeatherData)
 	register_kind(AudioCueData.KIND, AudioCueData)
 	register_kind(MiniGameDefinition.KIND, MiniGameDefinition)
 	register_kind(TriggerData.KIND, TriggerData)
@@ -144,7 +145,7 @@ func index() -> PackedStringArray:
 ## problems and reports nothing itself.
 func find_problems() -> PackedStringArray:
 	var problems := GameSettingsService.find_control_problems(GameSettingsService.game_controls())
-	problems.append_array(GameWeatherSystem.find_odds_problems(GameDefinition.current().weather_odds))
+	problems.append_array(GameWeatherSystem.find_problems(GameDefinition.current(), self))
 	problems.append_array(InheritanceRule.find_list_problems(GameDefinition.current().inheritance, self))
 	problems.append_array(GameCalendar.current().find_problems())
 	for kind: StringName in get_kinds():
