@@ -69,6 +69,15 @@ func set_time(new_day: int, new_minute_of_day: int) -> void:
 		hour_changed.emit(day, get_hour())
 	minute_changed.emit(day, minute_of_day)
 
+## Minutes from the start of day 1 to `minute_of_day` of `day`: one number
+## that orders every moment of the world, for durations and deadlines.
+static func absolute_minute(on_day: int, at_minute: int) -> int:
+	return (maxi(on_day, 1) - 1) * MINUTES_PER_DAY + clampi(at_minute, 0, MINUTES_PER_DAY - 1)
+
+## The current moment as `absolute_minute()`.
+func get_absolute_minute() -> int:
+	return absolute_minute(day, minute_of_day)
+
 func get_hour() -> int:
 	return minute_of_day / 60
 

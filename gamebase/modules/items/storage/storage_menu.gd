@@ -1,5 +1,5 @@
 class_name StorageMenu
-extends CanvasLayer
+extends MenuLayer
 
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var slots_label: Label = $Panel/VBox/Slots
@@ -13,10 +13,10 @@ var _container_id: StringName
 var _display_name := "Storage"
 var _max_slots := 24
 
+func _init() -> void:
+	super(&"storage_menu")
+
 func _ready() -> void:
-	add_to_group("storage_menu")
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	store_button.pressed.connect(_store_selected)
 	take_button.pressed.connect(_take_selected)
 	close_button.pressed.connect(close)
@@ -34,8 +34,7 @@ func open(container_id: StringName, display_name: String, max_slots: int) -> voi
 	_container_id = container_id
 	_display_name = display_name
 	_max_slots = maxi(max_slots, 1)
-	visible = true
-	InputLock.lock(&"storage_menu", true, self)
+	show_menu()
 	_rebuild()
 	if inventory_list.item_count > 0:
 		inventory_list.select(0)
@@ -45,16 +44,8 @@ func open(container_id: StringName, display_name: String, max_slots: int) -> voi
 	_refresh_buttons()
 
 func close() -> void:
-	if not visible:
-		return
-	visible = false
 	_container_id = &""
-	InputLock.unlock(&"storage_menu")
-
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
+	super()
 
 func _rebuild() -> void:
 	inventory_list.clear()

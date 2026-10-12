@@ -51,3 +51,12 @@ func test_sleep_spot_blocks_day_changed_reentrancy() -> void:
 	assert_eq(PlayerState.health, PlayerState.max_health)
 	WorldClock.load_save_data(clock_snapshot)
 	PlayerState.load_save_data(player_snapshot)
+
+func test_an_absolute_minute_orders_every_moment_of_the_world() -> void:
+	assert_eq(GameClock.absolute_minute(1, 0), 0)
+	assert_eq(GameClock.absolute_minute(2, 30), GameClock.MINUTES_PER_DAY + 30)
+	assert_eq(GameClock.absolute_minute(0, -5), 0, "out of range reads as the first moment")
+	var clock_snapshot := WorldClock.to_save_data()
+	WorldClock.set_time(3, 90)
+	assert_eq(WorldClock.get_absolute_minute(), 2 * GameClock.MINUTES_PER_DAY + 90, "the clock's own moment")
+	WorldClock.load_save_data(clock_snapshot)

@@ -383,3 +383,6 @@ msgstr "游玩 %d:%02d"
 
 msgid "Autosaved"
 msgstr "已自动保存"
+
+msgid "That way is closed for now"
+msgstr "这条路暂时走不通"

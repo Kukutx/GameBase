@@ -4,8 +4,9 @@ extends Node
 ## Numbers the game's systems read and other systems change: the energy a
 ## tool costs, how long a fish takes to bite, how hard an attack hits.
 ##
-## A module or the game registers each stat it reads (`register_stat()`), in
-## its `GameModule.install()`; content that changes a stat (a food buff, a
+## The core registers the stats it reads (`TopDownPlayer.MOVE_SPEED_STAT`), and
+## a module or the game each stat it reads (`register_stat()`), in its
+## `GameModule.install()`; content that changes a stat (a food buff, a
 ## skill perk) may name only a registered one. Whatever changes stats
 ## registers as a source (`register_source()`): an object with
 ## `get_stat_multiplier(stat) -> float` and `get_stat_bonus(stat) -> float`. A
@@ -14,6 +15,10 @@ extends Node
 
 var _stats: Dictionary[StringName, bool] = {}
 var _sources: Array[Object] = []
+
+func _init() -> void:
+	# The stats the core's own systems read.
+	register_stat(TopDownPlayer.MOVE_SPEED_STAT)
 
 ## Declares that an installed module or the game reads `stat`.
 func register_stat(stat: StringName) -> void:

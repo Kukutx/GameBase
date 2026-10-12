@@ -78,8 +78,8 @@ shop = ExtResource("5_merchant")
 [node name="DepthEntrance" type="Node2D" parent="."]
 position = Vector2(0, 100)
 script = ExtResource("6_entrance")
-depths_location_id = &"depths"
-arrival_spawn_id = &"arrival"
+target_location_id = &"depths"
+target_spawn_id = &"arrival"
 
 [node name="Visual" type="Polygon2D" parent="DepthEntrance"]
 polygon = PackedVector2Array(-20, -12, 20, -12, 24, 0, 20, 12, -20, 12, -24, 0)

@@ -1,5 +1,5 @@
 class_name AnimalManagementMenu
-extends CanvasLayer
+extends MenuLayer
 
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var summary_label: Label = $Panel/VBox/Summary
@@ -19,10 +19,10 @@ var _selected_instance_id: StringName
 var _feed_buttons: Dictionary[StringName, Button] = {}
 var _expansion_buttons: Dictionary[StringName, Button] = {}
 
+func _init() -> void:
+	super(&"animal_management_menu")
+
 func _ready() -> void:
-	add_to_group("animal_management_menu")
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	animal_select.item_selected.connect(_on_animal_selected)
 	rename_button.pressed.connect(_rename_selected)
 	sell_button.pressed.connect(_request_sell)
@@ -36,22 +36,10 @@ func _ready() -> void:
 
 func open(location_id: StringName) -> void:
 	_location_id = location_id
-	visible = true
-	InputLock.lock(&"animal_management_menu", true, self)
+	show_menu()
 	_rebuild_housing_rows()
 	_rebuild()
 	_focus_primary_control()
-
-func close() -> void:
-	if not visible:
-		return
-	visible = false
-	InputLock.unlock(&"animal_management_menu")
-
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
 
 func _rebuild() -> void:
 	var previous := _selected_instance_id

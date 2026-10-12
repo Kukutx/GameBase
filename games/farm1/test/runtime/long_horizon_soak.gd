@@ -1,18 +1,13 @@
-extends SceneTree
+extends "res://gamebase/core/test/runtime_smoke.gd"
 
-const SOAK_SAVE_DIRECTORY := "user://long_horizon_soak"
 const YEARS_TO_SOAK := 3
 const MORNING_MINUTE := 6 * 60
 
-var _failed := false
-
-func _initialize() -> void:
-	_run.call_deferred()
+func _init() -> void:
+	smoke_name = "LONG_HORIZON_SOAK"
+	save_directory = "user://long_horizon_soak"
 
 func _run() -> void:
-	# The checks compare text with the English source strings.
-	root.get_node("GameSettings").set("locale", "en")
-	TranslationServer.set_locale("en")
 	var world_clock := root.get_node("WorldClock")
 	var weather_state := root.get_node("WeatherState")
 	var event_state := root.get_node("EventState")
@@ -30,16 +25,9 @@ func _run() -> void:
 	var save_constants: Dictionary = (save_manager.get_script() as Script).get_script_constant_map()
 	var current_save_version := int(save_constants.get("SAVE_VERSION", 0))
 
-	save_manager.save_directory = SOAK_SAVE_DIRECTORY
-	save_manager.select_slot(1)
-	root.get_node("GameProfile").set("profile_path", SOAK_SAVE_DIRECTORY + "/profile.json")
-	_cleanup_soak_files()
-	root.get_node("GameProfile").call("load_profile")
-
 	var change_error := change_scene_to_file("res://game/world/dev_world.tscn")
 	if change_error != OK:
 		_fail("Could not open Starter Town for soak")
-		_finish()
 		return
 	await scene_changed
 	await process_frame
@@ -130,30 +118,3 @@ func _run() -> void:
 	_check(event_state.get_year() == YEARS_TO_SOAK + 1, "Day %d did not enter Year %d" % [total_days + 1, YEARS_TO_SOAK + 1])
 	var year_four_contract: Dictionary = contract_state.get_contract()
 	_check(int(year_four_contract.get("generated_day", 0)) == total_days + 1, "Year %d daily contract did not rotate" % (YEARS_TO_SOAK + 1))
-
-	_finish()
-
-func _finish() -> void:
-	_cleanup_soak_files()
-	if _failed:
-		quit(1)
-	else:
-		print("LONG_HORIZON_SOAK_OK")
-		quit(0)
-
-func _check(condition: bool, message: String) -> void:
-	if not condition:
-		_fail(message)
-
-func _fail(message: String) -> void:
-	_failed = true
-	push_error("LONG_HORIZON_SOAK: " + message)
-
-func _cleanup_soak_files() -> void:
-	root.get_node("SaveManager").delete_slot(1)
-	# Written first, so nothing waits to be written when the soak quits.
-	root.get_node("GameProfile").call("write_now")
-	var profile_path := String(root.get_node("GameProfile").get("profile_path"))
-	for path: String in [profile_path, profile_path + ".tmp"]:
-		if FileAccess.file_exists(path):
-			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

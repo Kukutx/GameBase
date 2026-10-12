@@ -1,5 +1,5 @@
 class_name PauseMenu
-extends CanvasLayer
+extends MenuLayer
 
 ## The pause menu every game's locations share: `ui_cancel` opens it over the
 ## paused world, to resume, save, load, change the settings, return to the
@@ -22,9 +22,10 @@ extends CanvasLayer
 # Whether the load this menu started is under way.
 var _loading := false
 
+func _init() -> void:
+	super(&"pause_menu")
+
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	# A web page is left by closing its tab.
 	quit_button.visible = not OS.has_feature("web")
 	resume_button.pressed.connect(close)
@@ -69,8 +70,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func open() -> void:
 	if visible or WorldTravel.is_traveling():
 		return
-	visible = true
-	InputLock.lock(&"pause_menu", true, self)
+	show_menu()
 	status_label.text = ""
 	load_button.disabled = not SaveManager.has_save()
 	resume_button.grab_focus()
@@ -78,11 +78,10 @@ func open() -> void:
 func close() -> void:
 	if not visible:
 		return
-	visible = false
 	settings_menu.close()
 	for dialog: ConfirmationDialog in [confirm_load, confirm_title, confirm_quit]:
 		dialog.hide()
-	InputLock.unlock(&"pause_menu")
+	super()
 
 ## Asks before loading the last save over the progress since.
 func request_load() -> void:
@@ -99,8 +98,7 @@ func _save_game() -> void:
 	load_button.disabled = not SaveManager.has_save()
 
 func _load_game() -> void:
-	visible = false
-	InputLock.unlock(&"pause_menu")
+	close()
 	# Not awaited: a load that succeeds frees this menu with its location.
 	_loading = true
 	SaveManager.load_game()

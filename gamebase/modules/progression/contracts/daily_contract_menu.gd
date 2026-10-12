@@ -1,38 +1,26 @@
 class_name DailyContractMenu
-extends CanvasLayer
+extends MenuLayer
 
 @onready var title_label: Label = $Panel/Layout/Title
 @onready var body_label: RichTextLabel = $Panel/Layout/Body
 @onready var action_button: Button = $Panel/Layout/Action
 @onready var close_button: Button = $Panel/Layout/Close
 
+func _init() -> void:
+	super(&"daily_contract_menu")
+
 func _ready() -> void:
-	add_to_group("daily_contract_menu")
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	action_button.pressed.connect(_on_action)
 	close_button.pressed.connect(close)
 	DailyContractState.contract_changed.connect(_on_contract_changed)
 
 func open() -> void:
-	visible = true
-	InputLock.lock(&"daily_contract_menu", true, self)
+	show_menu()
 	_refresh()
 	if action_button.disabled:
 		close_button.grab_focus()
 	else:
 		action_button.grab_focus()
-
-func close() -> void:
-	if not visible:
-		return
-	visible = false
-	InputLock.unlock(&"daily_contract_menu")
-
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
 
 func _on_action() -> void:
 	var state := DailyContractState.get_contract()

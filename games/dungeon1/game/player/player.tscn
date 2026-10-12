@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
 [ext_resource type="Script" path="res://gamebase/modules/combat/combat/melee_attack.gd" id="3_melee"]
 [ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="4_hud"]
+[ext_resource type="Script" path="res://gamebase/modules/items/hotbar/hotbar_input.gd" id="5_hotbar_input"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 6.0
@@ -20,6 +21,7 @@ z_index = 10
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_player")
+reach_nodes = Array[NodePath]([NodePath("InteractionController"), NodePath("MeleeAttack")])
 
 [node name="Body" type="Polygon2D" parent="."]
 polygon = PackedVector2Array(-7, -9, 7, -9, 7, 9, -7, 9)
@@ -64,3 +66,8 @@ position_smoothing_enabled = true
 position_smoothing_speed = 7.0
 
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="HotbarInput" type="Node" parent="."]
+script = ExtResource("5_hotbar_input")
+next_action = &"next_item"
+previous_action = &""

@@ -63,7 +63,7 @@ func _start_recipe_internal(recipe_id: StringName) -> bool:
 	if not InventoryState.apply_transaction_atomic(recipe.inputs, {}):
 		return false
 	active_recipe_id = recipe.id
-	finish_at = _absolute_minute(WorldClock.day, WorldClock.minute_of_day) + recipe.process_minutes
+	finish_at = WorldClock.get_absolute_minute() + recipe.process_minutes
 	output_ready = false
 	pending_output_item_id = recipe.output_item_id
 	pending_output_quantity = recipe.output_quantity
@@ -105,7 +105,7 @@ func _collect_output_internal() -> bool:
 func get_minutes_remaining() -> int:
 	if active_recipe_id == &"" or output_ready:
 		return 0
-	return maxi(finish_at - _absolute_minute(WorldClock.day, WorldClock.minute_of_day), 0)
+	return maxi(finish_at - WorldClock.get_absolute_minute(), 0)
 
 func get_state_data() -> Dictionary:
 	return {
@@ -162,7 +162,7 @@ func _update_job() -> void:
 	if active_recipe_id == &"" or output_ready:
 		_refresh()
 		return
-	if _absolute_minute(WorldClock.day, WorldClock.minute_of_day) < finish_at:
+	if WorldClock.get_absolute_minute() < finish_at:
 		_refresh()
 		return
 	output_ready = true
@@ -228,9 +228,6 @@ func _safe_string_name(value: Variant) -> StringName:
 	if value is String or value is StringName:
 		return StringName(String(value))
 	return &""
-
-func _absolute_minute(day: int, minute_of_day: int) -> int:
-	return (maxi(day, 1) - 1) * 1440 + clampi(minute_of_day, 0, 1439)
 
 ## The world state the station saves, for `ContentRegistry`'s check that no two
 ## nodes share it.

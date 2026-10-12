@@ -38,7 +38,7 @@ func test_buff_changes_its_stats_and_round_trips_save_data() -> void:
 	assert_eq(BuffState.get_minutes_remaining(&"fixture_focus"), 180)
 
 func test_buff_load_clamps_corrupt_far_future_expiry_to_one_game_day() -> void:
-	var now := BuffState.get_absolute_minute()
+	var now := WorldClock.get_absolute_minute()
 	BuffState.load_save_data({"fixture_vigor": now + 999999})
 	assert_true(BuffState.has_buff(&"fixture_vigor"))
 	assert_eq(BuffState.get_minutes_remaining(&"fixture_vigor"), GameClock.MINUTES_PER_DAY)
