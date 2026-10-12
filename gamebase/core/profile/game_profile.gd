@@ -15,8 +15,9 @@ extends Node
 
 signal achievement_unlocked(achievement_id: StringName)
 signal flag_changed(key: StringName, value: Variant)
-## Emitted when the profile file could not be written; the change is kept and
-## written again with the next one.
+## Emitted when a write of the profile file fails after the last one
+## succeeded: once for a run of failed writes, as the player is told once. The
+## change is kept and written again with the next one.
 signal write_failed
 
 const DEFAULT_PROFILE_PATH := "user://profile.json"

@@ -7,12 +7,10 @@ extends CanvasLayer
 @onready var skills_label: Label = $Skills
 @onready var hotbar_label: Label = $Hotbar
 @onready var inventory_label: Label = $Inventory
-@onready var status_label: Label = $Status
+@onready var status_label: StatusLine = $Status
 @onready var fishing_label: Label = $FishingStatus
 @onready var buffs_label: Label = $Buffs
 @onready var info_label: Label = $Info
-
-var _status_seconds := 0.0
 
 func _ready() -> void:
 	WorldClock.minute_changed.connect(_on_time_changed)
@@ -30,7 +28,6 @@ func _ready() -> void:
 	Skills.skill_xp_changed.connect(_on_skill_changed)
 	BuffState.buffs_changed.connect(_refresh_buffs)
 	FishingState.cast_state_changed.connect(_on_fishing_state_changed)
-	GameEvents.toast_requested.connect(_show_status)
 	SaveManager.save_completed.connect(_on_save_completed)
 	SaveManager.load_completed.connect(_on_load_completed)
 	InputPrompts.input_method_changed.connect(_on_input_method_changed)
@@ -38,13 +35,6 @@ func _ready() -> void:
 	GameSettings.locale_changed.connect(_on_locale_changed)
 	_refresh_all()
 	_refresh_fishing()
-
-func _process(delta: float) -> void:
-	if _status_seconds <= 0.0:
-		return
-	_status_seconds -= delta
-	if _status_seconds <= 0.0:
-		status_label.text = ""
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("debug_advance_time"):
@@ -178,5 +168,4 @@ func _refresh_fishing() -> void:
 	fishing_label.visible = not fishing_label.text.is_empty()
 
 func _show_status(message: String) -> void:
-	status_label.text = message
-	_status_seconds = 2.5
+	status_label.show_message(message)

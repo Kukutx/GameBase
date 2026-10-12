@@ -294,6 +294,7 @@ func _run() -> void:
 	_check(save_manager.save_path.begins_with(SMOKE_SAVE_DIRECTORY), "Title screen left the smoke save directory")
 	var loaded: bool = await save_manager.load_game()
 	_check(loaded, "SaveManager.load_game failed")
+	_check(profile.call("is_unlocked", &"green_thumb"), "Loading a save took back an achievement of the profile")
 	player = get_first_node_in_group("player") as Node2D
 	_check(world_clock.day == 5, "Clock did not restore")
 	_check(inventory.get_quantity(&"turnip") == 1, "Inventory did not restore")
