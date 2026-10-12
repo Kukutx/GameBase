@@ -1,8 +1,7 @@
 {
   "id": "strategy1",
   "modules": [
-    "combat",
-    "items",
+    "damage",
     "rts",
     "tactics"
   ]

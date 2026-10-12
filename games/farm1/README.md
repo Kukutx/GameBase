@@ -1,6 +1,6 @@
 # Farm1
 
-The first-generation game built on GameBase: a farming life-sim across several connected towns. It uses every foundation module (`items`, `skills`, `combat`, `lifesim`, `npc_social`, `progression`) and Dialogue Manager.
+The first-generation game built on GameBase: a farming life-sim across several connected towns. It uses the `items`, `skills`, `damage`, `combat`, `lifesim`, `npc_social`, `npc_ai` and `progression` modules and Dialogue Manager.
 
 ## Run
 

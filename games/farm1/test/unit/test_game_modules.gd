@@ -2,7 +2,7 @@ extends GutTest
 
 func test_every_linked_module_and_the_game_installed_itself() -> void:
 	assert_eq(GameModules.get_installed(), PackedStringArray([
-		"CombatModule", "GameSetup", "ItemsModule", "LifesimModule", "NpcAiModule", "NpcSocialModule", "ProgressionModule", "SkillsModule",
+		"CombatModule", "DamageModule", "GameSetup", "ItemsModule", "LifesimModule", "NpcAiModule", "NpcSocialModule", "ProgressionModule", "SkillsModule",
 	]))
 
 func test_each_module_registered_its_kinds_of_content() -> void:

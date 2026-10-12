@@ -33,11 +33,14 @@
   },
   "modules": {
     "combat": {
-      "requires": ["items"],
+      "requires": ["damage", "items"],
       "autoloads": {
         "CombatEvents": "res://gamebase/modules/combat/combat_events.gd",
         "PlayerDefeat": "res://gamebase/modules/combat/defeat/player_defeat_service.gd"
       }
+    },
+    "damage": {
+      "requires": []
     },
     "items": {
       "requires": [],
@@ -106,7 +109,7 @@
       }
     },
     "rts": {
-      "requires": ["combat"],
+      "requires": ["damage"],
       "autoloads": {
         "RtsEvents": "res://gamebase/modules/rts/rts_events.gd"
       }
@@ -118,7 +121,7 @@
       }
     },
     "tactics": {
-      "requires": ["combat"],
+      "requires": ["damage"],
       "autoloads": {
         "TacticsEvents": "res://gamebase/modules/tactics/tactics_events.gd"
       }

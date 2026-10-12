@@ -198,9 +198,16 @@ test("a game runs the tests of the core, of each of its modules and its own", ()
   assert.deepEqual(config, { dirs, should_exit: true, pre_run_script: "res://gamebase/core/test/gut_pre_run.gd" });
 });
 
+test("a battle on a grid or an open field needs no items", () => {
+  const foundation = readFoundation();
+  const below = (module) => (foundation.modules[module].requires || []).flatMap((required) => [required, ...below(required)]);
+  for (const module of ["rts", "tactics"]) assert.deepEqual([...new Set(below(module))], ["damage"], module);
+  assert.deepEqual(below("damage"), []);
+});
+
 test("a module's autoloads follow the modules it requires, between the core's", () => {
   const foundation = readFoundation();
-  assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "combat"]), ["items", "combat", "skills", "lifesim", "npc_social", "progression"]);
+  assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "combat", "damage"]), ["damage", "items", "combat", "skills", "lifesim", "npc_social", "progression"]);
   const game = { id: "probe", root: rootPath("games", "probe"), modules: ["skills", "items"], addons: ["gut"], manifest: { autoloads: { ProbeTools: "res://game/probe_tools.gd" } } };
   const names = desiredAutoloads(game, foundation).map(([name]) => name);
   const lastBefore = Object.keys(foundation.autoloads.before_modules).at(-1);

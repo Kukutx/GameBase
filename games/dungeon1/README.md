@@ -1,6 +1,6 @@
 # Ember Depths
 
-The second game built on GameBase, of another genre: a dungeon delve. From a camp the player goes down into the depths one floor at a time, clears each floor's enemies with the weapon in the hotbar, and climbs back up the rope with what they dropped, to sell it and buy a better blade. It uses the core and the `items`, `skills`, `combat` and `roguelite` modules, and keeps the foundation honest for a game that is not a life-sim.
+The second game built on GameBase, of another genre: a dungeon delve. From a camp the player goes down into the depths one floor at a time, clears each floor's enemies with the weapon in the hotbar, and climbs back up the rope with what they dropped, to sell it and buy a better blade. It uses the core and the `items`, `skills`, `damage`, `combat` and `roguelite` modules, and keeps the foundation honest for a game that is not a life-sim.
 
 ## Run
 

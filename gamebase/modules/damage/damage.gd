@@ -3,8 +3,8 @@ extends RefCounted
 
 ## One hit: the health it takes, the faction it comes from (`FactionData`),
 ## what dealt it, and how hard it pushes what it hits (pixels a second, in real
-## time). Real-time combat deals it to hurtboxes (`Hurtbox`); other kinds of
-## combat take it as a plain amount from a `Health`.
+## time). Real-time combat deals it to what it hits; other kinds of combat take
+## it as a plain amount from a `Health`.
 
 var amount: int
 var faction: StringName
