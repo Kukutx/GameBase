@@ -204,15 +204,6 @@ msgstr "%s\n%d 只需要%s"
 msgid "Animal Trough"
 msgstr "动物食槽"
 
-msgid "You do not have %s"
-msgstr "你没有%s"
-
-msgid "Not enough energy"
-msgstr "体力不足"
-
-msgid "No %s available"
-msgstr "没有可用的%s"
-
 msgid "Missing money or materials for %s"
 msgstr "购买%s所需的金钱或材料不足"
 
@@ -416,9 +407,6 @@ msgstr "抚摸动物"
 
 msgid "Rename"
 msgstr "重命名"
-
-msgid "Sell"
-msgstr "出售"
 
 msgid "Sell Animal"
 msgstr "出售动物"

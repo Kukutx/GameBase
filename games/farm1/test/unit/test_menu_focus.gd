@@ -56,8 +56,8 @@ func test_overlay_menus_open_with_a_valid_focus_target() -> void:
 		{"path": "res://gamebase/modules/items/storage/storage_menu.tscn", "kind": "storage"},
 		{"path": "res://gamebase/modules/progression/projects/town_project_menu.tscn", "kind": "projects"},
 		{"path": "res://gamebase/modules/progression/upgrades/tool_upgrade_menu.tscn", "kind": "upgrade"},
-		{"path": "res://game/ui/settings_menu.tscn", "kind": "settings"},
-		{"path": "res://game/ui/pause_menu.tscn", "kind": "pause"},
+		{"path": "res://gamebase/core/ui/settings_menu.tscn", "kind": "settings"},
+		{"path": "res://gamebase/core/ui/pause_menu.tscn", "kind": "pause"},
 	]
 	for data: Dictionary in cases:
 		var menu := await _instantiate(String(data["path"]))

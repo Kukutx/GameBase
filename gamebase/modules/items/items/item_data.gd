@@ -10,6 +10,8 @@ enum Kind {
 	GIFT,
 	QUEST,
 	PLACEABLE,
+	## Drunk rather than eaten: a potion restores and buffs as food does.
+	POTION,
 }
 
 const KIND := &"item"

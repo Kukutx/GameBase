@@ -30,6 +30,19 @@ func test_a_game_counts_its_days_by_its_own_calendar() -> void:
 	var held: bool = ContentFixture.with_definition(_definition(calendar), GameRules.check.bind("SEASON Dry, DAY_OF_SEASON 3, WEEKDAY 2", {"day": 23}))
 	assert_true(held, "the time conditions read the game's calendar")
 
+func test_the_date_reads_by_the_calendar() -> void:
+	var previous := TranslationServer.get_locale()
+	TranslationServer.set_locale("en")
+	var seasons := _calendar(PackedStringArray(["Dry", "Wet"]), 10, 5)
+	assert_eq(seasons.get_date_text(13), "Wet 3")
+	assert_eq(seasons.get_date_text(23), "Dry 3, Year 2", "the year shows from the second on")
+	var one_season := _calendar(PackedStringArray(["Run"]), 1000, 7)
+	assert_eq(one_season.get_date_text(31), "Day 31", "a calendar of one season counts the days alone")
+	TranslationServer.set_locale("zh_CN")
+	assert_eq(seasons.get_date_text(23), "Dry3日（第2年）")
+	assert_eq(one_season.get_date_text(31), "第31天")
+	TranslationServer.set_locale(previous)
+
 func test_time_conditions_name_only_what_the_calendar_has() -> void:
 	var definition := _definition(_calendar(PackedStringArray(["Dry", "Wet"]), 10, 5))
 	var problems := "\n".join(ContentFixture.with_definition(definition, GameRules.validate_query.bind("SEASON Spring, DAY_OF_SEASON 11, WEEKDAY 5")))
@@ -118,16 +131,27 @@ func test_the_screen_darkens_by_the_calendar_s_night() -> void:
 	assert_true(early.is_equal_approx(tint.night_color), "a game whose night falls at 18:00 is dark at 19:00")
 	tint.free()
 
+func test_a_calendar_whose_minutes_last_no_time_stops_the_clock() -> void:
+	var calendar := GameCalendar.new()
+	calendar.real_seconds_per_game_minute = 0.0
+	assert_eq(calendar.find_problems(), PackedStringArray())
+	var clock := _clock(1, 10 * 60)
+	clock.paused = false
+	ContentFixture.with_definition(_definition(calendar), clock._process.bind(30.0))
+	assert_eq(clock.minute_of_day, 10 * 60, "real time moves it no minute")
+	clock.advance_minutes(5)
+	assert_eq(clock.minute_of_day, 10 * 60 + 5, "the game still runs it on")
+
 func test_calendar_problems_are_named() -> void:
 	var calendar := _calendar(PackedStringArray(["Dry", "Dry", ""]), 0, 5)
-	calendar.real_seconds_per_game_minute = 0.0
+	calendar.real_seconds_per_game_minute = -1.0
 	calendar.collapse_minute = calendar.wake_minute
 	calendar.night_ends_at = calendar.night_starts_at
 	var problems := "\n".join(calendar.find_problems())
 	assert_string_contains(problems, "calendar lists season 'Dry' twice")
 	assert_string_contains(problems, "calendar has a season without a name")
 	assert_string_contains(problems, "calendar seasons and weeks need at least one day")
-	assert_string_contains(problems, "calendar game minutes need to last some real time")
+	assert_string_contains(problems, "calendar game minutes cannot last a negative time")
 	assert_string_contains(problems, "calendar collapses the player at the minute they wake")
 	assert_string_contains(problems, "calendar night starts and ends at the same minute")
 	assert_eq(_calendar(PackedStringArray(), 10, 5).find_problems(), PackedStringArray(["calendar has no seasons"]))

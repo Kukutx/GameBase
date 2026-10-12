@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       game:
-        description: Game id under games/ (optional while only one game is registered)
-        required: false
+        description: Game id under games/ (a tag build takes it from the tag)
+        required: true
         type: string
       engine_version:
         description: Optional Godot version override for this build

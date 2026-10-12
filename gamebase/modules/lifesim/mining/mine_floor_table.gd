@@ -9,17 +9,11 @@ extends Resource
 @export var default_rock_id: StringName
 ## Ore tiers, rarest first; the first unlocked tier is guaranteed on each floor.
 @export var rock_tiers: Array[MineRockTier] = []
-@export var enemy_tiers: Array[MineEnemyTier] = []
+@export var enemy_tiers: Array[EnemyTier] = []
 
 ## The enemy id for `floor`: the tier with the deepest minimum floor reached.
 func get_enemy_id(floor: int) -> StringName:
-	var result := StringName()
-	var best := 0
-	for tier: MineEnemyTier in enemy_tiers:
-		if tier != null and tier.minimum_floor <= floor and tier.minimum_floor > best:
-			best = tier.minimum_floor
-			result = tier.enemy_id
-	return result
+	return EnemyTier.deepest(enemy_tiers, floor)
 
 ## Every id that `registry` does not know, as readable problems.
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
@@ -29,7 +23,6 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	for tier: MineRockTier in rock_tiers:
 		if tier == null or not registry.has_entry(MiningNodeData.KIND, tier.rock_id):
 			problems.append("mine floor table rock tier '%s' is not a mining node" % (tier.rock_id if tier != null else &""))
-	for tier: MineEnemyTier in enemy_tiers:
-		if tier == null or not registry.has_entry(EnemyData.KIND, tier.enemy_id):
-			problems.append("mine floor table enemy tier '%s' is not an enemy" % (tier.enemy_id if tier != null else &""))
+	for problem: String in EnemyTier.find_problems(enemy_tiers, registry):
+		problems.append("mine floor table %s" % problem)
 	return problems

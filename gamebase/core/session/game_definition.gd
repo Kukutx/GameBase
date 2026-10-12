@@ -34,6 +34,8 @@ static func current() -> GameDefinition:
 @export var home_location_id: StringName = &""
 ## Spawn point used when the player is brought home.
 @export var home_spawn_id: StringName = &""
+## Share of their money, in percent, the player loses when defeated (0: none).
+@export_range(0, 100) var defeat_money_loss_percent := 0
 ## How the game counts its time: seasons, week, clock speed, night and the
 ## player's day (`GameCalendar`). None: the default calendar of four 28-day
 ## seasons.

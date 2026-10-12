@@ -1,23 +1,27 @@
 class_name ShopMenu
 extends CanvasLayer
 
+## A shop's counter: buys what the shop stocks and offers, and sells, one at a
+## time, every item the inventory holds that has a sell price.
+
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var money_label: Label = $Panel/VBox/Money
-@onready var items_container: VBoxContainer = $Panel/VBox/Items
-@onready var sell_button: Button = $Panel/VBox/SellSelected
+@onready var items_container: VBoxContainer = $Panel/VBox/Lists/Entries/Items
+@onready var sell_title: Label = $Panel/VBox/Lists/Entries/SellTitle
+@onready var sell_container: VBoxContainer = $Panel/VBox/Lists/Entries/SellItems
 @onready var close_button: Button = $Panel/VBox/Close
 
 var _shop: ShopData
+# item id -> the button that sells one of it
+var _sell_buttons: Dictionary[StringName, Button] = {}
 
 func _ready() -> void:
 	add_to_group("shop_menu")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	sell_button.pressed.connect(_sell_selected)
 	close_button.pressed.connect(close)
 	PlayerState.money_changed.connect(_on_money_changed)
-	InventoryState.changed.connect(_refresh_sell_button)
-	Hotbar.selected_slot_changed.connect(_on_selected_changed)
+	InventoryState.changed.connect(_on_inventory_changed)
 
 func open(shop: ShopData) -> void:
 	if shop == null:
@@ -72,7 +76,9 @@ func _rebuild() -> void:
 		items_container.add_child(button)
 		if first_button == null and not button.disabled:
 			first_button = button
-	_refresh_sell_button()
+	_refresh_sell_list()
+	if first_button == null and not _sell_buttons.is_empty():
+		first_button = sell_container.get_child(0) as Button
 	if first_button != null:
 		first_button.grab_focus()
 	else:
@@ -80,8 +86,6 @@ func _rebuild() -> void:
 
 func _buy(item_id: StringName) -> void:
 	ShopState.buy(_shop, item_id, 1)
-	money_label.text = tr("Money: %dg") % PlayerState.money
-	_refresh_sell_button()
 
 func _buy_offer(offer: ShopOffer) -> void:
 	ShopState.buy_offer(_shop, offer, _offer_context())
@@ -91,27 +95,49 @@ func _offer_context() -> Dictionary:
 	var location := WorldLocationData.find_current(get_tree())
 	return {"location_id": location.id if location != null else &""}
 
-func _sell_selected() -> void:
-	var item_id := Hotbar.get_selected_item_id()
+func _sell(item_id: StringName) -> void:
 	ShopState.sell(item_id, 1)
-	money_label.text = tr("Money: %dg") % PlayerState.money
-	_refresh_sell_button()
 
-func _refresh_sell_button() -> void:
-	if sell_button == null:
-		return
-	var item_id := Hotbar.get_selected_item_id()
-	var item := ItemData.find(item_id)
-	var can_sell := item != null and item.sell_price > 0 and InventoryState.get_quantity(item_id) > 0
-	sell_button.disabled = not can_sell
-	if can_sell:
-		sell_button.text = tr("Sell selected: %s — %dg") % [tr(item.display_name), item.sell_price]
-	else:
-		sell_button.text = tr("Sell selected")
+## Keeps one sell button per sellable item the inventory holds, in the
+## inventory's order, so a sale changes the buttons in place and the focus
+## stays on the list.
+func _refresh_sell_list() -> void:
+	var sellable: Array[ItemData] = []
+	for entry: Dictionary in InventoryState.get_entries():
+		var item := ItemData.find(StringName(String(entry["id"])))
+		if item != null and item.sell_price > 0:
+			sellable.append(item)
+	var focused := get_viewport().gui_get_focus_owner()
+	var focus_index := -1
+	for item_id: StringName in _sell_buttons.keys():
+		if sellable.any(func(item: ItemData) -> bool: return item.id == item_id):
+			continue
+		var gone := _sell_buttons[item_id]
+		if gone == focused:
+			focus_index = gone.get_index()
+		sell_container.remove_child(gone)
+		gone.queue_free()
+		_sell_buttons.erase(item_id)
+	for index: int in sellable.size():
+		var item := sellable[index]
+		var button: Button = _sell_buttons.get(item.id)
+		if button == null:
+			button = Button.new()
+			button.pressed.connect(_sell.bind(item.id))
+			sell_container.add_child(button)
+			_sell_buttons[item.id] = button
+		sell_container.move_child(button, index)
+		button.text = tr("Sell %s (%d) — %dg") % [tr(item.display_name), InventoryState.get_quantity(item.id), item.sell_price]
+	sell_title.visible = not sellable.is_empty()
+	if focus_index >= 0 and visible:
+		var count := sell_container.get_child_count()
+		var next := sell_container.get_child(mini(focus_index, count - 1)) as Button if count > 0 else close_button
+		next.grab_focus()
 
 func _on_money_changed(_amount: int) -> void:
 	if visible:
 		money_label.text = tr("Money: %dg") % PlayerState.money
 
-func _on_selected_changed(_index: int, _item_id: StringName) -> void:
-	_refresh_sell_button()
+func _on_inventory_changed() -> void:
+	if visible:
+		_refresh_sell_list()

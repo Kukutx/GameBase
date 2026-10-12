@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ControlAction" format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/input/control_action.gd" id="1_control"]
+
+[resource]
+script = ExtResource("1_control")
+action = &"move_up"
+display_name = "Move Up"
+key = 87
+secondary_key = 4194320
+gamepad_button = 11
+gamepad_axis = 1
+gamepad_axis_value = -1.0

@@ -1,0 +1,66 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat/melee_attack.gd" id="3_melee"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="4_hud"]
+
+[sub_resource type="CapsuleShape2D" id="Capsule_player"]
+radius = 6.0
+height = 16.0
+
+[sub_resource type="CircleShape2D" id="Circle_interaction"]
+radius = 24.0
+
+[sub_resource type="CircleShape2D" id="Circle_attack"]
+radius = 20.0
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+z_index = 10
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_player")
+
+[node name="Body" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-7, -9, 7, -9, 7, 9, -7, 9)
+color = Color(0.86, 0.46, 0.28, 1)
+
+[node name="Facing" type="Node2D" parent="."]
+
+[node name="Marker" type="Polygon2D" parent="Facing"]
+polygon = PackedVector2Array(-3, -8, 3, -8, 0, -13)
+color = Color(1, 0.9, 0.7, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 2)
+shape = SubResource("Capsule_player")
+
+[node name="InteractionController" type="Area2D" parent="." node_paths=PackedStringArray("actor", "prompt_label")]
+collision_layer = 0
+collision_mask = 16
+monitoring = true
+monitorable = false
+script = ExtResource("2_interaction")
+actor = NodePath("..")
+prompt_label = NodePath("../HUD/Prompt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionController"]
+shape = SubResource("Circle_interaction")
+
+[node name="MeleeAttack" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitoring = true
+monitorable = false
+script = ExtResource("3_melee")
+energy_cost = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack"]
+shape = SubResource("Circle_attack")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+enabled = true
+position_smoothing_enabled = true
+position_smoothing_speed = 7.0
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]

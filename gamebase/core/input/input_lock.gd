@@ -43,6 +43,13 @@ func unlock(reason: StringName) -> void:
 func is_locked() -> bool:
 	return not _locks.is_empty()
 
+## Whether `event` presses `action` for the player: the input map has the
+## action, the event presses it and no reason holds a lock. A handler of a
+## player action acts only then, leaving a press made while the controls are
+## locked to whoever holds them (a fishing cast reels in with it).
+func is_player_press(event: InputEvent, action: StringName) -> bool:
+	return InputMap.has_action(action) and event.is_action_pressed(action) and not is_locked()
+
 func is_held(reason: StringName) -> bool:
 	return _locks.has(reason)
 

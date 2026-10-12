@@ -8,3 +8,12 @@ msgstr ""
 
 msgid "Enemy"
 msgstr "敌人"
+
+msgid "Swung %s"
+msgstr "挥动了%s"
+
+msgid "You do not have %s"
+msgstr "你没有%s"
+
+msgid "Not enough energy"
+msgstr "体力不足"

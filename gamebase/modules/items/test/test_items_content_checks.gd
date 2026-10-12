@@ -43,6 +43,7 @@ func test_food_buffs_report_unread_stats_and_non_positive_multipliers() -> void:
 	assert_string_contains(joined, "food buff 'fixture_bad_buff' has a non-positive multiplier of 'fixture_speed'")
 
 func test_shops_and_recipes_report_malformed_numbers_without_crashing() -> void:
+	ContentFixture.use_calendar(self, GameCalendar.new())
 	var berry := _item(&"fixture_berry")
 	var shop := ShopData.new()
 	shop.id = &"fixture_bad_shop"

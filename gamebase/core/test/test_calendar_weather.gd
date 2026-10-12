@@ -14,6 +14,7 @@ func after_each() -> void:
 	GameRandom.set_seed(_seed)
 
 func test_seasons_roll_every_28_days() -> void:
+	ContentFixture.use_calendar(self, GameCalendar.new())
 	assert_eq(GameCalendar.current().get_season_name(1), "Spring")
 	assert_eq(GameCalendar.current().get_season_name(28), "Spring")
 	assert_eq(GameCalendar.current().get_season_name(29), "Summer")
@@ -40,6 +41,7 @@ func test_the_same_seed_gives_the_same_weather_and_another_seed_other_weather() 
 	assert_ne(first, other)
 
 func test_odds_problems_name_the_season() -> void:
+	ContentFixture.use_calendar(self, GameCalendar.new())
 	var problems := "\n".join(GameWeatherSystem.find_odds_problems([
 		_odds("Spring", 0.2, 0.1), _odds("Monsoon", 0.5, 0.0), _odds("Spring", 0.1, 0.0), _odds("Summer", 0.8, 0.3),
 	]))

@@ -1,0 +1,99 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/ui/title_screen.gd" id="1_title"]
+[ext_resource type="PackedScene" path="res://gamebase/core/ui/settings_menu.tscn" id="3_settings"]
+
+[node name="TitleScreen" type="ColorRect"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.098, 0.17, 0.165, 1)
+script = ExtResource("1_title")
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Menu" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(270, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Center/Menu"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "Game"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/Menu"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.79, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+
+[node name="Version" type="Label" parent="Center/Menu"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.66, 0.62, 1)
+theme_override_font_sizes/font_size = 9
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Center/Menu"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="SaveSlot" type="OptionButton" parent="Center/Menu"]
+layout_mode = 2
+
+[node name="SlotInfo" type="Label" parent="Center/Menu"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.79, 0.75, 1)
+theme_override_font_sizes/font_size = 10
+text = "Empty slot"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Continue" type="Button" parent="Center/Menu"]
+layout_mode = 2
+text = "Continue"
+
+[node name="NewGame" type="Button" parent="Center/Menu"]
+layout_mode = 2
+text = "New Game"
+
+[node name="DeleteSave" type="Button" parent="Center/Menu"]
+layout_mode = 2
+text = "Delete Save"
+
+[node name="Settings" type="Button" parent="Center/Menu"]
+layout_mode = 2
+text = "Settings"
+
+[node name="Quit" type="Button" parent="Center/Menu"]
+layout_mode = 2
+text = "Quit"
+
+[node name="Status" type="Label" parent="Center/Menu"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.72, 0.50, 1)
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+
+[node name="SettingsMenu" parent="." instance=ExtResource("3_settings")]
+
+[node name="ConfirmNewGame" type="ConfirmationDialog" parent="."]
+title = "Start New Game"
+dialog_text = "This save slot already contains a game. Starting a new game will replace it. Continue?"
+ok_button_text = "Start New Game"
+
+[node name="ConfirmDelete" type="ConfirmationDialog" parent="."]
+title = "Delete Save"
+dialog_text = "Delete this save slot and its backup?"
+ok_button_text = "Delete"

@@ -90,7 +90,7 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	assert_eq(PlayerState.energy, 94)
 
 func test_combat_and_fishing_perks_change_real_action_values() -> void:
-	var melee := MeleeController.new()
+	var melee := MeleeAttack.new()
 	add_child_autofree(melee)
 	var sword := ItemData.find(&"copper_sword")
 	assert_eq(melee.get_attack_damage(sword), 24)

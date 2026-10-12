@@ -22,9 +22,7 @@ func _process(_delta: float) -> void:
 	_refresh_focus()
 
 func _unhandled_input(event: InputEvent) -> void:
-	# While a dialogue, a fishing cast or a minigame holds the controls, the
-	# press is theirs (a cast reels in with it).
-	if not event.is_action_pressed(action) or InputLock.is_locked():
+	if not InputLock.is_player_press(event, action):
 		return
 	_refresh_focus()
 	if _focused == null:

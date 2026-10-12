@@ -66,7 +66,7 @@ func test_the_game_handles_its_melee_tool_action() -> void:
 	var weapon := ItemData.new()
 	weapon.id = &"probe_weapon"
 	weapon.kind = ItemData.Kind.TOOL
-	weapon.tool_action = MeleeController.TOOL_ACTION
+	weapon.tool_action = MeleeAttack.TOOL_ACTION
 	weapon.max_stack = 1
 	assert_eq(ContentDB.find_entry_problems(weapon), PackedStringArray(), "the game registers its attack action")
 

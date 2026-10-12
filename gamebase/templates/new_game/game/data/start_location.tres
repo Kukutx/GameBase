@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_location")
-id = &"start"
+id = &"starting_point"
 display_name = "Starting Point"
 scene_path = "res://game/world/start.tscn"
-default_spawn_id = &"start"
+default_spawn_id = &"arrival"

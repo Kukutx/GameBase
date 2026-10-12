@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/profile/achievement_data.gd" id="1_achievement"]
+
+[resource]
+script = ExtResource("1_achievement")
+id = &"first_blood"
+display_name = "First Blood"
+description = "Defeat a creature of the depths."

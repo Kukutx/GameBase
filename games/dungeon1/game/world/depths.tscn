@@ -1,0 +1,139 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat/enemy_tier.gd" id="2_tier"]
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="4_spawn"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="5_interactable"]
+
+[sub_resource type="Resource" id="Tier_slime"]
+script = ExtResource("2_tier")
+enemy_id = &"cave_slime"
+minimum_depth = 1
+
+[sub_resource type="Resource" id="Tier_skeleton"]
+script = ExtResource("2_tier")
+enemy_id = &"skeleton"
+minimum_depth = 3
+
+[sub_resource type="Resource" id="Tier_wisp"]
+script = ExtResource("2_tier")
+enemy_id = &"ember_wisp"
+minimum_depth = 6
+
+[sub_resource type="RectangleShape2D" id="Rect_horizontal"]
+size = Vector2(480, 20)
+
+[sub_resource type="RectangleShape2D" id="Rect_vertical"]
+size = Vector2(20, 280)
+
+[sub_resource type="RectangleShape2D" id="Rect_way"]
+size = Vector2(36, 30)
+
+[node name="Depths" type="Node2D"]
+script = ExtResource("1_floor")
+enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_wisp")])
+camp_location_id = &"camp"
+camp_spawn_id = &"from_depths"
+
+[node name="Background" type="ColorRect" parent="."]
+offset_left = -400.0
+offset_top = -260.0
+offset_right = 400.0
+offset_bottom = 260.0
+color = Color(0.03, 0.02, 0.03, 1)
+
+[node name="Floor" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-220, -130, 220, -130, 220, 130, -220, 130)
+color = Color(0.17, 0.12, 0.12, 1)
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -140)
+shape = SubResource("Rect_horizontal")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 140)
+shape = SubResource("Rect_horizontal")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-230, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(230, 0)
+shape = SubResource("Rect_vertical")
+
+[node name="ArrivalSpawn" type="Marker2D" parent="."]
+position = Vector2(0, 96)
+script = ExtResource("4_spawn")
+spawn_id = &"arrival"
+
+[node name="DepthLabel" type="Label" parent="."]
+offset_left = -120.0
+offset_top = 104.0
+offset_right = 120.0
+offset_bottom = 128.0
+theme_override_colors/font_color = Color(0.98, 0.62, 0.36, 1)
+theme_override_font_sizes/font_size = 9
+text = ""
+horizontal_alignment = 1
+
+[node name="Stairs" type="Node2D" parent="."]
+position = Vector2(170, -100)
+
+[node name="Visual" type="Polygon2D" parent="Stairs"]
+polygon = PackedVector2Array(-14, -12, 14, -12, 14, 12, -14, 12)
+color = Color(0.05, 0.04, 0.05, 1)
+
+[node name="Label" type="Label" parent="Stairs"]
+offset_left = -52.0
+offset_top = -30.0
+offset_right = 52.0
+offset_bottom = -15.0
+theme_override_font_sizes/font_size = 9
+text = "Stairs Down"
+horizontal_alignment = 1
+
+[node name="Interactable" type="Area2D" parent="Stairs"]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("5_interactable")
+prompt_text = "Descend deeper"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Stairs/Interactable"]
+shape = SubResource("Rect_way")
+
+[node name="Rope" type="Node2D" parent="."]
+position = Vector2(-170, -100)
+
+[node name="Visual" type="Polygon2D" parent="Rope"]
+polygon = PackedVector2Array(-2, -16, 2, -16, 2, 12, -2, 12)
+color = Color(0.72, 0.6, 0.4, 1)
+
+[node name="Label" type="Label" parent="Rope"]
+offset_left = -52.0
+offset_top = -32.0
+offset_right = 52.0
+offset_bottom = -17.0
+theme_override_font_sizes/font_size = 9
+text = "Rope"
+horizontal_alignment = 1
+
+[node name="Interactable" type="Area2D" parent="Rope"]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("5_interactable")
+prompt_text = "Climb back to camp"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Rope/Interactable"]
+shape = SubResource("Rect_way")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(0, 96)

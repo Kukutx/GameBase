@@ -1,0 +1,11 @@
+{
+  "id": "dungeon1",
+  "modules": [
+    "combat",
+    "items",
+    "skills"
+  ],
+  "autoloads": {
+    "DepthRun": "res://game/depths/depth_run.gd"
+  }
+}

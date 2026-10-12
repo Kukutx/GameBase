@@ -10,7 +10,7 @@ From the repository root, link the foundation and the addons once, then open `ga
 node tools/link.js --game farm1
 ```
 
-The main scene is `res://game/ui/title_screen.tscn`. `node tools/validate.js --game farm1` runs this game's checks; a successful runtime integration check ends with `LIFE_SIMULATION_SMOKE_OK`. The version lives in `config/version` of `project.godot`; a release is the tag `game/farm1/v<version>`.
+The main scene is the core title screen, `res://gamebase/core/ui/title_screen.tscn`. `node tools/validate.js --game farm1` runs this game's checks; a successful runtime integration check ends with `LIFE_SIMULATION_SMOKE_OK`. The version lives in `config/version` of `project.godot`; a release is the tag `game/farm1/v<version>`.
 
 ## Layout
 
@@ -20,7 +20,7 @@ game/dialogue/     Dialogue Manager scripts
 game/world/        Playable locations and the shared world HUD
 game/npc/          NPC scenes and presentation
 game/player/       Player scene and controller
-game/ui/           Title, pause, settings and game menus
+game/ui/           The game menu and the UI theme (title, pause and settings come from the core)
 game/i18n/         English and Simplified Chinese UI catalogs
 game/game_setup.gd The game's own module: what only Farm1 adds to the foundation
 test/unit/         Focused GUT regression tests

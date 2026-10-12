@@ -23,6 +23,7 @@ The registered games:
 | Game | Directory | Description |
 | --- | --- | --- |
 | Farm1 | `games/farm1/` | The first-generation farming life-sim; see [games/farm1/README.md](games/farm1/README.md) |
+| Ember Depths | `games/dungeon1/` | A dungeon delve on the core, items, skills and combat; see [games/dungeon1/README.md](games/dungeon1/README.md) |
 
 A game is registered by its `games/<id>/game.json`, which lists the foundation modules it uses (with every module they require) and any extra shared addons. Inside a game project, `res://game/` is that game's code, `res://gamebase/` the foundation and `res://addons/` the addons. Dependencies point one way: a game may use the core and its listed modules, a module may use the core and the modules it declares, and the core uses neither; `tools/check_layers.js` enforces this. See [gamebase/README.md](gamebase/README.md).
 
@@ -50,7 +51,7 @@ node tools/validate.js
 
 runs the repository checks once (agent rules, layer dependencies, tool tests, the engine baseline and its legal bundle, the packaging self-test, and a game freshly created from the template) and then every game's checks (links, version, localization coverage, clean import, GUT, its runtime scripts and a main-scene boot). `--game <id>` limits the games; `--no-repository` and `--no-games` skip one half.
 
-Tools that act on one game take `--game <id>` or `GAMEBASE_GAME`; while only one game is registered they pick it themselves:
+Tools that act on one game take `--game <id>` or `GAMEBASE_GAME`, which they need now that more than one game is registered:
 
 ```text
 node tools/export.js [--game <id>] [--preset "<name>"]

@@ -31,10 +31,11 @@ func get_bool(key: StringName, default_value := false) -> bool:
 	return bool(raw) if raw is bool else default_value
 
 ## A counter stored under `key`; saved numbers come back as floats, so read
-## counters through this instead of `get_value`.
+## counters through this instead of `get_value`. A value that is not a whole
+## number, as a hand-edited save can hold, reads as `default_value`.
 func get_int(key: StringName, default_value := 0) -> int:
-	var raw: Variant = get_value(key, default_value)
-	return int(raw) if raw is int or raw is float else default_value
+	var number: Variant = SaveValues.whole_number(get_value(key, default_value))
+	return default_value if number == null else int(number)
 
 ## Adds `delta` to the counter under `key` and returns the new value.
 func add_int(key: StringName, delta: int) -> int:

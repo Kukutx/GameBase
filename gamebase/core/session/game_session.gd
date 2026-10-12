@@ -160,8 +160,8 @@ func _handle_player_defeat() -> void:
 		return
 	_handling_defeat = true
 	var loss := 0
-	if PlayerState.money > 0:
-		loss = PlayerState.lose_money(maxi(int(ceil(float(PlayerState.money) * 0.10)), 1))
+	if definition.defeat_money_loss_percent > 0 and PlayerState.money > 0:
+		loss = PlayerState.lose_money(maxi(ceili(PlayerState.money * definition.defeat_money_loss_percent / 100.0), 1))
 	var calendar := GameCalendar.current()
 	WorldClock.set_time(calendar.get_wake_day(WorldClock.day, WorldClock.minute_of_day), calendar.wake_minute)
 	PlayerState.restore_full_energy()

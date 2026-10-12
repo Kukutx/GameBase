@@ -11,13 +11,13 @@ func test_static_and_formatted_toasts_translate_at_emit_time() -> void:
 
 	TranslationServer.set_locale("zh_CN")
 	events.toast("Travel failed")
-	events.toastf("Slept until %s %d", ["Spring", 3])
+	events.toastf("Slept until %s", ["Spring"])
 	assert_eq(observed[0], "旅行失败")
-	assert_eq(observed[1], "睡到了春季 3日")
+	assert_eq(observed[1], "睡到了春季")
 
 	TranslationServer.set_locale("en")
 	events.toast("Travel failed")
-	events.toastf("Slept until %s %d", ["Spring", 3])
+	events.toastf("Slept until %s", ["Spring"])
 	assert_eq(observed[2], "Travel failed")
-	assert_eq(observed[3], "Slept until Spring 3")
+	assert_eq(observed[3], "Slept until Spring")
 	TranslationServer.set_locale(previous)

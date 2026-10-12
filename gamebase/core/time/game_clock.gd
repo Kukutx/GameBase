@@ -78,8 +78,9 @@ func get_minute() -> int:
 func get_time_text() -> String:
 	return "Day %d  %02d:%02d" % [day, get_hour(), get_minute()]
 
+## The date (`GameCalendar.get_date_text()`) and the time of day, translated.
 func get_calendar_text() -> String:
-	return tr("%s %d  %02d:%02d") % [tr(get_season_name()), get_day_of_season(), get_hour(), get_minute()]
+	return "%s  %02d:%02d" % [GameCalendar.current().get_date_text(day), get_hour(), get_minute()]
 
 func get_season_index() -> int:
 	return GameCalendar.current().get_season_index(day)
