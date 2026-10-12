@@ -1,8 +1,11 @@
 class_name GameSceneTransition
 extends CanvasLayer
 
-## Changes the scene behind a fade: the screen covers, the scene changes, and
-## the screen clears again. `WorldTravel` changes locations through it.
+## Changes the scene behind a fade: the screen covers while the scene loads
+## (on a thread where the platform has them; a web build without threads
+## loads it when the change is asked for), the scene changes, and the screen
+## clears again.
+## `WorldTravel` changes locations through it.
 ##
 ## A change asked for while the screen clears after the last one starts at
 ## once from where the fade is; only one change covers the screen at a time.
@@ -31,24 +34,26 @@ func _ready() -> void:
 	add_child(_overlay)
 
 ## Covers the screen, opens the scene at `path` and clears the screen. False
-## when the scene cannot load or another change covers the screen; true when
-## the change starts (`scene_change_failed` follows if it then cannot open).
+## when there is no scene at `path` or another change covers the screen; true
+## when the change starts (`scene_change_failed` follows if it then cannot
+## open).
 func change_scene(path: String) -> bool:
 	if _covering or path.is_empty():
 		return false
-	var packed := ResourceLoader.load(path) as PackedScene
-	if packed == null:
+	# No type hint: what the load gives is checked once it is done, and a
+	# resource that is no scene then fails the change instead of the loader.
+	if not ResourceLoader.exists(path) or ResourceLoader.load_threaded_request(path) != OK:
 		push_error("Transition: scene is unavailable: %s" % path)
 		return false
 	_covering = true
-	_run(path, packed)
+	_run(path)
 	return true
 
 ## Whether a change covers the screen: from its request until its scene opens.
 func is_covering() -> bool:
 	return _covering
 
-func _run(path: String, packed: PackedScene) -> void:
+func _run(path: String) -> void:
 	_stop_fade()
 	var seconds := 0.0 if GameSettings.reduced_motion else fade_seconds
 	if seconds > 0.0:
@@ -56,10 +61,12 @@ func _run(path: String, packed: PackedScene) -> void:
 		_fade = create_tween()
 		_fade.tween_property(_overlay, "color:a", 1.0, seconds * (1.0 - _overlay.color.a))
 		await _fade.finished
-	var error := get_tree().change_scene_to_packed(packed)
+	var packed: PackedScene = await _finish_loading(path)
+	var error := get_tree().change_scene_to_packed(packed) if packed != null else ERR_CANT_OPEN
 	_covering = false
 	if error != OK:
-		push_error("Transition: scene change failed (%d): %s" % [error, path])
+		# Handled: the screen clears and `scene_change_failed` tells travel.
+		push_warning("Transition: scene change failed (%d): %s" % [error, path])
 		_clear()
 		scene_change_failed.emit(path)
 		return
@@ -75,6 +82,13 @@ func _run(path: String, packed: PackedScene) -> void:
 	# Not awaited: a change that takes over kills this fade, and a killed tween
 	# never finishes.
 	_fade.finished.connect(_clear)
+
+# The scene the background load of `path` gave, once it is done; null when it
+# is no scene.
+func _finish_loading(path: String) -> PackedScene:
+	while ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		await get_tree().process_frame
+	return ResourceLoader.load_threaded_get(path) as PackedScene
 
 func _stop_fade() -> void:
 	if _fade != null and _fade.is_valid():

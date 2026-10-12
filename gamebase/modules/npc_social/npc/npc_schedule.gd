@@ -116,9 +116,11 @@ func _apply_schedule(day: int, minute_of_day: int) -> void:
 		current_activity = entry.activity
 		activity_changed.emit(current_activity)
 	if not actor.global_position.is_equal_approx(entry.target_position):
-		_target_position = entry.target_position
-		_has_target = true
-		_sync_navigation_target()
+		# A path is planned once per target, not again every minute on the way.
+		if not _has_target or _target_position != entry.target_position:
+			_target_position = entry.target_position
+			_has_target = true
+			_sync_navigation_target()
 	else:
 		_finish_movement()
 

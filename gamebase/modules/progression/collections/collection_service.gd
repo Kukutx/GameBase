@@ -2,6 +2,8 @@ class_name CollectionService
 extends Node
 
 signal collection_changed(category: StringName, item_id: StringName, count: int)
+## Emitted when an item is recorded in a category for the first time.
+signal item_discovered(category: StringName, item_id: StringName)
 
 const STATE_KEY := &"collection:records"
 const CROPS := &"crops"
@@ -12,6 +14,10 @@ const PROCESSED := &"processed"
 const FORAGE := &"forage"
 const SHIPPED := &"shipped"
 const CATEGORIES: Array[StringName] = [CROPS, FISH, MINERALS, ANIMAL_PRODUCTS, PROCESSED, FORAGE, SHIPPED]
+
+# category -> its item ids, for the content of `_total_ids_revision`.
+var _total_ids: Dictionary = {}
+var _total_ids_revision := -1
 
 func _ready() -> void:
 	LifesimEvents.crop_harvested.connect(_on_crop_harvested)
@@ -25,36 +31,57 @@ func _ready() -> void:
 func record(category: StringName, item_id: StringName, quantity: int = 1) -> int:
 	if category == &"" or item_id == &"" or quantity <= 0:
 		return get_count(category, item_id)
-	var records := _get_records()
+	# Only the category that changes is copied; the others are shared with the
+	# records WorldState held, which nothing changes in place.
+	var records := _records().duplicate()
 	var category_key := String(category)
-	var item_key := String(item_id)
 	var raw_category: Variant = records.get(category_key, {})
-	var category_data: Dictionary = (raw_category as Dictionary).duplicate(true) if raw_category is Dictionary else {}
-	var next := _safe_count(category_data.get(item_key, 0)) + quantity
-	category_data[item_key] = next
+	var category_data: Dictionary = (raw_category as Dictionary).duplicate() if raw_category is Dictionary else {}
+	var previous := _count_of(category_data, item_id)
+	var next := previous + quantity
+	category_data[String(item_id)] = next
 	records[category_key] = category_data
-	_set_records(records)
+	WorldState.set_value(STATE_KEY, records)
 	collection_changed.emit(category, item_id, next)
+	if previous == 0:
+		item_discovered.emit(category, item_id)
 	return next
 
 func get_count(category: StringName, item_id: StringName) -> int:
-	var records := _get_records()
-	var category_data: Variant = records.get(String(category), {})
-	if not category_data is Dictionary:
-		return 0
-	return _safe_count((category_data as Dictionary).get(String(item_id), 0))
+	var category_data: Variant = _records().get(String(category), {})
+	return _count_of(category_data, item_id) if category_data is Dictionary else 0
 
 func is_discovered(category: StringName, item_id: StringName) -> bool:
 	return get_count(category, item_id) > 0
 
 func get_discovered_count(category: StringName) -> int:
+	var category_data: Variant = _records().get(String(category), {})
+	if not category_data is Dictionary:
+		return 0
 	var count := 0
-	for item_id: StringName in get_total_ids(category):
-		if is_discovered(category, item_id):
+	for item_id: StringName in _get_total_ids(category):
+		if _count_of(category_data, item_id) > 0:
 			count += 1
 	return count
 
+## The ids of the items `category` holds in the running game's content, sorted.
 func get_total_ids(category: StringName) -> Array[StringName]:
+	return _get_total_ids(category).duplicate()
+
+## How many items `category` holds in the running game's content.
+func get_total_count(category: StringName) -> int:
+	return _get_total_ids(category).size()
+
+# The cached ids of `category`; callers do not change them.
+func _get_total_ids(category: StringName) -> Array[StringName]:
+	if _total_ids_revision != ContentRegistry.active.revision:
+		_total_ids.clear()
+		_total_ids_revision = ContentRegistry.active.revision
+	if not _total_ids.has(category):
+		_total_ids[category] = _find_total_ids(category)
+	return _total_ids[category]
+
+func _find_total_ids(category: StringName) -> Array[StringName]:
 	var ids: Dictionary = {}
 	match category:
 		CROPS:
@@ -100,7 +127,7 @@ func get_total_ids(category: StringName) -> Array[StringName]:
 
 func get_category_entries(category: StringName) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for item_id: StringName in get_total_ids(category):
+	for item_id: StringName in _get_total_ids(category):
 		var item := ItemData.find(item_id)
 		result.append({
 			"id": String(item_id),
@@ -113,7 +140,7 @@ func get_category_entries(category: StringName) -> Array[Dictionary]:
 func get_summary() -> String:
 	var parts := PackedStringArray()
 	for category: StringName in CATEGORIES:
-		parts.append("%s %d/%d" % [get_category_name(category), get_discovered_count(category), get_total_ids(category).size()])
+		parts.append("%s %d/%d" % [get_category_name(category), get_discovered_count(category), _get_total_ids(category).size()])
 	return " · ".join(parts)
 
 func get_category_name(category: StringName) -> String:
@@ -130,17 +157,13 @@ func get_category_name(category: StringName) -> String:
 func clear() -> void:
 	WorldState.erase(STATE_KEY)
 
-func _get_records() -> Dictionary:
+# The records as WorldState holds them; read, never changed in place.
+func _records() -> Dictionary:
 	var raw: Variant = WorldState.get_value(STATE_KEY, {})
-	return raw.duplicate(true) if raw is Dictionary else {}
+	return raw if raw is Dictionary else {}
 
-func _set_records(records: Dictionary) -> void:
-	WorldState.set_value(STATE_KEY, records.duplicate(true))
-
-func _safe_count(value: Variant) -> int:
-	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
-		return 0
-	return maxi(int(value), 0)
+static func _count_of(category_data: Dictionary, item_id: StringName) -> int:
+	return SaveValues.count(category_data.get(String(item_id), 0))
 
 func _on_crop_harvested(_crop_id: StringName, item_id: StringName, quantity: int) -> void:
 	record(CROPS, item_id, maxi(quantity, 1))

@@ -9,6 +9,8 @@ signal focus_changed(target: Interactable)
 
 var _nearby: Array[Interactable] = []
 var _focused: Interactable
+# The focus by id: one freed without leaving the area still reads as a change.
+var _focused_id := 0
 
 func _ready() -> void:
 	area_entered.connect(_on_area_entered)
@@ -40,22 +42,31 @@ func _on_area_exited(area: Area2D) -> void:
 		_nearby.erase(area)
 		_refresh_focus()
 
+# Focuses the nearest enabled interactable in reach. A disabled one stays
+# nearby: it is focused once it is enabled again.
 func _refresh_focus() -> void:
 	for index in range(_nearby.size() - 1, -1, -1):
-		var item := _nearby[index]
-		if not is_instance_valid(item) or not item.enabled:
+		if not is_instance_valid(_nearby[index]):
 			_nearby.remove_at(index)
 	var next_focus: Interactable = null
 	var best_distance := INF
 	for item: Interactable in _nearby:
+		if not item.enabled:
+			continue
 		var distance := global_position.distance_squared_to(item.global_position)
 		if distance < best_distance:
 			best_distance = distance
 			next_focus = item
-	if next_focus == _focused:
-		_update_prompt()
+	var next_id := next_focus.get_instance_id() if next_focus != null else 0
+	if next_id == _focused_id:
 		return
+	# The prompt is written when the focus or what it says changes, not every frame.
+	if is_instance_valid(_focused) and _focused.prompt_changed.is_connected(_update_prompt):
+		_focused.prompt_changed.disconnect(_update_prompt)
 	_focused = next_focus
+	_focused_id = next_id
+	if _focused != null:
+		_focused.prompt_changed.connect(_update_prompt)
 	focus_changed.emit(_focused)
 	_update_prompt()
 

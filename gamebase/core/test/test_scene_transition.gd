@@ -54,6 +54,19 @@ func test_a_change_without_a_scene_is_refused() -> void:
 	assert_false(transition.change_scene(""))
 	assert_false(transition.is_covering())
 
+func test_a_resource_that_is_no_scene_fails_and_clears_the_screen() -> void:
+	var path := TEST_DIRECTORY.path_join("not_a_scene.tres")
+	assert_eq(ResourceSaver.save(Theme.new(), path), OK)
+	var transition := _transition()
+	watch_signals(transition)
+	assert_true(transition.change_scene(path), "the load starts; what it gives shows once it is done")
+	await wait_for_signal(transition.scene_change_failed, 2.0)
+	assert_signal_emitted_with_parameters(transition, "scene_change_failed", [path])
+	assert_push_warning("Transition: scene change failed")
+	assert_false(transition.is_covering())
+	assert_false((transition.get_node("FadeOverlay") as ColorRect).visible)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
 func _transition() -> GameSceneTransition:
 	var transition := GameSceneTransition.new()
 	transition.fade_seconds = 0.02

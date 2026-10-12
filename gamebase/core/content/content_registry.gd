@@ -30,6 +30,15 @@ static var active: ContentRegistry
 ## The packs `rebuild()` indexes: the game's `GameDefinition.content`, unless a
 ## test sets others.
 var packs: Array[ContentPack] = []
+## Names the content this registry indexed last: it changes with every
+## `index()` of any registry, so a cache built from the content keeps it and
+## rebuilds when `ContentRegistry.active.revision` differs.
+var revision := 0
+## Set in a release build (`GameModules`), whose content passed `find_problems()`
+## before the export: what the checks proved is then taken as given.
+var checked_before_export := false
+
+static var _last_revision := 0
 
 ## kind -> the script of its entries.
 var _kinds: Dictionary = {}
@@ -38,8 +47,13 @@ var _kind_by_script: Dictionary = {}
 ## kind -> {id (String) -> ContentEntry}.
 var _entries: Dictionary = {}
 var _checks: Array[Callable] = []
-## location id -> {spawn id -> number of spawn points with that id}.
+## location id -> {spawn id -> number of spawn points with that id}, read
+## from the location's scene when first asked for.
 var _location_spawn_ids: Dictionary = {}
+## kind -> its entries sorted by id, read-only; built when first asked for.
+var _sorted_entries: Dictionary = {}
+## scene path -> the location whose scene it is; built when first asked for.
+var _locations_by_scene: Dictionary = {}
 
 func _init() -> void:
 	packs.assign(GameDefinition.current().content)
@@ -70,6 +84,7 @@ func register_kind(kind: StringName, entry_script: Script) -> void:
 	_kind_by_script[entry_script] = kind
 	if not _entries.has(kind):
 		_entries[kind] = {}
+	_sorted_entries.erase(kind)
 
 ## Registers a check of the whole content, for what no single entry can tell
 ## (a graph without cycles, a ladder of tiers): `check.call(registry)` returns
@@ -79,7 +94,9 @@ func register_check(check: Callable) -> void:
 		_checks.append(check)
 
 ## Indexes and checks all content (`index()`, then `find_problems()`); returns
-## the problems found, which are also reported with `push_error`.
+## the problems found, which are also reported with `push_error`. The checks
+## open every location's scene, so a release build only indexes (`index()`):
+## its content passed them before it shipped.
 func rebuild() -> PackedStringArray:
 	var problems := index()
 	problems.append_array(find_problems())
@@ -95,6 +112,10 @@ func index() -> PackedStringArray:
 	for kind: StringName in _kinds:
 		_entries[kind] = {}
 	_location_spawn_ids.clear()
+	_sorted_entries.clear()
+	_locations_by_scene.clear()
+	_last_revision += 1
+	revision = _last_revision
 	for pack: ContentPack in packs:
 		if pack == null:
 			problems.append("the game lists an empty content pack")
@@ -118,9 +139,8 @@ func index() -> PackedStringArray:
 			by_id[String(entry.id)] = entry
 	return problems
 
-## Checks the indexed content (see the class description) and records each
-## location's spawn points (`has_location_spawn()`). Returns the problems and
-## reports nothing itself.
+## Checks the indexed content (see the class description). Returns the
+## problems and reports nothing itself.
 func find_problems() -> PackedStringArray:
 	var problems := GameSettingsService.find_control_problems(GameSettingsService.game_controls())
 	problems.append_array(GameWeatherSystem.find_odds_problems(GameDefinition.current().weather_odds))
@@ -148,15 +168,32 @@ func get_entry(kind: StringName, id: StringName) -> ContentEntry:
 func has_entry(kind: StringName, id: StringName) -> bool:
 	return get_entry(kind, id) != null
 
-## Every entry of `kind`, sorted by id.
+## Every entry of `kind`, sorted by id. The array is read-only and shared by
+## every caller until the next `index()`.
 func get_entries(kind: StringName) -> Array:
+	var cached: Variant = _sorted_entries.get(kind)
+	if cached != null:
+		return cached
 	var by_id: Dictionary = _entries.get(kind, {})
 	var ids: Array = by_id.keys()
 	ids.sort()
 	var result: Array = []
 	for id: String in ids:
 		result.append(by_id[id])
+	result.make_read_only()
+	_sorted_entries[kind] = result
 	return result
+
+## The location whose scene is `scene_path`, or null. When several share it
+## (a problem `find_problems()` reports), the one with the first id.
+func get_location_for_scene(scene_path: String) -> WorldLocationData:
+	if scene_path.is_empty():
+		return null
+	if _locations_by_scene.is_empty():
+		for location: WorldLocationData in _locations():
+			if not _locations_by_scene.has(location.scene_path):
+				_locations_by_scene[location.scene_path] = location
+	return _locations_by_scene.get(scene_path) as WorldLocationData
 
 ## The registered kinds, sorted.
 func get_kinds() -> Array[StringName]:
@@ -183,13 +220,61 @@ func get_kind_of(entry: ContentEntry) -> StringName:
 static func get_kind_label(kind: StringName) -> String:
 	return String(kind).replace("_", " ")
 
-## Whether the scene of `location_id` has exactly one spawn point `spawn_id`,
-## as `find_problems()` last saw it.
+## Whether the scene of `location_id` has exactly one spawn point `spawn_id`.
+## The scene's spawn points are read from its node list the first time, without
+## instancing it; content `checked_before_export` is taken at its word, since
+## reading the scene would load it before its travel's fade.
 func has_location_spawn(location_id: StringName, spawn_id: StringName) -> bool:
 	if location_id == &"" or spawn_id == &"":
 		return false
-	var counts: Dictionary = _location_spawn_ids.get(String(location_id), {})
-	return int(counts.get(String(spawn_id), 0)) == 1
+	if checked_before_export:
+		return get_entry(WorldLocationData.KIND, location_id) != null
+	return int(_get_spawn_counts(location_id).get(String(spawn_id), 0)) == 1
+
+## The spawn points of `packed`, read from its node list without instancing it:
+## spawn id (String) -> how many spawn points have it. Spawn points inside
+## scenes it instances count too.
+static func count_scene_spawns(packed: PackedScene) -> Dictionary:
+	var counts: Dictionary = {}
+	if packed != null:
+		_count_state_spawns(packed.get_state(), {}, counts)
+	return counts
+
+# `root_overrides` are what the node instancing this scene sets on its root.
+static func _count_state_spawns(state: SceneState, root_overrides: Dictionary, counts: Dictionary) -> void:
+	for node in range(state.get_node_count()):
+		var properties: Dictionary = {}
+		for property in range(state.get_node_property_count(node)):
+			properties[state.get_node_property_name(node, property)] = state.get_node_property_value(node, property)
+		if node == 0:
+			properties.merge(root_overrides, true)
+		var instance := state.get_node_instance(node)
+		if instance != null:
+			_count_state_spawns(instance.get_state(), properties, counts)
+			continue
+		var script := properties.get(&"script") as Script
+		if not _extends_script(script, WorldSpawnPoint):
+			continue
+		var spawn_id: Variant = properties.get(&"spawn_id", script.get_property_default_value(&"spawn_id"))
+		var key := String(spawn_id) if spawn_id != null else ""
+		counts[key] = int(counts.get(key, 0)) + 1
+
+static func _extends_script(script: Script, base: Script) -> bool:
+	while script != null:
+		if script == base:
+			return true
+		script = script.get_base_script()
+	return false
+
+func _get_spawn_counts(location_id: StringName) -> Dictionary:
+	var key := String(location_id)
+	if not _location_spawn_ids.has(key):
+		var counts: Dictionary = {}
+		var location := get_entry(WorldLocationData.KIND, location_id) as WorldLocationData
+		if location != null and not location.scene_path.is_empty() and ResourceLoader.exists(location.scene_path):
+			counts = count_scene_spawns(load(location.scene_path) as PackedScene)
+		_location_spawn_ids[key] = counts
+	return _location_spawn_ids[key]
 
 ## What the nodes under `root` report about themselves (see the class
 ## description); `location` is the location whose scene `root` is, or null.
@@ -271,6 +356,9 @@ func _check_locations(problems: PackedStringArray) -> void:
 		roots[String(location.id)] = root
 		var spawn_counts: Dictionary = {}
 		_collect_spawn_counts(root, spawn_counts)
+		# Travel reads the spawn points from the node list; it must see these.
+		if count_scene_spawns(packed) != spawn_counts:
+			problems.append("location '%s' scene '%s' has spawn points its node list does not show; place each as a WorldSpawnPoint node of its own, with its spawn_id set there rather than overridden from an inheriting or instancing scene" % [location.id, location.scene_path])
 		_location_spawn_ids[String(location.id)] = spawn_counts
 	# persistent key -> "location 'x' node 'y'"
 	var key_owners: Dictionary = {}

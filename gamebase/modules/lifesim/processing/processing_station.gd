@@ -154,7 +154,9 @@ func _on_interacted(_actor: Node) -> void:
 	GameEvents.toast("No processable materials")
 
 func _on_time_changed(_day: int, _minute_of_day: int) -> void:
-	_update_job()
+	# An idle or finished station shows nothing that changes with time.
+	if active_recipe_id != &"" and not output_ready:
+		_update_job()
 
 func _update_job() -> void:
 	if active_recipe_id == &"" or output_ready:

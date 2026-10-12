@@ -3,7 +3,8 @@ extends Node
 
 ## Installs every `GameModule` the game links, then has `ContentDB` index and
 ## check the game's content and `GameRules` check the conditions and actions it
-## names, now that every module registered its kinds and rule keys.
+## names, now that every module registered its kinds and rule keys. A release
+## build only indexes: its content passed the checks before it shipped.
 ##
 ## A game links only the modules its `game.json` lists (`tools/link.js`), so the
 ## global classes extending `GameModule` are exactly the game's modules and the
@@ -18,6 +19,13 @@ func _ready() -> void:
 		var module := script.new() as GameModule
 		module.install()
 		_modules.append(module)
+	# The checks open every location's scene, which only slows a release
+	# build's start; its content passed them before the export.
+	if not OS.is_debug_build():
+		ContentDB.checked_before_export = true
+		for problem: String in ContentDB.index():
+			push_error("ContentDB: " + problem)
+		return
 	ContentDB.rebuild()
 	for problem: String in GameRules.validate_content(ContentDB):
 		push_error("GameRules: " + problem)

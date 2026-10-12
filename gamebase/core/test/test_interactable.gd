@@ -56,3 +56,50 @@ func test_a_press_while_the_controls_are_locked_is_left_to_whoever_holds_them() 
 	var release := InputEventAction.new()
 	release.action = controller.action
 	Input.parse_input_event(release)
+
+func test_a_disabled_interactable_in_reach_is_focused_once_it_is_enabled() -> void:
+	var controller := InteractionController.new()
+	add_child_autofree(controller)
+	var interactable := Interactable.new()
+	interactable.enabled = false
+	add_child_autofree(interactable)
+	controller.call("_on_area_entered", interactable)
+	assert_null(controller.get_focused())
+	interactable.enabled = true
+	assert_eq(controller.get_focused(), interactable, "it stayed in reach while disabled")
+
+func test_the_prompt_follows_what_the_focused_interactable_says() -> void:
+	var controller := InteractionController.new()
+	var label := Label.new()
+	controller.prompt_label = label
+	add_child_autofree(controller)
+	add_child_autofree(label)
+	var interactable := Interactable.new()
+	add_child_autofree(interactable)
+	controller.call("_on_area_entered", interactable)
+	assert_string_contains(label.text, "Interact")
+	interactable.set_prompt("Harvest %s", ["Turnip"])
+	assert_string_contains(label.text, "Harvest Turnip")
+	interactable.prompt_text = "Rock"
+	assert_string_contains(label.text, "Rock")
+
+func test_the_prompt_hides_when_the_focus_is_disabled_or_freed() -> void:
+	var controller := InteractionController.new()
+	var label := Label.new()
+	controller.prompt_label = label
+	add_child_autofree(controller)
+	add_child_autofree(label)
+	var interactable := Interactable.new()
+	add_child_autofree(interactable)
+	controller.call("_on_area_entered", interactable)
+	assert_true(label.visible)
+	interactable.enabled = false
+	controller.get_focused()
+	assert_false(label.visible, "a disabled interactable shows no prompt")
+	interactable.enabled = true
+	controller.get_focused()
+	assert_true(label.visible)
+	# Freed without the area noticing it leave.
+	interactable.free()
+	assert_null(controller.get_focused())
+	assert_false(label.visible)

@@ -5,17 +5,35 @@ signal placement_added(location_id: StringName, record: Dictionary)
 signal placement_removed(location_id: StringName, placement_id: StringName)
 
 const SERIAL_KEY := &"building:serial"
+const PLACEMENTS_PREFIX := "building:placements:"
 const CONTAINER_NAME := "PlacedStructures"
 
 var _removing_placements: Dictionary = {}
 var _placing_from_inventory := false
+# location id (String) -> {"source": the records WorldState holds, "revision":
+# the content's, "records": them checked, "effects": effect -> positions}.
+var _checked: Dictionary = {}
 
 func _ready() -> void:
 	get_tree().scene_changed.connect(_on_scene_changed)
 	refresh_current_scene.call_deferred()
 
 func get_placements(location_id: StringName) -> Array[Dictionary]:
+	var records: Array[Dictionary] = _get_checked(location_id)["records"]
+	return records.duplicate(true)
+
+# The location's records, checked once for each value WorldState holds and
+# each content; callers read them and never change them.
+func _get_checked(location_id: StringName) -> Dictionary:
 	var raw: Variant = WorldState.get_value(_placements_key(location_id), [])
+	var cached: Dictionary = _checked.get(String(location_id), {})
+	if not cached.is_empty() and is_same(cached["source"], raw) and int(cached["revision"]) == ContentRegistry.active.revision:
+		return cached
+	cached = {"source": raw, "revision": ContentRegistry.active.revision, "records": _check_records(location_id, raw), "effects": {}}
+	_checked[String(location_id)] = cached
+	return cached
+
+func _check_records(location_id: StringName, raw: Variant) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var seen_ids: Dictionary = {}
 	if raw is Array:
@@ -57,7 +75,7 @@ func can_place(placeable_id: StringName, location_id: StringName, position: Vect
 	var snapped := snap_position(position, data.snap_size)
 	if _current_location_id() == location_id and not _is_inside_build_zone(placeable_id, snapped):
 		return false
-	for record: Dictionary in get_placements(location_id):
+	for record: Dictionary in _get_checked(location_id)["records"]:
 		var other_data := PlaceableData.find(StringName(String(record.get("placeable_id", ""))))
 		var other_position := Vector2(float(record.get("x", 0.0)), float(record.get("y", 0.0)))
 		var required_spacing := data.minimum_spacing
@@ -148,8 +166,23 @@ func remove_placement(location_id: StringName, placement_id: StringName, refund_
 	return true
 
 func get_daily_effect_positions(location_id: StringName, effect: StringName) -> Array[Dictionary]:
+	return _get_effect_positions(location_id, effect).duplicate(true)
+
+## Whether a placement with the daily `effect` covers `point`. Every farm plot
+## asks each day, so the placements are checked once, not once per plot.
+func is_point_affected(location_id: StringName, effect: StringName, point: Vector2) -> bool:
+	for entry: Dictionary in _get_effect_positions(location_id, effect):
+		if point.distance_to(entry["position"] as Vector2) <= float(entry["radius"]):
+			return true
+	return false
+
+func _get_effect_positions(location_id: StringName, effect: StringName) -> Array[Dictionary]:
+	var checked := _get_checked(location_id)
+	var effects: Dictionary = checked["effects"]
+	if effects.has(effect):
+		return effects[effect]
 	var result: Array[Dictionary] = []
-	for record: Dictionary in get_placements(location_id):
+	for record: Dictionary in checked["records"]:
 		var data := PlaceableData.find(StringName(String(record.get("placeable_id", ""))))
 		if data == null or data.daily_effect != effect:
 			continue
@@ -158,13 +191,8 @@ func get_daily_effect_positions(location_id: StringName, effect: StringName) -> 
 			"radius": data.effect_radius,
 			"placement_id": String(record.get("id", "")),
 		})
+	effects[effect] = result
 	return result
-
-func is_point_affected(location_id: StringName, effect: StringName, point: Vector2) -> bool:
-	for entry: Dictionary in get_daily_effect_positions(location_id, effect):
-		if point.distance_to(entry["position"] as Vector2) <= float(entry["radius"]):
-			return true
-	return false
 
 func refresh_current_scene() -> void:
 	var scene := get_tree().current_scene
@@ -239,12 +267,8 @@ func _is_inside_build_zone(placeable_id: StringName, point: Vector2) -> bool:
 
 func _next_unique_serial() -> int:
 	var used_ids: Dictionary = {}
-	var world := WorldState.to_save_data()
-	for raw_key: Variant in world.keys():
-		var key := String(raw_key)
-		if not key.begins_with("building:placements:"):
-			continue
-		var raw_records: Variant = world[raw_key]
+	for key: StringName in WorldState.get_keys(PLACEMENTS_PREFIX):
+		var raw_records: Variant = WorldState.get_value(key)
 		if not raw_records is Array:
 			continue
 		for raw_record: Variant in raw_records:
@@ -267,7 +291,7 @@ func _set_placements(location_id: StringName, placements: Array[Dictionary]) -> 
 	WorldState.set_value(_placements_key(location_id), placements.duplicate(true))
 
 func _placements_key(location_id: StringName) -> StringName:
-	return StringName("building:placements:%s" % String(location_id))
+	return StringName(PLACEMENTS_PREFIX + String(location_id))
 
 func _on_scene_changed() -> void:
 	refresh_current_scene.call_deferred()
