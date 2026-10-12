@@ -1,8 +1,9 @@
 extends "res://gamebase/core/test/runtime_smoke.gd"
 
 ## Plays Iron Banners: starts a new game, opens the battle at the ford on the
-## camp's war table and leaves it, walks to the lookout and back through the
-## portals, sleeps in the bed, saves, changes state and loads it back.
+## camp's war table and the battle in the pass from the muster and leaves
+## each, walks to the lookout and back through the portals, sleeps in the bed,
+## saves, changes state and loads it back.
 
 const START_SCENE := "res://game/world/start.tscn"
 const LOOKOUT_SCENE := "res://game/world/lookout.tscn"
@@ -38,6 +39,15 @@ func _run() -> void:
 	host.cancel()
 	await process_frame
 	_check(not bool(host.is_running()), "The battle did not close")
+
+	_use(current_scene.get_node("Muster/Interactable"))
+	await process_frame
+	_check(bool(host.is_running()) and host.get_active_id() == &"pass_battle", "The muster did not open the battle in the pass")
+	var fields := root.find_children("*", "RtsBattleGame", true, false)
+	_check(fields.size() == 1 and int(fields[0].get("battle").get("units").size()) == 19, "The battle in the pass does not show its nineteen units")
+	host.cancel()
+	await process_frame
+	_check(not bool(host.is_running()), "The battle in the pass did not close")
 
 	await _walk_into(current_scene.get_node("ToLookout"))
 	if not await _arrive(LOOKOUT_SCENE):

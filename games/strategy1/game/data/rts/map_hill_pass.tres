@@ -1,0 +1,127 @@
+[gd_resource type="Resource" script_class="RtsMapData" load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/rts/data/rts_map_data.gd" id="1_map"]
+[ext_resource type="Script" path="res://gamebase/modules/rts/data/rts_placement.gd" id="2_placement"]
+
+[sub_resource type="Resource" id="Placement_1"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 80)
+
+[sub_resource type="Resource" id="Placement_2"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 100)
+
+[sub_resource type="Resource" id="Placement_3"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 120)
+
+[sub_resource type="Resource" id="Placement_4"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 140)
+
+[sub_resource type="Resource" id="Placement_5"]
+script = ExtResource("2_placement")
+unit_id = &"bowman"
+faction_id = &"banners"
+position = Vector2(36, 90)
+
+[sub_resource type="Resource" id="Placement_6"]
+script = ExtResource("2_placement")
+unit_id = &"bowman"
+faction_id = &"banners"
+position = Vector2(36, 110)
+
+[sub_resource type="Resource" id="Placement_7"]
+script = ExtResource("2_placement")
+unit_id = &"bowman"
+faction_id = &"banners"
+position = Vector2(36, 130)
+
+[sub_resource type="Resource" id="Placement_8"]
+script = ExtResource("2_placement")
+unit_id = &"rider"
+faction_id = &"banners"
+position = Vector2(80, 60)
+
+[sub_resource type="Resource" id="Placement_9"]
+script = ExtResource("2_placement")
+unit_id = &"rider"
+faction_id = &"banners"
+position = Vector2(80, 160)
+
+[sub_resource type="Resource" id="Placement_10"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(400, 70)
+
+[sub_resource type="Resource" id="Placement_11"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(400, 90)
+
+[sub_resource type="Resource" id="Placement_12"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(400, 110)
+
+[sub_resource type="Resource" id="Placement_13"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(400, 130)
+
+[sub_resource type="Resource" id="Placement_14"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(400, 150)
+
+[sub_resource type="Resource" id="Placement_15"]
+script = ExtResource("2_placement")
+unit_id = &"brute"
+faction_id = &"raiders"
+position = Vector2(420, 100)
+
+[sub_resource type="Resource" id="Placement_16"]
+script = ExtResource("2_placement")
+unit_id = &"brute"
+faction_id = &"raiders"
+position = Vector2(420, 124)
+
+[sub_resource type="Resource" id="Placement_17"]
+script = ExtResource("2_placement")
+unit_id = &"slinger"
+faction_id = &"raiders"
+position = Vector2(436, 80)
+
+[sub_resource type="Resource" id="Placement_18"]
+script = ExtResource("2_placement")
+unit_id = &"slinger"
+faction_id = &"raiders"
+position = Vector2(440, 112)
+
+[sub_resource type="Resource" id="Placement_19"]
+script = ExtResource("2_placement")
+unit_id = &"slinger"
+faction_id = &"raiders"
+position = Vector2(436, 144)
+
+[resource]
+script = ExtResource("1_map")
+id = &"hill_pass"
+display_name = "Hill Pass"
+size = Vector2(464, 200)
+obstacles = Array[Rect2]([Rect2(200, 0, 60, 72), Rect2(200, 128, 60, 72), Rect2(120, 30, 24, 18), Rect2(326, 150, 22, 20), Rect2(300, 20, 18, 16)])
+player_faction_id = &"banners"
+placements = Array[ExtResource("2_placement")]([SubResource("Placement_1"), SubResource("Placement_2"), SubResource("Placement_3"), SubResource("Placement_4"), SubResource("Placement_5"), SubResource("Placement_6"), SubResource("Placement_7"), SubResource("Placement_8"), SubResource("Placement_9"), SubResource("Placement_10"), SubResource("Placement_11"), SubResource("Placement_12"), SubResource("Placement_13"), SubResource("Placement_14"), SubResource("Placement_15"), SubResource("Placement_16"), SubResource("Placement_17"), SubResource("Placement_18"), SubResource("Placement_19")])

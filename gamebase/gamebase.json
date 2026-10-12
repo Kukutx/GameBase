@@ -105,6 +105,12 @@
         "RunState": "res://gamebase/modules/roguelite/runs/run_service.gd"
       }
     },
+    "rts": {
+      "requires": ["combat"],
+      "autoloads": {
+        "RtsEvents": "res://gamebase/modules/rts/rts_events.gd"
+      }
+    },
     "skills": {
       "requires": [],
       "autoloads": {

@@ -27,8 +27,8 @@ msgstr "%s 移动 · %s 使用 · %s 存档 · %s 读档"
 msgid "Camp"
 msgstr "营地"
 
-msgid "Welcome to camp! Plan the battle at the ford on the war table."
-msgstr "欢迎来到营地！在战术桌上筹划渡口之战。"
+msgid "Welcome to camp! Plan the battle at the ford on the war table, or lead the troops into the pass from the muster."
+msgstr "欢迎来到营地！在战术桌上筹划渡口之战，或从集结点率军杀入山口。"
 
 msgid "War Table"
 msgstr "战术桌"
@@ -71,3 +71,21 @@ msgstr "蛮兵"
 
 msgid "Slinger"
 msgstr "投石手"
+
+msgid "Muster"
+msgstr "集结点"
+
+msgid "Lead the Troops"
+msgstr "率军出征"
+
+msgid "Hill Pass"
+msgstr "山口"
+
+msgid "Spearman"
+msgstr "长枪兵"
+
+msgid "Bowman"
+msgstr "弓兵"
+
+msgid "Rider"
+msgstr "骑兵"

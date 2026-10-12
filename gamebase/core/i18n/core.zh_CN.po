@@ -377,3 +377,12 @@ msgstr "联网服务"
 
 msgid "Play"
 msgstr "开始"
+
+msgid "Cancel again to give up."
+msgstr "再按一次取消即放弃。"
+
+msgid "Victory!"
+msgstr "胜利！"
+
+msgid "Defeat."
+msgstr "战败。"

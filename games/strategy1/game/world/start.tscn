@@ -62,9 +62,9 @@ spawn_id = &"from_lookout"
 offset_left = 30.0
 offset_top = 34.0
 offset_right = 170.0
-offset_bottom = 74.0
+offset_bottom = 84.0
 theme_override_font_sizes/font_size = 9
-text = "Welcome to camp! Plan the battle at the ford on the war table."
+text = "Welcome to camp! Plan the battle at the ford on the war table, or lead the troops into the pass from the muster."
 autowrap_mode = 3
 
 [node name="Bed" parent="." instance=ExtResource("3_sleep")]
@@ -112,6 +112,32 @@ offset_right = 45.0
 offset_bottom = 26.0
 theme_override_font_sizes/font_size = 8
 text = "War Table"
+horizontal_alignment = 1
+
+[node name="Muster" parent="." instance=ExtResource("5_station")]
+position = Vector2(-110, 50)
+minigame_id = &"pass_battle"
+
+[node name="Interactable" parent="Muster" index="0"]
+prompt_text = "Lead the Troops"
+
+[node name="Pole" type="Polygon2D" parent="Muster"]
+z_index = -1
+polygon = PackedVector2Array(-1, -22, 1, -22, 1, 8, -1, 8)
+color = Color(0.42, 0.3, 0.2, 1)
+
+[node name="Banner" type="Polygon2D" parent="Muster"]
+z_index = -1
+polygon = PackedVector2Array(1, -22, 15, -22, 11, -16, 15, -10, 1, -10)
+color = Color(0.35, 0.5, 0.8, 1)
+
+[node name="Label" type="Label" parent="Muster"]
+offset_left = -45.0
+offset_top = 12.0
+offset_right = 45.0
+offset_bottom = 26.0
+theme_override_font_sizes/font_size = 8
+text = "Muster"
 horizontal_alignment = 1
 
 [node name="Player" parent="." instance=ExtResource("1_player")]

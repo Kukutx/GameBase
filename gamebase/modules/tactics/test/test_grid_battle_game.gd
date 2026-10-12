@@ -100,9 +100,13 @@ func test_an_unknown_map_ends_the_minigame_at_once() -> void:
 	assert_false((outcome["result"] as MiniGameResult).success)
 	assert_false(MiniGameHost.is_running())
 
+# The minigame the host runs now; the one the last test cancelled may still
+# wait to be freed.
 func _game() -> GridBattleGame:
-	var found := get_tree().root.find_children("*", "GridBattleGame", true, false)
-	return found[0] as GridBattleGame if not found.is_empty() else null
+	for node: Node in get_tree().root.find_children("*", "GridBattleGame", true, false):
+		if not node.is_queued_for_deletion():
+			return node as GridBattleGame
+	return null
 
 func _press(game: GridBattleGame, action: StringName) -> void:
 	var event := InputEventAction.new()

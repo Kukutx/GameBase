@@ -59,6 +59,15 @@ func test_the_fixture_minigame_is_valid_content_and_the_minigame_checks_its_sett
 	definition.settings["rounds"] = 0
 	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(["plays 0 rounds, fewer than one"]))
 
+func test_a_cancel_soon_after_one_that_asked_gives_the_minigame_up() -> void:
+	var minigame := _FixtureMiniGame.new()
+	assert_false(minigame.confirm_give_up(), "the first only asks")
+	assert_true(minigame.confirm_give_up())
+	assert_false(minigame.confirm_give_up(), "the next asks anew")
+	assert_eq(minigame.get_give_up_prompt(), "Cancel again to give up.")
+	assert_eq([minigame.get_outcome_text(true), minigame.get_outcome_text(false)], ["Victory!", "Defeat."])
+	minigame.free()
+
 func test_host_pauses_the_world_blocks_saving_and_restores_both() -> void:
 	var outcome := {}
 	var runner := func() -> void:

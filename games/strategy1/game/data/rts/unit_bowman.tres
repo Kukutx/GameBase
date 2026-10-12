@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RtsUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/rts/data/rts_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"bowman"
+display_name = "Bowman"
+color = Color(0.3, 0.62, 0.48, 1)
+max_health = 22
+damage = 5
+armor = 0
+attack_range = 60.0
+attack_cooldown = 1.5
+move_speed = 26.0
+sight_range = 80.0
+radius = 4.0

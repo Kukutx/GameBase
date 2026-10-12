@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RtsUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/rts/data/rts_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"raider"
+display_name = "Raider"
+color = Color(0.72, 0.32, 0.26, 1)
+max_health = 28
+damage = 6
+armor = 0
+attack_range = 4.0
+attack_cooldown = 1.0
+move_speed = 32.0
+sight_range = 70.0
+radius = 5.0

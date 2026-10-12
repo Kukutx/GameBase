@@ -24,8 +24,6 @@ enum Mode {
 
 ## How long the battle's outcome shows before the minigame ends.
 const END_SECONDS := 1.2
-## How long a first cancel at the commands waits for the second.
-const GIVE_UP_SECONDS := 2.0
 const CURSOR_ACTIONS := {
 	&"ui_left": Vector2i.LEFT, &"ui_right": Vector2i.RIGHT, &"ui_up": Vector2i.UP, &"ui_down": Vector2i.DOWN,
 }
@@ -38,7 +36,6 @@ var _mode := Mode.WATCH
 var _action: BattleActionData
 var _speed := 1.0
 var _end_left := 0.0
-var _give_up_left := 0.0
 var _board: GridBattleBoard
 var _title: Label
 var _info: Label
@@ -105,8 +102,6 @@ func pick(cell: Vector2i) -> void:
 func _process(delta: float) -> void:
 	if is_finished() or battle == null:
 		return
-	if _give_up_left > 0.0:
-		_give_up_left = maxf(_give_up_left - delta, 0.0)
 	if battle.is_over():
 		_end_left -= delta
 		if _end_left <= 0.0:
@@ -123,11 +118,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if _mode == Mode.PICK_MOVE or _mode == Mode.PICK_TARGET:
 			_set_mode(Mode.COMMAND)
-		elif _give_up_left > 0.0:
+		elif confirm_give_up():
 			battle.forfeit()
 		else:
-			_give_up_left = GIVE_UP_SECONDS
-			_message.text = tr("Cancel again to give up the battle.")
+			_message.text = get_give_up_prompt()
 		return
 	if _mode != Mode.PICK_MOVE and _mode != Mode.PICK_TARGET:
 		return
@@ -277,7 +271,7 @@ func _on_turn_ended(unit: GridUnit) -> void:
 func _on_ended(won: bool) -> void:
 	_end_left = END_SECONDS
 	_set_mode(Mode.WATCH)
-	_message.text = tr("Victory!") if won else tr("Defeat.")
+	_message.text = get_outcome_text(won)
 	TacticsEvents.battle_ended.emit(map.id, won)
 
 func _build() -> void:

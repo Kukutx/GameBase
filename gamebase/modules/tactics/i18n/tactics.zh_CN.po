@@ -21,12 +21,6 @@ msgstr "轮到 %s 行动。"
 msgid "Attack %d · Defense %d · Move %d"
 msgstr "攻击 %d · 防御 %d · 移动 %d"
 
-msgid "Cancel again to give up the battle."
-msgstr "再按一次取消即放弃这场战斗。"
-
-msgid "Defeat."
-msgstr "战败。"
-
 msgid "End Turn"
 msgstr "结束回合"
 
@@ -44,6 +38,3 @@ msgstr "选择目标格。取消可返回。"
 
 msgid "Pick where it moves. Cancel goes back."
 msgstr "选择要移动到的格子。取消可返回。"
-
-msgid "Victory!"
-msgstr "胜利！"
