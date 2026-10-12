@@ -31,7 +31,7 @@ func get_state(project_id: StringName) -> Dictionary:
 	var raw_progress: Variant = source.get("progress", {})
 	if raw_progress is Dictionary:
 		for raw_id: Variant in (raw_progress as Dictionary).keys():
-			var quantity := _safe_nonnegative_int((raw_progress as Dictionary)[raw_id])
+			var quantity := SaveValues.count((raw_progress as Dictionary)[raw_id])
 			if quantity > 0:
 				normalized_progress[String(raw_id)] = quantity
 	state["progress"] = normalized_progress
@@ -39,8 +39,8 @@ func get_state(project_id: StringName) -> Dictionary:
 	var completed := claimed or (source.get("completed", false) is bool and bool(source.get("completed", false)))
 	state["completed"] = completed
 	state["claimed"] = claimed
-	state["completed_day"] = _safe_nonnegative_int(source.get("completed_day", 0))
-	state["claimed_day"] = _safe_nonnegative_int(source.get("claimed_day", 0))
+	state["completed_day"] = SaveValues.count(source.get("completed_day", 0))
+	state["claimed_day"] = SaveValues.count(source.get("claimed_day", 0))
 	return state
 
 func get_progress(project_id: StringName, item_id: StringName) -> int:
@@ -212,14 +212,9 @@ func _ensure_state(project_id: StringName) -> Dictionary:
 func _requirements_complete(project: TownProjectData, progress: Dictionary) -> bool:
 	for raw_id: Variant in project.requirements.keys():
 		var required := project.get_required_quantity(StringName(String(raw_id)))
-		if required <= 0 or _safe_nonnegative_int(progress.get(String(raw_id), 0)) < required:
+		if required <= 0 or SaveValues.count(progress.get(String(raw_id), 0)) < required:
 			return false
 	return not project.requirements.is_empty()
-
-func _safe_nonnegative_int(value: Variant) -> int:
-	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
-		return 0
-	return maxi(int(value), 0)
 
 func _item_name(item_id: StringName) -> String:
 	var item := ItemData.find(item_id)

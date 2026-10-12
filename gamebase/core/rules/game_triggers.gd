@@ -85,7 +85,7 @@ static func get_actions_fingerprint(trigger: TriggerData) -> String:
 
 ## Fires the triggers on `event` with the event's arguments by name.
 func fire(event: StringName, args: Dictionary) -> void:
-	if GameSaveManager.is_restoring() or GameSession.is_starting_new_game():
+	if GameSession.is_changing():
 		return
 	if _depth >= MAX_DEPTH:
 		push_warning("GameTriggers: '%s' fired %d triggers deep; a trigger sets itself off" % [event, MAX_DEPTH])

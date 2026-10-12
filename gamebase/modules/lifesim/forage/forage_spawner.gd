@@ -59,13 +59,14 @@ func _rebuild(day: int) -> void:
 	_spawned.clear()
 	_active_day = day
 	var state := _get_state()
-	if int(state.get("day", 0)) != day:
-		state = {"day": day, "collected": []}
+	if int(state["day"]) != day:
+		state = {"day": day, "left": {}}
 		_set_state(state)
-	var collected: Array = state.get("collected", []) if state.get("collected", []) is Array else []
+	var left: Dictionary = state["left"]
 	for spawn: Dictionary in generate_plan(day):
 		var index := int(spawn["index"])
-		if collected.has(index):
+		var quantity := mini(int(left.get(str(index), spawn["quantity"])), int(spawn["quantity"]))
+		if quantity <= 0:
 			continue
 		var item := ItemData.find(StringName(String(spawn["item_id"])))
 		if item == null:
@@ -73,22 +74,20 @@ func _rebuild(day: int) -> void:
 		var pickup := PICKUP_SCENE.instantiate() as WorldItemPickup
 		pickup.name = "Forage_%02d_%s" % [index, String(item.id)]
 		pickup.item = item
-		pickup.quantity = int(spawn["quantity"])
+		pickup.quantity = quantity
 		pickup.persistent_id = &""
 		pickup.position = spawn["position"] as Vector2
-		pickup.fully_collected.connect(_on_pickup_collected.bind(index))
+		pickup.items_collected.connect(_on_pickup_collected.bind(index))
 		add_child(pickup)
 		_spawned.append(pickup)
 
-func _on_pickup_collected(_item_id: StringName, index: int) -> void:
+# Keeps what is left of the spawn `index` today, so leaving and coming back
+# never fills it up again.
+func _on_pickup_collected(_item_id: StringName, _collected: int, remaining: int, index: int) -> void:
 	var state := _get_state()
-	if int(state.get("day", 0)) != _active_day:
+	if int(state["day"]) != _active_day:
 		return
-	var collected: Array = state.get("collected", []) if state.get("collected", []) is Array else []
-	if not collected.has(index):
-		collected.append(index)
-		collected.sort()
-	state["collected"] = collected
+	(state["left"] as Dictionary)[str(index)] = maxi(remaining, 0)
 	_set_state(state)
 
 func _weighted_pick(entries: Array[ForageEntryData], rng: GameRandomStream) -> ForageEntryData:
@@ -105,24 +104,23 @@ func _weighted_pick(entries: Array[ForageEntryData], rng: GameRandomStream) -> F
 			return entry
 	return entries.back()
 
+# {"day", "left"}: the day the spawns belong to and what is left of each.
 func _get_state() -> Dictionary:
 	var raw: Variant = WorldState.get_value(_state_key(), {})
 	if not raw is Dictionary:
-		return {}
+		return {"day": 0, "left": {}}
 	var source: Dictionary = raw
-	var raw_day: Variant = source.get("day", 0)
-	var day := int(raw_day) if typeof(raw_day) == TYPE_INT or typeof(raw_day) == TYPE_FLOAT else 0
-	var collected: Array[int] = []
-	var raw_collected: Variant = source.get("collected", [])
-	if raw_collected is Array:
-		for raw_index: Variant in raw_collected:
-			if typeof(raw_index) != TYPE_INT and typeof(raw_index) != TYPE_FLOAT:
-				continue
-			var index := int(raw_index)
-			if index >= 0 and not collected.has(index):
-				collected.append(index)
-	collected.sort()
-	return {"day": maxi(day, 0), "collected": collected}
+	var day := SaveValues.count(source.get("day", 0))
+	# Spawn index (as text) -> what is left of it today.
+	var left := {}
+	var raw_left: Variant = source.get("left", {})
+	if raw_left is Dictionary:
+		for raw_index: Variant in raw_left.keys():
+			var index := String(raw_index)
+			var quantity: Variant = SaveValues.whole_number(raw_left[raw_index])
+			if index.is_valid_int() and index.to_int() >= 0 and quantity != null and int(quantity) >= 0:
+				left[str(index.to_int())] = int(quantity)
+	return {"day": day, "left": left}
 
 func _set_state(state: Dictionary) -> void:
 	WorldState.set_value(_state_key(), state.duplicate(true))

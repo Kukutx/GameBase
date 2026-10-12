@@ -71,8 +71,12 @@ func test_a_new_game_is_starting_until_the_player_stands_in_its_start_location()
 	var seen := {}
 	var on_scene_changed := func() -> void: seen["scene_changed"] = GameSession.is_starting_new_game()
 	var on_started := func() -> void: seen["started"] = GameSession.is_starting_new_game()
+	var on_play := func() -> void:
+		seen["play_started"] = int(seen.get("play_started", 0)) + 1
+		seen["changing_at_play"] = GameSession.is_changing()
 	get_tree().scene_changed.connect(on_scene_changed)
 	GameSession.new_game_started.connect(on_started)
+	GameSession.play_started.connect(on_play)
 
 	# The slot holds a save this build cannot read; the title screen asked
 	# before the new game replaces it.
@@ -85,6 +89,7 @@ func test_a_new_game_is_starting_until_the_player_stands_in_its_start_location()
 	if not started:
 		get_tree().scene_changed.disconnect(on_scene_changed)
 		GameSession.new_game_started.disconnect(on_started)
+		GameSession.play_started.disconnect(on_play)
 		return
 	assert_true(GameSession.is_starting_new_game(), "while the start location opens")
 	assert_false(FileAccess.file_exists(SaveManager.save_path), "the unreadable save is replaced")
@@ -94,7 +99,8 @@ func test_a_new_game_is_starting_until_the_player_stands_in_its_start_location()
 	await get_tree().process_frame
 	get_tree().scene_changed.disconnect(on_scene_changed)
 	GameSession.new_game_started.disconnect(on_started)
-	assert_eq(seen, {"scene_changed": true, "started": false}, "the location's scene loads during the setup; the game starts after it")
+	GameSession.play_started.disconnect(on_play)
+	assert_eq(seen, {"scene_changed": true, "started": false, "play_started": 1, "changing_at_play": false}, "the location's scene loads during the setup; the game, and play, start after it")
 	assert_false(GameSession.is_starting_new_game())
 
 func test_ending_activities_calls_each_registered_end_once() -> void:

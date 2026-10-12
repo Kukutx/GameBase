@@ -6,4 +6,5 @@
 script = ExtResource("1_trigger")
 id = &"social_talk_xp"
 event = &"NpcSocialEvents.npc_talked"
+condition = "EVENT_ARG first_today true"
 actions = PackedStringArray("ADD_SKILL_XP social 2")

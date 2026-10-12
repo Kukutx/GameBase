@@ -114,8 +114,8 @@ func load_state_data(data: Dictionary, persist := true) -> void:
 	tilled = raw_tilled is bool and bool(raw_tilled)
 	watered = raw_watered is bool and bool(raw_watered)
 	crop_id = StringName(String(data.get("crop_id", "")))
-	growth_days = maxi(_safe_int(data.get("growth_days", 0), 0), 0)
-	last_processed_day = clampi(_safe_int(data.get("last_processed_day", WorldClock.day), WorldClock.day), 1, maxi(WorldClock.day, 1))
+	growth_days = SaveValues.count(data.get("growth_days", 0))
+	last_processed_day = clampi(SaveValues.whole_number_or(data.get("last_processed_day", WorldClock.day), WorldClock.day), 1, maxi(WorldClock.day, 1))
 	# A crop that is not content is dropped.
 	var crop := CropData.find(crop_id)
 	if crop == null:
@@ -328,11 +328,6 @@ func _refresh_visual() -> void:
 
 func _on_locale_changed(_locale: String) -> void:
 	_refresh_visual()
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback
 
 ## The world state the node saves, for `ContentRegistry`'s check that no two
 ## nodes share it.

@@ -129,6 +129,22 @@ func test_expansion_material_commit_is_atomic_before_inventory_listeners_run() -
 	assert_true(FarmExpansionState.is_completed(&"fixture_big_coop"))
 	assert_eq(AnimalState.get_housing_capacity(&"fixture_coop"), 8)
 
+func test_a_purchase_whose_materials_vanish_gives_the_money_back() -> void:
+	WorldState.set_value(&"fixture_garden_restored", true)
+	InventoryState.add_item_by_id(&"fixture_timber", 30)
+	InventoryState.add_item_by_id(&"fixture_rock_chunk", 10)
+	var money_before := PlayerState.money
+	# Something spends a timber the moment the money is paid.
+	var take_timber := func(_money: int) -> void: InventoryState.remove_item(&"fixture_timber", 1)
+	PlayerState.money_changed.connect(take_timber, CONNECT_ONE_SHOT)
+	assert_false(FarmExpansionState.purchase(&"fixture_big_coop"))
+	if PlayerState.money_changed.is_connected(take_timber):
+		PlayerState.money_changed.disconnect(take_timber)
+	assert_eq(PlayerState.money, money_before)
+	assert_eq(InventoryState.get_quantity(&"fixture_timber"), 29)
+	assert_eq(InventoryState.get_quantity(&"fixture_rock_chunk"), 10)
+	assert_false(FarmExpansionState.is_completed(&"fixture_big_coop"))
+
 func test_deluxe_expansion_requires_previous_tier_and_its_world_flag() -> void:
 	WorldState.set_value(&"fixture_garden_restored", true)
 	WorldState.set_value(&"fixture_workshop_built", true)

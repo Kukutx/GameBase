@@ -95,17 +95,17 @@ func get_state_data() -> Dictionary:
 func load_state_data(state: Dictionary, persist := true) -> void:
 	var max_health := data.max_health if data != null else 1
 	var current_day := maxi(WorldClock.day, 1)
-	health = clampi(_safe_int(state.get("health", max_health), max_health), 0, max_health)
+	health = clampi(SaveValues.whole_number_or(state.get("health", max_health), max_health), 0, max_health)
 	var raw_defeated: Variant = state.get("defeated", false)
 	is_defeated = raw_defeated is bool and bool(raw_defeated)
 	if is_defeated:
-		defeated_day = clampi(_safe_int(state.get("defeated_day", current_day), current_day), 1, current_day)
+		defeated_day = clampi(SaveValues.whole_number_or(state.get("defeated_day", current_day), current_day), 1, current_day)
 		health = 0
 	else:
 		defeated_day = 0
 		if health <= 0:
 			health = max_health
-	pending_drop_quantity = maxi(_safe_int(state.get("pending_drop_quantity", 0), 0), 0)
+	pending_drop_quantity = SaveValues.count(state.get("pending_drop_quantity", 0))
 	if persist:
 		_persist()
 	_refresh_health_label()
@@ -305,11 +305,6 @@ func _load_state() -> void:
 
 func _state_key() -> StringName:
 	return StringName("enemy:%s" % String(persistent_id))
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback
 
 ## The world state the node saves, for `ContentRegistry`'s check that no two
 ## nodes share it.

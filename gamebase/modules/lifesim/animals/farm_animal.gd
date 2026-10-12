@@ -97,13 +97,13 @@ func get_state_data() -> Dictionary:
 	}
 
 func load_state_data(state: Dictionary, persist := true) -> void:
-	happiness = clampi(_safe_int(state.get("happiness", 50), 50), 0, 100)
+	happiness = clampi(SaveValues.whole_number_or(state.get("happiness", 50), 50), 0, 100)
 	var current_day := maxi(WorldClock.day, 1)
 	var product_interval := maxi(data.product_interval_days if data != null else 1, 1)
-	last_product_day = clampi(_safe_int(state.get("last_product_day", current_day - product_interval), current_day - product_interval), current_day - product_interval, current_day)
-	last_pet_day = clampi(_safe_int(state.get("last_pet_day", current_day), current_day), 0, current_day)
-	last_fed_day = clampi(_safe_int(state.get("last_fed_day", current_day), current_day), 0, current_day)
-	last_processed_day = clampi(_safe_int(state.get("last_processed_day", current_day), current_day), 1, current_day)
+	last_product_day = clampi(SaveValues.whole_number_or(state.get("last_product_day", current_day - product_interval), current_day - product_interval), current_day - product_interval, current_day)
+	last_pet_day = clampi(SaveValues.whole_number_or(state.get("last_pet_day", current_day), current_day), 0, current_day)
+	last_fed_day = clampi(SaveValues.whole_number_or(state.get("last_fed_day", current_day), current_day), 0, current_day)
+	last_processed_day = clampi(SaveValues.whole_number_or(state.get("last_processed_day", current_day), current_day), 1, current_day)
 	if persist:
 		_persist()
 	_refresh_prompt()
@@ -307,11 +307,6 @@ func _load_state() -> void:
 
 func _state_key() -> StringName:
 	return StringName("animal:%s" % String(persistent_id))
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback
 
 ## The world state the node saves, for `ContentRegistry`'s check that no two
 ## nodes share it.

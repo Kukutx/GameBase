@@ -8,6 +8,7 @@ var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _shipping_snapshot: Dictionary
+var _world_snapshot: Dictionary
 
 func before_each() -> void:
 	_clock_day = WorldClock.day
@@ -16,6 +17,8 @@ func before_each() -> void:
 	_player_snapshot = PlayerState.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_shipping_snapshot = ShippingState.to_save_data()
+	# A new day makes its listeners (contracts, mail) write to the world.
+	_world_snapshot = WorldState.to_save_data()
 	ContentFixture.use(self, [_item(&"fixture_turnip", 35), _item(&"fixture_carrot", 50)])
 	ShippingState.load_save_data({"pending": {}, "last_day_seen": 1})
 	WorldClock.set_time(1, 12 * 60)
@@ -31,6 +34,7 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	PlayerState.load_save_data(_player_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
+	WorldState.load_save_data(_world_snapshot)
 
 func test_shipping_removes_item_and_pays_on_next_day() -> void:
 	var turnip := ItemData.find(&"fixture_turnip")
@@ -44,6 +48,19 @@ func test_shipping_removes_item_and_pays_on_next_day() -> void:
 	WorldClock.set_time(2, 6 * 60)
 	assert_eq(PlayerState.money, 100 + turnip.sell_price)
 	assert_eq(ShippingState.get_pending_total(), 0)
+
+func test_a_new_game_pays_its_first_night_after_a_later_day_was_seen() -> void:
+	# The previous session reached day 40; its new game starts over at the
+	# game's start day, and the clock is reset after the shipping step.
+	ShippingState.load_save_data({"pending": {}, "last_day_seen": 40})
+	WorldClock.set_time(40, 12 * 60)
+	ShippingState.reset_new_game()
+	var start_day := GameDefinition.current().start_day
+	WorldClock.set_time(start_day, 12 * 60)
+	InventoryState.add_item_by_id(&"fixture_turnip", 1)
+	assert_true(ShippingState.ship_item(&"fixture_turnip", 1))
+	WorldClock.set_time(start_day + 1, 6 * 60)
+	assert_eq(PlayerState.money, 100 + ItemData.find(&"fixture_turnip").sell_price)
 
 func test_shipping_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"fixture_turnip", 2)

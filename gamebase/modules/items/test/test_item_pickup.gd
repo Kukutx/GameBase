@@ -45,4 +45,30 @@ func test_pickup_blocks_item_added_reentrancy() -> void:
 		InventoryState.item_added.disconnect(listener)
 	assert_true(bool(observed["entered"]))
 	assert_eq(InventoryState.get_quantity(&"fixture_berry"), 1)
-	assert_true(WorldState.get_bool(&"pickup:fixture_pickup_reentrancy"))
+	assert_eq(WorldState.get_value(&"pickup:fixture_pickup_reentrancy"), 0, "taken whole")
+
+func test_a_pickup_taken_in_part_keeps_only_the_rest() -> void:
+	var berry := ItemData.find(&"fixture_berry")
+	berry.max_stack = 2
+	var max_slots := InventoryState.max_slots
+	InventoryState.max_slots = 1
+	var first := _pickup(5)
+	first.get_node("Interactable").interact(null)
+	InventoryState.max_slots = max_slots
+	assert_eq(InventoryState.get_quantity(&"fixture_berry"), 2, "the bag held two")
+	assert_eq(WorldState.get_value(&"pickup:fixture_bush"), 3)
+	# Leaving and coming back builds the pickup again from its scene.
+	var again := _pickup(5)
+	assert_eq(again.quantity, 3, "the rest is still there, no more")
+	again.get_node("Interactable").interact(null)
+	assert_true(again.is_queued_for_deletion())
+	var gone := _pickup(5)
+	assert_true(gone.is_queued_for_deletion(), "a pickup taken whole stays gone")
+
+func _pickup(quantity: int) -> WorldItemPickup:
+	var pickup := (load("res://gamebase/modules/items/items/item_pickup.tscn") as PackedScene).instantiate() as WorldItemPickup
+	pickup.item = ItemData.find(&"fixture_berry")
+	pickup.quantity = quantity
+	pickup.persistent_id = &"fixture_bush"
+	add_child_autofree(pickup)
+	return pickup

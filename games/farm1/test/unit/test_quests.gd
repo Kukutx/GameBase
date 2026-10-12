@@ -31,7 +31,7 @@ func after_each() -> void:
 	Skills.load_save_data(_skills_snapshot)
 
 func test_talking_to_mira_completes_intro_quest() -> void:
-	NpcSocialEvents.npc_talked.emit(&"mira")
+	NpcSocialEvents.npc_talked.emit(&"mira", true)
 	assert_true(QuestState.is_completed(&"meet_mira"))
 	assert_eq(PlayerState.money, 550)
 

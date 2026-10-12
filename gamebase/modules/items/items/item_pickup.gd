@@ -6,6 +6,8 @@ signal items_collected(item_id: StringName, collected: int, remaining: int)
 
 @export var item: ItemData
 @export_range(1, 999, 1) var quantity := 1
+## Makes what is left of the pickup persist in `WorldState`: a pickup taken in
+## part keeps the rest, and one taken whole stays gone.
 @export var persistent_id: StringName
 @export var counts_as_forage := true
 
@@ -15,9 +17,13 @@ signal items_collected(item_id: StringName, collected: int, remaining: int)
 var _collection_busy := false
 
 func _ready() -> void:
-	if persistent_id != &"" and WorldState.get_bool(_collected_key()):
-		queue_free()
-		return
+	if persistent_id != &"":
+		var left: Variant = SaveValues.whole_number(WorldState.get_value(_left_key()))
+		if left != null and int(left) <= 0:
+			queue_free()
+			return
+		if left != null:
+			quantity = mini(int(left), quantity)
 	interactable.interacted.connect(_on_interacted)
 	_refresh_label()
 
@@ -36,12 +42,12 @@ func _collect(_actor: Node) -> void:
 	var remaining := InventoryState.add_item(item, quantity)
 	var collected := original_quantity - remaining
 	if collected > 0:
+		if persistent_id != &"":
+			WorldState.set_value(_left_key(), remaining)
 		if counts_as_forage:
 			ItemsEvents.item_foraged.emit(item.id, collected)
 		items_collected.emit(item.id, collected, remaining)
 	if remaining <= 0:
-		if persistent_id != &"":
-			WorldState.set_value(_collected_key(), true)
 		fully_collected.emit(item.id)
 		queue_free()
 		return
@@ -62,10 +68,11 @@ func _refresh_label() -> void:
 	label.text = "%s x%d" % [tr(name_text), quantity]
 	interactable.set_prompt("Pick up %s", [name_text])
 
-func _collected_key() -> StringName:
+# What is left of the pickup once the player took some: 0 once taken whole.
+func _left_key() -> StringName:
 	return StringName("pickup:%s" % String(persistent_id))
 
 ## The world state the node saves, for `ContentRegistry`'s check that no two
 ## nodes share it.
 func get_persistent_keys() -> PackedStringArray:
-	return PackedStringArray([String(_collected_key())]) if persistent_id != &"" else PackedStringArray()
+	return PackedStringArray([String(_left_key())]) if persistent_id != &"" else PackedStringArray()

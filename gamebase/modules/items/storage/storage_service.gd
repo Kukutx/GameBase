@@ -57,7 +57,7 @@ func take_item(container_id: StringName, item_id: StringName, quantity: int = 1)
 	if accepted <= 0:
 		return 0
 	_mutating_containers[container_key] = true
-	if not InventoryState.apply_transaction_atomic({}, {String(item_id): accepted}):
+	if not InventoryState.return_items_atomic({String(item_id): accepted}):
 		_mutating_containers.erase(container_key)
 		return 0
 	current -= accepted
@@ -106,10 +106,7 @@ func _get_container_data(container_id: StringName) -> Dictionary:
 		return {}
 	var normalized: Dictionary = {}
 	for raw_key: Variant in (raw as Dictionary).keys():
-		var raw_quantity: Variant = (raw as Dictionary)[raw_key]
-		if typeof(raw_quantity) != TYPE_INT and typeof(raw_quantity) != TYPE_FLOAT:
-			continue
-		var quantity := maxi(int(raw_quantity), 0)
+		var quantity := SaveValues.count((raw as Dictionary)[raw_key])
 		if quantity > 0:
 			normalized[String(raw_key)] = quantity
 	return normalized

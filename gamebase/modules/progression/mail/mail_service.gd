@@ -6,7 +6,10 @@ signal mail_read(mail_id: StringName)
 signal mail_claimed(mail_id: StringName)
 
 var _claiming: Dictionary = {}
-var _refresh_pending := false
+# Whether the world changed since the last check, and whether a check is
+# queued for before the next frame.
+var _check_needed := false
+var _check_scheduled := false
 
 func _ready() -> void:
 	WorldClock.day_changed.connect(_on_state_may_unlock_mail)
@@ -15,9 +18,14 @@ func _ready() -> void:
 	WorldState.changed.connect(_on_world_state_changed)
 	refresh_deliveries.call_deferred()
 
+## Delivers every letter whose condition now holds. While the session changes
+## (`GameSession.is_changing()`) the world is half restored or half set up, so
+## the check waits for `GameSession.play_started`.
 func refresh_deliveries() -> Array[StringName]:
-	_refresh_pending = false
 	var delivered: Array[StringName] = []
+	if GameSession.is_changing():
+		return delivered
+	_check_needed = false
 	for mail: MailData in MailData.find_all():
 		if mail == null:
 			continue
@@ -88,7 +96,8 @@ func claim_rewards(mail_id: StringName) -> bool:
 	return true
 
 func is_received(mail_id: StringName) -> bool:
-	_refresh_if_pending()
+	if _check_needed:
+		refresh_deliveries()
 	return mail_id != &"" and WorldState.get_bool(_key(mail_id, "received"))
 
 func is_read(mail_id: StringName) -> bool:
@@ -96,10 +105,6 @@ func is_read(mail_id: StringName) -> bool:
 
 func is_claimed(mail_id: StringName) -> bool:
 	return mail_id != &"" and WorldState.get_bool(_key(mail_id, "claimed"))
-
-func reset_new_game() -> void:
-	# Mail state lives in WorldState, which is already cleared by GameSession.
-	refresh_deliveries.call_deferred()
 
 func _get_reward_snapshot(mail: MailData) -> Dictionary:
 	if mail == null:
@@ -130,11 +135,19 @@ func _on_friendship_changed(_npc_id: StringName, _points: int, _delta: int) -> v
 # loaded world (an empty key) already holds which letters arrived in it.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
 	if key == &"":
-		_refresh_pending = false
-	elif not _refresh_pending and not String(key).begins_with("mail:"):
-		_refresh_pending = true
-		_refresh_if_pending.call_deferred()
+		_check_needed = false
+		return
+	if String(key).begins_with("mail:"):
+		return
+	_check_needed = true
+	if not _check_scheduled:
+		_check_scheduled = true
+		_check_if_needed.call_deferred()
 
-func _refresh_if_pending() -> void:
-	if _refresh_pending:
+# A check while the session changes delivers nothing and leaves the world
+# marked changed: `play_started` checks again, or the next write after a
+# change that never reached play.
+func _check_if_needed() -> void:
+	_check_scheduled = false
+	if _check_needed:
 		refresh_deliveries()

@@ -92,9 +92,7 @@ func load_save_data(data: Dictionary) -> void:
 			continue
 		var now := get_absolute_minute()
 		var raw_expiry: Variant = data[raw_id]
-		var expires_at := 0
-		if typeof(raw_expiry) == TYPE_INT or typeof(raw_expiry) == TYPE_FLOAT:
-			expires_at = clampi(int(raw_expiry), 0, now + GameClock.MINUTES_PER_DAY)
+		var expires_at := clampi(SaveValues.whole_number_or(raw_expiry, 0), 0, now + GameClock.MINUTES_PER_DAY)
 		if expires_at > now:
 			_active[String(buff_id)] = expires_at
 	buffs_changed.emit()

@@ -96,19 +96,14 @@ func load_save_data(data: Dictionary) -> void:
 	_last_gift_day = {}
 	if points is Dictionary:
 		for raw_key: Variant in points.keys():
-			_points[String(raw_key)] = clampi(_safe_int(points[raw_key], 0), 0, POINTS_PER_HEART * MAX_HEARTS)
+			_points[String(raw_key)] = clampi(SaveValues.whole_number_or(points[raw_key], 0), 0, POINTS_PER_HEART * MAX_HEARTS)
 	var current_day := maxi(WorldClock.day, 1)
 	if talk is Dictionary:
 		for raw_key: Variant in talk.keys():
-			_last_talk_day[String(raw_key)] = clampi(_safe_int(talk[raw_key], current_day), 0, current_day)
+			_last_talk_day[String(raw_key)] = clampi(SaveValues.whole_number_or(talk[raw_key], current_day), 0, current_day)
 	if gift is Dictionary:
 		for raw_key: Variant in gift.keys():
-			_last_gift_day[String(raw_key)] = clampi(_safe_int(gift[raw_key], current_day), 0, current_day)
+			_last_gift_day[String(raw_key)] = clampi(SaveValues.whole_number_or(gift[raw_key], current_day), 0, current_day)
 	for raw_key: Variant in _points.keys():
 		var npc_id := StringName(String(raw_key))
 		friendship_changed.emit(npc_id, get_points(npc_id), 0)
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback

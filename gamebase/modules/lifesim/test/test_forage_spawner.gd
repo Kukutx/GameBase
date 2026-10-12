@@ -77,6 +77,32 @@ func test_collected_spawn_stays_gone_same_day_and_returns_next_day() -> void:
 	await get_tree().process_frame
 	assert_eq(spawner.get_spawned_pickups().size(), 1)
 
+func test_a_spawn_taken_in_part_keeps_only_the_rest_that_day() -> void:
+	for entry: ForageEntryData in ForageEntryData.find_all():
+		entry.min_quantity = 3
+		entry.max_quantity = 3
+	var spawner := ForageSpawner.new()
+	spawner.spawner_id = &"fixture_partial_forage"
+	spawner.location_id = &"fixture_meadow"
+	spawner.spawn_count = 1
+	spawner.spawn_rect = Rect2(Vector2.ZERO, Vector2.ONE)
+	add_child_autofree(spawner)
+	await get_tree().process_frame
+	var max_slots := InventoryState.max_slots
+	InventoryState.max_slots = 1
+	var pickup := spawner.get_spawned_pickups()[0]
+	(pickup.item as ItemData).max_stack = 1
+	pickup.get_node("Interactable").interact(null)
+	InventoryState.max_slots = max_slots
+	assert_eq(pickup.quantity, 2, "the bag held one")
+
+	# Leaving and coming back the same day builds the spawns again.
+	spawner._rebuild(1)
+	await get_tree().process_frame
+	var again := spawner.get_spawned_pickups()
+	assert_eq(again.size(), 1)
+	assert_eq(again[0].quantity, 2, "the rest is still there, no more")
+
 # A meadow where berries and twigs grow, and a shore where kelp washes up.
 func _fixture_content() -> Array:
 	return [

@@ -113,9 +113,7 @@ func load_save_data(data: Dictionary) -> void:
 		slots = default_slots()
 	while slots.size() < SLOT_COUNT:
 		slots.append(&"")
-	var raw_selected: Variant = data.get("selected_slot", 0)
-	var selected := int(raw_selected) if raw_selected is int or raw_selected is float else 0
-	selected_slot = clampi(selected, 0, maxi(slots.size() - 1, 0))
+	selected_slot = clampi(SaveValues.whole_number_or(data.get("selected_slot", 0), 0), 0, maxi(slots.size() - 1, 0))
 	_emit_all()
 
 func _emit_all() -> void:

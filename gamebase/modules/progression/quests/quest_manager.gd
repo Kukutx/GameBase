@@ -14,7 +14,7 @@ signal quest_completed(quest_id: StringName)
 var _states: Dictionary = {}
 
 func _ready() -> void:
-	InventoryState.item_added.connect(_on_item_added)
+	InventoryState.item_gained.connect(_on_item_gained)
 	InventoryState.item_removed.connect(_on_inventory_item_removed)
 	NpcSocialEvents.npc_talked.connect(_on_npc_talked)
 	LifesimEvents.crop_harvested.connect(_on_crop_harvested)
@@ -103,8 +103,8 @@ func load_save_data(data: Dictionary) -> void:
 		if quest == null or not raw_state is Dictionary:
 			continue
 		var saved_state: Dictionary = raw_state
-		var status := _safe_int(saved_state.get("status", -1), -1)
-		var progress := maxi(_safe_int(saved_state.get("progress", 0), 0), 0)
+		var status := SaveValues.whole_number_or(saved_state.get("status", -1), -1)
+		var progress := SaveValues.count(saved_state.get("progress", 0))
 		match status:
 			Status.INACTIVE:
 				progress = 0
@@ -120,10 +120,10 @@ func load_save_data(data: Dictionary) -> void:
 			normalized["reward_snapshot"] = (raw_reward as Dictionary).duplicate(true)
 		_states[key] = normalized
 
-func _on_item_added(item_id: StringName, quantity: int) -> void:
+func _on_item_gained(item_id: StringName, quantity: int) -> void:
 	_progress_matching(QuestData.ObjectiveType.COLLECT, item_id, quantity)
 
-func _on_npc_talked(npc_id: StringName) -> void:
+func _on_npc_talked(npc_id: StringName, _first_today: bool) -> void:
 	_progress_matching(QuestData.ObjectiveType.TALK, npc_id, 1)
 
 func _on_crop_harvested(crop_id: StringName, _item_id: StringName, quantity: int) -> void:
@@ -237,8 +237,3 @@ func complete_ready_quests() -> void:
 		var quest := get_quest(StringName(key))
 		if quest != null:
 			_complete(quest)
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback

@@ -13,10 +13,10 @@ const MAX_FLOOR := 120
 var floor_table: MineFloorTable
 
 func get_current_floor() -> int:
-	return clampi(_safe_int(WorldState.get_value(CURRENT_FLOOR_KEY, 1), 1), 1, MAX_FLOOR)
+	return clampi(SaveValues.whole_number_or(WorldState.get_value(CURRENT_FLOOR_KEY, 1), 1), 1, MAX_FLOOR)
 
 func get_deepest_floor() -> int:
-	return clampi(_safe_int(WorldState.get_value(DEEPEST_FLOOR_KEY, 1), 1), 1, MAX_FLOOR)
+	return clampi(SaveValues.whole_number_or(WorldState.get_value(DEEPEST_FLOOR_KEY, 1), 1), 1, MAX_FLOOR)
 
 func enter_from_surface() -> void:
 	set_floor(1)
@@ -124,8 +124,3 @@ func _pick_position(rng: GameRandomStream, occupied: Array[Vector2]) -> Vector2:
 		if clear:
 			return candidate
 	return Vector2(rng.randf_range(-180.0, 220.0), rng.randf_range(-120.0, 120.0)).snapped(Vector2(8, 8))
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback
