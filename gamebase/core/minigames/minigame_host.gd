@@ -5,8 +5,10 @@ extends Node
 ##
 ##     var result := await MiniGameHost.run(&"fishing_reel", {"difficulty": 0.4})
 ##
-## While it runs the world can be paused, saving is blocked, and when it ends
-## the definition's success or failure actions run through `GameRules`. It runs
+## While it runs the world can be paused, saving is blocked, its music plays
+## over the world's (`MiniGameDefinition.music_cue_id`, layer `MUSIC_LAYER`),
+## and when it ends the definition's success or failure actions run through
+## `GameRules`. It runs
 ## while its lock (`LOCK_REASON`) is on top and stands still while another
 ## lock is over it (the pause menu): nothing in it moves or reads input then.
 
@@ -17,6 +19,8 @@ signal minigame_finished(minigame_id: StringName, result: MiniGameResult)
 const LAYER := 90
 ## The reason of the `InputLock` lock a minigame holds while it runs.
 const LOCK_REASON := &"minigame"
+## The music layer a minigame's music plays on (`GameAudio.push_music()`).
+const MUSIC_LAYER := &"minigame"
 
 var _layer: CanvasLayer
 var _active: MiniGame
@@ -58,15 +62,20 @@ func run(minigame_id: StringName, context: Dictionary = {}) -> MiniGameResult:
 	_active_id = definition.id
 	minigame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layer.add_child(minigame)
+	# One taken away before it ends ends cancelled, so its lock and music go.
+	minigame.tree_exiting.connect(func() -> void: minigame.finish(MiniGameResult.cancelled_result()))
 	# Its lock is on top while it runs, so it runs until a menu opens over it.
 	InputLock.lock(LOCK_REASON, definition.pause_world, minigame)
 	minigame.setup(settings)
+	if definition.music_cue_id != &"":
+		GameAudio.push_music(MUSIC_LAYER, definition.music_cue_id)
 	minigame_started.emit(definition.id)
 	var result: MiniGameResult = await minigame.finished
 	_active = null
 	_active_id = &""
 	minigame.queue_free()
 	InputLock.unlock(LOCK_REASON)
+	GameAudio.pop_music(MUSIC_LAYER)
 	if result == null:
 		result = MiniGameResult.lost()
 	if not result.cancelled:

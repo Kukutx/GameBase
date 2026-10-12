@@ -36,7 +36,8 @@
       "requires": ["damage", "items"],
       "autoloads": {
         "CombatEvents": "res://gamebase/modules/combat/combat_events.gd",
-        "PlayerDefeat": "res://gamebase/modules/combat/defeat/player_defeat_service.gd"
+        "PlayerDefeat": "res://gamebase/modules/combat/defeat/player_defeat_service.gd",
+        "FightState": "res://gamebase/modules/combat/fight/fight_service.gd"
       }
     },
     "damage": {

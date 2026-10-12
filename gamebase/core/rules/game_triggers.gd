@@ -31,7 +31,7 @@ const STATE_KEY := &"triggers:state"
 ## and a once trigger whose event passes a value that is not of its declared
 ## type (or one it converts to without loss) or that a save could not keep
 ## exactly does not run, with a warning.
-const SAVED_TYPES: Array[int] = [TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME]
+const SAVED_TYPES: Array[int] = [TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME, TYPE_VECTOR2]
 
 # event -> Array[TriggerData]
 var _by_event: Dictionary = {}
@@ -233,6 +233,8 @@ static func _as_declared(trigger: TriggerData, args: Dictionary, types: Dictiona
 		var exact := typeof(value) == type and SAVED_TYPES.has(type)
 		if exact and value is float:
 			exact = is_finite(value)
+		elif exact and value is Vector2:
+			exact = (value as Vector2).is_finite()
 		elif exact and value is int:
 			exact = value <= SaveValues.MAX_WHOLE_INT and value >= -SaveValues.MAX_WHOLE_INT
 		if not exact:
@@ -244,6 +246,8 @@ static func _as_declared(trigger: TriggerData, args: Dictionary, types: Dictiona
 # An event's value (`SAVED_TYPES`) as a save keeps it: its type, and the value
 # as JSON holds it.
 static func _saved_value(value: Variant) -> Dictionary:
+	if value is Vector2:
+		return {"type": TYPE_VECTOR2, "value": {"x": value.x, "y": value.y}}
 	return {"type": typeof(value), "value": String(value) if value is StringName else value}
 
 # The value `saved` (`_saved_value()`) keeps, back in its type, as [value];
@@ -267,6 +271,13 @@ static func _loaded_value(saved: Variant) -> Array:
 			return [value] if value is String else []
 		TYPE_STRING_NAME:
 			return [StringName(value)] if value is String else []
+		TYPE_VECTOR2:
+			if not (value is Dictionary):
+				return []
+			var x: Variant = (value as Dictionary).get("x")
+			var y: Variant = (value as Dictionary).get("y")
+			var finite := (x is float or x is int) and (y is float or y is int) and is_finite(float(x)) and is_finite(float(y))
+			return [Vector2(float(x), float(y))] if finite else []
 	return []
 
 # A part of the triggers' state as the world holds it, or `empty` when it is

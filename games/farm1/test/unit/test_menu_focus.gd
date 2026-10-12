@@ -32,8 +32,10 @@ func test_game_menu_keeps_selected_tab_focusable() -> void:
 	assert_not_null(menu)
 	if menu == null:
 		return
+	watch_signals(GameEvents)
 	menu.open()
 	await get_tree().process_frame
+	assert_signal_emitted_with_parameters(GameEvents, "menu_opened", [GameMenu.MENU_ID])
 	var inventory := menu.get_node("Panel/Layout/Tabs/Inventory") as Button
 	assert_false(inventory.disabled)
 	assert_true(inventory.toggle_mode)
@@ -50,6 +52,7 @@ func test_game_menu_keeps_selected_tab_focusable() -> void:
 	await get_tree().process_frame
 	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
 	menu.close()
+	assert_signal_emitted_with_parameters(GameEvents, "menu_closed", [GameMenu.MENU_ID])
 
 func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> void:
 	var cases: Array[Dictionary] = [

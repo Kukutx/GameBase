@@ -77,7 +77,7 @@ func test_talking_collecting_and_foraging_complete_their_quests_and_start_the_ne
 	InventoryState.add_item_by_id(&"fixture_berry", 1)
 	assert_true(QuestState.is_completed(&"fixture_gather"))
 	assert_true(QuestState.is_active(&"fixture_forage"))
-	ItemsEvents.item_foraged.emit(&"fixture_radish", 1)
+	ItemsEvents.item_foraged.emit(&"fixture_radish", 1, Vector2.ZERO)
 	assert_true(QuestState.is_completed(&"fixture_forage"))
 
 func test_only_items_the_player_gains_count_as_collected() -> void:
@@ -108,7 +108,7 @@ func test_item_reward_quest_waits_for_inventory_space_then_completes_atomically(
 	assert_false(QuestState.is_active(&"fixture_study"))
 	assert_true(QuestState.start_quest(&"fixture_errands"))
 	watch_signals(GameEvents)
-	ItemsEvents.item_foraged.emit(&"fixture_radish", 1)
+	ItemsEvents.item_foraged.emit(&"fixture_radish", 1, Vector2.ZERO)
 	assert_signal_not_emitted(GameEvents, "toast_requested", "an event that moves another quest on retries no waiting reward")
 
 	assert_true(InventoryState.remove_item(&"fixture_crate", 1))
@@ -143,7 +143,7 @@ func test_chain_progresses_through_gifts_forage_talks_levels_upgrades_and_a_meas
 	NpcSocialEvents.gift_given.emit(&"fixture_npc", &"fixture_berry", 5)
 	assert_true(QuestState.is_completed(&"fixture_gift"))
 	assert_true(QuestState.is_active(&"fixture_pick"))
-	ItemsEvents.item_foraged.emit(&"fixture_radish", 2)
+	ItemsEvents.item_foraged.emit(&"fixture_radish", 2, Vector2.ZERO)
 	assert_true(QuestState.is_completed(&"fixture_pick"))
 	assert_true(QuestState.is_active(&"fixture_favor"))
 	NpcSocialEvents.npc_talked.emit(&"fixture_elder", true)
@@ -167,7 +167,7 @@ func test_a_quest_of_several_objectives_completes_once_all_are_met() -> void:
 	QuestState.load_save_data({})
 	assert_true(QuestState.start_quest(&"fixture_errands"))
 	watch_signals(QuestState)
-	ItemsEvents.item_foraged.emit(&"fixture_radish", 4)
+	ItemsEvents.item_foraged.emit(&"fixture_radish", 4, Vector2.ZERO)
 	assert_eq(QuestState.get_state(&"fixture_errands")["progress"], [2, 0], "the forage counts up to what it requires")
 	assert_signal_emitted_with_parameters(QuestState, "quest_progressed", [&"fixture_errands", 0, 2, 2])
 	assert_true(QuestState.is_active(&"fixture_errands"))

@@ -45,7 +45,7 @@ func _collect(_actor: Node) -> void:
 		if persistent_id != &"":
 			WorldState.set_value(_left_key(), remaining)
 		if counts_as_forage:
-			ItemsEvents.item_foraged.emit(item.id, collected)
+			ItemsEvents.item_foraged.emit(item.id, collected, global_position)
 		items_collected.emit(item.id, collected, remaining)
 	if remaining <= 0:
 		fully_collected.emit(item.id)

@@ -12,6 +12,7 @@ class FixtureEvents:
 	signal found(item: Resource)
 	signal noted(value: Variant)
 	signal arrived(location_id: StringName, visitors: int)
+	signal dropped(quantity: int, position: Vector2)
 
 var _events: FixtureEvents
 var _world_snapshot: Dictionary
@@ -118,6 +119,29 @@ func test_a_pending_trigger_resumes_through_a_save_with_the_event_s_values_in_th
 	assert_eq(seen.size(), 2)
 	assert_eq(seen[1], {"quantity": 3, "crop": &"fixture_radish"})
 	assert_eq([typeof(seen[1]["quantity"]), typeof(seen[1]["crop"])], [TYPE_INT, TYPE_STRING_NAME], "as the event gave them")
+	GameRules._actions.erase(&"FIXTURE_RECORD")
+
+func test_a_pending_trigger_keeps_where_its_event_happened_through_a_save() -> void:
+	var seen := []
+	GameRules.register_action(&"FIXTURE_RECORD", func(_args: PackedStringArray, context: Dictionary) -> bool:
+		seen.append(context["event"].duplicate())
+		return WorldState.get_bool(&"fixture:allowed"), 0, 0)
+	var reward := _trigger(&"fixture_record", ["ADD_FLAG fixture:before", "FIXTURE_RECORD"])
+	reward.event = &"FixtureEvents.dropped"
+	reward.once = true
+	var service := _start([reward])
+	var problems := "\n".join(ContentRegistry.active.find_problems())
+	assert_false(problems.contains("fixture_record"), "a once trigger may hear where its event happened: " + problems)
+	service.fire(&"FixtureEvents.dropped", {"quantity": 1, "position": Vector2(INF, 0.0)})
+	assert_push_warning_count(1)
+	assert_false(service.is_pending(&"fixture_record"), "a place no save can keep sets nothing off")
+	_events.dropped.emit(2, Vector2(12.5, -40.0))
+	assert_true(service.is_pending(&"fixture_record"))
+	WorldState.load_save_data(JSON.parse_string(JSON.stringify(WorldState.to_save_data())))
+	WorldState.set_value(&"fixture:allowed", true)
+	_events.dropped.emit(9, Vector2.ZERO)
+	assert_true(service.has_fired(&"fixture_record"))
+	assert_eq(seen[1], {"quantity": 2, "position": Vector2(12.5, -40.0)})
 	GameRules._actions.erase(&"FIXTURE_RECORD")
 
 func test_a_once_trigger_given_a_value_a_save_cannot_keep_does_not_run() -> void:

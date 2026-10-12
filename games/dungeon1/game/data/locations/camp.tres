@@ -10,3 +10,4 @@ scene_path = "res://game/world/camp.tscn"
 type = 2
 weather_exposed = false
 default_spawn_id = &"camp_start"
+music_cue_id = &"music_camp"

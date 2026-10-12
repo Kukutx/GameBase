@@ -214,17 +214,17 @@ func test_accepted_contract_progresses_from_matching_game_event_and_claims_once(
 	var required := int(contract["required"])
 	match objective:
 		DailyContractService.FORAGE:
-			ItemsEvents.item_foraged.emit(target, required)
+			ItemsEvents.item_foraged.emit(target, required, Vector2.ZERO)
 		DailyContractService.FISH:
 			LifesimEvents.fish_caught.emit(&"contract_fish", target)
 			for _index in range(required - 1):
 				LifesimEvents.fish_caught.emit(&"contract_fish", target)
 		DailyContractService.MINE:
-			LifesimEvents.resource_mined.emit(&"contract_node", target, required)
+			LifesimEvents.resource_mined.emit(&"contract_node", target, required, Vector2.ZERO)
 		DailyContractService.SHIP:
 			ShippingState.item_shipped.emit(target, required, 0)
 		DailyContractService.HARVEST:
-			LifesimEvents.crop_harvested.emit(&"contract_crop", target, required)
+			LifesimEvents.crop_harvested.emit(&"contract_crop", target, required, Vector2.ZERO)
 	contract = DailyContractState.get_contract()
 	assert_true(bool(contract["completed"]))
 	assert_eq(int(contract["progress"]), required)

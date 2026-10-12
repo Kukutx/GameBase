@@ -106,7 +106,7 @@ func _break_node() -> void:
 		_spawn_drop(item, pending_drop_quantity)
 	_refresh_visual()
 	depleted.emit(data.id)
-	LifesimEvents.resource_mined.emit(data.id, item.id, data.drop_quantity)
+	LifesimEvents.resource_mined.emit(data.id, item.id, data.drop_quantity, global_position)
 	GameEvents.toastf("Mined %s x%d", [item.display_name, data.drop_quantity])
 
 func _spawn_drop(item: ItemData, quantity: int) -> void:

@@ -72,7 +72,7 @@ func test_pick_breaks_rock_and_reports_the_mined_resource() -> void:
 	assert_true(node.is_depleted)
 	assert_eq(InventoryState.get_quantity(&"fixture_pebble"), 2)
 	assert_signal_emit_count(LifesimEvents, "resource_mined", 1)
-	assert_signal_emitted_with_parameters(LifesimEvents, "resource_mined", [&"fixture_rock", &"fixture_pebble", 2])
+	assert_signal_emitted_with_parameters(LifesimEvents, "resource_mined", [&"fixture_rock", &"fixture_pebble", 2, node.global_position])
 
 func test_mining_node_blocks_energy_and_drop_signal_reentrancy() -> void:
 	var node := _add_rock(&"")

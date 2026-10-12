@@ -12,3 +12,7 @@ home_spawn_id = &"arrival"
 start_day = 1
 start_minute_of_day = 480
 world_seed = 1
+menu_focus_cue_id = &"sfx_menu_focus"
+menu_press_cue_id = &"sfx_menu_press"
+menu_open_cue_id = &"sfx_menu_open"
+menu_close_cue_id = &"sfx_menu_close"

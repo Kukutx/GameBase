@@ -239,7 +239,7 @@ func _collect_product() -> void:
 	last_product_day = WorldClock.day
 	_persist()
 	product_collected.emit(product.id, collected)
-	LifesimEvents.animal_product_collected.emit(data.id, product.id, collected)
+	LifesimEvents.animal_product_collected.emit(data.id, product.id, collected, global_position)
 	GameEvents.toastf("Collected %s x%d", [product.display_name, collected])
 	_refresh_prompt()
 

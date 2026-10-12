@@ -159,6 +159,7 @@ func find_problems() -> PackedStringArray:
 	var problems := GameControls.find_problems(GameControls.of_game(), GameControls.of_modules())
 	problems.append_array(GameWeatherSystem.find_problems(GameDefinition.current(), self))
 	problems.append_array(GameDefinition.current().find_settings_problems(self, _settings_kinds))
+	problems.append_array(AudioCueData.find_definition_problems(GameDefinition.current(), self))
 	problems.append_array(InheritanceRule.find_list_problems(GameDefinition.current().inheritance, self))
 	problems.append_array(GameCalendar.current().find_problems())
 	for kind: StringName in get_kinds():

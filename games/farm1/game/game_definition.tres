@@ -117,6 +117,7 @@ script = ExtResource("15_combat_settings")
 health_vital_id = &"hp"
 attack_vital_id = &"energy"
 defeat_money_loss_percent = 10
+fight_music_cue_id = &"music_fight"
 
 [sub_resource type="Resource" id="Settings_lifesim"]
 script = ExtResource("16_lifesim_settings")
@@ -152,5 +153,9 @@ event_cues = Dictionary[StringName, StringName]({
 &"ShopState.purchase_completed": &"sfx_purchase",
 &"ShopState.sale_completed": &"sfx_sale"
 })
+menu_focus_cue_id = &"sfx_menu_focus"
+menu_press_cue_id = &"sfx_menu_press"
+menu_open_cue_id = &"sfx_menu_open"
+menu_close_cue_id = &"sfx_menu_close"
 controls = Array[Resource]([ExtResource("10_move_up"), ExtResource("11_move_down"), ExtResource("12_move_left"), ExtResource("13_move_right"), ExtResource("5_interact"), SubResource("Control_use_tool"), SubResource("Control_give_gift"), SubResource("Control_remove_building"), SubResource("Control_open_menu"), ExtResource("6_quick_save"), ExtResource("7_quick_load"), SubResource("Control_hotbar_prev"), SubResource("Control_hotbar_next")])
 module_settings = Array[Resource]([SubResource("Settings_items"), SubResource("Settings_combat"), SubResource("Settings_lifesim")])

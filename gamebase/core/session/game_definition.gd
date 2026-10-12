@@ -54,8 +54,16 @@ static func current() -> GameDefinition:
 ## odds, for a game without weather.
 @export var clear_weather_id: StringName = &""
 ## Audio cue played for an event, as `<Autoload>.<signal>`
-## (`LifesimEvents.crop_harvested`) → cue id.
+## (`LifesimEvents.crop_harvested`) → cue id; from where it happened when the
+## event carries a `position` (`GameAudio`).
 @export var event_cues: Dictionary[StringName, StringName] = {}
+## The sounds of the menus (`GameAudio.MenuSound`): the focus moving with the
+## keys or a gamepad, a button pressed, a menu opening and closing. Empty:
+## silent.
+@export var menu_focus_cue_id: StringName = &""
+@export var menu_press_cue_id: StringName = &""
+@export var menu_open_cue_id: StringName = &""
+@export var menu_close_cue_id: StringName = &""
 ## What a new playthrough or a sequel carries over from the game before it
 ## (`Playthrough`, `InheritanceRule`); empty carries nothing.
 @export var inheritance: Array[InheritanceRule] = []

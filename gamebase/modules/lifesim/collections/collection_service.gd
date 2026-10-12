@@ -175,22 +175,22 @@ func _records() -> Dictionary:
 static func _count_of(category_data: Dictionary, item_id: StringName) -> int:
 	return SaveValues.count(category_data.get(String(item_id), 0))
 
-func _on_crop_harvested(_crop_id: StringName, item_id: StringName, quantity: int) -> void:
+func _on_crop_harvested(_crop_id: StringName, item_id: StringName, quantity: int, _position: Vector2) -> void:
 	record(CROPS, item_id, maxi(quantity, 1))
 
 func _on_fish_caught(_fish_id: StringName, item_id: StringName) -> void:
 	record(FISH, item_id, 1)
 
-func _on_resource_mined(_node_id: StringName, item_id: StringName, quantity: int) -> void:
+func _on_resource_mined(_node_id: StringName, item_id: StringName, quantity: int, _position: Vector2) -> void:
 	record(MINERALS, item_id, maxi(quantity, 1))
 
-func _on_animal_product_collected(_animal_id: StringName, item_id: StringName, quantity: int) -> void:
+func _on_animal_product_collected(_animal_id: StringName, item_id: StringName, quantity: int, _position: Vector2) -> void:
 	record(ANIMAL_PRODUCTS, item_id, maxi(quantity, 1))
 
-func _on_item_processed(_recipe_id: StringName, item_id: StringName, quantity: int) -> void:
+func _on_item_processed(_recipe_id: StringName, item_id: StringName, quantity: int, _position: Vector2) -> void:
 	record(PROCESSED, item_id, maxi(quantity, 1))
 
-func _on_item_foraged(item_id: StringName, quantity: int) -> void:
+func _on_item_foraged(item_id: StringName, quantity: int, _position: Vector2) -> void:
 	record(FORAGE, item_id, maxi(quantity, 1))
 
 func _on_item_shipped(item_id: StringName, quantity: int, _value: int) -> void:
