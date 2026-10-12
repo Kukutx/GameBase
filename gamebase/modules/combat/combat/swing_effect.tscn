@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat/swing_effect.gd" id="1_swing"]
+
+[node name="SwingEffect" type="Node2D"]
+z_index = 12
+script = ExtResource("1_swing")

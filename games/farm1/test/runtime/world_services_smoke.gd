@@ -473,7 +473,7 @@ func _run() -> void:
 	world_clock.set_time(8, 10 * 60)
 	await process_frame
 	_check(not stone_rock.is_depleted and not copper_rock.is_depleted, "Mining nodes did not respawn next day")
-	_check(not slime.is_defeated and slime.health == slime.data.max_health, "Slime did not respawn next day")
+	_check(not slime.is_defeated and slime.health.current == slime.data.max_health, "Slime did not respawn next day")
 	for _hit in range(3):
 		_check(copper_rock.use_item(&"pickaxe"), "Second-day copper vein hit failed")
 	_check(inventory.get_quantity(&"copper_ore") == copper_before + 4, "Second-day copper mining drop incorrect")

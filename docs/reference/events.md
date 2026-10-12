@@ -60,6 +60,9 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 ## CombatEvents (combat)
 
 - `CombatEvents.enemy_defeated(enemy_id: StringName, combat_xp: int)`: A hostile creature was defeated; `combat_xp` is its `EnemyData.combat_xp`.
+- `CombatEvents.attack_swung(weapon_item_id: StringName)`: The player swung the weapon `weapon_item_id`, hitting or not.
+- `CombatEvents.enemy_hurt(enemy_id: StringName, amount: int)`: A hostile creature was hurt for `amount`.
+- `CombatEvents.player_hurt(amount: int)`: The player was hurt for `amount`.
 
 ## ItemsEvents (items)
 

@@ -21,6 +21,12 @@ const KIND := &"enemy"
 @export_range(4.0, 64.0, 1.0) var attack_range := 16.0
 @export_range(0, 999, 1) var contact_damage := 8
 @export_range(0.1, 10.0, 0.1) var attack_cooldown := 1.2
+## The side it fights on (`FactionData`): it hurts and is hurt by the others.
+@export var faction_id: StringName = FactionData.MONSTERS
+## How hard its strike pushes the player, in pixels a second.
+@export_range(0.0, 600.0, 1.0) var knockback := 90.0
+## How far a hit pushes it: 0 for not at all, 1 for the hit's full push.
+@export_range(0.0, 4.0, 0.05) var knockback_scale := 1.0
 @export var collision_size := Vector2(16, 12)
 @export var visual_offset := Vector2(0, -5)
 @export_range(0.1, 4.0, 0.05) var visual_scale := 1.0
@@ -50,4 +56,8 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		problems.append("has invalid animation ranges")
 	if drop_item_id != &"" and not registry.has_entry(ItemData.KIND, drop_item_id):
 		problems.append("references unknown drop '%s'" % drop_item_id)
+	if faction_id == &"":
+		problems.append("has no faction")
+	elif not FactionData.are_hostile(faction_id, FactionData.PLAYER):
+		problems.append("fights on the player's side")
 	return problems

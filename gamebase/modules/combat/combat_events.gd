@@ -8,3 +8,10 @@ extends Node
 
 ## A hostile creature was defeated; `combat_xp` is its `EnemyData.combat_xp`.
 signal enemy_defeated(enemy_id: StringName, combat_xp: int)
+
+## The player swung the weapon `weapon_item_id`, hitting or not.
+signal attack_swung(weapon_item_id: StringName)
+## A hostile creature was hurt for `amount`.
+signal enemy_hurt(enemy_id: StringName, amount: int)
+## The player was hurt for `amount`.
+signal player_hurt(amount: int)
