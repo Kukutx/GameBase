@@ -162,7 +162,7 @@ func _process(delta: float) -> void:
 	if battle.is_over():
 		_end_left -= delta
 		if _end_left <= 0.0:
-			var survivors := battle.units.filter(func(unit: RtsUnit) -> bool: return unit.is_alive() and battle.is_on_player_side(unit)).size()
+			var survivors := battle.get_living_units().filter(func(unit: RtsUnit) -> bool: return battle.is_on_player_side(unit)).size()
 			var details := {"map": map.id}
 			finish(MiniGameResult.won(survivors, details) if battle.is_won() else MiniGameResult.lost(0, details))
 		return

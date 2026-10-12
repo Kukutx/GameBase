@@ -7,17 +7,25 @@ extends RefCounted
 ## player orders the units of their faction (`player_faction`), one or a group
 ## at a time: move, attack a foe, attack-move, stop, hold. The others, their
 ## allies among them, march on the nearest foe when the battle says they
-## advance (`computer_advances`, `RtsBattleAi`). A unit with nothing to do, or
-## attack-moving, goes after the foes it sees and lets one go once it gets
-## well out of sight (`LEASH`); a holding unit fights only what it reaches.
+## advance (`computer_advances`, `RtsBattleAi`), each in its turn. A unit
+## with nothing to do, or attack-moving, goes after the foes it sees and lets
+## one go once it gets well out of sight (`LEASH`); a holding unit fights only
+## what it reaches.
 ## The battle ends when no two living units are hostile
-## (`FactionData.are_hostile()`), won when the player's side is left.
+## (`FactionData.are_hostile()`), won when the player's side is left. A unit
+## that falls is out of the battle for good, even if its health comes back.
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`RtsBattleGame`) lets time pass with `advance()`, gives the player's orders
 ## and shows what the signals say happened. Time passes in fixed steps
 ## (`STEP`), so the same battle with the same orders at the same times always
 ## plays the same way.
+##
+## A step costs about the units near each one rather than every pair of
+## units: the battle knows which factions are hostile once (`are_foes()`),
+## steps only the living units, files them by where they stand
+## (`RtsUnitGrid`) to find the foe a unit sees and the units it overlaps, and
+## the units the player does not command think by turns.
 
 signal unit_attacked(attacker: RtsUnit, target: RtsUnit, amount: int)
 signal unit_defeated(unit: RtsUnit)
@@ -27,8 +35,10 @@ signal ended(won: bool)
 const STEP := 1.0 / 30.0
 ## How often a unit going after a foe looks again for the way to it.
 const REPATH_SECONDS := 0.5
-## How often the units the player does not command think (`RtsBattleAi`).
-const THINK_SECONDS := 1.0
+## How often, in steps, each unit the player does not command thinks
+## (`RtsBattleAi`): once a second. They take turns by their place among the
+## units, so a large battle does not think all in one step.
+const THINK_STEPS := 30
 ## How far, as a share of its sight, a unit not ordered to attack a foe goes
 ## after it before it lets it go.
 const LEASH := 1.5
@@ -43,20 +53,39 @@ const _EPSILON := 0.000001
 var size: Vector2
 var navigation: RtsNavigation
 var units: Array[RtsUnit] = []
+## The player's faction, as the battle was made.
 var player_faction: StringName
 var computer_advances := true
 var ai := RtsBattleAi.new()
 ## The seconds of battle that have passed.
 var time := 0.0
 var _left := 0.0
-var _think_left := 0.0
+var _steps := 0
 var _over := false
 var _won := false
+# The living units, in the order placed: those a step moves.
+var _alive: Array[RtsUnit] = []
+# faction -> its place among the factions of the battle (`RtsUnit.side`).
+var _sides: Dictionary[StringName, int] = {}
+# Whether the factions of two places are hostile, by [first * count + second].
+var _hostility := PackedByteArray()
+# For each place, the places of the factions hostile to it; and every place.
+var _foe_sides: Array[PackedInt32Array] = []
+var _every_side := PackedInt32Array()
+# The living units by where they stand, filed while a step runs (`_filed`).
+var _grid: RtsUnitGrid
+var _filed := false
+# Whether a unit fell since the living were last counted.
+var _fallen := false
+# The widest unit's radius, and the most any unit walks in a step.
+var _widest_radius := 0.0
+var _stride := 0.0
 
 func _init(field_size: Vector2, obstacles: Array[Rect2] = [], side: StringName = FactionData.PLAYER) -> void:
 	size = field_size
 	navigation = RtsNavigation.new(field_size, obstacles)
 	player_faction = side
+	_side_of(side)
 
 ## The battle `map` sets up.
 static func from_map(map: RtsMapData) -> RtsBattle:
@@ -72,7 +101,14 @@ static func from_map(map: RtsMapData) -> RtsBattle:
 ## nearest it; the player orders it when `faction` is theirs.
 func add_unit(data: RtsUnitData, faction: StringName, point: Vector2) -> RtsUnit:
 	var unit := RtsUnit.new(data, faction, navigation.get_nearest_open(point), units.size(), faction == player_faction)
+	unit.side = _side_of(faction)
 	units.append(unit)
+	_alive.append(unit)
+	_widest_radius = maxf(_widest_radius, data.radius)
+	_stride = maxf(_stride, data.move_speed * STEP)
+	# One placed while a step runs is not filed: look at every unit until the
+	# step files them again.
+	_filed = false
 	return unit
 
 func is_over() -> bool:
@@ -83,7 +119,12 @@ func is_won() -> bool:
 
 ## Whether `unit` fights on the player's side.
 func is_on_player_side(unit: RtsUnit) -> bool:
-	return not FactionData.are_hostile(unit.faction, player_faction)
+	return _hostility[unit.side * _sides.size() + _sides[player_faction]] == 0
+
+## Whether `first` and `second` fight each other (`FactionData.are_hostile()`,
+## asked once per two factions of the battle).
+func are_foes(first: RtsUnit, second: RtsUnit) -> bool:
+	return _hostility[first.side * _sides.size() + second.side] == 1
 
 ## The living unit at `index` among the units, or null.
 func get_unit(index: int) -> RtsUnit:
@@ -91,16 +132,20 @@ func get_unit(index: int) -> RtsUnit:
 		return null
 	return units[index]
 
+## The living units, in the order placed.
+func get_living_units() -> Array[RtsUnit]:
+	return _alive.filter(func(unit: RtsUnit) -> bool: return unit.is_alive())
+
 ## The living units the player orders.
 func get_player_units() -> Array[RtsUnit]:
-	return units.filter(func(unit: RtsUnit) -> bool: return unit.is_alive() and unit.player_controlled)
+	return _alive.filter(func(unit: RtsUnit) -> bool: return unit.is_alive() and unit.player_controlled)
 
 ## The living unit whose body covers `point`, grown by `slack`, the nearest
 ## first; null when there is none.
 func get_unit_at(point: Vector2, slack := 0.0) -> RtsUnit:
 	var found: RtsUnit
 	var nearest := INF
-	for unit: RtsUnit in units:
+	for unit: RtsUnit in _alive:
 		var distance := unit.position.distance_to(point)
 		if unit.is_alive() and distance <= unit.data.radius + slack and distance < nearest:
 			found = unit
@@ -109,18 +154,23 @@ func get_unit_at(point: Vector2, slack := 0.0) -> RtsUnit:
 
 ## The living units whose middle lies in `rect`.
 func get_units_in(rect: Rect2) -> Array[RtsUnit]:
-	var area := rect.abs()
-	return units.filter(func(unit: RtsUnit) -> bool: return unit.is_alive() and area.grow(0.001).has_point(unit.position))
+	var area := rect.abs().grow(0.001)
+	return _alive.filter(func(unit: RtsUnit) -> bool: return unit.is_alive() and area.has_point(unit.position))
 
 ## The nearest living foe of `unit` whose edge is at most `within` from its
 ## edge, or null; of two as near, the earlier placed.
 func get_nearest_foe(unit: RtsUnit, within := INF) -> RtsUnit:
+	var candidates := _alive
+	if _filed and not is_inf(within):
+		# The foes filed at the start of the step, since when any unit walked
+		# a stride at most.
+		candidates = _grid.get_near(unit.position, within + unit.data.radius + _widest_radius + _stride, _foe_sides[unit.side])
 	var found: RtsUnit
 	var nearest := within
-	for other: RtsUnit in units:
-		if other.is_alive() and FactionData.are_hostile(unit.faction, other.faction):
+	for other: RtsUnit in candidates:
+		if other != unit and other.is_alive() and are_foes(unit, other):
 			var gap := unit.get_gap_to(other)
-			if gap <= nearest and (found == null or gap < nearest):
+			if gap <= nearest and (found == null or gap < nearest or other.index < found.index):
 				found = other
 				nearest = gap
 	return found
@@ -213,16 +263,35 @@ func get_formation(count: int, point: Vector2, spacing: float) -> Array[Vector2]
 
 func _step() -> void:
 	time += STEP
-	_think_left -= STEP
-	if _think_left <= 0.0:
-		_think_left += THINK_SECONDS
-		ai.think(self)
-	for unit: RtsUnit in units:
+	var turn := _steps % THINK_STEPS
+	_steps += 1
+	_file_units()
+	for unit: RtsUnit in _alive:
 		if _over:
-			return
-		if unit.is_alive():
-			_update(unit)
-	_separate()
+			break
+		if not unit.is_alive():
+			# One that fell outside a step.
+			_fallen = true
+			continue
+		if not unit.player_controlled and unit.index % THINK_STEPS == turn:
+			ai.think(self, unit)
+		_update(unit)
+	if _fallen:
+		_fallen = false
+		_alive = get_living_units()
+	if not _over:
+		_file_units()
+		_separate()
+	_filed = false
+
+# Files the living units by where they stand now, in cells three times as
+# wide as the widest unit.
+func _file_units() -> void:
+	var side := maxf(_widest_radius * 6.0, RtsNavigation.CELL_SIZE)
+	if _grid == null or _grid.cell_size != side:
+		_grid = RtsUnitGrid.new(side)
+	_grid.fill(_alive, _sides.size())
+	_filed = true
 
 func _update(unit: RtsUnit) -> void:
 	unit.cooldown = maxf(unit.cooldown - STEP, 0.0)
@@ -282,6 +351,7 @@ func _attack(unit: RtsUnit, target: RtsUnit) -> void:
 	var amount := target.health.take(maxi(unit.data.damage - target.data.armor, 1))
 	unit_attacked.emit(unit, target, amount)
 	if not target.is_alive():
+		_fallen = true
 		unit_defeated.emit(target)
 		_check_over()
 
@@ -315,15 +385,15 @@ func _clear_path(unit: RtsUnit) -> void:
 
 # Pushes apart each two living units whose bodies overlap: half each, or all
 # of it on the one that does not hold. A push into the closed part of the
-# field slides along it, or is left out.
+# field slides along it, or is left out. Each two are found through the
+# filing; two that the pushes before theirs brought together part in the
+# next step.
 func _separate() -> void:
-	for first_index in units.size():
-		var first := units[first_index]
+	for first: RtsUnit in _alive:
 		if not first.is_alive():
 			continue
-		for second_index in range(first_index + 1, units.size()):
-			var second := units[second_index]
-			if not second.is_alive():
+		for second: RtsUnit in _grid.get_near(first.position, first.data.radius + _widest_radius * 2.0, _every_side):
+			if second.index <= first.index or not second.is_alive():
 				continue
 			var apart := second.position - first.position
 			var reach := first.data.radius + second.data.radius
@@ -332,7 +402,7 @@ func _separate() -> void:
 				continue
 			var distance := sqrt(distance_squared)
 			# Two units on one point part along a direction of their own.
-			var away := apart / distance if distance > 0.001 else Vector2.RIGHT.rotated(second_index * 2.39996)
+			var away := apart / distance if distance > 0.001 else Vector2.RIGHT.rotated(second.index * 2.39996)
 			var share := 0.5
 			if first.order == RtsUnit.Order.HOLD and second.order != RtsUnit.Order.HOLD:
 				share = 0.0
@@ -351,14 +421,22 @@ func _nudge(unit: RtsUnit, offset: Vector2) -> void:
 			unit.position = point
 			return
 
+# Ends the battle once no two living units are foes: one of each faction
+# left stands for all of it.
 func _check_over() -> void:
-	var living := _living(units)
-	for first: RtsUnit in living:
-		for second: RtsUnit in living:
-			if FactionData.are_hostile(first.faction, second.faction):
+	var standing: Array[RtsUnit] = []
+	var seen := PackedByteArray()
+	seen.resize(_sides.size())
+	for unit: RtsUnit in _alive:
+		if unit.is_alive() and seen[unit.side] == 0:
+			seen[unit.side] = 1
+			standing.append(unit)
+	for first: RtsUnit in standing:
+		for second: RtsUnit in standing:
+			if are_foes(first, second):
 				return
 	_over = true
-	_won = living.any(func(unit: RtsUnit) -> bool: return is_on_player_side(unit))
+	_won = standing.any(func(unit: RtsUnit) -> bool: return is_on_player_side(unit))
 	ended.emit(_won)
 
 func _set_still(group: Array[RtsUnit], order: RtsUnit.Order) -> void:
@@ -369,6 +447,26 @@ func _set_still(group: Array[RtsUnit], order: RtsUnit.Order) -> void:
 
 func _living(group: Array[RtsUnit]) -> Array[RtsUnit]:
 	return group.filter(func(unit: RtsUnit) -> bool: return unit != null and unit.is_alive())
+
+# The place of `faction` among the factions of the battle; a faction new to
+# it learns its hostility to every other.
+func _side_of(faction: StringName) -> int:
+	if _sides.has(faction):
+		return _sides[faction]
+	_sides[faction] = _sides.size()
+	var factions := _sides.keys()
+	var count := factions.size()
+	_hostility.resize(count * count)
+	_foe_sides.resize(count)
+	_every_side.append(count - 1)
+	for first: int in count:
+		_foe_sides[first] = PackedInt32Array()
+		for second: int in count:
+			var hostile := FactionData.are_hostile(factions[first], factions[second])
+			_hostility[first * count + second] = 1 if hostile else 0
+			if hostile:
+				_foe_sides[first].append(second)
+	return _sides[faction]
 
 func _widest(group: Array[RtsUnit]) -> float:
 	var widest := 0.0
