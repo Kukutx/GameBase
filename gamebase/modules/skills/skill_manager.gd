@@ -11,8 +11,9 @@ signal skill_leveled_up(skill: StringName, level: int)
 ## Experience of each skill that has some, as skill id -> amount.
 var _xp: Dictionary[StringName, int] = {}
 
-## Adds experience to a skill. What earns experience is the game's to decide:
-## its `GameSetup` grants it for the module events it chooses.
+## Adds experience to a skill. What earns experience is the game's to decide,
+## in data: a trigger on a module event it chooses runs `ADD_SKILL_XP`
+## (`TriggerData`; Farm1's `game/data/triggers/`).
 func add_xp(skill: StringName, amount: int) -> int:
 	var data := SkillData.find(skill)
 	if data == null:

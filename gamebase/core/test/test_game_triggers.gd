@@ -10,6 +10,7 @@ class FixtureEvents:
 	extends Node
 	signal harvested(quantity: int, crop: StringName)
 	signal found(item: Resource)
+	signal noted(value: Variant)
 
 var _events: FixtureEvents
 var _world_snapshot: Dictionary
@@ -117,6 +118,19 @@ func test_a_pending_trigger_resumes_through_a_save_with_the_event_s_values_in_th
 	assert_eq(seen[1], {"quantity": 3, "crop": &"fixture_radish"})
 	assert_eq([typeof(seen[1]["quantity"]), typeof(seen[1]["crop"])], [TYPE_INT, TYPE_STRING_NAME], "as the event gave them")
 	GameRules._actions.erase(&"FIXTURE_RECORD")
+
+func test_a_once_trigger_given_a_value_a_save_cannot_keep_does_not_run() -> void:
+	var first := _trigger(&"fixture_first_harvest", ["ADD_FLAG fixture:first"])
+	first.once = true
+	var service := _start([first])
+	# What a sloppy emitter could pass for a typed argument.
+	service.fire(&"FixtureEvents.harvested", {"quantity": Vector2.ONE, "crop": &"fixture_radish"})
+	service.fire(&"FixtureEvents.harvested", {"quantity": INF, "crop": &"fixture_radish"})
+	assert_push_warning_count(2)
+	assert_eq(WorldState.get_int(&"fixture:first"), 0)
+	assert_false(service.has_fired(&"fixture_first_harvest"))
+	_events.harvested.emit(1, &"fixture_radish")
+	assert_true(service.has_fired(&"fixture_first_harvest"))
 
 func test_a_pending_trigger_whose_actions_changed_fires_anew() -> void:
 	GameRules.register_action(&"FIXTURE_WHEN_ALLOWED", func(_args: PackedStringArray, _context: Dictionary) -> bool:
@@ -252,11 +266,15 @@ func test_a_once_trigger_cannot_repeat_nor_listen_to_what_a_save_cannot_keep() -
 	var found := _trigger(&"fixture_found_once", ["ADD_FLAG fixture:x"])
 	found.event = &"FixtureEvents.found"
 	found.once = true
+	var noted := _trigger(&"fixture_noted_once", ["ADD_FLAG fixture:x"])
+	noted.event = &"FixtureEvents.noted"
+	noted.once = true
 	var found_every := _trigger(&"fixture_found_every", ["ADD_FLAG fixture:x"])
 	found_every.event = &"FixtureEvents.found"
-	var problems := "\n".join(ContentFixture.use(self, [repeated, found, found_every]).find_problems())
+	var problems := "\n".join(ContentFixture.use(self, [repeated, found, noted, found_every]).find_problems())
 	assert_string_contains(problems, "trigger 'fixture_repeated_once' fires once, so it cannot repeat per 'quantity'")
 	assert_string_contains(problems, "trigger 'fixture_found_once' fires once, so a save may keep its event's arguments, and 'item' is of type Object")
+	assert_string_contains(problems, "trigger 'fixture_noted_once' fires once, so a save may keep its event's arguments, and 'value' is untyped")
 	assert_false(problems.contains("fixture_found_every"), problems)
 
 func test_a_check_of_arguments_together_runs_for_every_value_an_event_id_can_take() -> void:

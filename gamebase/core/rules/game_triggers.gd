@@ -26,9 +26,11 @@ const MAX_DEPTH := 8
 ## the actions it ran (`get_actions_fingerprint()`), "event": {argument:
 ## {"type": its Variant.Type, "value": the value as JSON holds it}}}}}.
 const STATE_KEY := &"triggers:state"
-## The types of event value a pending trigger keeps. Another, an object, is
-## kept as null.
-const SAVED_TYPES: Array[int] = [TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME]
+## The types of value an event of a once trigger may pass: those a save keeps
+## for a pending trigger. A once trigger whose event passes another (an object,
+## or nothing) does not run, with a warning; content checks reject an event
+## that declares another.
+const SAVED_TYPES: Array[int] = [TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME]
 
 # event -> Array[TriggerData]
 var _by_event: Dictionary = {}
@@ -92,6 +94,8 @@ func fire(event: StringName, args: Dictionary) -> void:
 			if _running.has(trigger.id) or has_fired(trigger.id):
 				continue
 			var pending := _pending(trigger)
+			if pending.is_empty() and not _can_keep(trigger, args):
+				continue
 			if pending.is_empty() and not GameRules.check(trigger.condition, context):
 				continue
 			_running[trigger.id] = true
@@ -224,18 +228,20 @@ static func _saved_pending(trigger: TriggerData, done: int, event: Dictionary) -
 		values[name] = _saved_value(event[name])
 	return {"done": done, "actions": get_actions_fingerprint(trigger), "event": values}
 
-# An event's value as a save keeps it: its type, and the value as JSON holds
-# it. A value of a type JSON cannot hold, an object, is kept as null.
+# Whether a save could keep every value of `args`, the event's arguments, were
+# `trigger` left pending; warns when it could not.
+static func _can_keep(trigger: TriggerData, args: Dictionary) -> bool:
+	for name: String in args:
+		var value: Variant = args[name]
+		if not SAVED_TYPES.has(typeof(value)) or (value is float and not is_finite(value)):
+			push_warning("GameTriggers: once trigger '%s' does not run: '%s' passed %s = %s, which a save cannot keep" % [trigger.id, trigger.event, name, value])
+			return false
+	return true
+
+# An event's value (`SAVED_TYPES`) as a save keeps it: its type, and the value
+# as JSON holds it.
 static func _saved_value(value: Variant) -> Dictionary:
-	match typeof(value):
-		TYPE_BOOL, TYPE_INT, TYPE_STRING:
-			return {"type": typeof(value), "value": value}
-		TYPE_STRING_NAME:
-			return {"type": TYPE_STRING_NAME, "value": String(value)}
-		TYPE_FLOAT:
-			if is_finite(value):
-				return {"type": TYPE_FLOAT, "value": value}
-	return {"type": TYPE_NIL, "value": null}
+	return {"type": typeof(value), "value": String(value) if value is StringName else value}
 
 # The value `saved` (`_saved_value()`) keeps, back in its type, as [value];
 # empty when `saved` is not of that shape.
@@ -247,8 +253,6 @@ static func _loaded_value(saved: Variant) -> Array:
 	if type == null:
 		return []
 	match int(type):
-		TYPE_NIL:
-			return [null] if value == null else []
 		TYPE_BOOL:
 			return [value] if value is bool else []
 		TYPE_INT:
