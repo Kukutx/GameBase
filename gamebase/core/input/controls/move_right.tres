@@ -10,3 +10,4 @@ key = 68
 secondary_key = 4194321
 gamepad_button = 14
 gamepad_axis = 0
+ui_action = &"ui_right"

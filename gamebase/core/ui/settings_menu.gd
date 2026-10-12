@@ -93,6 +93,8 @@ func _ready() -> void:
 	controls_reset.pressed.connect(_reset_controls)
 	back_button.pressed.connect(go_back)
 	GameSettings.changed.connect(_on_settings_changed)
+	# The gamepad's buttons are named as the pad in use names them.
+	InputPrompts.input_method_changed.connect(_on_settings_changed.unbind(1))
 
 func open() -> void:
 	_sync_from_settings()
@@ -154,7 +156,7 @@ func _input(event: InputEvent) -> void:
 		if event is InputEventJoypadButton and event.pressed:
 			var button := (event as InputEventJoypadButton).button_index
 			if _waiting_gamepad:
-				_finish_rebind(GameSettings.bind_gamepad_button(_waiting_action, button), InputPromptService.gamepad_button_name(button))
+				_finish_rebind(GameSettings.bind_gamepad_button(_waiting_action, button), InputPrompts.get_button_name(button))
 			else:
 				_cancel_rebind()
 		# No stick or button moves the focus off the rebind.
@@ -270,7 +272,7 @@ func _binding_button(action: StringName, gamepad: bool) -> Button:
 
 func _binding_text(action: StringName, gamepad: bool) -> String:
 	var bindings := GameSettings.bindings
-	return InputPromptService.gamepad_button_name(bindings.get_gamepad_button(action)) if gamepad else bindings.get_binding_text(action)
+	return InputPrompts.get_button_name(bindings.get_gamepad_button(action)) if gamepad else bindings.get_binding_text(action)
 
 func _first_binding_button() -> Button:
 	for row: Node in controls_list.get_children():

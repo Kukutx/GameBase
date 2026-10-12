@@ -42,7 +42,7 @@ script = ExtResource("4_control")
 action = &"open_menu"
 display_name = "Open Menu"
 key = 73
-gamepad_button = 6
+gamepad_button = 4
 
 [sub_resource type="Resource" id="Control_hotbar_prev"]
 script = ExtResource("4_control")

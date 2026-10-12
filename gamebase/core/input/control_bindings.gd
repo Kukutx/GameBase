@@ -28,6 +28,10 @@ const MOUSE_BUTTON_NAMES := {
 	MOUSE_BUTTON_XBUTTON2: "Mouse Forward",
 }
 
+## The meta an event lent to a `ControlAction.ui_action` carries: the action
+## of the control that lent it.
+const LENT_BY := &"lent_by_control"
+
 var _controls: Array[ControlAction] = []
 var _by_action: Dictionary[StringName, ControlAction] = {}
 # action -> the binding the player chose, of a rebindable control.
@@ -191,7 +195,8 @@ func read_data(controls: Variant, gamepad: Variant) -> void:
 	if _has_clash():
 		reset()
 
-## Builds the input map's events of every control from its bindings.
+## Builds the input map's events of every control from its bindings, and
+## lends each `ControlAction.ui_action` its control's.
 func apply_to_input_map() -> void:
 	for control: ControlAction in _controls:
 		if not InputMap.has_action(control.action):
@@ -199,6 +204,25 @@ func apply_to_input_map() -> void:
 		InputMap.action_erase_events(control.action)
 		for event: InputEvent in control.build_events(get_binding(control.action), get_gamepad_button(control.action)):
 			InputMap.action_add_event(control.action, event)
+		if control.ui_action != &"" and InputMap.has_action(control.ui_action):
+			_lend_to_ui_action(control)
+
+# Gives `control.ui_action` the control's key or mouse button and gamepad
+# button, in place of those it lent before. The events it lends carry
+# `LENT_BY` (the control's action); the project's own stay as they are.
+func _lend_to_ui_action(control: ControlAction) -> void:
+	var kept: Array[InputEvent] = []
+	for event: InputEvent in InputMap.action_get_events(control.ui_action):
+		if not event.has_meta(LENT_BY):
+			kept.append(event)
+	InputMap.action_erase_events(control.ui_action)
+	for event: InputEvent in kept:
+		InputMap.action_add_event(control.ui_action, event)
+	for event: InputEvent in ControlAction.bound_events(get_binding(control.action), get_gamepad_button(control.action)):
+		if kept.any(func(own: InputEvent) -> bool: return own.is_match(event)):
+			continue
+		event.set_meta(LENT_BY, control.action)
+		InputMap.action_add_event(control.ui_action, event)
 
 # A binding as the settings file holds it, its number whole; {} when it is
 # none.

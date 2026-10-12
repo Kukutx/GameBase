@@ -95,7 +95,8 @@ func test_keyboard_rebinding_preserves_gamepad_core_actions() -> void:
 		&"use_tool": JOY_BUTTON_X,
 		&"give_gift": JOY_BUTTON_Y,
 		&"remove_building": JOY_BUTTON_RIGHT_SHOULDER,
-		&"open_menu": JOY_BUTTON_START,
+		&"open_menu": JOY_BUTTON_BACK,
+		&"pause": JOY_BUTTON_START,
 		&"quick_save": JOY_BUTTON_LEFT_STICK,
 		&"quick_load": JOY_BUTTON_RIGHT_STICK,
 	}

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ControlAction" format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/input/control_action.gd" id="1_control"]
+
+[resource]
+script = ExtResource("1_control")
+action = &"pause"
+display_name = "Pause"
+key = 4194305
+gamepad_button = 6
