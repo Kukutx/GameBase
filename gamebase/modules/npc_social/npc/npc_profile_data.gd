@@ -10,7 +10,10 @@ const KIND := &"npc"
 @export_multiline var speaking_style: String
 @export var home_location_id: StringName
 @export var default_location_id: StringName
-@export var ai_enabled := true
+## Whether the NPC chats about the topics the player brings up instead of
+## saying its daily lines, in a game with a module that makes chats (npc_ai);
+## its heart events play all the same.
+@export var ai_enabled := false
 @export var context_world_keys: Array[StringName] = []
 
 @export_group("Birthday")

@@ -82,9 +82,9 @@ const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\
 // Player-facing fields of data resources.
 const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|role|activity) = "((?:[^"\\]|\\.)*)"$/gm;
 
-// Player-facing lists of text in data resources, such as a calendar's seasons,
-// and the exported defaults of those lists.
-const TEXT_LISTS = ["season_names"];
+// Player-facing lists of text in data resources, such as a calendar's seasons
+// or what an NPC answers a chat topic, and the exported defaults of those lists.
+const TEXT_LISTS = ["season_names", "rule_replies"];
 const DATA_LIST_RE = new RegExp(`^(?:${TEXT_LISTS.join("|")}) = PackedStringArray\\((.*)\\)$`, "gm");
 const EXPORT_LIST_DEFAULT_RE = new RegExp(`^@export var (?:${TEXT_LISTS.join("|")})\\b[^=\\n]*=\\s*PackedStringArray\\(\\[(.*)\\]\\)`, "gm");
 const STRING_RE = /"((?:[^"\\]|\\.)*)"/g;

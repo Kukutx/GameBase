@@ -1,6 +1,6 @@
 # Writing a module
 
-A module is an optional piece of gameplay under `gamebase/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `combat`, `lifesim`, `npc_social`, `progression` and `roguelite` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `gamebase/core/`.
+A module is an optional piece of gameplay under `gamebase/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `combat`, `lifesim`, `npc_social`, `npc_ai`, `progression` and `roguelite` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `gamebase/core/`.
 
 The reference pages list what the foundation already offers: [autoloads](reference/autoloads.md), [events](reference/events.md) and [rule keys](reference/rules.md).
 
@@ -30,7 +30,7 @@ Add the module to `gamebase/gamebase.json`:
 ```
 
 - `requires` lists the modules it uses. Requirements form no cycle, so a game can take a module with only the modules below it. A module may use the core and the modules it requires, never a game; `tools/check_layers.js` enforces both.
-- `addons` lists the shared addons under `addons/` it uses (`npc_social` uses `dialogue_manager`).
+- `addons` lists the shared addons under `addons/` it uses (`npc_social` and `npc_ai` use `dialogue_manager`).
 - `autoloads` are its services. `node tools/link.js` writes them into each game's `project.godot` after the core's first group and after the autoloads of the modules it requires.
 
 ## Wire it in: `<Module>Module`

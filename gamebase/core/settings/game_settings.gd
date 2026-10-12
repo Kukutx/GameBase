@@ -81,6 +81,9 @@ var pause_on_focus_loss: bool
 var text_speed: TextSpeed
 var weather_effects: bool
 var reduced_motion: bool
+## Whether the player lets the game reach online services (an NPC chat's
+## language model: `register_online_service()`); off until they turn it on.
+var online_services: bool
 var locale := SOURCE_LOCALE
 ## Key of each rebindable action (String) the player chose or the default.
 var key_bindings: Dictionary = {}
@@ -88,6 +91,8 @@ var key_bindings: Dictionary = {}
 var gamepad_bindings: Dictionary = {}
 
 var _controls: Array[ControlAction] = []
+# id -> Callable() -> bool: whether the game uses the online service now.
+var _online_services: Dictionary[StringName, Callable] = {}
 ## action (String) -> ControlAction
 var _control_by_action: Dictionary = {}
 
@@ -169,6 +174,21 @@ func set_autosave(value: bool) -> void:
 func set_pause_on_focus_loss(value: bool) -> void:
 	pause_on_focus_loss = value
 	_save_and_emit()
+
+func set_online_services(value: bool) -> void:
+	online_services = value
+	_save_and_emit()
+
+## Registers an online service a module can reach (`id`), which the game uses
+## while `is_used.call()` holds (it names an endpoint). The service goes online
+## only while `online_services` is on, and the settings menu offers that
+## choice while the game uses any.
+func register_online_service(id: StringName, is_used: Callable) -> void:
+	_online_services[id] = is_used
+
+## Whether the game uses any online service (`register_online_service()`).
+func uses_online_services() -> bool:
+	return _online_services.values().any(func(is_used: Callable) -> bool: return is_used.is_valid() and bool(is_used.call()))
 
 func set_text_speed(value: TextSpeed) -> void:
 	text_speed = clampi(value, 0, TextSpeed.size() - 1) as TextSpeed
@@ -335,6 +355,7 @@ func to_data() -> Dictionary:
 		"display": {"fullscreen": fullscreen, "vsync": vsync, "integer_scaling": integer_scaling},
 		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss, "text_speed": TEXT_SPEED_NAMES[text_speed].to_lower()},
 		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
+		"privacy": {"online_services": online_services},
 		"localization": {"locale": locale},
 		"controls": controls,
 		"gamepad": gamepad,
@@ -377,6 +398,7 @@ func load_settings() -> void:
 			text_speed = index as TextSpeed
 	weather_effects = _read_bool(data, "accessibility", "weather_effects", weather_effects)
 	reduced_motion = _read_bool(data, "accessibility", "reduced_motion", reduced_motion)
+	online_services = _read_bool(data, "privacy", "online_services", online_services)
 	var loaded_locale: Variant = _read(data, "localization", "locale")
 	locale = loaded_locale if loaded_locale is String and get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
 	for action: StringName in get_rebindable_actions():
@@ -437,6 +459,7 @@ func _reset_values() -> void:
 	text_speed = TextSpeed.NORMAL
 	weather_effects = true
 	reduced_motion = false
+	online_services = false
 
 func _reset_control_values() -> void:
 	key_bindings.clear()

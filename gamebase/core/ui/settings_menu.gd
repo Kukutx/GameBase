@@ -31,6 +31,7 @@ const BINDING_WIDTH := 76.0
 @onready var pause_on_focus_loss_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/PauseOnFocusLoss
 @onready var text_speed_select: OptionButton = $Dim/Panel/Layout/Pages/Page/Main/TextSpeed/Select
 @onready var language_select: OptionButton = $Dim/Panel/Layout/Pages/Page/Main/Language/Select
+@onready var online_services_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/OnlineServices
 @onready var accessibility_button: Button = $Dim/Panel/Layout/Pages/Page/Main/AccessibilityButton
 @onready var controls_button: Button = $Dim/Panel/Layout/Pages/Page/Main/ControlsButton
 @onready var reset_all_button: Button = $Dim/Panel/Layout/Pages/Page/Main/ResetAll
@@ -67,6 +68,7 @@ func _ready() -> void:
 	pause_on_focus_loss_check.toggled.connect(_on_pause_on_focus_loss_toggled)
 	weather_effects_check.toggled.connect(_on_weather_effects_toggled)
 	reduced_motion_check.toggled.connect(_on_reduced_motion_toggled)
+	online_services_check.toggled.connect(_on_online_services_toggled)
 	# A game without weather has no weather effects to turn off.
 	weather_effects_check.visible = GameWeatherSystem.has_weather()
 	support_export.pressed.connect(_export_support_bundle)
@@ -174,6 +176,9 @@ func _sync_from_settings() -> void:
 	text_speed_select.select(GameSettings.text_speed)
 	weather_effects_check.button_pressed = GameSettings.weather_effects
 	reduced_motion_check.button_pressed = GameSettings.reduced_motion
+	# Offered only while the game uses a service that goes online.
+	online_services_check.visible = GameSettings.uses_online_services()
+	online_services_check.button_pressed = GameSettings.online_services
 	_select_current_language()
 	_syncing = false
 	if _waiting_action == &"":
@@ -318,6 +323,10 @@ func _on_weather_effects_toggled(value: bool) -> void:
 func _on_reduced_motion_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_reduced_motion(value)
+
+func _on_online_services_toggled(value: bool) -> void:
+	if not _syncing:
+		GameSettings.set_online_services(value)
 
 func _export_support_bundle() -> void:
 	var path := SupportBundle.create_bundle()

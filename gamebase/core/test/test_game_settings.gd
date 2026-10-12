@@ -66,6 +66,26 @@ func test_text_speed_sets_how_long_each_character_shows() -> void:
 	settings.load_settings()
 	assert_eq(settings.text_speed, GameSettingsService.TextSpeed.INSTANT, "an unknown speed keeps the current one")
 
+func test_online_services_stay_off_until_the_player_allows_them_and_are_offered_while_a_module_uses_one() -> void:
+	var source := GameSettingsService.new()
+	source.settings_path = TEST_PATH
+	add_child_autofree(source)
+	assert_false(source.online_services, "off by default")
+	assert_false(source.uses_online_services())
+	var used := [false]
+	source.register_online_service(&"fixture_chat", func() -> bool: return used[0])
+	assert_false(source.uses_online_services(), "a service the game does not use now")
+	used[0] = true
+	assert_true(source.uses_online_services())
+	source.set_online_services(true)
+
+	var restored := GameSettingsService.new()
+	restored.settings_path = TEST_PATH
+	add_child_autofree(restored)
+	restored.load_settings()
+	assert_true(restored.online_services)
+	assert_false(restored.uses_online_services(), "a service is registered at run time, not saved")
+
 func test_key_bindings_round_trip_and_apply_to_input_map() -> void:
 	var source := _settings_with_controls([])
 	assert_true(source.set_key_binding(&"interact", KEY_Q))

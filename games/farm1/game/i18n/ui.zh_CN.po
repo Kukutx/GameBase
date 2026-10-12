@@ -2111,3 +2111,36 @@ msgstr "下雨"
 
 msgid "Storm"
 msgstr "暴风雨"
+
+msgid "All quiet around {location} today."
+msgstr "{location}今天挺安静的。"
+
+msgid "Anything new?"
+msgstr "最近有什么新鲜事？"
+
+msgid "Being the {role} keeps me busy, and I like it that way."
+msgstr "当{role}让我一直很忙，不过我喜欢这样。"
+
+msgid "Busy as always. Right now: {activity}."
+msgstr "还是老样子，忙着呢。眼下：{activity}。"
+
+msgid "Can't complain. Weather's {weather} today, and I'm fine with that."
+msgstr "挺好的。今天{weather}，我觉得不错。"
+
+msgid "Don't miss the {event} today!"
+msgstr "今天的{event}可别错过！"
+
+msgid "How are you?"
+msgstr "最近好吗？"
+
+msgid "It's {season}. Everyone's busy with the season's work."
+msgstr "现在是{season}，大家都在忙这个季节的活儿。"
+
+msgid "My work? {role}. Someone has to keep things running."
+msgstr "我的工作？{role}。总得有人让这里运转下去。"
+
+msgid "Tell me about your work."
+msgstr "说说你的工作吧。"
+
+msgid "Well enough, thanks for asking."
+msgstr "还不错，谢谢关心。"

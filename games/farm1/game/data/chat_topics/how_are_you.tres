@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ChatTopicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/npc_ai/chat/chat_topic_data.gd" id="1_topic"]
+
+[resource]
+script = ExtResource("1_topic")
+id = &"how_are_you"
+title = "How are you?"
+order = 0
+rule_replies = PackedStringArray("Busy as always. Right now: {activity}.", "Can't complain. Weather's {weather} today, and I'm fine with that.", "Well enough, thanks for asking.")

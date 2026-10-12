@@ -155,6 +155,10 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `FishingState.cast_state_changed(state: CastState, message: String)`
 - `FishingState.fishing_active_changed(active: bool)`
 
+## NpcAi (npc_ai)
+
+- `NpcAi.answered(npc_id: StringName, source: StringName)`: A request was answered, from `source` (`SOURCE_RULES` or a provider's).
+
 ## NpcSocialEvents (npc_social)
 
 - `NpcSocialEvents.npc_talked(npc_id: StringName, first_today: bool)`: The player started talking to an NPC; `first_today` when it is the first time today, which is when talking raises their friendship. What rewards talking (skill experience) checks it, so talking again gives nothing more.
