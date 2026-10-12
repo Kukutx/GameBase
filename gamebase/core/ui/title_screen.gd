@@ -2,7 +2,8 @@ class_name GameTitleScreen
 extends ColorRect
 
 ## The title screen every game opens on (its main scene): the game's name,
-## description and version from the project settings, its save slots, a new
+## description and version from the project settings, its save slots (as many
+## as the game sets, each continuing from the newer of its saves), a new
 ## game, the settings and quitting. Like every menu it takes the project's
 ## theme (`gui/theme/custom`).
 
@@ -45,9 +46,10 @@ func _ready() -> void:
 
 func _build_slot_selector() -> void:
 	slot_select.clear()
-	for slot in range(1, SaveManager.SLOT_COUNT + 1):
+	var count := GameSaveManager.get_slot_count()
+	for slot in range(1, count + 1):
 		slot_select.add_item(tr("Save Slot %d") % slot, slot)
-	slot_select.select(clampi(SaveManager.active_slot - 1, 0, SaveManager.SLOT_COUNT - 1))
+	slot_select.select(clampi(SaveManager.active_slot - 1, 0, count - 1))
 	SaveManager.select_slot(slot_select.selected + 1)
 
 func _on_slot_selected(index: int) -> void:
@@ -66,9 +68,10 @@ func _refresh_slot_ui() -> void:
 	else:
 		slot_info.text = tr("Holds a save this version cannot open") if unreadable else tr("Empty slot")
 
-## A save's summary as the slot shows it: the date and time; where the player
-## stands and how long they played; then what the game and its modules add
-## (the money, the deepest depth).
+## A save's summary as the slot shows it: the date and time, marked when the
+## slot continues from its autosave; where the player stands and how long
+## they played; then what the game and its modules add (the money, the
+## deepest depth).
 func _format_slot_summary(summary: Dictionary) -> String:
 	var minute := int(summary["minute_of_day"])
 	var recovery := ""
@@ -80,6 +83,8 @@ func _format_slot_summary(summary: Dictionary) -> String:
 		minute % 60,
 		recovery,
 	]])
+	if bool(summary.get("autosave", false)):
+		lines[0] = tr("Autosave · %s") % lines[0]
 	var played_minutes := int(summary.get("play_seconds", 0)) / 60
 	var played := tr("Played %d:%02d") % [played_minutes / 60, played_minutes % 60]
 	var place := String(summary.get("location_name", ""))
@@ -130,7 +135,7 @@ func _on_load_completed(success: bool, message: String) -> void:
 func _delete_save() -> void:
 	if not SaveManager.has_files():
 		return
-	confirm_delete.dialog_text = tr("Delete Save Slot %d? This removes the primary save and its backup.") % SaveManager.active_slot
+	confirm_delete.dialog_text = tr("Delete Save Slot %d? This removes its save, its autosave and their backups.") % SaveManager.active_slot
 	confirm_delete.popup_centered()
 
 func _confirm_delete_save() -> void:

@@ -25,7 +25,7 @@ func test_support_summary_uses_privacy_safe_whitelist() -> void:
 	assert_false(bool(privacy.get("raw_settings_file_included", true)))
 	assert_true(bool(privacy.get("absolute_paths_redacted", false)))
 	assert_false(bool(privacy.get("licensed_source_art_included", true)))
-	assert_eq((summary.get("save_slots", []) as Array).size(), GameSaveManager.SLOT_COUNT)
+	assert_eq((summary.get("save_slots", []) as Array).size(), GameSaveManager.get_slot_count())
 	var encoded := JSON.stringify(summary)
 	assert_false(encoded.contains("settings.json"))
 	assert_false(encoded.contains("savegame.json"))

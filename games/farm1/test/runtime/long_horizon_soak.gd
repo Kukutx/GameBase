@@ -73,7 +73,7 @@ func _run() -> void:
 				_fail("Checkpoint save failed on Day %d" % day)
 				break
 
-			var raw: Dictionary = save_manager.call("_read_dictionary", save_manager.save_path)
+			var raw := SaveFiles._read_dictionary(save_manager.save_path)
 			_check(int(raw.get("version", 0)) == current_save_version, "Checkpoint schema mismatch on Day %d" % day)
 			_check(String(raw.get("game_version", "")) == String(ProjectSettings.get_setting("application/config/version", "unknown")), "Checkpoint game provenance mismatch on Day %d" % day)
 			_check(not String(raw.get("engine_version", "")).is_empty(), "Checkpoint engine provenance missing on Day %d" % day)

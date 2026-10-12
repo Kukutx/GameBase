@@ -55,9 +55,6 @@ msgstr "新游戏开始时无法保存"
 msgid "Save from a playable location"
 msgstr "请在可游玩的地点保存"
 
-msgid "Cannot save without the player"
-msgstr "找不到玩家角色，无法保存"
-
 msgid "Couldn't save: the save folder can't be written to. Check that the disk has free space."
 msgstr "无法保存：存档文件夹无法写入。请检查磁盘是否还有空间。"
 
@@ -84,6 +81,12 @@ msgstr "已从备份恢复存档位 %d"
 
 msgid "Game loaded · Slot %d"
 msgstr "已读取 · 存档位 %d"
+
+msgid "Autosave loaded · Slot %d"
+msgstr "已读取自动存档 · 存档位 %d"
+
+msgid "Autosave · %s"
+msgstr "自动存档 · %s"
 
 msgid "Finish the minigame before saving"
 msgstr "请先完成小游戏再保存"
@@ -166,8 +169,11 @@ msgstr "退出到桌面"
 msgid "Unsaved progress will be lost. Quit the game?"
 msgstr "未保存的进度将会丢失。确定退出游戏吗？"
 
-msgid "Unsaved progress will be lost. Load the last save?"
-msgstr "未保存的进度将会丢失。确定读取上次存档吗？"
+msgid "Unsaved progress will be lost. Load your last save?"
+msgstr "未保存的进度将会丢失。确定读取你上次的存档吗？"
+
+msgid "Unsaved progress will be lost. Load the autosave?"
+msgstr "未保存的进度将会丢失。确定读取自动存档吗？"
 
 msgid "Load"
 msgstr "读取"
@@ -283,8 +289,8 @@ msgstr "存档位 %d 存有当前版本无法读取的存档。开始新游戏�
 msgid "Loading Slot %d..."
 msgstr "正在读取存档位 %d..."
 
-msgid "Delete Save Slot %d? This removes the primary save and its backup."
-msgstr "删除存档位 %d？主存档及其备份都会被删除。"
+msgid "Delete Save Slot %d? This removes its save, its autosave and their backups."
+msgstr "删除存档位 %d？该存档位的存档、自动存档及其备份都会被删除。"
 
 msgid "Deleted Slot %d"
 msgstr "已删除存档位 %d"

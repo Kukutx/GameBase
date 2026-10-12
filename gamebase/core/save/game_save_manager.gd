@@ -3,33 +3,51 @@ extends Node
 
 ## Writes and restores the game in save slots.
 ##
-## A save holds a header (format version, build, slot, time, location, player
-## position) and one dictionary per registered `SaveSection`. Only a save of the
-## current `SAVE_VERSION` that contains every registered section loads; anything
-## else is not a save of this build. Writing goes through a temporary file and
-## keeps the previous save as a backup (renamed, not copied), so an interrupted
-## write never loses the slot: loading takes the newest intact file of the
-## three. What a file holds is read once and kept until the file changes, so a
-## menu that asks whether a slot has a save reads no file again. A load
-## covers the screen (`Transition`) while the world holds still, and clears it
-## once the player stands where they saved.
+## A game has as many slots as its definition sets (`get_slot_count()`). Each
+## slot keeps the player's save and an autosave of its own (`AutoSave` writes
+## it), so an autosave never replaces what the player saved: a slot continues
+## from the newer of the two (`SaveKind.LATEST`), and the pause menu loads the
+## player's own save. A load leaves the slot going on from the save it loaded:
+## the other one, when newer, is deleted.
+##
+## A save holds a header (format version, build, slot, time) and one
+## dictionary per registered `SaveSection`, among them the core's `place`:
+## where the game was, a location, and where the player stood in it when a
+## player walks the world. A game with no one walking it (cards, a visual
+## novel) saves as well, its place only a location. Only a save of the current
+## `SAVE_VERSION` that contains every registered section loads; anything else
+## is not a save of this build. Writing goes through a temporary file and keeps
+## the previous save as a backup (renamed, not copied), so an interrupted write
+## never loses the save: loading takes the newest intact file of the three
+## (`SaveFiles` reads each once, until it changes). A load covers the screen
+## (`Transition`) while the world holds still, and clears it once the player
+## stands where they saved.
 
 signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 10
-const SLOT_COUNT := 3
+const SAVE_VERSION := 11
 ## The reason of the lock that holds the world still while a save loads.
 const LOAD_LOCK := &"load"
 
+## Which of a slot's saves: the newer of the two, the player's own or the
+## autosave.
+enum SaveKind { LATEST, MANUAL, AUTO }
+
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
 const HEADER_KEYS: Array[String] = [
-	"version", "game_version", "engine_version", "slot", "saved_at_unix_msec", "location_id", "player",
+	"version", "game_version", "engine_version", "slot", "saved_at_unix_msec",
 ]
+## The core's section of where the game was: {"location_id", "player": {"x",
+## "y"}}, the player's position only when a player walks the world.
+const PLACE_SECTION := &"place"
 
 ## Restore orders of the sections the foundation owns. A game places its own
 ## sections between them (see `.agents/rules/save.md`).
+## The place is restored last of all, by opening its location; its order only
+## sorts it first in the file.
+const SECTION_ORDER_PLACE := 50
 const SECTION_ORDER_RANDOM := 100
 ## `GameSession`'s own section (the time played), registered by the session.
 const SECTION_ORDER_SESSION := 150
@@ -43,6 +61,7 @@ const SECTION_ORDER_WORLD := 700
 ## calls `select_slot()` before saving.
 var save_directory := "user://saves"
 var active_slot := 1
+## The files of the active slot's own save (the player's, not the autosave).
 var save_path := ""
 var temp_path := ""
 var backup_path := ""
@@ -59,9 +78,7 @@ static var _restoring := false
 static var _sections_changed := 0
 # Whether this manager is the one restoring a save.
 var _restoring_here := false
-# What each save file read holds: path -> {"stamp", "sections", "registry",
-# "data"}, `data` the usable snapshot or {} (`_read_usable()`).
-var _read_files: Dictionary[String, Dictionary] = {}
+var _files := SaveFiles.new(_is_snapshot_usable)
 
 func _ready() -> void:
 	_register_core_sections()
@@ -82,6 +99,7 @@ func _exit_tree() -> void:
 		_slot_details.clear()
 
 func _register_core_sections() -> void:
+	register_section(SaveSection.new(PLACE_SECTION, SECTION_ORDER_PLACE, SavePlace.write, SavePlace.read))
 	register_section(SaveSection.new(&"random", SECTION_ORDER_RANDOM,
 		GameRandom.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: GameRandom.load_save_data(section)))
 	register_section(SaveSection.new(&"clock", SECTION_ORDER_CLOCK,
@@ -145,16 +163,22 @@ func unregister_slot_detail(id: StringName) -> void:
 		if _slot_details[index]["id"] == id:
 			_slot_details.remove_at(index)
 
+## How many save slots the game has (`GameDefinition.save_slots`).
+static func get_slot_count() -> int:
+	return GameDefinition.current().save_slots
+
 func select_slot(slot: int) -> void:
-	active_slot = clampi(slot, 1, SLOT_COUNT)
+	active_slot = clampi(slot, 1, get_slot_count())
 	var paths := get_slot_paths(active_slot)
 	save_path = String(paths["save"])
 	temp_path = String(paths["temp"])
 	backup_path = String(paths["backup"])
 	active_slot_changed.emit(active_slot)
 
-func get_slot_paths(slot: int) -> Dictionary:
-	var stem := "%s/slot_%d" % [save_directory, clampi(slot, 1, SLOT_COUNT)]
+## The files of `slot`'s own save, or of its autosave: {"save", "temp",
+## "backup"}.
+func get_slot_paths(slot: int, autosave := false) -> Dictionary:
+	var stem := "%s/slot_%d%s" % [save_directory, clampi(slot, 1, get_slot_count()), "_auto" if autosave else ""]
 	return {"save": stem + ".json", "temp": stem + ".tmp", "backup": stem + ".bak"}
 
 ## Whether a save is being restored: from reading its sections into the
@@ -164,28 +188,26 @@ func get_slot_paths(slot: int) -> Dictionary:
 static func is_restoring() -> bool:
 	return _restoring
 
-## Whether `slot` (the active slot when -1) holds a save this build can load.
-func has_save(slot: int = -1) -> bool:
-	return not _read_slot(slot).is_empty()
+## Whether `slot` (the active slot when -1) holds a save of `kind` this
+## build can load.
+func has_save(slot: int = -1, kind := SaveKind.LATEST) -> bool:
+	return not _read_slot(slot, kind).is_empty()
 
 ## Whether any file of `slot` (the active slot when -1) exists, whether this
 ## build can load it or not: a save of another version is never replaced
 ## without asking.
 func has_files(slot: int = -1) -> bool:
-	var paths := _paths(slot)
-	for key: String in ["save", "temp", "backup"]:
-		if FileAccess.file_exists(String(paths[key])):
-			return true
-	return false
+	return SaveFiles.any_exists(_slot_files(slot))
 
-## What a slot holds, for slot pickers and support bundles. `exists` is false
-## when the slot has no save of this build; `unreadable` is true when it has
-## files all the same (a save of another version, or damaged). A save's
-## summary names its location (`location_name`, to translate when shown),
-## the seconds played (`play_seconds`) and what the game adds (`details`, see
+## What a slot holds, for slot pickers and support bundles: the newer of its
+## saves (`autosave` tells which). `exists` is false when the slot has no
+## save of this build; `unreadable` is true when it has files all the same (a
+## save of another version, or damaged). A save's summary names its location
+## (`location_name`, to translate when shown), the seconds played
+## (`play_seconds`) and what the game adds (`details`, see
 ## `register_slot_detail()`).
 func get_slot_summary(slot: int) -> Dictionary:
-	var resolved := clampi(slot, 1, SLOT_COUNT)
+	var resolved := clampi(slot, 1, get_slot_count())
 	var candidate := _read_slot(resolved)
 	if candidate.is_empty():
 		return {"slot": resolved, "exists": false, "recoverable": false, "unreadable": has_files(resolved)}
@@ -193,19 +215,21 @@ func get_slot_summary(slot: int) -> Dictionary:
 	var clock: Dictionary = data["clock"]
 	var day := maxi(SaveValues.whole_number_or(clock.get("day", 1), 1), 1)
 	var source := String(candidate["source"])
-	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
+	# A save this build loads names a location of its content.
+	var location := SavePlace.find_location(data)
 	return {
 		"slot": resolved,
 		"exists": true,
 		"unreadable": false,
+		"autosave": bool(candidate["autosave"]),
 		"recoverable": source != "primary",
 		"recovery_source": source,
 		"version": SAVE_VERSION,
 		"game_version": String(data.get("game_version", "")),
 		"engine_version": String(data.get("engine_version", "")),
 		"saved_at_unix": _snapshot_timestamp(data) / 1000,
-		"location_id": String(data.get("location_id", "")),
-		"location_name": location.display_name if location != null else "",
+		"location_id": String(location.id),
+		"location_name": location.display_name,
 		"play_seconds": GameSessionService.read_play_seconds(data),
 		"day": day,
 		"season": GameCalendar.current().get_season_name(day),
@@ -222,12 +246,13 @@ func _describe_slot(data: Dictionary) -> PackedStringArray:
 			details.append(text)
 	return details
 
+## Deletes `slot`'s saves, the player's and the autosave.
 func delete_slot(slot: int) -> bool:
-	var paths := get_slot_paths(slot)
-	return _delete_paths([String(paths["save"]), String(paths["temp"]), String(paths["backup"])])
+	return _files.delete(_slot_files(slot))
 
+## Deletes the active slot's saves, the player's and the autosave.
 func delete_save() -> bool:
-	return _delete_paths([save_path, temp_path, backup_path])
+	return delete_slot(active_slot)
 
 # Quick load asks first, in the pause menu (`PauseMenu`).
 func _unhandled_input(event: InputEvent) -> void:
@@ -245,8 +270,6 @@ func get_save_block_reason() -> String:
 	var scene := get_tree().current_scene
 	if scene == null or WorldLocationData.find_for_scene(scene.scene_file_path) == null:
 		return tr("Save from a playable location")
-	if get_tree().get_first_node_in_group("player") == null:
-		return tr("Cannot save without the player")
 	for blocker: Callable in _save_blockers:
 		var reason := String(blocker.call())
 		if not reason.is_empty():
@@ -260,22 +283,27 @@ func save_game() -> bool:
 	save_completed.emit(problem.is_empty(), tr("Game saved · Slot %d") % active_slot if problem.is_empty() else problem)
 	return problem.is_empty()
 
-## Saves the game in the active slot without a word: an empty string when it
-## is saved, else why not, in words for the player (the log has the details).
-func write_save() -> String:
+## Saves the game in the active slot without a word, as the player's save or
+## as its autosave: an empty string when it is saved, else why not, in words
+## for the player (the log has the details).
+func write_save(autosave := false) -> String:
 	var block_reason := get_save_block_reason()
 	if not block_reason.is_empty():
 		return block_reason
-	if not _write_dictionary(temp_path, build_snapshot()):
-		return _write_failed("the save", temp_path)
+	var paths := get_slot_paths(active_slot, autosave)
+	var path := String(paths["save"])
+	var temp := String(paths["temp"])
+	var backup := String(paths["backup"])
+	if not _files.write(temp, build_snapshot()):
+		return _write_failed("the save", temp)
 	# The last intact save becomes the backup before the new one replaces it.
-	if not _read_usable(save_path).is_empty():
-		var backup_error := _move(save_path, backup_path)
+	if not _read_usable(path).is_empty():
+		var backup_error := _files.move(path, backup)
 		if backup_error != OK:
-			return _write_failed("the backup (%s)" % error_string(backup_error), backup_path)
-	var rename_error := _move(temp_path, save_path)
+			return _write_failed("the backup (%s)" % error_string(backup_error), backup)
+	var rename_error := _files.move(temp, path)
 	if rename_error != OK:
-		return _write_failed("the save (%s)" % error_string(rename_error), save_path)
+		return _write_failed("the save (%s)" % error_string(rename_error), path)
 	return ""
 
 # Logs which file could not be written and tells the player what to check.
@@ -283,14 +311,16 @@ func _write_failed(what: String, path: String) -> String:
 	push_warning("SaveManager: could not write %s to %s" % [what, path])
 	return tr("Couldn't save: the save folder can't be written to. Check that the disk has free space.")
 
-func load_game() -> bool:
+## Loads the active slot's save of `kind` (the newer of its two by default)
+## and says how it went with `load_completed`.
+func load_game(kind := SaveKind.LATEST) -> bool:
 	if _restoring:
 		load_completed.emit(false, tr("A save is already loading"))
 		return false
 	if WorldTravel.is_traveling():
 		load_completed.emit(false, tr("Cannot load while traveling"))
 		return false
-	var candidate := _read_slot()
+	var candidate := _read_slot(-1, kind)
 	if candidate.is_empty():
 		load_completed.emit(false, tr("Slot %d has no save to load") % active_slot)
 		return false
@@ -302,48 +332,48 @@ func load_game() -> bool:
 	if not await apply_snapshot(data):
 		load_completed.emit(false, tr("This save can't be opened: a place it needs is missing from this version"))
 		return false
+	# The slot goes on from the save loaded: its other save, when newer, was
+	# left behind, and Continue must not bring it back.
+	var autosave := bool(candidate["autosave"])
+	var other := _read_files_of(active_slot, not autosave)
+	if not other.is_empty() and _snapshot_timestamp(other["data"]) > _snapshot_timestamp(saved):
+		_files.delete(_files_of(active_slot, not autosave))
 	var source := String(candidate["source"])
 	if source == "primary":
-		load_completed.emit(true, tr("Game loaded · Slot %d") % active_slot)
+		load_completed.emit(true, (tr("Autosave loaded · Slot %d") if autosave else tr("Game loaded · Slot %d")) % active_slot)
 		return true
-	# A recovered save becomes the slot's save again. A temp is a save that was
+	# A recovered save becomes the save again. A temp is a save that was
 	# interrupted before its commit, so the commit finishes: the previous primary
 	# becomes the backup first.
+	var paths := get_slot_paths(active_slot, autosave)
 	if source == "temp":
-		if not _read_usable(save_path).is_empty():
-			_move(save_path, backup_path)
-		_move(temp_path, save_path)
+		if not _read_usable(String(paths["save"])).is_empty():
+			_files.move(String(paths["save"]), String(paths["backup"]))
+		_files.move(String(paths["temp"]), String(paths["save"]))
 		load_completed.emit(true, tr("Recovered Slot %d from temporary save") % active_slot)
 	else:
-		_write_dictionary(save_path, saved)
+		_files.write(String(paths["save"]), saved)
 		load_completed.emit(true, tr("Recovered Slot %d from backup") % active_slot)
 	return true
 
 func build_snapshot() -> Dictionary:
-	var location := WorldLocationData.find_current(get_tree())
-	var player := get_tree().get_first_node_in_group("player") as Node2D
 	var snapshot := {
 		"version": SAVE_VERSION,
 		"game_version": String(ProjectSettings.get_setting("application/config/version", "")),
 		"engine_version": String(Engine.get_version_info().get("string", "")),
 		"slot": active_slot,
 		"saved_at_unix_msec": int(Time.get_unix_time_from_system() * 1000.0),
-		"location_id": String(location.id) if location != null else "",
-		"player": {"x": player.global_position.x, "y": player.global_position.y} if player != null else {},
 	}
-	_write_sections(snapshot)
-	return snapshot
-
-func _write_sections(snapshot: Dictionary) -> void:
 	for section: SaveSection in _sections:
 		snapshot[String(section.id)] = section.write.call()
+	return snapshot
 
 ## Restores `data`, a usable snapshot: every section, then the load steps, then
 ## the saved location with the player where they stood. The screen covers
 ## first and the world holds still (`LOAD_LOCK`) while the location loads in
 ## the background; the screen clears once the player stands there.
 func apply_snapshot(data: Dictionary) -> bool:
-	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
+	var location := SavePlace.find_location(data)
 	if location == null or not ResourceLoader.exists(location.scene_path):
 		return false
 	_restoring = true
@@ -377,72 +407,63 @@ func _restore(data: Dictionary, location: WorldLocationData, packed: PackedScene
 		return false
 	await get_tree().scene_changed
 	await get_tree().process_frame
-	var position: Variant = data.get("player", {})
-	if position is Dictionary and _is_numeric(position.get("x")) and _is_numeric(position.get("y")):
-		WorldTravel.place_player(Vector2(float(position["x"]), float(position["y"])))
+	var position: Variant = SavePlace.get_player_position(data)
+	if position is Vector2:
+		WorldTravel.place_player(position)
 	else:
 		var spawn := WorldSpawnPoint.find(get_tree(), location.default_spawn_id)
 		if spawn != null:
 			WorldTravel.place_player(spawn.global_position)
 	return true
 
-## The newest intact save of `slot` (the active slot when -1) as
-## {"data", "source": "primary" | "temp" | "backup"}, or {} when there is none.
-## The primary wins unless an intact temp is newer (a save interrupted after
-## writing it); without a primary, the temp wins only when newer than the backup.
-func _read_slot(slot: int = -1) -> Dictionary:
-	var paths := _paths(slot)
+## The save of `kind` in `slot` (the active slot when -1) as {"data",
+## "source": "primary" | "temp" | "backup", "autosave"}, or {} when there is
+## none; the newer of the player's save and the autosave for `LATEST`.
+func _read_slot(slot: int = -1, kind := SaveKind.LATEST) -> Dictionary:
+	var resolved := slot if slot > 0 else active_slot
+	var manual := _read_files_of(resolved, false) if kind != SaveKind.AUTO else {}
+	var auto := _read_files_of(resolved, true) if kind != SaveKind.MANUAL else {}
+	if auto.is_empty() or (not manual.is_empty() and _snapshot_timestamp(manual["data"]) >= _snapshot_timestamp(auto["data"])):
+		return manual
+	return auto
+
+# The newest intact file of one of `slot`'s saves, as `_read_slot()` tells.
+# The primary wins unless an intact temp is newer (a save interrupted after
+# writing it); without a primary, the temp wins only when newer than the backup.
+func _read_files_of(slot: int, autosave: bool) -> Dictionary:
+	var paths := get_slot_paths(slot, autosave)
 	var primary := _read_usable(String(paths["save"]))
 	var temp := _read_usable(String(paths["temp"]))
 	var backup := _read_usable(String(paths["backup"]))
 	var temp_is_newest := not temp.is_empty() and _snapshot_timestamp(temp) > _snapshot_timestamp(primary if not primary.is_empty() else backup)
+	var found := {}
 	if temp_is_newest:
-		return {"data": temp, "source": "temp"}
-	if not primary.is_empty():
-		return {"data": primary, "source": "primary"}
-	if not backup.is_empty():
-		return {"data": backup, "source": "backup"}
-	if not temp.is_empty():
-		return {"data": temp, "source": "temp"}
-	return {}
+		found = {"data": temp, "source": "temp"}
+	elif not primary.is_empty():
+		found = {"data": primary, "source": "primary"}
+	elif not backup.is_empty():
+		found = {"data": backup, "source": "backup"}
+	elif not temp.is_empty():
+		found = {"data": temp, "source": "temp"}
+	if not found.is_empty():
+		found["autosave"] = autosave
+	return found
 
-# The files of `slot`, of the active slot when -1.
-func _paths(slot: int) -> Dictionary:
-	return get_slot_paths(slot) if slot > 0 else {"save": save_path, "temp": temp_path, "backup": backup_path}
+# Every file of `slot` (the active slot when -1): both saves' files.
+func _slot_files(slot: int) -> PackedStringArray:
+	var files := _files_of(slot, false)
+	files.append_array(_files_of(slot, true))
+	return files
+
+# The files of `slot`'s save of the player's or its autosave.
+func _files_of(slot: int, autosave: bool) -> PackedStringArray:
+	var paths := get_slot_paths(slot if slot > 0 else active_slot, autosave)
+	return PackedStringArray([String(paths["save"]), String(paths["temp"]), String(paths["backup"])])
 
 # The save at `path` when it is one this build loads, else {}: read again only
 # when the file, the registered sections or the content changed since.
 func _read_usable(path: String) -> Dictionary:
-	var stamp := _file_stamp(path)
-	var registry := ContentRegistry.active.get_instance_id()
-	var known: Dictionary = _read_files.get(path, {})
-	if not known.is_empty() and known["stamp"] == stamp and known["sections"] == _sections_changed and known["registry"] == registry:
-		return known["data"]
-	var data := _read_dictionary(path) if not stamp.is_empty() else {}
-	if not _is_snapshot_usable(data):
-		data = {}
-	_read_files[path] = {"stamp": stamp, "sections": _sections_changed, "registry": registry, "data": data}
-	return data
-
-# When the file at `path` last changed and how long it is, which tell a file
-# changed outside the game; empty for no file.
-static func _file_stamp(path: String) -> Array[int]:
-	var file := FileAccess.open(path, FileAccess.READ) if not path.is_empty() and FileAccess.file_exists(path) else null
-	if file == null:
-		return []
-	return [FileAccess.get_modified_time(path), file.get_length()]
-
-# Renames the file at `from` over the one at `to`; what was read of it moves
-# along.
-func _move(from: String, to: String) -> Error:
-	if FileAccess.file_exists(to):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(to))
-	_read_files.erase(to)
-	var error := DirAccess.rename_absolute(ProjectSettings.globalize_path(from), ProjectSettings.globalize_path(to))
-	if error == OK and _read_files.has(from):
-		_read_files[to] = _read_files[from]
-	_read_files.erase(from)
-	return error
+	return _files.read_usable(path, [_sections_changed, ContentRegistry.active.get_instance_id()])
 
 func _snapshot_timestamp(data: Dictionary) -> int:
 	return SaveValues.count(data.get("saved_at_unix_msec", 0))
@@ -457,38 +478,5 @@ func _is_snapshot_usable(data: Dictionary) -> bool:
 	var clock: Dictionary = data.get("clock", {}) if data.get("clock") is Dictionary else {}
 	if not clock.has("day") or not clock.has("minute_of_day"):
 		return false
-	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
+	var location := SavePlace.find_location(data)
 	return location != null and ResourceLoader.exists(location.scene_path)
-
-func _is_numeric(value: Variant) -> bool:
-	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
-
-func _read_dictionary(path: String) -> Dictionary:
-	if path.is_empty() or not FileAccess.file_exists(path):
-		return {}
-	var json := JSON.new()
-	if json.parse(FileAccess.get_file_as_string(path)) != OK:
-		return {}
-	return json.data if json.data is Dictionary else {}
-
-func _write_dictionary(path: String, data: Dictionary) -> bool:
-	if path.is_empty():
-		return false
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path.get_base_dir()))
-	_read_files.erase(path)
-	var file := FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
-		return false
-	# Compact, with every digit, so a float comes back as it was saved.
-	var stored := file.store_string(JSON.stringify(data, "", false, true))
-	file.close()
-	return stored
-
-func _delete_paths(paths: Array[String]) -> bool:
-	var ok := true
-	for path: String in paths:
-		_read_files.erase(path)
-		if path.is_empty() or not FileAccess.file_exists(path):
-			continue
-		ok = DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK and ok
-	return ok

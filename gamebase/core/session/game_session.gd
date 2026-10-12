@@ -210,7 +210,8 @@ func continue_game() -> bool:
 ## ends their activities, calls `recover` (what the cause restores or takes,
 ## such as the vitals and money, before the new day's payouts arrive), moves
 ## the clock to the next morning (`GameCalendar.wake_minute`, counted from
-## `from_day` and `from_minute`, now when -1), takes them home and saves;
+## `from_day` and `from_minute`, now when -1), takes them home and autosaves
+## (`AutoSave`, while the player has autosave on: their own save stays theirs);
 ## `passed_out` follows. Returns
 ## whether they woke at home, and false at once while they already pass out.
 ## The module that knocks them out names the `cause` and tells the player.
@@ -227,7 +228,7 @@ func pass_out(cause: StringName, recover := Callable(), from_day := -1, from_min
 		recover.call()
 	WorldClock.set_time(calendar.get_wake_day(day, minute), calendar.wake_minute)
 	var woke_at_home := await _return_home()
-	SaveManager.save_game()
+	AutoSave.request_autosave("pass_out")
 	_passing_out = false
 	passed_out.emit(cause, woke_at_home)
 	return woke_at_home
