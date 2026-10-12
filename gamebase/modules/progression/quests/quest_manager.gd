@@ -1,6 +1,17 @@
 class_name QuestManager
 extends Node
 
+## The player's quests (`QuestData`): which have started, how far each has come
+## and which are done. A quest moves on by itself as the player does what it
+## asks, such as collecting an item, talking to an NPC, catching a fish or
+## reaching a mine floor, and pays its reward (items and money) when it is done.
+##
+## A quest whose reward items do not fit stays active and completes once the
+## inventory has room; a completed quest starts the next one of its chain
+## (`next_quest_id`). Quests are saved with the game, and a new game starts the
+## quests marked `auto_start`. `quest_started`, `quest_progressed` and
+## `quest_completed` announce each step.
+
 enum Status {
 	INACTIVE,
 	ACTIVE,

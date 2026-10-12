@@ -1,6 +1,17 @@
 class_name GameConversationService
 extends Node
 
+## Starts a conversation with an NPC: it notes the talk in the NPC's memory
+## (`NpcMemory`), builds what the NPC knows (`NpcContext`) and shows the dialogue:
+## a due heart event (`HeartEvents`) first, else an AI conversation when the game
+## set an `ai_provider`, turned on `prefer_ai` and the NPC allows it, else the
+## NPC's lines for its hearts.
+##
+## Only one scripted conversation runs at a time. Its balloon comes from the
+## `DialogueManager` addon and holds the player's controls (`InputLock`, reason
+## `dialogue`) until it closes, without pausing the world. The service saves
+## nothing of its own.
+
 signal conversation_requested(npc_id: StringName, actor: Node)
 signal context_prepared(npc_id: StringName, context: Dictionary)
 

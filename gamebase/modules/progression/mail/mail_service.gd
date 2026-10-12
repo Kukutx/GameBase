@@ -1,6 +1,17 @@
 class_name MailService
 extends Node
 
+## The player's mailbox: it delivers each letter (`MailData`) once its condition
+## holds, and keeps which letters arrived, which were read and whose reward
+## (items and money) was claimed.
+##
+## Deliveries are checked when the day changes, a quest completes, a friendship
+## or the world's state changes, and wait while a save loads or a new game is
+## set up. A letter's reward is fixed when it arrives, and claiming it is
+## refused while the items do not fit in the inventory. All of this lives in
+## `WorldState` (`mail:<id>:...`), so it is saved with the world.
+## `mail_received` announces each new letter.
+
 signal mail_received(mail_id: StringName)
 signal mail_read(mail_id: StringName)
 signal mail_claimed(mail_id: StringName)

@@ -59,7 +59,23 @@ function assertStringList(value, label) {
 // and after the modules', and the addons every game links (the test
 // framework). tools/lib/project.js writes a game's autoloads from it.
 function readFoundation() {
-  return checkFoundation(readJson(FOUNDATION_MANIFEST, "gamebase/gamebase.json"));
+  const foundation = checkFoundation(readJson(FOUNDATION_MANIFEST, "gamebase/gamebase.json"));
+  assertAutoloadScripts(foundation.autoloads.before_modules, "gamebase.json autoloads.before_modules");
+  assertAutoloadScripts(foundation.autoloads.after_modules, "gamebase.json autoloads.after_modules");
+  for (const [name, module] of Object.entries(foundation.modules)) {
+    assertAutoloadScripts(module.autoloads ?? {}, `gamebase.json modules.${name}.autoloads`);
+  }
+  return foundation;
+}
+
+// Fails when a script `autoloads` names does not exist: the foundation's and
+// the addons' in the repository, a game's own (res://game/) in `gameRoot`.
+function assertAutoloadScripts(autoloads, label, gameRoot = null) {
+  for (const [name, script] of Object.entries(autoloads)) {
+    const relative = script.slice("res://".length);
+    const file = gameRoot && relative.startsWith("game/") ? path.join(gameRoot, ...relative.split("/")) : rootPath(...relative.split("/"));
+    if (!fs.existsSync(file)) fail(`${label}.${name} names ${script}, which does not exist.`);
+  }
 }
 
 // The foundation manifest, checked: `owners` maps each autoload name to the
@@ -143,7 +159,7 @@ function loadGame(id) {
   for (const addon of addons) {
     if (!fs.existsSync(rootPath("addons", addon, "plugin.cfg"))) fail(`${label} uses addon ${addon}, which addons/ does not hold.`);
   }
-  checkGameAutoloads(manifest.autoloads ?? {}, `${label} autoloads`, addons, foundation);
+  assertAutoloadScripts(checkGameAutoloads(manifest.autoloads ?? {}, `${label} autoloads`, addons, foundation), `${label} autoloads`, root);
   return { id, root, modules, addons: [...addons].sort(), manifest };
 }
 
@@ -258,6 +274,7 @@ function releaseTag(game, version) {
 module.exports = {
   GAMES_ROOT,
   GAME_ID_RE,
+  assertAutoloadScripts,
   checkFoundation,
   checkGameAutoloads,
   readFoundation,

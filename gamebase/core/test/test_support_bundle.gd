@@ -98,7 +98,7 @@ func test_truncated_log_tail_starts_at_a_full_line() -> void:
 	assert_lte(tail.to_utf8_buffer().size(), SupportBundleService.MAX_LOG_BYTES)
 
 func _cleanup() -> void:
-	for path in [TEST_ZIP, _test_log]:
+	for path: String in [TEST_ZIP, _test_log]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	var log_dir := ProjectSettings.globalize_path(TEST_LOG_DIR)

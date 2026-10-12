@@ -1,6 +1,18 @@
 class_name PersistentWorldState
 extends Node
 
+## The world's memory for one game: named values (flags, counters and the state
+## of things in the world) that content and services keep under a key, such as
+## a rule's `SET_FLAG` or a farm plot's crop. Many module services keep all
+## their state here rather than in a save section of their own.
+##
+## The values are saved with the game and a new game clears them all; what
+## outlives every save belongs in `GameProfile`. The save is JSON, so keep plain
+## values (booleans, numbers, text, arrays, dictionaries), and read counters with
+## `get_int()`: a saved whole number comes back as a float. `changed` fires with
+## the key and its new value, or with an empty key when the whole world was
+## cleared or loaded.
+
 signal changed(key: StringName, value: Variant)
 
 var _flags: Dictionary = {}

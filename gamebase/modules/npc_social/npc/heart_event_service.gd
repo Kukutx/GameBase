@@ -1,6 +1,18 @@
 class_name HeartEventService
 extends Node
 
+## Which heart events (`HeartEventData`, an NPC's scripted scene at a number of
+## hearts) the player has seen, and which one is due when they talk to an NPC:
+## the unseen event that matches the NPC's hearts, the location, the day and the
+## time, lowest hearts first.
+##
+## Each event plays once. `ConversationService` plays a due event in place of the
+## NPC's daily lines and marks it seen when its dialogue ends, so a scene that is
+## cut off plays again. Seen events live in `WorldState`
+## (`heart_event:<id>:seen`), so they are saved with the world, and the NPC also
+## remembers each one (`NpcMemory`). `heart_event_triggered` fires when one is
+## seen.
+
 signal heart_event_triggered(event_id: StringName, npc_id: StringName)
 
 func get_pending_event(npc_id: StringName) -> HeartEventData:

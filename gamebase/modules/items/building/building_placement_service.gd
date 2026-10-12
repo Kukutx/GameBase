@@ -1,6 +1,19 @@
 class_name BuildingPlacementService
 extends Node
 
+## The structures the player places in the world (`PlaceableData`, such as a
+## chest, a furnace or a sprinkler): which stand where in each location, and
+## whether a new one may go at a spot. Each time the scene changes it builds the
+## current location's structures under a `PlacedStructures` node.
+##
+## The placements live in `WorldState` (`building:placements:<location id>`), so
+## they are saved with the world and a new game has none. A spot is refused
+## outside the scene's build zones (`BuildZone`, when it has any) or too close to
+## another structure. Placing from the inventory uses up the structure's item,
+## and packing it up gives the item back; packing up is refused while the item
+## does not fit or the structure says it cannot be packed up (`can_pack_up()`).
+## `placement_added` and `placement_removed` announce each change.
+
 signal placement_added(location_id: StringName, record: Dictionary)
 signal placement_removed(location_id: StringName, placement_id: StringName)
 

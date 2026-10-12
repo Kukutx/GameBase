@@ -22,7 +22,7 @@ Read only when the task is to move the shared Godot baseline or to judge the res
    node tools/export.js --all --godot-bin <new engine>
    ```
 
-7. Check save migration and recovery: the save tests in `games/<id>/test/unit/` and one real save and load cycle with a save made before the upgrade.
+7. Check saving and recovery: the core's `gamebase/core/test/test_save_slots.gd` and `test_auto_save.gd`, the save-section tests of the modules and games, and one real save and load cycle. There is no save migration; a save whose format the upgrade changes is refused, and its format version rises.
 8. Re-check the engine facts recorded in `.agents/rules/gdscript.md`, `.agents/rules/scenes-resources.md`, `.agents/rules/save.md` and `.agents/rules/testing.md`; they were confirmed on the previous baseline. Update the ones the new engine changes and keep only statements that were confirmed again.
 9. Commit the baseline, the synchronized legal bundle, addon compatibility updates and engine-generated format changes together.
 

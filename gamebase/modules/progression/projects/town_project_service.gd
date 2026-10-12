@@ -1,6 +1,17 @@
 class_name TownProjectService
 extends Node
 
+## The town's community projects (`TownProjectData`): the player donates the
+## items a project asks for from the inventory, and once every item is in, the
+## project is complete and its reward (items and money) can be claimed. A project
+## opens once the projects it requires are complete.
+##
+## The reward is fixed when the project completes, and claiming it is refused
+## while the items do not fit in the inventory. Progress lives in `WorldState`
+## (`town_projects:state`), so it is saved with the world, and NPCs know it
+## through `NpcContext`. `project_changed`, `project_completed` and
+## `project_claimed` announce each step.
+
 signal project_changed(project_id: StringName, state: Dictionary)
 signal project_completed(project_id: StringName)
 signal project_claimed(project_id: StringName)

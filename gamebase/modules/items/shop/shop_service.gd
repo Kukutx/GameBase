@@ -1,6 +1,18 @@
 class_name GameShopService
 extends Node
 
+## Buying from shops and selling to them: it checks the price (`ShopData`), the
+## player's money (`PlayerState`) and the room in the inventory
+## (`InventoryState`), moves the money and the items together, and tells the
+## player the result with a toast.
+##
+## A purchase buys as many as the player can afford and carry, up to the number
+## asked, and takes no money when nothing fits. An item sells at its
+## `sell_price`, and one without a price cannot be sold. A shop's other offers
+## (`ShopOffer`, such as an animal) buy themselves through `buy_offer()`. The
+## service keeps no state and saves nothing; `purchase_completed`,
+## `offer_purchased` and `sale_completed` announce each trade.
+
 signal purchase_completed(shop_id: StringName, item_id: StringName, quantity: int, total: int)
 signal offer_purchased(shop_id: StringName, offer: ShopOffer)
 signal sale_completed(item_id: StringName, quantity: int, total: int)

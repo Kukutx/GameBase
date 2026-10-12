@@ -1,6 +1,15 @@
 class_name GameCraftingService
 extends Node
 
+## Crafting items from recipes (`RecipeData`): a recipe can be crafted when its
+## condition holds and the player carries its ingredients, and crafting it
+## swaps the ingredients for the result in the inventory (`InventoryState`) in
+## one step.
+##
+## When the result does not fit, nothing changes and a toast tells the player
+## why. A placeable result also gets a `Hotbar` slot when one is free. The
+## service keeps no state and saves nothing; `crafted` announces each craft.
+
 signal crafted(recipe_id: StringName, output_item_id: StringName, quantity: int)
 
 var _craft_busy := false

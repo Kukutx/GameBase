@@ -28,6 +28,7 @@ jobs:
   validate:
     name: Validate release source
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       engine_version: ${{ steps.engine.outputs.version }}
       game: ${{ steps.release.outputs.game }}
@@ -67,6 +68,7 @@ jobs:
     name: Build ${{ matrix.name }}
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -154,6 +156,7 @@ jobs:
             os: ubuntu-latest
             artifact: release-Linux
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     env:
       GAMEBASE_GAME: ${{ needs.validate.outputs.game }}
     steps:
@@ -179,6 +182,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/game/') && (github.event_name != 'workflow_dispatch' || inputs.engine_version == '')
     needs: [validate, build, native-smoke]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     env:
@@ -186,6 +190,9 @@ jobs:
     steps:
       - name: Checkout release source
         uses: actions/checkout@v7
+        with:
+          # The release notes read the history since the game's previous tag.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v7

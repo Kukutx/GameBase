@@ -6,10 +6,12 @@ const path = require("node:path");
 const test = require("node:test");
 const { checkLocalization } = require("./check_localization");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
-const { checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
+const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
 const { desiredAutoloads, desiredTestDirs, moduleOrder, projectInSync, syncedGutConfig, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
+const { selectGames } = require("./ci");
+const { callArguments, pages, ruleKeys, signalsOf, stalePages } = require("./generate_reference");
 
 const read = (...parts) => fs.readFileSync(rootPath(...parts), "utf8");
 const pluginVersion = (addon) => (/^version="([^"]+)"$/m.exec(read("addons", addon, "plugin.cfg")) || [])[1];
@@ -186,6 +188,9 @@ test("the manifests reject autoloads that would break a linked game", () => {
   const foundation = checkFoundation(manifest({ a: { addons: ["tool"], autoloads: { ToolService: "res://addons/tool/service.gd" } }, b: { requires: ["c"] }, c: { requires: ["b"] } }));
   assert.throws(() => checkGameAutoloads({ Events: "res://game/events.gd" }, "game.json autoloads", ["gut"], foundation), /Events is already declared by gamebase\.json autoloads\.before_modules/);
   assert.throws(() => checkGameAutoloads({ Probe: "res://gamebase/core/probe.gd" }, "game.json autoloads", ["gut"], foundation), /must be a script under res:\/\/game\/ or res:\/\/addons\/gut\//);
+  assert.throws(() => assertAutoloadScripts({ Probe: "res://gamebase/core/probe.gd" }, "gamebase.json autoloads.after_modules"), /autoloads\.after_modules\.Probe names res:\/\/gamebase\/core\/probe\.gd, which does not exist/);
+  assert.throws(() => assertAutoloadScripts({ Probe: "res://game/probe.gd" }, "game.json autoloads", rootPath("games", "farm1")), /Probe names res:\/\/game\/probe\.gd, which does not exist/);
+  assertAutoloadScripts({ SaveManager: "res://gamebase/core/save/game_save_manager.gd", Setup: "res://game/game_setup.gd" }, "probe", rootPath("games", "farm1"));
   assert.throws(() => moduleOrder(foundation, ["a", "b", "c"]), /modules b, c cannot be ordered because their requires form a cycle/);
 });
 
@@ -238,4 +243,52 @@ test("repository tooling is Node only", () => {
     assert.ok(!text.includes("shell: pwsh"), `${workflow} must not use PowerShell`);
     assert.ok(!text.includes("setup-python"), `${workflow} must not set up Python`);
   }
+});
+
+test("every workflow job has a time limit, and CI ends in one verdict over every job", () => {
+  for (const workflow of fs.readdirSync(rootPath(".github", "workflows"))) {
+    const jobs = read(".github", "workflows", workflow).split(/^jobs:$/m)[1].split(/^ {2}(?=[\w-]+:$)/m).slice(1);
+    assert.ok(jobs.length > 0, `${workflow} has jobs`);
+    for (const job of jobs) {
+      assert.match(job, /^ {4}timeout-minutes: \d+$/m, `${workflow} job ${job.split(":")[0]} sets timeout-minutes`);
+    }
+  }
+  const ci = read(".github", "workflows", "ci.yml");
+  const jobNames = [...ci.split(/^jobs:$/m)[1].matchAll(/^ {2}([\w-]+):$/gm)].map((match) => match[1]).filter((name) => name !== "result");
+  const verdict = /^ {2}result:\n(?: {4}.*\n)*? {4}needs: \[([^\]]*)\]/m.exec(ci);
+  assert.ok(verdict, "ci.yml has a result job");
+  assert.deepEqual(verdict[1].split(",").map((name) => name.trim()).sort(), jobNames.sort(), "the result job needs every other job");
+});
+
+test("a pull request runs the games it changes, every game for a shared change and none for documentation", () => {
+  const all = ["dungeon1", "farm1"];
+  assert.deepEqual(selectGames(all, []), all, "a push or a manual run");
+  assert.deepEqual(selectGames(all, ["README.md", "docs/RELEASE.md", ".agents/rules/save.md"]), []);
+  assert.deepEqual(selectGames(all, ["games/farm1/game/a.gd", "games/farm1/README.md", "docs/A.md"]), ["farm1"]);
+  assert.deepEqual(selectGames(all, ["gamebase/core/a.gd", "games/farm1/game/a.gd"]), all);
+  assert.deepEqual(selectGames(all, ["tools/ci.js"]), all);
+});
+
+test("the reference pages name every autoload with what it does and every rule key with what it means", () => {
+  assert.deepEqual(stalePages(), [], "run node tools/generate_reference.js");
+  const foundation = readFoundation();
+  const reference = pages(foundation);
+  const names = [
+    ...Object.keys(foundation.autoloads.before_modules),
+    ...Object.values(foundation.modules).flatMap((module) => Object.keys(module.autoloads || {})),
+    ...Object.keys(foundation.autoloads.after_modules),
+  ];
+  for (const name of names) {
+    const row = reference["autoloads.md"].split("\n").find((line) => line.startsWith(`| \`${name}\` |`));
+    assert.ok(row, `autoloads.md lists ${name}`);
+    assert.ok(!row.endsWith("|  |"), `${name}'s script has a class doc saying what it does`);
+  }
+  for (const entry of ruleKeys()) {
+    assert.ok(entry.meaning, `${entry.file}: ${entry.key} has a doc comment "## ${entry.key} <args>: what it means"`);
+  }
+  assert.deepEqual(callArguments('&"KEY", _f.bind(a, "b, c"), 1, -1, [X, Y])', 0), ['&"KEY"', '_f.bind(a, "b, c")', "1", "-1", "[X, Y]"]);
+  assert.deepEqual(signalsOf("## Done.\nsignal done(at: int)\nsignal bare\n"), [
+    { name: "done", params: "(at: int)", doc: "Done." },
+    { name: "bare", params: "()", doc: "" },
+  ]);
 });

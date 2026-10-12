@@ -26,6 +26,9 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_action(&"ADD_FLAG", _add_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_INT])
 	rules.register_action(&"ADD_MONEY", _add_money, 1, 1, [GameRulesService.ARG_INT])
 
+## TRUE: always holds.
+
+## FALSE: never holds.
 static func _always(_args: PackedStringArray, _context: Dictionary, result: bool) -> bool:
 	return result
 
@@ -83,7 +86,7 @@ static func _location(args: PackedStringArray, context: Dictionary, rules: GameR
 		location_id = String(current.id) if current != null else ""
 	return args.has(location_id)
 
-## MONEY_AT_LEAST <n>
+## MONEY_AT_LEAST <n>: the player has at least n money.
 static func _money_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
 	return PlayerState.money >= int(args[0])
 
@@ -106,7 +109,8 @@ static func _set_flag(args: PackedStringArray, _context: Dictionary) -> bool:
 	WorldState.set_value(StringName(args[0]), value)
 	return true
 
-## CLEAR_FLAG <key>
+## CLEAR_FLAG <key>: removes the value stored under the key, so a flag reads as
+## false and a counter as 0; never fails.
 static func _clear_flag(args: PackedStringArray, _context: Dictionary) -> bool:
 	WorldState.erase(StringName(args[0]))
 	return true
@@ -116,7 +120,8 @@ static func _add_flag(args: PackedStringArray, _context: Dictionary) -> bool:
 	WorldState.add_int(StringName(args[0]), int(args[1]) if args.size() > 1 else 1)
 	return true
 
-## ADD_MONEY <n>
+## ADD_MONEY <n>: gives the player n money; an n of 0 or less gives nothing and
+## takes nothing, and the action still succeeds.
 static func _add_money(args: PackedStringArray, _context: Dictionary) -> bool:
 	PlayerState.add_money(int(args[0]))
 	return true

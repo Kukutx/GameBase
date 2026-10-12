@@ -21,10 +21,12 @@ concurrency:
 
 jobs:
   # Picks the games this run covers: every game, except on a pull request that
-  # changes nothing but some games' own directories.
+  # changes nothing but some games' own directories, and none on one that
+  # changes documentation alone.
   plan:
     name: Plan games
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       games: ${{ steps.games.outputs.games }}
     steps:
@@ -45,6 +47,7 @@ jobs:
   repository:
     name: Repository checks
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -75,6 +78,7 @@ jobs:
     needs: plan
     if: needs.plan.outputs.games != '[]'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -108,6 +112,7 @@ jobs:
     name: Export ${{ matrix.game }} ${{ matrix.target.name }}
     needs: [plan, repository, validate]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -200,6 +205,7 @@ jobs:
             os: ubuntu-latest
             dir: linux
     runs-on: ${{ matrix.target.os }}
+    timeout-minutes: 15
     env:
       GAMEBASE_GAME: ${{ matrix.game }}
     steps:
@@ -219,3 +225,26 @@ jobs:
 
       - name: Launch exported build
         run: node tools/smoke_export.js --target ${{ matrix.target.name }}
+
+  # The one check branch protection requires: it fails when any job above
+  # failed or was cancelled, and passes when the jobs a documentation change
+  # skips had nothing to do.
+  result:
+    name: CI result
+    needs: [plan, repository, validate, export, native-smoke]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Judge the run
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: node tools/ci.js result

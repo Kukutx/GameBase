@@ -1,6 +1,16 @@
 class_name InputPromptService
 extends Node
 
+## Which device the player is using, keyboard and mouse or a gamepad, and the
+## text that names the key, button or stick of a control on it ("E", "A",
+## "Left Stick") for the HUD and the interaction prompts. The bindings come from
+## `GameSettings`; this service reads them and never changes them.
+##
+## The device switches on the last input: a gamepad button, or a stick or
+## trigger pushed more than half way, picks the gamepad; a key or a mouse button
+## picks the keyboard. `input_method_changed` fires on each switch, so prompts on
+## screen can show the other device's names.
+
 signal input_method_changed(using_gamepad: bool)
 
 const GAMEPAD_BUTTON_LABELS := {

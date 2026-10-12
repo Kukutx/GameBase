@@ -28,7 +28,7 @@ This repository runs on GitHub-hosted runners only: `.github/workflows/ci.yml`, 
 
 - When a hosted job seems to be blocked by billing, a spending limit, included minutes or availability, first read the job and check-run evidence. Only a job that got no runner, ran no step and carries a GitHub annotation that explicitly points at such a gate counts as a hosted outage; an ordinary failure in the code is not one.
 - Without an explicit decision by the user, do not add a self-hosted runner, a runner selection variable or a parallel workflow, and do not copy the workflows, secrets, environments or the repository. When the authorization is not enough, stay read-only and state the smallest approval that would be needed.
-- Meanwhile run the equivalent checks locally (`node tools/validate.js`, `node tools/export.js --all`, `node tools/smoke_export.js --game <id>`, `npm run --prefix tools/web_smoke smoke:web`) and report them as local evidence; they do not make a pending or blocked remote check pass.
+- Meanwhile run the equivalent checks locally (`node tools/validate.js`, `node tools/export.js --all`, `node tools/smoke_export.js --game <id>`, `npm run --prefix tools/web_smoke smoke:web -- --game <id>`) and report them as local evidence; they do not make a pending or blocked remote check pass.
 - Once hosted runners are available again, the same workflows run again unchanged.
 - A self-hosted runner is a persistent environment; system-level cleanup that suits only a one-off GitHub-hosted machine is not reused on one. An open-source repository does not put untrusted pull requests on a personal self-hosted runner.
 
@@ -50,7 +50,7 @@ Pick the smallest related checks for what really changed, for example:
 - GDScript, scenes, resources and content: `node tools/validate.js --skip-soak` while iterating, and without `--skip-soak` when the change touches save data or time progression
 - Player-visible text: `node tools/check_localization.js`
 - Tools: `node tools/validate.js`, which runs the packaging self-test, plus the tool that changed
-- Export and packaging: `node tools/export.js --game <id> --preset <preset>` and `node tools/smoke_export.js --game <id>`; for the Web target also `npm run --prefix tools/web_smoke smoke:web`
+- Export and packaging: `node tools/export.js --game <id> --preset <preset>` and `node tools/smoke_export.js --game <id>`; for the Web target also `npm run --prefix tools/web_smoke smoke:web -- --game <id>`
 - CI workflows: the workflow assertions in `tools/repository.test.js`
 - `.agents`: `node tools/validate_rules.js --strict` plus a review of the related pressure-test scenarios
 

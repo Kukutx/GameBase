@@ -83,6 +83,7 @@ SupportBundle="*res://gamebase/core/diagnostics/support_bundle_service.gd"
 [debug]
 
 file_logging/log_path="user://logs/farm1.log"
+gdscript/warnings/untyped_declaration=2
 settings/gdscript/always_track_call_stacks=true
 
 [display]

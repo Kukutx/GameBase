@@ -1,6 +1,15 @@
 class_name GameDiagnosticsService
 extends Node
 
+## Prints one line of diagnostics to the game's output and log
+## (`GAMEBASE_DIAGNOSTIC` and JSON) at startup and when a save, a load, an
+## autosave or a travel fails: the game and engine versions, the system, the
+## language, the save slot, the day and time, and the location. `SupportBundle`
+## puts the same context in its summary.
+##
+## Other code can add an event of its own with `record()`. The service only
+## prints: it sends nothing anywhere and saves nothing.
+
 const DIAGNOSTIC_SCHEMA := 1
 
 func _ready() -> void:

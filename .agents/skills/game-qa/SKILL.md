@@ -12,7 +12,7 @@ The detailed capture procedure — which states to visit, when to take a screens
 ## Read first
 
 1. The scope the user named and where output may be written (`artifacts/`).
-2. How the game is run: the editor or `godot --path games/<id>` for the windowed game (after `node tools/link.js`), `node tools/smoke_export.js` for an exported build, `npm run --prefix tools/web_smoke smoke:web` for the Web export in Chromium. The log is `user://logs/<id>.log`.
+2. How the game is run: the editor or `godot --path games/<id>` for the windowed game (after `node tools/link.js`), `node tools/smoke_export.js --game <id>` for an exported build, `npm run --prefix tools/web_smoke smoke:web -- --game <id>` for the Web export in Chromium. The log is `user://logs/<id>.log`.
 3. The code, tests and data of the area under test, and `.agents/rules/testing.md`.
 
 ## The loop

@@ -10,11 +10,11 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"MILESTONE_CLAIMED", _milestone_claimed, 1, 1, [CollectionMilestoneData.KIND])
 	rules.register_action(&"START_QUEST", _start_quest, 1, 1, [QuestData.KIND])
 
-## QUEST_ACTIVE <quest>
+## QUEST_ACTIVE <quest>: the quest has started and is not completed yet.
 static func _quest_active(args: PackedStringArray, _context: Dictionary) -> bool:
 	return QuestState.is_active(StringName(args[0]))
 
-## QUEST_COMPLETED <quest>
+## QUEST_COMPLETED <quest>: the quest is completed and its reward was given.
 static func _quest_completed(args: PackedStringArray, _context: Dictionary) -> bool:
 	return QuestState.is_completed(StringName(args[0]))
 

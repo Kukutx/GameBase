@@ -61,6 +61,7 @@ DepthRun="*res://game/depths/depth_run.gd"
 [debug]
 
 file_logging/log_path="user://logs/dungeon1.log"
+gdscript/warnings/untyped_declaration=2
 settings/gdscript/always_track_call_stacks=true
 
 [display]

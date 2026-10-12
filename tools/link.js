@@ -11,9 +11,11 @@
 // every game at once. The links are generated and Git-ignored; the validation
 // and export tools refresh them before they run Godot. It also writes the parts
 // of the game's project.godot that follow from the manifests: the autoloads of
-// the core and of the game's modules, the translation catalogs and the addon
-// plugins (tools/lib/project.js). Without --game every registered game is
-// linked, and the new-game template's project.godot is brought in step too.
+// the core, of the game's modules and the game's own, the translation catalogs,
+// the addon plugins and the typed-declaration setting, and the test directories
+// and pre-run hook of its .gutconfig.json (tools/lib/project.js). Without
+// --game every registered game is linked, and the new-game template's
+// project.godot is brought in step too.
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");

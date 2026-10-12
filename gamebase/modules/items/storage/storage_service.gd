@@ -1,6 +1,16 @@
 class_name StorageService
 extends Node
 
+## What each storage container (a chest, named by its container id) holds, and
+## the moves between it and the player's inventory (`InventoryState`). A
+## container holds stacks of each item's stack size, in as many slots as the
+## caller allows (24 by default).
+##
+## The contents live in `WorldState` under `storage:<container id>`, so they are
+## saved with the world and a new game empties them. Storing or taking moves only
+## what fits on the other side and returns how many moved; `container_changed`
+## fires after each change.
+
 signal container_changed(container_id: StringName)
 
 var _mutating_containers: Dictionary = {}

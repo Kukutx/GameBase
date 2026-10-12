@@ -18,7 +18,9 @@ static func _check_hearts(args: PackedStringArray) -> String:
 		return ""
 	return "%d is not a number of hearts (0-%d)" % [hearts, RelationshipManager.MAX_HEARTS]
 
-## ADD_FRIENDSHIP <npc> <points>
+## ADD_FRIENDSHIP <npc> <points>: adds the points to the friendship with the NPC,
+## or takes them away when negative; the friendship stays between 0 and full
+## hearts (`RelationshipManager.POINTS_PER_HEART` points a heart). Never fails.
 static func _add_friendship(args: PackedStringArray, _context: Dictionary) -> bool:
 	RelationshipState.add_friendship(StringName(args[0]), int(args[1]))
 	return true

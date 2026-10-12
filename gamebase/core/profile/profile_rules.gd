@@ -25,7 +25,9 @@ static func _profile_flag(args: PackedStringArray, _context: Dictionary) -> bool
 static func _profile_flag_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
 	return GameProfile.get_int(StringName(args[0])) >= int(args[1])
 
-## UNLOCK_ACHIEVEMENT <achievement>
+## UNLOCK_ACHIEVEMENT <achievement>: unlocks the achievement in the player's
+## profile, for every save; one already unlocked stays so and the action still
+## succeeds. Fails only when the id is not an achievement.
 static func _unlock_achievement(args: PackedStringArray, _context: Dictionary) -> bool:
 	return GameProfile.unlock(StringName(args[0]))
 

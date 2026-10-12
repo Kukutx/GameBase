@@ -12,7 +12,10 @@
 //     base64_to_variant(..., true) build objects, so what the text names
 //     loads and runs. Tests, which are not exported, may write fixture scenes;
 //   - only InputLockService sets SceneTree.paused: a pause is a lock with a
-//     reason, so one menu that closes never unpauses what another holds.
+//     reason, so one menu that closes never unpauses what another holds;
+//   - every script has its .uid file beside it, and no .uid file outlives its
+//     script: scenes and resources find a script by its uid, and the editor
+//     writes a new one, which nobody commits, when it is missing.
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -40,28 +43,41 @@ const PAUSE_WRITE = [
   /\.set(?:_deferred)?\s*\(\s*&?["']paused["']/,
 ];
 
-function walk(dir, out = []) {
+function walk(dir, extension, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     // The links tools/link.js creates inside a game point back at the shared copy.
     if (entry.isSymbolicLink()) continue;
-    if (entry.isDirectory()) walk(full, out);
-    else if (entry.name.endsWith(".gd")) out.push(full);
+    if (entry.isDirectory()) walk(full, extension, out);
+    else if (entry.name.endsWith(extension)) out.push(full);
   }
   return out;
 }
 
-// The scripts the guardrails cover: the foundation's and each game's own.
-function scriptsOf(root) {
-  const files = walk(path.join(root, "gamebase"));
+// The files with `extension` the guardrails cover: the foundation's and each
+// game's own.
+function filesOf(root, extension) {
+  const files = walk(path.join(root, "gamebase"), extension);
   const games = path.join(root, "games");
   if (fs.existsSync(games)) {
     for (const id of fs.readdirSync(games)) {
-      files.push(...walk(path.join(games, id, "game")), ...walk(path.join(games, id, "test")));
+      files.push(...walk(path.join(games, id, "game"), extension), ...walk(path.join(games, id, "test"), extension));
     }
   }
   return files.map((file) => path.relative(root, file).split(path.sep).join("/")).sort();
+}
+
+// The scripts without a .uid file and the .uid files without a script.
+function uidProblems(root, scripts) {
+  const problems = [];
+  for (const file of scripts) {
+    if (!fs.existsSync(path.join(root, `${file}.uid`))) problems.push(`${file} has no ${path.basename(file)}.uid; import the project in Godot and commit the file it writes`);
+  }
+  for (const uid of filesOf(root, ".gd.uid")) {
+    if (!fs.existsSync(path.join(root, uid.slice(0, -".uid".length)))) problems.push(`${uid} belongs to no script; delete it, or move it with its script`);
+  }
+  return problems;
 }
 
 function checkScript(file, source) {
@@ -115,10 +131,12 @@ function balancedArgument(code, start) {
 }
 
 function checkCode(root = ROOT) {
+  const scripts = filesOf(root, ".gd");
   const problems = [];
-  for (const file of scriptsOf(root)) {
+  for (const file of scripts) {
     problems.push(...checkScript(file, fs.readFileSync(path.join(root, file), "utf8")));
   }
+  problems.push(...uidProblems(root, scripts));
   return problems;
 }
 

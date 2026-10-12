@@ -1,6 +1,18 @@
 class_name WorldTravelService
 extends Node
 
+## Moves the player from one location (`WorldLocationData`) to another: it
+## changes to the location's scene behind the `Transition` fade and puts the
+## player on the named spawn point (`WorldSpawnPoint`), or the location's default
+## one.
+##
+## One travel runs at a time, and it holds the player's controls (`InputLock`,
+## reason `travel`) until the new scene is in place; a portal (`ScenePortal`)
+## does not take the player again for a moment after they arrive. A travel to an
+## unknown location or spawn fails with `travel_failed` and a toast.
+## `travel_finished` fires on arrival, which `AutoSave` follows. The service
+## saves nothing; the save records the location itself.
+
 signal travel_started(scene_path: String, spawn_id: StringName)
 signal travel_finished(scene_path: String, spawn_id: StringName)
 signal travel_failed(scene_path: String, spawn_id: StringName, reason: String)

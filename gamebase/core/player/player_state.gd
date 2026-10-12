@@ -1,6 +1,18 @@
 class_name GlobalPlayerState
 extends Node
 
+## The player's energy, health and money in the current game. Tools and work
+## spend energy, enemies take health, and shops, shipping and rewards move
+## money; the HUD follows them through `energy_changed`, `health_changed` and
+## `money_changed`.
+##
+## Energy and health stay between 0 and their maximum, and money never drops
+## below 0: `consume_energy()` and `spend_money()` refuse, and return false,
+## when there is not enough. All of it is saved with the game; a new game
+## starts with full energy and health and the game's
+## `GameDefinition.start_money`. At 0 health `GameSession` makes the player
+## collapse.
+
 signal energy_changed(current: int, maximum: int)
 signal health_changed(current: int, maximum: int)
 signal money_changed(amount: int)

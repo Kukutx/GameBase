@@ -6,15 +6,18 @@ GameBase is the single repository for a family of Godot 4.x games: a shared, gen
 
 ```text
 gamebase/core/        Genre-agnostic foundation services (save, content, session, rules, settings,
-                      input, audio, world travel, time, interactions, minigames, diagnostics)
-gamebase/modules/     Optional gameplay modules: items, npc_social, progression, lifesim, combat
+                      input, audio, world travel, time, randomness, stats, profile, interactions,
+                      minigames, diagnostics, and the title, pause and settings menus)
+gamebase/modules/     Optional gameplay modules: items, skills, combat, lifesim, npc_social, progression
 gamebase/templates/   The template tools/new_game.js creates a game from
-gamebase/gamebase.json  Modules, the modules each one requires and the addons each one uses
+gamebase/gamebase.json  The core's autoloads, the modules with the modules each one requires and the
+                      addons and autoloads each one uses, and the addons every game links
 addons/               Vendored third-party Godot addons shared by every game (Dialogue Manager, GUT)
 games/<id>/           One Godot project per game: game.json, project.godot, export_presets.cfg,
                       game/ (the game's own code and data) and test/ (GUT and runtime checks)
 tools/                Node tooling: links, validation, export, packaging, release checks
-docs/                 Project documentation (release, localization, audio, support, engine upgrades, automation policy)
+docs/                 Project documentation (writing a module, release, localization, audio, support,
+                      engine upgrades, automation policy) and the generated reference pages
 AGENTS.md, .agents/   Agent instructions: rules, skills, workflows, standards and templates
 ```
 
@@ -49,7 +52,7 @@ node tools/new_game.js --id <id> --name "<Game Name>" [--description "<One line>
 node tools/validate.js
 ```
 
-runs the repository checks once (agent rules, layer dependencies, tool tests, the engine baseline and its legal bundle, the packaging self-test, and a game freshly created from the template) and then every game's checks (links, version, localization coverage, clean import, GUT, its runtime scripts and a main-scene boot). `--game <id>` limits the games; `--no-repository` and `--no-games` skip one half.
+runs the repository checks once (agent rules, layer dependencies, code guardrails, each game's project settings against its manifests, the reference pages, tool tests, the engine baseline and its legal bundle, the packaging self-test, and a game freshly created from the template) and then every game's checks (links, version, localization coverage, headless import, GUT, its runtime scripts and a main-scene boot). `--game <id>` limits the games; `--no-repository` and `--no-games` skip one half; `--clean-import` imports from an empty cache, `--skip-import` and `--skip-soak` skip those steps.
 
 Tools that act on one game take `--game <id>` or `GAMEBASE_GAME`, which they need now that more than one game is registered:
 
@@ -63,12 +66,12 @@ Builds go to `build/<id>/<platform>/`, packages to `dist/<id>/` and QA output to
 
 GitHub Actions:
 
-- `.github/workflows/ci.yml`: repository checks, then per-game clean-import validation, Windows/Linux/Web exports, native Windows/Linux execution and Chromium Web smoke. A pull request that changes only some games' own directories validates only those games.
-- `.github/workflows/release.yml`: a `game/<id>/v<version>` tag builds that game's deterministic Windows/Linux/Web packages, smokes them, writes `RELEASE_MANIFEST.json` and SHA-256 checksums and publishes a GitHub Release.
+- `.github/workflows/ci.yml`: repository checks and per-game clean-import validation side by side, then Windows/Linux/Web exports, native Windows/Linux execution and Chromium Web smoke, judged by one `CI result` check. A pull request that changes only some games' own directories validates only those games, and one that changes only documentation runs the repository checks alone.
+- `.github/workflows/release.yml`: a `game/<id>/v<version>` tag builds that game's deterministic Windows/Linux/Web packages, smokes them, writes `RELEASE_MANIFEST.json` and SHA-256 checksums and publishes a GitHub Release whose notes list that game's changes and its foundation's since its previous release.
 - `.github/workflows/engine-compat.yml`: weekly validation and exports of every game against the newest stable Godot 4.x release, without moving the shared baseline.
 - `.github/workflows/addon-freshness.yml`: weekly stable-tag comparison for the vendored addons; it maintains one reminder issue and never replaces addon code.
 
-See `docs/RELEASE.md`, `docs/ENGINE_UPGRADES.md`, `docs/LOCALIZATION.md`, `docs/AUDIO.md` and `docs/SUPPORT.md`.
+See `docs/MODULES.md` (writing a module), `docs/RELEASE.md`, `docs/ENGINE_UPGRADES.md`, `docs/LOCALIZATION.md`, `docs/AUDIO.md`, `docs/SUPPORT.md` and the reference pages `docs/reference/autoloads.md`, `docs/reference/events.md` and `docs/reference/rules.md`, which `node tools/generate_reference.js` writes from the code.
 
 ## Development rules
 

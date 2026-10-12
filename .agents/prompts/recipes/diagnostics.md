@@ -32,7 +32,7 @@ ERROR:
 SCRIPT ERROR:
 ```
 
-A Godot step fails on a non-zero exit code or on any `ERROR:` or `SCRIPT ERROR:` output line, so a log is read for those lines even when the process ended with code 0. The smoke runs keep their own evidence: `node tools/smoke_export.js` writes the log of the exported build under `artifacts/<id>/release-smoke/`, and `npm run --prefix tools/web_smoke smoke:web` writes screenshots under `artifacts/<id>/web-smoke/` and prints the console, page and network errors.
+A Godot step fails on a non-zero exit code or on any `ERROR:` or `SCRIPT ERROR:` output line, so a log is read for those lines even when the process ended with code 0. The smoke runs keep their own evidence: `node tools/smoke_export.js --game <id>` writes the log of the exported build under `artifacts/<id>/release-smoke/`, and `npm run --prefix tools/web_smoke smoke:web -- --game <id>` writes screenshots under `artifacts/<id>/web-smoke/` and prints the console, page and network errors.
 
 Ask for more only when the current problem needs deeper runtime evidence, in this order: the support bundle the player created with the `SupportBundle` service when one is available, otherwise the newest `<id>.log`; the `BUILD_INFO.json` of the build; the exact action that triggered the problem; and the raw save files only when the problem is specifically about saving and the player chooses to share them. The bundle is opt-in and holds a whitelisted runtime and settings summary, summaries of the save slots without the raw save payloads, the recent logs with known absolute paths replaced by placeholders, and a README; `docs/SUPPORT.md` is the source of truth for its contents.
 

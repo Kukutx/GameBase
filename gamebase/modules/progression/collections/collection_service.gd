@@ -1,6 +1,16 @@
 class_name CollectionService
 extends Node
 
+## The player's collection log: how many of each item they have harvested,
+## caught, mined, collected from animals, processed, foraged and shipped, one
+## category each (`CATEGORIES`), and how many items each category holds in the
+## game's content. It counts them by itself from the modules' events
+## (`LifesimEvents`, `ItemsEvents`, `ShippingState`).
+##
+## The counts live in `WorldState` (`collection:records`), so they are saved
+## with the world and a new game starts empty. `item_discovered` fires the first
+## time an item is counted in a category, which `CollectionMilestones` follows.
+
 signal collection_changed(category: StringName, item_id: StringName, count: int)
 ## Emitted when an item is recorded in a category for the first time.
 signal item_discovered(category: StringName, item_id: StringName)

@@ -1,6 +1,17 @@
 class_name GameAudioService
 extends Node
 
+## Plays the game's music and sounds by cue (`AudioCueData`): one music track at
+## a time on the Music bus and up to `SFX_CHANNEL_COUNT` sounds at once on the
+## Sounds bus. Each location plays its own music (`WorldLocationData`) when the
+## scene changes, and each event listed in `GameDefinition.event_cues` plays its
+## cue.
+##
+## Asking for the music that already plays leaves it playing, a location without
+## music stops it, and a sound past the channel count cuts off the oldest. The
+## volumes are the player's, which `GameSettings` sets on the buses. Audio keeps
+## playing while the world is paused. The service saves nothing.
+
 signal cue_requested(cue_id: StringName)
 signal cue_started(cue_id: StringName)
 signal music_changed(cue_id: StringName)

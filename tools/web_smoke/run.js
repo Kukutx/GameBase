@@ -1,12 +1,15 @@
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const { parseArgs } = require("node:util");
 const { chromium } = require("playwright");
 
 const { artifactsPath, buildPath, resolveGame } = require("../lib/games");
 
-// The game comes from GAMEBASE_GAME, or is the only registered one.
-const game = resolveGame();
+// The game comes from --game <id>, else GAMEBASE_GAME, else is the only
+// registered one: npm run --prefix tools/web_smoke smoke:web -- --game <id>
+const { values: options } = parseArgs({ options: { game: { type: "string" } } });
+const game = resolveGame(options.game);
 const artifactDir = artifactsPath(game, "web-smoke");
 const viewportProfiles = [
   { name: "720p-16x9", width: 1280, height: 720 },

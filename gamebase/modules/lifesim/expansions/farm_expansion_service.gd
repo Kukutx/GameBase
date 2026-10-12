@@ -1,6 +1,17 @@
 class_name FarmExpansionService
 extends Node
 
+## The farm expansions (`FarmExpansionData`, such as a big coop or barn) the
+## player has bought, and whether the next one can be bought. A bought expansion
+## raises how many animals its housing holds, which `AnimalState` reads through
+## `get_capacity()`.
+##
+## An expansion is offered once its condition holds and the expansions it
+## requires are bought. Buying it takes its money and materials together, or
+## nothing, and it stays bought. What is bought lives in `WorldState`
+## (`farm_expansions:completed`), so it is saved with the world and a new game
+## has none. `expansion_completed` announces each purchase.
+
 signal expansion_completed(expansion_id: StringName, housing_id: StringName, capacity: int)
 
 const STATE_KEY := &"farm_expansions:completed"
