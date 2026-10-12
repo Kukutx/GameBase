@@ -58,7 +58,7 @@ func get_event(event_id: StringName) -> CalendarEventData:
 
 func get_year(day: int = -1) -> int:
 	var resolved_day := WorldClock.day if day < 1 else day
-	return int((maxi(resolved_day, 1) - 1) / (GameClock.DAYS_PER_SEASON * GameClock.SEASON_NAMES.size())) + 1
+	return GameCalendar.current().get_year(resolved_day)
 
 func has_claimed_participation(event_id: StringName, year: int = -1) -> bool:
 	var resolved_year := get_year() if year < 1 else year

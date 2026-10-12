@@ -105,7 +105,7 @@ func continue_game() -> bool:
 	return success
 
 func _on_minute_changed(day: int, minute_of_day: int) -> void:
-	if minute_of_day != 2 * 60 or _handling_late_night or _handling_defeat:
+	if minute_of_day != GameCalendar.current().collapse_minute or _handling_late_night or _handling_defeat:
 		return
 	if get_tree().get_first_node_in_group("player") == null:
 		return
@@ -115,12 +115,19 @@ func _handle_late_night(day: int) -> void:
 	var definition := GameDefinition.current()
 	if _handling_late_night or _handling_defeat:
 		return
-	if WorldClock.day != day or WorldClock.minute_of_day != 2 * 60:
+	var calendar := GameCalendar.current()
+	# The clock may have run a few minutes on in the same frame (short game
+	# minutes, a long frame, an action that passes time); the player still
+	# collapses unless it was moved past the morning (they slept).
+	var collapse_at := _minute_count(day, calendar.collapse_minute)
+	var wake_at := _minute_count(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
+	var now := _minute_count(WorldClock.day, WorldClock.minute_of_day)
+	if now < collapse_at or now >= wake_at:
 		return
 	if get_tree().get_first_node_in_group("player") == null:
 		return
 	_handling_late_night = true
-	WorldClock.set_time(day, 6 * 60)
+	WorldClock.set_time(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
 	PlayerState.set_energy(maxi(PlayerState.max_energy / 2, 1))
 	PlayerState.restore_full_health()
 	var current_location := WorldLocationData.find_current(get_tree())
@@ -138,6 +145,10 @@ func _handle_late_night(day: int) -> void:
 	late_night_collapse.emit()
 	GameEvents.toast("You stayed up too late and woke at home with reduced energy" if returned_home else "You stayed up too late and recovered with reduced energy")
 
+# Minutes from the start of day 1 to `minute_of_day` of `day`.
+static func _minute_count(day: int, minute_of_day: int) -> int:
+	return (day - 1) * GameClock.MINUTES_PER_DAY + minute_of_day
+
 func _on_health_changed(current: int, _maximum: int) -> void:
 	if current > 0 or _handling_defeat:
 		return
@@ -151,7 +162,8 @@ func _handle_player_defeat() -> void:
 	var loss := 0
 	if PlayerState.money > 0:
 		loss = PlayerState.lose_money(maxi(int(ceil(float(PlayerState.money) * 0.10)), 1))
-	WorldClock.set_time(WorldClock.day + 1, 6 * 60)
+	var calendar := GameCalendar.current()
+	WorldClock.set_time(calendar.get_wake_day(WorldClock.day, WorldClock.minute_of_day), calendar.wake_minute)
 	PlayerState.restore_full_energy()
 	PlayerState.restore_full_health()
 	var current_location := WorldLocationData.find_current(get_tree())

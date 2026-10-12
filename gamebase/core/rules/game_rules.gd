@@ -36,6 +36,8 @@ const ARG_BOOL := &"bool"
 const ARG_TEXT := &"text"
 ## A whole number of at least 1 (how many items).
 const ARG_COUNT := &"count"
+## A season of the game's calendar (`GameCalendar.season_names`).
+const ARG_SEASON := &"season"
 ## How many values of its event arguments a clause's cross-argument check is
 ## tried with at most; one with more is checked when the event fires.
 const MAX_EVENT_ARG_VALUES := 256
@@ -284,11 +286,14 @@ func _check_with_any_event_values(args_check: Callable, args: PackedStringArray,
 	return first_problem
 
 # Every value an argument of `kind` can take, when they can be listed: true and
-# false, or the ids of a content kind; empty when they cannot.
+# false, the calendar's seasons, or the ids of a content kind; empty when they
+# cannot.
 func _arg_values(kind: StringName) -> PackedStringArray:
 	var values := PackedStringArray()
 	if kind == ARG_BOOL:
 		return PackedStringArray(["true", "false"])
+	if kind == ARG_SEASON:
+		return GameCalendar.current().season_names.duplicate()
 	if kind in [&"", ARG_INT, ARG_NUMBER, ARG_TEXT, ARG_COUNT]:
 		return values
 	# A kind registered with its own check may still name content (a skill):
@@ -317,6 +322,8 @@ func _check_value(value: String, kind: StringName) -> String:
 			return "" if ["true", "false"].has(value.to_lower()) else "'%s' is not true or false" % value
 		ARG_TEXT:
 			return ""
+		ARG_SEASON:
+			return "" if GameCalendar.current().has_season(value) else "unknown season '%s'" % value
 	if _arg_kinds.has(kind):
 		return String((_arg_kinds[kind] as Callable).call(value))
 	return "" if ContentRegistry.active.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
@@ -485,9 +492,9 @@ func _register_core_rules() -> void:
 	register_condition(&"FLAG_AT_LEAST", _flag_at_least, 2, 2, [ARG_TEXT, ARG_INT])
 	register_condition(&"DAY_AT_LEAST", _day_at_least, 1, 1, [ARG_INT])
 	register_condition(&"DAY_AT_MOST", _day_at_most, 1, 1, [ARG_INT])
-	register_condition(&"SEASON", _season, 1, -1, [ARG_TEXT])
-	register_condition(&"DAY_OF_SEASON", _day_of_season, 1, -1, [ARG_INT])
-	register_condition(&"WEEKDAY", _weekday, 1, -1, [ARG_INT])
+	register_condition(&"SEASON", _season, 1, -1, [ARG_SEASON])
+	register_condition(&"DAY_OF_SEASON", _day_of_season, 1, -1, [ARG_INT], Callable(), _days_within.bind(&"days_per_season", 1, "day of a season"))
+	register_condition(&"WEEKDAY", _weekday, 1, -1, [ARG_INT], Callable(), _days_within.bind(&"days_per_week", 0, "weekday"))
 	register_condition(&"TIME_BETWEEN", _time_between, 2, 2, [ARG_INT])
 	register_condition(&"WEATHER", _weather, 1, -1, [ARG_TEXT])
 	register_condition(&"LOCATION", _location, 1, -1, [WorldLocationData.KIND])
@@ -518,17 +525,26 @@ func _day_at_least(args: PackedStringArray, context: Dictionary) -> bool:
 func _day_at_most(args: PackedStringArray, context: Dictionary) -> bool:
 	return context_day(context) <= int(args[0])
 
-## SEASON <name>...: the season is one of the names (Spring, Summer, Autumn, Winter).
+## SEASON <name>...: the season is one of the names (the calendar's seasons).
 func _season(args: PackedStringArray, context: Dictionary) -> bool:
-	return args.has(GameClock.get_season_name_for_day(context_day(context)))
+	return args.has(GameCalendar.current().get_season_name(context_day(context)))
 
-## DAY_OF_SEASON <n>...: the day within the season (1-28) is one of the numbers.
+## DAY_OF_SEASON <n>...: the day within the season (from 1) is one of the numbers.
 func _day_of_season(args: PackedStringArray, context: Dictionary) -> bool:
-	return args.has(str(posmod(context_day(context) - 1, GameClock.DAYS_PER_SEASON) + 1))
+	return args.has(str(GameCalendar.current().get_day_of_season(context_day(context))))
 
-## WEEKDAY <0-6>...: the weekday is one of the numbers; day 1 is weekday 0.
+## WEEKDAY <n>...: the weekday is one of the numbers; day 1 is weekday 0.
 func _weekday(args: PackedStringArray, context: Dictionary) -> bool:
-	return args.has(str(posmod(maxi(context_day(context), 1) - 1, 7)))
+	return args.has(str(GameCalendar.current().get_weekday(context_day(context))))
+
+# The numbers are days the calendar has: from `first` to the calendar's
+# `count_property` (counted from `first`).
+func _days_within(args: PackedStringArray, count_property: StringName, first: int, label: String) -> String:
+	var last := first + int(GameCalendar.current().get(count_property)) - 1
+	for arg: String in args:
+		if int(arg) < first or int(arg) > last:
+			return "%s is not a %s (%d-%d)" % [arg, label, first, last]
+	return ""
 
 ## TIME_BETWEEN <from> <to>: the minute of the day is in [from, to).
 func _time_between(args: PackedStringArray, context: Dictionary) -> bool:

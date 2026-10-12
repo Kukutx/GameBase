@@ -34,6 +34,10 @@ static func current() -> GameDefinition:
 @export var home_location_id: StringName = &""
 ## Spawn point used when the player is brought home.
 @export var home_spawn_id: StringName = &""
+## How the game counts its time: seasons, week, clock speed, night and the
+## player's day (`GameCalendar`). None: the default calendar of four 28-day
+## seasons.
+@export var calendar: GameCalendar
 ## Clock at the start of a new game.
 @export_range(1, 100000) var start_day := 1
 @export_range(0, 1439) var start_minute_of_day := 8 * 60
@@ -60,3 +64,13 @@ static func current() -> GameDefinition:
 ## array makes GDScript's shutdown skip scripts (a loop upstream has since
 ## rewritten), so every test run ends with leak errors.
 @export var controls: Array[Resource] = []
+
+var _default_calendar: GameCalendar
+
+## The game's calendar, or the default one when it sets none.
+func get_calendar() -> GameCalendar:
+	if calendar != null:
+		return calendar
+	if _default_calendar == null:
+		_default_calendar = GameCalendar.new()
+	return _default_calendar

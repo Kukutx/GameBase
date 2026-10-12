@@ -152,7 +152,7 @@ func _calendar_text() -> String:
 		"[font_size=18][b]%s[/b][/font_size]" % tr("Calendar"),
 		"",
 		tr("Today: [b]%s %d[/b] — %s") % [tr(WorldClock.get_season_name()), WorldClock.get_day_of_season(), tr(WeatherState.get_weather_name())],
-		tr("Tomorrow: %s %d — %s") % [tr(GameClock.get_season_name_for_day(tomorrow)), posmod(tomorrow - 1, GameClock.DAYS_PER_SEASON) + 1, tr(WeatherState.get_weather_name(WeatherState.get_weather_for_day(tomorrow)))],
+		tr("Tomorrow: %s %d — %s") % [tr(GameCalendar.current().get_season_name(tomorrow)), GameCalendar.current().get_day_of_season(tomorrow), tr(WeatherState.get_weather_name(WeatherState.get_weather_for_day(tomorrow)))],
 		"",
 		"[b]%s[/b]" % tr("Upcoming events"),
 	])
@@ -165,9 +165,9 @@ func _calendar_text() -> String:
 		var location := WorldLocationData.find(event.location_id)
 		var location_name := tr(location.display_name) if location != null else tr("World")
 		var participation := tr(" · joined this year") if event.has_participation_reward() and EventState.has_claimed_participation(event.id) else ""
-		lines.append(tr("• %s%s — %s %d, %02d:%02d @ %s") % [tr(event.display_name), participation, tr(GameClock.get_season_name_for_day(event_day)), posmod(event_day - 1, GameClock.DAYS_PER_SEASON) + 1, event.start_minute / 60, event.start_minute % 60, location_name])
+		lines.append(tr("• %s%s — %s %d, %02d:%02d @ %s") % [tr(event.display_name), participation, tr(GameCalendar.current().get_season_name(event_day)), GameCalendar.current().get_day_of_season(event_day), event.start_minute / 60, event.start_minute % 60, location_name])
 	if not any_event:
-		lines.append(tr("No events in the next 28 days."))
+		lines.append(tr("No events in the next %d days.") % GameCalendar.current().days_per_season)
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Upcoming birthdays"))
 	var birthdays: Array[Dictionary] = []
@@ -179,9 +179,9 @@ func _calendar_text() -> String:
 	for entry: Dictionary in birthdays:
 		var profile: NpcProfileData = entry["profile"]
 		var birthday_day := int(entry["day"])
-		lines.append(tr("• %s — %s %d") % [tr(profile.display_name), tr(GameClock.get_season_name_for_day(birthday_day)), posmod(birthday_day - 1, GameClock.DAYS_PER_SEASON) + 1])
+		lines.append(tr("• %s — %s %d") % [tr(profile.display_name), tr(GameCalendar.current().get_season_name(birthday_day)), GameCalendar.current().get_day_of_season(birthday_day)])
 	if birthdays.is_empty():
-		lines.append(tr("No birthdays in the next 28 days."))
+		lines.append(tr("No birthdays in the next %d days.") % GameCalendar.current().days_per_season)
 	return "\n".join(lines)
 
 func _world_text() -> String:
@@ -253,7 +253,7 @@ func _assign_hotbar() -> void:
 func _next_birthday_day(profile: NpcProfileData, from_day: int) -> int:
 	if profile == null:
 		return -1
-	for offset in range(GameClock.DAYS_PER_SEASON):
+	for offset in range(GameCalendar.current().days_per_season):
 		var candidate := from_day + offset
 		if profile.is_birthday(candidate):
 			return candidate
@@ -262,7 +262,7 @@ func _next_birthday_day(profile: NpcProfileData, from_day: int) -> int:
 func _next_event_day(event: CalendarEventData, from_day: int) -> int:
 	if event == null:
 		return -1
-	for offset in range(28):
+	for offset in range(GameCalendar.current().days_per_season):
 		var candidate := from_day + offset
 		if event.is_active(candidate, event.start_minute):
 			return candidate

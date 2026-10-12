@@ -870,12 +870,13 @@ func _run() -> void:
 	_check(player_state.money == money_before_collapse - expected_loss, "Collapse money penalty incorrect")
 
 	# Hard day boundary: staying awake until 02:00 forces rest at home with an
-	# energy penalty instead of allowing infinite play through the night.
+	# energy penalty instead of allowing infinite play through the night, also
+	# when the clock runs past 02:00 within one frame.
 	player_state.set_energy(12)
 	player_state.take_damage(20)
 	var late_night_day: int = int(world_clock.day)
-	world_clock.set_time(late_night_day, 1 * 60 + 59)
-	world_clock.advance_minutes(1)
+	world_clock.set_time(late_night_day, 1 * 60 + 57)
+	world_clock.advance_minutes(5)
 	await root.get_node("GameSession").late_night_collapse
 	await process_frame
 	_check(world_clock.day == late_night_day and world_clock.minute_of_day == 6 * 60, "02:00 late-night collapse did not wake at 06:00")
@@ -919,9 +920,10 @@ func _clear_current_mine_floor(mine: Node) -> void:
 ## any are given, or -1.
 func _find_weather_day_after(weather_name: String, start_day: int, seasons := PackedStringArray()) -> int:
 	var weather := root.get_node("WeatherState")
-	var clock := root.get_node("WorldClock")
+	# Loaded rather than named: this script compiles before the autoloads exist.
+	var calendar: Resource = load("res://gamebase/core/time/game_calendar.gd").call("current")
 	for day in range(maxi(start_day, 1), maxi(start_day, 1) + 730):
-		if not seasons.is_empty() and not seasons.has(clock.get_season_name_for_day(day)):
+		if not seasons.is_empty() and not seasons.has(calendar.call("get_season_name", day)):
 			continue
 		if weather.get_weather_name(weather.get_weather_for_day(day)) == weather_name:
 			return day

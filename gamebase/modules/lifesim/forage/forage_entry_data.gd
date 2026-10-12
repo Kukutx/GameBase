@@ -40,6 +40,6 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		if not registry.has_entry(WorldLocationData.KIND, location_id):
 			problems.append("references unknown location '%s'" % location_id)
 	for season: String in seasons:
-		if not GameClock.SEASON_NAMES.has(season):
+		if not GameCalendar.current().has_season(season):
 			problems.append("has unknown season '%s'" % season)
 	return problems

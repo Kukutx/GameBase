@@ -106,7 +106,7 @@ test("a catalog entry translates text of its own layer, and the core's text in t
   assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Nobody says this", which no text of games/probe holds'));
 });
 
-test("a resource's player-facing field needs a translation, such as a control's name or a skill's short name", () => {
+test("a resource's player-facing text needs a translation, such as a control's name, a skill's short name or a calendar's seasons", () => {
   const out = tempFile("gamebase-resource-text-test");
   const log = console.log;
   const lines = [];
@@ -118,6 +118,8 @@ test("a resource's player-facing field needs a translation, such as a control's 
     const skill = gamePath(game, "game", "data", "skills", "probing.tres");
     fs.mkdirSync(path.dirname(skill), { recursive: true });
     fs.writeFileSync(skill, '[gd_resource type="Resource" format=3]\n\n[resource]\nid = &"probing"\nshort_name = "Probe Short"\n', "utf8");
+    const calendar = gamePath(game, "game", "probe_calendar.tres");
+    fs.writeFileSync(calendar, '[gd_resource type="Resource" format=3]\n\n[resource]\nseason_names = PackedStringArray("Spring", "Probe Dry")\n', "utf8");
     console.log = (line) => lines.push(String(line));
     assert.equal(checkLocalization(game), 1);
   } finally {
@@ -126,6 +128,8 @@ test("a resource's player-facing field needs a translation, such as a control's 
   }
   assert.ok(lines.includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing Probe Jump"));
   assert.ok(lines.includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing Probe Short"));
+  assert.ok(lines.includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing Probe Dry"));
+  assert.ok(!lines.some((line) => line.includes("missing Spring")), "the core translates its own seasons");
 });
 
 test("every game's project.godot and .gutconfig.json hold what its manifests give", () => {

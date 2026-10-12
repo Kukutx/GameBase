@@ -155,7 +155,7 @@ func _is_contract_content_valid(state: Dictionary) -> bool:
 
 func _build_candidates(day: int) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	var season := GameClock.get_season_name_for_day(day)
+	var season := GameCalendar.current().get_season_name(day)
 	var unique_forage: Dictionary = {}
 	for entry: ForageEntryData in ForageEntryData.find_all():
 		if entry == null or (not entry.seasons.is_empty() and not entry.seasons.has(season)):
@@ -185,8 +185,8 @@ func _build_candidates(day: int) -> Array[Dictionary]:
 			continue
 		_add_candidate(result, MINE, node.drop_item_id, 3, 130, 2)
 
-	var day_of_season := posmod(maxi(day, 1) - 1, GameClock.DAYS_PER_SEASON) + 1
-	var growth_days_left := GameClock.DAYS_PER_SEASON - day_of_season + 1
+	var day_of_season := GameCalendar.current().get_day_of_season(maxi(day, 1))
+	var growth_days_left := GameCalendar.current().days_per_season - day_of_season + 1
 	for crop: CropData in CropData.find_all():
 		if crop == null or not crop.can_grow_in(season):
 			continue
@@ -214,7 +214,7 @@ func _forage_entry_available_through_deadline(entry: ForageEntryData, start_day:
 		return false
 	for offset in range(maxi(duration_days, 0) + 1):
 		var candidate_day := maxi(start_day, 1) + offset
-		var candidate_season := GameClock.get_season_name_for_day(candidate_day)
+		var candidate_season := GameCalendar.current().get_season_name(candidate_day)
 		if not entry.seasons.is_empty() and not entry.seasons.has(candidate_season):
 			return false
 	return true

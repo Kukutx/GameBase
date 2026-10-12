@@ -61,7 +61,7 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 			"day": WorldClock.day,
 			"season": WorldClock.get_season_name(),
 			"day_of_season": WorldClock.get_day_of_season(),
-			"weekday": posmod(WorldClock.day - 1, 7),
+			"weekday": GameCalendar.current().get_weekday(WorldClock.day),
 			"minute_of_day": WorldClock.minute_of_day,
 			"time_text": WorldClock.get_time_text(),
 			"weather": WeatherState.get_weather_name(),

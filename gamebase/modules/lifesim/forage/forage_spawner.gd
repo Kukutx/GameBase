@@ -21,7 +21,7 @@ func _ready() -> void:
 
 func generate_plan(day: int, target_location_id: StringName = &"") -> Array[Dictionary]:
 	var resolved_location := target_location_id if target_location_id != &"" else location_id
-	var season := GameClock.get_season_name_for_day(day)
+	var season := GameCalendar.current().get_season_name(day)
 	var eligible: Array[ForageEntryData] = []
 	for entry: ForageEntryData in ForageEntryData.find_all():
 		if entry != null and entry.is_available(resolved_location, season):
