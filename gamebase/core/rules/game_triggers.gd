@@ -4,7 +4,8 @@ extends Node
 ## Runs the game's triggers (`TriggerData`): listens to every event a trigger
 ## names and, when one fires, runs the actions of each trigger on it whose
 ## condition holds. The condition and the actions see the event's arguments
-## by name under the context's "event" key.
+## by name under the context's "event" key. What the services announce while a
+## save is restored or a new game resets them is not play and fires nothing.
 
 signal trigger_fired(trigger_id: StringName)
 
@@ -51,6 +52,8 @@ func has_fired(trigger_id: StringName) -> bool:
 
 ## Fires the triggers on `event` with the event's arguments by name.
 func fire(event: StringName, args: Dictionary) -> void:
+	if GameSaveManager.is_restoring() or GameSession.is_starting_new_game():
+		return
 	if _depth >= MAX_DEPTH:
 		push_warning("GameTriggers: '%s' fired %d triggers deep; a trigger sets itself off" % [event, MAX_DEPTH])
 		return
@@ -97,16 +100,19 @@ func _disconnect_all() -> void:
 	_by_event.clear()
 	_arg_names.clear()
 
-# A cleared or loaded world keeps only what current once triggers fired: a
-# save names current content only.
+# A cleared or loaded world keeps only the marks of current once triggers
+# that fired, each exactly true: a save names current content only.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
 	if key != &"":
 		return
-	for world_key: String in WorldState.to_save_data():
-		if world_key.begins_with("trigger:") and world_key.ends_with(":fired"):
-			var trigger := TriggerData.find(StringName(world_key.trim_prefix("trigger:").trim_suffix(":fired")))
-			if trigger == null or not trigger.once:
-				WorldState.erase(StringName(world_key))
+	var world := WorldState.to_save_data()
+	for world_key: String in world:
+		if not (world_key.begins_with("trigger:") and world_key.ends_with(":fired")):
+			continue
+		var trigger := TriggerData.find(StringName(world_key.trim_prefix("trigger:").trim_suffix(":fired")))
+		var mark: Variant = world[world_key]
+		if trigger == null or not trigger.once or not (mark is bool and mark):
+			WorldState.erase(StringName(world_key))
 
 func _fired_key(trigger_id: StringName) -> StringName:
 	return StringName("trigger:%s:fired" % trigger_id)

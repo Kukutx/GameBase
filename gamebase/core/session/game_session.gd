@@ -18,6 +18,7 @@ signal late_night_collapse
 var _handling_defeat := false
 var _handling_late_night := false
 var _new_game_steps: Array[Dictionary] = []
+var _starting_new_game := false
 
 func _ready() -> void:
 	register_new_game_step(&"random", NEW_GAME_ORDER_RANDOM, GameRandom.reset_new_game)
@@ -38,8 +39,15 @@ func register_new_game_step(id: StringName, order: int, step: Callable) -> void:
 	_new_game_steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["order"]) < int(b["order"]))
 
 func initialize_new_game_state() -> void:
+	_starting_new_game = true
 	for step: Dictionary in _new_game_steps:
 		(step["step"] as Callable).call()
+	_starting_new_game = false
+
+## Whether the new-game steps are resetting the services: what they announce
+## meanwhile is the reset, not play (`GameTriggers` ignores it).
+func is_starting_new_game() -> bool:
+	return _starting_new_game
 
 func _reset_clock() -> void:
 	var definition := GameDefinition.current()

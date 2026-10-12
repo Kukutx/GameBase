@@ -78,10 +78,27 @@ func test_a_once_trigger_whose_action_fails_fires_again() -> void:
 func test_a_loaded_world_keeps_only_what_current_once_triggers_fired() -> void:
 	var first := _trigger(&"fixture_first_harvest", ["ADD_FLAG fixture:first"])
 	first.once = true
+	var second := _trigger(&"fixture_second_harvest", ["ADD_FLAG fixture:second"])
+	second.once = true
 	var every := _trigger(&"fixture_every_harvest", ["ADD_FLAG fixture:every"])
-	_start([first, every])
-	WorldState.load_save_data({"trigger:fixture_first_harvest:fired": true, "trigger:fixture_every_harvest:fired": true, "trigger:fixture_removed:fired": true, "fixture:kept": 1})
-	assert_eq(WorldState.to_save_data().keys(), ["trigger:fixture_first_harvest:fired", "fixture:kept"])
+	_start([first, second, every])
+	WorldState.load_save_data({"trigger:fixture_first_harvest:fired": true, "trigger:fixture_second_harvest:fired": 1,
+		"trigger:fixture_every_harvest:fired": true, "trigger:fixture_removed:fired": true, "fixture:kept": 1})
+	assert_eq(WorldState.to_save_data().keys(), ["trigger:fixture_first_harvest:fired", "fixture:kept"], "a mark that is not true is no mark")
+
+func test_what_a_restore_or_a_new_game_announces_fires_nothing() -> void:
+	_start([_trigger(&"fixture_every_harvest", ["ADD_FLAG fixture:every"])])
+	# The save manager and the session set these while they restore a save and
+	# run the new-game steps.
+	GameSaveManager._restoring = true
+	_events.harvested.emit(1, &"fixture_radish")
+	GameSaveManager._restoring = false
+	GameSession._starting_new_game = true
+	_events.harvested.emit(1, &"fixture_radish")
+	GameSession._starting_new_game = false
+	assert_eq(WorldState.get_int(&"fixture:every"), 0)
+	_events.harvested.emit(1, &"fixture_radish")
+	assert_eq(WorldState.get_int(&"fixture:every"), 1, "play fires it again")
 
 func test_a_trigger_that_sets_itself_off_stops() -> void:
 	var loop := _trigger(&"fixture_loop", ["ADD_FLAG fixture:loops"])

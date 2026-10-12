@@ -23,7 +23,8 @@ const KIND := &"trigger"
 ## (`quantity`: once per crop harvested); empty runs them once.
 @export var repeat_per: StringName
 ## Whether the trigger fires only once in a world: once all its actions ran.
-## An action that failed (a full inventory) leaves it to fire again.
+## An action that failed (a full inventory) leaves it to fire again, from its
+## first action, so a once trigger lists an action that can fail first.
 @export var once := false
 
 ## The trigger with `entry_id` in the running game's content, or null.

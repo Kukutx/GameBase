@@ -42,6 +42,8 @@ var backup_path := ""
 static var _sections: Array[SaveSection] = []
 static var _load_steps: Array[Dictionary] = []
 static var _save_blockers: Array[Callable] = []
+# Whether a save is being read into the services; shared like the sections.
+static var _restoring := false
 
 func _ready() -> void:
 	_register_core_sections()
@@ -114,6 +116,11 @@ func select_slot(slot: int) -> void:
 func get_slot_paths(slot: int) -> Dictionary:
 	var stem := "%s/slot_%d" % [save_directory, clampi(slot, 1, SLOT_COUNT)]
 	return {"save": stem + ".json", "temp": stem + ".tmp", "backup": stem + ".bak"}
+
+## Whether a save is being read into the services: what they announce
+## meanwhile is the save coming back, not play (`GameTriggers` ignores it).
+static func is_restoring() -> bool:
+	return _restoring
 
 func has_save(slot: int = -1) -> bool:
 	return not _read_slot(slot).is_empty()
@@ -271,10 +278,12 @@ func apply_snapshot(data: Dictionary) -> bool:
 		return false
 	# Services are restored before the scene is instantiated: scene components
 	# read them in _ready().
+	_restoring = true
 	for section: SaveSection in _sections:
 		section.read.call(data[String(section.id)], data)
 	for step: Dictionary in _load_steps:
 		(step["step"] as Callable).call()
+	_restoring = false
 	if get_tree().change_scene_to_packed(packed) != OK:
 		return false
 	await get_tree().scene_changed
