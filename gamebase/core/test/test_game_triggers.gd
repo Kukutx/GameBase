@@ -125,6 +125,18 @@ func test_a_loaded_world_keeps_only_what_current_once_triggers_left() -> void:
 	WorldState.load_save_data({GameTriggerService.STATE_KEY: true})
 	assert_null(WorldState.get_value(GameTriggerService.STATE_KEY))
 
+func test_a_loaded_world_drops_a_pending_trigger_whose_saved_value_is_no_longer_content() -> void:
+	GameRules.register_action(&"FIXTURE_VISIT", func(_args: PackedStringArray, _context: Dictionary) -> bool: return true,
+		1, 1, [WorldLocationData.KIND])
+	var visit := _trigger(&"fixture_visit", ["ADD_FLAG fixture:before", "FIXTURE_VISIT $crop"])
+	visit.once = true
+	var service := _start([_location(&"fixture_field"), visit])
+	for crop: String in ["fixture_field", "fixture_removed"]:
+		var pending := {"fixture_visit": {"done": 1.0, "event": {"quantity": "1", "crop": crop}}}
+		WorldState.load_save_data({GameTriggerService.STATE_KEY: {"fired": [], "pending": pending}})
+		assert_eq(service.is_pending(&"fixture_visit"), crop == "fixture_field", crop)
+	GameRules._actions.erase(&"FIXTURE_VISIT")
+
 func test_what_a_restore_or_a_new_game_announces_fires_nothing() -> void:
 	_start([_trigger(&"fixture_every_harvest", ["ADD_FLAG fixture:every"])])
 	# The save manager and the session set these while they restore a save and
@@ -139,15 +151,20 @@ func test_what_a_restore_or_a_new_game_announces_fires_nothing() -> void:
 	_events.harvested.emit(1, &"fixture_radish")
 	assert_eq(WorldState.get_int(&"fixture:every"), 1, "play fires it again")
 
-func test_a_condition_on_an_event_value_that_fails_its_check_does_not_hold_negated() -> void:
+func test_an_event_value_that_fails_its_check_fails_the_condition_whatever_surrounds_it() -> void:
 	var away := _trigger(&"fixture_away", ["ADD_FLAG fixture:away"], "!LOCATION $crop")
 	var any_away := _trigger(&"fixture_any_away", ["ADD_FLAG fixture:any_away"], '!ANY "LOCATION $crop" "FALSE"')
-	ContentFixture.use(self, [_location(&"fixture_field"), away, any_away])
+	# A branch or a clause that decides the result before it does not hide it.
+	var any_first := _trigger(&"fixture_any_first", ["ADD_FLAG fixture:any_first"], 'ANY "TRUE" "LOCATION $crop"')
+	var false_first := _trigger(&"fixture_false_first", ["ADD_FLAG fixture:false_first"], '!ANY "FALSE, LOCATION $crop" "FALSE"')
+	ContentFixture.use(self, [_location(&"fixture_field"), away, any_away, any_first, false_first])
 	_service()
+	var counts := func() -> Array:
+		return [&"fixture:away", &"fixture:any_away", &"fixture:any_first", &"fixture:false_first"].map(WorldState.get_int)
 	_events.harvested.emit(1, &"fixture_nowhere")
-	assert_eq([WorldState.get_int(&"fixture:away"), WorldState.get_int(&"fixture:any_away")], [0, 0], "an id the content does not have")
+	assert_eq(counts.call(), [0, 0, 0, 0], "an id the content does not have")
 	_events.harvested.emit(1, &"fixture_field")
-	assert_eq([WorldState.get_int(&"fixture:away"), WorldState.get_int(&"fixture:any_away")], [1, 1], "the player is not in the field")
+	assert_eq(counts.call(), [1, 1, 1, 1], "the player is not in the field")
 
 func test_a_trigger_that_sets_itself_off_stops() -> void:
 	var loop := _trigger(&"fixture_loop", ["ADD_FLAG fixture:loops"])

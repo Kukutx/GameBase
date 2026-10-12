@@ -109,9 +109,11 @@ func _run(trigger: TriggerData, times: int, context: Dictionary) -> bool:
 # at it; when all ran, it fired.
 func _run_once(trigger: TriggerData, event: Dictionary, first: int) -> bool:
 	var done := GameRules.run_actions_from(trigger.actions, first, {"event": event})
-	var completed := done >= GameRules.count_actions(trigger.actions)
-	if done == 0:
+	# Nothing ran this time: the action at `first` failed, or the actions
+	# cannot run as written (-1). The state stays as it was.
+	if done <= first:
 		return false
+	var completed := done >= GameRules.count_actions(trigger.actions)
 	var state := _get_state()
 	var id := String(trigger.id)
 	if completed:
@@ -148,7 +150,9 @@ func _disconnect_all() -> void:
 # A cleared or loaded world keeps only what current once triggers left: the
 # ones that fired, and the pending ones that have not, each past its first
 # action and short of all of them, with a text value for every argument of
-# its event. A save names current content only.
+# its event that the remaining actions take. A save names current content
+# only: a pending trigger whose stored value is an id the content no longer
+# has is dropped.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
 	if key != &"" or WorldState.get_value(STATE_KEY) == null:
 		return
@@ -169,7 +173,8 @@ func _is_once(id: Variant) -> bool:
 
 # Whether `entry` is where `trigger` can resume: a whole count of the actions
 # that ran, at least one and short of all of them, and a text value for each
-# argument its event has. A saved count comes back as a float.
+# argument its event has, which the remaining actions take. A saved count
+# comes back as a float.
 func _is_resumable(trigger: TriggerData, entry: Variant) -> bool:
 	if not (entry is Dictionary):
 		return false
@@ -182,7 +187,7 @@ func _is_resumable(trigger: TriggerData, entry: Variant) -> bool:
 	for name: String in trigger.get_event_args():
 		if not ((event as Dictionary).get(name) is String):
 			return false
-	return true
+	return GameRules.can_run_actions_from(trigger.actions, int(done), {"event": event})
 
 # A part of the triggers' state as the world holds it, or `empty` when it is
 # not of that shape. Read only: `_get_state()` gives a copy to change.

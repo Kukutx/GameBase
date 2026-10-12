@@ -28,6 +28,14 @@ func test_a_skill_level_is_checked_against_that_skill_s_own_levels() -> void:
 	assert_eq(GameRules.validate_query("SKILL_LEVEL fixture_whistling 0"),
 		PackedStringArray(["condition 'SKILL_LEVEL': skill 'fixture_whistling' has no level 0 (1-3)"]))
 
+func test_a_skill_an_event_names_is_checked_against_every_skill() -> void:
+	var never := _xp_trigger(&"fixture_never", "SKILL_LEVEL $skill 11")
+	var fine := _xp_trigger(&"fixture_fine", "SKILL_LEVEL $skill 10")
+	var registry := ContentFixture.use(self, [_skill(&"fixture_digging", "Digging"), _skill(&"fixture_tilling", "Tilling"), never, fine])
+	var problems := "\n".join(GameRules.validate_content(registry))
+	assert_string_contains(problems, "condition 'SKILL_LEVEL': skill 'fixture_digging' has no level 11 (1-10), whatever the event's arguments are")
+	assert_false(problems.contains("fixture_fine"), problems)
+
 func test_describe_lists_what_a_skill_condition_requires() -> void:
 	assert_eq(GameRules.describe("SKILL_LEVEL fixture_digging 3, WORLD_FLAG test:rules_flag, !SKILL_LEVEL fixture_tilling 2"), PackedStringArray(["Digging Lv3"]))
 
@@ -38,3 +46,11 @@ func _skill(id: StringName, display_name: String) -> SkillData:
 	skill.display_name = display_name
 	skill.level_xp = PackedInt32Array([100, 200, 300, 400, 500, 600, 700, 800, 900])
 	return skill
+
+func _xp_trigger(id: StringName, condition: String) -> TriggerData:
+	var trigger := TriggerData.new()
+	trigger.id = id
+	trigger.event = &"Skills.skill_xp_changed"
+	trigger.condition = condition
+	trigger.actions = PackedStringArray(["SET_FLAG fixture:xp"])
+	return trigger

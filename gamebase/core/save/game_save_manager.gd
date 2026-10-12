@@ -42,14 +42,20 @@ var backup_path := ""
 static var _sections: Array[SaveSection] = []
 static var _load_steps: Array[Dictionary] = []
 static var _save_blockers: Array[Callable] = []
-# Whether a save is being read into the services; shared like the sections.
+# Whether a save is being restored; shared like the sections.
 static var _restoring := false
+# Whether this manager is the one restoring a save.
+var _restoring_here := false
 
 func _ready() -> void:
 	_register_core_sections()
 	select_slot(active_slot)
 
 func _exit_tree() -> void:
+	# A manager freed while it restores never resumes to end the restore.
+	if _restoring_here:
+		_restoring = false
+		_restoring_here = false
 	# The registrations hold callables of other autoloads. Release them while
 	# those still exist when the autoload itself leaves, instead of when the
 	# script's static variables are torn down at engine shutdown.
@@ -117,8 +123,10 @@ func get_slot_paths(slot: int) -> Dictionary:
 	var stem := "%s/slot_%d" % [save_directory, clampi(slot, 1, SLOT_COUNT)]
 	return {"save": stem + ".json", "temp": stem + ".tmp", "backup": stem + ".bak"}
 
-## Whether a save is being read into the services: what they announce
-## meanwhile is the save coming back, not play (`GameTriggers` ignores it).
+## Whether a save is being restored: from reading its sections into the
+## services until the player stands where they saved. What the services and
+## the saved location announce meanwhile is the save coming back, not play
+## (`GameTriggers` ignores it).
 static func is_restoring() -> bool:
 	return _restoring
 
@@ -276,14 +284,20 @@ func apply_snapshot(data: Dictionary) -> bool:
 	var packed := ResourceLoader.load(location.scene_path) as PackedScene
 	if packed == null:
 		return false
+	_restoring = true
+	_restoring_here = true
+	var restored: bool = await _restore(data, location, packed)
+	_restoring = false
+	_restoring_here = false
+	return restored
+
+func _restore(data: Dictionary, location: WorldLocationData, packed: PackedScene) -> bool:
 	# Services are restored before the scene is instantiated: scene components
 	# read them in _ready().
-	_restoring = true
 	for section: SaveSection in _sections:
 		section.read.call(data[String(section.id)], data)
 	for step: Dictionary in _load_steps:
 		(step["step"] as Callable).call()
-	_restoring = false
 	if get_tree().change_scene_to_packed(packed) != OK:
 		return false
 	await get_tree().scene_changed

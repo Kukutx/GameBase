@@ -153,6 +153,17 @@ func test_loading_a_backup_makes_it_the_save_again() -> void:
 	assert_eq(PlayerState.money, 111)
 	assert_eq(_money(_read(_manager.save_path)), 111)
 
+func test_a_save_is_restoring_until_the_player_stands_where_they_saved() -> void:
+	await _enter_fixture_location()
+	assert_true(_manager.save_game_silent())
+	var seen := {}
+	var on_scene_changed := func() -> void: seen["scene_changed"] = GameSaveManager.is_restoring()
+	get_tree().scene_changed.connect(on_scene_changed)
+	assert_true(await _manager.load_game())
+	get_tree().scene_changed.disconnect(on_scene_changed)
+	assert_eq(seen, {"scene_changed": true}, "the saved location's scene loads during the restore")
+	assert_false(GameSaveManager.is_restoring())
+
 func test_a_newer_complete_temp_finishes_an_interrupted_save() -> void:
 	await _enter_fixture_location()
 	PlayerState.money = 111

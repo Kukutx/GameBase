@@ -81,7 +81,8 @@ func get_action_keys() -> PackedStringArray:
 ## True when every clause of `query` holds. An empty query is true; a query
 ## that does not parse or names an unknown key is false.
 ## A value an event gave that does not pass its argument's check makes the
-## query false, whatever negates the clause.
+## query false, whatever negates the clause or the other clauses and `ANY`
+## branches hold.
 func check(query: String, context: Dictionary = {}) -> bool:
 	var holds: Variant = _holds(query, context)
 	return holds is bool and holds
@@ -109,39 +110,56 @@ func run_actions(actions: PackedStringArray, context: Dictionary = {}) -> bool:
 func count_actions(actions: PackedStringArray) -> int:
 	var count := 0
 	for action_text: String in actions:
-		count += (GameQuery.parse(action_text)["clauses"] as Array).size()
+		count += (_parse(action_text)["clauses"] as Array).size()
 	return count
 
 ## Runs the actions from the one at `first` (each clause of each text counts,
 ## from 0) in order and stops at the first one that fails. Returns how many,
 ## from the start, have run then: `count_actions()` when every one did. The
 ## actions are looked up and the values an event gives them checked before
-## any runs, so an action list that cannot run as written runs none.
+## any runs: an action list that cannot run as written (a parse error, an
+## unknown action, an event value that fails its check) runs none and returns
+## -1, which no count equals.
 func run_actions_from(actions: PackedStringArray, first: int, context: Dictionary = {}) -> int:
-	var calls: Array[Array] = []
-	var index := 0
-	for action_text: String in actions:
-		var parsed := _parse(action_text)
-		if not String(parsed["error"]).is_empty():
-			push_error("GameRules: %s" % parsed["error"])
-			return first
-		for clause: Dictionary in parsed["clauses"]:
-			if index >= first:
-				var entry: Dictionary = _actions.get(clause["key"], {})
-				if entry.is_empty():
-					push_error("GameRules: unknown action '%s'" % clause["key"])
-					return first
-				var args: Variant = _resolve_clause_args(entry, clause, context)
-				if args == null:
-					return first
-				calls.append([entry["call"], args])
-			index += 1
-	var done := mini(first, index)
+	var calls: Variant = _prepare_actions(actions, first, context)
+	if calls == null:
+		return -1
+	var done := mini(first, count_actions(actions))
 	for action_call: Array in calls:
 		if not bool((action_call[0] as Callable).call(action_call[1], context)):
 			return done
 		done += 1
 	return done
+
+## Whether `run_actions_from()` would run the actions from `first` as written:
+## each parses, is a known action and takes the values the context's event
+## gives it. Runs nothing.
+func can_run_actions_from(actions: PackedStringArray, first: int, context: Dictionary = {}) -> bool:
+	return _prepare_actions(actions, first, context) != null
+
+# The actions from `first` as [callable, resolved args] pairs, or null, with a
+# warning, when they cannot run as written. Validation reports such content
+# at startup; here it only runs none of it.
+func _prepare_actions(actions: PackedStringArray, first: int, context: Dictionary) -> Variant:
+	var calls: Array[Array] = []
+	var index := 0
+	for action_text: String in actions:
+		var parsed := _parse(action_text)
+		if not String(parsed["error"]).is_empty():
+			push_warning("GameRules: %s" % parsed["error"])
+			return null
+		for clause: Dictionary in parsed["clauses"]:
+			if index >= first:
+				var entry: Dictionary = _actions.get(clause["key"], {})
+				if entry.is_empty():
+					push_warning("GameRules: unknown action '%s'" % clause["key"])
+					return null
+				var args: Variant = _resolve_clause_args(entry, clause, context)
+				if args == null:
+					return null
+				calls.append([entry["call"], args])
+			index += 1
+	return calls
 
 ## Problems with `query`: parse errors, unknown keys, argument counts and kinds.
 func validate_query(query: String) -> PackedStringArray:
@@ -266,16 +284,20 @@ func _check_with_any_event_values(args_check: Callable, args: PackedStringArray,
 	return first_problem
 
 # Every value an argument of `kind` can take, when they can be listed: true and
-# false, or the ids of a content kind.
+# false, or the ids of a content kind; empty when they cannot.
 func _arg_values(kind: StringName) -> PackedStringArray:
 	var values := PackedStringArray()
 	if kind == ARG_BOOL:
 		return PackedStringArray(["true", "false"])
-	if kind in [&"", ARG_INT, ARG_NUMBER, ARG_TEXT, ARG_COUNT] or _arg_kinds.has(kind):
+	if kind in [&"", ARG_INT, ARG_NUMBER, ARG_TEXT, ARG_COUNT]:
 		return values
+	# A kind registered with its own check may still name content (a skill):
+	# its values are the entries that pass that check.
 	for entry: Variant in ContentRegistry.active.get_entries(kind):
 		if entry is ContentEntry:
-			values.append(String((entry as ContentEntry).id))
+			var id := String((entry as ContentEntry).id)
+			if _check_value(id, kind).is_empty():
+				values.append(id)
 	return values
 
 func _check_arg(value: String, kind: StringName) -> String:
@@ -300,30 +322,34 @@ func _check_value(value: String, kind: StringName) -> String:
 	return "" if ContentRegistry.active.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
 
 # Whether every clause of `query` holds: true or false, or null when a value
-# an event gave a clause does not pass its check, which no negation turns
-# into a pass.
+# an event gave any clause does not pass its check, which no negation, other
+# clause or `ANY` branch turns into a pass. Every clause is evaluated, so the
+# result does not depend on their order.
 func _holds(query: String, context: Dictionary) -> Variant:
 	var parsed := _parse(query)
 	if not String(parsed["error"]).is_empty():
 		return false
+	var result := true
 	for clause: Dictionary in parsed["clauses"]:
 		var holds: Variant = _evaluate_clause(clause, context)
 		if holds == null:
 			return null
 		if holds == bool(clause["negate"]):
-			return false
-	return true
+			result = false
+	return result
 
 # Whether the clause holds, before its negation; null as `_holds()` says.
 func _evaluate_clause(clause: Dictionary, context: Dictionary) -> Variant:
 	var key: StringName = clause["key"]
 	var args: PackedStringArray = clause["args"]
 	if key == &"ANY":
+		var any := false
 		for sub_query: String in args:
 			var holds: Variant = _holds(sub_query, context)
-			if holds == null or holds:
-				return holds
-		return false
+			if holds == null:
+				return null
+			any = any or holds
+		return any
 	var entry: Dictionary = _conditions.get(key, {})
 	if entry.is_empty():
 		return false

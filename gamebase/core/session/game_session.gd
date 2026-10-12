@@ -10,6 +10,8 @@ const NEW_GAME_ORDER_PLAYER := 400
 const NEW_GAME_ORDER_CLOCK := 1200
 const NEW_GAME_ORDER_FINISH := 10000
 
+## Emitted when a new game is ready to play: its start location is open with
+## the player placed.
 signal new_game_started
 signal continue_started(success: bool)
 signal player_collapsed(money_lost: int)
@@ -39,13 +41,16 @@ func register_new_game_step(id: StringName, order: int, step: Callable) -> void:
 	_new_game_steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["order"]) < int(b["order"]))
 
 func initialize_new_game_state() -> void:
+	var starting := _starting_new_game
 	_starting_new_game = true
 	for step: Dictionary in _new_game_steps:
 		(step["step"] as Callable).call()
-	_starting_new_game = false
+	_starting_new_game = starting
 
-## Whether the new-game steps are resetting the services: what they announce
-## meanwhile is the reset, not play (`GameTriggers` ignores it).
+## Whether a new game is being set up: from the new-game steps resetting the
+## services until the start location is open with the player placed. What the
+## services and the location announce meanwhile is the setup, not play
+## (`GameTriggers` ignores it).
 func is_starting_new_game() -> bool:
 	return _starting_new_game
 
@@ -53,7 +58,10 @@ func _reset_clock() -> void:
 	var definition := GameDefinition.current()
 	WorldClock.set_time(definition.start_day, definition.start_minute_of_day)
 
-
+## Starts a new game in the selected slot: resets the services and opens the
+## start location; `new_game_started` follows once the player stands in it.
+## False when the start location cannot open, which is checked before the
+## slot's save or the session changes.
 func start_new_game() -> bool:
 	var definition := GameDefinition.current()
 	# Validate the starting world before destroying the selected slot. A broken
@@ -64,12 +72,29 @@ func start_new_game() -> bool:
 	if SaveManager.has_save() and not SaveManager.delete_save():
 		GameEvents.toast("Could not replace the selected save slot")
 		return false
+	_starting_new_game = true
 	initialize_new_game_state()
+	WorldTravel.travel_finished.connect(_on_start_location_opened)
+	WorldTravel.travel_failed.connect(_on_start_location_failed)
 	if not WorldTravel.travel_to(definition.start_location_id):
+		_end_new_game_setup()
 		GameEvents.toast("Could not start the new game location")
 		return false
-	new_game_started.emit()
 	return true
+
+func _on_start_location_opened(_scene_path: String, _spawn_id: StringName) -> void:
+	_end_new_game_setup()
+	new_game_started.emit()
+
+func _on_start_location_failed(_scene_path: String, _spawn_id: StringName, _reason: String) -> void:
+	_end_new_game_setup()
+
+func _end_new_game_setup() -> void:
+	_starting_new_game = false
+	if WorldTravel.travel_finished.is_connected(_on_start_location_opened):
+		WorldTravel.travel_finished.disconnect(_on_start_location_opened)
+	if WorldTravel.travel_failed.is_connected(_on_start_location_failed):
+		WorldTravel.travel_failed.disconnect(_on_start_location_failed)
 
 func continue_game() -> bool:
 	if not SaveManager.has_save():
