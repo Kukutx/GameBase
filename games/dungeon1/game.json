@@ -2,6 +2,7 @@
   "id": "dungeon1",
   "modules": [
     "combat",
+    "damage",
     "items",
     "roguelite",
     "skills"

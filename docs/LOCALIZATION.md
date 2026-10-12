@@ -23,7 +23,7 @@ gamebase/modules/<module>/i18n/<module>.<locale>.po each module's text
 games/<id>/game/i18n/ui.<locale>.po                 the game's own text, data and dialogue
 ```
 
-A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own; `node tools/link.js` writes that list from the catalogs under `gamebase/core/i18n/`, each listed module's `i18n/` and the game's `game/i18n/`. Farm1 registers the core, all six module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; Ember Depths the core, `items`, `skills` and `combat` and its own; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
+A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own; `node tools/link.js` writes that list from the catalogs under `gamebase/core/i18n/`, each listed module's `i18n/` and the game's `game/i18n/`. A module with no text of its own (`damage`) has no catalog. Farm1 registers the core, its seven module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; Ember Depths the core, `items`, `skills` and `combat` and its own; Iron Banners the core, `rts` and `tactics` and its own; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
 
 Scene-authored Control text participates in Godot translation automatically. Runtime-created text must use `tr(...)` or `TranslationServer.translate(...)` for translatable labels.
 

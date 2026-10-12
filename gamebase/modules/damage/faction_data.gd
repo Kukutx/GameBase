@@ -9,7 +9,7 @@ extends ContentEntry
 const KIND := &"faction"
 ## The player's side.
 const PLAYER := &"player"
-## The side of the creatures that attack the player (`EnemyData.faction_id`).
+## The side of the creatures that attack the player.
 const MONSTERS := &"monsters"
 
 ## The factions this one never hurts and is never hurt by.

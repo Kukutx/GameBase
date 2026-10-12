@@ -2,6 +2,7 @@
   "id": "farm1",
   "modules": [
     "combat",
+    "damage",
     "items",
     "lifesim",
     "npc_ai",

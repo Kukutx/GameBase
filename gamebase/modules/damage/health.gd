@@ -2,9 +2,8 @@ class_name Health
 extends RefCounted
 
 ## Health that damage takes and healing gives back, between 0 and its maximum:
-## a creature's or any other combatant's. (The player's own is a vital,
-## `CombatSettings.health_vital_id`, which the save keeps.) `depleted` fires
-## once it reaches 0.
+## a creature's, a unit's or any other combatant's. (A player's own health is
+## usually a vital the save keeps.) `depleted` fires once it reaches 0.
 
 signal changed(current: int, maximum: int)
 signal depleted

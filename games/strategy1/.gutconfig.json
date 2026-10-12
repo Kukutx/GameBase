@@ -2,8 +2,7 @@
   "include_subdirs": true,
   "dirs": [
     "res://gamebase/core/test/",
-    "res://gamebase/modules/items/test/",
-    "res://gamebase/modules/combat/test/",
+    "res://gamebase/modules/damage/test/",
     "res://gamebase/modules/rts/test/",
     "res://gamebase/modules/tactics/test/",
     "res://test/unit/"

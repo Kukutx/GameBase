@@ -1,6 +1,6 @@
 # Iron Banners
 
-The third game built on GameBase, of a third genre: strategy. From a camp the player plans a battle on a war table and fights it on a grid in active time, or leads the troops from the muster into a battle in real time on an open field, commanding their banner's units against raiders. It uses the core and the `combat`, `items`, `rts` and `tactics` modules, and keeps the foundation honest for a game whose fights are turns on a grid or orders to troops rather than swings in the world.
+The third game built on GameBase, of a third genre: strategy. From a camp the player plans a battle on a war table and fights it on a grid in active time, or leads the troops from the muster into a battle in real time on an open field, commanding their banner's units against raiders. It uses only the core and the `damage`, `rts` and `tactics` modules (no items), and keeps the foundation honest for a game whose fights are turns on a grid or orders to troops rather than swings in the world.
 
 ## Run
 
