@@ -870,12 +870,13 @@ func _run() -> void:
 	_check(player_state.money == money_before_collapse - expected_loss, "Collapse money penalty incorrect")
 
 	# Hard day boundary: staying awake until 02:00 forces rest at home with an
-	# energy penalty instead of allowing infinite play through the night.
+	# energy penalty instead of allowing infinite play through the night, also
+	# when the clock runs past 02:00 within one frame.
 	player_state.set_energy(12)
 	player_state.take_damage(20)
 	var late_night_day: int = int(world_clock.day)
-	world_clock.set_time(late_night_day, 1 * 60 + 59)
-	world_clock.advance_minutes(1)
+	world_clock.set_time(late_night_day, 1 * 60 + 57)
+	world_clock.advance_minutes(5)
 	await root.get_node("GameSession").late_night_collapse
 	await process_frame
 	_check(world_clock.day == late_night_day and world_clock.minute_of_day == 6 * 60, "02:00 late-night collapse did not wake at 06:00")

@@ -81,6 +81,20 @@ func test_a_wait_ends_where_a_player_who_is_up_collapses() -> void:
 	player.remove_from_group(&"player")
 	assert_eq(ContentFixture.with_definition(definition, wait), GameClock.MINUTES_PER_DAY - collapse_minute, "nobody is up to collapse")
 
+func test_a_wait_for_the_collapse_minute_ends_in_the_collapse() -> void:
+	var clock := _clock(1, 0)
+	var player := Node2D.new()
+	player.add_to_group(&"player")
+	add_child_autofree(player)
+	var definition := _definition(GameCalendar.new())
+	var collapse_minute := definition.calendar.collapse_minute
+	var wait := clock.advance_until.bind("TIME_BETWEEN %d %d" % [collapse_minute, collapse_minute + 60], 3 * 60)
+	assert_eq(ContentFixture.with_definition(definition, wait), -1, "the player collapses before they can act")
+	assert_eq([clock.day, clock.minute_of_day], [1, collapse_minute])
+	player.remove_from_group(&"player")
+	clock.set_time(1, 0)
+	assert_eq(ContentFixture.with_definition(definition, wait), collapse_minute, "nobody is up to collapse")
+
 func test_a_player_wakes_the_same_day_after_midnight_and_the_next_day_before_it() -> void:
 	var calendar := GameCalendar.new()
 	assert_eq(calendar.get_wake_day(5, 22 * 60), 6)

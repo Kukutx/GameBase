@@ -36,7 +36,8 @@ func advance_minutes(amount: int) -> void:
 ## festival. Returns how many minutes passed, or -1 when the condition did not
 ## hold within the limit (the clock then stands `limit` minutes on). While the
 ## player is up, the wait also ends at the calendar's collapse minute, where
-## they collapse, with -1. A condition that is not a valid query moves nothing.
+## they collapse, with -1, even when the condition would hold there. A
+## condition that is not a valid query moves nothing.
 func advance_until(condition: String, limit: int) -> int:
 	var problems := GameRules.validate_query(condition)
 	if not GameRulesService.find_event_arg_uses(PackedStringArray([condition])).is_empty():
@@ -46,10 +47,10 @@ func advance_until(condition: String, limit: int) -> int:
 		return -1
 	var collapse_minute := GameCalendar.current().collapse_minute
 	for passed: int in range(maxi(limit, 0) + 1):
-		if GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day}):
-			return passed
 		if passed > 0 and minute_of_day == collapse_minute and get_tree().get_first_node_in_group(&"player") != null:
 			return -1
+		if GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day}):
+			return passed
 		if passed < limit:
 			_advance_one_minute()
 	return -1

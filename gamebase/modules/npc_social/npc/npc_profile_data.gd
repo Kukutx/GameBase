@@ -14,7 +14,7 @@ const KIND := &"npc"
 @export var context_world_keys: Array[StringName] = []
 
 @export_group("Birthday")
-## A season of the game's calendar.
+## A season of the game's calendar; none ("") for an NPC without a birthday.
 @export var birthday_season: String = ""
 @export_range(1, 28, 1, "or_greater") var birthday_day := 1
 
@@ -46,6 +46,8 @@ static func find_all() -> Array[NpcProfileData]:
 	return result
 
 func is_birthday(target_day: int = -1) -> bool:
+	if birthday_season.is_empty():
+		return false
 	var resolved_day := WorldClock.day if target_day < 1 else target_day
 	return GameCalendar.current().get_season_name(resolved_day) == birthday_season and GameCalendar.current().get_day_of_season(resolved_day) == birthday_day
 
@@ -102,10 +104,11 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		var title: Variant = dialogue_titles_by_hearts[raw_threshold]
 		if (not title is String and not title is StringName) or String(title).is_empty():
 			problems.append("dialogue threshold %d has an invalid title" % threshold)
-	if not GameCalendar.current().has_season(birthday_season):
-		problems.append("has unknown birthday season '%s'" % birthday_season)
-	if birthday_day < 1 or birthday_day > GameCalendar.current().days_per_season:
-		problems.append("has invalid birthday day %d" % birthday_day)
+	if not birthday_season.is_empty():
+		if not GameCalendar.current().has_season(birthday_season):
+			problems.append("has unknown birthday season '%s'" % birthday_season)
+		if birthday_day < 1 or birthday_day > GameCalendar.current().days_per_season:
+			problems.append("has invalid birthday day %d" % birthday_day)
 	for location_id: StringName in [home_location_id, default_location_id]:
 		if location_id != &"" and not registry.has_entry(WorldLocationData.KIND, location_id):
 			problems.append("references unknown location '%s'" % location_id)

@@ -73,6 +73,13 @@ const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\
 // Player-facing fields of data resources.
 const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|role|activity) = "((?:[^"\\]|\\.)*)"$/gm;
 
+// Player-facing lists of text in data resources, such as a calendar's seasons,
+// and the exported defaults of those lists.
+const TEXT_LISTS = ["season_names"];
+const DATA_LIST_RE = new RegExp(`^(?:${TEXT_LISTS.join("|")}) = PackedStringArray\\((.*)\\)$`, "gm");
+const EXPORT_LIST_DEFAULT_RE = new RegExp(`^@export var (?:${TEXT_LISTS.join("|")})\\b[^=\\n]*=\\s*PackedStringArray\\(\\[(.*)\\]\\)`, "gm");
+const STRING_RE = /"((?:[^"\\]|\\.)*)"/g;
+
 const SCENE_PROPERTIES = [
   "text",
   "display_name",
@@ -244,6 +251,9 @@ function collectNonDialogueKeys(layer) {
     for (const match of text.matchAll(EXPORT_DEFAULT_RE)) {
       add(match[1]);
     }
+    for (const match of text.matchAll(EXPORT_LIST_DEFAULT_RE)) {
+      for (const [, raw] of match[1].matchAll(STRING_RE)) add(raw);
+    }
     for (const match of text.matchAll(ASSIGNED_TEXT_RE)) {
       // A layout of already translated parts ("%s\n%s") carries no words of its own.
       if (/\p{L}/u.test(match[1].replace(/%[-+0-9.]*[a-z]|\\[a-z]/g, ""))) {
@@ -257,8 +267,12 @@ function collectNonDialogueKeys(layer) {
     }
   }
   for (const file of walk(layer.root, ".tres")) {
-    for (const match of readText(file).matchAll(DATA_RE)) {
+    const text = readText(file);
+    for (const match of text.matchAll(DATA_RE)) {
       add(match[1]);
+    }
+    for (const match of text.matchAll(DATA_LIST_RE)) {
+      for (const [, raw] of match[1].matchAll(STRING_RE)) add(raw);
     }
   }
   return keys;

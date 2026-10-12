@@ -116,7 +116,13 @@ func _handle_late_night(day: int) -> void:
 	if _handling_late_night or _handling_defeat:
 		return
 	var calendar := GameCalendar.current()
-	if WorldClock.day != day or WorldClock.minute_of_day != calendar.collapse_minute:
+	# The clock may have run a few minutes on in the same frame (short game
+	# minutes, a long frame, an action that passes time); the player still
+	# collapses unless it was moved past the morning (they slept).
+	var collapse_at := _minute_count(day, calendar.collapse_minute)
+	var wake_at := _minute_count(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
+	var now := _minute_count(WorldClock.day, WorldClock.minute_of_day)
+	if now < collapse_at or now >= wake_at:
 		return
 	if get_tree().get_first_node_in_group("player") == null:
 		return
@@ -138,6 +144,10 @@ func _handle_late_night(day: int) -> void:
 	_handling_late_night = false
 	late_night_collapse.emit()
 	GameEvents.toast("You stayed up too late and woke at home with reduced energy" if returned_home else "You stayed up too late and recovered with reduced energy")
+
+# Minutes from the start of day 1 to `minute_of_day` of `day`.
+static func _minute_count(day: int, minute_of_day: int) -> int:
+	return (day - 1) * GameClock.MINUTES_PER_DAY + minute_of_day
 
 func _on_health_changed(current: int, _maximum: int) -> void:
 	if current > 0 or _handling_defeat:
