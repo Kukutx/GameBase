@@ -48,9 +48,20 @@ test("a user:// path held in a name is still a user:// path", () => {
 });
 
 test("player data is never parsed by what can build resources and objects", () => {
-  const source = "var file := ConfigFile.new()\nvar value = str_to_var(text)\nvar more = bytes_to_var_with_objects(bytes)\nvar safe = bytes_to_var(bytes)\n";
+  const source = [
+    "var file := ConfigFile.new()",
+    "var value = str_to_var(text)",
+    "var more = bytes_to_var_with_objects(bytes)",
+    "var stored = save_file.get_var(true)",
+    "var native = JSON.to_native(json.data, true)",
+    "var decoded = Marshalls.base64_to_variant(text, true)",
+    "var safe = bytes_to_var(bytes)",
+    "var plain = save_file.get_var()",
+    "var typed = JSON.to_native(json.data)",
+    "",
+  ].join("\n");
   const problems = checkScript("gamebase/core/a.gd", source);
-  assert.equal(problems.length, 3);
+  assert.deepEqual(problems.map((problem) => problem.match(/a\.gd:(\d+)/)[1]), ["1", "2", "3", "4", "5", "6"]);
   assert.match(problems[0], /a\.gd:1 parses text that can name resources and objects/);
   assert.deepEqual(checkScript("gamebase/core/test/test_a.gd", source), [], "a test may read a fixture");
 });
@@ -67,9 +78,15 @@ test("only the input lock pauses the world", () => {
     "get_tree().set_pause(true)",
     'get_tree().set("paused", true)',
     "get_tree().set_deferred(&\"paused\", true)",
+    "var st := get_tree()",
+    "st.paused = true",
+    "var loop := Engine.get_main_loop() as SceneTree",
+    "loop.paused = false",
+    "var world_clock := get_tree().root.get_node(\"WorldClock\")",
+    "world_clock.paused = true",
   ].join("\n");
   assert.deepEqual(checkScript("gamebase/core/input/input_lock.gd", source), []);
   const problems = checkScript("gamebase/modules/items/shop/shop_menu.gd", source);
-  assert.deepEqual(problems.map((problem) => problem.match(/shop_menu\.gd:(\d+)/)[1]), ["1", "4", "5", "6", "7", "8", "9", "10"]);
+  assert.deepEqual(problems.map((problem) => problem.match(/shop_menu\.gd:(\d+)/)[1]), ["1", "4", "5", "6", "7", "8", "9", "10", "12", "14"]);
   assert.match(problems[0], /sets SceneTree\.paused; take a lock with InputLock/);
 });

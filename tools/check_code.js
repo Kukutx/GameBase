@@ -5,11 +5,12 @@
 //   - nothing the game ships loads a resource from user:// or saves one at
 //     runtime: a resource file can carry a script, so a save, a profile or a
 //     file someone drops into the player's data folder must never run as code.
-//     A path held in a constant or variable counts, wherever the call breaks
-//     its lines. Player data is JSON: ConfigFile, str_to_var() and
-//     bytes_to_var_with_objects() parse Resource("path") and Object(...)
-//     values, which load and build what the text names. Tests, which are not
-//     exported, may write fixture scenes;
+//     A path held in a constant or variable of the same script counts,
+//     wherever the call breaks its lines. Player data is JSON: ConfigFile,
+//     str_to_var() and bytes_to_var_with_objects() parse Resource("path") and
+//     Object(...) values, and get_var(true), JSON.to_native(..., true) and
+//     base64_to_variant(..., true) build objects, so what the text names
+//     loads and runs. Tests, which are not exported, may write fixture scenes;
 //   - only InputLockService sets SceneTree.paused: a pause is a lock with a
 //     reason, so one menu that closes never unpauses what another holds.
 
@@ -28,7 +29,9 @@ const RESOURCE_LOAD = /(?:(?<![\w.])(?:preload|load)|\bResourceLoader\.(?:load|l
 const USER_PATH_NAME = /\b(?:const|var)\s+(\w+)\b[^=\n]*:?=[^\n]*(?:["']user:\/\/|OS\.get_user_data_dir\(\))/g;
 const USER_PATH = /["']user:\/\/|OS\.get_user_data_dir\(\)/;
 const RESOURCE_SAVE = /\bResourceSaver\.save\s*\(/;
-const OBJECT_PARSER = /\b(?:ConfigFile|str_to_var|bytes_to_var_with_objects)\b/;
+const OBJECT_PARSER = /\b(?:ConfigFile|str_to_var|bytes_to_var_with_objects)\b|\.get_var\s*\(\s*true\b|\b(?:to_native|base64_to_variant)\s*\([^)]*,\s*true\b/;
+// A name given a scene tree (var tree := get_tree()).
+const TREE_NAME = /\b(?:const|var)\s+(\w+)\b[^=\n]*:?=\s*(?:\w+\.)*(?:get_tree|get_main_loop)\(\)(?:\s+as\s+SceneTree)?\s*$/gm;
 // SceneTree.paused set on any tree: get_tree(), a variable naming one, the
 // main loop, set_pause() or set("paused", ...). A clock's own `paused` is not.
 const PAUSE_WRITE = [
@@ -70,6 +73,8 @@ function checkScript(file, source) {
     problems.push(`${file} has ${lines} lines, more than ${limit}; split it by responsibility`);
   }
   const code = stripComments(source);
+  const treeNames = [...code.matchAll(TREE_NAME)].map((match) => match[1]);
+  const pauseWrites = treeNames.length > 0 ? [...PAUSE_WRITE, new RegExp(`\\b(?:${treeNames.join("|")})\\.paused\\s*=(?!=)`)] : PAUSE_WRITE;
   if (!isTest) {
     for (const line of userResourceLoads(code)) problems.push(`${file}:${line} loads a resource from user://; read player data as JSON`);
   }
@@ -77,7 +82,7 @@ function checkScript(file, source) {
     const at = `${file}:${index + 1}`;
     if (!isTest && RESOURCE_SAVE.test(line)) problems.push(`${at} saves a resource at runtime; write player data as JSON`);
     if (!isTest && OBJECT_PARSER.test(line)) problems.push(`${at} parses text that can name resources and objects; read player data as JSON`);
-    if (PAUSE_WRITE.some((pattern) => pattern.test(line)) && file !== PAUSE_OWNER) problems.push(`${at} sets SceneTree.paused; take a lock with InputLock.lock(reason, true) instead`);
+    if (pauseWrites.some((pattern) => pattern.test(line)) && file !== PAUSE_OWNER) problems.push(`${at} sets SceneTree.paused; take a lock with InputLock.lock(reason, true) instead`);
   });
   return problems;
 }

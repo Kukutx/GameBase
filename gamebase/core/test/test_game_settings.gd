@@ -54,6 +54,15 @@ func test_key_bindings_round_trip_and_apply_to_input_map() -> void:
 	assert_eq(restored.get_key_binding(&"interact"), KEY_Q)
 	assert_eq(restored.get_key_binding_text(&"interact"), OS.get_keycode_string(KEY_Q))
 
+func test_a_key_that_is_not_a_whole_number_reads_as_the_default() -> void:
+	var file := FileAccess.open(TEST_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify({"settings_version": GameSettingsService.SETTINGS_VERSION, "controls": {"interact": 81.5, "quick_save": 1e19, "quick_load": 81.0}}))
+	file.close()
+	var settings := _settings_with_controls([])
+	assert_eq(settings.get_key_binding(&"interact"), KEY_E, "a fraction is no key")
+	assert_eq(settings.get_key_binding(&"quick_save"), KEY_K, "nor a number past what JSON keeps exactly")
+	assert_eq(settings.get_key_binding(&"quick_load"), KEY_Q, "JSON gives a whole number back as a float")
+
 func test_duplicate_primary_key_swaps_existing_binding() -> void:
 	var settings := _settings_with_controls([])
 	settings.reset_controls()

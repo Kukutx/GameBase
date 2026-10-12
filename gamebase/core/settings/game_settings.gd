@@ -270,8 +270,10 @@ func save_settings() -> void:
 	file.close()
 
 ## Reads the settings from `settings_path`. A missing, unreadable or other
-## version's file changes nothing; a value of the wrong type keeps the current
-## one.
+## version's file changes nothing. In a file that is read, a value of the wrong
+## type keeps the current one, except that a locale the game does not support
+## reads as the source language and a control without a usable key as its
+## default key.
 func load_settings() -> void:
 	if key_bindings.is_empty():
 		_reset_control_values()
@@ -293,7 +295,8 @@ func load_settings() -> void:
 	locale = loaded_locale if loaded_locale is String and get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
 	for action: StringName in get_rebindable_actions():
 		var fallback := int(get_control(action).key)
-		var value := int(_read_number(data, "controls", String(action), fallback))
+		var whole: Variant = SaveValues.whole_number(_read(data, "controls", String(action)))
+		var value := int(whole) if whole != null else fallback
 		key_bindings[String(action)] = value if value > 0 and not _is_fixed_key(value as Key, action) else fallback
 
 # The value under `section` and `key` of the settings file's `data`, or null
