@@ -14,8 +14,7 @@ func _on_interacted(_actor: Node) -> void:
 	_sleeping = true
 	var calendar := GameCalendar.current()
 	WorldClock.set_time(calendar.get_wake_day(WorldClock.day, WorldClock.minute_of_day), calendar.wake_minute)
-	PlayerState.restore_full_energy()
-	PlayerState.restore_full_health()
+	Vitals.refill_after_sleep()
 	SaveManager.save_game()
 	GameEvents.toastf("Slept until %s", [calendar.get_date_text(WorldClock.day)])
 	_sleeping = false

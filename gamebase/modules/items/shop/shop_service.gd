@@ -2,7 +2,7 @@ class_name GameShopService
 extends Node
 
 ## Buying from shops and selling to them: it checks the price (`ShopData`), the
-## player's money (`PlayerState`) and the room in the inventory
+## player's money (`Wallet`) and the room in the inventory
 ## (`InventoryState`), moves the money and the items together, and tells the
 ## player the result with a toast.
 ##
@@ -37,7 +37,7 @@ func _buy_internal(shop: ShopData, item_id: StringName, quantity: int = 1) -> in
 	var unit_price := shop.get_buy_price(item)
 	if unit_price <= 0:
 		return 0
-	var affordable := mini(quantity, PlayerState.money / unit_price)
+	var affordable := mini(quantity, Wallet.money / unit_price)
 	if affordable <= 0:
 		GameEvents.toast("Not enough money")
 		return 0
@@ -46,10 +46,10 @@ func _buy_internal(shop: ShopData, item_id: StringName, quantity: int = 1) -> in
 		GameEvents.toast("Inventory is full")
 		return 0
 	var total := bought * unit_price
-	if not PlayerState.spend_money(total):
+	if not Wallet.spend(total):
 		return 0
 	if not InventoryState.apply_transaction_atomic({}, {String(item.id): bought}):
-		PlayerState.add_money(total)
+		Wallet.add(total)
 		GameEvents.toast("Inventory changed before the purchase completed")
 		return 0
 	purchase_completed.emit(shop.id, item_id, bought, total)
@@ -85,7 +85,7 @@ func _sell_internal(item_id: StringName, quantity: int = 1) -> int:
 	if not InventoryState.remove_item(item_id, available):
 		return 0
 	var total := available * item.sell_price
-	PlayerState.add_money(total)
+	Wallet.add(total)
 	sale_completed.emit(item_id, available, total)
 	GameEvents.toastf("Sold %s x%d for %dg", [item.display_name, available, total])
 	return available

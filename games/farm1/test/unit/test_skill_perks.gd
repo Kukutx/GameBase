@@ -2,7 +2,7 @@ extends GutTest
 
 var _skill_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _buff_snapshot: Dictionary
@@ -11,14 +11,14 @@ var _clock_snapshot: Dictionary
 func before_each() -> void:
 	_skill_snapshot = Skills.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_buff_snapshot = BuffState.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	Skills.reset_new_game()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Vitals.reset_new_game()
 	WorldState.clear()
 	BuffState.clear()
 	WorldClock.set_time(1, 8 * 60)
@@ -26,7 +26,7 @@ func before_each() -> void:
 func after_each() -> void:
 	Skills.load_save_data(_skill_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	BuffState.load_save_data(_buff_snapshot)
@@ -62,32 +62,32 @@ func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 
 	Skills.reset_new_game()
 	InventoryState.add_item_by_id(&"gold_pickaxe", 1)
-	PlayerState.energy = 100
+	Vitals.set_value(&"energy", 100)
 	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var rock1 := scene.instantiate() as MiningNode
 	rock1.data = MiningNodeData.find(&"iridium_rock")
 	rock1.persistent_id = &""
 	add_child_autofree(rock1)
 	assert_true(rock1.use_item(&"gold_pickaxe"))
-	assert_eq(PlayerState.energy, 92)
+	assert_eq(Vitals.get_value(&"energy"), 92)
 
 	Skills.add_xp(&"mining", 700)
-	PlayerState.energy = 100
+	Vitals.set_value(&"energy", 100)
 	var rock5 := scene.instantiate() as MiningNode
 	rock5.data = MiningNodeData.find(&"iridium_rock")
 	rock5.persistent_id = &""
 	add_child_autofree(rock5)
 	assert_true(rock5.use_item(&"gold_pickaxe"))
-	assert_eq(PlayerState.energy, 93)
+	assert_eq(Vitals.get_value(&"energy"), 93)
 
 	Skills.add_xp(&"mining", 2500)
-	PlayerState.energy = 100
+	Vitals.set_value(&"energy", 100)
 	var rock10 := scene.instantiate() as MiningNode
 	rock10.data = MiningNodeData.find(&"iridium_rock")
 	rock10.persistent_id = &""
 	add_child_autofree(rock10)
 	assert_true(rock10.use_item(&"gold_pickaxe"))
-	assert_eq(PlayerState.energy, 94)
+	assert_eq(Vitals.get_value(&"energy"), 94)
 
 func test_combat_and_fishing_perks_change_real_action_values() -> void:
 	var melee := MeleeAttack.new()

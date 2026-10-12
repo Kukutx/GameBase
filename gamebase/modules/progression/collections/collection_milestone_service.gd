@@ -87,7 +87,7 @@ func claim(id: StringName) -> bool:
 		return false
 	var reward_money := DeferredRewardSnapshot.get_money(reward)
 	if reward_money > 0:
-		PlayerState.add_money(reward_money)
+		Wallet.add(reward_money)
 	WorldState.set_value(_claim_key(id), true)
 	milestone_claimed.emit(id)
 	_claiming.erase(claim_key)

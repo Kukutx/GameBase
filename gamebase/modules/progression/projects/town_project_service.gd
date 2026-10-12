@@ -150,7 +150,7 @@ func claim_reward(project_id: StringName) -> bool:
 				Hotbar.ensure_item(item_id)
 	var reward_money := DeferredRewardSnapshot.get_money(reward)
 	if reward_money > 0:
-		PlayerState.add_money(reward_money)
+		Wallet.add(reward_money)
 	state["claimed"] = true
 	state["claimed_day"] = WorldClock.day
 	_set_state(project_id, state)

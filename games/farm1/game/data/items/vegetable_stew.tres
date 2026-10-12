@@ -10,7 +10,9 @@ description = "A filling stew made from fresh farm vegetables."
 max_stack = 12
 kind = 1
 sell_price = 180
-energy_restore = 45
-health_restore = 20
+restores = Dictionary[StringName, int]({
+&"energy": 45,
+&"hp": 20
+})
 food_buff_id = &"hearty_worker"
 tags = PackedStringArray("food", "cooked", "vegetable", "meal")

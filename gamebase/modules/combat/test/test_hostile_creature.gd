@@ -5,7 +5,7 @@ const HOSTILE_CREATURE_SCENE := preload("res://gamebase/modules/combat/combat/ho
 
 var _clock_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _reduced_motion := false
@@ -14,13 +14,16 @@ func before_each() -> void:
 	_reduced_motion = GameSettings.reduced_motion
 	_clock_snapshot = WorldClock.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	ContentFixture.use(self, _fixture_content())
+	var settings := CombatSettings.new()
+	settings.health_vital_id = &"fixture_hp"
+	ContentFixture.use_settings(self, [settings])
 	InventoryState.clear()
 	WorldState.clear()
-	PlayerState.reset_new_game()
+	Vitals.reset_new_game()
 
 func after_each() -> void:
 	# GUT frees the fixture content only after this method: restore the
@@ -28,7 +31,7 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	WorldClock.load_save_data(_clock_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	GameSettings.reduced_motion = _reduced_motion
@@ -79,11 +82,11 @@ func test_a_creature_chases_and_strikes_the_player_s_hurtbox() -> void:
 	slime.global_position = player.global_position + Vector2(10, 0)
 	watch_signals(CombatEvents)
 	for frame in range(10):
-		if PlayerState.health < PlayerState.max_health:
+		if not Vitals.is_full(&"fixture_hp"):
 			break
 		await get_tree().physics_frame
 	assert_eq(slime.get_state(), HostileCreature.STATE_CHASE)
-	assert_eq(PlayerState.health, PlayerState.max_health - slime.data.contact_damage)
+	assert_eq(Vitals.get_value(&"fixture_hp"), 100 - slime.data.contact_damage)
 	assert_signal_emit_count(CombatEvents, "player_hurt", 1)
 	assert_true(target.is_invincible(), "the next strike waits for the player's moment")
 
@@ -170,7 +173,8 @@ func _add_slime(persistent_id: StringName) -> HostileCreature:
 	add_child_autofree(enemy)
 	return enemy
 
-# A slime with 30 health that drops one gel and is worth 20 combat experience.
+# A slime with 30 health that drops one gel and is worth 20 combat
+# experience, and the player's health.
 func _fixture_content() -> Array:
 	var gel := ItemData.new()
 	gel.id = &"fixture_gel"
@@ -183,4 +187,4 @@ func _fixture_content() -> Array:
 	slime.drop_quantity = 1
 	slime.respawn_days = 1
 	slime.combat_xp = 20
-	return [gel, slime]
+	return [gel, slime, ContentFixture.vital(&"fixture_hp")]

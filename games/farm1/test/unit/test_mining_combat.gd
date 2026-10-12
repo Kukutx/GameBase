@@ -1,27 +1,27 @@
 extends GutTest
 
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _skill_snapshot: Dictionary
 
 func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_skill_snapshot = Skills.to_save_data()
 	InventoryState.clear()
 	WorldState.clear()
-	PlayerState.reset_new_game()
+	Vitals.reset_new_game()
 	Skills.reset_new_game()
 	InventoryState.add_item_by_id(&"pickaxe", 1)
 	InventoryState.add_item_by_id(&"rusty_sword", 1)
 
 func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	Skills.load_save_data(_skill_snapshot)

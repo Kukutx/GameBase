@@ -3,16 +3,24 @@ extends GutTest
 ## Real-time hits (`Hurtbox`, `PlayerHurtbox`): which side's damage hurts, the
 ## invincibility after a hit, the knockback, the flash, and the player's.
 
-var _player: Dictionary
+const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+const HP := &"fixture_hp"
+
+var _vitals_snapshot: Dictionary
 var _reduced_motion := false
 
 func before_each() -> void:
-	_player = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_reduced_motion = GameSettings.reduced_motion
-	PlayerState.reset_new_game()
+	ContentFixture.use(self, [ContentFixture.vital(HP)])
+	var settings := CombatSettings.new()
+	settings.health_vital_id = HP
+	ContentFixture.use_settings(self, [settings])
+	Vitals.reset_new_game()
 
 func after_each() -> void:
-	PlayerState.load_save_data(_player)
+	ContentRegistry.active = ContentDB
+	Vitals.load_save_data(_vitals_snapshot)
 	GameSettings.reduced_motion = _reduced_motion
 
 func test_only_damage_of_a_hostile_side_hurts() -> void:
@@ -65,7 +73,7 @@ func test_the_player_s_hurtbox_takes_the_player_s_health() -> void:
 	watch_signals(CombatEvents)
 	assert_false(hurtbox.receive(Damage.new(10, FactionData.PLAYER)), "the player's own side")
 	assert_true(hurtbox.receive(Damage.new(10, FactionData.MONSTERS)))
-	assert_eq(PlayerState.health, PlayerState.max_health - 10)
+	assert_eq(Vitals.get_value(HP), 90)
 	assert_signal_emitted_with_parameters(CombatEvents, "player_hurt", [10])
 	assert_true(hurtbox.is_invincible(), "the player gets a moment after a hit")
 
@@ -87,8 +95,8 @@ func test_a_player_without_health_takes_no_more_hits() -> void:
 	player.add_child(hurtbox)
 	add_child_autofree(player)
 	watch_signals(CombatEvents)
-	# Set quietly: at 0 announced, the session would take the player home.
-	PlayerState.health = 0
+	# Loaded, not drained: no defeat takes the player home.
+	Vitals.load_save_data({String(HP): {"value": 0}})
 	assert_false(hurtbox.receive(Damage.new(10, FactionData.MONSTERS)))
 	assert_false(hurtbox.is_invincible(), "nothing of a hit starts")
 	assert_signal_not_emitted(CombatEvents, "player_hurt")

@@ -100,7 +100,7 @@ func claim_participation(event_id: StringName) -> bool:
 		GameEvents.toast("Inventory is full")
 		return false
 	if event.reward_money > 0:
-		PlayerState.add_money(event.reward_money)
+		Wallet.add(event.reward_money)
 	if event.reward_skill != &"" and event.reward_skill_xp > 0:
 		Skills.add_xp(event.reward_skill, event.reward_skill_xp)
 	WorldState.set_value(_participation_key(event_id, claim_year), true)

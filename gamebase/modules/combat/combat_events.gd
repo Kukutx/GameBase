@@ -15,3 +15,6 @@ signal attack_swung(weapon_item_id: StringName)
 signal enemy_hurt(enemy_id: StringName, amount: int)
 ## The player was hurt for `amount`.
 signal player_hurt(amount: int)
+## The player lost all their health and woke up again; `money_lost` is what
+## the defeat cost (`CombatSettings.defeat_money_loss_percent`).
+signal player_defeated(money_lost: int)

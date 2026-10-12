@@ -10,24 +10,24 @@ func test_the_title_screen_shows_the_slot_summary_by_the_calendar() -> void:
 	var title: Node = autofree((load("res://gamebase/core/ui/title_screen.tscn") as PackedScene).instantiate())
 	for path: String in ["Center/Menu/SaveSlot", "Center/Menu/SlotInfo", "Center/Menu/Actions/DeleteSave", "ConfirmDelete"]:
 		assert_not_null(title.get_node_or_null(path), path)
-	var summary := {"day": 68, "minute_of_day": 600, "money": 4321, "recoverable": true, "recovery_source": "backup"}
+	var summary := {"day": 68, "minute_of_day": 600, "recoverable": true, "recovery_source": "backup"}
 	ContentFixture.use_calendar(self, GameCalendar.new())
-	assert_eq(String(title.call("_format_slot_summary", summary)), "Autumn 12 · 10:00 · 4321g · backup available\nPlayed 0:00")
+	assert_eq(String(title.call("_format_slot_summary", summary)), "Autumn 12 · 10:00 · backup available\nPlayed 0:00")
 	var one_season := GameCalendar.new()
 	one_season.season_names = PackedStringArray(["Run"])
 	ContentFixture.use_calendar(self, one_season)
 	summary["recoverable"] = false
-	assert_eq(String(title.call("_format_slot_summary", summary)), "Day 68 · 10:00 · 4321g\nPlayed 0:00")
+	assert_eq(String(title.call("_format_slot_summary", summary)), "Day 68 · 10:00\nPlayed 0:00")
 
 func test_a_slot_shows_where_the_player_stands_how_long_they_played_and_what_the_game_adds() -> void:
 	var title: Node = autofree((load("res://gamebase/core/ui/title_screen.tscn") as PackedScene).instantiate())
 	ContentFixture.use_calendar(self, GameCalendar.new())
 	var summary := {
-		"day": 3, "minute_of_day": 375, "money": 50, "recoverable": false,
+		"day": 3, "minute_of_day": 375, "recoverable": false,
 		"location_name": "Meadow", "play_seconds": 2 * 3600 + 7 * 60 + 59,
-		"details": PackedStringArray(["Deepest 4", "Run 2"]),
+		"details": PackedStringArray(["50g", "Deepest 4", "Run 2"]),
 	}
-	assert_eq(String(title.call("_format_slot_summary", summary)), "Spring 3 · 06:15 · 50g\nMeadow · Played 2:07\nDeepest 4 · Run 2")
+	assert_eq(String(title.call("_format_slot_summary", summary)), "Spring 3 · 06:15\nMeadow · Played 2:07\n50g · Deepest 4 · Run 2")
 
 func test_a_new_game_that_fails_after_it_started_gives_the_menu_back() -> void:
 	var title := (load("res://gamebase/core/ui/title_screen.tscn") as PackedScene).instantiate()

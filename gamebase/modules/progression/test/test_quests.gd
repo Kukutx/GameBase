@@ -6,6 +6,7 @@ var _quest_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _inventory_max_slots: int
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 
@@ -13,13 +14,15 @@ func before_each() -> void:
 	_quest_snapshot = QuestState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
 	_inventory_max_slots = InventoryState.max_slots
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	ContentFixture.use(self, _content())
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	QuestState.reset_new_game()
 
 func after_each() -> void:
@@ -29,7 +32,8 @@ func after_each() -> void:
 	QuestState.load_save_data(_quest_snapshot)
 	InventoryState.max_slots = _inventory_max_slots
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_load_normalizes_progress_and_drops_unknown_quests_and_statuses() -> void:
@@ -59,10 +63,10 @@ func test_new_game_auto_starts_only_data_declared_entry_quests() -> void:
 			assert_false(QuestState.is_active(quest.id), "Non-auto quest %s started unexpectedly" % quest.id)
 
 func test_talking_collecting_and_harvesting_complete_their_quests_and_start_the_next() -> void:
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	NpcSocialEvents.npc_talked.emit(&"fixture_npc", true)
 	assert_true(QuestState.is_completed(&"fixture_intro"))
-	assert_eq(PlayerState.money, money_before + 50)
+	assert_eq(Wallet.money, money_before + 50)
 	assert_true(QuestState.is_active(&"fixture_gather"))
 	InventoryState.add_item_by_id(&"fixture_berry", 2)
 	assert_false(QuestState.is_completed(&"fixture_gather"))
@@ -87,7 +91,7 @@ func test_item_reward_quest_waits_for_inventory_space_then_completes_atomically(
 	InventoryState.max_slots = 1
 	assert_eq(InventoryState.add_item_by_id(&"fixture_rod", 1), 0)
 	assert_true(QuestState.start_quest(&"fixture_slime_quest"))
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 
 	CombatEvents.enemy_defeated.emit(&"fixture_slime", 20)
 	var blocked_state := QuestState.get_state(&"fixture_slime_quest")
@@ -95,7 +99,7 @@ func test_item_reward_quest_waits_for_inventory_space_then_completes_atomically(
 	assert_eq(blocked_state["progress"], [1])
 	assert_true(blocked_state.get("reward_snapshot", {}) is Dictionary)
 	assert_false((blocked_state.get("reward_snapshot", {}) as Dictionary).is_empty())
-	assert_eq(PlayerState.money, money_before)
+	assert_eq(Wallet.money, money_before)
 	assert_eq(InventoryState.get_quantity(&"fixture_snack"), 0)
 	assert_false(QuestState.is_active(&"fixture_smelt"))
 	assert_true(QuestState.start_quest(&"fixture_errands"))
@@ -106,7 +110,7 @@ func test_item_reward_quest_waits_for_inventory_space_then_completes_atomically(
 	assert_true(InventoryState.remove_item(&"fixture_rod", 1))
 	await get_tree().process_frame
 	assert_true(QuestState.is_completed(&"fixture_slime_quest"))
-	assert_eq(PlayerState.money, money_before + 200)
+	assert_eq(Wallet.money, money_before + 200)
 	assert_eq(InventoryState.get_quantity(&"fixture_snack"), 1)
 	assert_true(QuestState.is_active(&"fixture_smelt"))
 
@@ -119,11 +123,11 @@ func test_loaded_quest_waiting_for_inventory_space_completes_with_its_promised_r
 		},
 	})
 	InventoryState.clear()
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	QuestState.complete_ready_quests()
 	assert_true(QuestState.is_completed(&"fixture_slime_quest"))
 	assert_true(QuestState.is_active(&"fixture_smelt"))
-	assert_eq(PlayerState.money, money_before + 654)
+	assert_eq(Wallet.money, money_before + 654)
 	assert_eq(InventoryState.get_quantity(&"fixture_twig"), 5)
 	assert_eq(InventoryState.get_quantity(&"fixture_snack"), 0)
 

@@ -13,8 +13,8 @@ extends CanvasLayer
 @onready var controls_label: Label = $Controls
 
 func _ready() -> void:
-	PlayerState.health_changed.connect(_on_player_changed)
-	PlayerState.money_changed.connect(_on_player_changed)
+	Vitals.changed.connect(_on_player_changed)
+	Wallet.money_changed.connect(_on_player_changed)
 	Skills.skill_xp_changed.connect(_on_player_changed)
 	Hotbar.changed.connect(_refresh_hotbar)
 	Hotbar.selected_slot_changed.connect(_on_hotbar_selected)
@@ -39,7 +39,10 @@ func _refresh_all() -> void:
 	_refresh_controls()
 
 func _refresh_stats() -> void:
-	stats_label.text = tr("HP %d/%d · %dg · Combat Lv %d") % [PlayerState.health, PlayerState.max_health, PlayerState.money, Skills.get_level(&"combat")]
+	var parts := Vitals.describe_all()
+	parts.append(Wallet.describe())
+	parts.append(tr("Combat Lv %d") % Skills.get_level(&"combat"))
+	stats_label.text = " · ".join(parts)
 
 func _refresh_run() -> void:
 	var location := WorldLocationData.find_current(get_tree())

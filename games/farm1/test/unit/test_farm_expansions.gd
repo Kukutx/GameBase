@@ -6,17 +6,20 @@ extends GutTest
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
-	PlayerState.money = 50000
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
+	Wallet.money = 50000
 	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4, "Coop")
 	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4, "Barn")
 	AnimalState.reset_new_game()
@@ -26,7 +29,8 @@ func after_each() -> void:
 	AnimalState.unregister_housing(&"starter_barn")
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_expansion_catalog_is_registered() -> void:
@@ -40,10 +44,10 @@ func test_coop_expands_from_four_to_eight_to_twelve_after_the_garden_and_worksho
 	_set_completed_projects([&"starter_garden_restoration"])
 	InventoryState.add_item_by_id(&"wood", 30)
 	InventoryState.add_item_by_id(&"stone", 10)
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(FarmExpansionState.is_available(&"big_coop"))
 	assert_true(FarmExpansionState.purchase(&"big_coop"))
-	assert_eq(PlayerState.money, money_before - 2000)
+	assert_eq(Wallet.money, money_before - 2000)
 	assert_eq(InventoryState.get_quantity(&"wood"), 0)
 	assert_eq(InventoryState.get_quantity(&"stone"), 0)
 	assert_eq(AnimalState.get_housing_capacity(&"starter_coop"), 8)

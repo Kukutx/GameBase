@@ -5,7 +5,8 @@ extends Area2D
 ## hotbar (a tool whose action is `TOOL_ACTION`) at every hurtbox in this area
 ## (`Hurtbox`) of a faction hostile to `faction`. It hits for the weapon's
 ## `tool_power` changed by the `attack_damage` stat, pushes what it hits away
-## by `knockback`, costs `energy_cost` changed by the `attack_energy` stat and
+## by `knockback`, costs `cost` of the game's attack vital (`CombatSettings.attack_vital_id`)
+## changed by the `attack_cost` stat and
 ## swings again only after `cooldown_seconds`. A swing draws its arc
 ## (`SwingEffect`), is announced as `CombatEvents.attack_swung`, and a swing
 ## that lands shakes the screen a little (`ScreenShake`). A child of the
@@ -20,8 +21,9 @@ const SHAKE_SECONDS := 0.1
 
 ## The input action that swings the weapon.
 @export var action: StringName = &"attack"
-## Energy a swing costs (0: none).
-@export_range(0, 100, 1) var energy_cost := 2
+## How much of the attack vital (`CombatSettings.attack_vital_id`) a swing
+## costs (0: none).
+@export_range(0, 100, 1) var cost := 2
 ## The faction the swing belongs to.
 @export var faction: StringName = FactionData.PLAYER
 ## Seconds before the next swing.
@@ -69,18 +71,17 @@ func get_attack_damage(weapon: ItemData) -> int:
 		return 0
 	return maxi(roundi(GameStats.apply(&"attack_damage", weapon.tool_power)), 1)
 
-## The energy a swing costs now.
-func get_energy_cost() -> int:
-	if energy_cost <= 0:
+## What a swing costs now, of the attack vital.
+func get_cost() -> int:
+	if cost <= 0:
 		return 0
-	return maxi(int(floor(float(energy_cost) * GameStats.get_multiplier(&"attack_energy"))), 1)
+	return maxi(int(floor(float(cost) * GameStats.get_multiplier(&"attack_cost"))), 1)
 
 func _attack(weapon: ItemData) -> bool:
 	if not InventoryState.has_item(weapon.id, 1):
 		GameEvents.toastf("You do not have %s", [weapon.display_name])
 		return false
-	if not PlayerState.consume_energy(get_energy_cost()):
-		GameEvents.toast("Not enough energy")
+	if not Vitals.try_spend(CombatSettings.current().attack_vital_id, get_cost()):
 		return false
 	_cooldown_left = cooldown_seconds
 	set_physics_process(_cooldown_left > 0.0)

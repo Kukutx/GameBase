@@ -5,18 +5,21 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	ContentFixture.use(self, _fixture_content())
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
-	PlayerState.money = 50000
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
+	Wallet.money = 50000
 	AnimalState.register_housing(&"fixture_coop", &"fixture_farm", &"fixture_poultry", 4, "Coop")
 	AnimalState.register_housing(&"fixture_barn", &"fixture_farm", &"fixture_livestock", 4, "Barn")
 	AnimalState.reset_new_game()
@@ -30,7 +33,8 @@ func after_each() -> void:
 	AnimalState.unregister_housing(&"fixture_barn")
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_animal_ledger_has_a_feed_and_an_expansion_button_per_housing() -> void:
@@ -54,10 +58,10 @@ func test_coop_expands_from_four_to_eight_to_twelve_and_persists() -> void:
 	WorldState.set_value(&"fixture_garden_restored", true)
 	InventoryState.add_item_by_id(&"fixture_timber", 30)
 	InventoryState.add_item_by_id(&"fixture_rock_chunk", 10)
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(FarmExpansionState.is_available(&"fixture_big_coop"))
 	assert_true(FarmExpansionState.purchase(&"fixture_big_coop"))
-	assert_eq(PlayerState.money, money_before - 2000)
+	assert_eq(Wallet.money, money_before - 2000)
 	assert_eq(InventoryState.get_quantity(&"fixture_timber"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_rock_chunk"), 0)
 	assert_eq(AnimalState.get_housing_capacity(&"fixture_coop"), 8)
@@ -90,7 +94,7 @@ func test_expansion_purchase_blocks_item_removed_reentrancy() -> void:
 	WorldState.set_value(&"fixture_garden_restored", true)
 	InventoryState.add_item_by_id(&"fixture_timber", 30)
 	InventoryState.add_item_by_id(&"fixture_rock_chunk", 10)
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	var observed := {"entered": false, "inner_result": true}
 	var reenter := func(_item_id: StringName, _quantity: int) -> void:
 		if bool(observed["entered"]):
@@ -106,13 +110,13 @@ func test_expansion_purchase_blocks_item_removed_reentrancy() -> void:
 	assert_true(FarmExpansionState.is_completed(&"fixture_big_coop"))
 	assert_eq(InventoryState.get_quantity(&"fixture_timber"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_rock_chunk"), 0)
-	assert_eq(PlayerState.money, money_before - 2000)
+	assert_eq(Wallet.money, money_before - 2000)
 
 func test_expansion_material_commit_is_atomic_before_inventory_listeners_run() -> void:
 	WorldState.set_value(&"fixture_garden_restored", true)
 	InventoryState.add_item_by_id(&"fixture_timber", 30)
 	InventoryState.add_item_by_id(&"fixture_rock_chunk", 10)
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	var observed := {"signals": 0, "final_state": true}
 	var listener := func(_item_id: StringName, _quantity: int) -> void:
 		observed["signals"] = int(observed["signals"]) + 1
@@ -125,7 +129,7 @@ func test_expansion_material_commit_is_atomic_before_inventory_listeners_run() -
 	assert_true(bool(observed["final_state"]))
 	assert_eq(InventoryState.get_quantity(&"fixture_timber"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_rock_chunk"), 0)
-	assert_eq(PlayerState.money, money_before - 2000)
+	assert_eq(Wallet.money, money_before - 2000)
 	assert_true(FarmExpansionState.is_completed(&"fixture_big_coop"))
 	assert_eq(AnimalState.get_housing_capacity(&"fixture_coop"), 8)
 
@@ -133,14 +137,14 @@ func test_a_purchase_whose_materials_vanish_gives_the_money_back() -> void:
 	WorldState.set_value(&"fixture_garden_restored", true)
 	InventoryState.add_item_by_id(&"fixture_timber", 30)
 	InventoryState.add_item_by_id(&"fixture_rock_chunk", 10)
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	# Something spends a timber the moment the money is paid.
 	var take_timber := func(_money: int) -> void: InventoryState.remove_item(&"fixture_timber", 1)
-	PlayerState.money_changed.connect(take_timber, CONNECT_ONE_SHOT)
+	Wallet.money_changed.connect(take_timber, CONNECT_ONE_SHOT)
 	assert_false(FarmExpansionState.purchase(&"fixture_big_coop"))
-	if PlayerState.money_changed.is_connected(take_timber):
-		PlayerState.money_changed.disconnect(take_timber)
-	assert_eq(PlayerState.money, money_before)
+	if Wallet.money_changed.is_connected(take_timber):
+		Wallet.money_changed.disconnect(take_timber)
+	assert_eq(Wallet.money, money_before)
 	assert_eq(InventoryState.get_quantity(&"fixture_timber"), 29)
 	assert_eq(InventoryState.get_quantity(&"fixture_rock_chunk"), 10)
 	assert_false(FarmExpansionState.is_completed(&"fixture_big_coop"))

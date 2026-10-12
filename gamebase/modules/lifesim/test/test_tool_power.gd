@@ -5,6 +5,8 @@ extends GutTest
 ## a rock with each hit.
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+## The vital the life-sim work spends here.
+const ENERGY := &"fixture_energy"
 const PLOT_SCENE := preload("res://gamebase/modules/lifesim/farming/farm_plot.tscn")
 const ROCK_SCENE := preload("res://gamebase/modules/lifesim/mining/mining_node.tscn")
 
@@ -12,7 +14,7 @@ var _clock_day: int
 var _clock_minute: int
 var _seed: int
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _world_snapshot: Dictionary
 
 func before_each() -> void:
@@ -20,7 +22,7 @@ func before_each() -> void:
 	_clock_minute = WorldClock.minute_of_day
 	_seed = GameRandom.world_seed
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	# The fixture holds no skills or food buffs, so no perk or buff changes a cost.
 	ContentFixture.use(self, [
@@ -29,7 +31,9 @@ func before_each() -> void:
 		_tool(&"fixture_strong_pickaxe", MiningNode.TOOL_ACTION, 2),
 		_stone(),
 		_stone_chunk(),
+		ContentFixture.vital(ENERGY),
 	])
+	_use_energy()
 	InventoryState.clear()
 	WorldState.clear()
 	WorldClock.set_time(1, 8 * 60)
@@ -41,7 +45,7 @@ func after_each() -> void:
 	# GUT frees the fixture after this; restore against the game's content.
 	ContentRegistry.active = ContentDB
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	GameRandom.set_seed(_seed)
 	WorldClock.set_time(_clock_day, _clock_minute)
@@ -55,12 +59,12 @@ func test_tool_power_divides_the_energy_a_farm_plot_costs() -> void:
 	plot.water_energy_cost = 2
 	add_child_autofree(plot)
 	await get_tree().process_frame
-	PlayerState.energy = 100
+	Vitals.set_value(ENERGY, 100)
 
 	assert_true(plot.use_item(&"fixture_strong_hoe"))
-	assert_eq(PlayerState.energy, 98)
+	assert_eq(Vitals.get_value(ENERGY), 98)
 	assert_true(plot.use_item(&"fixture_strong_can"))
-	assert_eq(PlayerState.energy, 97)
+	assert_eq(Vitals.get_value(ENERGY), 97)
 
 func test_a_pickaxe_as_strong_as_a_rock_is_durable_breaks_it_in_one_hit() -> void:
 	InventoryState.add_item_by_id(&"fixture_strong_pickaxe", 1)
@@ -96,3 +100,9 @@ func _stone_chunk() -> ItemData:
 	chunk.id = &"fixture_stone_chunk"
 	chunk.tags = PackedStringArray(["mined"])
 	return chunk
+
+# Makes `ENERGY` the vital the life-sim work spends.
+func _use_energy() -> void:
+	var settings := LifesimSettings.new()
+	settings.energy_vital_id = ENERGY
+	ContentFixture.use_settings(self, [settings])

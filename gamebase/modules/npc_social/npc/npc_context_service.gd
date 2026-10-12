@@ -71,9 +71,8 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 			"facts": world_facts,
 		},
 		"player": {
-			"energy": PlayerState.energy,
-			"max_energy": PlayerState.max_energy,
-			"money": PlayerState.money,
+			"vitals": _vitals(),
+			"money": Wallet.money,
 			"selected_item_id": String(Hotbar.get_selected_item_id()),
 			"inventory": InventoryState.get_entries(),
 			"skills": Skills.to_save_data(),
@@ -107,3 +106,10 @@ func _get_runtime_npc_state(npc_id: StringName) -> Dictionary:
 		"activity": "",
 		"visible_in_current_location": false,
 	}
+
+# The player's vitals as vital id -> {"value", "maximum"}.
+func _vitals() -> Dictionary:
+	var vitals := {}
+	for vital: VitalData in VitalData.find_all():
+		vitals[String(vital.id)] = {"value": Vitals.get_value(vital.id), "maximum": Vitals.get_maximum(vital.id)}
+	return vitals

@@ -22,7 +22,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `ITEM_TAG` | items | 2 | `ITEM_TAG <item> <tag>` | the item has the tag, as an objective that counts every fish caught asks of the event's item (`ITEM_TAG $item_id fish`). |
 | `LOCATION` | core | 1 or more | `LOCATION <id>...` | the player is in one of the locations. |
 | `MILESTONE_CLAIMED` | progression | 1 | `MILESTONE_CLAIMED <collection_milestone>` | the player claimed the milestone's reward. |
-| `MONEY_AT_LEAST` | core | 1 | `MONEY_AT_LEAST <n>` | the player has at least n money. |
+| `MONEY_AT_LEAST` | items | 1 | `MONEY_AT_LEAST <n>` | the player has at least n money. |
 | `PLAYTHROUGH_AT_LEAST` | core | 1 | `PLAYTHROUGH_AT_LEAST <n>` | this is the nth playthrough or a later one (`Playthrough`; new game plus). |
 | `PROFILE_FLAG` | core | 1 to 2 | `PROFILE_FLAG <key> [true\|false]` | the profile's boolean flag has the value (default true). |
 | `PROFILE_FLAG_AT_LEAST` | core | 2 | `PROFILE_FLAG_AT_LEAST <key> <n>` | the profile's counter is at least n. |
@@ -36,6 +36,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `SKILL_LEVEL` | skills | 2 | `SKILL_LEVEL <skill> <level>` | the skill has reached at least the level. |
 | `TIME_BETWEEN` | core | 2 | `TIME_BETWEEN <from> <to>` | the minute of the day is in [from, to). |
 | `TRUE` | core | 0 | `TRUE` | always holds. |
+| `VITAL_AT_LEAST` | core | 2 | `VITAL_AT_LEAST <vital> <n>` | the player has at least n of the vital. |
 | `WEATHER` | core | 1 or more | `WEATHER <weather>...` | the day's weather is one of them (`WeatherData`). |
 | `WEEKDAY` | core | 1 or more | `WEEKDAY <n>...` | the weekday is one of the numbers; day 1 is weekday 0. |
 | `WORLD_FLAG` | core | 1 to 2 | `WORLD_FLAG <key> [true\|false]` | the boolean world flag has the value (default true). |
@@ -47,11 +48,12 @@ The condition and action keys the core and the modules register with `GameRules`
 | `ADD_FLAG` | core | 1 to 2 | `ADD_FLAG <key> [n]` | adds n (default 1) to the counter stored under the key. |
 | `ADD_FRIENDSHIP` | npc_social | 2 | `ADD_FRIENDSHIP <npc> <points>` | adds the points to the friendship with the NPC, or takes them away when negative; the friendship stays between 0 and full hearts (`RelationshipManager.POINTS_PER_HEART` points a heart). Never fails. |
 | `ADD_ITEM` | items | 1 to 2 | `ADD_ITEM <item> [count]` | adds every item, or none and fails when the inventory cannot take them all, so a failed action never gives a part. |
-| `ADD_MONEY` | core | 1 | `ADD_MONEY <n>` | gives the player n money; an n of 0 or less gives nothing and takes nothing, and the action still succeeds. |
+| `ADD_MONEY` | items | 1 | `ADD_MONEY <n>` | gives the player n money; an n of 0 or less gives nothing and takes nothing, and the action still succeeds. |
 | `ADD_PROFILE_FLAG` | core | 1 to 2 | `ADD_PROFILE_FLAG <key> [n]` | adds n (default 1) to the profile's counter. |
 | `ADD_SKILL_XP` | skills | 2 | `ADD_SKILL_XP <skill> <amount>` | gives the skill that much experience, which can raise its level; an amount of 0 or less gives none, and the action still succeeds. |
 | `CLEAR_FLAG` | core | 1 | `CLEAR_FLAG <key>` | removes the value stored under the key, so a flag reads as false and a counter as 0; never fails. |
 | `REMOVE_ITEM` | items | 1 to 2 | `REMOVE_ITEM <item> [count]` | fails, removing nothing, when there are not enough. |
+| `RESTORE_VITAL` | core | 2 | `RESTORE_VITAL <vital> <n>` | restores n of the vital, up to its maximum; an n of 0 or less restores nothing, and the action still succeeds. |
 | `SET_FLAG` | core | 1 to 2 | `SET_FLAG <key> [value]` | value is true, false or an integer (default true). |
 | `SET_PROFILE_FLAG` | core | 1 to 2 | `SET_PROFILE_FLAG <key> [value]` | value is true, false or an integer (default true). |
 | `START_QUEST` | progression | 1 | `START_QUEST <quest>` | fails when the quest already started. |

@@ -147,12 +147,6 @@ msgstr "收起建筑前背包内容发生了变化"
 msgid "You do not need that right now"
 msgstr "现在不需要使用它"
 
-msgid "+%d energy"
-msgstr "+%d 体力"
-
-msgid "+%d HP"
-msgstr "+%d 生命"
-
 msgid "food"
 msgstr "食物"
 
@@ -164,3 +158,6 @@ msgstr "吃了%s%s"
 
 msgid "Drank %s%s"
 msgstr "喝了%s%s"
+
+msgid "%dg"
+msgstr "%dg"

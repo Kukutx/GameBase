@@ -1,10 +1,12 @@
 extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+## The vital the life-sim work spends here.
+const ENERGY := &"fixture_energy"
 
 var _clock_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _skill_snapshot: Dictionary
@@ -12,11 +14,12 @@ var _skill_snapshot: Dictionary
 func before_each() -> void:
 	_clock_snapshot = WorldClock.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_skill_snapshot = Skills.to_save_data()
-	ContentFixture.use(self, _fixture_content())
+	ContentFixture.use(self, _fixture_content() + [ContentFixture.vital(ENERGY)])
+	_use_energy()
 
 func after_each() -> void:
 	# GUT frees the fixture content only after this method: restore the
@@ -24,7 +27,7 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	WorldClock.load_save_data(_clock_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	Skills.load_save_data(_skill_snapshot)
@@ -65,7 +68,7 @@ func test_fishing_sequence_round_trips() -> void:
 func test_fishing_state_machine_waits_bites_and_reels() -> void:
 	WorldClock.set_time(1, 13 * 60)
 	InventoryState.clear()
-	PlayerState.restore_full_energy()
+	Vitals.refill(ENERGY)
 
 	var service := FishingService.new()
 	add_child_autofree(service)
@@ -83,10 +86,10 @@ func test_fishing_state_machine_waits_bites_and_reels() -> void:
 
 func test_a_cast_ends_with_the_player_s_activities() -> void:
 	WorldClock.set_time(1, 13 * 60)
-	PlayerState.restore_full_energy()
+	Vitals.refill(ENERGY)
 	assert_true(FishingState.start_cast(&"fixture_river", 0))
 	assert_true(InputLock.is_held(&"fishing_cast"))
-	# A collapse, a defeat or a load ends the cast before it saves or travels.
+	# Passing out or a load ends the cast before it saves or travels.
 	GameSession.end_activities()
 	assert_false(FishingState.is_active())
 	assert_false(InputLock.is_held(&"fishing_cast"))
@@ -94,26 +97,26 @@ func test_a_cast_ends_with_the_player_s_activities() -> void:
 func test_fishing_blocks_energy_and_item_signal_reentrancy() -> void:
 	WorldClock.set_time(1, 13 * 60)
 	InventoryState.clear()
-	PlayerState.restore_full_energy()
+	Vitals.refill(ENERGY)
 	var service := FishingService.new()
 	add_child_autofree(service)
 	service.bite_delay_range = Vector2(0.01, 0.01)
 	service.bite_window = 1.0
 
-	var energy_before := PlayerState.energy
+	var energy_before := Vitals.get_value(ENERGY)
 	var start_observed := {"entered": false, "inner_result": true}
-	var energy_listener := func(_current: int, _maximum: int) -> void:
+	var energy_listener := func(_vital_id: StringName, _current: int, _maximum: int) -> void:
 		if bool(start_observed["entered"]):
 			return
 		start_observed["entered"] = true
 		start_observed["inner_result"] = service.start_cast(&"fixture_river", 4)
-	PlayerState.energy_changed.connect(energy_listener)
+	Vitals.changed.connect(energy_listener)
 	assert_true(service.start_cast(&"fixture_river", 4))
-	if PlayerState.energy_changed.is_connected(energy_listener):
-		PlayerState.energy_changed.disconnect(energy_listener)
+	if Vitals.changed.is_connected(energy_listener):
+		Vitals.changed.disconnect(energy_listener)
 	assert_true(bool(start_observed["entered"]))
 	assert_false(bool(start_observed["inner_result"]))
-	assert_eq(PlayerState.energy, energy_before - 4)
+	assert_eq(Vitals.get_value(ENERGY), energy_before - 4)
 
 	service._process(0.06)
 	assert_eq(service.cast_state, FishingService.CastState.BITE)
@@ -171,3 +174,9 @@ func _fish(id: StringName, location_id: StringName, seasons: PackedStringArray, 
 	fish.end_minute = end_minute
 	fish.allowed_weather.assign(allowed_weather)
 	return fish
+
+# Makes `ENERGY` the vital the life-sim work spends.
+func _use_energy() -> void:
+	var settings := LifesimSettings.new()
+	settings.energy_vital_id = ENERGY
+	ContentFixture.use_settings(self, [settings])

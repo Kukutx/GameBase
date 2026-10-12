@@ -20,7 +20,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	close_button.pressed.connect(close)
-	PlayerState.money_changed.connect(_on_money_changed)
+	Wallet.money_changed.connect(_on_money_changed)
 	InventoryState.changed.connect(_on_inventory_changed)
 
 func open(shop: ShopData) -> void:
@@ -40,7 +40,7 @@ func _rebuild() -> void:
 	if _shop == null:
 		return
 	title_label.text = tr(_shop.display_name)
-	money_label.text = tr("Money: %dg") % PlayerState.money
+	money_label.text = tr("Money: %dg") % Wallet.money
 	var ids: Array[String] = []
 	for raw: Variant in _shop.get_stock().keys():
 		ids.append(String(raw))
@@ -127,7 +127,7 @@ func _refresh_sell_list() -> void:
 
 func _on_money_changed(_amount: int) -> void:
 	if visible:
-		money_label.text = tr("Money: %dg") % PlayerState.money
+		money_label.text = tr("Money: %dg") % Wallet.money
 
 func _on_inventory_changed() -> void:
 	if visible:

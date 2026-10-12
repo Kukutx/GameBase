@@ -11,4 +11,6 @@ max_stack = 20
 kind = 8
 buy_price = 20
 sell_price = 6
-health_restore = 35
+restores = Dictionary[StringName, int]({
+&"hp": 35
+})

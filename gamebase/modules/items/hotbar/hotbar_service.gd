@@ -12,10 +12,10 @@ const SLOT_COUNT := 9
 var slots: Array[StringName] = default_slots()
 var selected_slot := 0
 
-## The game's starting hotbar (`GameDefinition.start_hotbar`), padded to
+## The game's starting hotbar (`ItemsSettings.start_hotbar`), padded to
 ## `SLOT_COUNT` slots.
 static func default_slots() -> Array[StringName]:
-	var result: Array[StringName] = GameDefinition.current().start_hotbar.duplicate()
+	var result: Array[StringName] = ItemsSettings.current().start_hotbar.duplicate()
 	result.resize(SLOT_COUNT)
 	return result
 

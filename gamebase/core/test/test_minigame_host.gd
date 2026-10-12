@@ -39,7 +39,7 @@ func test_ending_the_player_s_activities_cancels_the_minigame() -> void:
 		outcome["result"] = await MiniGameHost.run(MINIGAME)
 	runner.call()
 	assert_true(MiniGameHost.is_running())
-	# A collapse, a defeat or a load ends what the player is doing.
+	# Passing out or a load ends what the player is doing.
 	GameSession.end_activities()
 	var result := outcome.get("result") as MiniGameResult
 	assert_not_null(result)

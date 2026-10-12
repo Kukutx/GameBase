@@ -249,7 +249,7 @@ func _complete(quest: QuestData) -> bool:
 		return false
 	var reward_money := DeferredRewardSnapshot.get_money(reward)
 	if reward_money > 0:
-		PlayerState.add_money(reward_money)
+		Wallet.add(reward_money)
 	_listen()
 	quest_completed.emit(quest.id)
 	GameEvents.toastf("Quest complete: %s", [quest.title])

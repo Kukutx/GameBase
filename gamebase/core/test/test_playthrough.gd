@@ -7,14 +7,12 @@ extends GutTest
 const LEGACY_PATH := "user://test_playthrough/legacy.json"
 
 var _definition: GameDefinition
-var _player: Dictionary
 var _world: Dictionary
 var _playthrough: int
 var _legacy_path: String
 
 func before_each() -> void:
 	_definition = GameDefinition.current()
-	_player = PlayerState.to_save_data()
 	_world = WorldState.to_save_data()
 	_playthrough = Playthrough.get_playthrough()
 	_legacy_path = Playthrough.legacy_path
@@ -23,7 +21,6 @@ func before_each() -> void:
 
 func after_each() -> void:
 	GameDefinition._current = _definition
-	PlayerState.load_save_data(_player)
 	WorldState.load_save_data(_world)
 	Playthrough.call("_load_save_data", {"playthrough": _playthrough}, {})
 	Playthrough.legacy_path = _legacy_path
@@ -31,42 +28,40 @@ func after_each() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(LEGACY_PATH.get_base_dir()))
 
 func test_the_next_playthrough_begins_with_what_carries_over() -> void:
-	var money := MoneyInheritance.new()
-	money.percent = 50
-	var world := WorldValueInheritance.new()
-	world.prefixes = PackedStringArray(["legacy:"])
-	_use_rules([money, world])
-	PlayerState.money = 301
+	var legacy := _world_rule(&"world", ["legacy:"])
+	var deeds := _world_rule(&"deeds", ["deed:"])
+	_use_rules([legacy, deeds])
 	WorldState.set_value(&"legacy:gate_open", true)
 	WorldState.set_value(&"legacy:secrets", 3)
 	WorldState.set_value(&"legacy:notes", {"kept": false})
+	WorldState.set_value(&"deed:dragon", "slain")
 	WorldState.set_value(&"farm:plot", true)
 	var carried := Playthrough.capture()
-	assert_eq(carried, {"money": 150, "world": {"legacy:gate_open": true, "legacy:secrets": 3}})
+	assert_eq(carried, {"world": {"legacy:gate_open": true, "legacy:secrets": 3}, "deeds": {"deed:dragon": "slain"}})
 
 	# What the new game's step finds once the services are reset.
-	PlayerState.money = 10
 	WorldState.clear()
 	watch_signals(Playthrough)
 	Playthrough.set("_next", {"playthrough": 2, "carried": carried})
 	Playthrough.call("_begin")
 	assert_eq(Playthrough.get_playthrough(), 2, "known from the new game's first step")
-	assert_eq(PlayerState.money, 10, "nothing carries over before the services are reset")
+	assert_false(WorldState.has_value(&"legacy:gate_open"), "nothing carries over before the services are reset")
 	Playthrough.call("_carry_over")
 	assert_signal_emitted_with_parameters(Playthrough, "playthrough_started", [2])
-	assert_eq(PlayerState.money, 160)
 	assert_true(WorldState.get_bool(&"legacy:gate_open"))
 	assert_eq(WorldState.get_int(&"legacy:secrets"), 3)
+	assert_eq(String(WorldState.get_value(&"deed:dragon", "")), "slain")
 	assert_false(WorldState.has_value(&"farm:plot"))
 	assert_true(GameRules.check("PLAYTHROUGH_AT_LEAST 2"))
 	assert_false(GameRules.check("PLAYTHROUGH_AT_LEAST 3"))
 	assert_eq(Playthrough.call("_to_save_data"), {"playthrough": 2})
 
 	# A new game of its own is the first playthrough again.
+	WorldState.clear()
 	Playthrough.call("_begin")
 	Playthrough.call("_carry_over")
 	assert_eq(Playthrough.get_playthrough(), 1)
-	assert_eq(PlayerState.money, 160)
+	assert_false(WorldState.has_value(&"legacy:gate_open"))
 
 func test_a_new_game_that_cannot_start_carries_nothing_over() -> void:
 	WorldTravel.set("_traveling", true)
@@ -77,13 +72,7 @@ func test_a_new_game_that_cannot_start_carries_nothing_over() -> void:
 	assert_eq(Playthrough.get_playthrough(), _playthrough)
 
 func test_rules_take_only_what_they_understand() -> void:
-	var money := MoneyInheritance.new()
-	var world := WorldValueInheritance.new()
-	world.prefixes = PackedStringArray(["legacy:"])
-	PlayerState.money = 5
-	for bad: Variant in [-40, "lots", [1], null, 2.5]:
-		money.apply(bad)
-	assert_eq(PlayerState.money, 5)
+	var world := _world_rule(&"world", ["legacy:"])
 	world.apply({"legacy:a": 1, "other:b": 2, "legacy:c": {"x": 1}})
 	world.apply("not a dictionary")
 	var keys := WorldState.get_keys("")
@@ -91,14 +80,13 @@ func test_rules_take_only_what_they_understand() -> void:
 	assert_eq(keys[0] if not keys.is_empty() else &"", &"legacy:a")
 
 func test_a_legacy_carries_the_game_over_to_a_sequel() -> void:
-	var money := MoneyInheritance.new()
-	_use_rules([money])
-	PlayerState.money = 77
+	_use_rules([_world_rule(&"world", ["legacy:"])])
+	WorldState.set_value(&"legacy:coins", 77)
 	assert_true(Playthrough.write_legacy())
 	var legacy := PlaythroughService.read_legacy(LEGACY_PATH)
 	assert_eq(int(legacy["version"]), PlaythroughService.LEGACY_VERSION)
 	assert_eq(String(legacy["game"]), String(ProjectSettings.get_setting("application/config/name")))
-	assert_eq(int((legacy["carried"] as Dictionary)["money"]), 77)
+	assert_eq(int(((legacy["carried"] as Dictionary)["world"] as Dictionary)["legacy:coins"]), 77)
 	var file := FileAccess.open(LEGACY_PATH, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"version": PlaythroughService.LEGACY_VERSION + 1, "carried": {}}))
 	file.close()
@@ -109,28 +97,27 @@ func test_a_legacy_carries_the_game_over_to_a_sequel() -> void:
 	assert_eq(PlaythroughService.user_directory_name(' Farm: "One"?<x>|a/b\\c. '), "Farm- -One---x--a-b-c")
 
 func test_a_legacy_a_crash_kept_from_replacing_the_old_one_is_read() -> void:
-	_use_rules([MoneyInheritance.new()])
-	PlayerState.money = 12
+	_use_rules([_world_rule(&"world", ["legacy:"])])
+	WorldState.set_value(&"legacy:coins", 12)
 	assert_true(Playthrough.write_legacy())
 	assert_false(FileAccess.file_exists(LEGACY_PATH + ".tmp"), "the file is replaced whole")
 	DirAccess.rename_absolute(ProjectSettings.globalize_path(LEGACY_PATH), ProjectSettings.globalize_path(LEGACY_PATH + ".tmp"))
-	assert_eq(int((PlaythroughService.read_legacy(LEGACY_PATH)["carried"] as Dictionary)["money"]), 12)
+	var carried := PlaythroughService.read_legacy(LEGACY_PATH)["carried"] as Dictionary
+	assert_eq(int((carried["world"] as Dictionary)["legacy:coins"]), 12)
 
 func test_a_game_s_rules_are_checked() -> void:
-	var empty_world := WorldValueInheritance.new()
-	empty_world.prefixes = PackedStringArray([""])
-	var first := MoneyInheritance.new()
-	var second := MoneyInheritance.new()
-	var keyless := MoneyInheritance.new()
-	keyless.key = &""
+	var first := _world_rule(&"world", ["legacy:"])
+	var second := _world_rule(&"world", ["deed:"])
+	var keyless := _world_rule(&"", ["note:"])
+	var empty_world := _world_rule(&"everything", [""])
 	var rules: Array[InheritanceRule] = [first, null, second, keyless, empty_world]
 	assert_eq(InheritanceRule.find_list_problems(rules, ContentDB), PackedStringArray([
 		"inheritance rule 2 is empty",
-		"inheritance rules 1 and 3 share key 'money'",
+		"inheritance rules 1 and 3 share key 'world'",
 		"inheritance rule 4 has no key",
-		"inheritance rule 'world' has an empty prefix, which would carry the whole world",
+		"inheritance rule 'everything' has an empty prefix, which would carry the whole world",
 	]))
-	var plain: Array[InheritanceRule] = [MoneyInheritance.new()]
+	var plain: Array[InheritanceRule] = [first]
 	assert_eq(InheritanceRule.find_list_problems(plain, ContentDB), PackedStringArray())
 
 func test_a_save_holds_the_playthrough() -> void:
@@ -144,3 +131,10 @@ func _use_rules(rules: Array[InheritanceRule]) -> void:
 	var definition := _definition.duplicate() as GameDefinition
 	definition.inheritance = rules
 	GameDefinition._current = definition
+
+# A rule under `key` that carries the world values of `prefixes`.
+func _world_rule(key: StringName, prefixes: Array) -> WorldValueInheritance:
+	var rule := WorldValueInheritance.new()
+	rule.key = key
+	rule.prefixes = PackedStringArray(prefixes)
+	return rule

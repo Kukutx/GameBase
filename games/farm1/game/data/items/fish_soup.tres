@@ -10,7 +10,9 @@ description = "A light harbor-style soup that sharpens your fishing rhythm."
 max_stack = 12
 kind = 1
 sell_price = 210
-energy_restore = 35
-health_restore = 15
+restores = Dictionary[StringName, int]({
+&"energy": 35,
+&"hp": 15
+})
 food_buff_id = &"angler_focus"
 tags = PackedStringArray("food", "cooked", "fish", "meal")

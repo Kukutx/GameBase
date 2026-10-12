@@ -8,24 +8,28 @@ const WORKSHOP := &"fixture_workshop"
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	ContentFixture.use(self, _content())
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 
 func after_each() -> void:
 	# The game's content is active again before the stores load their items.
 	ContentRegistry.active = ContentDB
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_project_chain_donates_materials_unlocks_the_next_and_rewards_once() -> void:
@@ -40,9 +44,9 @@ func test_project_chain_donates_materials_unlocks_the_next_and_rewards_once() ->
 	assert_true(TownProjects.is_completed(GARDEN))
 	assert_true(GameRules.check("PROJECT_COMPLETED %s" % GARDEN))
 	assert_true(TownProjects.is_available(WORKSHOP))
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(TownProjects.claim_reward(GARDEN))
-	assert_eq(PlayerState.money, money_before + 600)
+	assert_eq(Wallet.money, money_before + 600)
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 6)
 	assert_false(TownProjects.claim_reward(GARDEN))
 	assert_eq(TownProjects.contribute_all_available(GARDEN), 0, "a completed project takes no donations")
@@ -65,7 +69,7 @@ func test_project_reward_claim_blocks_item_added_reentrancy() -> void:
 			"claimed_day": 0,
 		},
 	})
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	var observed := {"entered": false, "inner_result": true}
 	var reenter := func(item_id: StringName, _quantity: int) -> void:
 		if item_id != &"fixture_seeds" or bool(observed["entered"]):
@@ -80,7 +84,7 @@ func test_project_reward_claim_blocks_item_added_reentrancy() -> void:
 	assert_false(bool(observed["inner_result"]))
 	assert_true(TownProjects.is_claimed(GARDEN))
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 6)
-	assert_eq(PlayerState.money, money_before + 600)
+	assert_eq(Wallet.money, money_before + 600)
 
 func test_completed_project_grants_the_reward_promised_at_completion() -> void:
 	WorldState.set_value(TownProjectService.STATE_KEY, {
@@ -93,9 +97,9 @@ func test_completed_project_grants_the_reward_promised_at_completion() -> void:
 			"reward_snapshot": {"items": {"fixture_twig": 3, "removed_item": 2}, "money": 999},
 		},
 	})
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(TownProjects.claim_reward(GARDEN))
-	assert_eq(PlayerState.money, money_before + 999)
+	assert_eq(Wallet.money, money_before + 999)
 	assert_eq(InventoryState.get_quantity(&"fixture_twig"), 3)
 	assert_eq(InventoryState.get_quantity(&"removed_item"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 0)

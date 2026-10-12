@@ -10,5 +10,7 @@ description = "High-quality milk from a very happy cow."
 max_stack = 12
 kind = 1
 sell_price = 155
-energy_restore = 34
+restores = Dictionary[StringName, int]({
+&"energy": 34
+})
 tags = PackedStringArray("food", "animal_product", "premium")

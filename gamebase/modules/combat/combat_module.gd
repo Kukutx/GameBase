@@ -7,6 +7,7 @@ extends GameModule
 func install() -> void:
 	ContentDB.register_kind(EnemyData.KIND, EnemyData)
 	ContentDB.register_kind(FactionData.KIND, FactionData)
+	ContentDB.register_settings(CombatSettings)
 	ItemData.register_tool_action(MeleeAttack.TOOL_ACTION)
-	for stat: StringName in [&"attack_damage", &"attack_energy"]:
+	for stat: StringName in [&"attack_damage", &"attack_cost"]:
 		GameStats.register_stat(stat)

@@ -9,16 +9,16 @@ const FLAG := &"test:rules_flag"
 const COUNTER := &"test:rules_counter"
 
 var _world_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 
 func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	WorldState.load_save_data(_world_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 
 func test_query_syntax_parses_negation_quotes_and_any() -> void:
 	var parsed := GameQuery.parse('WORLD_flag a:b, !SEASON Spring Summer, ANY "DAY_AT_LEAST 3, TRUE" "FALSE"')
@@ -49,38 +49,49 @@ func test_time_conditions_read_the_day_from_the_context() -> void:
 	assert_true(GameRules.check("TIME_BETWEEN 600 720", {"minute_of_day": 600}))
 	assert_false(GameRules.check("TIME_BETWEEN 600 720", {"minute_of_day": 720}))
 
-func test_actions_change_flags_counters_and_money() -> void:
-	var money := PlayerState.money
-	assert_true(GameRules.run_actions(PackedStringArray(["SET_FLAG %s" % FLAG, "ADD_FLAG %s 2" % COUNTER, "ADD_FLAG %s" % COUNTER, "ADD_MONEY 5"])))
+func test_actions_change_flags_and_counters() -> void:
+	assert_true(GameRules.run_actions(PackedStringArray(["SET_FLAG %s" % FLAG, "ADD_FLAG %s 2" % COUNTER, "ADD_FLAG %s" % COUNTER])))
 	assert_true(WorldState.get_bool(FLAG))
 	assert_eq(WorldState.get_int(COUNTER), 3)
 	assert_true(GameRules.check("FLAG_AT_LEAST %s 3" % COUNTER))
-	assert_eq(PlayerState.money, money + 5)
 	assert_true(GameRules.run_actions(PackedStringArray(["CLEAR_FLAG %s" % FLAG])))
 	assert_false(WorldState.get_bool(FLAG))
 
+func test_vital_conditions_and_actions_read_and_restore_a_vital() -> void:
+	var stamina := VitalData.new()
+	stamina.id = &"fixture_stamina"
+	stamina.display_name = "Stamina"
+	stamina.maximum = 40
+	ContentFixture.use(self, [stamina])
+	Vitals.reset_new_game()
+	assert_true(Vitals.spend(stamina.id, 30))
+	assert_true(GameRules.check("VITAL_AT_LEAST fixture_stamina 10"))
+	assert_false(GameRules.check("VITAL_AT_LEAST fixture_stamina 11"))
+	assert_true(GameRules.run_actions(PackedStringArray(["RESTORE_VITAL fixture_stamina 25"])))
+	assert_eq(Vitals.get_value(stamina.id), 35)
+	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["RESTORE_VITAL fixture_mana 5"]))), "fixture_mana")
+
 func test_an_action_list_that_cannot_run_as_written_runs_none() -> void:
-	var money := PlayerState.money
 	# An unterminated quote parses to no clause, as many as an empty list has.
-	assert_eq(GameRules.run_actions_from(PackedStringArray(['ADD_MONEY "5']), 0), -1)
-	assert_false(GameRules.run_actions(PackedStringArray(["ADD_MONEY 5", 'ADD_MONEY "5'])))
-	assert_false(GameRules.can_run_actions_from(PackedStringArray(['ADD_MONEY "5']), 0))
+	assert_eq(GameRules.run_actions_from(PackedStringArray(['ADD_FLAG %s "5' % COUNTER]), 0), -1)
+	assert_false(GameRules.run_actions(PackedStringArray(["ADD_FLAG %s 5" % COUNTER, 'ADD_FLAG %s "5' % COUNTER])))
+	assert_false(GameRules.can_run_actions_from(PackedStringArray(['ADD_FLAG %s "5' % COUNTER]), 0))
 	assert_push_warning_count(3)
-	assert_eq(PlayerState.money, money, "not even the actions before it")
-	assert_true(GameRules.can_run_actions_from(PackedStringArray(["ADD_MONEY 5"]), 0))
-	assert_eq(PlayerState.money, money, "asking runs nothing")
+	assert_eq(WorldState.get_int(COUNTER), 0, "not even the actions before it")
+	assert_true(GameRules.can_run_actions_from(PackedStringArray(["ADD_FLAG %s 5" % COUNTER]), 0))
+	assert_eq(WorldState.get_int(COUNTER), 0, "asking runs nothing")
 
 func test_validation_reports_unknown_keys_argument_counts_kinds_and_negated_actions() -> void:
-	for key: String in ["TRUE", "WORLD_FLAG", "SEASON", "LOCATION", "MONEY_AT_LEAST"]:
+	for key: String in ["TRUE", "WORLD_FLAG", "SEASON", "LOCATION", "VITAL_AT_LEAST"]:
 		assert_true(GameRules.has_condition(StringName(key)), key)
-	for key: String in ["SET_FLAG", "CLEAR_FLAG", "ADD_FLAG", "ADD_MONEY"]:
+	for key: String in ["SET_FLAG", "CLEAR_FLAG", "ADD_FLAG", "RESTORE_VITAL"]:
 		assert_true(GameRules.has_action(StringName(key)), key)
 	assert_eq(GameRules.validate_query("WORLD_FLAG %s, !DAY_AT_LEAST 3" % FLAG), PackedStringArray())
 	var problems := "\n".join(GameRules.validate_query("FLAG_AT_LEAST %s lots, TYPO_KEY, WORLD_FLAG" % COUNTER))
 	assert_string_contains(problems, "'lots' is not an integer")
 	assert_string_contains(problems, "unknown condition 'TYPO_KEY'")
 	assert_string_contains(problems, "takes 1-2 arguments, got 0")
-	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["!ADD_MONEY 3"]))), "cannot be negated")
+	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["!ADD_FLAG %s 3" % COUNTER]))), "cannot be negated")
 	assert_eq(GameRules.validate_actions(PackedStringArray(["SET_FLAG %s false, SET_FLAG %s 3" % [FLAG, COUNTER]])), PackedStringArray())
 	assert_string_contains("\n".join(GameRules.validate_actions(PackedStringArray(["SET_FLAG %s ture" % FLAG]))), "'ture' is not true, false or an integer")
 

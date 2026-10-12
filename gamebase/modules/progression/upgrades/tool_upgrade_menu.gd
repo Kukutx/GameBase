@@ -11,7 +11,7 @@ func _init() -> void:
 func _ready() -> void:
 	close_button.pressed.connect(close)
 	InventoryState.changed.connect(_refresh_if_open)
-	PlayerState.money_changed.connect(_on_money_changed)
+	Wallet.money_changed.connect(_on_money_changed)
 	Skills.skill_xp_changed.connect(_on_skill_changed)
 	UpgradeState.tool_upgraded.connect(_on_tool_upgraded)
 	GameSettings.locale_changed.connect(_on_locale_changed)
@@ -23,7 +23,7 @@ func open() -> void:
 func _rebuild() -> void:
 	for child: Node in items_container.get_children():
 		child.queue_free()
-	money_label.text = tr("Money: %dg") % PlayerState.money
+	money_label.text = tr("Money: %dg") % Wallet.money
 	var first_button: Button
 	for upgrade: ToolUpgradeData in UpgradeState.get_all_upgrades():
 		if upgrade == null:

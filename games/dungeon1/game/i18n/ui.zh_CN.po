@@ -48,8 +48,11 @@ msgstr "喝药水"
 msgid "Next Item"
 msgstr "下一个物品"
 
-msgid "HP %d/%d · %dg · Combat Lv %d"
-msgstr "生命 %d/%d · %dg · 战斗 %d 级"
+msgid "Health"
+msgstr "生命"
+
+msgid "Combat Lv %d"
+msgstr "战斗 %d 级"
 
 msgid "%s · Depth %d"
 msgstr "%s · 第 %d 层"

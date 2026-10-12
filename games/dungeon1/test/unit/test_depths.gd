@@ -13,6 +13,7 @@ var _inventory: Dictionary
 var _hotbar: Dictionary
 var _skills: Dictionary
 var _player: Dictionary
+var _vitals_snapshot: Dictionary
 var _profile_path: String
 var _profile: Dictionary
 
@@ -22,7 +23,8 @@ func before_each() -> void:
 	_inventory = InventoryState.to_save_data()
 	_hotbar = Hotbar.to_save_data()
 	_skills = Skills.to_save_data()
-	_player = PlayerState.to_save_data()
+	_player = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_profile_path = GameProfile.profile_path
 	_profile = GameProfile.to_save_data()
 	GameProfile.profile_path = TEST_PROFILE
@@ -36,7 +38,8 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory)
 	Hotbar.load_save_data(_hotbar)
 	Skills.load_save_data(_skills)
-	PlayerState.load_save_data(_player)
+	Wallet.load_save_data(_player)
+	Vitals.load_save_data(_vitals_snapshot)
 	GameProfile.load_save_data(_profile)
 	GameProfile.profile_path = _profile_path
 	for path: String in [TEST_PROFILE, TEST_PROFILE + ".tmp"]:
@@ -148,15 +151,15 @@ func test_what_the_player_gets_goes_to_the_hotbar() -> void:
 func test_a_potion_is_drunk_only_when_it_heals() -> void:
 	InventoryState.clear()
 	InventoryState.add_item_by_id(&"health_potion", 2)
-	PlayerState.restore_full_health()
+	Vitals.refill(&"hp")
 	var player := DelverPlayer.new()
 	assert_false(player.drink_potion(), "a player at full health needs no potion")
-	PlayerState.take_damage(40)
+	Vitals.drain(&"hp", 40)
 	watch_signals(GameEvents)
 	assert_true(player.drink_potion())
-	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Drank Health Potion (+35 HP)"])
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Drank Health Potion (+35 Health)"])
 	assert_eq(InventoryState.get_quantity(&"health_potion"), 1)
-	assert_eq(PlayerState.health, PlayerState.max_health - 5)
+	assert_eq(Vitals.get_value(&"hp"), Vitals.get_maximum(&"hp") - 5)
 	InventoryState.clear()
 	assert_false(player.drink_potion(), "no potion, no drink")
 	player.free()

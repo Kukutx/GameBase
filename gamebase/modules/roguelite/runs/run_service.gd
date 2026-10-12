@@ -3,9 +3,9 @@ extends Node
 
 ## Runs: a stretch of play that starts, say at a dungeon's entrance, and ends
 ## with an outcome, the player back at camp (`OUTCOME_RETURNED`), defeated
-## (`OUTCOME_DEFEATED`) or taken out of play by a late-night collapse, a load, a
-## new game or the title (`OUTCOME_ABANDONED`; the collapse then saves what the
-## run brought, the others do not). It counts the runs a world started and keeps values
+## (`OUTCOME_DEFEATED`) or taken out of play by passing out for another cause
+## (lifesim's late night), a load, a new game or the title (`OUTCOME_ABANDONED`;
+## passing out then saves what the run brought, the others do not). It counts the runs a world started and keeps values
 ## that last one run (`set_value()`), cleared when a run starts and when it
 ## ends, and gives each run its own random streams (`stream()`).
 ##
@@ -34,7 +34,7 @@ var blocks_saves := true
 var save_block_reason := ""
 
 func _ready() -> void:
-	PlayerState.health_changed.connect(_on_health_changed)
+	GameSession.passing_out.connect(_on_passing_out)
 
 ## How many runs this world started.
 func get_run() -> int:
@@ -94,8 +94,10 @@ func abandon() -> void:
 
 # The player lost all their health: the run ends in defeat before the session
 # takes them home.
-func _on_health_changed(current: int, _maximum: int) -> void:
-	if current <= 0:
+# A defeat ends the run before passing out ends the player's activities, which
+# would abandon it.
+func _on_passing_out(cause: StringName) -> void:
+	if cause == GameSession.CAUSE_DEFEAT:
 		end_run(OUTCOME_DEFEATED)
 
 func _clear_values() -> void:

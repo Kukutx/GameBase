@@ -10,5 +10,7 @@ description = "A rich egg produced by a very happy chicken."
 max_stack = 24
 kind = 1
 sell_price = 75
-energy_restore = 18
+restores = Dictionary[StringName, int]({
+&"energy": 18
+})
 tags = PackedStringArray("food", "animal_product", "premium")

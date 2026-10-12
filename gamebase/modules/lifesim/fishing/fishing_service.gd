@@ -6,7 +6,7 @@ extends Node
 ## the game's reel minigame (`reel_minigame_id`). The fish that bites is rolled
 ## from the fish (`FishData`) available at that location, day, time and weather.
 ##
-## Casting costs energy (`PlayerState`) and holds the player's controls
+## Casting costs energy (`LifesimSettings.energy_vital_id`) and holds the player's controls
 ## (`InputLock`) until the cast ends; a bite that is not reeled in, or a fish
 ## that does not fit in the inventory, gets away. The wait and the window follow
 ## the `fishing_wait` and `fishing_window` stats (`GameStats`). Rolls come from
@@ -126,12 +126,11 @@ func _start_cast_internal(location_id: StringName, energy_cost: int) -> bool:
 	if get_available_fish(location_id).is_empty():
 		GameEvents.toast("Nothing is biting right now")
 		return false
-	if not PlayerState.consume_energy(energy_cost):
-		GameEvents.toast("Not enough energy to fish")
+	if not LifesimSettings.spend_energy(energy_cost):
 		return false
 	var fish := roll_catch(location_id)
 	if fish == null:
-		PlayerState.restore_energy(energy_cost)
+		LifesimSettings.refund_energy(energy_cost)
 		return false
 	_pending_fish = fish
 	_active_location_id = location_id
@@ -182,16 +181,15 @@ func _try_fish_internal(location_id: StringName, energy_cost: int) -> bool:
 	if get_available_fish(location_id).is_empty():
 		GameEvents.toast("Nothing is biting right now")
 		return false
-	if not PlayerState.consume_energy(energy_cost):
-		GameEvents.toast("Not enough energy to fish")
+	if not LifesimSettings.spend_energy(energy_cost):
 		return false
 	var fish := roll_catch(location_id)
 	if fish == null:
-		PlayerState.restore_energy(energy_cost)
+		LifesimSettings.refund_energy(energy_cost)
 		return false
 	var caught := _award_fish(fish)
 	if not caught:
-		PlayerState.restore_energy(energy_cost)
+		LifesimSettings.refund_energy(energy_cost)
 	return caught
 
 func is_active() -> bool:

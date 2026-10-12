@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="VitalData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/player/vital_data.gd" id="1_vital"]
+
+[resource]
+script = ExtResource("1_vital")
+id = &"energy"
+display_name = "Energy"

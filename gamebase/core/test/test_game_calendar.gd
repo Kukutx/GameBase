@@ -81,32 +81,29 @@ func test_a_wait_with_a_condition_that_is_no_query_moves_nothing() -> void:
 	assert_eq(clock.advance_until("EVENT_ARG crop turnip", 7 * GameClock.MINUTES_PER_DAY), -1)
 	assert_eq([clock.day, clock.minute_of_day], [1, 10 * 60])
 
-func test_a_wait_ends_where_a_player_who_is_up_collapses() -> void:
+func test_a_wait_ends_at_a_minute_a_stop_holds_for() -> void:
 	var clock := _clock(1, 18 * 60)
-	var player := Node2D.new()
-	player.add_to_group(&"player")
-	add_child_autofree(player)
+	var late := 2 * 60
+	var stop := func(_day: int, minute_of_day: int) -> bool: return minute_of_day == late
+	clock.register_wait_stop(stop)
+	clock.register_wait_stop(stop)
 	var definition := _definition(GameCalendar.new())
-	var collapse_minute := definition.calendar.collapse_minute
 	var wait := clock.advance_until.bind("DAY_OF_SEASON 3", 3 * GameClock.MINUTES_PER_DAY)
 	assert_eq(ContentFixture.with_definition(definition, wait), -1)
-	assert_eq([clock.day, clock.minute_of_day], [2, collapse_minute], "the collapse ends the wait")
-	player.remove_from_group(&"player")
-	assert_eq(ContentFixture.with_definition(definition, wait), GameClock.MINUTES_PER_DAY - collapse_minute, "nobody is up to collapse")
+	assert_eq([clock.day, clock.minute_of_day], [2, late], "the stop ends the wait")
+	assert_eq(ContentFixture.with_definition(definition, wait), GameClock.MINUTES_PER_DAY - late, "a wait that starts there runs on")
+	clock.unregister_wait_stop(stop)
+	clock.set_time(1, 18 * 60)
+	assert_eq(ContentFixture.with_definition(definition, wait), 30 * 60, "without the stop")
 
-func test_a_wait_for_the_collapse_minute_ends_in_the_collapse() -> void:
+func test_a_stop_ends_a_wait_even_where_its_condition_holds() -> void:
 	var clock := _clock(1, 0)
-	var player := Node2D.new()
-	player.add_to_group(&"player")
-	add_child_autofree(player)
+	var late := 2 * 60
+	clock.register_wait_stop(func(_day: int, minute_of_day: int) -> bool: return minute_of_day == late)
 	var definition := _definition(GameCalendar.new())
-	var collapse_minute := definition.calendar.collapse_minute
-	var wait := clock.advance_until.bind("TIME_BETWEEN %d %d" % [collapse_minute, collapse_minute + 60], 3 * 60)
-	assert_eq(ContentFixture.with_definition(definition, wait), -1, "the player collapses before they can act")
-	assert_eq([clock.day, clock.minute_of_day], [1, collapse_minute])
-	player.remove_from_group(&"player")
-	clock.set_time(1, 0)
-	assert_eq(ContentFixture.with_definition(definition, wait), collapse_minute, "nobody is up to collapse")
+	var wait := clock.advance_until.bind("TIME_BETWEEN %d %d" % [late, late + 60], 3 * 60)
+	assert_eq(ContentFixture.with_definition(definition, wait), -1, "what stops there comes first")
+	assert_eq([clock.day, clock.minute_of_day], [1, late])
 
 func test_a_player_wakes_the_same_day_after_midnight_and_the_next_day_before_it() -> void:
 	var calendar := GameCalendar.new()
@@ -145,14 +142,12 @@ func test_a_calendar_whose_minutes_last_no_time_stops_the_clock() -> void:
 func test_calendar_problems_are_named() -> void:
 	var calendar := _calendar(PackedStringArray(["Dry", "Dry", ""]), 0, 5)
 	calendar.real_seconds_per_game_minute = -1.0
-	calendar.collapse_minute = calendar.wake_minute
 	calendar.night_ends_at = calendar.night_starts_at
 	var problems := "\n".join(calendar.find_problems())
 	assert_string_contains(problems, "calendar lists season 'Dry' twice")
 	assert_string_contains(problems, "calendar has a season without a name")
 	assert_string_contains(problems, "calendar seasons and weeks need at least one day")
 	assert_string_contains(problems, "calendar game minutes cannot last a negative time")
-	assert_string_contains(problems, "calendar collapses the player at the minute they wake")
 	assert_string_contains(problems, "calendar night starts and ends at the same minute")
 	assert_eq(_calendar(PackedStringArray(), 10, 5).find_problems(), PackedStringArray(["calendar has no seasons"]))
 

@@ -4,26 +4,30 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _clock_snapshot: Dictionary
 var _random_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	_random_snapshot = GameRandom.to_save_data()
 	ContentFixture.use(self, _content())
 	WorldState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	WorldClock.set_time(1, 8 * 60)
 
 func after_each() -> void:
 	# The game's content is active again before the stores load their state.
 	ContentRegistry.active = ContentDB
 	WorldState.load_save_data(_world_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	GameRandom.load_save_data(_random_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
@@ -155,9 +159,9 @@ func test_removed_contract_target_is_withdrawn_but_completed_reward_is_preserved
 	WorldState.set_value(DailyContractService.STATE_KEY, invalid)
 	var completed := DailyContractState.get_contract()
 	assert_eq(String(completed.get("target_item_id", "")), "removed_contract_item")
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_eq(DailyContractState.claim(), 222)
-	assert_eq(PlayerState.money, money_before + 222)
+	assert_eq(Wallet.money, money_before + 222)
 
 func test_contract_state_sanitizes_malformed_nested_values_without_crashing() -> void:
 	WorldState.set_value(DailyContractService.STATE_KEY, {
@@ -224,10 +228,10 @@ func test_accepted_contract_progresses_from_matching_game_event_and_claims_once(
 	contract = DailyContractState.get_contract()
 	assert_true(bool(contract["completed"]))
 	assert_eq(int(contract["progress"]), required)
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	var reward := DailyContractState.claim()
 	assert_eq(reward, int(contract["reward_money"]))
-	assert_eq(PlayerState.money, money_before + reward)
+	assert_eq(Wallet.money, money_before + reward)
 	assert_eq(DailyContractState.claim(), 0)
 
 func test_contract_claim_commits_before_money_changed_reentrancy() -> void:
@@ -237,19 +241,19 @@ func test_contract_claim_commits_before_money_changed_reentrancy() -> void:
 	state["claimed"] = false
 	state["reward_money"] = 333
 	WorldState.set_value(DailyContractService.STATE_KEY, state)
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	var observed := {"entered": false, "inner_reward": -1}
 	var reenter := func(_money: int) -> void:
 		if bool(observed["entered"]):
 			return
 		observed["entered"] = true
 		observed["inner_reward"] = DailyContractState.claim()
-	PlayerState.money_changed.connect(reenter)
+	Wallet.money_changed.connect(reenter)
 	assert_eq(DailyContractState.claim(), 333)
-	if PlayerState.money_changed.is_connected(reenter):
-		PlayerState.money_changed.disconnect(reenter)
+	if Wallet.money_changed.is_connected(reenter):
+		Wallet.money_changed.disconnect(reenter)
 	assert_eq(int(observed["inner_reward"]), 0)
-	assert_eq(PlayerState.money, money_before + 333)
+	assert_eq(Wallet.money, money_before + 333)
 	assert_true(bool(DailyContractState.get_contract().get("claimed", false)))
 
 func test_unaccepted_offer_refreshes_next_day() -> void:

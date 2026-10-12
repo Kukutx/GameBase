@@ -129,7 +129,7 @@ func _stop() -> void:
 # Strikes the player's hurtbox; the cooldown starts only with a strike that
 # hurt (the player may still be invincible from the last).
 func _strike(player: Node2D, offset: Vector2) -> void:
-	if _attack_time_left > 0.0 or PlayerState.health <= 0:
+	if _attack_time_left > 0.0 or not PlayerHurtbox.is_standing():
 		return
 	var target := Hurtbox.of(player)
 	var push := offset.normalized() * data.knockback

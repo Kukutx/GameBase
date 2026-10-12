@@ -6,11 +6,13 @@ const UPGRADE := &"fixture_pick_upgrade"
 
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	var upgrade := ToolUpgradeData.new()
 	upgrade.id = UPGRADE
@@ -24,16 +26,18 @@ func before_each() -> void:
 	bar.display_name = "Bar"
 	ContentFixture.use(self, [upgrade, _tool(&"fixture_pick", 1), _tool(&"fixture_better_pick", 2), bar])
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	InventoryState.add_item_by_id(&"fixture_pick", 1)
 	InventoryState.add_item_by_id(&"fixture_bar", 2)
-	PlayerState.money = 1000
+	Wallet.money = 1000
 
 func after_each() -> void:
 	# The game's content is active again before the stores load their items.
 	ContentRegistry.active = ContentDB
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_upgrade_blocks_money_callback_reentrancy() -> void:
@@ -43,13 +47,13 @@ func test_upgrade_blocks_money_callback_reentrancy() -> void:
 			return
 		observed["entered"] = true
 		observed["inner_result"] = UpgradeState.upgrade(UPGRADE)
-	PlayerState.money_changed.connect(reenter)
+	Wallet.money_changed.connect(reenter)
 	assert_true(UpgradeState.upgrade(UPGRADE))
-	if PlayerState.money_changed.is_connected(reenter):
-		PlayerState.money_changed.disconnect(reenter)
+	if Wallet.money_changed.is_connected(reenter):
+		Wallet.money_changed.disconnect(reenter)
 	assert_true(bool(observed["entered"]))
 	assert_false(bool(observed["inner_result"]))
-	assert_eq(PlayerState.money, 700)
+	assert_eq(Wallet.money, 700)
 	assert_eq(InventoryState.get_quantity(&"fixture_pick"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_bar"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_better_pick"), 1)
@@ -70,10 +74,10 @@ func test_upgrade_inventory_commit_is_atomic_after_money_side_effects() -> void:
 	InventoryState.item_added.connect(on_added)
 	InventoryState.item_removed.connect(on_removed)
 	UpgradeState.tool_upgraded.connect(on_upgraded)
-	PlayerState.money_changed.connect(sabotage)
+	Wallet.money_changed.connect(sabotage)
 
 	assert_false(UpgradeState.upgrade(UPGRADE))
-	assert_eq(PlayerState.money, 1000)
+	assert_eq(Wallet.money, 1000)
 	assert_eq(InventoryState.get_quantity(&"fixture_pick"), 1)
 	assert_eq(InventoryState.get_quantity(&"fixture_better_pick"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_bar"), 0)
@@ -83,13 +87,13 @@ func test_upgrade_inventory_commit_is_atomic_after_money_side_effects() -> void:
 	assert_eq(int(observed["added"]), 0)
 	assert_eq(int(observed["upgraded"]), 0)
 
-	if PlayerState.money_changed.is_connected(sabotage):
-		PlayerState.money_changed.disconnect(sabotage)
+	if Wallet.money_changed.is_connected(sabotage):
+		Wallet.money_changed.disconnect(sabotage)
 	InventoryState.add_item_by_id(&"fixture_bar", 2)
 	observed["added"] = 0
 	observed["removed"] = 0
 	assert_true(UpgradeState.upgrade(UPGRADE))
-	assert_eq(PlayerState.money, 700)
+	assert_eq(Wallet.money, 700)
 	assert_eq(InventoryState.get_quantity(&"fixture_pick"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_bar"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_better_pick"), 1)

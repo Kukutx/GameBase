@@ -6,7 +6,8 @@ extends RefCounted
 ## `find()` and `find_all()` read for the rest of the test; when the test ends
 ## and GUT frees it, `ContentDB` is the active registry again. `add_stat()`
 ## lets fixture content change a stat no module registers, `use_calendar()`
-## counts the days by a calendar whatever the game's is, and
+## counts the days by a calendar whatever the game's is, `use_settings()`
+## stands in for its module settings, and
 ## `with_definition()` starts a service on a fixture `GameDefinition`.
 ##
 ## GUT runs `after_each()` before it frees the registry, so a test that
@@ -63,14 +64,39 @@ static func add_stat(test: GutTest, stat: StringName) -> void:
 ## the game it runs in has.
 ## A test may call it again for another calendar.
 static func use_calendar(test: GutTest, calendar: GameCalendar) -> void:
-	if _running_definition == null:
-		_running_definition = GameDefinition.current()
+	_stand_in(test).calendar = calendar
+
+# A copy of the game's definition that is the running one until the test ends;
+# the same copy again while it is.
+static func _stand_in(test: GutTest) -> GameDefinition:
+	if _running_definition != null:
+		return GameDefinition._current
+	_running_definition = GameDefinition.current()
 	var definition := _running_definition.duplicate() as GameDefinition
-	definition.calendar = calendar
 	GameDefinition._current = definition
 	var holder := Node.new()
 	test.add_child_autofree(holder)
 	holder.tree_exiting.connect(_restore_definition)
+	return definition
+
+## Makes `settings` (`ModuleSettings`) the running game's module settings
+## until the test ends: what `GameDefinition.get_settings()` returns, and the
+## defaults for every kind the list leaves out. Calling `use_calendar()`
+## afterwards keeps them.
+static func use_settings(test: GutTest, settings: Array) -> void:
+	var definition := _stand_in(test)
+	var listed: Array[Resource] = []
+	listed.assign(settings)
+	definition.module_settings = listed
+
+## A vital (`VitalData`) of fixture content, named after its id.
+static func vital(id: StringName, maximum := 100, refill_on_sleep := true) -> VitalData:
+	var made := VitalData.new()
+	made.id = id
+	made.display_name = String(id).trim_prefix("fixture_").capitalize()
+	made.maximum = maximum
+	made.refill_on_sleep = refill_on_sleep
+	return made
 
 ## Calls `create` while `definition` is the running game's definition
 ## (`GameDefinition.current()`) and returns what it returns: for a service

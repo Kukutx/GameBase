@@ -33,8 +33,11 @@ msgstr "分配"
 msgid "Claim Archive Reward"
 msgstr "领取收藏奖励"
 
-msgid "HP %d/%d   ·   Energy %d/%d   ·   %dg"
-msgstr "生命 %d/%d   ·   体力 %d/%d   ·   %dg"
+msgid "Energy"
+msgstr "体力"
+
+msgid "Health"
+msgstr "生命"
 
 msgid "Quest: %s"
 msgstr "任务：%s"
@@ -47,9 +50,6 @@ msgstr "领取收藏奖励（%d）"
 
 msgid "Empty"
 msgstr "空"
-
-msgid "HP: %d/%d    Energy: %d/%d"
-msgstr "生命：%d/%d    体力：%d/%d"
 
 msgid "Use the controls below to bind any carried item to slots 1–9."
 msgstr "使用下方控件将携带的物品绑定到 1–9 热栏。"

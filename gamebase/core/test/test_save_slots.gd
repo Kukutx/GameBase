@@ -3,16 +3,18 @@ extends GutTest
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 const TEST_DIRECTORY := "user://test_save_slots"
 const LOCATION := &"fixture_meadow"
+## A world value the tests save and read back.
+const MARK := &"fixture:save_mark"
 
 var _scene_path := TEST_DIRECTORY.path_join("fixture_meadow.tscn")
 var _manager: GameSaveManager
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _clock_snapshot: Dictionary
 var _slot_details: Array[Dictionary]
 
 func before_each() -> void:
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	# What these tests read of a slot leaves out the lines the game adds.
@@ -43,7 +45,7 @@ func after_each() -> void:
 		get_tree().unload_current_scene()
 	if FileAccess.file_exists(_scene_path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(_scene_path))
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
 	GameSaveManager._slot_details = _slot_details
@@ -81,7 +83,6 @@ func test_each_slot_has_its_own_files_in_the_save_directory() -> void:
 func test_slot_summary_describes_the_save() -> void:
 	await _enter_fixture_location()
 	_manager.select_slot(2)
-	PlayerState.money = 4321
 	WorldClock.set_time(68, 600)
 	assert_eq(_manager.write_save(), "")
 	var summary := _manager.get_slot_summary(2)
@@ -93,7 +94,6 @@ func test_slot_summary_describes_the_save() -> void:
 	assert_eq(int(summary["day"]), 68)
 	assert_eq(String(summary["season"]), GameCalendar.current().get_season_name(68))
 	assert_eq(int(summary["minute_of_day"]), 600)
-	assert_eq(int(summary["money"]), 4321)
 	assert_eq(String(summary["location_name"]), "Meadow")
 	assert_eq(int(summary["play_seconds"]), GameSession.get_play_seconds())
 	assert_eq(Array(summary["details"]), [])
@@ -105,12 +105,12 @@ func test_a_slot_summary_reads_the_time_played_and_what_the_game_adds() -> void:
 	var saved := _read(_manager.save_path)
 	saved[String(GameSessionService.SAVE_SECTION)] = {"play_seconds": 3725.0}
 	_write(_manager.save_path, saved)
-	_manager.register_slot_detail(&"fixture_money", 20, func(snapshot: Dictionary) -> String: return "Purse %d" % _money(snapshot))
+	_manager.register_slot_detail(&"fixture_mark", 20, func(snapshot: Dictionary) -> String: return "Mark %d" % _mark(snapshot))
 	_manager.register_slot_detail(&"fixture_place", 10, func(snapshot: Dictionary) -> String: return String(snapshot["location_id"]))
 	_manager.register_slot_detail(&"fixture_nothing", 15, func(_snapshot: Dictionary) -> String: return "")
 	var summary := _manager.get_slot_summary(_manager.active_slot)
 	assert_eq(int(summary["play_seconds"]), 3725, "the time played comes back as whole seconds")
-	assert_eq(Array(summary["details"]), [String(LOCATION), "Purse %d" % PlayerState.money], "by order, without the empty ones")
+	assert_eq(Array(summary["details"]), [String(LOCATION), "Mark %d" % WorldState.get_int(MARK)], "by order, without the empty ones")
 	saved[String(GameSessionService.SAVE_SECTION)] = {"play_seconds": 12.5}
 	_write(_manager.save_path, saved)
 	assert_eq(int(_manager.get_slot_summary(_manager.active_slot)["play_seconds"]), 0, "a damaged value reads as none")
@@ -223,47 +223,47 @@ func test_a_snapshot_whose_location_cannot_open_changes_nothing() -> void:
 	await _enter_fixture_location()
 	var snapshot := _manager.build_snapshot()
 	snapshot["location_id"] = "removed_location"
-	(snapshot["player_state"] as Dictionary)["money"] = 1
-	PlayerState.money = 987
+	(snapshot["world"] as Dictionary)[String(MARK)] = 1
+	WorldState.set_value(MARK, 987)
 	var scene_before := get_tree().current_scene
 	assert_false(await _manager.apply_snapshot(snapshot))
-	assert_eq(PlayerState.money, 987)
+	assert_eq(WorldState.get_int(MARK), 987)
 	assert_eq(get_tree().current_scene, scene_before)
 
 func test_saving_keeps_the_previous_save_as_backup_and_a_damaged_save_falls_back_to_it() -> void:
 	await _enter_fixture_location()
-	PlayerState.money = 111
+	WorldState.set_value(MARK, 111)
 	assert_eq(_manager.write_save(), "")
 	assert_false(FileAccess.file_exists(_manager.backup_path))
-	PlayerState.money = 222
+	WorldState.set_value(MARK, 222)
 	assert_eq(_manager.write_save(), "")
-	assert_eq(_money(_read(_manager.save_path)), 222)
-	assert_eq(_money(_read(_manager.backup_path)), 111)
+	assert_eq(_mark(_read(_manager.save_path)), 222)
+	assert_eq(_mark(_read(_manager.backup_path)), 111)
 
 	var corrupt := FileAccess.open(_manager.save_path, FileAccess.WRITE)
 	corrupt.store_string("{ definitely not valid json")
 	corrupt.close()
 	var recovered := _manager.call("_read_slot") as Dictionary
 	assert_eq(String(recovered["source"]), "backup")
-	assert_eq(_money(recovered["data"]), 111)
+	assert_eq(_mark(recovered["data"]), 111)
 
 	# A damaged save is not rotated into the backup.
-	PlayerState.money = 333
+	WorldState.set_value(MARK, 333)
 	assert_eq(_manager.write_save(), "")
-	assert_eq(_money(_read(_manager.save_path)), 333)
-	assert_eq(_money(_read(_manager.backup_path)), 111)
+	assert_eq(_mark(_read(_manager.save_path)), 333)
+	assert_eq(_mark(_read(_manager.backup_path)), 111)
 
 func test_loading_a_backup_makes_it_the_save_again() -> void:
 	await _enter_fixture_location()
-	PlayerState.money = 111
+	WorldState.set_value(MARK, 111)
 	assert_eq(_manager.write_save(), "")
-	PlayerState.money = 222
+	WorldState.set_value(MARK, 222)
 	assert_eq(_manager.write_save(), "")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_manager.save_path))
-	PlayerState.money = 999
+	WorldState.set_value(MARK, 999)
 	assert_true(await _manager.load_game())
-	assert_eq(PlayerState.money, 111)
-	assert_eq(_money(_read(_manager.save_path)), 111)
+	assert_eq(WorldState.get_int(MARK), 111)
+	assert_eq(_mark(_read(_manager.save_path)), 111)
 
 func test_a_save_is_restoring_until_the_player_stands_where_they_saved() -> void:
 	await _enter_fixture_location()
@@ -278,10 +278,10 @@ func test_a_save_is_restoring_until_the_player_stands_where_they_saved() -> void
 
 func test_a_newer_complete_temp_finishes_an_interrupted_save() -> void:
 	await _enter_fixture_location()
-	PlayerState.money = 111
+	WorldState.set_value(MARK, 111)
 	assert_eq(_manager.write_save(), "")
 	var primary_time := int(_read(_manager.save_path)["saved_at_unix_msec"])
-	PlayerState.money = 222
+	WorldState.set_value(MARK, 222)
 	var temp := _manager.build_snapshot()
 	# A tie keeps the committed save.
 	temp["saved_at_unix_msec"] = primary_time
@@ -291,22 +291,22 @@ func test_a_newer_complete_temp_finishes_an_interrupted_save() -> void:
 	temp["saved_at_unix_msec"] = primary_time + 100
 	_write(_manager.temp_path, temp)
 	assert_eq(String((_manager.call("_read_slot") as Dictionary)["source"]), "temp")
-	PlayerState.money = 999
+	WorldState.set_value(MARK, 999)
 	assert_true(await _manager.load_game())
-	assert_eq(PlayerState.money, 222)
+	assert_eq(WorldState.get_int(MARK), 222)
 	assert_false(FileAccess.file_exists(_manager.temp_path))
-	assert_eq(_money(_read(_manager.save_path)), 222)
-	assert_eq(_money(_read(_manager.backup_path)), 111)
+	assert_eq(_mark(_read(_manager.save_path)), 222)
+	assert_eq(_mark(_read(_manager.backup_path)), 111)
 
 func test_without_a_save_a_temp_wins_only_when_newer_than_the_backup() -> void:
 	await _enter_fixture_location()
-	PlayerState.money = 111
+	WorldState.set_value(MARK, 111)
 	assert_eq(_manager.write_save(), "")
-	PlayerState.money = 222
+	WorldState.set_value(MARK, 222)
 	assert_eq(_manager.write_save(), "")
 	var backup_time := int(_read(_manager.backup_path)["saved_at_unix_msec"])
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_manager.save_path))
-	PlayerState.money = 333
+	WorldState.set_value(MARK, 333)
 	var temp := _manager.build_snapshot()
 	temp["saved_at_unix_msec"] = backup_time - 1
 	_write(_manager.temp_path, temp)
@@ -315,7 +315,7 @@ func test_without_a_save_a_temp_wins_only_when_newer_than_the_backup() -> void:
 	_write(_manager.temp_path, temp)
 	var choice := _manager.call("_read_slot") as Dictionary
 	assert_eq(String(choice["source"]), "temp")
-	assert_eq(_money(choice["data"]), 333)
+	assert_eq(_mark(choice["data"]), 333)
 
 func test_save_guard_rejects_unregistered_scene_and_active_travel() -> void:
 	var original_scene := get_tree().current_scene
@@ -374,8 +374,8 @@ func _read(path: String) -> Dictionary:
 func _write(path: String, data: Dictionary) -> void:
 	assert_true(bool(_manager.call("_write_dictionary", path, data)))
 
-func _money(snapshot: Dictionary) -> int:
-	return int((snapshot["player_state"] as Dictionary)["money"])
+func _mark(snapshot: Dictionary) -> int:
+	return SaveValues.whole_number_or(WorldState.read_saved(snapshot, MARK), 0)
 
 func _delete_test_slots() -> void:
 	for slot in range(1, GameSaveManager.SLOT_COUNT + 1):

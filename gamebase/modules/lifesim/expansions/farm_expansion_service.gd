@@ -39,7 +39,7 @@ func can_purchase(expansion_id: StringName) -> bool:
 	var data := get_expansion(expansion_id)
 	if data == null or not is_available(expansion_id):
 		return false
-	if PlayerState.money < data.money_cost:
+	if Wallet.money < data.money_cost:
 		return false
 	return InventoryState.can_apply_transaction(data.materials, {})
 
@@ -54,12 +54,12 @@ func purchase(expansion_id: StringName) -> bool:
 		GameEvents.toastf("Missing money or materials for %s", [data.display_name])
 		return false
 	_purchasing[purchase_key] = true
-	if not PlayerState.spend_money(data.money_cost):
+	if not Wallet.spend(data.money_cost):
 		_purchasing.erase(purchase_key)
 		GameEvents.toastf("Money changed before %s could be purchased", [data.display_name])
 		return false
 	if not InventoryState.apply_transaction_atomic(data.materials, {}):
-		PlayerState.add_money(data.money_cost)
+		Wallet.add(data.money_cost)
 		_purchasing.erase(purchase_key)
 		GameEvents.toastf("Materials changed before %s could be purchased", [data.display_name])
 		return false

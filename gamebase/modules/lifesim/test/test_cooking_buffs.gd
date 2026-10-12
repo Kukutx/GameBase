@@ -1,17 +1,19 @@
 extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+## The vital the life-sim work spends here.
+const ENERGY := &"fixture_energy"
 const FARM_PLOT_SCENE := preload("res://gamebase/modules/lifesim/farming/farm_plot.tscn")
 
 var _clock_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _buff_snapshot: Dictionary
 
 func before_each() -> void:
 	_clock_snapshot = WorldClock.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_buff_snapshot = BuffState.to_save_data()
 	var hoe := ItemData.new()
 	hoe.id = &"fixture_hoe"
@@ -25,9 +27,10 @@ func before_each() -> void:
 	buff.display_name = "Vigor"
 	buff.duration_minutes = 240
 	buff.multipliers[&"tool_energy"] = 0.8
-	ContentFixture.use(self, [hoe, buff])
+	ContentFixture.use(self, [hoe, buff, ContentFixture.vital(ENERGY)])
+	_use_energy()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Vitals.reset_new_game()
 	BuffState.clear()
 	WorldClock.set_time(1, 8 * 60)
 
@@ -37,7 +40,7 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	WorldClock.load_save_data(_clock_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	BuffState.load_save_data(_buff_snapshot)
 
 func test_food_buff_on_tool_energy_lowers_what_tilling_a_plot_costs() -> void:
@@ -48,12 +51,18 @@ func test_food_buff_on_tool_energy_lowers_what_tilling_a_plot_costs() -> void:
 	add_child_autofree(plot)
 	await get_tree().process_frame
 
-	PlayerState.energy = 100
+	Vitals.set_value(ENERGY, 100)
 	assert_true(plot.use_item(&"fixture_hoe"))
-	assert_eq(PlayerState.energy, 96)
+	assert_eq(Vitals.get_value(ENERGY), 96)
 
 	plot.load_state_data({"tilled": false, "watered": false, "crop_id": "", "growth_days": 0, "last_processed_day": 1}, false)
-	PlayerState.energy = 100
+	Vitals.set_value(ENERGY, 100)
 	assert_true(BuffState.apply_buff(&"fixture_vigor"))
 	assert_true(plot.use_item(&"fixture_hoe"))
-	assert_eq(PlayerState.energy, 97, "4 energy x 0.8, rounded down")
+	assert_eq(Vitals.get_value(ENERGY), 97, "4 energy x 0.8, rounded down")
+
+# Makes `ENERGY` the vital the life-sim work spends.
+func _use_energy() -> void:
+	var settings := LifesimSettings.new()
+	settings.energy_vital_id = ENERGY
+	ContentFixture.use_settings(self, [settings])

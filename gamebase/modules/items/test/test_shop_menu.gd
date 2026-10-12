@@ -8,17 +8,20 @@ const SHOP_MENU := preload("res://gamebase/modules/items/shop/shop_menu.tscn")
 
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _shop: ShopData
 
 func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_shop = ShopData.new()
 	_shop.id = &"fixture_counter"
 	_shop.display_name = "Counter"
 	ContentFixture.use(self, [_item(&"fixture_berry", "Berry", 5), _item(&"fixture_pebble", "Pebble", 3), _shop])
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	InventoryState.add_item_by_id(&"fixture_berry", 2)
 	InventoryState.add_item_by_id(&"fixture_pebble", 1)
 
@@ -26,10 +29,11 @@ func after_each() -> void:
 	# GUT frees the fixture content only after this hook.
 	ContentRegistry.active = ContentDB
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 
 func test_selling_keeps_the_buttons_in_place_and_the_focus_on_the_list() -> void:
-	var money := PlayerState.money
+	var money := Wallet.money
 	var menu := SHOP_MENU.instantiate() as ShopMenu
 	add_child_autofree(menu)
 	menu.open(_shop)
@@ -47,7 +51,7 @@ func test_selling_keeps_the_buttons_in_place_and_the_focus_on_the_list() -> void
 	assert_eq(_sell_buttons(menu), [])
 	assert_eq(_focused(menu), menu.close_button, "with nothing left to sell, to the close button")
 	assert_false(menu.sell_title.visible)
-	assert_eq(PlayerState.money, money + 2 * 5 + 3)
+	assert_eq(Wallet.money, money + 2 * 5 + 3)
 	menu.close()
 
 static func _sell_buttons(menu: ShopMenu) -> Array:

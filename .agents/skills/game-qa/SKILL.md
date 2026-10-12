@@ -45,7 +45,7 @@ An anomaly is a candidate. It becomes a defect only after it has been replayed f
 - Both locales (English and Simplified Chinese), switching the locale while a screen is open.
 - Keyboard and gamepad: every menu opens with a valid focus target and focus never escapes to the screen behind it.
 - The save lifecycle: save, load, quick save and quick load, the three slots, a save made before the change under test.
-- Time passing: day change, festival days, late-night collapse, defeat.
+- Time passing: day change, festival days, staying up past the late-night minute, defeat.
 - Travel between locations and the state that must survive it.
 - The windowed game for anything guarded by a headless check, because the automated suite never runs that code (`.agents/rules/testing.md`).
 

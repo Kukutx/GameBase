@@ -20,3 +20,7 @@ signal resource_mined(mining_node_id: StringName, item_id: StringName, quantity:
 
 ## A processing station's output was collected.
 signal item_processed(processing_recipe_id: StringName, item_id: StringName, quantity: int)
+
+## The player stayed up past the late night minute, passed out and woke up
+## again (`LateNight`): at home, or where they fell when home could not open.
+signal stayed_up_late(woke_at_home: bool)

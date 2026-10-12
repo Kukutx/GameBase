@@ -99,7 +99,7 @@ func claim_rewards(mail_id: StringName) -> bool:
 		return false
 	var reward_money := DeferredRewardSnapshot.get_money(reward)
 	if reward_money > 0:
-		PlayerState.add_money(reward_money)
+		Wallet.add(reward_money)
 	mark_read(mail_id)
 	WorldState.set_value(_key(mail_id, "claimed"), true)
 	mail_claimed.emit(mail_id)

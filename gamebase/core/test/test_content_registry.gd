@@ -20,7 +20,7 @@ func after_each() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
 
 func test_the_core_registers_its_own_kinds_of_content() -> void:
-	for kind: StringName in [WorldLocationData.KIND, RegionData.KIND, WeatherData.KIND, AudioCueData.KIND, MiniGameDefinition.KIND, TriggerData.KIND, AchievementData.KIND]:
+	for kind: StringName in [WorldLocationData.KIND, RegionData.KIND, WeatherData.KIND, VitalData.KIND, AudioCueData.KIND, MiniGameDefinition.KIND, TriggerData.KIND, AchievementData.KIND]:
 		assert_true(ContentDB.get_kinds().has(kind), "the core registers kind '%s'" % kind)
 
 func test_unknown_ids_return_null() -> void:

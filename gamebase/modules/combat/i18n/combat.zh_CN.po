@@ -12,5 +12,14 @@ msgstr "敌人"
 msgid "You do not have %s"
 msgstr "你没有%s"
 
-msgid "Not enough energy"
-msgstr "体力不足"
+msgid "You were defeated and lost %dg"
+msgstr "你被击倒了，损失了 %dg"
+
+msgid "You were defeated and woke up at home"
+msgstr "你被击倒了，随后在家中醒来"
+
+msgid "You were defeated, lost %dg, and recovered where you fell"
+msgstr "你被击倒了，损失了 %dg，并在原地恢复"
+
+msgid "You were defeated and recovered where you fell"
+msgstr "你被击倒了，并在原地恢复"

@@ -9,7 +9,6 @@ extends TopDownPlayer
 @onready var facing_marker: Node2D = $Facing
 
 func _ready() -> void:
-	super()
 	facing_changed.connect(_on_facing_changed)
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -24,7 +23,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func drink_potion() -> bool:
 	for entry: Dictionary in InventoryState.get_entries():
 		var item := ItemData.find(StringName(String(entry["id"])))
-		if item != null and item.health_restore > 0:
+		if item != null and item.restores.get(CombatSettings.current().health_vital_id, 0) > 0:
 			return InventoryState.consume(item)
 	GameEvents.toast("No potion at hand")
 	return false
