@@ -1,13 +1,15 @@
 extends GutTest
 
-const TEST_PATH := "user://game_settings_test.cfg"
+const TEST_PATH := "user://game_settings_test.json"
 
 func _read_project_version() -> String:
 	return String(ProjectSettings.get_setting("application/config/version", "unknown"))
 
 func after_each() -> void:
-	if FileAccess.file_exists(TEST_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_PATH))
+	# The services of the test write their last change as their frame ends.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	JsonFile.remove(TEST_PATH)
 	GameSettings.apply()
 
 func test_supported_locale_translation_and_selector() -> void:

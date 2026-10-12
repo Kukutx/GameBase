@@ -90,6 +90,34 @@ func test_host_pauses_the_world_blocks_saving_and_restores_both() -> void:
 	assert_false(get_tree().paused)
 	assert_eq(MiniGameHost.call("_save_block_reason"), "")
 
+func test_the_minigame_stands_still_while_a_lock_is_over_it() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var minigame := _active_minigame()
+	assert_true(get_tree().paused)
+	assert_true(minigame.can_process(), "it runs over the paused world")
+	assert_true(minigame.has_input())
+	InputLock.lock(&"fixture_menu", true)
+	assert_false(minigame.can_process(), "nothing in it moves under a menu")
+	assert_false(minigame.has_input())
+	InputLock.unlock(&"fixture_menu")
+	assert_true(minigame.can_process(), "and it goes on once the menu closes")
+	assert_true(minigame.has_input())
+
+func test_the_pause_menu_opens_over_a_minigame_when_the_window_loses_focus() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var minigame := _active_minigame()
+	var menu := (load("res://gamebase/core/ui/pause_menu.tscn") as PackedScene).instantiate() as PauseMenu
+	add_child_autofree(menu)
+	assert_gt(menu.layer, MiniGameHostService.LAYER, "the menu shows over the minigame")
+	assert_gt(menu.settings_menu.layer, menu.layer)
+	assert_true(GameSettings.pause_on_focus_loss)
+	menu.notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_true(menu.visible)
+	assert_false(minigame.can_process(), "the minigame stands still under it")
+	menu.close()
+	assert_true(minigame.can_process())
+	assert_true(MiniGameHost.is_running(), "closing the menu goes back to the minigame")
+
 func test_a_second_run_while_one_is_running_fails_at_once() -> void:
 	var runner := func() -> void:
 		await MiniGameHost.run(MINIGAME)

@@ -8,8 +8,9 @@ extends Node
 ##
 ## The device switches on the last input: a gamepad button, or a stick or
 ## trigger pushed more than half way, picks the gamepad; a key or a mouse button
-## picks the keyboard. `input_method_changed` fires on each switch, so prompts on
-## screen can show the other device's names.
+## picks the keyboard, the world paused or not (a menu's prompts follow too).
+## `input_method_changed` fires on each switch, so prompts on screen can show
+## the other device's names.
 
 signal input_method_changed(using_gamepad: bool)
 
@@ -50,6 +51,9 @@ static func gamepad_button_name(button: JoyButton) -> String:
 	if GAMEPAD_BUTTON_LABELS.has(button):
 		return String(GAMEPAD_BUTTON_LABELS[button])
 	return TranslationServer.translate("Button %d") % int(button)
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventJoypadButton:

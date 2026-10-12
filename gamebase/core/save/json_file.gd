@@ -1,9 +1,10 @@
 class_name JsonFile
 extends RefCounted
 
-## A JSON file outside the save slots (the profile, a legacy) that is replaced
-## whole: written beside itself first and then renamed over the old one, so a
-## crash leaves the old file or the new one, never half a file.
+## A JSON file outside the save slots (the settings, the profile, a legacy)
+## that is replaced whole: written beside itself first and then renamed over
+## the old one, so a crash leaves the old file or the new one, never half a
+## file.
 
 ## Writes `data` as JSON to `path`; what went wrong, or "".
 static func write(path: String, data: Variant) -> String:

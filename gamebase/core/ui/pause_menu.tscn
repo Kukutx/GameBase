@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://gamebase/core/ui/settings_menu.tscn" id="2_settings"]
 
 [node name="PauseMenu" type="CanvasLayer"]
-layer = 70
+layer = 100
 script = ExtResource("1_pause")
 
 [node name="Dim" type="ColorRect" parent="."]
