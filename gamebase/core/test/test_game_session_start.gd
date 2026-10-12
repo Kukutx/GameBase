@@ -74,6 +74,12 @@ func test_a_new_game_is_starting_until_the_player_stands_in_its_start_location()
 	get_tree().scene_changed.connect(on_scene_changed)
 	GameSession.new_game_started.connect(on_started)
 
+	# The slot holds a save this build cannot read; the title screen asked
+	# before the new game replaces it.
+	var unreadable := FileAccess.open(SaveManager.save_path, FileAccess.WRITE)
+	unreadable.store_string("a save of another version")
+	unreadable.close()
+
 	var started: bool = ContentFixture.with_definition(definition, GameSession.start_new_game)
 	assert_true(started)
 	if not started:
@@ -81,11 +87,34 @@ func test_a_new_game_is_starting_until_the_player_stands_in_its_start_location()
 		GameSession.new_game_started.disconnect(on_started)
 		return
 	assert_true(GameSession.is_starting_new_game(), "while the start location opens")
-	await WorldTravel.travel_finished
+	assert_false(FileAccess.file_exists(SaveManager.save_path), "the unreadable save is replaced")
+	assert_eq(SaveManager.get_save_block_reason(), "Cannot save while a new game starts")
+	await WorldTravel.travel_ended
+	# The wait ends inside the arrival's signal; let it return first.
+	await get_tree().process_frame
 	get_tree().scene_changed.disconnect(on_scene_changed)
 	GameSession.new_game_started.disconnect(on_started)
 	assert_eq(seen, {"scene_changed": true, "started": false}, "the location's scene loads during the setup; the game starts after it")
 	assert_false(GameSession.is_starting_new_game())
+
+func test_ending_activities_calls_each_registered_end_once() -> void:
+	var ended := {"count": 0}
+	var end := func() -> void: ended["count"] = int(ended["count"]) + 1
+	GameSession.register_activity_end(end)
+	GameSession.register_activity_end(end)
+	GameSession.end_activities()
+	assert_eq(int(ended["count"]), 1)
+	GameSession.get("_activity_ends").erase(end)
+
+func test_nothing_leaves_for_the_title_while_a_travel_changes_the_scene() -> void:
+	var scene := get_tree().current_scene
+	WorldTravel.set("_traveling", true)
+	assert_false(GameSession.return_to_title(), "the travel's scene would replace the title")
+	var menu := (load("res://gamebase/core/ui/pause_menu.tscn") as PackedScene).instantiate() as PauseMenu
+	add_child_autofree(menu)
+	menu.open()
+	assert_false(menu.visible, "the pause menu waits for the arrival")
+	assert_eq(get_tree().current_scene, scene)
 
 func _cleanup() -> void:
 	for slot in range(1, GameSaveManager.SLOT_COUNT + 1):

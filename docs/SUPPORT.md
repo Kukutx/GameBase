@@ -45,7 +45,7 @@ The bundle is opt-in and contains:
 - up to five recent game logs, capped at 2 MiB each;
 - a README describing the bundle contents.
 
-Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw `savegame*.json/.tmp/.bak`, `settings.json`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
+Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw slot files (`user://saves/slot_<n>.json/.tmp/.bak`), `settings.json`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
 
 ## When investigating a report
 
@@ -64,16 +64,18 @@ Search the log for `GAMEBASE_DIAGNOSTIC`, `ERROR:`, and `SCRIPT ERROR:` first.
 
 Save snapshots record both `game_version` and `engine_version` at the top level, and slot summaries expose them.
 
-The numeric save `version` field is the save-format version and is independent from the game version in `config/version` of `games/<id>/project.godot`. Only a save of the current format loads; there are no migrations.
+The numeric save `version` field is the save-format version and is independent from the game version in `config/version` of `games/<id>/project.godot`. Only a save of the current format loads; there are no migrations. A slot whose files this build cannot read is shown as such on the title screen, and a new game asks before replacing it.
 
-Manual saves and autosaves share the same temporary-file, backup and atomic finalization path.
+Manual saves and autosaves share one path: the new save is written to a temporary file, the previous save becomes the backup, and the temporary file then replaces the save. A write interrupted at any point leaves an intact file of the three, and loading takes the newest one.
+
+Nothing saves while a save loads, a new game starts, or the player travels.
 
 Autosave is enabled by default and:
 
 - attempts a periodic save every 5 real minutes;
 - attempts a save after successful world travel;
+- attempts a save when the window closes;
 - skips unsafe states such as active travel, fishing, missing player, or unregistered scenes;
-- suppresses normal success toasts;
-- never overwrites a newer-format primary save with an older build.
+- suppresses normal success toasts.
 
 Players can disable autosave in Settings.

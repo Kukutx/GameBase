@@ -66,6 +66,12 @@ msgstr "床"
 msgid "Cannot save while traveling"
 msgstr "旅行途中无法保存"
 
+msgid "Cannot save while a save loads"
+msgstr "读档时无法保存"
+
+msgid "Cannot save while a new game starts"
+msgstr "新游戏开始时无法保存"
+
 msgid "Save from a playable location"
 msgstr "请在可游玩的地点保存"
 
@@ -86,6 +92,9 @@ msgstr "已保存 · 存档位 %d"
 
 msgid "Cannot load while traveling"
 msgstr "旅行途中无法读取"
+
+msgid "A save is already loading"
+msgstr "正在读取存档"
 
 msgid "No save file yet"
 msgstr "还没有存档"
@@ -144,6 +153,9 @@ msgstr "无法保存成就"
 msgid "Empty slot"
 msgstr "空存档位"
 
+msgid "Holds a save this version cannot open"
+msgstr "存有当前版本无法读取的存档"
+
 msgid "Continue"
 msgstr "继续游戏"
 
@@ -182,6 +194,9 @@ msgstr "返回标题画面"
 
 msgid "Unsaved progress will be lost. Return to the title screen?"
 msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
+
+msgid "Cannot return to the title while the scene changes"
+msgstr "场景切换中，无法返回标题画面"
 
 msgid "Master"
 msgstr "主音量"
@@ -230,6 +245,9 @@ msgstr " · 有可用备份"
 
 msgid "Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?"
 msgstr "存档位 %d 已有游戏。开始新游戏会覆盖该存档，是否继续？"
+
+msgid "Save Slot %d holds a save this version cannot open. Starting a new game will replace it. Continue?"
+msgstr "存档位 %d 存有当前版本无法读取的存档。开始新游戏会覆盖它，是否继续？"
 
 msgid "Loading Slot %d..."
 msgstr "正在读取存档位 %d..."

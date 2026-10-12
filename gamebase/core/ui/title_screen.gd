@@ -36,6 +36,8 @@ func _ready() -> void:
 	settings_menu.closed.connect(_on_settings_closed)
 	confirm_new_game.confirmed.connect(_start_new_game)
 	confirm_delete.confirmed.connect(_confirm_delete_save)
+	GameSession.continue_started.connect(_on_continue_started)
+	GameSession.new_game_failed.connect(_on_new_game_failed)
 	_refresh_slot_ui()
 	(new_game_button if continue_button.disabled else continue_button).grab_focus()
 
@@ -54,9 +56,13 @@ func _on_slot_selected(index: int) -> void:
 func _refresh_slot_ui() -> void:
 	var summary := SaveManager.get_slot_summary(SaveManager.active_slot)
 	var exists := bool(summary["exists"])
+	var unreadable := bool(summary["unreadable"])
 	continue_button.disabled = not exists
-	delete_button.disabled = not exists
-	slot_info.text = _format_slot_summary(summary) if exists else tr("Empty slot")
+	delete_button.disabled = not exists and not unreadable
+	if exists:
+		slot_info.text = _format_slot_summary(summary)
+	else:
+		slot_info.text = tr("Holds a save this version cannot open") if unreadable else tr("Empty slot")
 
 func _format_slot_summary(summary: Dictionary) -> String:
 	var minute := int(summary["minute_of_day"])
@@ -76,6 +82,10 @@ func _new_game() -> void:
 		confirm_new_game.dialog_text = tr("Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?") % SaveManager.active_slot
 		confirm_new_game.popup_centered()
 		return
+	if SaveManager.has_files():
+		confirm_new_game.dialog_text = tr("Save Slot %d holds a save this version cannot open. Starting a new game will replace it. Continue?") % SaveManager.active_slot
+		confirm_new_game.popup_centered()
+		return
 	_start_new_game()
 
 func _start_new_game() -> void:
@@ -83,21 +93,29 @@ func _start_new_game() -> void:
 	# GameSession owns replacement of the selected slot so it can preflight the
 	# starting Location before any destructive save operation occurs.
 	if not GameSession.start_new_game():
-		status_label.text = tr("Could not open the starting location")
-		_set_buttons_disabled(false)
-		_refresh_slot_ui()
+		_on_new_game_failed()
+
+# The start location did not open, at once or once its scene failed to load.
+func _on_new_game_failed() -> void:
+	status_label.text = tr("Could not open the starting location")
+	_set_buttons_disabled(false)
+	_refresh_slot_ui()
 
 func _continue_game() -> void:
 	_set_buttons_disabled(true)
 	status_label.text = tr("Loading Slot %d...") % SaveManager.active_slot
-	var success: bool = await GameSession.continue_game()
-	if not success:
-		status_label.text = tr("No valid save found")
-		_set_buttons_disabled(false)
-		_refresh_slot_ui()
+	# Not awaited: a load that succeeds frees the title screen.
+	GameSession.continue_game()
+
+func _on_continue_started(success: bool) -> void:
+	if success:
+		return
+	status_label.text = tr("No valid save found")
+	_set_buttons_disabled(false)
+	_refresh_slot_ui()
 
 func _delete_save() -> void:
-	if not SaveManager.has_save():
+	if not SaveManager.has_files():
 		return
 	confirm_delete.dialog_text = tr("Delete Save Slot %d? This removes the primary save and its backup.") % SaveManager.active_slot
 	confirm_delete.popup_centered()

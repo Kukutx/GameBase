@@ -81,6 +81,16 @@ func test_fishing_state_machine_waits_bites_and_reels() -> void:
 	assert_eq(service.cast_state, FishingService.CastState.IDLE)
 	assert_eq(InventoryState.get_quantity(&"fixture_trout") + InventoryState.get_quantity(&"fixture_carp"), 1)
 
+func test_a_cast_ends_with_the_player_s_activities() -> void:
+	WorldClock.set_time(1, 13 * 60)
+	PlayerState.restore_full_energy()
+	assert_true(FishingState.start_cast(&"fixture_river", 0))
+	assert_true(InputLock.is_held(&"fishing_cast"))
+	# A collapse, a defeat or a load ends the cast before it saves or travels.
+	GameSession.end_activities()
+	assert_false(FishingState.is_active())
+	assert_false(InputLock.is_held(&"fishing_cast"))
+
 func test_fishing_blocks_energy_and_item_signal_reentrancy() -> void:
 	WorldClock.set_time(1, 13 * 60)
 	InventoryState.clear()

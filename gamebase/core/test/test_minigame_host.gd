@@ -33,6 +33,20 @@ func after_each() -> void:
 func _active_minigame() -> _FixtureMiniGame:
 	return MiniGameHost.get("_active") as _FixtureMiniGame
 
+func test_ending_the_player_s_activities_cancels_the_minigame() -> void:
+	var outcome := {}
+	var runner := func() -> void:
+		outcome["result"] = await MiniGameHost.run(MINIGAME)
+	runner.call()
+	assert_true(MiniGameHost.is_running())
+	# A collapse, a defeat or a load ends what the player is doing.
+	GameSession.end_activities()
+	var result := outcome.get("result") as MiniGameResult
+	assert_not_null(result)
+	assert_true(result.cancelled)
+	assert_false(MiniGameHost.is_running())
+	assert_false(InputLock.is_held(&"minigame"))
+
 func test_the_fixture_minigame_is_valid_content() -> void:
 	assert_eq(MiniGameDefinition.find(MINIGAME).find_problems(ContentRegistry.active), PackedStringArray())
 

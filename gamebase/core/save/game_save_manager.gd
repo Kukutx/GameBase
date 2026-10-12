@@ -130,16 +130,28 @@ func get_slot_paths(slot: int) -> Dictionary:
 static func is_restoring() -> bool:
 	return _restoring
 
+## Whether `slot` (the active slot when -1) holds a save this build can load.
 func has_save(slot: int = -1) -> bool:
 	return not _read_slot(slot).is_empty()
 
+## Whether any file of `slot` (the active slot when -1) exists, whether this
+## build can load it or not: a save of another version is never replaced
+## without asking.
+func has_files(slot: int = -1) -> bool:
+	var paths := _paths(slot)
+	for key: String in ["save", "temp", "backup"]:
+		if FileAccess.file_exists(String(paths[key])):
+			return true
+	return false
+
 ## What a slot holds, for slot pickers and support bundles. `exists` is false
-## when the slot has no save of this build.
+## when the slot has no save of this build; `unreadable` is true when it has
+## files all the same (a save of another version, or damaged).
 func get_slot_summary(slot: int) -> Dictionary:
 	var resolved := clampi(slot, 1, SLOT_COUNT)
 	var candidate := _read_slot(resolved)
 	if candidate.is_empty():
-		return {"slot": resolved, "exists": false, "recoverable": false}
+		return {"slot": resolved, "exists": false, "recoverable": false, "unreadable": has_files(resolved)}
 	var data: Dictionary = candidate["data"]
 	var clock: Dictionary = data["clock"]
 	var player_state: Dictionary = data.get("player_state", {})
@@ -148,6 +160,7 @@ func get_slot_summary(slot: int) -> Dictionary:
 	return {
 		"slot": resolved,
 		"exists": true,
+		"unreadable": false,
 		"recoverable": source != "primary",
 		"recovery_source": source,
 		"version": SAVE_VERSION,
@@ -178,6 +191,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func get_save_block_reason() -> String:
+	if _restoring:
+		return tr("Cannot save while a save loads")
+	if GameSession.is_starting_new_game():
+		return tr("Cannot save while a new game starts")
 	if WorldTravel.is_traveling():
 		return tr("Cannot save while traveling")
 	var scene := get_tree().current_scene
@@ -224,6 +241,9 @@ func _emit_save_result(enabled: bool, success: bool, message: String) -> void:
 		save_completed.emit(success, message)
 
 func load_game() -> bool:
+	if _restoring:
+		load_completed.emit(false, tr("A save is already loading"))
+		return false
 	if WorldTravel.is_traveling():
 		load_completed.emit(false, tr("Cannot load while traveling"))
 		return false
@@ -232,6 +252,8 @@ func load_game() -> bool:
 		load_completed.emit(false, tr("No save file yet"))
 		return false
 	var data: Dictionary = candidate["data"]
+	# Whatever the player is doing belongs to the session the save replaces.
+	GameSession.end_activities()
 	if not await apply_snapshot(data):
 		load_completed.emit(false, tr("Save references an unavailable scene"))
 		return false
@@ -323,7 +345,7 @@ func _apply_player_spawn(player: Node2D, spawn_id: StringName) -> void:
 ## The primary wins unless an intact temp is newer (a save interrupted after
 ## writing it); without a primary, the temp wins only when newer than the backup.
 func _read_slot(slot: int = -1) -> Dictionary:
-	var paths := get_slot_paths(slot) if slot > 0 else {"save": save_path, "temp": temp_path, "backup": backup_path}
+	var paths := _paths(slot)
 	var primary := _read_usable(String(paths["save"]))
 	var temp := _read_usable(String(paths["temp"]))
 	var backup := _read_usable(String(paths["backup"]))
@@ -337,6 +359,10 @@ func _read_slot(slot: int = -1) -> Dictionary:
 	if not temp.is_empty():
 		return {"data": temp, "source": "temp"}
 	return {}
+
+# The files of `slot`, of the active slot when -1.
+func _paths(slot: int) -> Dictionary:
+	return get_slot_paths(slot) if slot > 0 else {"save": save_path, "temp": temp_path, "backup": backup_path}
 
 func _read_usable(path: String) -> Dictionary:
 	var data := _read_dictionary(path)

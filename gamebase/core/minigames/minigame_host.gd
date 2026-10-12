@@ -25,6 +25,7 @@ func _ready() -> void:
 	_layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_layer)
 	SaveManager.register_save_blocker(_save_block_reason)
+	GameSession.register_activity_end(cancel)
 
 func is_running() -> bool:
 	return _active != null

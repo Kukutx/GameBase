@@ -109,6 +109,41 @@ func test_a_save_of_another_format_or_without_a_section_is_not_a_save() -> void:
 	_write(_manager.save_path, snapshot)
 	assert_true(_manager.has_save())
 
+func test_a_slot_with_files_this_build_cannot_read_is_unreadable_not_empty() -> void:
+	await _enter_fixture_location()
+	var snapshot := _manager.build_snapshot()
+	snapshot["version"] = GameSaveManager.SAVE_VERSION + 1
+	_write(String(_manager.get_slot_paths(2)["save"]), snapshot)
+	var summary := _manager.get_slot_summary(2)
+	assert_false(bool(summary["exists"]))
+	assert_true(bool(summary["unreadable"]))
+	assert_false(_manager.has_save(2))
+	assert_true(_manager.has_files(2))
+	assert_false(bool(_manager.get_slot_summary(3)["unreadable"]), "an empty slot has no files")
+	assert_false(_manager.has_files(3))
+
+func test_nothing_saves_and_no_second_load_starts_while_a_save_loads() -> void:
+	await _enter_fixture_location()
+	assert_true(_manager.save_game_silent())
+	var first := {}
+	var loading := func() -> void: first["loaded"] = await _manager.load_game()
+	loading.call()
+	assert_true(GameSaveManager.is_restoring())
+	assert_eq(_manager.get_save_block_reason(), "Cannot save while a save loads")
+	assert_false(_manager.save_game_silent())
+	var refusals: Array[String] = []
+	_manager.load_completed.connect(func(success: bool, message: String) -> void:
+		if not success:
+			refusals.append(message)
+	)
+	assert_false(await _manager.load_game())
+	assert_eq(refusals, ["A save is already loading"])
+	for frame in range(30):
+		if first.has("loaded"):
+			break
+		await get_tree().process_frame
+	assert_true(bool(first.get("loaded", false)), "the first load finishes")
+
 func test_a_snapshot_whose_location_cannot_open_changes_nothing() -> void:
 	await _enter_fixture_location()
 	var snapshot := _manager.build_snapshot()
