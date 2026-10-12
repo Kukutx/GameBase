@@ -179,7 +179,8 @@ func _calendar_text() -> String:
 		var participation := tr(" · joined this year") if event.has_participation_reward() and EventState.has_claimed_participation(event.id) else ""
 		lines.append(tr("• %s%s — %s %d, %02d:%02d @ %s") % [tr(event.display_name), participation, tr(GameCalendar.current().get_season_name(event_day)), GameCalendar.current().get_day_of_season(event_day), event.start_minute / 60, event.start_minute % 60, location_name])
 	if not any_event:
-		lines.append(tr("No events in the next %d days.") % GameCalendar.current().days_per_season)
+		var days := GameCalendar.current().days_per_season
+		lines.append(tr_n("No events in the next %d day.", "No events in the next %d days.", days) % days)
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Upcoming birthdays"))
 	var birthdays: Array[Dictionary] = []
@@ -193,7 +194,8 @@ func _calendar_text() -> String:
 		var birthday_day := int(entry["day"])
 		lines.append(tr("• %s — %s %d") % [tr(profile.display_name), tr(GameCalendar.current().get_season_name(birthday_day)), GameCalendar.current().get_day_of_season(birthday_day)])
 	if birthdays.is_empty():
-		lines.append(tr("No birthdays in the next %d days.") % GameCalendar.current().days_per_season)
+		var days := GameCalendar.current().days_per_season
+		lines.append(tr_n("No birthdays in the next %d day.", "No birthdays in the next %d days.", days) % days)
 	return "\n".join(lines)
 
 func _world_text() -> String:

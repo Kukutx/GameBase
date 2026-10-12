@@ -54,7 +54,7 @@ func _refresh() -> void:
 	var unfed := 0
 	for count: int in needs.values():
 		unfed += count
-	label.text = tr("%s\n%d need %s") % [tr(display_name), unfed, _feed_names(needs)]
+	label.text = tr_n("%s\n%d needs %s", "%s\n%d need %s", unfed) % [tr(display_name), unfed, _feed_names(needs)]
 	interactable.set_prompt("Feed %s x%d", [display_name, unfed])
 
 ## The translated names of the needed feed items.

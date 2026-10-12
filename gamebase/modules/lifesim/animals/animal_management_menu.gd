@@ -185,7 +185,7 @@ func _sell_selected() -> void:
 
 func _feed_housing(housing_id: StringName) -> void:
 	var fed := AnimalState.feed_housing(housing_id)
-	GameEvents.toast(tr("Fed %d animals") % fed if fed > 0 else tr("No animals were fed"))
+	GameEvents.toast(tr_n("Fed %d animal", "Fed %d animals", fed) % fed if fed > 0 else tr("No animals were fed"))
 	_refresh_summary()
 	_refresh_selected()
 

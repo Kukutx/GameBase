@@ -122,6 +122,40 @@ test("a catalog entry translates text of its own layer, and the core's text in t
   assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Nobody says this", which no text of games/probe holds'));
 });
 
+test("a count's text needs a plural entry with every form its language has", () => {
+  const out = tempFile("gamebase-plural-test");
+  const log = console.log;
+  const runs = [];
+  try {
+    const game = createGame({ id: "probe", name: "Probe Game", out });
+    const script = gamePath(game, "game", "probe_counter.gd");
+    fs.writeFileSync(script, 'extends Node\n\nfunc text(count: int) -> String:\n\treturn tr_n("%d probe apple", "%d probe apples", count) % count\n', "utf8");
+    const catalog = gamePath(game, "game", "i18n", "ui.zh_CN.po");
+    const base = fs.readFileSync(catalog, "utf8");
+    const check = (entry) => {
+      fs.writeFileSync(catalog, base + entry, "utf8");
+      const lines = [];
+      console.log = (line) => lines.push(String(line));
+      const result = checkLocalization(game);
+      console.log = log;
+      runs.push(lines);
+      return result;
+    };
+    assert.equal(check(""), 1);
+    assert.equal(check('\nmsgid "%d probe apple"\nmsgstr "%d 个探针苹果"\n'), 1);
+    assert.equal(check('\nmsgid "%d probe apple"\nmsgid_plural "%d probe pears"\nmsgstr[0] "%d 个探针苹果"\n'), 1);
+    assert.equal(check('\nmsgid "%d probe apple"\nmsgid_plural "%d probe apples"\nmsgstr[0] ""\n'), 1);
+    assert.equal(check('\nmsgid "%d probe apple"\nmsgid_plural "%d probe apples"\nmsgstr[0] "%d 个探针苹果"\n'), 0);
+  } finally {
+    console.log = log;
+    removeRecursive(out);
+  }
+  assert.ok(runs[0].includes("LOCALIZATION_PROBLEM: games/probe (zh_CN): missing plural %d probe apple"));
+  assert.ok(runs[1].includes('LOCALIZATION_PROBLEM: games/probe (zh_CN): "%d probe apple" is translated without its plural "%d probe apples"'));
+  assert.ok(runs[2].includes('LOCALIZATION_PROBLEM: games/probe (zh_CN): the plural of "%d probe apple" is "%d probe apples", not "%d probe pears"'));
+  assert.ok(runs[3].includes('LOCALIZATION_PROBLEM: games/probe (zh_CN): "%d probe apple" needs 1 plural form(s), not 0'));
+});
+
 test("a resource's player-facing text needs a translation, such as a control's name, a skill's short name or a calendar's seasons", () => {
   const out = tempFile("gamebase-resource-text-test");
   const log = console.log;

@@ -9,6 +9,9 @@ extends Node
 ## change is done: a slider dragged across writes once a frame, not once a step.
 ## The file is replaced whole (`JsonFile`), so a crash never leaves half of it.
 ##
+## The first launch, with no settings file yet, speaks the supported language
+## nearest the system's (`system_locale`, `nearest_locale()`).
+##
 ## Settings belong to the player, not to a save slot: starting or loading a game
 ## leaves them as they are. The controls are those of the game, its modules
 ## and the core (`GameControls`); binding one follows the rules of
@@ -58,6 +61,10 @@ const _CHARACTERS_PER_SECOND: Array[float] = [25.0, 50.0, 100.0, 0.0]
 ## layout may add effects to them; the core adds the ones it lacks.
 const AUDIO_BUSES: Array[StringName] = [&"Music", &"Sounds"]
 
+## The system's language as the game starts (`OS.get_locale()`); a test run
+## sets the source language here, so no test depends on the machine's.
+static var system_locale := OS.get_locale()
+
 var settings_path := DEFAULT_SETTINGS_PATH
 # The values `reset_all()` restores are those `_reset_values()` sets.
 var master_volume: float
@@ -104,6 +111,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	ensure_audio_buses()
+	locale = nearest_locale(system_locale, get_supported_locales())
 	load_settings()
 	apply()
 
@@ -201,6 +209,19 @@ func get_supported_locales() -> PackedStringArray:
 		if not result.has(loaded_locale):
 			result.append(loaded_locale)
 	return result
+
+## The locale of `supported` nearest `system` (an `OS.get_locale()`): the same
+## one, else one of the same language (a Traditional Chinese system reads
+## Simplified Chinese before English), else the source language.
+static func nearest_locale(system: String, supported: PackedStringArray) -> String:
+	var nearest := SOURCE_LOCALE
+	var nearest_score := 0
+	for candidate: String in supported:
+		var score := TranslationServer.compare_locales(system, candidate)
+		if score > nearest_score:
+			nearest = candidate
+			nearest_score = score
+	return nearest
 
 func get_locale_display_name(value: String) -> String:
 	return String(LOCALE_NAMES.get(value, TranslationServer.get_locale_name(value)))

@@ -79,6 +79,11 @@ function registeredCatalogs(game, layers) {
 // sent through a reference to GameEvents (`events.call("toastf", "...", args)`).
 const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\s*/g;
 
+// A count's text, its singular and plural (`tr_n("%d heart", "%d hearts", n)`),
+// which a catalog translates as one entry with every plural form its language
+// has.
+const PLURAL_CALL_RE = /\btr_n\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"/g;
+
 // Player-facing fields of data resources.
 const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|role|activity|group) = "((?:[^"\\]|\\.)*)"$/gm;
 
@@ -288,6 +293,17 @@ function collectNonDialogueKeys(layer) {
   return keys;
 }
 
+// The counts a layer's scripts name (`tr_n()`): singular -> plural.
+function collectPluralKeys(layer) {
+  const keys = new Map();
+  for (const file of walk(layer.root, ".gd")) {
+    for (const [, singular, plural] of readText(file).matchAll(PLURAL_CALL_RE)) {
+      keys.set(decodeString(singular), decodeString(plural));
+    }
+  }
+  return keys;
+}
+
 function poString(line, prefix) {
   try {
     return JSON.parse(line.slice(prefix.length));
@@ -296,27 +312,70 @@ function poString(line, prefix) {
   }
 }
 
+// A catalog's entries, context and msgid -> msgstr. A plural entry's msgstr is
+// its first form, or "" while any form its language has is empty; `plurals`
+// holds each one's plural and forms, and `pluralForms` how many forms the
+// header's Plural-Forms gives the language (0 without one).
 function collectPoEntries(po) {
   const entries = new Map();
+  entries.plurals = new Map();
+  entries.pluralForms = 0;
   for (const block of fs.readFileSync(po, "utf8").split(/\r?\n\r?\n/)) {
     let context = "";
     let msgid;
     let msgstr;
+    let plural;
+    const forms = [];
+    let header = "";
+    let last = "";
     for (const rawLine of block.split(/\r?\n/)) {
       const line = rawLine.trim();
+      const form = /^msgstr\[(\d+)\] /.exec(line);
       if (line.startsWith("msgctxt ")) {
         context = poString(line, "msgctxt ") ?? context;
+      } else if (line.startsWith("msgid_plural ")) {
+        plural = poString(line, "msgid_plural ");
       } else if (line.startsWith("msgid ")) {
         msgid = poString(line, "msgid ");
+      } else if (form) {
+        forms[Number(form[1])] = poString(line, form[0]);
       } else if (line.startsWith("msgstr ")) {
         msgstr = poString(line, "msgstr ");
+        last = "msgstr";
+      } else if (line.startsWith('"') && last === "msgstr") {
+        header += poString(line, "") ?? "";
       }
     }
-    if (msgid !== undefined && msgstr !== undefined) {
+    if (msgid === "" && msgstr !== undefined) {
+      const count = /Plural-Forms:\s*nplurals\s*=\s*(\d+)/.exec(header);
+      entries.pluralForms = count ? Number(count[1]) : 0;
+    }
+    if (msgid !== undefined && plural !== undefined) {
+      const key = `${context}\u0000${msgid}`;
+      entries.plurals.set(key, { plural, forms });
+      entries.set(key, forms.length > 0 && forms.every((text) => text) ? forms[0] : "");
+    } else if (msgid !== undefined && msgstr !== undefined) {
       entries.set(`${context}\u0000${msgid}`, msgstr);
     }
   }
   return entries;
+}
+
+// What is wrong with how the catalogs `available` translate the count
+// `singular`/`plural`, or "" when one translates it with every form.
+function pluralProblem(available, singular, plural) {
+  const key = `\u0000${singular}`;
+  const catalog = available.find((entries) => entries.has(key));
+  if (!catalog) return `missing plural ${singular}`;
+  const entry = catalog.plurals.get(key);
+  if (!entry) return `"${singular}" is translated without its plural "${plural}"`;
+  if (entry.plural !== plural) return `the plural of "${singular}" is "${plural}", not "${entry.plural}"`;
+  if (catalog.pluralForms === 0) return `"${singular}" is in a catalog without a Plural-Forms header`;
+  const filled = entry.forms.filter((text) => text).length;
+  if (entry.forms.length !== catalog.pluralForms || filled !== catalog.pluralForms) {
+    return `"${singular}" needs ${catalog.pluralForms} plural form(s), not ${filled}`;
+  }
+  return "";
 }
 
 // Every layer's text needs a non-empty entry, for every locale the game
@@ -361,6 +420,12 @@ function checkLocalization(game, { reportOnly = false } = {}) {
       const visible = new Set([layer.name, ...layer.below]);
       const available = inLocale.filter((catalog) => visible.has(catalog.layer)).map((catalog) => entries.get(catalog));
       const translated = (key) => available.some((catalog) => catalog.get(key));
+      const plurals = collectPluralKeys(layer);
+      total += plurals.size;
+      for (const [singular, plural] of [...plurals].sort()) {
+        const problem = pluralProblem(available, singular, plural);
+        if (problem) problems.push(`${layer.name} (${locale}): ${problem}`);
+      }
       const keys = [
         ...[...collectNonDialogueKeys(layer)].map((key) => [`\u0000${key}`, key]),
         ...[...collectDialogueKeys(layer)].map((key) => [`dialogue\u0000${key}`, `[dialogue] ${key}`]),
@@ -377,7 +442,7 @@ function checkLocalization(game, { reportOnly = false } = {}) {
   return problems.length > 0 && !reportOnly ? 1 : 0;
 }
 
-module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPoEntries, layerLiterals, textLayers };
+module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPluralKeys, collectPoEntries, layerLiterals, textLayers };
 
 if (require.main === module) {
   main(() => {
