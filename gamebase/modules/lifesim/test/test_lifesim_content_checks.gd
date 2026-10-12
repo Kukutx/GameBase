@@ -7,7 +7,7 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 
 func test_tools_of_the_actions_the_module_handles_are_valid() -> void:
 	var tools: Array = []
-	for action: StringName in [ItemData.ACTION_TILL, ItemData.ACTION_WATER, ItemData.ACTION_MINE, ItemData.ACTION_FISH]:
+	for action: StringName in [FarmPlot.TILL_ACTION, FarmPlot.WATER_ACTION, MiningNode.TOOL_ACTION, FishingSpot.TOOL_ACTION]:
 		var tool := _item(StringName("fixture_%s_tool" % action))
 		tool.kind = ItemData.Kind.TOOL
 		tool.tool_action = action

@@ -169,7 +169,7 @@ func _fixture_content() -> Array:
 	pick.display_name = "Pick"
 	pick.kind = ItemData.Kind.TOOL
 	pick.max_stack = 1
-	pick.tool_action = ItemData.ACTION_MINE
+	pick.tool_action = MiningNode.TOOL_ACTION
 	pick.tool_power = 1
 	var pebble := ItemData.new()
 	pebble.id = &"fixture_pebble"

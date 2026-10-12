@@ -12,9 +12,9 @@ extends Node
 ## through `NpcContext`. `project_changed`, `project_completed` and
 ## `project_claimed` announce each step.
 
-signal project_changed(project_id: StringName, state: Dictionary)
-signal project_completed(project_id: StringName)
-signal project_claimed(project_id: StringName)
+signal project_changed(town_project_id: StringName, state: Dictionary)
+signal project_completed(town_project_id: StringName)
+signal project_claimed(town_project_id: StringName)
 
 const STATE_KEY := &"town_projects:state"
 

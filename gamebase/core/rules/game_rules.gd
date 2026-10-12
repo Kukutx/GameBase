@@ -196,13 +196,13 @@ func _validate_resource(resource: Resource, context: String, problems: PackedStr
 		if (name == "condition" or name.ends_with("_condition")) and value is String:
 			for problem: String in validate_query(value):
 				problems.append("%s %s: %s" % [context, name, problem])
-			if not resource is TriggerData and not find_event_arg_uses(PackedStringArray([value])).is_empty():
-				problems.append("%s %s: only a trigger's conditions and actions name event arguments ($name)" % [context, name])
+			if not GameEvent.is_listener(resource) and not GameEvent.find_arg_uses(PackedStringArray([value])).is_empty():
+				problems.append("%s %s: only the conditions and actions of content that listens to an event read its arguments" % [context, name])
 		elif (name == "actions" or name.ends_with("_actions")) and (value is PackedStringArray or value is Array):
 			for problem: String in validate_actions(PackedStringArray(value)):
 				problems.append("%s %s: %s" % [context, name, problem])
-			if not resource is TriggerData and not find_event_arg_uses(PackedStringArray(value)).is_empty():
-				problems.append("%s %s: only a trigger's conditions and actions name event arguments ($name)" % [context, name])
+			if not GameEvent.is_listener(resource) and not GameEvent.find_arg_uses(PackedStringArray(value)).is_empty():
+				problems.append("%s %s: only the conditions and actions of content that listens to an event read its arguments" % [context, name])
 		elif value is Array:
 			for item: Variant in value:
 				if item is Resource and not (item as Resource).resource_path.ends_with(".tres"):
@@ -397,26 +397,6 @@ func _sorted_keys(source: Dictionary) -> PackedStringArray:
 		keys.append(String(key))
 	keys.sort()
 	return keys
-
-## Each place `texts`, conditions or actions, read an argument of the event
-## that set off a trigger, as {"name", "key", "index"}: `index` is where the
-## `$name` stands among the key's arguments, or -1 for the name `EVENT_ARG` and
-## `EVENT_ARG_AT_LEAST` read. The clauses inside `ANY` count too.
-static func find_event_arg_uses(texts: PackedStringArray) -> Array[Dictionary]:
-	var uses: Array[Dictionary] = []
-	for text: String in texts:
-		for clause: Dictionary in GameQuery.parse(text)["clauses"]:
-			var key := StringName(String(clause["key"]).to_upper())
-			var args: PackedStringArray = clause["args"]
-			if key == &"ANY":
-				uses.append_array(find_event_arg_uses(args))
-				continue
-			if (key == &"EVENT_ARG" or key == &"EVENT_ARG_AT_LEAST") and not args.is_empty():
-				uses.append({"name": args[0], "key": key, "index": -1})
-			for index: int in args.size():
-				if args[index].begins_with("$"):
-					uses.append({"name": args[index].substr(1), "key": key, "index": index})
-	return uses
 
 ## The kind of argument `key` takes at `index` (see `register_condition`), or
 ## &"" when nothing checks it.

@@ -1,8 +1,8 @@
 class_name ProcessingStation
 extends PlacedStructure
 
-signal job_started(station_id: StringName, recipe_id: StringName, finish_at: int)
-signal job_finished(station_id: StringName, recipe_id: StringName)
+signal job_started(station_id: StringName, processing_recipe_id: StringName, finish_at: int)
+signal job_finished(station_id: StringName, processing_recipe_id: StringName)
 signal output_collected(station_id: StringName, item_id: StringName, quantity: int)
 
 @export var station_id: StringName

@@ -12,7 +12,7 @@ extends Node
 ## (`farm_expansions:completed`), so it is saved with the world and a new game
 ## has none. `expansion_completed` announces each purchase.
 
-signal expansion_completed(expansion_id: StringName, housing_id: StringName, capacity: int)
+signal expansion_completed(farm_expansion_id: StringName, housing_id: StringName, capacity: int)
 
 const STATE_KEY := &"farm_expansions:completed"
 

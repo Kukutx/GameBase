@@ -1,15 +1,19 @@
-[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="QuestData" format=3]
 
 [ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_data.gd" id="1_quest"]
+[ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_objective.gd" id="2_objective"]
+
+[sub_resource type="Resource" id="Resource_objective"]
+script = ExtResource("2_objective")
+event = &"CombatEvents.enemy_defeated"
+condition = "EVENT_ARG enemy_id green_slime"
 
 [resource]
 script = ExtResource("1_quest")
 id = &"defeat_green_slime"
 title = "Cave Pest"
 description = "Defeat a Green Slime in the Old Mine."
-objective_type = 5
-target_id = &"green_slime"
-required_amount = 1
+objectives = [SubResource("Resource_objective")]
 reward_money = 200
 reward_items = {"field_snack": 1}
 next_quest_id = &"smelt_copper"

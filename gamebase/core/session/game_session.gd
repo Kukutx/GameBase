@@ -36,8 +36,8 @@ signal new_game_failed
 ## Emitted when play starts after the session changed: a new game is ready, or
 ## a save finished loading. Mail checks its deliveries again here. What is
 ## announced while the session changes (`is_changing()`) is not replayed:
-## `GameTriggers` drops it, since a load or a new game's steps set the state
-## those events stand for.
+## `GameTriggers` and the quests drop it, since a load or a new game's steps
+## set the state those events stand for.
 signal play_started
 signal player_collapsed(money_lost: int)
 signal late_night_collapse

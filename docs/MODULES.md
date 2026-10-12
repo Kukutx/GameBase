@@ -74,7 +74,7 @@ A service keeps its state in the autoload and saves it in a section of its own, 
 
 ## Events and rules
 
-- `<Module>Events` declares the signals of what happened in the module (an item crafted, a fish caught). Only the module emits them; higher modules, the game and triggers (`TriggerData.event`, `"<Module>Events.<signal>"`) listen.
+- `<Module>Events` declares the signals of what happened in the module (an item crafted, a fish caught). Only the module emits them; higher modules, the game, triggers and quest objectives listen (`"<Module>Events.<signal>"`, `GameEvent`), so a module that counts or rewards what happens elsewhere listens to an event named in content rather than to another module's code. An argument that holds a content id is named `<kind>_id` after its kind (`crop_id`, `mining_node_id`, or `result_item_id` for an item that is a result), which lets content checks verify the ids compared with it.
 - `<Module>Rules.register(rules)` registers the module's keys. Each handler has a doc comment `## KEY <arg> [optional]: what it means.`, which the [rule keys](reference/rules.md) page shows.
 
 After changing an autoload, a signal or a rule key, run `node tools/generate_reference.js`; validation fails while a reference page differs from the code.

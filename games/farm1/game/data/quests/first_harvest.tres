@@ -1,15 +1,21 @@
-[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="QuestData" format=3]
 
 [ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_data.gd" id="1_quest"]
+[ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_objective.gd" id="2_objective"]
+
+[sub_resource type="Resource" id="Resource_objective"]
+script = ExtResource("2_objective")
+event = &"LifesimEvents.crop_harvested"
+condition = "EVENT_ARG crop_id turnip"
+count_per = &"quantity"
+required_amount = 3
 
 [resource]
 script = ExtResource("1_quest")
 id = &"first_harvest"
 title = "First Harvest"
 description = "Grow and harvest three turnips."
-objective_type = 2
-target_id = &"turnip"
-required_amount = 3
+objectives = [SubResource("Resource_objective")]
 reward_money = 250
 reward_items = {"turnip_seeds": 5}
 next_quest_id = &"catch_first_fish"

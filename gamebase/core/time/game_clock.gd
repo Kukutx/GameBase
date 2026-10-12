@@ -47,8 +47,8 @@ func advance_minutes(amount: int) -> void:
 ## condition that is not a valid query moves nothing.
 func advance_until(condition: String, limit: int) -> int:
 	var problems := GameRules.validate_query(condition)
-	if not GameRulesService.find_event_arg_uses(PackedStringArray([condition])).is_empty():
-		problems.append("only a trigger's conditions name event arguments ($name)")
+	if not GameEvent.find_arg_uses(PackedStringArray([condition])).is_empty():
+		problems.append("a wait listens to no event, so it reads no event argument")
 	if not problems.is_empty():
 		push_warning("GameClock: cannot wait until '%s': %s" % [condition, "; ".join(problems)])
 		return -1

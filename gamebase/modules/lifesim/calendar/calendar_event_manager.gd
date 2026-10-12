@@ -12,10 +12,10 @@ extends Node
 ## refused while the items do not fit in the inventory, and the claim is kept in
 ## `WorldState`.
 
-signal event_started(event_id: StringName)
-signal event_ended(event_id: StringName)
+signal event_started(calendar_event_id: StringName)
+signal event_ended(calendar_event_id: StringName)
 signal active_events_changed
-signal participation_claimed(event_id: StringName, year: int)
+signal participation_claimed(calendar_event_id: StringName, year: int)
 
 var _active: Dictionary = {}
 var _claiming: Dictionary = {}

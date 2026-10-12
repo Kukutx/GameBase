@@ -8,8 +8,9 @@
 //                                the order a game loads them, with its layer,
 //                                script and what its class doc says it does;
 //   docs/reference/events.md     the signals of those autoloads: what a
-//                                trigger (`TriggerData.event`, "Autoload.signal")
-//                                and the game's code listen to;
+//                                trigger and a quest objective listen to
+//                                ("Autoload.signal", GameEvent) and the game's
+//                                code connects to;
 //   docs/reference/rules.md      the condition and action keys the core and
 //                                the modules register with GameRules, with
 //                                the usage and meaning their doc comment gives.
@@ -181,7 +182,7 @@ function eventsPage(foundation) {
     "",
     "# Events",
     "",
-    'The signals of the foundation\'s autoloads. A trigger names one as its event, `"Autoload.signal"` (`TriggerData.event`), and its condition and actions read the signal\'s arguments by name; the game\'s own code connects to them. Only the module that owns an `<Module>Events` autoload emits its signals.',
+    'The signals of the foundation\'s autoloads. A trigger or a quest objective names one as its event, `"Autoload.signal"` (`GameEvent`), and its condition reads the signal\'s arguments by name, as do a trigger\'s actions; the game\'s own code connects to them, or listens through a `GameEventListener`. An argument named `<kind>_id`, or ending in `_<kind>_id`, holds an id of that kind of content. Only the module that owns an `<Module>Events` autoload emits its signals.',
     "",
   ];
   for (const [name, script, layer] of autoloads(foundation)) {

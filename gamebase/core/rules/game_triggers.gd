@@ -35,12 +35,8 @@ const SAVED_TYPES: Array[int] = [TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, T
 
 # event -> Array[TriggerData]
 var _by_event: Dictionary = {}
-# event -> argument names, in their order
-var _arg_names: Dictionary = {}
-# event -> {argument name: its declared type}
-var _arg_types: Dictionary = {}
-# event -> the callable connected to its signal
-var _connections: Dictionary = {}
+# event -> the GameEventListener on it
+var _listeners: Dictionary = {}
 var _depth := 0
 # Once triggers whose actions are running, so they do not set themselves off.
 var _running: Dictionary = {}
@@ -57,16 +53,13 @@ func _exit_tree() -> void:
 func connect_triggers() -> void:
 	_disconnect_all()
 	for trigger: TriggerData in TriggerData.find_all():
-		var source := trigger.get_source()
-		if source == null:
-			continue
 		if not _by_event.has(trigger.event):
+			var event := trigger.event
+			var listener := GameEventListener.new(event, func(args: Dictionary) -> void: fire(event, args))
+			if not listener.start():
+				continue
+			_listeners[trigger.event] = listener
 			_by_event[trigger.event] = []
-			_arg_types[trigger.event] = trigger.get_event_args()
-			_arg_names[trigger.event] = PackedStringArray(_arg_types[trigger.event].keys())
-			var callable := _on_event.bind(trigger.event)
-			source.connect(String(trigger.event).get_slice(".", 1), callable)
-			_connections[trigger.event] = [source, callable]
 		(_by_event[trigger.event] as Array).append(trigger)
 
 ## Whether the trigger already fired in this world, for one that fires once.
@@ -100,7 +93,7 @@ func fire(event: StringName, args: Dictionary) -> void:
 			var pending := _pending(trigger)
 			var declared: Variant = null
 			if pending.is_empty():
-				declared = _as_declared(trigger, args, _arg_types.get(event, {}))
+				declared = _as_declared(trigger, args, (_listeners[event] as GameEventListener).arg_types)
 				if declared == null or not GameRules.check(trigger.condition, {"event": declared}):
 					continue
 			_running[trigger.id] = true
@@ -144,26 +137,11 @@ func _run_once(trigger: TriggerData, event: Dictionary, first: int) -> bool:
 	_set_state(state)
 	return completed
 
-func _on_event(...values: Array) -> void:
-	var event: StringName = values.pop_back()
-	var names: PackedStringArray = _arg_names.get(event, PackedStringArray())
-	var args: Dictionary = {}
-	for index: int in mini(names.size(), values.size()):
-		args[names[index]] = values[index]
-	fire(event, args)
-
 func _disconnect_all() -> void:
-	for event: StringName in _connections:
-		# The source may already be gone (freed before this service at exit).
-		var source: Variant = _connections[event][0]
-		var callable: Callable = _connections[event][1]
-		var signal_name := String(event).get_slice(".", 1)
-		if is_instance_valid(source) and (source as Node).is_connected(signal_name, callable):
-			(source as Node).disconnect(signal_name, callable)
-	_connections.clear()
+	for listener: GameEventListener in _listeners.values():
+		listener.stop()
+	_listeners.clear()
 	_by_event.clear()
-	_arg_names.clear()
-	_arg_types.clear()
 
 # A cleared or loaded world keeps only what current once triggers left: the
 # ones that fired, and the pending ones that have not and can resume
@@ -214,7 +192,7 @@ func _resume_point(trigger: TriggerData, entry: Variant) -> Dictionary:
 	if done == null or int(done) < 1 or int(done) >= GameRules.count_actions(trigger.actions):
 		return {}
 	var values: Variant = (entry as Dictionary).get("event")
-	var names := trigger.get_event_args()
+	var names := GameEvent.get_args(trigger.event)
 	if not (values is Dictionary) or (values as Dictionary).size() != names.size():
 		return {}
 	var event := {}

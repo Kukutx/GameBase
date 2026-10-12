@@ -14,6 +14,9 @@ func before_each() -> void:
 	var quest := QuestData.new()
 	quest.id = &"fixture_errand"
 	quest.title = "Errand"
+	var talk := QuestObjective.new()
+	talk.event = &"NpcSocialEvents.npc_talked"
+	quest.objectives = [talk]
 	var project := TownProjectData.new()
 	project.id = &"fixture_garden"
 	project.display_name = "Fixture Garden"

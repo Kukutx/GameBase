@@ -74,7 +74,7 @@ func test_iron_depth_chain_syncs_from_mine_progress_and_closes_at_smelting() -> 
 	QuestState.load_save_data({})
 	MineState.enter_from_surface()
 	assert_true(QuestState.start_quest(&"reach_iron_depth"))
-	assert_eq(int(QuestState.get_state(&"reach_iron_depth")["progress"]), 1)
+	assert_eq(QuestState.get_progress(&"reach_iron_depth"), 1)
 	MineState.set_floor(6)
 	assert_true(QuestState.is_completed(&"reach_iron_depth"))
 	assert_true(QuestState.is_active(&"mine_iron"))

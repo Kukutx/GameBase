@@ -2,7 +2,7 @@
 
 # Events
 
-The signals of the foundation's autoloads. A trigger names one as its event, `"Autoload.signal"` (`TriggerData.event`), and its condition and actions read the signal's arguments by name; the game's own code connects to them. Only the module that owns an `<Module>Events` autoload emits its signals.
+The signals of the foundation's autoloads. A trigger or a quest objective names one as its event, `"Autoload.signal"` (`GameEvent`), and its condition reads the signal's arguments by name, as do a trigger's actions; the game's own code connects to them, or listens through a `GameEventListener`. An argument named `<kind>_id`, or ending in `_<kind>_id`, holds an id of that kind of content. Only the module that owns an `<Module>Events` autoload emits its signals.
 
 ## Transition (core)
 
@@ -78,8 +78,8 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 ## BuffState (items)
 
-- `BuffState.buff_applied(buff_id: StringName, expires_at: int)`
-- `BuffState.buff_expired(buff_id: StringName)`
+- `BuffState.buff_applied(food_buff_id: StringName, expires_at: int)`
+- `BuffState.buff_expired(food_buff_id: StringName)`
 - `BuffState.buffs_changed()`
 
 ## ShopState (items)
@@ -104,17 +104,17 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 ## LifesimEvents (lifesim)
 
 - `LifesimEvents.crop_harvested(crop_id: StringName, item_id: StringName, quantity: int)`: A grown crop was harvested into `quantity` of `item_id`.
-- `LifesimEvents.animal_product_collected(animal_id: StringName, item_id: StringName, quantity: int)`: A farm animal's product was collected.
+- `LifesimEvents.animal_product_collected(farm_animal_id: StringName, item_id: StringName, quantity: int)`: A farm animal's product was collected.
 - `LifesimEvents.fish_caught(fish_id: StringName, item_id: StringName)`: A biting fish was landed.
-- `LifesimEvents.resource_mined(node_id: StringName, item_id: StringName, quantity: int)`: A mining node broke and dropped `quantity` of `item_id`.
-- `LifesimEvents.item_processed(recipe_id: StringName, item_id: StringName, quantity: int)`: A processing station's output was collected.
+- `LifesimEvents.resource_mined(mining_node_id: StringName, item_id: StringName, quantity: int)`: A mining node broke and dropped `quantity` of `item_id`.
+- `LifesimEvents.item_processed(processing_recipe_id: StringName, item_id: StringName, quantity: int)`: A processing station's output was collected.
 
 ## EventState (lifesim)
 
-- `EventState.event_started(event_id: StringName)`
-- `EventState.event_ended(event_id: StringName)`
+- `EventState.event_started(calendar_event_id: StringName)`
+- `EventState.event_ended(calendar_event_id: StringName)`
 - `EventState.active_events_changed()`
-- `EventState.participation_claimed(event_id: StringName, year: int)`
+- `EventState.participation_claimed(calendar_event_id: StringName, year: int)`
 
 ## ShippingState (lifesim)
 
@@ -124,7 +124,7 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 ## FarmExpansionState (lifesim)
 
-- `FarmExpansionState.expansion_completed(expansion_id: StringName, housing_id: StringName, capacity: int)`
+- `FarmExpansionState.expansion_completed(farm_expansion_id: StringName, housing_id: StringName, capacity: int)`
 
 ## MineState (lifesim)
 
@@ -134,7 +134,7 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 ## AnimalState (lifesim)
 
 - `AnimalState.ownership_changed(location_id: StringName)`
-- `AnimalState.animal_purchased(instance_id: StringName, animal_id: StringName, price: int)`
+- `AnimalState.animal_purchased(instance_id: StringName, farm_animal_id: StringName, price: int)`
 - `AnimalState.animal_renamed(instance_id: StringName, custom_name: String)`
 - `AnimalState.animal_sold(instance_id: StringName, refund: int)`
 - `AnimalState.animal_fed(instance_id: StringName)`
@@ -157,7 +157,7 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 ## HeartEvents (npc_social)
 
-- `HeartEvents.heart_event_triggered(event_id: StringName, npc_id: StringName)`
+- `HeartEvents.heart_event_triggered(heart_event_id: StringName, npc_id: StringName)`
 
 ## NpcMemory (npc_social)
 
@@ -170,12 +170,12 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 ## ProgressionEvents (progression)
 
-- `ProgressionEvents.tool_upgraded(upgrade_id: StringName, result_item_id: StringName)`: A tool upgrade was collected as `result_item_id`.
+- `ProgressionEvents.tool_upgraded(tool_upgrade_id: StringName, result_item_id: StringName)`: A tool upgrade was collected as `result_item_id`.
 
 ## QuestState (progression)
 
 - `QuestState.quest_started(quest_id: StringName)`
-- `QuestState.quest_progressed(quest_id: StringName, progress: int, required: int)`
+- `QuestState.quest_progressed(quest_id: StringName, objective: int, progress: int, required: int)`: An objective of an active quest moved on: `objective` is its index.
 - `QuestState.quest_completed(quest_id: StringName)`
 
 ## MailState (progression)
@@ -186,7 +186,7 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 ## UpgradeState (progression)
 
-- `UpgradeState.tool_upgraded(upgrade_id: StringName, source_item_id: StringName, result_item_id: StringName)`
+- `UpgradeState.tool_upgraded(tool_upgrade_id: StringName, source_item_id: StringName, result_item_id: StringName)`
 
 ## CollectionState (progression)
 
@@ -195,8 +195,8 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 ## CollectionMilestones (progression)
 
-- `CollectionMilestones.milestone_ready(milestone_id: StringName)`
-- `CollectionMilestones.milestone_claimed(milestone_id: StringName)`
+- `CollectionMilestones.milestone_ready(collection_milestone_id: StringName)`
+- `CollectionMilestones.milestone_claimed(collection_milestone_id: StringName)`
 
 ## DailyContractState (progression)
 
@@ -206,14 +206,14 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 ## TownProjects (progression)
 
-- `TownProjects.project_changed(project_id: StringName, state: Dictionary)`
-- `TownProjects.project_completed(project_id: StringName)`
-- `TownProjects.project_claimed(project_id: StringName)`
+- `TownProjects.project_changed(town_project_id: StringName, state: Dictionary)`
+- `TownProjects.project_completed(town_project_id: StringName)`
+- `TownProjects.project_claimed(town_project_id: StringName)`
 
 ## Skills (skills)
 
-- `Skills.skill_xp_changed(skill: StringName, xp: int, level: int)`
-- `Skills.skill_leveled_up(skill: StringName, level: int)`
+- `Skills.skill_xp_changed(skill_id: StringName, xp: int, level: int)`
+- `Skills.skill_leveled_up(skill_id: StringName, level: int)`
 
 ## WorldTravel (core)
 
@@ -224,9 +224,9 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 ## GameAudio (core)
 
-- `GameAudio.cue_requested(cue_id: StringName)`
-- `GameAudio.cue_started(cue_id: StringName)`
-- `GameAudio.music_changed(cue_id: StringName)`
+- `GameAudio.cue_requested(audio_cue_id: StringName)`
+- `GameAudio.cue_started(audio_cue_id: StringName)`
+- `GameAudio.music_changed(audio_cue_id: StringName)`
 
 ## SaveManager (core)
 
@@ -244,7 +244,7 @@ The signals of the foundation's autoloads. A trigger names one as its event, `"A
 
 - `GameSession.new_game_started()`: Emitted when a new game is ready to play: its start location is open with the player placed.
 - `GameSession.new_game_failed()`: Emitted when a new game that started cannot open its start location. Its steps already reset the services and its slot was replaced, so the player stays where they started it (the title screen).
-- `GameSession.play_started()`: Emitted when play starts after the session changed: a new game is ready, or a save finished loading. Mail checks its deliveries again here. What is announced while the session changes (`is_changing()`) is not replayed: `GameTriggers` drops it, since a load or a new game's steps set the state those events stand for.
+- `GameSession.play_started()`: Emitted when play starts after the session changed: a new game is ready, or a save finished loading. Mail checks its deliveries again here. What is announced while the session changes (`is_changing()`) is not replayed: `GameTriggers` and the quests drop it, since a load or a new game's steps set the state those events stand for.
 - `GameSession.player_collapsed(money_lost: int)`
 - `GameSession.late_night_collapse()`
 

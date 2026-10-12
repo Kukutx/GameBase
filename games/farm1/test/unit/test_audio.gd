@@ -58,16 +58,15 @@ func test_gameplay_audio_mapping_requests_stable_cue_ids() -> void:
 	GameAudio.cue_requested.connect(on_requested)
 	# Call GameAudio's own handlers only; emitting the signals would also
 	# advance quests, contracts and collections.
-	_call_audio_handler(LifesimEvents.fish_caught, [&"river_trout", &"river_trout"])
-	_call_audio_handler(LifesimEvents.resource_mined, [&"stone_rock", &"stone", 1])
-	_call_audio_handler(ProgressionEvents.tool_upgraded, [&"copper_pickaxe", &"copper_pickaxe"])
+	_call_audio_handler(&"LifesimEvents.fish_caught", [&"river_trout", &"river_trout"])
+	_call_audio_handler(&"LifesimEvents.resource_mined", [&"stone_rock", &"stone", 1])
+	_call_audio_handler(&"ProgressionEvents.tool_upgraded", [&"copper_pickaxe", &"copper_pickaxe"])
 	assert_eq(requested, [&"sfx_fish_caught", &"sfx_resource_mined", &"sfx_tool_upgraded"])
 	GameAudio.cue_requested.disconnect(on_requested)
 
-func _call_audio_handler(event: Signal, arguments: Array) -> void:
-	for connection: Dictionary in event.get_connections():
-		var handler: Callable = connection["callable"]
-		if handler.get_object() == GameAudio:
-			handler.callv(arguments)
-			return
-	fail_test("GameAudio does not listen to %s" % event.get_name())
+func _call_audio_handler(event: StringName, arguments: Array) -> void:
+	var listener: GameEventListener = GameAudio._event_listeners.get(event)
+	if listener == null or not listener.is_listening():
+		fail_test("GameAudio does not listen to %s" % event)
+		return
+	listener._relay.callv(arguments)

@@ -24,9 +24,9 @@ func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	# The fixture holds no skills or food buffs, so no perk or buff changes a cost.
 	ContentFixture.use(self, [
-		_tool(&"fixture_strong_hoe", ItemData.ACTION_TILL, 2),
-		_tool(&"fixture_strong_can", ItemData.ACTION_WATER, 2),
-		_tool(&"fixture_strong_pickaxe", ItemData.ACTION_MINE, 2),
+		_tool(&"fixture_strong_hoe", FarmPlot.TILL_ACTION, 2),
+		_tool(&"fixture_strong_can", FarmPlot.WATER_ACTION, 2),
+		_tool(&"fixture_strong_pickaxe", MiningNode.TOOL_ACTION, 2),
 		_stone(),
 		_stone_chunk(),
 	])

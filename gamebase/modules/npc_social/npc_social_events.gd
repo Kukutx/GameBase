@@ -3,7 +3,8 @@ extends Node
 
 ## What happened in the npc_social module, for higher modules and the game to
 ## react to (quests, collections, skill experience, sounds). Only the npc_social
-## module emits these.
+## module emits these. An argument named `<kind>_id` (or ending in
+## `_<kind>_id`) is the id of an entry of that kind of content (`GameEvent`).
 
 ## The player started talking to an NPC; `first_today` when it is the first
 ## time today, which is when talking raises their friendship. What rewards

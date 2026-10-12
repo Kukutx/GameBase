@@ -10,8 +10,8 @@ func test_entries_report_invalid_rewards_and_tool_changes() -> void:
 	var meadow := WorldLocationData.new()
 	meadow.id = &"fixture_meadow"
 	var berry := _item(&"fixture_berry")
-	var source_tool := _tool(&"fixture_source_tool", ItemData.ACTION_MINE, 2)
-	var result_tool := _tool(&"fixture_result_tool", ItemData.ACTION_TILL, 2)
+	var source_tool := _tool(&"fixture_source_tool", MiningNode.TOOL_ACTION, 2)
+	var result_tool := _tool(&"fixture_result_tool", FarmPlot.TILL_ACTION, 2)
 	var bad_mail := MailData.new()
 	bad_mail.id = &"fixture_bad_mail"
 	bad_mail.subject = "Bad"
@@ -39,21 +39,39 @@ func test_entries_report_invalid_rewards_and_tool_changes() -> void:
 	assert_string_contains(joined, "tool upgrade 'fixture_bad_upgrade' changes tool action from 'mine' to 'till'")
 	assert_string_contains(joined, "tool upgrade 'fixture_bad_upgrade' result power 2 does not exceed source power 2")
 
-func test_quests_report_malformed_numbers_without_crashing() -> void:
+func test_quests_report_malformed_numbers_and_objectives_without_crashing() -> void:
 	var berry := _item(&"fixture_berry")
 	var quest := QuestData.new()
 	quest.id = &"fixture_bad_quest"
 	quest.title = ""
-	quest.objective_type = QuestData.ObjectiveType.COLLECT
-	quest.target_id = &"fixture_berry"
-	quest.required_amount = 0
 	quest.reward_money = -1
 	quest.reward_items = {"fixture_berry": {"bad": true}}
 	quest.entry_point = true
-	var entries: Array = [berry, quest]
+	var gather := QuestObjective.new()
+	gather.event = &"InventoryState.item_gained"
+	gather.condition = "EVENT_ARG item_id fixture_berry fixture_retired_item"
+	gather.count_per = &"item_id"
+	gather.required_amount = 0
+	var dive := QuestObjective.new()
+	dive.event = &"MineState.deepest_floor_changed"
+	dive.measure = &"MineState.set_floor"
+	var nowhere := QuestObjective.new()
+	nowhere.event = &"FixtureNoAutoload.happened"
+	quest.objectives = [gather, dive, nowhere]
+	var empty := QuestData.new()
+	empty.id = &"fixture_empty_quest"
+	empty.title = "Empty"
+	var entries: Array = [berry, quest, empty]
 	var joined := _problems_of(ContentFixture.use(self, entries), entries)
 	assert_string_contains(joined, "quest 'fixture_bad_quest' has an empty title")
-	assert_string_contains(joined, "quest 'fixture_bad_quest' has invalid required amount 0")
+	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 1 requires 0; an objective requires at least 1")
+	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 1 compares argument 'item_id' with unknown item 'fixture_retired_item'")
+	assert_false(joined.contains("unknown item 'fixture_berry'"), "an id of the kind passes")
+	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 1 counts per 'item_id', which is no integer argument of 'InventoryState.item_gained'")
+	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 2 follows 'MineState.set_floor', which is no method of an autoload that takes no argument and returns an int")
+	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 3 listens to 'FixtureNoAutoload.happened', which is no signal of an autoload")
+	assert_string_contains(joined, "quest 'fixture_empty_quest' has no objectives")
+	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 2 has no description; each of several objectives says what it asks")
 	assert_string_contains(joined, "quest 'fixture_bad_quest' has negative reward money")
 	assert_string_contains(joined, "quest 'fixture_bad_quest' has invalid reward quantity for 'fixture_berry'")
 

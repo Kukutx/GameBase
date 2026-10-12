@@ -11,7 +11,7 @@ func install() -> void:
 	ContentDB.register_check(FarmExpansionData.find_cycle_problems)
 	ContentDB.register_check(_find_slot_problems)
 	LifesimRules.register(GameRules)
-	for action: StringName in [ItemData.ACTION_TILL, ItemData.ACTION_WATER, ItemData.ACTION_MINE, ItemData.ACTION_FISH]:
+	for action: StringName in [FarmPlot.TILL_ACTION, FarmPlot.WATER_ACTION, MiningNode.TOOL_ACTION, FishingSpot.TOOL_ACTION]:
 		ItemData.register_tool_action(action)
 	for stat: StringName in [&"tool_energy", &"farming_energy", &"mining_energy", &"fishing_wait", &"fishing_window",
 			&"forage_quantity"]:

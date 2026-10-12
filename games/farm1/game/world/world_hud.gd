@@ -75,7 +75,7 @@ func _on_selected_changed(_index: int, _item_id: StringName) -> void:
 func _on_quest_event(_quest_id: StringName) -> void:
 	_refresh_quest()
 
-func _on_quest_progress(_quest_id: StringName, _progress: int, _required: int) -> void:
+func _on_quest_progress(_quest_id: StringName, _objective: int, _progress: int, _required: int) -> void:
 	_refresh_quest()
 
 func _on_skill_changed(_skill: StringName, _xp: int, _level: int) -> void:

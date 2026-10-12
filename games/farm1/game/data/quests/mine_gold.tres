@@ -1,14 +1,20 @@
-[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="QuestData" format=3]
 
 [ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_data.gd" id="1_quest"]
+[ext_resource type="Script" path="res://gamebase/modules/progression/quests/quest_objective.gd" id="2_objective"]
+
+[sub_resource type="Resource" id="Resource_objective"]
+script = ExtResource("2_objective")
+event = &"LifesimEvents.resource_mined"
+condition = "EVENT_ARG mining_node_id gold_rock"
+count_per = &"quantity"
+required_amount = 2
 
 [resource]
 script = ExtResource("1_quest")
 id = &"mine_gold"
 title = "Gold in the Deep"
 description = "Break Gold Veins in the deeper mine."
-objective_type = 4
-target_id = &"gold_rock"
-required_amount = 2
+objectives = [SubResource("Resource_objective")]
 reward_money = 350
 next_quest_id = &"smelt_gold"

@@ -11,6 +11,7 @@ class FixtureEvents:
 	signal harvested(quantity: int, crop: StringName)
 	signal found(item: Resource)
 	signal noted(value: Variant)
+	signal arrived(location_id: StringName, visitors: int)
 
 var _events: FixtureEvents
 var _world_snapshot: Dictionary
@@ -322,7 +323,22 @@ func test_triggers_report_arguments_of_the_wrong_type_and_inside_any() -> void:
 	assert_string_contains(problems, "trigger 'fixture_nested' reads argument 'season'")
 	assert_false(problems.contains("fixture_fine"), problems)
 
-func test_only_triggers_name_event_arguments() -> void:
+func test_an_id_argument_is_checked_against_its_kind_of_content() -> void:
+	GameRules.register_action(&"FIXTURE_UNLOCK", func(_args: PackedStringArray, _context: Dictionary) -> bool: return true,
+		1, 1, [AchievementData.KIND])
+	var compares := _trigger(&"fixture_compares", ["ADD_FLAG fixture:x"], "EVENT_ARG location_id fixture_field fixture_gone")
+	var mismatched := _trigger(&"fixture_mismatched", ["FIXTURE_UNLOCK $location_id"])
+	var fine := _trigger(&"fixture_fine", ["SET_FLAG $location_id"], "EVENT_ARG location_id fixture_field, EVENT_ARG_AT_LEAST visitors 2")
+	for trigger: TriggerData in [compares, mismatched, fine]:
+		trigger.event = &"FixtureEvents.arrived"
+	var registry := ContentFixture.use(self, [_location(&"fixture_field"), compares, mismatched, fine])
+	var problems := "\n".join(registry.find_problems())
+	assert_string_contains(problems, "trigger 'fixture_compares' compares argument 'location_id' with unknown location 'fixture_gone'")
+	assert_string_contains(problems, "trigger 'fixture_mismatched' passes argument 'location_id' (location id) to FIXTURE_UNLOCK, which takes achievement")
+	assert_false(problems.contains("fixture_fine"), problems)
+	GameRules._actions.erase(&"FIXTURE_UNLOCK")
+
+func test_only_content_that_listens_to_an_event_reads_its_arguments() -> void:
 	var trigger := _trigger(&"fixture_total", ["ADD_FLAG fixture:total $quantity"])
 	var minigame := MiniGameDefinition.new()
 	minigame.id = &"fixture_minigame"
@@ -330,8 +346,8 @@ func test_only_triggers_name_event_arguments() -> void:
 	var registry := ContentFixture.use(self, [trigger, minigame])
 	var problems := "\n".join(GameRules.validate_content(registry))
 	assert_false(problems.contains("fixture_total"), problems)
-	assert_string_contains(problems, "minigame 'fixture_minigame' success_actions: only a trigger's conditions and actions name event arguments")
-	var nested := GameRulesService.find_event_arg_uses(PackedStringArray(['ANY "EVENT_ARG crop fixture_radish" "WORLD_FLAG $crop"']))
+	assert_string_contains(problems, "minigame 'fixture_minigame' success_actions: only the conditions and actions of content that listens to an event read its arguments")
+	var nested := GameEvent.find_arg_uses(PackedStringArray(['ANY "EVENT_ARG crop fixture_radish" "WORLD_FLAG $crop"']))
 	assert_eq(nested.size(), 2, "the clauses inside ANY name event arguments too")
 
 # Makes `triggers` the only content and starts a trigger service on them.

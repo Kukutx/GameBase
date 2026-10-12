@@ -12,9 +12,9 @@ extends Node
 ## volumes are the player's, which `GameSettings` sets on the buses. Audio keeps
 ## playing while the world is paused. The service saves nothing.
 
-signal cue_requested(cue_id: StringName)
-signal cue_started(cue_id: StringName)
-signal music_changed(cue_id: StringName)
+signal cue_requested(audio_cue_id: StringName)
+signal cue_started(audio_cue_id: StringName)
+signal music_changed(audio_cue_id: StringName)
 
 const SFX_CHANNEL_COUNT := 8
 
@@ -22,6 +22,8 @@ var _music_player: AudioStreamPlayer
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_cursor := 0
 var _current_music_cue_id: StringName = &""
+# event -> the GameEventListener that plays its cue
+var _event_listeners: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -76,18 +78,12 @@ func _build_players() -> void:
 func _connect_gameplay_events() -> void:
 	var event_cues := GameDefinition.current().event_cues
 	for event: StringName in event_cues:
-		var parts := String(event).split(".")
-		var source: Node = get_tree().root.get_node_or_null(NodePath(parts[0])) if parts.size() == 2 else null
-		var argument_count := -1
-		if source != null:
-			for info: Dictionary in source.get_signal_list():
-				if info["name"] == parts[1]:
-					argument_count = (info["args"] as Array).size()
-		if argument_count < 0:
+		var cue_id: StringName = event_cues[event]
+		var listener := GameEventListener.new(event, func(_args: Dictionary) -> void: play_cue(cue_id))
+		if not listener.start():
 			push_error("GameAudio: GameDefinition.event_cues names unknown event '%s'; name it <Autoload>.<signal>" % event)
 			continue
-		var cue_id: StringName = event_cues[event]
-		source.connect(parts[1], play_cue.bind(cue_id).unbind(argument_count))
+		_event_listeners[event] = listener
 
 func _play_music(cue: AudioCueData) -> bool:
 	if _music_player == null:

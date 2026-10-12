@@ -23,7 +23,7 @@ func before_each() -> void:
 	_player_snapshot = PlayerState.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_buff_snapshot = BuffState.to_save_data()
-	ContentFixture.use(self, [_tool(&"fixture_sword", "Sword", MeleeAttack.TOOL_ACTION, 7), _tool(&"fixture_hoe", "Hoe", ItemData.ACTION_TILL, 1)])
+	ContentFixture.use(self, [_tool(&"fixture_sword", "Sword", MeleeAttack.TOOL_ACTION, 7), _tool(&"fixture_hoe", "Hoe", &"fixture_till", 1)])
 	InventoryState.clear()
 	PlayerState.reset_new_game()
 	BuffState.clear()

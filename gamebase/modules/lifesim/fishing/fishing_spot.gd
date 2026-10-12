@@ -1,7 +1,10 @@
 class_name FishingSpot
 extends Interactable
 
-## Fishing needs a tool whose action is ItemData.ACTION_FISH in the inventory.
+## Fishing needs a tool whose action is `TOOL_ACTION` in the inventory.
+
+const TOOL_ACTION := &"fish"
+
 @export var location_id: StringName
 @export_range(0, 100, 1) var energy_cost := 4
 
@@ -13,7 +16,7 @@ func interact(actor: Node) -> void:
 		var location := WorldLocationData.find_current(get_tree())
 		if location != null:
 			location_id = location.id
-	if not InventoryState.has_tool(ItemData.ACTION_FISH):
+	if not InventoryState.has_tool(TOOL_ACTION):
 		GameEvents.toast("You need a fishing rod")
 		return
 	if location_id == &"":
