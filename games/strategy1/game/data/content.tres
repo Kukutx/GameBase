@@ -1,8 +1,16 @@
-[gd_resource type="Resource" script_class="ContentPack" load_steps=17 format=3]
+[gd_resource type="Resource" script_class="ContentPack" load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://gamebase/core/content/content_pack.gd" id="1_pack"]
 [ext_resource type="Resource" path="res://game/data/start_location.tres" id="2_start"]
 [ext_resource type="Resource" path="res://game/data/lookout_location.tres" id="3_lookout"]
+[ext_resource type="Resource" path="res://game/data/rts/map_hill_pass.tres" id="rts_map_hill_pass"]
+[ext_resource type="Resource" path="res://game/data/rts/pass_battle.tres" id="rts_pass_battle"]
+[ext_resource type="Resource" path="res://game/data/rts/unit_bowman.tres" id="rts_unit_bowman"]
+[ext_resource type="Resource" path="res://game/data/rts/unit_brute.tres" id="rts_unit_brute"]
+[ext_resource type="Resource" path="res://game/data/rts/unit_raider.tres" id="rts_unit_raider"]
+[ext_resource type="Resource" path="res://game/data/rts/unit_rider.tres" id="rts_unit_rider"]
+[ext_resource type="Resource" path="res://game/data/rts/unit_slinger.tres" id="rts_unit_slinger"]
+[ext_resource type="Resource" path="res://game/data/rts/unit_spearman.tres" id="rts_unit_spearman"]
 [ext_resource type="Resource" path="res://game/data/tactics/action_firepot.tres" id="tactics_action_firepot"]
 [ext_resource type="Resource" path="res://game/data/tactics/action_mend.tres" id="tactics_action_mend"]
 [ext_resource type="Resource" path="res://game/data/tactics/action_shoot.tres" id="tactics_action_shoot"]
@@ -19,4 +27,4 @@
 
 [resource]
 script = ExtResource("1_pack")
-entries = [ExtResource("2_start"), ExtResource("3_lookout"), ExtResource("tactics_action_firepot"), ExtResource("tactics_action_mend"), ExtResource("tactics_action_shoot"), ExtResource("tactics_action_smash"), ExtResource("tactics_action_strike"), ExtResource("tactics_ford_battle"), ExtResource("tactics_map_border_ford"), ExtResource("tactics_unit_archer"), ExtResource("tactics_unit_brute"), ExtResource("tactics_unit_cleric"), ExtResource("tactics_unit_raider"), ExtResource("tactics_unit_slinger"), ExtResource("tactics_unit_swordsman")]
+entries = [ExtResource("2_start"), ExtResource("3_lookout"), ExtResource("rts_map_hill_pass"), ExtResource("rts_pass_battle"), ExtResource("rts_unit_bowman"), ExtResource("rts_unit_brute"), ExtResource("rts_unit_raider"), ExtResource("rts_unit_rider"), ExtResource("rts_unit_slinger"), ExtResource("rts_unit_spearman"), ExtResource("tactics_action_firepot"), ExtResource("tactics_action_mend"), ExtResource("tactics_action_shoot"), ExtResource("tactics_action_smash"), ExtResource("tactics_action_strike"), ExtResource("tactics_ford_battle"), ExtResource("tactics_map_border_ford"), ExtResource("tactics_unit_archer"), ExtResource("tactics_unit_brute"), ExtResource("tactics_unit_cleric"), ExtResource("tactics_unit_raider"), ExtResource("tactics_unit_slinger"), ExtResource("tactics_unit_swordsman")]

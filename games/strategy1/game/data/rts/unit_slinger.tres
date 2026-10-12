@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RtsUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/rts/data/rts_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"slinger"
+display_name = "Slinger"
+color = Color(0.78, 0.52, 0.26, 1)
+max_health = 18
+damage = 4
+armor = 0
+attack_range = 55.0
+attack_cooldown = 1.4
+move_speed = 30.0
+sight_range = 75.0
+radius = 4.0

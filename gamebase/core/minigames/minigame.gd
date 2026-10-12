@@ -10,7 +10,12 @@ extends Control
 
 signal finished(result: MiniGameResult)
 
+## How long after a cancel that asks to give the minigame up a second one
+## does (`confirm_give_up()`), in seconds of real time.
+const GIVE_UP_SECONDS := 2.0
+
 var _finished := false
+var _give_up_asked_at := -1
 
 ## Receives `MiniGameDefinition.settings` overridden by the caller's context.
 func setup(_settings: Dictionary) -> void:
@@ -37,6 +42,23 @@ func is_finished() -> bool:
 ## (`InputLock.is_top()`).
 func has_input() -> bool:
 	return not _finished and InputLock.is_top(self)
+
+## Whether a cancel now gives the minigame up, for a minigame that asks first
+## (a battle): it does within `GIVE_UP_SECONDS` of the cancel before. Else it
+## only asks; the minigame then shows `get_give_up_prompt()`.
+func confirm_give_up() -> bool:
+	var now := Time.get_ticks_msec()
+	var confirmed := _give_up_asked_at >= 0 and now - _give_up_asked_at <= int(GIVE_UP_SECONDS * 1000.0)
+	_give_up_asked_at = -1 if confirmed else now
+	return confirmed
+
+## The words that ask for a second cancel to give the minigame up.
+func get_give_up_prompt() -> String:
+	return tr("Cancel again to give up.")
+
+## The words of the minigame's outcome, won or lost.
+func get_outcome_text(won: bool) -> String:
+	return tr("Victory!") if won else tr("Defeat.")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if has_input() and event.is_action_pressed("ui_cancel"):

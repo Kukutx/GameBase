@@ -228,6 +228,11 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `RunState.run_started(run: int)`
 - `RunState.run_ended(run: int, outcome: StringName)`
 
+## RtsEvents (rts)
+
+- `RtsEvents.battle_ended(rts_map_id: StringName, won: bool)`: A command battle on `rts_map_id` ended: won, or lost or given up.
+- `RtsEvents.foe_defeated(rts_unit_id: StringName)`: A foe of the player's side of kind `rts_unit_id` fell.
+
 ## Skills (skills)
 
 - `Skills.skill_xp_changed(skill_id: StringName, xp: int, level: int)`

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RtsUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/rts/data/rts_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"rider"
+display_name = "Rider"
+color = Color(0.86, 0.84, 0.66, 1)
+max_health = 34
+damage = 6
+armor = 1
+attack_range = 4.0
+attack_cooldown = 0.9
+move_speed = 48.0
+sight_range = 80.0
+radius = 6.0

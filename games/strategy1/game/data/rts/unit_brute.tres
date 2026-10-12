@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RtsUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/rts/data/rts_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"brute"
+display_name = "Brute"
+color = Color(0.52, 0.26, 0.2, 1)
+max_health = 60
+damage = 11
+armor = 2
+attack_range = 5.0
+attack_cooldown = 1.8
+move_speed = 22.0
+sight_range = 60.0
+radius = 7.0
