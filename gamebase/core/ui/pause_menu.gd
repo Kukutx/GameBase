@@ -4,8 +4,13 @@ extends MenuLayer
 ## The pause menu every game's locations share: `ui_cancel` opens it over the
 ## paused world, to resume, save, load, change the settings, return to the
 ## title screen (the game's main scene) or quit. It also opens when the window
-## loses focus (`GameSettings.pause_on_focus_loss`), and `quick_load` asks
-## here before a load throws away the progress since the last save.
+## loses focus (`GameSettings.pause_on_focus_loss`), over the world or over a
+## minigame, which stands still under it, and `quick_load` asks here before a
+## load throws away the progress since the last save.
+
+## The menu's id: its group and the reason of its lock, held while the game
+## is paused for the player (`GameSession` counts no time played then).
+const MENU_ID := &"pause_menu"
 
 @onready var resume_button: Button = $Dim/Panel/Layout/Resume
 @onready var save_button: Button = $Dim/Panel/Layout/Save
@@ -23,7 +28,7 @@ extends MenuLayer
 var _loading := false
 
 func _init() -> void:
-	super(&"pause_menu")
+	super(MENU_ID)
 
 func _ready() -> void:
 	# A web page is left by closing its tab.
@@ -44,8 +49,13 @@ func _ready() -> void:
 	SaveManager.load_completed.connect(_on_load_completed)
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and GameSettings.pause_on_focus_loss and not get_tree().paused:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and GameSettings.pause_on_focus_loss and _runs_unwatched():
 		open()
+
+# Whether play goes on while the player looks away: the world runs, or a
+# minigame does over it. A menu or a dialogue on top waits for the player.
+func _runs_unwatched() -> bool:
+	return not get_tree().paused or InputLock.get_top_reason() == MiniGameHostService.LOCK_REASON
 
 func _unhandled_input(event: InputEvent) -> void:
 	var cancel := event.is_action_pressed("ui_cancel")

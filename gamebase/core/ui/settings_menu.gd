@@ -88,7 +88,7 @@ func _ready() -> void:
 	_build_controls()
 	controls_reset.pressed.connect(_reset_controls)
 	back_button.pressed.connect(go_back)
-	GameSettings.changed.connect(_sync_from_settings)
+	GameSettings.changed.connect(_on_settings_changed)
 
 func open() -> void:
 	_sync_from_settings()
@@ -162,6 +162,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel") and not confirm_reset.visible:
 		go_back()
 		get_viewport().set_input_as_handled()
+
+# A change shows at once while the menu is open; a closed menu reads the
+# settings as it opens.
+func _on_settings_changed() -> void:
+	if visible:
+		_sync_from_settings()
 
 func _sync_from_settings() -> void:
 	_syncing = true

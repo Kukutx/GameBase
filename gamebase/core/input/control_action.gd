@@ -7,7 +7,11 @@ extends Resource
 ## (interact, quick save, quick load under `core/input/controls/`) and the
 ## controls the game lists in `GameDefinition.controls`. A rebindable control
 ## appears in the settings and keeps the player's key and gamepad button; its
-## second key and stick direction stay as declared.
+## second key and stick direction stay as declared. Its events answer every
+## device (`ALL_DEVICES`), so any gamepad plays, not only the first.
+
+## The device of an event that matches input from any device.
+const ALL_DEVICES := -1
 
 @export var action: StringName = &""
 ## Name of the action in the controls settings, translated by the catalog of
@@ -31,14 +35,17 @@ func build_events(bound_key: Key, bound_button: JoyButton) -> Array[InputEvent]:
 	for event_key: Key in [bound_key, secondary_key if secondary_key != bound_key else KEY_NONE]:
 		if event_key != KEY_NONE:
 			var key_event := InputEventKey.new()
+			key_event.device = ALL_DEVICES
 			key_event.physical_keycode = event_key
 			events.append(key_event)
 	if bound_button != JOY_BUTTON_INVALID:
 		var button := InputEventJoypadButton.new()
+		button.device = ALL_DEVICES
 		button.button_index = bound_button
 		events.append(button)
 	if gamepad_axis != JOY_AXIS_INVALID:
 		var motion := InputEventJoypadMotion.new()
+		motion.device = ALL_DEVICES
 		motion.axis = gamepad_axis
 		motion.axis_value = gamepad_axis_value
 		events.append(motion)

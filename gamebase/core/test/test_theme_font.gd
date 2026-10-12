@@ -2,7 +2,7 @@ extends GutTest
 
 ## The game's text shows in its theme's font: every character of every
 ## translation the game registers, and the name of each language it offers, is
-## in the font a label draws with, the core's (`GameSettingsService.FONT_PATH`)
+## in the font a label draws with, the core's (`GameFont.PATH`)
 ## unless the game's theme names another. A web build has no system fonts to
 ## fall back on, so a missing character would show as a box.
 
@@ -28,7 +28,7 @@ func test_the_theme_font_has_the_name_of_each_language() -> void:
 func test_labels_and_rich_text_draw_in_the_core_font_unless_the_theme_names_one() -> void:
 	var theme := ThemeDB.get_project_theme()
 	if theme == null or theme.default_font == null:
-		assert_eq(_theme_font().resource_path, GameSettingsService.FONT_PATH)
+		assert_eq(_theme_font().resource_path, GameFont.PATH)
 	var rich := RichTextLabel.new()
 	add_child_autofree(rich)
 	for font_name: StringName in [&"normal_font", &"bold_font", &"italics_font", &"bold_italics_font", &"mono_font"]:

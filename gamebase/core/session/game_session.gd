@@ -56,6 +56,8 @@ var _play_seconds := 0.0
 var _playing := false
 
 func _ready() -> void:
+	# It counts the time played while the world is paused for play.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	SaveManager.register_section(SaveSection.new(SAVE_SECTION, GameSaveManager.SECTION_ORDER_SESSION, _to_save_data, _load_save_data))
 	register_new_game_step(SAVE_SECTION, NEW_GAME_ORDER_SESSION, _reset_play_time)
 	register_new_game_step(&"random", NEW_GAME_ORDER_RANDOM, GameRandom.reset_new_game)
@@ -66,12 +68,12 @@ func _ready() -> void:
 	SaveManager.load_completed.connect(_on_load_completed)
 
 func _process(delta: float) -> void:
-	# The session pauses with the world, so a paused game adds no time.
-	if _playing and not is_changing():
+	if _playing and not is_changing() and not InputLock.is_held(PauseMenu.MENU_ID):
 		_play_seconds += delta
 
 ## Whole seconds played in the running game: counted while play runs (from
-## `play_started` until the title), not while the world is paused or the
+## `play_started` until the title), a minigame, a dialogue or a menu that
+## pauses the world included, but not while the pause menu is open or the
 ## session changes. A save keeps them, and a new game starts at 0.
 func get_play_seconds() -> int:
 	return floori(_play_seconds)

@@ -7,8 +7,9 @@ const TEST_PATH := "user://game_settings_test.json"
 var _fixture_actions: Array[StringName] = []
 
 func after_each() -> void:
-	if FileAccess.file_exists(TEST_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_PATH))
+	# The services of the test write their last change first.
+	await _frame_done()
+	JsonFile.remove(TEST_PATH)
 	for action: StringName in _fixture_actions:
 		if InputMap.has_action(action):
 			InputMap.erase_action(action)
@@ -78,6 +79,7 @@ func test_online_services_stay_off_until_the_player_allows_them_and_are_offered_
 	used[0] = true
 	assert_true(source.uses_online_services())
 	source.set_online_services(true)
+	await _frame_done()
 
 	var restored := GameSettingsService.new()
 	restored.settings_path = TEST_PATH
@@ -91,10 +93,50 @@ func test_key_bindings_round_trip_and_apply_to_input_map() -> void:
 	assert_true(source.set_key_binding(&"interact", KEY_Q))
 	assert_eq(source.get_key_binding(&"interact"), KEY_Q)
 	assert_true(_has_key_event(&"interact", KEY_Q))
+	await _frame_done()
 
 	var restored := _settings_with_controls([])
 	assert_eq(restored.get_key_binding(&"interact"), KEY_Q)
 	assert_eq(restored.get_key_binding_text(&"interact"), OS.get_keycode_string(KEY_Q))
+
+func test_the_changes_of_a_frame_are_written_once_it_is_done_and_whole() -> void:
+	var settings := GameSettingsService.new()
+	settings.settings_path = TEST_PATH
+	add_child_autofree(settings)
+	for step in 20:
+		settings.set_master_volume(step / 20.0)
+	settings.set_vsync(false)
+	assert_false(FileAccess.file_exists(TEST_PATH), "a slider dragged across writes nothing while it moves")
+	await _frame_done()
+	assert_true(FileAccess.file_exists(TEST_PATH), "the frame's changes are written as it ends")
+	assert_false(FileAccess.file_exists(TEST_PATH + ".tmp"), "written beside the file and then over it")
+	var restored := GameSettingsService.new()
+	restored.settings_path = TEST_PATH
+	add_child_autofree(restored)
+	assert_almost_eq(restored.master_volume, 0.95, 0.001, "the last value the slider had")
+	assert_false(restored.vsync)
+
+func test_settings_a_crash_left_beside_the_file_are_read() -> void:
+	assert_eq(JsonFile.write(TEST_PATH + ".tmp", {"settings_version": GameSettingsService.SETTINGS_VERSION, "audio": {"music": 0.25}}), "")
+	var settings := GameSettingsService.new()
+	settings.settings_path = TEST_PATH
+	add_child_autofree(settings)
+	assert_almost_eq(settings.music_volume, 0.25, 0.001)
+
+func test_the_bindings_answer_every_gamepad() -> void:
+	var settings := _settings_with_controls([])
+	var one_pad_only := {}
+	for action: StringName in InputMap.get_actions():
+		for event: InputEvent in InputMap.action_get_events(action):
+			if (event is InputEventJoypadButton or event is InputEventJoypadMotion) and event.device != ControlAction.ALL_DEVICES:
+				one_pad_only[action] = event.device
+	assert_eq(one_pad_only, {}, "actions, the project's menu ones too, with a gamepad event of one device")
+	for device: int in [0, 1, 3]:
+		var press := InputEventJoypadButton.new()
+		press.device = device
+		press.button_index = settings.get_gamepad_binding(&"interact")
+		press.pressed = true
+		assert_true(press.is_action_pressed(&"interact"), "gamepad %d interacts" % device)
 
 func test_a_key_that_is_not_a_whole_number_reads_as_the_default() -> void:
 	var file := FileAccess.open(TEST_PATH, FileAccess.WRITE)
@@ -160,6 +202,24 @@ func test_input_prompts_follow_the_active_device() -> void:
 	var button := GameSettings.get_control(&"interact").gamepad_button
 	assert_eq(InputPrompts.get_action_prompt(&"interact"), String(InputPromptService.GAMEPAD_BUTTON_LABELS[button]))
 	InputPrompts.using_gamepad = previous_gamepad
+
+func test_the_prompts_follow_the_device_while_the_world_is_paused() -> void:
+	var previous_gamepad := InputPrompts.using_gamepad
+	InputPrompts.using_gamepad = false
+	InputLock.lock(&"fixture_menu", true)
+	var press := InputEventJoypadButton.new()
+	press.button_index = JOY_BUTTON_A
+	press.pressed = true
+	Input.parse_input_event(press)
+	await _frame_done()
+	var switched := InputPrompts.using_gamepad
+	var release := press.duplicate() as InputEventJoypadButton
+	release.pressed = false
+	Input.parse_input_event(release)
+	await _frame_done()
+	InputLock.unlock(&"fixture_menu")
+	InputPrompts.using_gamepad = previous_gamepad
+	assert_true(switched, "a menu over the paused world names the gamepad's buttons")
 
 func test_the_move_prompt_names_each_move_key_then_the_arrows() -> void:
 	var moves: Array[ControlAction] = []
@@ -239,6 +299,11 @@ func test_control_problems_name_the_control() -> void:
 		"controls 'dodge' and 'quick_save' share the default key K",
 	]:
 		assert_has(problems, expected)
+
+# Waits until a change made in this frame is written, as its frame ends.
+func _frame_done() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
 
 ## A settings service of a game whose controls are `controls`, followed by
 ## the core's own: the service reads the game's controls from its

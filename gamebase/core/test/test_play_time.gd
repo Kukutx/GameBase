@@ -1,7 +1,8 @@
 extends GutTest
 
 ## The time played (`GameSession.get_play_seconds()`): it runs while play does,
-## stops while the session changes or the world is paused, and a save keeps it.
+## a minigame or a dialogue that pauses the world included, stops while the
+## session changes or the pause menu is open, and a save keeps it.
 
 var _play_seconds := 0.0
 var _playing := false
@@ -27,12 +28,20 @@ func test_the_time_runs_while_play_does_and_not_while_the_session_changes() -> v
 	GameSession._process(10.0)
 	assert_eq(GameSession.get_play_seconds(), 60, "a new game being set up adds no time")
 
-func test_the_time_stops_with_the_world() -> void:
-	assert_true(GameSession.can_process())
+func test_the_time_runs_while_play_pauses_the_world_and_stops_under_the_pause_menu() -> void:
+	GameSession.set("_play_seconds", 10.0)
+	GameSession.set("_playing", true)
 	InputLock.lock(&"test_play_time", true)
-	assert_false(GameSession.can_process(), "a paused world adds no time")
+	assert_true(GameSession.can_process(), "a minigame or a dialogue pauses the world and is play")
+	GameSession._process(2.0)
+	assert_eq(GameSession.get_play_seconds(), 12)
+	InputLock.lock(PauseMenu.MENU_ID, true)
+	GameSession._process(30.0)
+	assert_eq(GameSession.get_play_seconds(), 12, "the pause menu adds no time")
+	InputLock.unlock(PauseMenu.MENU_ID)
 	InputLock.unlock(&"test_play_time")
-	assert_true(GameSession.can_process())
+	GameSession._process(1.0)
+	assert_eq(GameSession.get_play_seconds(), 13)
 
 func test_a_save_keeps_the_time_and_a_new_game_starts_from_none() -> void:
 	assert_true(SaveManager.get_section_ids().has(String(GameSessionService.SAVE_SECTION)))

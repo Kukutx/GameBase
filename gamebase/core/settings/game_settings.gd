@@ -5,22 +5,17 @@ extends Node
 ## types out, accessibility, the language and the key and gamepad bindings of
 ## the controls (`ControlAction`).
 ## It applies them to the audio buses, the window, the translation server and
-## the input map, and writes them to `settings_path` (JSON) after every change.
+## the input map, and writes them to `settings_path` (JSON) once the frame of a
+## change is done: a slider dragged across writes once a frame, not once a step.
+## The file is replaced whole (`JsonFile`), so a crash never leaves half of it.
 ##
 ## Settings belong to the player, not to a save slot: starting or loading a game
 ## leaves them as they are. Binding a key or button that another rebindable
 ## control has swaps the two; one a control holds fixed (a second key, or a
 ## control the player cannot rebind) is refused. `changed` fires on any change,
 ## `controls_changed` when a binding changes and `locale_changed` when the
-## language does.
-##
-## It also makes the font the core ships (`FONT_PATH`) the font of the engine's
-## default theme (`use_font()`), the one every text shows in unless the game's
-## theme names another: Latin, Chinese punctuation, the characters of GB 2312
-## and those the repository's text uses (`tools/subset_font.js`), since a web
-## build has no system fonts to fall back on. It is loaded when the game starts
-## rather than named by a theme, which the engine reads before a fresh checkout
-## has imported the font.
+## language does. As the game starts it makes the core's font (`GameFont`)
+## the font every text shows in.
 
 signal changed
 signal controls_changed
@@ -59,9 +54,6 @@ const TEXT_SPEED_NAMES: Array[String] = ["Slow", "Normal", "Fast", "Instant"]
 # Characters a second of each text speed; 0 shows a line at once.
 const _CHARACTERS_PER_SECOND: Array[float] = [25.0, 50.0, 100.0, 0.0]
 
-## The font every text falls back to (`ThemeDB.fallback_font`).
-const FONT_PATH := "res://gamebase/core/ui/fonts/noto_sans_sc.woff2"
-
 ## The buses `GameAudio` plays on, each sending to Master. A game's bus
 ## layout may add effects to them; the core adds the ones it lacks.
 const AUDIO_BUSES: Array[StringName] = [&"Music", &"Sounds"]
@@ -91,6 +83,8 @@ var key_bindings: Dictionary = {}
 var gamepad_bindings: Dictionary = {}
 
 var _controls: Array[ControlAction] = []
+# Whether a change waits to be written at the end of its frame.
+var _save_pending := false
 # id -> Callable() -> bool: whether the game uses the online service now.
 var _online_services: Dictionary[StringName, Callable] = {}
 ## action (String) -> ControlAction
@@ -106,24 +100,8 @@ static func ensure_audio_buses() -> void:
 		AudioServer.set_bus_name(index, bus_name)
 		AudioServer.set_bus_send(index, &"Master")
 
-## Makes `font` what text shows in unless a theme names another: the default
-## theme's font, the base of the bold and italic fonts it makes of that, and
-## the font of last resort (`ThemeDB.fallback_font`).
-static func use_font(font: Font) -> void:
-	var theme := ThemeDB.get_default_theme()
-	var replaced := theme.default_font
-	theme.default_font = font
-	for type: StringName in theme.get_font_type_list():
-		for font_name: StringName in theme.get_font_list(type):
-			var variation := theme.get_font(font_name, type) as FontVariation
-			if variation != null and variation.base_font == replaced:
-				var based := variation.duplicate() as FontVariation
-				based.base_font = font
-				theme.set_font(font_name, type, based)
-	ThemeDB.fallback_font = font
-
 func _init() -> void:
-	use_font(load(FONT_PATH) as Font)
+	GameFont.use(load(GameFont.PATH) as Font)
 	_reset_values()
 	for control: ControlAction in GameControls.resolve(GameControls.of_game()):
 		_controls.append(control)
@@ -134,6 +112,11 @@ func _ready() -> void:
 	_reset_control_values()
 	load_settings()
 	apply()
+
+# A change the frame did not write yet is written as the game quits.
+func _exit_tree() -> void:
+	if _save_pending:
+		save_settings()
 
 func set_master_volume(value: float) -> void:
 	master_volume = clampf(value, 0.0, 1.0)
@@ -211,7 +194,7 @@ func set_reduced_motion(value: bool) -> void:
 func set_locale(value: String) -> void:
 	locale = value if get_supported_locales().has(value) else SOURCE_LOCALE
 	TranslationServer.set_locale(locale)
-	save_settings()
+	_request_save()
 	locale_changed.emit(locale)
 	changed.emit()
 
@@ -290,7 +273,7 @@ func set_key_binding(action: StringName, key: Key) -> bool:
 			break
 	key_bindings[String(action)] = int(key)
 	_apply_input_bindings()
-	save_settings()
+	_request_save()
 	controls_changed.emit()
 	changed.emit()
 	return true
@@ -308,7 +291,7 @@ func set_gamepad_binding(action: StringName, button: JoyButton) -> bool:
 			break
 	gamepad_bindings[String(action)] = int(button)
 	_apply_input_bindings()
-	save_settings()
+	_request_save()
 	controls_changed.emit()
 	changed.emit()
 	return true
@@ -317,7 +300,7 @@ func set_gamepad_binding(action: StringName, button: JoyButton) -> bool:
 func reset_controls() -> void:
 	_reset_control_values()
 	_apply_input_bindings()
-	save_settings()
+	_request_save()
 	controls_changed.emit()
 	changed.emit()
 
@@ -326,7 +309,7 @@ func reset_all() -> void:
 	_reset_values()
 	_reset_control_values()
 	apply()
-	save_settings()
+	_request_save()
 	controls_changed.emit()
 	changed.emit()
 
@@ -361,14 +344,13 @@ func to_data() -> Dictionary:
 		"gamepad": gamepad,
 	}
 
+## Writes the settings to `settings_path` now. A change writes them by itself
+## at the end of its frame.
 func save_settings() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(settings_path.get_base_dir()))
-	var file := FileAccess.open(settings_path, FileAccess.WRITE)
-	if file == null:
-		push_warning("GameSettings: could not write '%s' (%d)" % [settings_path, FileAccess.get_open_error()])
-		return
-	file.store_string(JSON.stringify(to_data(), "\t"))
-	file.close()
+	_save_pending = false
+	var problem := JsonFile.write(settings_path, to_data())
+	if not problem.is_empty():
+		push_warning("GameSettings: " + problem)
 
 ## Reads the settings from `settings_path`. A missing, unreadable or other
 ## version's file changes nothing. In a file that is read, a value of the wrong
@@ -378,10 +360,7 @@ func save_settings() -> void:
 func load_settings() -> void:
 	if key_bindings.is_empty():
 		_reset_control_values()
-	var json := JSON.new()
-	if not FileAccess.file_exists(settings_path) or json.parse(FileAccess.get_file_as_string(settings_path)) != OK:
-		return
-	var data: Variant = json.data
+	var data: Variant = JsonFile.read(settings_path)
 	if not (data is Dictionary) or _read_number(data, "settings_version", "", 0.0) != SETTINGS_VERSION:
 		return
 	master_volume = clampf(_read_number(data, "audio", "master", master_volume), 0.0, 1.0)
@@ -494,5 +473,15 @@ func _apply_bus(bus_name: StringName, linear: float) -> void:
 	AudioServer.set_bus_mute(index, linear <= 0.0001)
 
 func _save_and_emit() -> void:
-	save_settings()
+	_request_save()
 	changed.emit()
+
+# Writes the settings once the frame is done, however many changes it made.
+func _request_save() -> void:
+	if not _save_pending:
+		_save_pending = true
+		_save_when_idle.call_deferred()
+
+func _save_when_idle() -> void:
+	if _save_pending:
+		save_settings()
