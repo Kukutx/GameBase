@@ -7,18 +7,26 @@ layer = 80
 script = ExtResource("1_menu")
 
 [node name="Panel" type="PanelContainer" parent="."]
-offset_left = 70.0
-offset_top = 24.0
-offset_right = 410.0
-offset_bottom = 254.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -111.0
+offset_right = 170.0
+offset_bottom = 119.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 
 [node name="Title" type="Label" parent="Panel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Animal Ledger"
 horizontal_alignment = 1
 
@@ -32,11 +40,11 @@ horizontal_alignment = 1
 layout_mode = 2
 
 [node name="Details" type="RichTextLabel" parent="Panel/VBox"]
-custom_minimum_size = Vector2(0, 78)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
+size_flags_vertical = 3
 bbcode_enabled = true
 fit_content = false
-scroll_active = false
 text = ""
 
 [node name="RenameRow" type="HBoxContainer" parent="Panel/VBox"]
@@ -58,15 +66,22 @@ layout_mode = 2
 [node name="ExpansionRow" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
 
-[node name="Sell" type="Button" parent="Panel/VBox"]
+[node name="Actions" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
+
+[node name="Sell" type="Button" parent="Panel/VBox/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Sell Animal"
 
-[node name="Close" type="Button" parent="Panel/VBox"]
+[node name="Close" type="Button" parent="Panel/VBox/Actions"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Close"
 
 [node name="ConfirmSell" type="ConfirmationDialog" parent="."]
+size = Vector2i(300, 100)
+dialog_autowrap = true
 title = "Sell Animal"
 dialog_text = "Sell this animal?"
 ok_button_text = "Sell"

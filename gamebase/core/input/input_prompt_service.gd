@@ -33,6 +33,14 @@ const MOVE_ACTIONS: Array[StringName] = [&"move_up", &"move_left", &"move_down",
 
 var using_gamepad := false
 
+## The name of a gamepad button in prompts and the settings.
+static func gamepad_button_name(button: JoyButton) -> String:
+	if button == JOY_BUTTON_INVALID:
+		return TranslationServer.translate("Unbound")
+	if GAMEPAD_BUTTON_LABELS.has(button):
+		return String(GAMEPAD_BUTTON_LABELS[button])
+	return TranslationServer.translate("Button %d") % int(button)
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventJoypadButton:
 		if event.pressed:
@@ -54,7 +62,7 @@ func get_action_prompt(action: StringName) -> String:
 	var control := GameSettings.get_control(action)
 	if using_gamepad and control != null:
 		if control.gamepad_button != JOY_BUTTON_INVALID:
-			return String(GAMEPAD_BUTTON_LABELS.get(control.gamepad_button, "Pad"))
+			return gamepad_button_name(GameSettings.get_gamepad_binding(action))
 		if control.gamepad_axis != JOY_AXIS_INVALID:
 			return String(GAMEPAD_AXIS_LABELS.get(control.gamepad_axis, "Pad"))
 	var key := GameSettings.get_key_binding(action)

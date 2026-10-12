@@ -1,5 +1,7 @@
 extends GutTest
 
+const MenuFit := preload("res://gamebase/core/test/menu_fit.gd")
+
 func after_each() -> void:
 	InputLock.clear()
 	var focus := get_viewport().gui_get_focus_owner()
@@ -45,9 +47,11 @@ func test_game_menu_keeps_selected_tab_focusable() -> void:
 	assert_true(quests.button_pressed)
 	assert_false(inventory.button_pressed)
 	assert_eq(get_viewport().gui_get_focus_owner(), quests)
+	await get_tree().process_frame
+	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
 	menu.close()
 
-func test_overlay_menus_open_with_a_valid_focus_target() -> void:
+func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> void:
 	var cases: Array[Dictionary] = [
 		{"path": "res://gamebase/modules/lifesim/animals/animal_management_menu.tscn", "kind": "animal"},
 		{"path": "res://gamebase/modules/progression/contracts/daily_contract_menu.tscn", "kind": "contract"},
@@ -85,6 +89,9 @@ func test_overlay_menus_open_with_a_valid_focus_target() -> void:
 				menu.call("open")
 		await get_tree().process_frame
 		_assert_valid_focus(menu)
+		# Containers sort their children on the frame after a change.
+		await get_tree().process_frame
+		assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray(), String(data["path"]))
 		if menu.has_method("close"):
 			menu.call("close")
 		await get_tree().process_frame

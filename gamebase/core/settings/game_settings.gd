@@ -38,18 +38,29 @@ const CORE_CONTROLS: Array[String] = [
 	"res://gamebase/core/input/controls/quick_load.tres",
 ]
 
+## The buses `GameAudio` plays on, each sending to Master. A game's bus
+## layout may add effects to them; the core adds the ones it lacks.
+const AUDIO_BUSES: Array[StringName] = [&"Music", &"Sounds"]
+
 var settings_path := DEFAULT_SETTINGS_PATH
-var master_volume := 1.0
-var music_volume := 0.8
-var sounds_volume := 0.9
-var fullscreen := false
-var vsync := true
-var autosave := true
-var weather_effects := true
-var reduced_motion := false
+# The values `reset_all()` restores are those `_reset_values()` sets.
+var master_volume: float
+var music_volume: float
+var sounds_volume: float
+var fullscreen: bool
+var vsync: bool
+## Whether the game scales only by whole multiples, for sharp pixels.
+var integer_scaling: bool
+var autosave: bool
+## Whether the pause menu opens when the game window loses focus.
+var pause_on_focus_loss: bool
+var weather_effects: bool
+var reduced_motion: bool
 var locale := SOURCE_LOCALE
 ## Key of each rebindable action (String) the player chose or the default.
 var key_bindings: Dictionary = {}
+## Gamepad button of each rebindable action with one (String), chosen or default.
+var gamepad_bindings: Dictionary = {}
 
 var _controls: Array[ControlAction] = []
 ## action (String) -> ControlAction
@@ -85,6 +96,7 @@ static func find_control_problems(controls: Array[ControlAction]) -> PackedStrin
 		problems.append("GameDefinition.controls has an entry that is not a ControlAction")
 	var actions: Dictionary = {}
 	var key_owners: Dictionary = {}
+	var button_owners: Dictionary = {}
 	for control: ControlAction in resolve_controls(controls):
 		var action := String(control.action)
 		if action.is_empty():
@@ -104,6 +116,11 @@ static func find_control_problems(controls: Array[ControlAction]) -> PackedStrin
 				problems.append("controls '%s' and '%s' share the default key %s" % [key_owners[default_key], action, OS.get_keycode_string(default_key)])
 			else:
 				key_owners[default_key] = action
+		if control.gamepad_button != JOY_BUTTON_INVALID:
+			if button_owners.has(control.gamepad_button):
+				problems.append("controls '%s' and '%s' share the default gamepad button %s" % [button_owners[control.gamepad_button], action, InputPromptService.gamepad_button_name(control.gamepad_button)])
+			else:
+				button_owners[control.gamepad_button] = action
 		if not control.rebindable:
 			continue
 		if control.display_name.is_empty():
@@ -112,12 +129,24 @@ static func find_control_problems(controls: Array[ControlAction]) -> PackedStrin
 			problems.append("rebindable control '%s' has no default key" % action)
 	return problems
 
+## Adds each of `AUDIO_BUSES` the project's bus layout lacks, sending to Master.
+static func ensure_audio_buses() -> void:
+	for bus_name: StringName in AUDIO_BUSES:
+		if AudioServer.get_bus_index(bus_name) >= 0:
+			continue
+		AudioServer.add_bus()
+		var index := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(index, bus_name)
+		AudioServer.set_bus_send(index, &"Master")
+
 func _init() -> void:
+	_reset_values()
 	for control: ControlAction in resolve_controls(game_controls()):
 		_controls.append(control)
 		_control_by_action[String(control.action)] = control
 
 func _ready() -> void:
+	ensure_audio_buses()
 	_reset_control_values()
 	load_settings()
 	apply()
@@ -149,8 +178,17 @@ func set_vsync(value: bool) -> void:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
 	_save_and_emit()
 
+func set_integer_scaling(value: bool) -> void:
+	integer_scaling = value
+	_apply_scaling()
+	_save_and_emit()
+
 func set_autosave(value: bool) -> void:
 	autosave = value
+	_save_and_emit()
+
+func set_pause_on_focus_loss(value: bool) -> void:
+	pause_on_focus_loss = value
 	_save_and_emit()
 
 func set_weather_effects(value: bool) -> void:
@@ -211,6 +249,23 @@ func get_key_binding_text(action: StringName) -> String:
 	var key := get_key_binding(action)
 	return OS.get_keycode_string(key) if key != KEY_NONE else tr("Unbound")
 
+## Whether the player can change the gamepad button of `action`: a rebindable
+## control that declares one.
+func has_gamepad_binding(action: StringName) -> bool:
+	var control := get_control(action)
+	return control != null and control.rebindable and control.gamepad_button != JOY_BUTTON_INVALID
+
+## The gamepad button of `action`: the player's for a rebindable control, else
+## the declared one (`JOY_BUTTON_INVALID` for none).
+func get_gamepad_binding(action: StringName) -> JoyButton:
+	var control := get_control(action)
+	if control == null:
+		return JOY_BUTTON_INVALID
+	return int(gamepad_bindings.get(String(action), int(control.gamepad_button))) as JoyButton
+
+func get_gamepad_binding_text(action: StringName) -> String:
+	return InputPromptService.gamepad_button_name(get_gamepad_binding(action))
+
 ## Binds `key` to a rebindable action. The action that had the key takes the
 ## old one; a key another control holds fixed cannot be taken.
 func set_key_binding(action: StringName, key: Key) -> bool:
@@ -231,9 +286,37 @@ func set_key_binding(action: StringName, key: Key) -> bool:
 	changed.emit()
 	return true
 
+## Binds `button` to the gamepad of a rebindable action that has one. The
+## action that had the button takes the old one; a button another control
+## holds fixed cannot be taken.
+func set_gamepad_binding(action: StringName, button: JoyButton) -> bool:
+	if not has_gamepad_binding(action) or button < 0 or button >= JOY_BUTTON_MAX or _is_fixed_button(button, action):
+		return false
+	var old_button := get_gamepad_binding(action)
+	for other: StringName in get_rebindable_actions():
+		if other != action and has_gamepad_binding(other) and get_gamepad_binding(other) == button:
+			gamepad_bindings[String(other)] = int(old_button)
+			break
+	gamepad_bindings[String(action)] = int(button)
+	_apply_input_bindings()
+	save_settings()
+	controls_changed.emit()
+	changed.emit()
+	return true
+
+## Gives every control its declared key and gamepad button back.
 func reset_controls() -> void:
 	_reset_control_values()
 	_apply_input_bindings()
+	save_settings()
+	controls_changed.emit()
+	changed.emit()
+
+## Restores every setting but the language to its default, controls included.
+func reset_all() -> void:
+	_reset_values()
+	_reset_control_values()
+	apply()
 	save_settings()
 	controls_changed.emit()
 	changed.emit()
@@ -244,36 +327,44 @@ func apply() -> void:
 	_apply_bus(&"Music", music_volume)
 	_apply_bus(&"Sounds", sounds_volume)
 	_apply_input_bindings()
+	_apply_scaling()
 	if DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
 
-func save_settings() -> void:
+## The settings as the file holds them.
+func to_data() -> Dictionary:
 	var controls := {}
+	var gamepad := {}
 	for action: StringName in get_rebindable_actions():
 		controls[String(action)] = int(get_key_binding(action))
-	var data := {
+		if has_gamepad_binding(action):
+			gamepad[String(action)] = int(get_gamepad_binding(action))
+	return {
 		"settings_version": SETTINGS_VERSION,
 		"audio": {"master": master_volume, "music": music_volume, "sounds": sounds_volume},
-		"display": {"fullscreen": fullscreen, "vsync": vsync},
-		"gameplay": {"autosave": autosave},
+		"display": {"fullscreen": fullscreen, "vsync": vsync, "integer_scaling": integer_scaling},
+		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss},
 		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
 		"localization": {"locale": locale},
 		"controls": controls,
+		"gamepad": gamepad,
 	}
+
+func save_settings() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(settings_path.get_base_dir()))
 	var file := FileAccess.open(settings_path, FileAccess.WRITE)
 	if file == null:
 		push_warning("GameSettings: could not write '%s' (%d)" % [settings_path, FileAccess.get_open_error()])
 		return
-	file.store_string(JSON.stringify(data, "\t"))
+	file.store_string(JSON.stringify(to_data(), "\t"))
 	file.close()
 
 ## Reads the settings from `settings_path`. A missing, unreadable or other
 ## version's file changes nothing. In a file that is read, a value of the wrong
 ## type keeps the current one, except that a locale the game does not support
 ## reads as the source language and a control without a usable key as its
-## default key.
+## default key, and a gamepad button likewise.
 func load_settings() -> void:
 	if key_bindings.is_empty():
 		_reset_control_values()
@@ -288,7 +379,9 @@ func load_settings() -> void:
 	sounds_volume = clampf(_read_number(data, "audio", "sounds", sounds_volume), 0.0, 1.0)
 	fullscreen = _read_bool(data, "display", "fullscreen", fullscreen)
 	vsync = _read_bool(data, "display", "vsync", vsync)
+	integer_scaling = _read_bool(data, "display", "integer_scaling", integer_scaling)
 	autosave = _read_bool(data, "gameplay", "autosave", autosave)
+	pause_on_focus_loss = _read_bool(data, "gameplay", "pause_on_focus_loss", pause_on_focus_loss)
 	weather_effects = _read_bool(data, "accessibility", "weather_effects", weather_effects)
 	reduced_motion = _read_bool(data, "accessibility", "reduced_motion", reduced_motion)
 	var loaded_locale: Variant = _read(data, "localization", "locale")
@@ -298,6 +391,13 @@ func load_settings() -> void:
 		var whole: Variant = SaveValues.whole_number(_read(data, "controls", String(action)))
 		var value := int(whole) if whole != null else fallback
 		key_bindings[String(action)] = value if value > 0 and not _is_fixed_key(value as Key, action) else fallback
+		if not has_gamepad_binding(action):
+			continue
+		var default_button := int(get_control(action).gamepad_button)
+		var whole_button: Variant = SaveValues.whole_number(_read(data, "gamepad", String(action)))
+		var button := int(whole_button) if whole_button != null else default_button
+		var usable := button >= 0 and button < JOY_BUTTON_MAX and not _is_fixed_button(button as JoyButton, action)
+		gamepad_bindings[String(action)] = button if usable else default_button
 
 # The value under `section` and `key` of the settings file's `data`, or null
 # (`key` "" reads `section` itself).
@@ -324,18 +424,50 @@ func _is_fixed_key(key: Key, action: StringName) -> bool:
 			return true
 	return false
 
+## Whether a control other than `action`'s that the player cannot rebind
+## holds gamepad `button`.
+func _is_fixed_button(button: JoyButton, action: StringName) -> bool:
+	for other: ControlAction in _controls:
+		if other.action != action and not other.rebindable and other.gamepad_button == button:
+			return true
+	return false
+
+func _reset_values() -> void:
+	master_volume = 1.0
+	music_volume = 0.8
+	sounds_volume = 0.9
+	fullscreen = false
+	vsync = true
+	integer_scaling = false
+	autosave = true
+	pause_on_focus_loss = true
+	weather_effects = true
+	reduced_motion = false
+
 func _reset_control_values() -> void:
 	key_bindings.clear()
+	gamepad_bindings.clear()
 	for action: StringName in get_rebindable_actions():
-		key_bindings[String(action)] = int(get_control(action).key)
+		var control := get_control(action)
+		key_bindings[String(action)] = int(control.key)
+		if has_gamepad_binding(action):
+			gamepad_bindings[String(action)] = int(control.gamepad_button)
 
 func _apply_input_bindings() -> void:
 	for control: ControlAction in _controls:
 		if not InputMap.has_action(control.action):
 			InputMap.add_action(control.action)
 		InputMap.action_erase_events(control.action)
-		for event: InputEvent in control.build_events(get_key_binding(control.action)):
+		for event: InputEvent in control.build_events(get_key_binding(control.action), get_gamepad_binding(control.action)):
 			InputMap.action_add_event(control.action, event)
+
+# Set only on a change: each change lays out every embedded window again.
+func _apply_scaling() -> void:
+	if not is_inside_tree():
+		return
+	var stretch := Window.CONTENT_SCALE_STRETCH_INTEGER if integer_scaling else Window.CONTENT_SCALE_STRETCH_FRACTIONAL
+	if get_tree().root.content_scale_stretch != stretch:
+		get_tree().root.content_scale_stretch = stretch
 
 func _apply_bus(bus_name: StringName, linear: float) -> void:
 	var index := AudioServer.get_bus_index(bus_name)

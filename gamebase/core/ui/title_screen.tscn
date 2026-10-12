@@ -21,13 +21,13 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Menu" type="VBoxContainer" parent="Center"]
-custom_minimum_size = Vector2(270, 0)
+custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
 [node name="Title" type="Label" parent="Center/Menu"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 42
+theme_override_font_sizes/font_size = 32
 text = "Game"
 horizontal_alignment = 1
 
@@ -37,21 +37,15 @@ theme_override_colors/font_color = Color(0.72, 0.79, 0.75, 1)
 theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
 
-[node name="Version" type="Label" parent="Center/Menu"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.58, 0.66, 0.62, 1)
-theme_override_font_sizes/font_size = 9
-horizontal_alignment = 1
-
 [node name="Spacer" type="Control" parent="Center/Menu"]
-custom_minimum_size = Vector2(0, 10)
+custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
 
 [node name="SaveSlot" type="OptionButton" parent="Center/Menu"]
 layout_mode = 2
 
 [node name="SlotInfo" type="Label" parent="Center/Menu"]
-custom_minimum_size = Vector2(0, 28)
+custom_minimum_size = Vector2(0, 26)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.79, 0.75, 1)
 theme_override_font_sizes/font_size = 10
@@ -63,37 +57,69 @@ autowrap_mode = 2
 layout_mode = 2
 text = "Continue"
 
-[node name="NewGame" type="Button" parent="Center/Menu"]
+[node name="Actions" type="GridContainer" parent="Center/Menu"]
 layout_mode = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="NewGame" type="Button" parent="Center/Menu/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
 text = "New Game"
 
-[node name="DeleteSave" type="Button" parent="Center/Menu"]
+[node name="DeleteSave" type="Button" parent="Center/Menu/Actions"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Delete Save"
 
-[node name="Settings" type="Button" parent="Center/Menu"]
+[node name="Settings" type="Button" parent="Center/Menu/Actions"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Settings"
 
-[node name="Quit" type="Button" parent="Center/Menu"]
+[node name="Quit" type="Button" parent="Center/Menu/Actions"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Quit"
 
 [node name="Status" type="Label" parent="Center/Menu"]
-custom_minimum_size = Vector2(0, 22)
+custom_minimum_size = Vector2(0, 14)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.88, 0.72, 0.50, 1)
 theme_override_font_sizes/font_size = 10
 horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Version" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -16.0
+offset_right = -6.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.58, 0.66, 0.62, 1)
+theme_override_font_sizes/font_size = 9
+horizontal_alignment = 2
 
 [node name="SettingsMenu" parent="." instance=ExtResource("3_settings")]
 
 [node name="ConfirmNewGame" type="ConfirmationDialog" parent="."]
 title = "Start New Game"
+size = Vector2i(300, 100)
+dialog_autowrap = true
 dialog_text = "This save slot already contains a game. Starting a new game will replace it. Continue?"
 ok_button_text = "Start New Game"
 
 [node name="ConfirmDelete" type="ConfirmationDialog" parent="."]
 title = "Delete Save"
+size = Vector2i(300, 100)
+dialog_autowrap = true
 dialog_text = "Delete this save slot and its backup?"
 ok_button_text = "Delete"

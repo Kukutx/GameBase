@@ -55,12 +55,14 @@ func test_release_diagnostics_are_configured() -> void:
 	assert_false(String(context.get("engine", "")).is_empty())
 	assert_false(String(context.get("os", "")).is_empty())
 
-func test_unit_run_does_not_inherit_the_saved_language_or_profile() -> void:
+func test_unit_run_does_not_inherit_the_saved_language_settings_or_profile() -> void:
 	var config: Variant = JSON.parse_string(_read_text("res://.gutconfig.json"))
 	assert_true(config is Dictionary)
 	if config is Dictionary:
 		assert_eq(String((config as Dictionary).get("pre_run_script", "")), "res://gamebase/core/test/gut_pre_run.gd")
-	assert_true(_read_text("res://gamebase/core/test/gut_pre_run.gd").contains('TranslationServer.set_locale("en")'))
+	assert_eq(GameSettings.locale, "en")
+	assert_eq(TranslationServer.get_locale(), "en")
+	assert_eq(GameSettings.settings_path, "user://test_run/settings.json", "the run keeps settings of its own")
 	assert_eq(GameProfile.profile_path, "user://test_run/profile.json", "the run keeps a profile of its own")
 	for runtime_script: String in ["world_services_smoke.gd", "long_horizon_soak.gd"]:
 		assert_true(_read_text("res://test/runtime/%s" % runtime_script).contains('TranslationServer.set_locale("en")'), runtime_script)

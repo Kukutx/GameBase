@@ -28,24 +28,17 @@ func test_supported_locale_translation_and_selector() -> void:
 	var menu := scene.instantiate() as SettingsMenu
 	add_child_autofree(menu)
 	await get_tree().process_frame
-	var selector := menu.get_node("Dim/Panel/Layout/Language/Select") as OptionButton
-	assert_eq(selector.item_count, GameSettings.get_supported_locales().size())
-	var accessibility_button := menu.get_node("Dim/Panel/Layout/AccessibilityButton") as Button
-	var accessibility_page := menu.get_node("Dim/Panel/Layout/AccessibilityPage") as VBoxContainer
-	var weather_effects := menu.get_node("Dim/Panel/Layout/AccessibilityPage/WeatherEffects") as CheckButton
-	var reduced_motion := menu.get_node("Dim/Panel/Layout/AccessibilityPage/ReducedMotion") as CheckButton
-	assert_not_null(accessibility_button)
-	assert_not_null(weather_effects)
-	assert_not_null(reduced_motion)
+	assert_eq(menu.language_select.item_count, GameSettings.get_supported_locales().size())
 	menu.open()
-	menu.call("_show_accessibility", true)
+	menu.show_page(SettingsMenu.Page.ACCESSIBILITY)
 	await get_tree().process_frame
-	assert_true(accessibility_page.visible)
-	assert_eq(get_viewport().gui_get_focus_owner(), weather_effects)
-	menu.call("_show_accessibility", false)
+	assert_true(menu.accessibility_page.visible)
+	assert_true(menu.weather_effects_check.visible, "Farm1 has weather")
+	assert_eq(get_viewport().gui_get_focus_owner(), menu.weather_effects_check)
+	menu.go_back()
 	await get_tree().process_frame
-	assert_false(accessibility_page.visible)
-	assert_eq(get_viewport().gui_get_focus_owner(), accessibility_button)
+	assert_false(menu.accessibility_page.visible)
+	assert_eq(get_viewport().gui_get_focus_owner(), menu.accessibility_button)
 	menu.close()
 
 func test_title_screen_static_and_dynamic_labels_translate_in_runtime() -> void:
@@ -55,13 +48,13 @@ func test_title_screen_static_and_dynamic_labels_translate_in_runtime() -> void:
 	var title := scene.instantiate() as GameTitleScreen
 	add_child_autofree(title)
 	await get_tree().process_frame
-	var continue_button := title.get_node("Center/Menu/Continue") as Button
-	var settings_button := title.get_node("Center/Menu/Settings") as Button
+	var continue_button := title.continue_button
+	var settings_button := title.settings_button
 	assert_eq(TranslationServer.translate(continue_button.text), "继续游戏")
 	assert_eq(TranslationServer.translate(settings_button.text), "设置")
-	var version_label := title.get_node("Center/Menu/Version") as Label
+	var version_label := title.version_label
 	assert_eq(version_label.text, "v%s" % _read_project_version())
-	var slots := title.get_node("Center/Menu/SaveSlot") as OptionButton
+	var slots := title.slot_select
 	assert_eq(slots.get_item_text(0), "存档位 1")
 	TranslationServer.set_locale(previous)
 
@@ -71,10 +64,9 @@ func test_settings_controls_page_builds_all_rebindable_actions() -> void:
 	add_child_autofree(menu)
 	await get_tree().process_frame
 	menu.open()
-	menu.call("_show_controls", true)
+	menu.show_page(SettingsMenu.Page.CONTROLS)
 	await get_tree().process_frame
-	var list := menu.get_node("Dim/Panel/Layout/ControlsPage/Scroll/List")
-	assert_eq(list.get_child_count(), GameSettings.get_rebindable_actions().size())
+	assert_eq(menu.controls_list.get_child_count(), GameSettings.get_rebindable_actions().size())
 	menu.close()
 
 func test_farm1_default_keys_and_their_swap() -> void:

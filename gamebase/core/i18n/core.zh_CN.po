@@ -195,6 +195,18 @@ msgstr "返回标题画面"
 msgid "Unsaved progress will be lost. Return to the title screen?"
 msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
 
+msgid "Quit to Desktop"
+msgstr "退出到桌面"
+
+msgid "Unsaved progress will be lost. Quit the game?"
+msgstr "未保存的进度将会丢失。确定退出游戏吗？"
+
+msgid "Unsaved progress will be lost. Load the last save?"
+msgstr "未保存的进度将会丢失。确定读取上次存档吗？"
+
+msgid "Load"
+msgstr "读取"
+
 msgid "Cannot return to the title while the scene changes"
 msgstr "场景切换中，无法返回标题画面"
 
@@ -219,11 +231,47 @@ msgstr "语言"
 msgid "Controls..."
 msgstr "按键设置..."
 
-msgid "Key Bindings"
-msgstr "按键绑定"
+msgid "Controls"
+msgstr "按键设置"
 
-msgid "Reset Defaults"
-msgstr "恢复默认"
+msgid "Action"
+msgstr "操作"
+
+msgid "Keyboard"
+msgstr "键盘"
+
+msgid "Gamepad"
+msgstr "手柄"
+
+msgid "Reset Controls"
+msgstr "恢复默认按键"
+
+msgid "Press a button..."
+msgstr "请按一个手柄按钮..."
+
+msgid "Esc cancels"
+msgstr "按 Esc 取消"
+
+msgid "%s is held by another control"
+msgstr "%s 已被其他操作占用"
+
+msgid "Button %d"
+msgstr "按钮 %d"
+
+msgid "Integer Scaling"
+msgstr "整数倍缩放"
+
+msgid "Pause When Unfocused"
+msgstr "失去焦点时暂停"
+
+msgid "Reset All Settings"
+msgstr "恢复全部默认设置"
+
+msgid "Restore every setting except the language to its default?"
+msgstr "将除语言外的所有设置恢复为默认值？"
+
+msgid "Reset"
+msgstr "恢复"
 
 msgid "Settings are saved automatically."
 msgstr "设置会自动保存。"
@@ -291,8 +339,8 @@ msgstr "天气视觉效果"
 msgid "Reduce Motion"
 msgstr "减少动态效果"
 
-msgid "Reduce Motion removes scene fades and animated rain/lightning while preserving weather gameplay."
-msgstr "减少动态效果会关闭场景淡入淡出和动态雨/闪电，同时保留天气玩法。"
+msgid "Reduce Motion turns off scene fades and animated effects such as rain; gameplay stays the same."
+msgstr "减少动态效果会关闭场景淡入淡出和下雨等动画效果，玩法不变。"
 
 msgid "Support"
 msgstr "支持"

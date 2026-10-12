@@ -3,25 +3,25 @@ extends ColorRect
 
 ## The title screen every game opens on (its main scene): the game's name,
 ## description and version from the project settings, its save slots, a new
-## game, the settings and quitting. It takes the game's `GameDefinition.ui_theme`.
+## game, the settings and quitting. Like every menu it takes the project's
+## theme (`gui/theme/custom`).
 
 @onready var title_label: Label = $Center/Menu/Title
 @onready var subtitle_label: Label = $Center/Menu/Subtitle
-@onready var version_label: Label = $Center/Menu/Version
+@onready var version_label: Label = $Version
 @onready var slot_select: OptionButton = $Center/Menu/SaveSlot
 @onready var slot_info: Label = $Center/Menu/SlotInfo
 @onready var continue_button: Button = $Center/Menu/Continue
-@onready var new_game_button: Button = $Center/Menu/NewGame
-@onready var delete_button: Button = $Center/Menu/DeleteSave
-@onready var settings_button: Button = $Center/Menu/Settings
-@onready var quit_button: Button = $Center/Menu/Quit
+@onready var new_game_button: Button = $Center/Menu/Actions/NewGame
+@onready var delete_button: Button = $Center/Menu/Actions/DeleteSave
+@onready var settings_button: Button = $Center/Menu/Actions/Settings
+@onready var quit_button: Button = $Center/Menu/Actions/Quit
 @onready var status_label: Label = $Center/Menu/Status
 @onready var settings_menu: SettingsMenu = $SettingsMenu
 @onready var confirm_new_game: ConfirmationDialog = $ConfirmNewGame
 @onready var confirm_delete: ConfirmationDialog = $ConfirmDelete
 
 func _ready() -> void:
-	theme = GameDefinition.current().ui_theme
 	title_label.text = String(ProjectSettings.get_setting("application/config/name", ""))
 	subtitle_label.text = String(ProjectSettings.get_setting("application/config/description", ""))
 	subtitle_label.visible = not subtitle_label.text.is_empty()
@@ -33,6 +33,8 @@ func _ready() -> void:
 	delete_button.pressed.connect(_delete_save)
 	settings_button.pressed.connect(_open_settings)
 	quit_button.pressed.connect(_quit)
+	# A web page is left by closing its tab.
+	quit_button.visible = not OS.has_feature("web")
 	settings_menu.closed.connect(_on_settings_closed)
 	confirm_new_game.confirmed.connect(_start_new_game)
 	confirm_delete.confirmed.connect(_confirm_delete_save)

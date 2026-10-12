@@ -9,8 +9,8 @@ extends CanvasLayer
 @onready var rename_button: Button = $Panel/VBox/RenameRow/Rename
 @onready var feed_row: HBoxContainer = $Panel/VBox/FeedRow
 @onready var expansion_row: HBoxContainer = $Panel/VBox/ExpansionRow
-@onready var sell_button: Button = $Panel/VBox/Sell
-@onready var close_button: Button = $Panel/VBox/Close
+@onready var sell_button: Button = $Panel/VBox/Actions/Sell
+@onready var close_button: Button = $Panel/VBox/Actions/Close
 @onready var confirm_sell: ConfirmationDialog = $ConfirmSell
 
 var _location_id: StringName
@@ -21,7 +21,6 @@ var _expansion_buttons: Dictionary[StringName, Button] = {}
 
 func _ready() -> void:
 	add_to_group("animal_management_menu")
-	($Panel as Control).theme = GameDefinition.current().ui_theme
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	animal_select.item_selected.connect(_on_animal_selected)

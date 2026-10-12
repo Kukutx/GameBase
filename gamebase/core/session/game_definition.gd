@@ -57,8 +57,6 @@ static func current() -> GameDefinition:
 ## Starting money and hotbar of a new game (item ids; empty for a free slot).
 @export_range(0, 999999) var start_money := 500
 @export var start_hotbar: Array[StringName] = []
-## The game's UI theme; module menus apply it to their panels (none: Godot's default).
-@export var ui_theme: Theme
 ## The game's input controls, `ControlAction` resources in the order the
 ## settings list them. The core's own controls (`GameSettingsService.CORE_CONTROLS`)
 ## follow, except one whose action the game lists: the game's control replaces
