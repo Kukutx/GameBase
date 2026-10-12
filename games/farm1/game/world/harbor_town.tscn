@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://gamebase/modules/lifesim/calendar/calendar_event_booth.tscn" id="14_festival_booth"]
 [ext_resource type="PackedScene" path="res://game/npc/mira_npc.tscn" id="15_mira"]
 [ext_resource type="PackedScene" path="res://game/npc/rowan_npc.tscn" id="16_rowan"]
+[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(760, 16)
@@ -161,3 +162,10 @@ position = Vector2(-50, -184)
 theme_override_colors/font_color = Color(0.82, 0.88, 0.92, 1)
 theme_override_font_sizes/font_size = 16
 text = "Harbor Town"
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -380.0
+offset_top = -210.0
+offset_right = 380.0
+offset_bottom = 210.0
+script = ExtResource("91_bounds")

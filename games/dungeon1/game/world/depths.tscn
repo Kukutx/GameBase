@@ -1,10 +1,11 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
 [ext_resource type="Script" path="res://gamebase/modules/combat/combat/enemy_tier.gd" id="2_tier"]
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="3_player"]
 [ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="4_spawn"]
 [ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="5_interactable"]
+[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="Resource" id="Tier_slime"]
 script = ExtResource("2_tier")
@@ -137,3 +138,10 @@ shape = SubResource("Rect_way")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 position = Vector2(0, 96)
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -400.0
+offset_top = -260.0
+offset_right = 400.0
+offset_bottom = 260.0
+script = ExtResource("91_bounds")

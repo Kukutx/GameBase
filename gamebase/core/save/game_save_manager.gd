@@ -359,21 +359,14 @@ func _restore(data: Dictionary, location: WorldLocationData, packed: PackedScene
 		return false
 	await get_tree().scene_changed
 	await get_tree().process_frame
-	var player := get_tree().get_first_node_in_group("player") as Node2D
-	if player != null:
-		var position: Variant = data.get("player", {})
-		if position is Dictionary and _is_numeric(position.get("x")) and _is_numeric(position.get("y")):
-			player.global_position = Vector2(float(position["x"]), float(position["y"]))
-		else:
-			_apply_player_spawn(player, location.default_spawn_id)
+	var position: Variant = data.get("player", {})
+	if position is Dictionary and _is_numeric(position.get("x")) and _is_numeric(position.get("y")):
+		WorldTravel.place_player(Vector2(float(position["x"]), float(position["y"])))
+	else:
+		var spawn := WorldSpawnPoint.find(get_tree(), location.default_spawn_id)
+		if spawn != null:
+			WorldTravel.place_player(spawn.global_position)
 	return true
-
-func _apply_player_spawn(player: Node2D, spawn_id: StringName) -> void:
-	for node: Node in get_tree().get_nodes_in_group("world_spawn_point"):
-		var spawn := node as WorldSpawnPoint
-		if spawn != null and spawn.spawn_id == spawn_id:
-			player.global_position = spawn.global_position
-			return
 
 ## The newest intact save of `slot` (the active slot when -1) as
 ## {"data", "source": "primary" | "temp" | "backup"}, or {} when there is none.

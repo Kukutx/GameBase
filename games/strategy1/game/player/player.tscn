@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://gamebase/core/player/top_down_player.gd" id="1_player"]
 [ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
 [ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="3_hud"]
+[ext_resource type="Script" path="res://gamebase/core/camera/game_camera.gd" id="90_camera"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 6.0
@@ -38,9 +39,7 @@ prompt_label = NodePath("../HUD/Prompt")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionController"]
 shape = SubResource("Circle_interaction")
 
-[node name="Camera2D" type="Camera2D" parent="."]
-enabled = true
-position_smoothing_enabled = true
-position_smoothing_speed = 7.0
+[node name="Camera" type="Camera2D" parent="."]
+script = ExtResource("90_camera")
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]

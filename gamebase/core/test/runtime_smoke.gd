@@ -75,6 +75,8 @@ func _run_smoke() -> void:
 	# The checks compare text with the English source strings.
 	root.get_node("GameSettings").set("locale", "en")
 	TranslationServer.set_locale("en")
+	# Travels change scenes behind the transition as in play, without its fades.
+	root.get_node("Transition").set("fade_seconds", 0.0)
 	var save_manager := root.get_node("SaveManager")
 	save_manager.save_directory = save_directory
 	save_manager.select_slot(1)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3]
+[gd_scene load_steps=36 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://game/npc/mira_npc.tscn" id="2_npc"]
@@ -31,6 +31,7 @@
 [ext_resource type="PackedScene" path="res://game/npc/rowan_npc.tscn" id="33_rowan"]
 [ext_resource type="PackedScene" path="res://game/npc/neri_npc.tscn" id="34_neri"]
 [ext_resource type="Resource" path="res://game/data/shops/general_store.tres" id="35_general_store"]
+[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(800, 16)
@@ -295,3 +296,10 @@ position = Vector2(0, 128)
 [node name="WorldHud" parent="." instance=ExtResource("8_hud")]
 
 [node name="ShopMenu" parent="." instance=ExtResource("14_shop_menu")]
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -400.0
+offset_top = -230.0
+offset_right = 400.0
+offset_bottom = 230.0
+script = ExtResource("91_bounds")

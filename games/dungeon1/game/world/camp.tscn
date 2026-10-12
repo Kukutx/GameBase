@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="2_spawn"]
@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://game/data/shops/camp_merchant.tres" id="5_merchant"]
 [ext_resource type="Script" path="res://game/depths/depth_entrance.gd" id="6_entrance"]
 [ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="7_interactable"]
+[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(480, 20)
@@ -106,3 +107,10 @@ prompt_text = "Descend into the depths"
 shape = SubResource("Rect_entrance")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -400.0
+offset_top = -260.0
+offset_right = 400.0
+offset_bottom = 260.0
+script = ExtResource("91_bounds")
