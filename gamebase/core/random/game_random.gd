@@ -44,4 +44,4 @@ func to_save_data() -> Dictionary:
 
 func load_save_data(data: Dictionary) -> void:
 	var raw: Variant = data.get("world_seed", 0)
-	set_seed(int(raw) if typeof(raw) == TYPE_INT or typeof(raw) == TYPE_FLOAT else 0)
+	set_seed(SaveValues.whole_number_or(raw, 0))

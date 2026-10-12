@@ -37,7 +37,8 @@ func _ready() -> void:
 	_refresh_fishing()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("debug_advance_time"):
+	# A development shortcut: exported release builds never skip time.
+	if OS.is_debug_build() and event.is_action_pressed("debug_advance_time"):
 		WorldClock.advance_minutes(60)
 		_show_status(tr("Advanced time by 1 hour"))
 		get_viewport().set_input_as_handled()

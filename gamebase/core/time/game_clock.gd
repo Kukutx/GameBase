@@ -112,8 +112,8 @@ func to_save_data() -> Dictionary:
 func load_save_data(data: Dictionary) -> void:
 	var raw_day: Variant = data.get("day", 1)
 	var raw_minute: Variant = data.get("minute_of_day", GameDefinition.current().start_minute_of_day)
-	var loaded_day := int(raw_day) if typeof(raw_day) == TYPE_INT or typeof(raw_day) == TYPE_FLOAT else 1
-	var loaded_minute := int(raw_minute) if typeof(raw_minute) == TYPE_INT or typeof(raw_minute) == TYPE_FLOAT else GameDefinition.current().start_minute_of_day
+	var loaded_day := SaveValues.whole_number_or(raw_day, 1)
+	var loaded_minute := SaveValues.whole_number_or(raw_minute, GameDefinition.current().start_minute_of_day)
 	set_time(loaded_day, loaded_minute)
 
 func _advance_one_minute() -> void:

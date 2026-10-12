@@ -18,3 +18,9 @@ static func whole_number(value: Variant) -> Variant:
 	if typeof(value) == TYPE_FLOAT and is_finite(value) and value == floorf(value) and absf(value) <= MAX_WHOLE_NUMBER:
 		return int(value)
 	return null
+
+## `value` as an int when it is a whole number (see `whole_number`), otherwise
+## `fallback`.
+static func whole_number_or(value: Variant, fallback: int) -> int:
+	var whole: Variant = whole_number(value)
+	return fallback if whole == null else int(whole)

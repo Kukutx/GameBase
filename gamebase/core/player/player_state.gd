@@ -102,17 +102,12 @@ func to_save_data() -> Dictionary:
 	}
 
 func load_save_data(data: Dictionary) -> void:
-	max_energy = maxi(_safe_int(data.get("max_energy", 100), 100), 1)
-	energy = clampi(_safe_int(data.get("energy", max_energy), max_energy), 0, max_energy)
-	max_health = maxi(_safe_int(data.get("max_health", 100), 100), 1)
-	health = clampi(_safe_int(data.get("health", max_health), max_health), 0, max_health)
+	max_energy = maxi(SaveValues.whole_number_or(data.get("max_energy", 100), 100), 1)
+	energy = clampi(SaveValues.whole_number_or(data.get("energy", max_energy), max_energy), 0, max_energy)
+	max_health = maxi(SaveValues.whole_number_or(data.get("max_health", 100), 100), 1)
+	health = clampi(SaveValues.whole_number_or(data.get("health", max_health), max_health), 0, max_health)
 	var start_money := GameDefinition.current().start_money
-	money = maxi(_safe_int(data.get("money", start_money), start_money), 0)
+	money = maxi(SaveValues.whole_number_or(data.get("money", start_money), start_money), 0)
 	energy_changed.emit(energy, max_energy)
 	health_changed.emit(health, max_health)
 	money_changed.emit(money)
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback

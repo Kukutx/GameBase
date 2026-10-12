@@ -75,7 +75,8 @@ func payout_pending() -> int:
 
 func reset_new_game() -> void:
 	_pending.clear()
-	_last_day_seen = WorldClock.day
+	# The day the new game starts on: the clock is reset after this step.
+	_last_day_seen = GameDefinition.current().start_day
 	shipment_changed.emit()
 
 func to_save_data() -> Dictionary:
@@ -93,12 +94,12 @@ func load_save_data(data: Dictionary) -> void:
 			if not raw_entry is Dictionary:
 				continue
 			var entry: Dictionary = raw_entry
-			var quantity := maxi(_safe_int(entry.get("quantity", 0), 0), 0)
-			var value := maxi(_safe_int(entry.get("value", 0), 0), 0)
+			var quantity := maxi(SaveValues.whole_number_or(entry.get("quantity", 0), 0), 0)
+			var value := maxi(SaveValues.whole_number_or(entry.get("value", 0), 0), 0)
 			if quantity <= 0 or value <= 0:
 				continue
 			_pending[String(raw_key)] = {"quantity": quantity, "value": value}
-	_last_day_seen = maxi(_safe_int(data.get("last_day_seen", WorldClock.day), WorldClock.day), 1)
+	_last_day_seen = maxi(SaveValues.whole_number_or(data.get("last_day_seen", WorldClock.day), WorldClock.day), 1)
 	shipment_changed.emit()
 
 func _on_day_changed(day: int) -> void:
@@ -109,8 +110,3 @@ func _on_day_changed(day: int) -> void:
 	# nested day marker when it resumes.
 	_last_day_seen = day
 	payout_pending()
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback

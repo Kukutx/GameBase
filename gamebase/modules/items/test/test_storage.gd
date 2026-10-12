@@ -36,6 +36,20 @@ func test_storage_respects_stack_based_slot_capacity_and_transfers_both_ways() -
 	assert_eq(StorageState.get_quantity(CONTAINER, &"fixture_snack"), 25)
 	assert_eq(StorageState.get_used_slots(CONTAINER), 2)
 
+func test_items_taken_out_of_storage_come_back_without_being_gained() -> void:
+	assert_eq(InventoryState.add_item(_snack, 3), 0)
+	assert_eq(StorageState.store_item(CONTAINER, &"fixture_snack", 3, 24), 3)
+	var observed := {"added": 0, "gained": 0}
+	var on_added := func(_item_id: StringName, quantity: int) -> void: observed["added"] = int(observed["added"]) + quantity
+	var on_gained := func(_item_id: StringName, quantity: int) -> void: observed["gained"] = int(observed["gained"]) + quantity
+	InventoryState.item_added.connect(on_added)
+	InventoryState.item_gained.connect(on_gained)
+	assert_eq(StorageState.take_item(CONTAINER, &"fixture_snack", 3), 3)
+	InventoryState.item_added.disconnect(on_added)
+	InventoryState.item_gained.disconnect(on_gained)
+	assert_eq(int(observed["added"]), 3)
+	assert_eq(int(observed["gained"]), 0, "the player's own snacks are not gained again")
+
 func test_storage_blocks_same_container_reentrancy_in_both_directions() -> void:
 	InventoryState.add_item_by_id(&"fixture_stone", 2)
 	var store_observed := {"entered": false, "inner": -1}

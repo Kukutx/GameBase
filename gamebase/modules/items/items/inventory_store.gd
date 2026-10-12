@@ -8,7 +8,12 @@ extends Node
 ## only items that are current content.
 
 signal changed
+## Every item that enters the inventory.
 signal item_added(item_id: StringName, quantity: int)
+## An item the player gains in play: found, harvested, bought, crafted or
+## given. Their own items coming back (`return_items_atomic`) are added but
+## not gained, so nothing that counts gains counts them twice.
+signal item_gained(item_id: StringName, quantity: int)
 signal item_removed(item_id: StringName, quantity: int)
 
 @export_range(1, 200, 1) var max_slots := 24
@@ -29,6 +34,7 @@ func add_item(item: ItemData, quantity: int = 1) -> int:
 	_put(_items, _definitions, item, accepted)
 	changed.emit()
 	item_added.emit(item.id, accepted)
+	item_gained.emit(item.id, accepted)
 	return quantity - accepted
 
 func add_item_by_id(item_id: StringName, quantity: int = 1) -> int:
@@ -51,10 +57,19 @@ func can_add_items_by_id(items: Dictionary) -> bool:
 func add_items_atomic(items: Dictionary) -> bool:
 	return apply_transaction_atomic({}, items)
 
+## Adds the player's own items back (id -> int quantity) as one step, or
+## nothing when any of them does not fit: items taken out of storage, or a
+## packed-up structure. They are added but not gained (`item_gained`).
+func return_items_atomic(items: Dictionary) -> bool:
+	return _apply_transaction({}, items, false)
+
 ## Removes `removals` and adds `additions` (both id -> int quantity) as one
 ## step: when any part fails nothing changes and no signal is emitted.
 ## Listeners of the emitted signals already see the final state.
 func apply_transaction_atomic(removals: Dictionary, additions: Dictionary) -> bool:
+	return _apply_transaction(removals, additions, true)
+
+func _apply_transaction(removals: Dictionary, additions: Dictionary, gained: bool) -> bool:
 	var plan := _plan_transaction(removals, additions)
 	if plan.is_empty():
 		return false
@@ -69,6 +84,8 @@ func apply_transaction_atomic(removals: Dictionary, additions: Dictionary) -> bo
 		item_removed.emit(event[0] as StringName, int(event[1]))
 	for event: Array in added:
 		item_added.emit(event[0] as StringName, int(event[1]))
+		if gained:
+			item_gained.emit(event[0] as StringName, int(event[1]))
 	return true
 
 func can_apply_transaction(removals: Dictionary, additions: Dictionary) -> bool:

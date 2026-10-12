@@ -14,7 +14,7 @@ signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 5
+const SAVE_VERSION := 6
 const SLOT_COUNT := 3
 
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
@@ -155,7 +155,7 @@ func get_slot_summary(slot: int) -> Dictionary:
 	var data: Dictionary = candidate["data"]
 	var clock: Dictionary = data["clock"]
 	var player_state: Dictionary = data.get("player_state", {})
-	var day := maxi(_safe_int(clock.get("day", 1), 1), 1)
+	var day := maxi(SaveValues.whole_number_or(clock.get("day", 1), 1), 1)
 	var source := String(candidate["source"])
 	return {
 		"slot": resolved,
@@ -171,8 +171,8 @@ func get_slot_summary(slot: int) -> Dictionary:
 		"day": day,
 		"season": GameCalendar.current().get_season_name(day),
 		"day_of_season": GameCalendar.current().get_day_of_season(day),
-		"minute_of_day": clampi(_safe_int(clock.get("minute_of_day", 0), 0), 0, GameClock.MINUTES_PER_DAY - 1),
-		"money": maxi(_safe_int(player_state.get("money", 0), 0), 0),
+		"minute_of_day": clampi(SaveValues.whole_number_or(clock.get("minute_of_day", 0), 0), 0, GameClock.MINUTES_PER_DAY - 1),
+		"money": maxi(SaveValues.whole_number_or(player_state.get("money", 0), 0), 0),
 	}
 
 func delete_slot(slot: int) -> bool:
@@ -369,11 +369,11 @@ func _read_usable(path: String) -> Dictionary:
 	return data if _is_snapshot_usable(data) else {}
 
 func _snapshot_timestamp(data: Dictionary) -> int:
-	return maxi(_safe_int(data.get("saved_at_unix_msec", 0), 0), 0)
+	return maxi(SaveValues.whole_number_or(data.get("saved_at_unix_msec", 0), 0), 0)
 
 ## Whether `data` is a complete save of this build that can be loaded.
 func _is_snapshot_usable(data: Dictionary) -> bool:
-	if _safe_int(data.get("version", 0), 0) != SAVE_VERSION:
+	if SaveValues.whole_number_or(data.get("version", 0), 0) != SAVE_VERSION:
 		return false
 	for section: SaveSection in _sections:
 		if not data.get(String(section.id)) is Dictionary:
@@ -383,11 +383,6 @@ func _is_snapshot_usable(data: Dictionary) -> bool:
 		return false
 	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
 	return location != null and ResourceLoader.exists(location.scene_path)
-
-func _safe_int(value: Variant, fallback: int = 0) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback
 
 func _is_numeric(value: Variant) -> bool:
 	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT

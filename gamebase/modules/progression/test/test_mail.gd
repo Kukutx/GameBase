@@ -30,6 +30,7 @@ func before_each() -> void:
 	WorldClock.set_time(1, 8 * 60)
 
 func after_each() -> void:
+	GameSession.set("_starting_new_game", false)
 	# The game's content is active again before the stores load their state.
 	ContentRegistry.active = ContentDB
 	WorldState.load_save_data(_world_snapshot)
@@ -55,6 +56,17 @@ func test_dated_mail_delivers_on_its_day_and_rewards_once() -> void:
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), seeds_before + 3)
 	assert_false(MailState.claim_rewards(WELCOME))
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), seeds_before + 3)
+
+func test_letters_wait_while_the_session_changes_and_arrive_when_play_starts() -> void:
+	# A save restoring or a new game being set up: the world is half replaced,
+	# so what it announces (a friendship, a day) delivers nothing yet.
+	GameSession.set("_starting_new_game", true)
+	WorldClock.set_time(2, 8 * 60)
+	assert_true(MailState.refresh_deliveries().is_empty())
+	assert_false(MailState.is_received(WELCOME))
+	GameSession.set("_starting_new_game", false)
+	GameSession.play_started.emit()
+	assert_true(MailState.is_received(WELCOME))
 
 func test_mail_claim_blocks_item_added_reentrancy() -> void:
 	WorldClock.set_time(2, 8 * 60)

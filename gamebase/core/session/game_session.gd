@@ -17,6 +17,10 @@ signal new_game_started
 ## steps already reset the services and its slot was replaced, so the player
 ## stays where they started it (the title screen).
 signal new_game_failed
+## Emitted when play starts after the session changed: a new game is ready, or
+## a save finished loading. A service that ignores what is announced while the
+## session changes (`is_changing()`) catches up here.
+signal play_started
 signal continue_started(success: bool)
 signal player_collapsed(money_lost: int)
 signal late_night_collapse
@@ -35,6 +39,7 @@ func _ready() -> void:
 	register_new_game_step(&"finish", NEW_GAME_ORDER_FINISH, WorldState.set_value.bind(NEW_GAME_FLAG, true))
 	PlayerState.health_changed.connect(_on_health_changed)
 	WorldClock.minute_changed.connect(_on_minute_changed)
+	SaveManager.load_completed.connect(_on_load_completed)
 
 ## Registers a step that resets or seeds a service when a new game starts. Steps
 ## run by ascending `order`; registering the same id again replaces the step.
@@ -62,7 +67,7 @@ func end_activities() -> void:
 ## player's activities and gives back every lock first. False while a travel,
 ## a load or a new game changes the scene: that change would replace the title.
 func return_to_title() -> bool:
-	if is_starting_new_game() or GameSaveManager.is_restoring() or WorldTravel.is_traveling():
+	if is_changing() or WorldTravel.is_traveling():
 		return false
 	end_activities()
 	# Nothing of the session holds the controls on the title screen.
@@ -83,6 +88,12 @@ func initialize_new_game_state() -> void:
 ## (`GameTriggers` ignores it).
 func is_starting_new_game() -> bool:
 	return _starting_new_game
+
+## Whether the session is changing: a new game is being set up or a save is
+## being restored. What the services and the location announce meanwhile is
+## the change, not play; `play_started` follows it.
+func is_changing() -> bool:
+	return _starting_new_game or GameSaveManager.is_restoring()
 
 func _reset_clock() -> void:
 	var definition := GameDefinition.current()
@@ -116,10 +127,15 @@ func start_new_game() -> bool:
 		return false
 	return true
 
+func _on_load_completed(success: bool, _message: String) -> void:
+	if success:
+		play_started.emit()
+
 func _on_start_travel_ended(arrived: bool) -> void:
 	_starting_new_game = false
 	if arrived:
 		new_game_started.emit()
+		play_started.emit()
 	else:
 		GameEvents.toast("Could not start the new game location")
 		new_game_failed.emit()

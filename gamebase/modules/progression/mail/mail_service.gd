@@ -15,9 +15,15 @@ func _ready() -> void:
 	WorldState.changed.connect(_on_world_state_changed)
 	refresh_deliveries.call_deferred()
 
+## Delivers every letter whose condition now holds. While the session changes
+## (`GameSession.is_changing()`) the world is half restored or half set up, so
+## the check waits for `GameSession.play_started`.
 func refresh_deliveries() -> Array[StringName]:
-	_refresh_pending = false
 	var delivered: Array[StringName] = []
+	if GameSession.is_changing():
+		_refresh_pending = true
+		return delivered
+	_refresh_pending = false
 	for mail: MailData in MailData.find_all():
 		if mail == null:
 			continue
@@ -96,10 +102,6 @@ func is_read(mail_id: StringName) -> bool:
 
 func is_claimed(mail_id: StringName) -> bool:
 	return mail_id != &"" and WorldState.get_bool(_key(mail_id, "claimed"))
-
-func reset_new_game() -> void:
-	# Mail state lives in WorldState, which is already cleared by GameSession.
-	refresh_deliveries.call_deferred()
 
 func _get_reward_snapshot(mail: MailData) -> Dictionary:
 	if mail == null:

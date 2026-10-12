@@ -271,7 +271,7 @@ func _next_unique_sequence(animal_id: StringName) -> int:
 	var used_ids: Dictionary = {}
 	for record: Dictionary in _get_records():
 		used_ids[String(record["instance_id"])] = true
-	var sequence := maxi(_safe_int(WorldState.get_value(SEQUENCE_KEY, 0), 0), 0) + 1
+	var sequence := maxi(SaveValues.whole_number_or(WorldState.get_value(SEQUENCE_KEY, 0), 0), 0) + 1
 	while used_ids.has("owned_%s_%04d" % [String(animal_id), sequence]):
 		sequence += 1
 	return sequence
@@ -331,7 +331,7 @@ func _get_records() -> Array[Dictionary]:
 			"animal_id": String(source.get("animal_id", "")),
 			"location_id": String(source.get("location_id", "")),
 			"housing_id": String(source.get("housing_id", "")),
-			"slot_index": maxi(_safe_int(source.get("slot_index", 0), 0), 0),
+			"slot_index": maxi(SaveValues.whole_number_or(source.get("slot_index", 0), 0), 0),
 			"node_name": String(source.get("node_name", "")),
 		}
 		if source.has("custom_name"):
@@ -362,17 +362,12 @@ func _get_animal_state(instance_id: StringName) -> Dictionary:
 	var state: Dictionary = (raw as Dictionary).duplicate(true)
 	var current_day := maxi(WorldClock.day, 1)
 	if state.has("happiness"):
-		state["happiness"] = clampi(_safe_int(state.get("happiness", 50), 50), 0, 100)
+		state["happiness"] = clampi(SaveValues.whole_number_or(state.get("happiness", 50), 50), 0, 100)
 	for key: String in ["last_product_day", "last_pet_day", "last_fed_day"]:
 		if state.has(key):
 			# A malformed date should not grant free products/pets or punish the player
 			# with a missed-feed state. Treat unparseable values as observed today.
-			state[key] = clampi(_safe_int(state.get(key, current_day), current_day), 0, current_day)
+			state[key] = clampi(SaveValues.whole_number_or(state.get(key, current_day), current_day), 0, current_day)
 	if state.has("last_processed_day"):
-		state["last_processed_day"] = clampi(_safe_int(state.get("last_processed_day", current_day), current_day), 1, current_day)
+		state["last_processed_day"] = clampi(SaveValues.whole_number_or(state.get("last_processed_day", current_day), current_day), 1, current_day)
 	return state
-
-func _safe_int(value: Variant, fallback: int = 0) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback

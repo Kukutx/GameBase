@@ -124,7 +124,7 @@ func _run() -> void:
 
 	# Talk/social path without opening the dialogue balloon in headless mode.
 	relationship_state.record_talk(&"mira")
-	root.get_node("NpcSocialEvents").npc_talked.emit(&"mira")
+	root.get_node("NpcSocialEvents").npc_talked.emit(&"mira", true)
 	_check(quest_state.is_completed(&"meet_mira"), "Meet Mira quest did not complete")
 	_check(relationship_state.get_points(&"mira") == 10, "Daily talk friendship missing")
 	npc_memory.append_message(&"mira", &"player", "How is the garden today?")

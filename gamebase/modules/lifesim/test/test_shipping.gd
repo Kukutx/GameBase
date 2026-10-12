@@ -45,6 +45,19 @@ func test_shipping_removes_item_and_pays_on_next_day() -> void:
 	assert_eq(PlayerState.money, 100 + turnip.sell_price)
 	assert_eq(ShippingState.get_pending_total(), 0)
 
+func test_a_new_game_pays_its_first_night_after_a_later_day_was_seen() -> void:
+	# The previous session reached day 40; its new game starts over at the
+	# game's start day, and the clock is reset after the shipping step.
+	ShippingState.load_save_data({"pending": {}, "last_day_seen": 40})
+	WorldClock.set_time(40, 12 * 60)
+	ShippingState.reset_new_game()
+	var start_day := GameDefinition.current().start_day
+	WorldClock.set_time(start_day, 12 * 60)
+	InventoryState.add_item_by_id(&"fixture_turnip", 1)
+	assert_true(ShippingState.ship_item(&"fixture_turnip", 1))
+	WorldClock.set_time(start_day + 1, 6 * 60)
+	assert_eq(PlayerState.money, 100 + ItemData.find(&"fixture_turnip").sell_price)
+
 func test_shipping_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"fixture_turnip", 2)
 	var observed := {"entered": false, "inner_result": true}

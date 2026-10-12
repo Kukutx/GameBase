@@ -74,17 +74,17 @@ func get_state_data() -> Dictionary:
 func load_state_data(state: Dictionary, persist := true) -> void:
 	var default_durability := data.durability if data != null else 1
 	var current_day := maxi(WorldClock.day, 1)
-	durability_left = clampi(_safe_int(state.get("durability_left", default_durability), default_durability), 0, default_durability)
+	durability_left = clampi(SaveValues.whole_number_or(state.get("durability_left", default_durability), default_durability), 0, default_durability)
 	var raw_depleted: Variant = state.get("depleted", false)
 	is_depleted = raw_depleted is bool and bool(raw_depleted)
 	if is_depleted:
-		depleted_day = clampi(_safe_int(state.get("depleted_day", current_day), current_day), 1, current_day)
+		depleted_day = clampi(SaveValues.whole_number_or(state.get("depleted_day", current_day), current_day), 1, current_day)
 		durability_left = 0
 	else:
 		depleted_day = 0
 		if durability_left <= 0:
 			durability_left = default_durability
-	pending_drop_quantity = maxi(_safe_int(state.get("pending_drop_quantity", 0), 0), 0)
+	pending_drop_quantity = maxi(SaveValues.whole_number_or(state.get("pending_drop_quantity", 0), 0), 0)
 	if persist:
 		_persist()
 	_refresh_visual()
@@ -192,11 +192,6 @@ func _load_state() -> void:
 
 func _state_key() -> StringName:
 	return StringName("mining:%s" % String(persistent_id))
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback
 
 ## The world state the node saves, for `ContentRegistry`'s check that no two
 ## nodes share it.

@@ -57,7 +57,7 @@ func take_item(container_id: StringName, item_id: StringName, quantity: int = 1)
 	if accepted <= 0:
 		return 0
 	_mutating_containers[container_key] = true
-	if not InventoryState.apply_transaction_atomic({}, {String(item_id): accepted}):
+	if not InventoryState.return_items_atomic({String(item_id): accepted}):
 		_mutating_containers.erase(container_key)
 		return 0
 	current -= accepted

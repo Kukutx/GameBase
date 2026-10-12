@@ -134,7 +134,7 @@ func remove_placement(location_id: StringName, placement_id: StringName, refund_
 			return false
 	_removing_placements[placement_key] = true
 	if refund_data != null and refund_data.item_id != &"":
-		if not InventoryState.apply_transaction_atomic({}, {String(refund_data.item_id): 1}):
+		if not InventoryState.return_items_atomic({String(refund_data.item_id): 1}):
 			_removing_placements.erase(placement_key)
 			GameEvents.toast("Inventory changed before the structure could be packed up")
 			return false
@@ -252,7 +252,7 @@ func _next_unique_serial() -> int:
 				var placement_id := String((raw_record as Dictionary).get("id", ""))
 				if not placement_id.is_empty():
 					used_ids[placement_id] = true
-	var serial := maxi(_safe_int(WorldState.get_value(SERIAL_KEY, 0), 0) + 1, 1)
+	var serial := maxi(SaveValues.whole_number_or(WorldState.get_value(SERIAL_KEY, 0), 0) + 1, 1)
 	while used_ids.has("placed_%06d" % serial):
 		serial += 1
 	return serial
@@ -262,9 +262,6 @@ func _refund_fits(item_id: StringName) -> bool:
 
 func _is_numeric(value: Variant) -> bool:
 	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	return int(value) if _is_numeric(value) else fallback
 
 func _set_placements(location_id: StringName, placements: Array[Dictionary]) -> void:
 	WorldState.set_value(_placements_key(location_id), placements.duplicate(true))

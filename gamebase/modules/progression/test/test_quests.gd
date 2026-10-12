@@ -56,7 +56,7 @@ func test_new_game_auto_starts_only_data_declared_entry_quests() -> void:
 
 func test_talking_collecting_and_harvesting_complete_their_quests_and_start_the_next() -> void:
 	var money_before := PlayerState.money
-	NpcSocialEvents.npc_talked.emit(&"fixture_npc")
+	NpcSocialEvents.npc_talked.emit(&"fixture_npc", true)
 	assert_true(QuestState.is_completed(&"fixture_intro"))
 	assert_eq(PlayerState.money, money_before + 50)
 	assert_true(QuestState.is_active(&"fixture_gather"))
@@ -67,6 +67,15 @@ func test_talking_collecting_and_harvesting_complete_their_quests_and_start_the_
 	assert_true(QuestState.is_active(&"fixture_harvest"))
 	LifesimEvents.crop_harvested.emit(&"fixture_radish_crop", &"fixture_radish", 1)
 	assert_true(QuestState.is_completed(&"fixture_harvest"))
+
+func test_only_items_the_player_gains_count_as_collected() -> void:
+	NpcSocialEvents.npc_talked.emit(&"fixture_npc", true)
+	InventoryState.add_item_by_id(&"fixture_berry", 2)
+	# Berries put away and taken back, or refunded, are the same berries.
+	assert_true(InventoryState.return_items_atomic({"fixture_berry": 2}))
+	assert_eq(int(QuestState.get_state(&"fixture_gather").get("progress", 0)), 2)
+	assert_true(InventoryState.apply_transaction_atomic({}, {"fixture_berry": 1}))
+	assert_true(QuestState.is_completed(&"fixture_gather"))
 
 func test_item_reward_quest_waits_for_inventory_space_then_completes_atomically() -> void:
 	QuestState.load_save_data({})

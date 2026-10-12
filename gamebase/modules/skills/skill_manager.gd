@@ -96,7 +96,7 @@ func to_save_data() -> Dictionary:
 func load_save_data(data: Dictionary) -> void:
 	_xp.clear()
 	for skill: SkillData in SkillData.find_all():
-		var xp := maxi(_safe_int(data.get(String(skill.id), 0), 0), 0)
+		var xp := maxi(SaveValues.whole_number_or(data.get(String(skill.id), 0), 0), 0)
 		if xp > 0:
 			_xp[skill.id] = xp
 		skill_xp_changed.emit(skill.id, xp, skill.get_level_for_xp(xp))
@@ -109,8 +109,3 @@ func _get_active_perks() -> Array[SkillPerk]:
 		if perk != null:
 			perks.append(perk)
 	return perks
-
-func _safe_int(value: Variant, fallback: int) -> int:
-	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
-		return int(value)
-	return fallback
