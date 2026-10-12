@@ -19,6 +19,7 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"TIME_BETWEEN", _time_between, 2, 2, [GameRulesService.ARG_INT])
 	rules.register_condition(&"WEATHER", _weather, 1, -1, [GameRulesService.ARG_TEXT])
 	rules.register_condition(&"LOCATION", _location.bind(rules), 1, -1, [WorldLocationData.KIND])
+	rules.register_condition(&"REGION", _region.bind(rules), 1, -1, [RegionData.KIND])
 	rules.register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [GameRulesService.ARG_INT])
 	rules.register_condition(&"PLAYTHROUGH_AT_LEAST", _playthrough_at_least, 1, 1, [GameRulesService.ARG_COUNT])
 	rules.register_condition(&"EVENT_ARG", _event_arg, 2, -1, [GameRulesService.ARG_TEXT])
@@ -87,6 +88,16 @@ static func _location(args: PackedStringArray, context: Dictionary, rules: GameR
 		var current := WorldLocationData.find_current(rules.get_tree())
 		location_id = String(current.id) if current != null else ""
 	return args.has(location_id)
+
+## REGION <region>...: the player (or the context's "location_id") is in a
+## location of one of the regions.
+static func _region(args: PackedStringArray, context: Dictionary, rules: GameRulesService) -> bool:
+	var location: WorldLocationData = null
+	if context.has("location_id"):
+		location = WorldLocationData.find(StringName(String(context["location_id"])))
+	else:
+		location = WorldLocationData.find_current(rules.get_tree())
+	return location != null and args.has(String(location.region_id))
 
 ## MONEY_AT_LEAST <n>: the player has at least n money.
 static func _money_at_least(args: PackedStringArray, _context: Dictionary) -> bool:

@@ -11,6 +11,12 @@ extends Node
 ## A lock taken with an `owner` is given back when the owner leaves the tree,
 ## so a menu freed by a scene change never leaves the game locked. Nothing but
 ## this service sets `SceneTree.paused` (`tools/check_code.js`).
+##
+## The locks stack as the modes that take them nest: the latest one is on top
+## (a menu opened over a minigame over the world), and a lock taken again goes
+## back on top. A mode that reads input of its own (a menu's cancel, a
+## minigame's keys) reads it only while its lock is on top (`is_top()`), so
+## two nested modes never both take one key press.
 
 signal changed
 
@@ -22,6 +28,8 @@ func lock(reason: StringName, pause_world := false, owner: Node = null) -> void:
 	if reason == &"":
 		return
 	_release_owner(reason)
+	# Taken again, it goes back on top.
+	_locks.erase(reason)
 	var entry := {"pause": pause_world, "owner": owner, "release": Callable()}
 	if owner != null:
 		# A callable of its own per lock: bound callables of one method compare
@@ -52,6 +60,17 @@ func is_player_press(event: InputEvent, action: StringName) -> bool:
 
 func is_held(reason: StringName) -> bool:
 	return _locks.has(reason)
+
+## Whether `owner` took the lock on top, the latest one held: the mode it
+## stands for reads input now. False while no lock is held.
+func is_top(owner: Node) -> bool:
+	if _locks.is_empty() or owner == null:
+		return false
+	return _locks[get_top_reason()]["owner"] == owner
+
+## The reason of the lock on top, the latest one held; empty while none is.
+func get_top_reason() -> StringName:
+	return _locks.keys().back() if not _locks.is_empty() else &""
 
 ## The reasons holding a lock, sorted.
 func get_reasons() -> Array[StringName]:

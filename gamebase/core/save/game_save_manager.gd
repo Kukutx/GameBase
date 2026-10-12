@@ -353,6 +353,10 @@ func _restore(data: Dictionary, location: WorldLocationData, packed: PackedScene
 		section.read.call(data[String(section.id)], data)
 	for step: Dictionary in _load_steps:
 		(step["step"] as Callable).call()
+	# The loaded scene is no travel's, and nothing of the last scene remains to
+	# uncover the screen.
+	Transition.reset()
+	WorldTravel.reset()
 	if get_tree().change_scene_to_packed(packed) != OK:
 		return false
 	await get_tree().scene_changed

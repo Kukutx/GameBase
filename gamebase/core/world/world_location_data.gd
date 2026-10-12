@@ -16,6 +16,8 @@ const KIND := &"location"
 @export var weather_exposed := true
 @export var default_spawn_id: StringName
 @export var music_cue_id: StringName
+## The region the location belongs to (`RegionData`); empty for none.
+@export var region_id: StringName
 
 ## The location with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> WorldLocationData:
@@ -39,11 +41,14 @@ static func find_current(tree: SceneTree) -> WorldLocationData:
 	return find_for_scene(tree.current_scene.scene_file_path)
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if region_id != &"" and not registry.has_entry(RegionData.KIND, region_id):
+		problems.append("belongs to unknown region '%s'" % region_id)
 	if music_cue_id == &"":
-		return PackedStringArray()
+		return problems
 	var cue := registry.get_entry(AudioCueData.KIND, music_cue_id) as AudioCueData
 	if cue == null:
-		return PackedStringArray(["references unknown music cue '%s'" % music_cue_id])
-	if not cue.is_music():
-		return PackedStringArray(["music cue '%s' is not MUSIC" % music_cue_id])
-	return PackedStringArray()
+		problems.append("references unknown music cue '%s'" % music_cue_id)
+	elif not cue.is_music():
+		problems.append("music cue '%s' is not MUSIC" % music_cue_id)
+	return problems

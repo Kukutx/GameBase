@@ -120,8 +120,11 @@ func return_to_title() -> bool:
 		return false
 	end_activities()
 	_playing = false
-	# Nothing of the session holds the controls on the title screen.
+	# Nothing of the session holds the controls or the screen on the title
+	# screen, and no travel leads there.
 	InputLock.clear()
+	Transition.reset()
+	WorldTravel.reset()
 	get_tree().change_scene_to_file(String(ProjectSettings.get_setting("application/run/main_scene")))
 	return true
 
@@ -242,13 +245,11 @@ func _return_home() -> bool:
 	# arrives first; the player is then where it took them.
 	if WorldTravel.is_traveling():
 		await WorldTravel.wait_until_arrived()
-		await get_tree().process_frame
 	if _is_home():
 		return true
 	var definition := GameDefinition.current()
 	if not await WorldTravel.go_to(definition.home_location_id, definition.home_spawn_id):
 		return false
-	await get_tree().process_frame
 	return _is_home()
 
 func _is_home() -> bool:

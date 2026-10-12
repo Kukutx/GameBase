@@ -4,8 +4,9 @@ extends CanvasLayer
 ## A menu over the world, which the core's and the modules' menus extend. It
 ## stays hidden until it shows (`show_menu()`), pauses the world and holds the
 ## player's controls while it shows (an `InputLock` lock named `menu_id`,
-## given back when the menu leaves the tree), and `ui_cancel` closes it. A
-## menu is found by its id as a group:
+## given back when the menu leaves the tree), and `ui_cancel` closes it while
+## the menu is on top (`InputLock.is_top()`). A menu is found by its id as a
+## group:
 ## `get_tree().get_first_node_in_group(&"shop_menu")`.
 ##
 ## A menu passes its id to the constructor (`super(&"shop_menu")` in its
@@ -42,6 +43,6 @@ func close() -> void:
 	closed.emit()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
+	if visible and InputLock.is_top(self) and event.is_action_pressed("ui_cancel"):
 		close()
 		get_viewport().set_input_as_handled()

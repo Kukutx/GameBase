@@ -34,7 +34,7 @@ This file holds the domain invariants of the game base. Generic engineering rule
 
 ## World travel
 
-- Travel uses stable Location ids and Spawn ids through `WorldTravel.travel_to()` (with the fade) and `go_to()` (at once); there is no travel by scene path.
+- Travel uses stable Location ids and Spawn ids through `WorldTravel.travel_to()` and `go_to()` (which also waits until the player arrives); there is no travel by scene path. What a place needs to know about the travel goes in its `params` (`WorldTravel.get_params()`), not in a global.
 
 ## Player-visible text
 
