@@ -4,11 +4,15 @@ extends Node
 signal conversation_requested(npc_id: StringName, actor: Node)
 signal context_prepared(npc_id: StringName, context: Dictionary)
 
+## The `InputLock` reason a conversation holds the player's controls under.
+const DIALOGUE_LOCK := &"dialogue"
+
 var ai_provider: Node
 var prefer_ai := false
 var _starting := false
 var _active_balloon: Node
 var _active_balloon_id := 0
+var _active_dialogue: DialogueResource
 var _active_heart_event: HeartEventData
 var _active_heart_dialogue: DialogueResource
 
@@ -65,14 +69,24 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 	var balloon: Variant = manager.call("show_example_dialogue_balloon", dialogue, resolved_title, [actor, npc])
 	if balloon == null or not is_instance_valid(balloon):
 		return
-	_active_balloon = balloon as Node
-	_active_balloon_id = _active_balloon.get_instance_id()
-	_active_balloon.tree_exited.connect(Callable(self, "_on_scripted_balloon_exited").bind(_active_balloon_id), CONNECT_ONE_SHOT)
+	_hold_controls(balloon as Node, dialogue)
 	if heart_event != null:
 		_active_heart_event = heart_event
 		_active_heart_dialogue = dialogue
 
+# The player stays put while `balloon` shows `dialogue`: the lock is given back
+# when the dialogue ends or the balloon leaves the tree, whichever comes first.
+func _hold_controls(balloon: Node, dialogue: DialogueResource) -> void:
+	_active_balloon = balloon
+	_active_balloon_id = balloon.get_instance_id()
+	_active_dialogue = dialogue
+	InputLock.lock(DIALOGUE_LOCK, false, balloon)
+	balloon.tree_exited.connect(_on_scripted_balloon_exited.bind(_active_balloon_id), CONNECT_ONE_SHOT)
+
 func _on_dialogue_ended(resource: DialogueResource) -> void:
+	if resource != null and resource == _active_dialogue:
+		_active_dialogue = null
+		InputLock.unlock(DIALOGUE_LOCK)
 	if _active_heart_event == null or resource != _active_heart_dialogue:
 		return
 	var completed_event := _active_heart_event
@@ -85,6 +99,7 @@ func _on_scripted_balloon_exited(balloon_id: int) -> void:
 		return
 	_active_balloon = null
 	_active_balloon_id = 0
+	_active_dialogue = null
 	# If dialogue_ended did not fire first, the balloon was interrupted. Leave the
 	# heart event unseen so the player can trigger the authored scene again.
 	_active_heart_event = null

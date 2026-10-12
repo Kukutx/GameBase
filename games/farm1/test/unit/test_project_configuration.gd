@@ -64,8 +64,12 @@ func test_unit_run_does_not_inherit_the_saved_language_settings_or_profile() -> 
 	assert_eq(TranslationServer.get_locale(), "en")
 	assert_eq(GameSettings.settings_path, "user://test_run/settings.json", "the run keeps settings of its own")
 	assert_eq(GameProfile.profile_path, "user://test_run/profile.json", "the run keeps a profile of its own")
-	for runtime_script: String in ["world_services_smoke.gd", "long_horizon_soak.gd"]:
-		assert_true(_read_text("res://test/runtime/%s" % runtime_script).contains('TranslationServer.set_locale("en")'), runtime_script)
+	# Each runtime smoke extends the core's, which reads English text and keeps
+	# its saves and profile apart.
+	for runtime_script: String in DirAccess.get_files_at("res://test/runtime"):
+		if runtime_script.get_extension() == "gd":
+			var script := load("res://test/runtime".path_join(runtime_script)) as Script
+			assert_eq(script.get_base_script().resource_path, "res://gamebase/core/test/runtime_smoke.gd", runtime_script)
 
 func test_project_uses_web_compatible_renderer() -> void:
 	var project := _read_text("res://project.godot")

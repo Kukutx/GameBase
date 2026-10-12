@@ -1,5 +1,5 @@
 class_name TownProjectMenu
-extends CanvasLayer
+extends MenuLayer
 
 @onready var title_label: Label = $Panel/Layout/Title
 @onready var projects_container: VBoxContainer = $Panel/Layout/Scroll/Projects
@@ -7,10 +7,10 @@ extends CanvasLayer
 
 var _location_id: StringName
 
+func _init() -> void:
+	super(&"town_project_menu")
+
 func _ready() -> void:
-	add_to_group("town_project_menu")
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	close_button.pressed.connect(close)
 	TownProjects.project_changed.connect(_on_project_changed)
 	InventoryState.changed.connect(_refresh_if_visible)
@@ -18,20 +18,8 @@ func _ready() -> void:
 
 func open(location_id: StringName) -> void:
 	_location_id = location_id
-	visible = true
-	InputLock.lock(&"town_project_menu", true, self)
+	show_menu()
 	_rebuild()
-
-func close() -> void:
-	if not visible:
-		return
-	visible = false
-	InputLock.unlock(&"town_project_menu")
-
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
 
 func _rebuild() -> void:
 	for child: Node in projects_container.get_children():

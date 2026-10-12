@@ -1,5 +1,5 @@
 class_name MailboxMenu
-extends CanvasLayer
+extends MenuLayer
 
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var sender_label: Label = $Panel/VBox/Sender
@@ -13,10 +13,10 @@ extends CanvasLayer
 var _mail: Array[MailData] = []
 var _index := 0
 
+func _init() -> void:
+	super(&"mailbox_menu")
+
 func _ready() -> void:
-	add_to_group("mailbox_menu")
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	previous_button.pressed.connect(_previous)
 	next_button.pressed.connect(_next)
 	claim_button.pressed.connect(_claim)
@@ -30,20 +30,8 @@ func open() -> void:
 		GameEvents.toast(tr("The mailbox is empty"))
 		return
 	_index = _first_unread_index()
-	visible = true
-	InputLock.lock(&"mailbox_menu", true, self)
+	show_menu()
 	_show_current()
-
-func close() -> void:
-	if not visible:
-		return
-	visible = false
-	InputLock.unlock(&"mailbox_menu")
-
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
 
 func _show_current() -> void:
 	if _mail.is_empty():

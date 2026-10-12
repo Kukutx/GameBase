@@ -199,9 +199,9 @@ func _handle_late_night(day: int) -> void:
 	# The clock may have run a few minutes on in the same frame (short game
 	# minutes, a long frame, an action that passes time); the player still
 	# collapses unless it was moved past the morning (they slept).
-	var collapse_at := _minute_count(day, calendar.collapse_minute)
-	var wake_at := _minute_count(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
-	var now := _minute_count(WorldClock.day, WorldClock.minute_of_day)
+	var collapse_at := GameClock.absolute_minute(day, calendar.collapse_minute)
+	var wake_at := GameClock.absolute_minute(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
+	var now := WorldClock.get_absolute_minute()
 	if now < collapse_at or now >= wake_at:
 		return
 	if get_tree().get_first_node_in_group("player") == null:
@@ -238,10 +238,6 @@ func _return_home() -> bool:
 func _is_home() -> bool:
 	var location := WorldLocationData.find_current(get_tree())
 	return location != null and location.id == GameDefinition.current().home_location_id
-
-# Minutes from the start of day 1 to `minute_of_day` of `day`.
-static func _minute_count(day: int, minute_of_day: int) -> int:
-	return (day - 1) * GameClock.MINUTES_PER_DAY + minute_of_day
 
 func _on_health_changed(current: int, _maximum: int) -> void:
 	if current > 0 or _handling_defeat:

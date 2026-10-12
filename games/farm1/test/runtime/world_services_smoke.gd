@@ -1,16 +1,12 @@
-extends SceneTree
+extends "res://gamebase/core/test/runtime_smoke.gd"
 
 const SMOKE_SAVE_DIRECTORY := "user://world_services_smoke"
 
-var _failed := false
-
-func _initialize() -> void:
-	_run.call_deferred()
+func _init() -> void:
+	smoke_name = "LIFE_SIMULATION_SMOKE"
+	save_directory = SMOKE_SAVE_DIRECTORY
 
 func _run() -> void:
-	# The checks compare text with the English source strings.
-	root.get_node("GameSettings").set("locale", "en")
-	TranslationServer.set_locale("en")
 	var inventory := root.get_node("InventoryState")
 	var world_state := root.get_node("WorldState")
 	var world_clock := root.get_node("WorldClock")
@@ -38,13 +34,7 @@ func _run() -> void:
 	var mine_state := root.get_node("MineState")
 	var content_db := root.get_node("ContentDB")
 	var game_rules := root.get_node("GameRules")
-
-	save_manager.save_directory = SMOKE_SAVE_DIRECTORY
-	save_manager.select_slot(1)
 	var profile := root.get_node("GameProfile")
-	profile.set("profile_path", SMOKE_SAVE_DIRECTORY + "/profile.json")
-	_cleanup_smoke_files()
-	profile.call("load_profile")
 
 	# New-game initialization must recompute Day 1 weather after resetting the
 	# world seed, even when the previous session was already on Day 1.
@@ -898,14 +888,6 @@ func _run() -> void:
 	_check(current_scene.scene_file_path == "res://game/world/home_interior.tscn", "Late-night collapse did not keep player at home")
 	_check(FileAccess.file_exists(root.get_node("SaveManager").save_path), "Late-night collapse did not autosave")
 
-	if _failed:
-		_cleanup_smoke_files()
-		quit(1)
-	else:
-		_cleanup_smoke_files()
-		print("LIFE_SIMULATION_SMOKE_OK")
-		quit(0)
-
 func _clear_current_mine_floor(mine: Node) -> void:
 	if mine == null:
 		return
@@ -941,21 +923,3 @@ func _find_weather_day_after(weather_name: String, start_day: int, seasons := Pa
 		if weather.get_weather_name(weather.get_weather_for_day(day)) == weather_name:
 			return day
 	return -1
-
-func _check(condition: bool, message: String) -> void:
-	if not condition:
-		_fail(message)
-
-func _fail(message: String) -> void:
-	_failed = true
-	push_error("LIFE_SIMULATION_SMOKE: " + message)
-
-func _cleanup_smoke_files() -> void:
-	for slot in range(1, 4):
-		root.get_node("SaveManager").delete_slot(slot)
-	# Written first, so nothing waits to be written when the smoke quits.
-	root.get_node("GameProfile").call("write_now")
-	var profile_path := String(root.get_node("GameProfile").get("profile_path"))
-	for path: String in [profile_path, profile_path + ".tmp"]:
-		if FileAccess.file_exists(path):
-			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

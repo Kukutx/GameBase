@@ -15,7 +15,6 @@ const START_ANIMALS := [
 ]
 
 func install() -> void:
-	GameStats.register_stat(&"move_speed")
 	# After the lifesim module empties the animals (order 300).
 	GameSession.register_new_game_step(&"start_animals", 310, _grant_start_animals)
 	FishingState.reel_minigame_id = &"fishing_reel"

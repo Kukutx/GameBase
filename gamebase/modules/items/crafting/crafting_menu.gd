@@ -1,5 +1,5 @@
 class_name CraftingMenu
-extends CanvasLayer
+extends MenuLayer
 
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var recipes_container: VBoxContainer = $Panel/VBox/Recipes
@@ -8,10 +8,10 @@ extends CanvasLayer
 var current_category: RecipeData.Category = RecipeData.Category.CRAFTING
 var current_station_name := "Crafting"
 
+func _init() -> void:
+	super(&"crafting_menu")
+
 func _ready() -> void:
-	add_to_group("crafting_menu")
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	close_button.pressed.connect(close)
 	InventoryState.changed.connect(_refresh_if_visible)
 	GameSettings.locale_changed.connect(_on_locale_changed)
@@ -19,20 +19,8 @@ func _ready() -> void:
 func open(category: RecipeData.Category = RecipeData.Category.CRAFTING, station_name: String = "Crafting") -> void:
 	current_category = category
 	current_station_name = station_name
-	visible = true
-	InputLock.lock(&"crafting_menu", true, self)
+	show_menu()
 	_rebuild()
-
-func close() -> void:
-	if not visible:
-		return
-	visible = false
-	InputLock.unlock(&"crafting_menu")
-
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
 
 func _rebuild() -> void:
 	title_label.text = tr(current_station_name)

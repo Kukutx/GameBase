@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
 [ext_resource type="Script" path="res://game/player/farm_tool_controller.gd" id="3_farm_tool"]
 [ext_resource type="Script" path="res://gamebase/modules/combat/combat/melee_attack.gd" id="4_melee"]
 [ext_resource type="Script" path="res://gamebase/core/visual/directional_actor_visual.gd" id="5_visual"]
+[ext_resource type="Script" path="res://gamebase/modules/items/hotbar/hotbar_input.gd" id="6_hotbar_input"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 6.0
@@ -13,11 +14,15 @@ height = 16.0
 [sub_resource type="CircleShape2D" id="Circle_interaction"]
 radius = 24.0
 
-[node name="Player" type="CharacterBody2D" groups=["player"]]
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("actor_visual") groups=["player"]]
 z_index = 10
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_player")
+move_speed = 115.0
+reach = 18.0
+reach_nodes = Array[NodePath]([NodePath("InteractionController"), NodePath("FarmToolController"), NodePath("MeleeAttack")])
+actor_visual = NodePath("ActorVisual")
 
 [node name="Body" type="Polygon2D" parent="."]
 polygon = PackedVector2Array(-7, -9, 7, -9, 7, 9, -7, 9)
@@ -88,3 +93,6 @@ offset_right = 260.0
 offset_bottom = 52.0
 theme_override_font_sizes/font_size = 18
 text = ""
+
+[node name="HotbarInput" type="Node" parent="."]
+script = ExtResource("6_hotbar_input")

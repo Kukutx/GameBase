@@ -1,5 +1,5 @@
 class_name ShopMenu
-extends CanvasLayer
+extends MenuLayer
 
 ## A shop's counter: buys what the shop stocks and offers, and sells, one at a
 ## time, every item the inventory holds that has a sell price.
@@ -15,10 +15,10 @@ var _shop: ShopData
 # item id -> the button that sells one of it
 var _sell_buttons: Dictionary[StringName, Button] = {}
 
+func _init() -> void:
+	super(&"shop_menu")
+
 func _ready() -> void:
-	add_to_group("shop_menu")
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	close_button.pressed.connect(close)
 	PlayerState.money_changed.connect(_on_money_changed)
 	InventoryState.changed.connect(_on_inventory_changed)
@@ -27,21 +27,12 @@ func open(shop: ShopData) -> void:
 	if shop == null:
 		return
 	_shop = shop
-	visible = true
-	InputLock.lock(&"shop_menu", true, self)
+	show_menu()
 	_rebuild()
 
 func close() -> void:
-	if not visible:
-		return
-	visible = false
 	_shop = null
-	InputLock.unlock(&"shop_menu")
-
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
+	super()
 
 func _rebuild() -> void:
 	for child: Node in items_container.get_children():

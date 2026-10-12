@@ -144,6 +144,39 @@ func test_portal_reenables_itself_when_travel_cannot_start() -> void:
 	assert_true(portal.enabled)
 	assert_false(bool(portal.get("_travel_requested")))
 
+func test_an_interactive_portal_checks_where_it_leads_and_stays_put_when_it_cannot_go() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
+	assert_eq(ResourceSaver.save(_location_scene(), _scene_path), OK)
+	var location := WorldLocationData.new()
+	location.id = LOCATION
+	location.scene_path = _scene_path
+	location.default_spawn_id = ENTRY
+	var registry := ContentFixture.use(self, [location])
+	var portal := _interactive_portal()
+	portal.target_location_id = LOCATION
+	assert_eq(portal.find_scene_problems(registry, location), PackedStringArray(), "the default spawn point of the target")
+	portal.target_spawn_id = &"fixture_missing"
+	assert_eq(portal.find_scene_problems(registry, location), PackedStringArray(["portal '%s' leads to spawn 'fixture_missing' of '%s', which does not exist" % [portal.name, LOCATION]]))
+	portal.target_location_id = &"removed_future_location"
+	assert_eq(portal.find_scene_problems(registry, null), PackedStringArray(["portal '%s' leads to unknown location 'removed_future_location'" % portal.name]), "a placed building's portal stands in no location")
+	watch_signals(portal)
+	var toasts: Array[String] = []
+	var record := func(message: String) -> void: toasts.append(message)
+	GameEvents.toast_requested.connect(record)
+	portal.interactable.interact(null)
+	GameEvents.toast_requested.disconnect(record)
+	assert_signal_not_emitted(portal, "about_to_travel")
+	assert_eq(toasts, ["That way is closed for now"])
+	assert_false(WorldTravel.is_traveling())
+
+func _interactive_portal() -> InteractivePortal:
+	var portal := InteractivePortal.new()
+	var interactable := Interactable.new()
+	interactable.name = "Interactable"
+	portal.add_child(interactable)
+	add_child_autofree(portal)
+	return portal
+
 ## A location scene with the player and one spawn point, `ENTRY`.
 static func _location_scene() -> PackedScene:
 	var root := Node2D.new()

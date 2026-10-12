@@ -10,7 +10,7 @@ From the repository root, link the foundation and the addons once, then open `ga
 node tools/link.js --game farm1
 ```
 
-The main scene is the core title screen, `res://gamebase/core/ui/title_screen.tscn`. `node tools/validate.js --game farm1` runs this game's checks; a successful runtime integration check ends with `LIFE_SIMULATION_SMOKE_OK`. The version lives in `config/version` of `project.godot`; a release is the tag `game/farm1/v<version>`.
+The main scene is the core title screen, `res://gamebase/core/ui/title_screen.tscn`. `node tools/validate.js --game farm1` runs this game's checks; a successful runtime integration check ends with `LIFE_SIMULATION_SMOKE passed.`. The version lives in `config/version` of `project.godot`; a release is the tag `game/farm1/v<version>`.
 
 ## Layout
 

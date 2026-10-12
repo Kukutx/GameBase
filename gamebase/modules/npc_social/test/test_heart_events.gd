@@ -30,6 +30,7 @@ func before_each() -> void:
 	WorldClock.set_time(1, 10 * 60)
 
 func after_each() -> void:
+	InputLock.unlock(GameConversationService.DIALOGUE_LOCK)
 	WorldState.load_save_data(_world_snapshot)
 	RelationshipState.load_save_data(_relationship_snapshot)
 	NpcMemory.load_save_data(_memory_snapshot)
@@ -83,6 +84,27 @@ func test_heart_event_seen_commits_on_dialogue_end_not_interrupted_balloon_exit(
 	service.call("_on_dialogue_ended", dialogue)
 	assert_true(HeartEvents.is_seen(event.id))
 	assert_true(bool(NpcMemory.get_facts(&"fixture_npc").get("heart_event:fixture_npc_two_hearts", false)))
+
+func test_a_conversation_holds_the_controls_until_its_dialogue_ends_or_its_balloon_goes() -> void:
+	var service := GameConversationService.new()
+	add_child_autofree(service)
+	var dialogue := _dialogue()
+	var balloon := Node.new()
+	add_child_autofree(balloon)
+	service.call("_hold_controls", balloon, dialogue)
+	assert_true(InputLock.is_held(GameConversationService.DIALOGUE_LOCK))
+	service.call("_on_dialogue_ended", _dialogue())
+	assert_true(InputLock.is_held(GameConversationService.DIALOGUE_LOCK), "another dialogue's end is not this one's")
+	service.call("_on_dialogue_ended", dialogue)
+	assert_false(InputLock.is_held(GameConversationService.DIALOGUE_LOCK), "its end gives the controls back")
+
+	var next_balloon := Node.new()
+	add_child(next_balloon)
+	service.call("_hold_controls", next_balloon, dialogue)
+	assert_true(InputLock.is_held(GameConversationService.DIALOGUE_LOCK))
+	next_balloon.free()
+	assert_false(InputLock.is_held(GameConversationService.DIALOGUE_LOCK), "a balloon that goes before its dialogue ends gives them back too")
+	assert_null(service.get("_active_dialogue"))
 
 func test_heart_events_match_only_their_npc_location_time_hearts_and_condition() -> void:
 	var event := _two_hearts_event()

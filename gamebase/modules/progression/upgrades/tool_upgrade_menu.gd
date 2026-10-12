@@ -1,14 +1,14 @@
 class_name ToolUpgradeMenu
-extends CanvasLayer
+extends MenuLayer
 
 @onready var money_label: Label = $Panel/VBox/Money
 @onready var items_container: VBoxContainer = $Panel/VBox/Scroll/Items
 @onready var close_button: Button = $Panel/VBox/Close
 
+func _init() -> void:
+	super(&"tool_upgrade_menu")
+
 func _ready() -> void:
-	add_to_group("tool_upgrade_menu")
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
 	close_button.pressed.connect(close)
 	InventoryState.changed.connect(_refresh_if_open)
 	PlayerState.money_changed.connect(_on_money_changed)
@@ -17,20 +17,8 @@ func _ready() -> void:
 	GameSettings.locale_changed.connect(_on_locale_changed)
 
 func open() -> void:
-	visible = true
-	InputLock.lock(&"tool_upgrade_menu", true, self)
+	show_menu()
 	_rebuild()
-
-func close() -> void:
-	if not visible:
-		return
-	visible = false
-	InputLock.unlock(&"tool_upgrade_menu")
-
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
-		close()
-		get_viewport().set_input_as_handled()
 
 func _rebuild() -> void:
 	for child: Node in items_container.get_children():

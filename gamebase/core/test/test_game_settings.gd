@@ -73,22 +73,23 @@ func test_duplicate_primary_key_swaps_existing_binding() -> void:
 	assert_eq(settings.get_key_binding(&"quick_save"), KEY_E)
 
 func test_a_key_another_control_holds_fixed_cannot_be_bound() -> void:
-	var climb := _control(&"fixture_climb", "Climb", KEY_W)
-	climb.secondary_key = KEY_UP
+	var climb := _control(&"fixture_climb", "Climb", KEY_R)
+	climb.secondary_key = KEY_PAGEUP
 	var pause := _control(&"fixture_pause", "Pause", KEY_P)
 	pause.rebindable = false
 	var settings := _settings_with_controls([climb, pause])
 	settings.reset_controls()
-	assert_false(settings.set_key_binding(&"interact", KEY_UP), "the up arrow stays with climbing")
+	assert_false(settings.set_key_binding(&"interact", KEY_PAGEUP), "page up stays with climbing")
+	assert_false(settings.set_key_binding(&"interact", KEY_UP), "and the up arrow with the core's move up")
 	assert_false(settings.set_key_binding(&"interact", KEY_P), "a control the player cannot rebind keeps its key")
 	assert_eq(settings.get_key_binding(&"interact"), KEY_E)
-	assert_true(settings.set_key_binding(&"fixture_climb", KEY_UP), "a control may take its own second key")
+	assert_true(settings.set_key_binding(&"fixture_climb", KEY_PAGEUP), "a control may take its own second key")
 
 func test_keyboard_rebinding_preserves_the_other_bindings() -> void:
-	var climb := _control(&"fixture_climb", "Climb", KEY_W)
-	climb.secondary_key = KEY_UP
-	climb.gamepad_button = JOY_BUTTON_DPAD_UP
-	climb.gamepad_axis = JOY_AXIS_LEFT_Y
+	var climb := _control(&"fixture_climb", "Climb", KEY_R)
+	climb.secondary_key = KEY_PAGEUP
+	climb.gamepad_button = JOY_BUTTON_Y
+	climb.gamepad_axis = JOY_AXIS_RIGHT_Y
 	climb.gamepad_axis_value = -1.0
 	var settings := _settings_with_controls([climb])
 	settings.reset_controls()
@@ -100,11 +101,11 @@ func test_keyboard_rebinding_preserves_the_other_bindings() -> void:
 	assert_false(_has_key_event(&"interact", KEY_E))
 	assert_true(_has_button_event(&"interact", interact_button), "interact keeps its gamepad button")
 	assert_true(_has_key_event(&"fixture_climb", KEY_I))
-	assert_true(_has_key_event(&"fixture_climb", KEY_UP), "the second key stays")
-	assert_true(_has_button_event(&"fixture_climb", JOY_BUTTON_DPAD_UP))
+	assert_true(_has_key_event(&"fixture_climb", KEY_PAGEUP), "the second key stays")
+	assert_true(_has_button_event(&"fixture_climb", JOY_BUTTON_Y))
 	var motions := 0
 	for event: InputEvent in InputMap.action_get_events(&"fixture_climb"):
-		if event is InputEventJoypadMotion and (event as InputEventJoypadMotion).axis == JOY_AXIS_LEFT_Y:
+		if event is InputEventJoypadMotion and (event as InputEventJoypadMotion).axis == JOY_AXIS_RIGHT_Y:
 			motions += 1
 			assert_eq((event as InputEventJoypadMotion).axis_value, -1.0)
 	assert_eq(motions, 1, "the stick direction stays")
@@ -160,7 +161,7 @@ func test_core_controls_follow_the_game_and_a_game_control_replaces_one() -> voi
 	var actions: Array[StringName] = []
 	for control: ControlAction in GameSettingsService.resolve_controls(controls):
 		actions.append(control.action)
-	var expected: Array[StringName] = [&"jump", &"quick_save", &"interact", &"quick_load"]
+	var expected: Array[StringName] = [&"jump", &"quick_save", &"move_up", &"move_down", &"move_left", &"move_right", &"interact", &"quick_load"]
 	assert_eq(actions, expected)
 	assert_eq(GameSettingsService.find_control_problems(controls), PackedStringArray())
 

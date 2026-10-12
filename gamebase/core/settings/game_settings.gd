@@ -30,9 +30,14 @@ const LOCALE_NAMES := {
 	"zh_CN": "简体中文",
 	"zh_TW": "繁體中文",
 }
-## The controls the core's own systems read, as `ControlAction` paths. A game
-## lists them in `GameDefinition.controls` only to place or replace them.
+## The controls the core's own systems read, as `ControlAction` paths: the
+## moves a `TopDownPlayer` walks with, interacting and the quick save and load.
+## A game lists them in `GameDefinition.controls` only to place or replace them.
 const CORE_CONTROLS: Array[String] = [
+	"res://gamebase/core/input/controls/move_up.tres",
+	"res://gamebase/core/input/controls/move_down.tres",
+	"res://gamebase/core/input/controls/move_left.tres",
+	"res://gamebase/core/input/controls/move_right.tres",
 	"res://gamebase/core/input/controls/interact.tres",
 	"res://gamebase/core/input/controls/quick_save.tres",
 	"res://gamebase/core/input/controls/quick_load.tres",
