@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="GameDefinition" load_steps=14 format=3]
+[gd_resource type="Resource" script_class="GameDefinition" load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://gamebase/core/session/game_definition.gd" id="1_definition"]
 [ext_resource type="Resource" path="res://game/data/content.tres" id="2_content"]
@@ -9,6 +9,8 @@
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/move_down.tres" id="7_move_down"]
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/move_left.tres" id="8_move_left"]
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/move_right.tres" id="9_move_right"]
+[ext_resource type="Script" path="res://gamebase/modules/items/items_settings.gd" id="20_items_settings"]
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat_settings.gd" id="21_combat_settings"]
 
 [sub_resource type="Resource" id="Control_attack"]
 script = ExtResource("3_control")
@@ -37,7 +39,20 @@ script = ExtResource("5_calendar")
 season_names = PackedStringArray("Day")
 days_per_season = 1000
 real_seconds_per_game_minute = 0.0
-collapse_minute = -1
+
+[sub_resource type="Resource" id="Settings_items"]
+script = ExtResource("20_items_settings")
+start_money = 30
+start_items = Dictionary[StringName, int]({
+&"rusty_sword": 1,
+&"health_potion": 2
+})
+start_hotbar = Array[StringName]([&"rusty_sword", &"health_potion"])
+
+[sub_resource type="Resource" id="Settings_combat"]
+script = ExtResource("21_combat_settings")
+health_vital_id = &"hp"
+defeat_money_loss_percent = 25
 
 [resource]
 script = ExtResource("1_definition")
@@ -45,15 +60,10 @@ content = [ExtResource("2_content")]
 start_location_id = &"camp"
 home_location_id = &"camp"
 home_spawn_id = &"camp_start"
-defeat_money_loss_percent = 25
 calendar = SubResource("Calendar")
 start_day = 1
 start_minute_of_day = 480
 world_seed = 0
-start_items = Dictionary[StringName, int]({
-&"rusty_sword": 1,
-&"health_potion": 2
-})
 event_cues = Dictionary[StringName, StringName]({
 &"CombatEvents.attack_swung": &"sfx_swing",
 &"CombatEvents.enemy_hurt": &"sfx_hit",
@@ -62,6 +72,5 @@ event_cues = Dictionary[StringName, StringName]({
 &"ShopState.purchase_completed": &"sfx_purchase",
 &"ShopState.sale_completed": &"sfx_sale"
 })
-start_money = 30
-start_hotbar = Array[StringName]([&"rusty_sword", &"health_potion"])
 controls = Array[Resource]([ExtResource("6_move_up"), ExtResource("7_move_down"), ExtResource("8_move_left"), ExtResource("9_move_right"), ExtResource("4_interact"), SubResource("Control_attack"), SubResource("Control_drink"), SubResource("Control_next_item")])
+module_settings = Array[Resource]([SubResource("Settings_items"), SubResource("Settings_combat")])

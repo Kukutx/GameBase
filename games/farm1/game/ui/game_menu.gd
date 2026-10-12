@@ -106,8 +106,8 @@ func _inventory_text() -> String:
 			var marker := "→ " if item_id == selected else "  "
 			lines.append("%s%s  x%d" % [marker, tr(String(entry["display_name"])), entry["quantity"]])
 	lines.append("")
-	lines.append(tr("Money: %dg") % PlayerState.money)
-	lines.append(tr("HP: %d/%d    Energy: %d/%d") % [PlayerState.health, PlayerState.max_health, PlayerState.energy, PlayerState.max_energy])
+	lines.append(tr("Money: %dg") % Wallet.money)
+	lines.append("    ".join(Vitals.describe_all()))
 	lines.append("")
 	lines.append(tr("Use the controls below to bind any carried item to slots 1–9."))
 	return "\n".join(lines)

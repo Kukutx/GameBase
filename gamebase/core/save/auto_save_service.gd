@@ -74,7 +74,7 @@ func _on_travel_finished(_scene_path: String, _spawn_id: StringName) -> void:
 
 func _autosave_after_travel() -> void:
 	# Let the destination scene and any travel completion listeners settle first.
-	# This also allows collapse/sleep flows to perform their explicit save before
+	# This also allows pass-out and sleep flows to perform their explicit save before
 	# the autosave de-duplication check runs.
 	await get_tree().process_frame
 	await get_tree().process_frame

@@ -14,7 +14,7 @@ signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 9
+const SAVE_VERSION := 10
 const SLOT_COUNT := 3
 
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
@@ -30,7 +30,7 @@ const SECTION_ORDER_SESSION := 150
 ## `Playthrough`'s section (the playthrough's number).
 const SECTION_ORDER_PLAYTHROUGH := 160
 const SECTION_ORDER_CLOCK := 300
-const SECTION_ORDER_PLAYER_STATE := 600
+const SECTION_ORDER_VITALS := 600
 const SECTION_ORDER_WORLD := 700
 
 ## Where the slots are stored. A test points it at a directory of its own and
@@ -75,8 +75,8 @@ func _register_core_sections() -> void:
 		GameRandom.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: GameRandom.load_save_data(section)))
 	register_section(SaveSection.new(&"clock", SECTION_ORDER_CLOCK,
 		WorldClock.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: WorldClock.load_save_data(section)))
-	register_section(SaveSection.new(&"player_state", SECTION_ORDER_PLAYER_STATE,
-		PlayerState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: PlayerState.load_save_data(section)))
+	register_section(SaveSection.new(&"vitals", SECTION_ORDER_VITALS,
+		Vitals.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: Vitals.load_save_data(section)))
 	register_section(SaveSection.new(&"world", SECTION_ORDER_WORLD,
 		WorldState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: WorldState.load_save_data(section)))
 
@@ -178,7 +178,6 @@ func get_slot_summary(slot: int) -> Dictionary:
 		return {"slot": resolved, "exists": false, "recoverable": false, "unreadable": has_files(resolved)}
 	var data: Dictionary = candidate["data"]
 	var clock: Dictionary = data["clock"]
-	var player_state: Dictionary = data.get("player_state", {})
 	var day := maxi(SaveValues.whole_number_or(clock.get("day", 1), 1), 1)
 	var source := String(candidate["source"])
 	var location := WorldLocationData.find(StringName(String(data.get("location_id", ""))))
@@ -199,7 +198,6 @@ func get_slot_summary(slot: int) -> Dictionary:
 		"season": GameCalendar.current().get_season_name(day),
 		"day_of_season": GameCalendar.current().get_day_of_season(day),
 		"minute_of_day": clampi(SaveValues.whole_number_or(clock.get("minute_of_day", 0), 0), 0, GameClock.MINUTES_PER_DAY - 1),
-		"money": SaveValues.count(player_state.get("money", 0)),
 		"details": _describe_slot(data),
 	}
 

@@ -6,6 +6,7 @@ extends GutTest
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _clock_day: int
@@ -13,15 +14,17 @@ var _clock_minute: int
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
 	_clock_day = WorldClock.day
 	_clock_minute = WorldClock.minute_of_day
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
-	PlayerState.money = 10000
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
+	Wallet.money = 10000
 	WorldClock.set_time(1, 8 * 60)
 	AnimalState.register_housing(&"starter_coop", &"starter_town", &"coop", 4, "Coop")
 	AnimalState.register_housing(&"starter_barn", &"starter_town", &"barn", 4, "Barn")
@@ -34,7 +37,8 @@ func after_each() -> void:
 	AnimalState.unregister_housing(&"starter_barn")
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldClock.set_time(_clock_day, _clock_minute)
 
@@ -60,13 +64,13 @@ func test_general_store_sells_animals_as_shop_offers() -> void:
 		offers[offer.get_key()] = offer
 	assert_eq(offers.keys(), ["animal:chicken", "animal:cow", "animal:pig"])
 	var context := {"location_id": &"starter_town"}
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(ShopState.buy_offer(shop, offers["animal:cow"], context))
-	assert_eq(PlayerState.money, money_before - FarmAnimalData.find(&"cow").purchase_price)
+	assert_eq(Wallet.money, money_before - FarmAnimalData.find(&"cow").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 2)
-	money_before = PlayerState.money
+	money_before = Wallet.money
 	assert_true(ShopState.buy_offer(shop, offers["animal:pig"], context))
-	assert_eq(PlayerState.money, money_before - FarmAnimalData.find(&"pig").purchase_price)
+	assert_eq(Wallet.money, money_before - FarmAnimalData.find(&"pig").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"starter_barn"), 3)
 
 func test_owned_animal_state_is_applied_to_scene_animals() -> void:

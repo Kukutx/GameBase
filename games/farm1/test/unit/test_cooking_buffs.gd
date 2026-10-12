@@ -7,7 +7,7 @@ extends GutTest
 
 var _clock_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _buff_snapshot: Dictionary
 var _skills_snapshot: Dictionary
@@ -15,12 +15,12 @@ var _skills_snapshot: Dictionary
 func before_each() -> void:
 	_clock_snapshot = WorldClock.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_buff_snapshot = BuffState.to_save_data()
 	_skills_snapshot = Skills.to_save_data()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Vitals.reset_new_game()
 	BuffState.clear()
 	Skills.reset_new_game()
 	WorldClock.set_time(1, 8 * 60)
@@ -28,7 +28,7 @@ func before_each() -> void:
 func after_each() -> void:
 	WorldClock.load_save_data(_clock_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	Skills.load_save_data(_skills_snapshot)
 	BuffState.load_save_data(_buff_snapshot)
@@ -55,23 +55,23 @@ func test_vegetable_stew_crafts_restores_stats_and_applies_work_buff() -> void:
 	assert_eq(InventoryState.get_quantity(&"carrot"), 0)
 	assert_eq(InventoryState.get_quantity(&"potato"), 0)
 
-	PlayerState.energy = 40
-	PlayerState.health = 50
+	Vitals.set_value(&"energy", 40)
+	Vitals.set_value(&"hp", 50)
 	watch_signals(GameEvents)
 	assert_true(InventoryState.consume(ItemData.find(&"vegetable_stew")))
-	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Ate Vegetable Stew (+45 energy, +20 HP)"])
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Ate Vegetable Stew (+45 Energy, +20 Health)"])
 
 	assert_eq(InventoryState.get_quantity(&"vegetable_stew"), 0)
-	assert_eq(PlayerState.energy, 85)
-	assert_eq(PlayerState.health, 70)
+	assert_eq(Vitals.get_value(&"energy"), 85)
+	assert_eq(Vitals.get_value(&"hp"), 70)
 	assert_true(BuffState.has_buff(&"hearty_worker"))
 	assert_almost_eq(BuffState.get_stat_multiplier(&"move_speed"), 1.1, 0.001)
 	assert_almost_eq(BuffState.get_stat_multiplier(&"tool_energy"), 0.8, 0.001)
 
 func test_food_use_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"vegetable_stew", 2)
-	PlayerState.energy = 40
-	PlayerState.health = 50
+	Vitals.set_value(&"energy", 40)
+	Vitals.set_value(&"hp", 50)
 	var observed := {"entered": false, "inner_result": true}
 	var listener := func(item_id: StringName, _quantity: int) -> void:
 		if item_id != &"vegetable_stew" or bool(observed["entered"]):
@@ -85,8 +85,8 @@ func test_food_use_blocks_item_removed_reentrancy() -> void:
 	assert_true(bool(observed["entered"]))
 	assert_false(bool(observed["inner_result"]))
 	assert_eq(InventoryState.get_quantity(&"vegetable_stew"), 1)
-	assert_eq(PlayerState.energy, 85)
-	assert_eq(PlayerState.health, 70)
+	assert_eq(Vitals.get_value(&"energy"), 85)
+	assert_eq(Vitals.get_value(&"hp"), 70)
 	assert_true(BuffState.has_buff(&"hearty_worker"))
 
 func test_angler_focus_changes_fishing_timing_for_three_hours() -> void:

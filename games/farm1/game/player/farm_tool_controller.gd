@@ -87,8 +87,7 @@ func _use_multi_plot_tool_internal(tool: ItemData, target: FarmPlot) -> bool:
 	if candidates.is_empty():
 		return target.use_item(tool.id)
 	var energy_cost := target.get_tool_energy_cost(tool)
-	if energy_cost > 0 and not PlayerState.consume_energy(energy_cost):
-		GameEvents.toast("Not enough energy")
+	if not LifesimSettings.spend_energy(energy_cost):
 		return false
 	var affected := 0
 	for plot: FarmPlot in candidates:
@@ -97,8 +96,7 @@ func _use_multi_plot_tool_internal(tool: ItemData, target: FarmPlot) -> bool:
 		if plot.use_item(tool.id, false, false):
 			affected += 1
 	if affected <= 0:
-		if energy_cost > 0:
-			PlayerState.restore_energy(energy_cost)
+		LifesimSettings.refund_energy(energy_cost)
 		return false
 	if tool.tool_action == FarmPlot.TILL_ACTION:
 		GameEvents.toastf("Tilled %d plots", [affected])

@@ -23,10 +23,8 @@ extends Resource
 @export_range(0, 1439) var night_starts_at := 20 * 60
 ## ...until this one (the next morning when it is the smaller).
 @export_range(0, 1439) var night_ends_at := 6 * 60
-## The minute the player wakes after sleeping, collapsing or being defeated.
+## The minute the player wakes after sleeping or passing out.
 @export_range(0, 1439) var wake_minute := 6 * 60
-## The minute a player who is still up collapses and wakes at home; -1 never.
-@export_range(-1, 1439) var collapse_minute := 2 * 60
 
 ## The running game's calendar (`GameDefinition.current()`).
 static func current() -> GameCalendar:
@@ -70,7 +68,7 @@ func get_weekday(day: int) -> int:
 func has_season(season: String) -> bool:
 	return season_names.has(season)
 
-## The day a player who goes to sleep, collapses or is defeated at
+## The day a player who goes to sleep or passes out at
 ## `minute_of_day` of `day` wakes on: the same day when it is still before the
 ## wake minute (after midnight), the next day otherwise.
 func get_wake_day(day: int, minute_of_day: int) -> int:
@@ -103,8 +101,4 @@ func find_problems() -> PackedStringArray:
 			problems.append("calendar minute %d is not a minute of the day (0-%d)" % [minute, GameClock.MINUTES_PER_DAY - 1])
 	if night_starts_at == night_ends_at:
 		problems.append("calendar night starts and ends at the same minute")
-	if collapse_minute < -1 or collapse_minute >= GameClock.MINUTES_PER_DAY:
-		problems.append("calendar collapse minute %d is neither -1 nor a minute of the day" % collapse_minute)
-	elif collapse_minute == wake_minute:
-		problems.append("calendar collapses the player at the minute they wake")
 	return problems

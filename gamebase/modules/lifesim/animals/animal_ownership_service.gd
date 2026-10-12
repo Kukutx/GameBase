@@ -139,7 +139,7 @@ func sell_animal(instance_id: StringName) -> int:
 		_set_records(records)
 		WorldState.erase(_animal_state_key(instance_id))
 		if refund > 0:
-			PlayerState.add_money(refund)
+			Wallet.add(refund)
 		ownership_changed.emit(location_id)
 		animal_sold.emit(instance_id, refund)
 		GameEvents.toastf("Sold %s for %dg", [data.display_name, refund])
@@ -232,7 +232,7 @@ func can_purchase(animal_id: StringName, location_id: StringName) -> bool:
 	var data := FarmAnimalData.find(animal_id)
 	if data == null or data.purchase_price <= 0:
 		return false
-	if PlayerState.money < data.purchase_price:
+	if Wallet.money < data.purchase_price:
 		return false
 	return _find_housing_with_space(location_id, data.housing_type) != &""
 
@@ -252,7 +252,7 @@ func _purchase_internal(animal_id: StringName, location_id: StringName) -> Strin
 	if housing_id == &"":
 		GameEvents.toastf("No free %s slots", [String(data.housing_type).capitalize()])
 		return &""
-	if not PlayerState.spend_money(data.purchase_price):
+	if not Wallet.spend(data.purchase_price):
 		GameEvents.toast("Not enough money")
 		return &""
 	# Money callbacks can synchronously change animal ownership or housing. Recheck
@@ -260,7 +260,7 @@ func _purchase_internal(animal_id: StringName, location_id: StringName) -> Strin
 	# overbooked by this purchase.
 	housing_id = _find_housing_with_space(location_id, data.housing_type)
 	if housing_id == &"":
-		PlayerState.add_money(data.purchase_price)
+		Wallet.add(data.purchase_price)
 		GameEvents.toast("Housing changed before the purchase completed")
 		return &""
 	var sequence := _next_unique_sequence(animal_id)

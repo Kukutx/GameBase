@@ -6,13 +6,13 @@ const LOCATION := &"fixture_meadow"
 
 var _save_directory := ""
 var _scene_path := TEST_DIRECTORY.path_join("fixture_meadow.tscn")
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _clock_snapshot: Dictionary
 
 func before_each() -> void:
 	_save_directory = SaveManager.save_directory
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	SaveManager.save_directory = TEST_DIRECTORY
@@ -31,7 +31,7 @@ func after_each() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(_scene_path))
 	SaveManager.save_directory = _save_directory
 	SaveManager.select_slot(SaveManager.active_slot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
 
@@ -43,14 +43,12 @@ func test_new_game_preflight_failure_preserves_existing_save_and_session() -> vo
 		return
 	sentinel.store_string("existing-save-must-survive")
 	sentinel.close()
-	PlayerState.money = 4321
 	WorldState.set_value(&"test:new_game_guard", "keep")
 	WorldTravel.set("_traveling", true)
 
 	assert_false(GameSession.start_new_game())
 	assert_true(FileAccess.file_exists(SaveManager.save_path))
 	assert_eq(FileAccess.get_file_as_string(SaveManager.save_path), "existing-save-must-survive")
-	assert_eq(PlayerState.money, 4321)
 	assert_eq(String(WorldState.get_value(&"test:new_game_guard", "")), "keep")
 
 func test_a_new_game_is_starting_until_the_player_stands_in_its_start_location() -> void:

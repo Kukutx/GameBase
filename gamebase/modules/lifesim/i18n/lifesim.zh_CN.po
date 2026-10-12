@@ -282,8 +282,11 @@ msgstr "你已经在钓鱼"
 msgid "Nothing is biting right now"
 msgstr "现在没有鱼咬钩"
 
-msgid "Not enough energy to fish"
-msgstr "体力不足，无法钓鱼"
+msgid "You stayed up too late and woke at home with reduced energy"
+msgstr "你熬得太晚，在家醒来时体力有所减少"
+
+msgid "You stayed up too late and recovered with reduced energy"
+msgstr "你熬得太晚，恢复后体力有所减少"
 
 msgid "Cast the line... wait for a bite"
 msgstr "已抛竿……等待鱼咬钩"

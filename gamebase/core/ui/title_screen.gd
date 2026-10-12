@@ -66,18 +66,18 @@ func _refresh_slot_ui() -> void:
 	else:
 		slot_info.text = tr("Holds a save this version cannot open") if unreadable else tr("Empty slot")
 
-## A save's summary as the slot shows it: the date, time and money; where the
-## player stands and how long they played; then what the game adds.
+## A save's summary as the slot shows it: the date and time; where the player
+## stands and how long they played; then what the game and its modules add
+## (the money, the deepest depth).
 func _format_slot_summary(summary: Dictionary) -> String:
 	var minute := int(summary["minute_of_day"])
 	var recovery := ""
 	if bool(summary["recoverable"]):
 		recovery = tr(" · temporary save recovery") if String(summary["recovery_source"]) == "temp" else tr(" · backup available")
-	var lines := PackedStringArray([tr("%s · %02d:%02d · %dg%s") % [
+	var lines := PackedStringArray([tr("%s · %02d:%02d%s") % [
 		GameCalendar.current().get_date_text(int(summary["day"])),
 		minute / 60,
 		minute % 60,
-		int(summary["money"]),
 		recovery,
 	]])
 	var played_minutes := int(summary.get("play_seconds", 0)) / 60

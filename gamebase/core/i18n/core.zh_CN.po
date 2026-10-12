@@ -33,29 +33,8 @@ msgstr "无法替换当前存档位"
 msgid "Could not start the new game location"
 msgstr "无法启动新游戏地点"
 
-msgid "Could not return home after staying up late"
-msgstr "熬夜后无法返回家中"
-
-msgid "You stayed up too late and woke at home with reduced energy"
-msgstr "你熬得太晚，在家醒来时体力有所减少"
-
-msgid "You stayed up too late and recovered with reduced energy"
-msgstr "你熬得太晚，恢复后体力有所减少"
-
-msgid "Could not return home after collapse"
-msgstr "倒下后无法返回家中"
-
-msgid "You collapsed and lost %dg"
-msgstr "你倒下了，损失了 %dg"
-
-msgid "You collapsed and woke up at home"
-msgstr "你倒下了，随后在家中醒来"
-
-msgid "You collapsed, lost %dg, and recovered where you fell"
-msgstr "你倒下了，损失了 %dg，并在原地恢复"
-
-msgid "You collapsed and recovered where you fell"
-msgstr "你倒下了，并在原地恢复"
+msgid "Not enough %s"
+msgstr "%s不足"
 
 msgid "Portal target is unavailable"
 msgstr "传送目标不可用"
@@ -366,8 +345,8 @@ msgstr "%s%d日"
 msgid "%s %d, Year %d"
 msgstr "%s%d日（第%d年）"
 
-msgid "%s · %02d:%02d · %dg%s"
-msgstr "%s · %02d:%02d · %dg%s"
+msgid "%s · %02d:%02d%s"
+msgstr "%s · %02d:%02d%s"
 
 msgid "Played %d:%02d"
 msgstr "游玩 %d:%02d"

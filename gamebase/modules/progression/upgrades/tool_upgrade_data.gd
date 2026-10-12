@@ -26,7 +26,7 @@ func meets_requirements(inventory: InventoryStore = InventoryState) -> bool:
 		return false
 	if not inventory.has_item(source_item_id, 1):
 		return false
-	if PlayerState.money < money_cost:
+	if Wallet.money < money_cost:
 		return false
 	if not GameRules.check(condition):
 		return false

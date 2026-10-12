@@ -111,9 +111,9 @@ func has_tool(action: StringName) -> bool:
 	return false
 
 ## Eats one `item` the inventory holds, or drinks it when it is a potion: it
-## restores the player's energy and health and starts its food buff. False,
-## with a toast, when the inventory holds none or the item would do nothing now
-## (the player is rested and unhurt and it has no buff).
+## restores the player's vitals (`ItemData.restores`) and starts its food buff.
+## False, with a toast, when the inventory holds none or the item would do
+## nothing now (every vital it restores is full and it has no buff).
 func consume(item: ItemData) -> bool:
 	if _consume_busy:
 		return false
@@ -203,20 +203,20 @@ func _consume(item: ItemData) -> bool:
 	if item == null or not item.is_edible() or not has_item(item.id):
 		GameEvents.toastf("No %s available", [item.display_name if item != null else "food"])
 		return false
-	var restores_energy := item.energy_restore > 0 and PlayerState.energy < PlayerState.max_energy
-	var restores_health := item.health_restore > 0 and PlayerState.health < PlayerState.max_health
-	if not restores_energy and not restores_health and item.food_buff_id == &"":
+	var needed := item.food_buff_id != &""
+	for vital_id: StringName in item.restores:
+		needed = needed or (Vitals.has_vital(vital_id) and not Vitals.is_full(vital_id))
+	if not needed:
 		GameEvents.toast("You do not need that right now")
 		return false
 	if not remove_item(item.id, 1):
 		return false
 	var effects := PackedStringArray()
-	if item.energy_restore > 0:
-		PlayerState.restore_energy(item.energy_restore)
-		effects.append(tr("+%d energy") % item.energy_restore)
-	if item.health_restore > 0:
-		PlayerState.heal(item.health_restore)
-		effects.append(tr("+%d HP") % item.health_restore)
+	for vital_id: StringName in item.restores:
+		var restored := Vitals.restore(vital_id, item.restores[vital_id])
+		var vital := VitalData.find(vital_id)
+		if restored > 0 and vital != null:
+			effects.append("+%d %s" % [restored, tr(vital.display_name)])
 	if item.food_buff_id != &"":
 		BuffState.apply_buff(item.food_buff_id)
 	var gave := " (%s)" % ", ".join(effects) if not effects.is_empty() else ""

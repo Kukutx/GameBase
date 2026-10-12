@@ -24,8 +24,8 @@ const KIND := &"item"
 @export var kind: Kind = Kind.MATERIAL
 @export_range(0, 999999, 1) var buy_price := 0
 @export_range(0, 999999, 1) var sell_price := 0
-@export_range(0, 999, 1) var energy_restore := 0
-@export_range(0, 999, 1) var health_restore := 0
+## What eating or drinking it restores, as vital id (`VitalData`) → amount.
+@export var restores: Dictionary[StringName, int] = {}
 @export var food_buff_id: StringName
 @export var tags: PackedStringArray = PackedStringArray()
 ## What the tool does: an action some installed module or the game responds
@@ -84,7 +84,7 @@ func is_placeable() -> bool:
 	return kind == Kind.PLACEABLE and placeable_id != &""
 
 func is_edible() -> bool:
-	return energy_restore > 0 or health_restore > 0 or food_buff_id != &""
+	return not restores.is_empty() or food_buff_id != &""
 
 func has_tag(tag: String) -> bool:
 	return tags.has(tag)
@@ -108,4 +108,9 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		problems.append("is not a placeable but names placeable '%s'" % placeable_id)
 	if food_buff_id != &"" and not registry.has_entry(FoodBuffData.KIND, food_buff_id):
 		problems.append("references unknown food buff '%s'" % food_buff_id)
+	for vital_id: StringName in restores:
+		if not registry.has_entry(VitalData.KIND, vital_id):
+			problems.append("restores unknown vital '%s'" % vital_id)
+		elif restores[vital_id] <= 0:
+			problems.append("restores no %s" % vital_id)
 	return problems

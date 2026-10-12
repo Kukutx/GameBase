@@ -10,5 +10,7 @@ description = "A juicy summer tomato from a regrowing vine."
 max_stack = 99
 kind = 4
 sell_price = 70
-energy_restore = 8
+restores = Dictionary[StringName, int]({
+&"energy": 8
+})
 tags = PackedStringArray("crop", "vegetable", "summer")

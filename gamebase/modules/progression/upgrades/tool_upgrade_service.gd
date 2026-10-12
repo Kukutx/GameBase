@@ -48,11 +48,11 @@ func _upgrade_internal(upgrade_id: StringName) -> bool:
 	var removals := upgrade_data.materials.duplicate(true)
 	var source_key := String(source.id)
 	removals[source_key] = int(removals.get(source_key, 0)) + 1
-	if upgrade_data.money_cost > 0 and not PlayerState.spend_money(upgrade_data.money_cost):
+	if upgrade_data.money_cost > 0 and not Wallet.spend(upgrade_data.money_cost):
 		return false
 	if not InventoryState.apply_transaction_atomic(removals, {String(result.id): 1}):
 		if upgrade_data.money_cost > 0:
-			PlayerState.add_money(upgrade_data.money_cost)
+			Wallet.add(upgrade_data.money_cost)
 		GameEvents.toast("Inventory or materials changed before the upgrade completed")
 		return false
 

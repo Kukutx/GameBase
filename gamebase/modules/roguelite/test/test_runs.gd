@@ -57,8 +57,8 @@ func test_each_run_rolls_its_own_numbers() -> void:
 func test_a_run_ends_in_defeat_and_when_play_is_left() -> void:
 	watch_signals(RunState)
 	RunState.start_run()
-	# What the player state announces when the player loses all their health.
-	PlayerState.health_changed.emit(0, PlayerState.max_health)
+	# What the session announces as a defeat knocks the player out.
+	GameSession.passing_out.emit(GameSession.CAUSE_DEFEAT)
 	assert_signal_emitted_with_parameters(RunState, "run_ended", [1, RunService.OUTCOME_DEFEATED])
 	RunState.start_run()
 	GameSession.end_activities()

@@ -17,9 +17,8 @@ func _ready() -> void:
 	WeatherState.weather_changed.connect(_on_weather_changed)
 	EventState.active_events_changed.connect(_refresh_clock)
 	InventoryState.changed.connect(_refresh_inventory)
-	PlayerState.energy_changed.connect(_on_energy_changed)
-	PlayerState.health_changed.connect(_on_health_changed)
-	PlayerState.money_changed.connect(_on_money_changed)
+	Vitals.changed.connect(_on_vital_changed)
+	Wallet.money_changed.connect(_on_money_changed)
 	Hotbar.selected_slot_changed.connect(_on_selected_changed)
 	Hotbar.changed.connect(_refresh_hotbar)
 	QuestState.quest_started.connect(_on_quest_event)
@@ -60,10 +59,7 @@ func _on_time_changed(_day: int, _minute_of_day: int) -> void:
 func _on_weather_changed(_day: int, _weather_id: StringName) -> void:
 	_refresh_clock()
 
-func _on_energy_changed(_current: int, _maximum: int) -> void:
-	_refresh_stats()
-
-func _on_health_changed(_current: int, _maximum: int) -> void:
+func _on_vital_changed(_vital_id: StringName, _current: int, _maximum: int) -> void:
 	_refresh_stats()
 
 func _on_money_changed(_amount: int) -> void:
@@ -111,7 +107,9 @@ func _refresh_clock() -> void:
 		clock_label.text += " · " + event_summary
 
 func _refresh_stats() -> void:
-	stats_label.text = tr("HP %d/%d   ·   Energy %d/%d   ·   %dg") % [PlayerState.health, PlayerState.max_health, PlayerState.energy, PlayerState.max_energy, PlayerState.money]
+	var parts := Vitals.describe_all()
+	parts.append(Wallet.describe())
+	stats_label.text = "   ·   ".join(parts)
 
 func _refresh_quest() -> void:
 	quest_label.text = tr("Quest: %s") % QuestState.get_active_summary()

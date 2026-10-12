@@ -6,6 +6,7 @@ var _clock_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _skill_snapshot: Dictionary
 
@@ -13,14 +14,16 @@ func before_each() -> void:
 	_clock_snapshot = WorldClock.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_skill_snapshot = Skills.to_save_data()
 	ContentFixture.use(self, _fixture_content())
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
-	PlayerState.money = 0
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
+	Wallet.money = 0
 	Skills.reset_new_game()
 	WorldClock.set_time(1, 8 * 60)
 	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)
@@ -31,7 +34,8 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	Skills.load_save_data(_skill_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
@@ -44,12 +48,12 @@ func test_spring_fair_claims_once_per_year_and_rewards_money_items_and_skill_xp(
 	assert_eq(EventState.get_year(), 1)
 	assert_true(EventState.can_claim_participation(&"fixture_spring_fair"))
 	assert_true(EventState.claim_participation(&"fixture_spring_fair"))
-	assert_eq(PlayerState.money, 150)
+	assert_eq(Wallet.money, 150)
 	assert_eq(InventoryState.get_quantity(&"fixture_seed_packet"), 5)
 	assert_eq(Skills.get_xp(&"fixture_gardening"), 75)
 	assert_true(EventState.has_claimed_participation(&"fixture_spring_fair"))
 	assert_false(EventState.claim_participation(&"fixture_spring_fair"))
-	assert_eq(PlayerState.money, 150)
+	assert_eq(Wallet.money, 150)
 	assert_eq(InventoryState.get_quantity(&"fixture_seed_packet"), 5)
 
 	WorldClock.set_time(121, 10 * 60)
@@ -58,7 +62,7 @@ func test_spring_fair_claims_once_per_year_and_rewards_money_items_and_skill_xp(
 	assert_true(EventState.is_active(&"fixture_spring_fair"))
 	assert_false(EventState.has_claimed_participation(&"fixture_spring_fair"))
 	assert_true(EventState.claim_participation(&"fixture_spring_fair"))
-	assert_eq(PlayerState.money, 300)
+	assert_eq(Wallet.money, 300)
 	assert_eq(InventoryState.get_quantity(&"fixture_seed_packet"), 10)
 	assert_eq(Skills.get_xp(&"fixture_gardening"), 150)
 
@@ -79,7 +83,7 @@ func test_festival_claim_blocks_item_added_reentrancy() -> void:
 	assert_true(bool(observed["entered"]))
 	assert_false(bool(observed["inner_result"]))
 	assert_true(EventState.has_claimed_participation(&"fixture_spring_fair"))
-	assert_eq(PlayerState.money, 150)
+	assert_eq(Wallet.money, 150)
 	assert_eq(InventoryState.get_quantity(&"fixture_seed_packet"), 5)
 	assert_eq(Skills.get_xp(&"fixture_gardening"), 75)
 

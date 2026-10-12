@@ -6,21 +6,25 @@ extends GutTest
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 
 func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_archive_milestones_are_registered_and_visible_in_game_menu() -> void:
@@ -36,9 +40,9 @@ func test_completing_the_crop_archive_pays_500g_and_six_tomato_seeds() -> void:
 	for item_id: StringName in CollectionState.get_total_ids(CollectionService.CROPS):
 		CollectionState.record(CollectionService.CROPS, item_id, 1)
 	assert_true(CollectionMilestones.is_ready(&"crop_archive"))
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(CollectionMilestones.claim(&"crop_archive"))
-	assert_eq(PlayerState.money, money_before + 500)
+	assert_eq(Wallet.money, money_before + 500)
 	assert_eq(InventoryState.get_quantity(&"tomato_seeds"), 6)
 
 func test_mineral_archive_tracks_all_metal_tiers_through_iridium() -> void:

@@ -17,14 +17,15 @@ func _init() -> void:
 func _run() -> void:
 	var session := root.get_node("GameSession")
 	var save_manager := root.get_node("SaveManager")
-	var player_state := root.get_node("PlayerState")
+	var wallet := root.get_node("Wallet")
+	var vitals := root.get_node("Vitals")
 	var inventory := root.get_node("InventoryState")
 	var depth_run := root.get_node("DepthRun")
 	var profile := root.get_node("GameProfile")
 
 	_check(bool(session.start_new_game()), "New game did not start")
 	await _arrive(CAMP_SCENE)
-	_check(int(player_state.money) == 30 and int(inventory.get_quantity(&"rusty_sword")) == 1, "New game did not start with the camp's kit")
+	_check(int(wallet.money) == 30 and int(inventory.get_quantity(&"rusty_sword")) == 1, "New game did not start with the camp's kit")
 
 	_use(current_scene.get_node("DepthEntrance/Interactable"))
 	await _arrive(DEPTHS_SCENE)
@@ -51,23 +52,24 @@ func _run() -> void:
 	_check(problem.is_empty(), "Saving at camp failed: %s" % problem)
 	var details := Array(save_manager.get_slot_summary(1)["details"])
 	_check(details.has("Deepest 2"), "The slot does not show the deepest depth: %s" % [details])
-	player_state.money = 1
+	wallet.set_money(1)
 	_use(current_scene.get_node("DepthEntrance/Interactable"))
 	await _arrive(DEPTHS_SCENE)
 	var loaded: bool = await save_manager.load_game()
 	_check(loaded, "Load failed")
 	await _arrive(CAMP_SCENE)
-	_check(int(player_state.money) == 30, "Loading did not restore the money (got %d)" % player_state.money)
+	_check(int(wallet.money) == 30, "Loading did not restore the money (got %d)" % wallet.money)
 	_check(int(depth_run.get_run()) == 1 and int(depth_run.get_deepest()) == 2, "Loading did not restore the run")
 
 	_use(current_scene.get_node("DepthEntrance/Interactable"))
 	await _arrive(DEPTHS_SCENE)
 	_check(int(depth_run.get_run()) == 2 and int(depth_run.get_depth()) == 1, "A new run did not start at the first depth")
-	player_state.take_damage(int(player_state.health))
-	var money_lost: int = await session.player_collapsed
+	vitals.drain(&"hp", int(vitals.get_value(&"hp")))
+	var money_lost: int = await root.get_node("CombatEvents").player_defeated
 	await _arrive(CAMP_SCENE)
-	_check(money_lost == 8 and int(player_state.money) == 22, "Defeat did not cost a quarter of 30g (lost %d)" % money_lost)
-	_check(int(player_state.health) == int(player_state.max_health), "Defeat did not restore the player's health")
+	_check(money_lost == 8 and int(wallet.money) == 22, "Defeat did not cost a quarter of 30g (lost %d)" % money_lost)
+	_check(bool(vitals.is_full(&"hp")), "Defeat did not restore the player's health")
+	_check(int(depth_run.get_run()) == 2 and not bool(root.get_node("RunState").is_active()), "The defeat did not end the run")
 
 # Defeats every enemy of the floor with the player's swings, standing next to
 # each in turn.

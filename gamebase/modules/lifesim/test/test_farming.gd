@@ -1,11 +1,13 @@
 extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+## The vital the life-sim work spends here.
+const ENERGY := &"fixture_energy"
 const FARM_PLOT_SCENE := preload("res://gamebase/modules/lifesim/farming/farm_plot.tscn")
 
 var _clock_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _skill_snapshot: Dictionary
@@ -14,15 +16,16 @@ var _inventory_slots: int
 func before_each() -> void:
 	_clock_snapshot = WorldClock.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_skill_snapshot = Skills.to_save_data()
 	_inventory_slots = InventoryState.max_slots
-	ContentFixture.use(self, _fixture_content())
+	ContentFixture.use(self, _fixture_content() + [ContentFixture.vital(ENERGY)])
+	_use_energy()
 	WorldClock.set_time(1, 8 * 60)
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Vitals.reset_new_game()
 	Skills.reset_new_game()
 	InventoryState.add_item_by_id(&"fixture_hoe", 1)
 	InventoryState.add_item_by_id(&"fixture_can", 1)
@@ -34,7 +37,7 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	WorldClock.load_save_data(_clock_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	Skills.load_save_data(_skill_snapshot)
@@ -118,21 +121,21 @@ func test_plot_blocks_energy_changed_reentrancy_while_planting() -> void:
 	var plot := _add_plot()
 	assert_true(plot.use_item(&"fixture_hoe"))
 	var seeds_before := InventoryState.get_quantity(&"fixture_radish_seeds")
-	var energy_before := PlayerState.energy
+	var energy_before := Vitals.get_value(ENERGY)
 	var observed := {"entered": false, "inner_result": true}
-	var listener := func(_current: int, _maximum: int) -> void:
+	var listener := func(_vital_id: StringName, _current: int, _maximum: int) -> void:
 		if bool(observed["entered"]):
 			return
 		observed["entered"] = true
 		observed["inner_result"] = plot.use_item(&"fixture_radish_seeds")
-	PlayerState.energy_changed.connect(listener)
+	Vitals.changed.connect(listener)
 	assert_true(plot.use_item(&"fixture_radish_seeds"))
-	if PlayerState.energy_changed.is_connected(listener):
-		PlayerState.energy_changed.disconnect(listener)
+	if Vitals.changed.is_connected(listener):
+		Vitals.changed.disconnect(listener)
 	assert_true(bool(observed["entered"]))
 	assert_false(bool(observed["inner_result"]))
 	assert_eq(InventoryState.get_quantity(&"fixture_radish_seeds"), seeds_before - 1)
-	assert_eq(PlayerState.energy, energy_before - plot.plant_energy_cost)
+	assert_eq(Vitals.get_value(ENERGY), energy_before - plot.plant_energy_cost)
 	assert_eq(plot.crop_id, &"fixture_radish")
 
 func test_harvest_blocks_item_added_reentrancy() -> void:
@@ -288,3 +291,9 @@ func _crop(id: StringName, harvest_item_id: StringName, days_to_mature: int, reg
 	crop.harvest_quantity = harvest_quantity
 	crop.allowed_seasons = seasons
 	return crop
+
+# Makes `ENERGY` the vital the life-sim work spends.
+func _use_energy() -> void:
+	var settings := LifesimSettings.new()
+	settings.energy_vital_id = ENERGY
+	ContentFixture.use_settings(self, [settings])

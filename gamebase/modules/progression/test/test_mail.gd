@@ -8,6 +8,7 @@ const GARDEN_FLAG := &"fixture_garden_restored"
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _quest_snapshot: Dictionary
 var _relationship_snapshot: Dictionary
@@ -16,7 +17,8 @@ var _clock_snapshot: Dictionary
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_quest_snapshot = QuestState.to_save_data()
 	_relationship_snapshot = RelationshipState.to_save_data()
@@ -24,7 +26,8 @@ func before_each() -> void:
 	ContentFixture.use(self, _content())
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	QuestState.load_save_data({})
 	RelationshipState.clear()
 	WorldClock.set_time(1, 8 * 60)
@@ -35,7 +38,8 @@ func after_each() -> void:
 	GameSession.set("_starting_new_game", false)
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	QuestState.load_save_data(_quest_snapshot)
 	RelationshipState.load_save_data(_relationship_snapshot)
@@ -105,11 +109,11 @@ func test_received_mail_grants_the_reward_promised_at_delivery() -> void:
 		"items": {"fixture_twig": 4, "removed_item": 1},
 		"money": 777,
 	})
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(MailState.claim_rewards(WELCOME))
 	assert_true(MailState.is_claimed(WELCOME))
 	assert_true(MailState.is_read(WELCOME))
-	assert_eq(PlayerState.money, money_before + 777)
+	assert_eq(Wallet.money, money_before + 777)
 	assert_eq(InventoryState.get_quantity(&"fixture_twig"), 4)
 	assert_eq(InventoryState.get_quantity(&"removed_item"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 0)

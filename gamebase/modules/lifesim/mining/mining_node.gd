@@ -54,8 +54,7 @@ func _use_item_internal(item_id: StringName) -> bool:
 		return false
 	var energy_multiplier := GameStats.get_multiplier(&"tool_energy") * GameStats.get_multiplier(&"mining_energy")
 	var energy_cost := maxi(int(floor(float(data.energy_cost) * energy_multiplier)), 1)
-	if not PlayerState.consume_energy(energy_cost):
-		GameEvents.toast("Not enough energy")
+	if not LifesimSettings.spend_energy(energy_cost):
 		return false
 	durability_left = maxi(durability_left - item.tool_power, 0)
 	if durability_left <= 0:

@@ -6,6 +6,7 @@ var _clock_day := 1
 var _clock_minute := 0
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _shipping_snapshot: Dictionary
 var _world_snapshot: Dictionary
@@ -14,7 +15,8 @@ func before_each() -> void:
 	_clock_day = WorldClock.day
 	_clock_minute = WorldClock.minute_of_day
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_shipping_snapshot = ShippingState.to_save_data()
 	# A new day makes its listeners (contracts, mail) write to the world.
@@ -23,7 +25,7 @@ func before_each() -> void:
 	ShippingState.load_save_data({"pending": {}, "last_day_seen": 1})
 	WorldClock.set_time(1, 12 * 60)
 	InventoryState.clear()
-	PlayerState.money = 100
+	Wallet.money = 100
 
 func after_each() -> void:
 	# GUT frees the fixture content after after_each(): restore the saved state
@@ -32,7 +34,8 @@ func after_each() -> void:
 	ShippingState.load_save_data(_shipping_snapshot)
 	WorldClock.set_time(_clock_day, _clock_minute)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 
@@ -43,10 +46,10 @@ func test_shipping_removes_item_and_pays_on_next_day() -> void:
 	assert_eq(InventoryState.get_quantity(&"fixture_turnip"), 1)
 	assert_eq(ShippingState.get_pending_quantity(&"fixture_turnip"), 1)
 	assert_eq(ShippingState.get_pending_total(), turnip.sell_price)
-	assert_eq(PlayerState.money, 100)
+	assert_eq(Wallet.money, 100)
 
 	WorldClock.set_time(2, 6 * 60)
-	assert_eq(PlayerState.money, 100 + turnip.sell_price)
+	assert_eq(Wallet.money, 100 + turnip.sell_price)
 	assert_eq(ShippingState.get_pending_total(), 0)
 
 func test_a_new_game_pays_its_first_night_after_a_later_day_was_seen() -> void:
@@ -60,7 +63,7 @@ func test_a_new_game_pays_its_first_night_after_a_later_day_was_seen() -> void:
 	InventoryState.add_item_by_id(&"fixture_turnip", 1)
 	assert_true(ShippingState.ship_item(&"fixture_turnip", 1))
 	WorldClock.set_time(start_day + 1, 6 * 60)
-	assert_eq(PlayerState.money, 100 + ItemData.find(&"fixture_turnip").sell_price)
+	assert_eq(Wallet.money, 100 + ItemData.find(&"fixture_turnip").sell_price)
 
 func test_shipping_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"fixture_turnip", 2)
@@ -88,10 +91,10 @@ func test_shipping_day_marker_survives_money_callback_advancing_clock() -> void:
 			return
 		entered["value"] = true
 		WorldClock.set_time(3, 6 * 60)
-	PlayerState.money_changed.connect(advance_day)
+	Wallet.money_changed.connect(advance_day)
 	WorldClock.set_time(2, 6 * 60)
-	if PlayerState.money_changed.is_connected(advance_day):
-		PlayerState.money_changed.disconnect(advance_day)
+	if Wallet.money_changed.is_connected(advance_day):
+		Wallet.money_changed.disconnect(advance_day)
 	assert_eq(WorldClock.day, 3)
 	assert_eq(int(ShippingState.to_save_data().get("last_day_seen", 0)), 3)
 	assert_eq(ShippingState.get_pending_total(), 0)

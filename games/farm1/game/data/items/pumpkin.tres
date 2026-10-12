@@ -10,5 +10,7 @@ description = "A heavy Autumn pumpkin with strong market value."
 max_stack = 99
 kind = 4
 sell_price = 180
-energy_restore = 12
+restores = Dictionary[StringName, int]({
+&"energy": 12
+})
 tags = PackedStringArray("crop", "vegetable", "autumn")

@@ -6,23 +6,27 @@ extends GutTest
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _clock_snapshot: Dictionary
 var _random_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	_random_snapshot = GameRandom.to_save_data()
 	WorldState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	WorldClock.set_time(1, 8 * 60)
 
 func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	GameRandom.load_save_data(_random_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)

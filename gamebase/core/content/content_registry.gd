@@ -15,7 +15,8 @@ extends Node
 ##   themselves (`find_scene_problems()`). A node with a
 ##   `get_persistent_keys() -> PackedStringArray` method names the world state
 ##   it saves; no two nodes of any locations may share a key;
-## - the registered checks, and the controls of the game's `GameDefinition`.
+## - the registered checks, and the controls, weather and module settings of
+##   the game's `GameDefinition`.
 ##
 ## A scene node takes part in the checks by having a
 ## `find_scene_problems(registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray`
@@ -47,6 +48,7 @@ var _kind_by_script: Dictionary = {}
 ## kind -> {id (String) -> ContentEntry}.
 var _entries: Dictionary = {}
 var _checks: Array[Callable] = []
+var _settings_kinds: Array[Script] = []
 ## location id -> {spawn id -> number of spawn points with that id}, read
 ## from the location's scene when first asked for.
 var _location_spawn_ids: Dictionary = {}
@@ -60,6 +62,7 @@ func _init() -> void:
 	register_kind(WorldLocationData.KIND, WorldLocationData)
 	register_kind(RegionData.KIND, RegionData)
 	register_kind(WeatherData.KIND, WeatherData)
+	register_kind(VitalData.KIND, VitalData)
 	register_kind(AudioCueData.KIND, AudioCueData)
 	register_kind(MiniGameDefinition.KIND, MiniGameDefinition)
 	register_kind(TriggerData.KIND, TriggerData)
@@ -87,6 +90,14 @@ func register_kind(kind: StringName, entry_script: Script) -> void:
 	if not _entries.has(kind):
 		_entries[kind] = {}
 	_sorted_entries.erase(kind)
+
+## Registers `script`, a module's kind of `ModuleSettings`, so the running
+## game's settings of that kind are checked with the content
+## (`GameDefinition.find_settings_problems()`), its defaults when the game
+## lists none.
+func register_settings(script: Script) -> void:
+	if script != null and not _settings_kinds.has(script):
+		_settings_kinds.append(script)
 
 ## Registers a check of the whole content, for what no single entry can tell
 ## (a graph without cycles, a ladder of tiers): `check.call(registry)` returns
@@ -146,6 +157,7 @@ func index() -> PackedStringArray:
 func find_problems() -> PackedStringArray:
 	var problems := GameSettingsService.find_control_problems(GameSettingsService.game_controls())
 	problems.append_array(GameWeatherSystem.find_problems(GameDefinition.current(), self))
+	problems.append_array(GameDefinition.current().find_settings_problems(self, _settings_kinds))
 	problems.append_array(InheritanceRule.find_list_problems(GameDefinition.current().inheritance, self))
 	problems.append_array(GameCalendar.current().find_problems())
 	for kind: StringName in get_kinds():

@@ -75,7 +75,7 @@ func claim() -> int:
 	state["claimed"] = true
 	_set_state(state)
 	if reward > 0:
-		PlayerState.add_money(reward)
+		Wallet.add(reward)
 	contract_claimed.emit(state.duplicate(true))
 	GameEvents.toastf("Contract complete · +%dg", [reward])
 	return reward

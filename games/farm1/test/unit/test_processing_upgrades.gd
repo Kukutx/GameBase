@@ -4,6 +4,7 @@ var _clock_day: int
 var _clock_minute: int
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _skills_snapshot: Dictionary
@@ -12,19 +13,22 @@ func before_each() -> void:
 	_clock_day = WorldClock.day
 	_clock_minute = WorldClock.minute_of_day
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_skills_snapshot = Skills.to_save_data()
 	InventoryState.clear()
 	WorldState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	Skills.reset_new_game()
 	WorldClock.set_time(1, 8 * 60)
 
 func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	Skills.load_save_data(_skills_snapshot)
@@ -72,13 +76,13 @@ func test_iron_bar_smelt_and_pickaxe_upgrade_extend_mining_progression() -> void
 
 	InventoryState.add_item_by_id(&"copper_pickaxe", 1)
 	InventoryState.add_item_by_id(&"iron_bar", 2)
-	PlayerState.money = 1400
+	Wallet.money = 1400
 	Hotbar.set_slot_item(2, &"copper_pickaxe")
 	assert_true(UpgradeState.upgrade(&"iron_pickaxe_upgrade"))
 	assert_eq(InventoryState.get_quantity(&"copper_pickaxe"), 0)
 	assert_eq(InventoryState.get_quantity(&"iron_pickaxe"), 1)
 	assert_eq(InventoryState.get_quantity(&"iron_bar"), 0)
-	assert_eq(PlayerState.money, 0)
+	assert_eq(Wallet.money, 0)
 	assert_eq(Hotbar.slots[2], &"iron_pickaxe")
 	assert_eq(ItemData.find(&"iron_pickaxe").tool_power, 3)
 
@@ -132,13 +136,13 @@ func test_gold_bar_smelt_and_pickaxe_upgrade_complete_deep_mining_chain() -> voi
 
 	InventoryState.add_item_by_id(&"iron_pickaxe", 1)
 	InventoryState.add_item_by_id(&"gold_bar", 4)
-	PlayerState.money = 4000
+	Wallet.money = 4000
 	Hotbar.set_slot_item(2, &"iron_pickaxe")
 	assert_true(UpgradeState.upgrade(&"gold_pickaxe_upgrade"))
 	assert_eq(InventoryState.get_quantity(&"iron_pickaxe"), 0)
 	assert_eq(InventoryState.get_quantity(&"gold_pickaxe"), 1)
 	assert_eq(InventoryState.get_quantity(&"gold_bar"), 0)
-	assert_eq(PlayerState.money, 0)
+	assert_eq(Wallet.money, 0)
 	assert_eq(Hotbar.slots[2], &"gold_pickaxe")
 	assert_eq(ItemData.find(&"gold_pickaxe").tool_power, 4)
 
@@ -201,13 +205,13 @@ func test_iridium_bar_smelt_and_pickaxe_upgrade_complete_late_mining_chain() -> 
 
 	InventoryState.add_item_by_id(&"gold_pickaxe", 1)
 	InventoryState.add_item_by_id(&"iridium_bar", 4)
-	PlayerState.money = 9000
+	Wallet.money = 9000
 	Hotbar.set_slot_item(2, &"gold_pickaxe")
 	assert_true(UpgradeState.upgrade(&"iridium_pickaxe_upgrade"))
 	assert_eq(InventoryState.get_quantity(&"gold_pickaxe"), 0)
 	assert_eq(InventoryState.get_quantity(&"iridium_pickaxe"), 1)
 	assert_eq(InventoryState.get_quantity(&"iridium_bar"), 0)
-	assert_eq(PlayerState.money, 0)
+	assert_eq(Wallet.money, 0)
 	assert_eq(Hotbar.slots[2], &"iridium_pickaxe")
 	assert_eq(ItemData.find(&"iridium_pickaxe").tool_power, 5)
 

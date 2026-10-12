@@ -138,10 +138,7 @@ func _till(tool: ItemData, consume_energy: bool = true, show_message: bool = tru
 		if show_message:
 			GameEvents.toast("This soil is already tilled")
 		return false
-	var energy_cost := _scaled_tool_energy(hoe_energy_cost, tool)
-	if consume_energy and not PlayerState.consume_energy(energy_cost):
-		if show_message:
-			GameEvents.toast("Not enough energy")
+	if consume_energy and not LifesimSettings.spend_energy(_scaled_tool_energy(hoe_energy_cost, tool), show_message):
 		return false
 	tilled = true
 	last_processed_day = WorldClock.day
@@ -158,10 +155,7 @@ func _water(tool: ItemData, consume_energy: bool = true, show_message: bool = tr
 		if show_message:
 			GameEvents.toast("The soil is already watered")
 		return false
-	var energy_cost := _scaled_tool_energy(water_energy_cost, tool)
-	if consume_energy and not PlayerState.consume_energy(energy_cost):
-		if show_message:
-			GameEvents.toast("Not enough energy")
+	if consume_energy and not LifesimSettings.spend_energy(_scaled_tool_energy(water_energy_cost, tool), show_message):
 		return false
 	watered = true
 	_commit(tr("Soil watered"), show_message)
@@ -183,8 +177,7 @@ func _plant(seed: ItemData) -> bool:
 	if not InventoryState.has_item(seed.id, 1):
 		GameEvents.toastf("No %s left", [seed.display_name])
 		return false
-	if plant_energy_cost > 0 and not PlayerState.consume_energy(plant_energy_cost):
-		GameEvents.toast("Not enough energy")
+	if not LifesimSettings.spend_energy(plant_energy_cost):
 		return false
 	InventoryState.remove_item(seed.id, 1)
 	crop_id = crop.id

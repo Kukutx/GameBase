@@ -77,7 +77,7 @@ func payout_pending() -> int:
 	if amount <= 0:
 		return 0
 	_pending.clear()
-	PlayerState.add_money(amount)
+	Wallet.add(amount)
 	shipment_changed.emit()
 	payout_completed.emit(amount)
 	GameEvents.toastf("Overnight shipping earned %dg", [amount])

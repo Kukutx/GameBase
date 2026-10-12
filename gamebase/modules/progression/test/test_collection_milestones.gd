@@ -7,16 +7,19 @@ const ARCHIVE := &"fixture_crop_archive"
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	var archive := CollectionMilestoneData.new()
 	archive.id = ARCHIVE
 	archive.display_name = "Fixture Crops"
@@ -36,7 +39,8 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_archive_becomes_ready_claims_once_and_persists() -> void:
@@ -45,11 +49,11 @@ func test_archive_becomes_ready_claims_once_and_persists() -> void:
 	_discover_every_crop()
 	assert_true(CollectionMilestones.is_ready(ARCHIVE))
 	assert_eq(CollectionMilestones.get_ready_count(), 1)
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(CollectionMilestones.claim(ARCHIVE))
 	assert_true(CollectionMilestones.is_claimed(ARCHIVE))
 	assert_true(GameRules.check("MILESTONE_CLAIMED %s" % ARCHIVE))
-	assert_eq(PlayerState.money, money_before + 500)
+	assert_eq(Wallet.money, money_before + 500)
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 6)
 	assert_false(CollectionMilestones.claim(ARCHIVE))
 
@@ -63,7 +67,7 @@ func test_archive_becomes_ready_claims_once_and_persists() -> void:
 func test_archive_claim_blocks_item_added_reentrancy() -> void:
 	_discover_every_crop()
 	assert_true(CollectionMilestones.is_ready(ARCHIVE))
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	var observed := {"entered": false, "inner_result": true}
 	var listener := func(item_id: StringName, _quantity: int) -> void:
 		if item_id != &"fixture_seeds" or bool(observed["entered"]):
@@ -77,7 +81,7 @@ func test_archive_claim_blocks_item_added_reentrancy() -> void:
 	assert_true(bool(observed["entered"]))
 	assert_false(bool(observed["inner_result"]))
 	assert_true(CollectionMilestones.is_claimed(ARCHIVE))
-	assert_eq(PlayerState.money, money_before + 500)
+	assert_eq(Wallet.money, money_before + 500)
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 6)
 
 func test_ready_archive_grants_the_reward_promised_when_it_became_ready() -> void:
@@ -88,9 +92,9 @@ func test_ready_archive_grants_the_reward_promised_when_it_became_ready() -> voi
 		"items": {"fixture_twig": 2, "removed_item": 5},
 		"money": 888,
 	})
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(CollectionMilestones.claim(ARCHIVE))
-	assert_eq(PlayerState.money, money_before + 888)
+	assert_eq(Wallet.money, money_before + 888)
 	assert_eq(InventoryState.get_quantity(&"fixture_twig"), 2)
 	assert_eq(InventoryState.get_quantity(&"removed_item"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 0)
@@ -103,9 +107,9 @@ func test_qualified_milestone_stays_claimable_after_catalog_growth() -> void:
 		"money": 321,
 	})
 	assert_true(CollectionMilestones.is_ready(ARCHIVE))
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(CollectionMilestones.claim(ARCHIVE))
-	assert_eq(PlayerState.money, money_before + 321)
+	assert_eq(Wallet.money, money_before + 321)
 	assert_eq(InventoryState.get_quantity(&"fixture_twig"), 1)
 
 func test_pure_prerequisite_milestones_require_claimed_dependencies() -> void:

@@ -12,7 +12,8 @@ func _run() -> void:
 	var world_clock := root.get_node("WorldClock")
 	var weather_state := root.get_node("WeatherState")
 	var game_random := root.get_node("GameRandom")
-	var player_state := root.get_node("PlayerState")
+	var vitals := root.get_node("Vitals")
+	var wallet := root.get_node("Wallet")
 	var relationship_state := root.get_node("RelationshipState")
 	var heart_events := root.get_node("HeartEvents")
 	var mail_state := root.get_node("MailState")
@@ -67,9 +68,9 @@ func _run() -> void:
 	_check(inventory.get_quantity(&"fishing_rod") == 1, "Starter fishing rod missing")
 	_check(inventory.get_quantity(&"turnip_seeds") == 10, "Starter seeds missing")
 	_check(inventory.get_quantity(&"hay") == 20, "Starter hay missing")
-	_check(player_state.energy == player_state.max_energy, "Starter energy incorrect")
-	_check(player_state.health == player_state.max_health, "Starter health incorrect")
-	_check(player_state.money == 500, "Starter money incorrect")
+	_check(vitals.is_full(&"energy"), "Starter energy incorrect")
+	_check(vitals.is_full(&"hp"), "Starter health incorrect")
+	_check(wallet.money == 500, "Starter money incorrect")
 	_check(quest_state.is_active(&"meet_mira"), "Meet Mira quest did not start")
 	_check(quest_state.is_active(&"gather_berries"), "Foraging quest did not start")
 	var starter_forage := current_scene.get_node("DailyForage")
@@ -92,8 +93,8 @@ func _run() -> void:
 	# purchase by exactly its price so downstream economy assertions stay stable.
 	_check(animal_state.get_owned(&"starter_town").size() == 2, "Starter animal ownership migration incorrect")
 	var chicken_price: int = int(content_db.get_entry(&"farm_animal", &"chicken").purchase_price)
-	var money_before_animal_purchase: int = int(player_state.money)
-	player_state.add_money(chicken_price)
+	var money_before_animal_purchase: int = int(wallet.money)
+	wallet.add(chicken_price)
 	# Untyped: naming a module class here compiles it before the autoloads exist.
 	var general_store: Resource = content_db.get_entry(&"shop", &"general_store")
 	var chicken_offer: Resource = general_store.offers[0]
@@ -108,7 +109,7 @@ func _run() -> void:
 		if not coop_before.has(StringName(String(record.get("instance_id", "")))):
 			purchased_chicken_id = StringName(String(record.get("instance_id", "")))
 	_check(purchased_chicken_id != &"", "Purchased chicken has no instance id")
-	_check(player_state.money == money_before_animal_purchase, "Animal purchase did not charge the correct price")
+	_check(wallet.money == money_before_animal_purchase, "Animal purchase did not charge the correct price")
 	_check(animal_state.get_owned(&"starter_town", &"starter_coop").size() == 2, "Purchased chicken was not assigned to Coop")
 	_check(current_scene.get_node("CoopHousing").get_spawned_animals().size() == 2, "Purchased chicken did not spawn into the live scene")
 
@@ -167,7 +168,7 @@ func _run() -> void:
 	# Economy path uses shared prices and inventory.
 	var shop := load("res://game/data/shops/general_store.tres")
 	_check(shop_state.buy(shop, &"turnip_seeds", 2) == 2, "Buying seeds failed")
-	_check(player_state.money == 610, "Money after starter quests and seed purchase is incorrect")
+	_check(wallet.money == 610, "Money after starter quests and seed purchase is incorrect")
 
 	# Full farming cycle across three persistent plots.
 	var farm_field := current_scene.get_node("FarmField")
@@ -204,7 +205,7 @@ func _run() -> void:
 	_check(profile.call("get_int", &"crops_harvested") == 3, "The profile did not count the harvested crops")
 
 	_check(shop_state.sell(&"turnip", 1) == 1, "Selling harvest failed")
-	_check(player_state.money == 895, "Money after harvest reward and sale incorrect")
+	_check(wallet.money == 895, "Money after harvest reward and sale incorrect")
 
 	# Mailbox is world-reactive: day/quest conditions deliver letters and rewards are one-shot.
 	_check(current_scene.get_node_or_null("Mailbox") != null, "Starter Town mailbox missing")
@@ -222,7 +223,7 @@ func _run() -> void:
 	_check(shipping_state.ship_item(&"turnip", 1), "Shipping a turnip failed")
 	_check(inventory.get_quantity(&"turnip") == 1, "Shipping did not remove the turnip")
 	_check(shipping_state.get_pending_total() == 35, "Shipping pending value incorrect")
-	_check(player_state.money == 895, "Shipping paid before overnight settlement")
+	_check(wallet.money == 895, "Shipping paid before overnight settlement")
 
 	# Daily animal products become available again and are persisted at collection time.
 	chicken = current_scene.get_node("Chicken")
@@ -239,11 +240,11 @@ func _run() -> void:
 	inventory.add_item_by_id(&"potato", 1)
 	_check(crafting_state.craft(&"vegetable_stew"), "Kitchen cooking recipe failed")
 	_check(inventory.get_quantity(&"vegetable_stew") == 1, "Vegetable Stew output missing")
-	player_state.energy = 40
-	player_state.health = 60
+	vitals.set_value(&"energy", 40)
+	vitals.set_value(&"hp", 60)
 	inventory.call("consume", content_db.get_entry(&"item", &"vegetable_stew"))
 	_check(inventory.get_quantity(&"vegetable_stew") == 0, "Cooked meal was not consumed")
-	_check(player_state.energy == 85 and player_state.health == 80, "Cooked meal did not restore player stats")
+	_check(vitals.get_value(&"energy") == 85 and vitals.get_value(&"hp") == 80, "Cooked meal did not restore player stats")
 	_check(buff_state.call("has_buff", &"hearty_worker"), "Cooked meal did not apply Hearty Worker buff")
 	var saved_buff_remaining: int = int(buff_state.call("get_minutes_remaining", &"hearty_worker"))
 	_check(saved_buff_remaining == 240, "Hearty Worker duration incorrect before save")
@@ -251,8 +252,8 @@ func _run() -> void:
 	# Save every global state, mutate it, and verify complete restoration.
 	player.global_position = Vector2(31, 47)
 	world_state.set_value(&"smoke:flag", true)
-	var saved_money: int = player_state.money
-	var saved_energy: int = player_state.energy
+	var saved_money: int = wallet.money
+	var saved_energy: int = vitals.get_value(&"energy")
 	var saved_relationship: int = relationship_state.get_points(&"mira")
 	var saved_farming_xp: int = skills.get_xp(&"farming")
 	var saved_shipping_total: int = shipping_state.get_pending_total()
@@ -264,8 +265,8 @@ func _run() -> void:
 	inventory.clear()
 	world_state.clear()
 	shipping_state.load_save_data({"pending": {}, "last_day_seen": 1})
-	player_state.money = 0
-	player_state.energy = 1
+	wallet.set_money(0)
+	vitals.set_value(&"energy", 1)
 	relationship_state.clear()
 	npc_memory.clear()
 	quest_state.load_save_data({})
@@ -298,7 +299,7 @@ func _run() -> void:
 	_check(shipping_state.get_pending_total() == saved_shipping_total, "Shipping state did not restore")
 	_check(mail_state.call("is_claimed", &"mira_welcome"), "Mailbox claimed state did not restore through WorldState")
 	_check(world_state.get_bool(&"smoke:flag"), "World state did not restore")
-	_check(player_state.money == saved_money and player_state.energy == saved_energy, "Player state did not restore")
+	_check(wallet.money == saved_money and vitals.get_value(&"energy") == saved_energy, "Money and vitals did not restore")
 	_check(relationship_state.get_points(&"mira") == saved_relationship, "Relationship state did not restore")
 	_check(bool(npc_memory.get_facts(&"mira").get("player_started_farming", false)), "NPC memory facts did not restore")
 	_check(npc_memory.get_recent_messages(&"mira").size() == 2, "NPC conversation memory did not restore")
@@ -336,13 +337,13 @@ func _run() -> void:
 	_check(current_scene.scene_file_path == "res://game/world/home_interior.tscn", "Travel to home failed")
 	_check(player != null and player.global_position.is_equal_approx(Vector2(0, 72)), "Home spawn point failed")
 	var bed := current_scene.get_node("Bed")
-	var money_before_shipping_payout: int = player_state.money
+	var money_before_shipping_payout: int = wallet.money
 	bed.get_node("Interactable").interact(player)
 	await process_frame
 	_check(world_clock.day == 6 and world_clock.minute_of_day == 6 * 60, "Sleeping did not advance to next morning")
-	_check(player_state.energy == player_state.max_energy, "Sleeping did not restore energy")
+	_check(vitals.is_full(&"energy"), "Sleeping did not restore energy")
 	_check(not buff_state.call("has_buff", &"hearty_worker"), "Timed food buff did not expire overnight")
-	_check(player_state.money == money_before_shipping_payout + saved_shipping_total, "Overnight shipping payout incorrect")
+	_check(wallet.money == money_before_shipping_payout + saved_shipping_total, "Overnight shipping payout incorrect")
 	_check(shipping_state.get_pending_total() == 0, "Shipping bin did not clear after payout")
 
 	world_travel.travel_to(&"starter_town", &"from_home")
@@ -494,11 +495,11 @@ func _run() -> void:
 	_check(inventory.get_quantity(&"copper_bar") == 2, "Copper processing output incorrect")
 	_check(quest_state.is_completed(&"smelt_copper"), "Copper processing quest did not complete")
 	_check(quest_state.is_active(&"upgrade_pickaxe"), "Tool upgrade quest did not unlock")
-	var upgrade_money_before: int = int(player_state.money)
+	var upgrade_money_before: int = int(wallet.money)
 	_check(root.get_node("UpgradeState").upgrade(&"copper_pickaxe_upgrade"), "Copper Pickaxe upgrade failed")
 	_check(inventory.get_quantity(&"pickaxe") == 0 and inventory.get_quantity(&"copper_pickaxe") == 1, "Tool upgrade did not replace Pickaxe")
 	_check(root.get_node("Hotbar").slots[2] == &"copper_pickaxe", "Tool upgrade did not update hotbar")
-	_check(player_state.money == upgrade_money_before - 300 + 250, "Tool upgrade money/reward total incorrect")
+	_check(wallet.money == upgrade_money_before - 300 + 250, "Tool upgrade money/reward total incorrect")
 	_check(quest_state.is_completed(&"upgrade_pickaxe"), "Tool upgrade quest did not complete")
 
 	# Third copper cycle unlocks the first piece of farm automation.
@@ -625,14 +626,14 @@ func _run() -> void:
 	inventory.add_item_by_id(&"potato", 3)
 	inventory.add_item_by_id(&"wood", 10)
 	var starter_tomato_seeds_before: int = inventory.get_quantity(&"tomato_seeds")
-	var starter_project_money_before: int = player_state.money
+	var starter_project_money_before: int = wallet.money
 	_check(town_projects.contribute_all_available(&"starter_garden_restoration") > 0, "Starter garden project accepted no materials")
 	_check(town_projects.is_completed(&"starter_garden_restoration"), "Starter garden project did not complete")
 	_check(game_rules.check("PROJECT_COMPLETED starter_garden_restoration"), "PROJECT_COMPLETED did not see the Starter project")
 	_check(mail_state.is_received(&"mira_garden_restored"), "Starter project completion mail did not arrive immediately")
 	_check(town_projects.claim_reward(&"starter_garden_restoration"), "Starter project reward could not be claimed")
 	_check(inventory.get_quantity(&"tomato_seeds") == starter_tomato_seeds_before + 6, "Starter project seed reward incorrect")
-	_check(player_state.money == starter_project_money_before + 600, "Starter project money reward incorrect")
+	_check(wallet.money == starter_project_money_before + 600, "Starter project money reward incorrect")
 	var project_context: Dictionary = npc_context.build_context(&"mira", player)
 	var starter_project_seen := false
 	for project_entry: Variant in project_context["town_projects"]:
@@ -688,18 +689,18 @@ func _run() -> void:
 		if festival_npc != null:
 			var festival_schedule := festival_npc.get_node_or_null("Schedule")
 			_check(festival_schedule != null and String(festival_schedule.get("current_activity")) == "Watch the Harbor Derby", "%s did not switch to the Harbor Derby schedule" % festival_npc_name)
-	var derby_money_before: int = int(player_state.money)
+	var derby_money_before: int = int(wallet.money)
 	var derby_soup_before: int = inventory.get_quantity(&"fish_soup")
 	var derby_fishing_xp_before: int = skills.get_xp(&"fishing")
 	derby_booth.get_node("Interactable").interact(player)
 	await process_frame
 	_check(event_state.has_claimed_participation(&"fall_harbor_derby"), "Fall Harbor Derby participation did not persist")
-	_check(int(player_state.money) == derby_money_before + 400, "Fall Harbor Derby money reward incorrect")
+	_check(int(wallet.money) == derby_money_before + 400, "Fall Harbor Derby money reward incorrect")
 	_check(inventory.get_quantity(&"fish_soup") == derby_soup_before + 2, "Fall Harbor Derby item reward incorrect")
 	_check(skills.get_xp(&"fishing") == derby_fishing_xp_before + 150, "Fall Harbor Derby Fishing XP reward incorrect")
 	derby_booth.get_node("Interactable").interact(player)
 	await process_frame
-	_check(int(player_state.money) == derby_money_before + 400, "Fall Harbor Derby could be claimed twice in one year")
+	_check(int(wallet.money) == derby_money_before + 400, "Fall Harbor Derby could be claimed twice in one year")
 
 	# When the event ends, visiting NPCs must immediately return to their normal
 	# cross-town presence instead of remaining stranded in Harbor.
@@ -720,7 +721,7 @@ func _run() -> void:
 	_check(event_state.get_year() == 2 and event_state.can_claim_participation(&"fall_harbor_derby"), "Fall Harbor Derby did not reopen in year two")
 	derby_booth.get_node("Interactable").interact(player)
 	await process_frame
-	_check(int(player_state.money) == derby_money_before + 800, "Year-two Fall Harbor Derby reward incorrect")
+	_check(int(wallet.money) == derby_money_before + 800, "Year-two Fall Harbor Derby reward incorrect")
 
 	# Dynamic mine progression stays in one stable scene: clear Floor 1, descend
 	# through Floor 6, verify Iron content, then exercise the 5-floor elevator checkpoint.
@@ -860,33 +861,33 @@ func _run() -> void:
 	_check(mine_state.get_current_floor() == 1, "Floor 120 elevator did not return to surface after checkpoint round-trip")
 
 	# Defeat loop: zero HP wakes the player at home next morning with a money penalty.
-	var collapse_day: int = int(world_clock.day)
-	var money_before_collapse: int = int(player_state.money)
-	var expected_loss: int = mini(maxi(int(ceil(float(money_before_collapse) * 0.10)), 1), money_before_collapse) if money_before_collapse > 0 else 0
-	player_state.take_damage(player_state.max_health + 999)
-	await root.get_node("GameSession").player_collapsed
+	var defeat_day: int = int(world_clock.day)
+	var money_before_defeat: int = int(wallet.money)
+	var expected_loss: int = mini(maxi(int(ceil(float(money_before_defeat) * 0.10)), 1), money_before_defeat) if money_before_defeat > 0 else 0
+	vitals.drain(&"hp", 9999)
+	await root.get_node("CombatEvents").player_defeated
 	await process_frame
-	_check(current_scene.scene_file_path == "res://game/world/home_interior.tscn", "Collapse did not return player home")
-	_check(world_clock.day == collapse_day + 1 and world_clock.minute_of_day == 6 * 60, "Collapse did not advance to next morning")
-	_check(player_state.health == player_state.max_health, "Collapse did not restore health")
-	_check(player_state.energy == player_state.max_energy, "Collapse did not restore energy")
-	_check(player_state.money == money_before_collapse - expected_loss, "Collapse money penalty incorrect")
+	_check(current_scene.scene_file_path == "res://game/world/home_interior.tscn", "Defeat did not return player home")
+	_check(world_clock.day == defeat_day + 1 and world_clock.minute_of_day == 6 * 60, "Defeat did not advance to next morning")
+	_check(vitals.is_full(&"hp"), "Defeat did not restore health")
+	_check(vitals.is_full(&"energy"), "Defeat did not restore energy")
+	_check(wallet.money == money_before_defeat - expected_loss, "Defeat money penalty incorrect")
 
 	# Hard day boundary: staying awake until 02:00 forces rest at home with an
 	# energy penalty instead of allowing infinite play through the night, also
 	# when the clock runs past 02:00 within one frame.
-	player_state.set_energy(12)
-	player_state.take_damage(20)
+	vitals.set_value(&"energy", 12)
+	vitals.drain(&"hp", 20)
 	var late_night_day: int = int(world_clock.day)
 	world_clock.set_time(late_night_day, 1 * 60 + 57)
 	world_clock.advance_minutes(5)
-	await root.get_node("GameSession").late_night_collapse
+	await root.get_node("LifesimEvents").stayed_up_late
 	await process_frame
-	_check(world_clock.day == late_night_day and world_clock.minute_of_day == 6 * 60, "02:00 late-night collapse did not wake at 06:00")
-	_check(player_state.energy == maxi(player_state.max_energy / 2, 1), "Late-night collapse did not apply 50% energy penalty")
-	_check(player_state.health == player_state.max_health, "Late-night collapse did not restore health")
-	_check(current_scene.scene_file_path == "res://game/world/home_interior.tscn", "Late-night collapse did not keep player at home")
-	_check(FileAccess.file_exists(root.get_node("SaveManager").save_path), "Late-night collapse did not autosave")
+	_check(world_clock.day == late_night_day and world_clock.minute_of_day == 6 * 60, "02:00 late night did not wake at 06:00")
+	_check(vitals.get_value(&"energy") == maxi(vitals.get_maximum(&"energy") / 2, 1), "Late night did not apply 50% energy penalty")
+	_check(vitals.is_full(&"hp"), "Late night did not restore health")
+	_check(current_scene.scene_file_path == "res://game/world/home_interior.tscn", "Late night did not keep player at home")
+	_check(FileAccess.file_exists(root.get_node("SaveManager").save_path), "Late night did not autosave")
 
 func _clear_current_mine_floor(mine: Node) -> void:
 	if mine == null:

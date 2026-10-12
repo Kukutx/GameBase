@@ -11,5 +11,7 @@ max_stack = 24
 kind = 1
 buy_price = 115
 sell_price = 60
-energy_restore = 14
+restores = Dictionary[StringName, int]({
+&"energy": 14
+})
 tags = PackedStringArray("food", "fish", "river")

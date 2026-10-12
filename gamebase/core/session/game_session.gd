@@ -4,15 +4,11 @@ extends Node
 ## The game from the title screen to play and back: it starts a new game (each
 ## service's new-game step in order, then the start location), continues the
 ## selected slot's save through `SaveManager`, and returns to the title. It also
-## counts the time played and handles the player collapsing, from staying up too
-## late or from losing all their health.
-##
-## A late-night collapse wakes the player at home in the morning with half their
-## energy. A defeat wakes them at home in the morning with full health and
-## energy, less `GameDefinition.defeat_money_loss_percent` of their money. Both
-## end the player's activities (fishing, a minigame) and save the game. While
-## the session changes (`is_changing()`: a new game is set up or a save loads),
-## what the services announce is not play; `play_started` marks the end of it.
+## counts the time played, and takes the player out of play to wake at home
+## when a module knocks them out (`pass_out()`: combat's defeat, lifesim's late
+## night). While the session changes (`is_changing()`: a new game is set up or
+## a save loads), what the services announce is not play; `play_started` marks
+## the end of it.
 
 const NEW_GAME_FLAG := &"system:new_game_initialized"
 ## The session's section of a save: the time played.
@@ -22,7 +18,7 @@ const SAVE_SECTION := &"session"
 const NEW_GAME_ORDER_SESSION := 50
 const NEW_GAME_ORDER_RANDOM := 100
 const NEW_GAME_ORDER_WORLD := 200
-const NEW_GAME_ORDER_PLAYER := 400
+const NEW_GAME_ORDER_VITALS := 400
 const NEW_GAME_ORDER_CLOCK := 1200
 const NEW_GAME_ORDER_FINISH := 10000
 
@@ -39,11 +35,18 @@ signal new_game_failed
 ## `GameTriggers` and the quests drop it, since a load or a new game's steps
 ## set the state those events stand for.
 signal play_started
-signal player_collapsed(money_lost: int)
-signal late_night_collapse
+## Emitted when the player starts to pass out (`pass_out()`), before anything
+## changes: a run in progress ends with it.
+signal passing_out(cause: StringName)
+## Emitted when the player has passed out, woken and been saved: at home, or
+## where they fell when home could not open.
+signal passed_out(cause: StringName, woke_at_home: bool)
 
-var _handling_defeat := false
-var _handling_late_night := false
+## The cause a defeat passes out with: the player lost what keeps them in the
+## fight (combat's health).
+const CAUSE_DEFEAT := &"defeat"
+
+var _passing_out := false
 var _new_game_steps: Array[Dictionary] = []
 var _starting_new_game := false
 var _activity_ends: Array[Callable] = []
@@ -57,11 +60,9 @@ func _ready() -> void:
 	register_new_game_step(SAVE_SECTION, NEW_GAME_ORDER_SESSION, _reset_play_time)
 	register_new_game_step(&"random", NEW_GAME_ORDER_RANDOM, GameRandom.reset_new_game)
 	register_new_game_step(&"world", NEW_GAME_ORDER_WORLD, WorldState.clear)
-	register_new_game_step(&"player", NEW_GAME_ORDER_PLAYER, PlayerState.reset_new_game)
+	register_new_game_step(&"vitals", NEW_GAME_ORDER_VITALS, Vitals.reset_new_game)
 	register_new_game_step(&"clock", NEW_GAME_ORDER_CLOCK, _reset_clock)
 	register_new_game_step(&"finish", NEW_GAME_ORDER_FINISH, WorldState.set_value.bind(NEW_GAME_FLAG, true))
-	PlayerState.health_changed.connect(_on_health_changed)
-	WorldClock.minute_changed.connect(_on_minute_changed)
 	SaveManager.load_completed.connect(_on_load_completed)
 
 func _process(delta: float) -> void:
@@ -100,8 +101,7 @@ func register_new_game_step(id: StringName, order: int, step: Callable) -> void:
 
 ## Registers `end`, which ends an activity the player may be in (fishing, a
 ## minigame) without its outcome. `end_activities()` calls it before something
-## takes the player out of play: a collapse, a defeat, a load, a new game, the
-## title.
+## takes the player out of play: passing out, a load, a new game, the title.
 func register_activity_end(end: Callable) -> void:
 	if not _activity_ends.has(end):
 		_activity_ends.append(end)
@@ -204,39 +204,35 @@ func _on_start_travel_ended(arrived: bool) -> void:
 func continue_game() -> bool:
 	return await SaveManager.load_game()
 
-func _on_minute_changed(day: int, minute_of_day: int) -> void:
-	if minute_of_day != GameCalendar.current().collapse_minute or _handling_late_night or _handling_defeat:
-		return
-	if get_tree().get_first_node_in_group("player") == null:
-		return
-	_handle_late_night.call_deferred(day)
-
-func _handle_late_night(day: int) -> void:
-	if _handling_late_night or _handling_defeat:
-		return
-	var calendar := GameCalendar.current()
-	# The clock may have run a few minutes on in the same frame (short game
-	# minutes, a long frame, an action that passes time); the player still
-	# collapses unless it was moved past the morning (they slept).
-	var collapse_at := GameClock.absolute_minute(day, calendar.collapse_minute)
-	var wake_at := GameClock.absolute_minute(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
-	var now := WorldClock.get_absolute_minute()
-	if now < collapse_at or now >= wake_at:
-		return
-	if get_tree().get_first_node_in_group("player") == null:
-		return
-	_handling_late_night = true
+## Takes the player out of play to wake at home: `passing_out` first, then it
+## ends their activities, calls `recover` (what the cause restores or takes,
+## such as the vitals and money, before the new day's payouts arrive), moves
+## the clock to the next morning (`GameCalendar.wake_minute`, counted from
+## `from_day` and `from_minute`, now when -1), takes them home and saves;
+## `passed_out` follows. Returns
+## whether they woke at home, and false at once while they already pass out.
+## The module that knocks them out names the `cause` and tells the player.
+func pass_out(cause: StringName, recover := Callable(), from_day := -1, from_minute := -1) -> bool:
+	if _passing_out:
+		return false
+	_passing_out = true
+	passing_out.emit(cause)
 	end_activities()
-	WorldClock.set_time(calendar.get_wake_day(day, calendar.collapse_minute), calendar.wake_minute)
-	PlayerState.set_energy(maxi(PlayerState.max_energy / 2, 1))
-	PlayerState.restore_full_health()
-	var returned_home := await _return_home()
-	if not returned_home:
-		GameEvents.toast("Could not return home after staying up late")
+	var calendar := GameCalendar.current()
+	var day := WorldClock.day if from_day < 0 else from_day
+	var minute := WorldClock.minute_of_day if from_minute < 0 else from_minute
+	if recover.is_valid():
+		recover.call()
+	WorldClock.set_time(calendar.get_wake_day(day, minute), calendar.wake_minute)
+	var woke_at_home := await _return_home()
 	SaveManager.save_game()
-	_handling_late_night = false
-	late_night_collapse.emit()
-	GameEvents.toast("You stayed up too late and woke at home with reduced energy" if returned_home else "You stayed up too late and recovered with reduced energy")
+	_passing_out = false
+	passed_out.emit(cause, woke_at_home)
+	return woke_at_home
+
+## Whether the player is passing out (`pass_out()`).
+func is_passing_out() -> bool:
+	return _passing_out
 
 # Takes the player to the game's home spawn unless they are home already.
 # True when they stand at home after it.
@@ -255,32 +251,3 @@ func _return_home() -> bool:
 func _is_home() -> bool:
 	var location := WorldLocationData.find_current(get_tree())
 	return location != null and location.id == GameDefinition.current().home_location_id
-
-func _on_health_changed(current: int, _maximum: int) -> void:
-	if current > 0 or _handling_defeat:
-		return
-	_handle_player_defeat.call_deferred()
-
-func _handle_player_defeat() -> void:
-	var definition := GameDefinition.current()
-	if _handling_defeat or PlayerState.health > 0:
-		return
-	_handling_defeat = true
-	end_activities()
-	var loss := 0
-	if definition.defeat_money_loss_percent > 0 and PlayerState.money > 0:
-		loss = PlayerState.lose_money(maxi(ceili(PlayerState.money * definition.defeat_money_loss_percent / 100.0), 1))
-	var calendar := GameCalendar.current()
-	WorldClock.set_time(calendar.get_wake_day(WorldClock.day, WorldClock.minute_of_day), calendar.wake_minute)
-	PlayerState.restore_full_energy()
-	PlayerState.restore_full_health()
-	var returned_home := await _return_home()
-	if not returned_home:
-		GameEvents.toast("Could not return home after collapse")
-	SaveManager.save_game()
-	_handling_defeat = false
-	player_collapsed.emit(loss)
-	if returned_home:
-		GameEvents.toastf("You collapsed and lost %dg", [loss]) if loss > 0 else GameEvents.toast("You collapsed and woke up at home")
-	else:
-		GameEvents.toastf("You collapsed, lost %dg, and recovered where you fell", [loss]) if loss > 0 else GameEvents.toast("You collapsed and recovered where you fell")

@@ -6,6 +6,7 @@ extends GutTest
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _quest_snapshot: Dictionary
 var _relationship_snapshot: Dictionary
@@ -14,14 +15,16 @@ var _clock_snapshot: Dictionary
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_quest_snapshot = QuestState.to_save_data()
 	_relationship_snapshot = RelationshipState.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 	QuestState.load_save_data({})
 	RelationshipState.clear()
 	WorldClock.set_time(1, 8 * 60)
@@ -29,7 +32,8 @@ func before_each() -> void:
 func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	QuestState.load_save_data(_quest_snapshot)
 	RelationshipState.load_save_data(_relationship_snapshot)

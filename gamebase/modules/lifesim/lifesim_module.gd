@@ -7,6 +7,7 @@ func install() -> void:
 	for kind_script: Script in [CalendarEventData, CropData, FarmAnimalData, FarmExpansionData, FishData,
 			ForageEntryData, MiningNodeData, ProcessingRecipeData]:
 		ContentDB.register_kind(kind_script.KIND, kind_script)
+	ContentDB.register_settings(LifesimSettings)
 	ContentDB.register_check(CropData.find_seed_problems)
 	ContentDB.register_check(FarmExpansionData.find_cycle_problems)
 	ContentDB.register_check(_find_slot_problems)

@@ -22,6 +22,8 @@ var day := 1
 var minute_of_day := 8 * 60
 var paused := false
 var _elapsed := 0.0
+# Callables (day, minute_of_day) -> bool: a wait ends at a minute one holds for.
+var _wait_stops: Array[Callable] = []
 
 func _process(delta: float) -> void:
 	var minute_length := GameCalendar.current().real_seconds_per_game_minute
@@ -41,10 +43,11 @@ func advance_minutes(amount: int) -> void:
 ## `GameRules` query, asked about the clock's day and minute) holds, for at
 ## most `limit` minutes: waiting for the evening, the next market day or a
 ## festival. Returns how many minutes passed, or -1 when the condition did not
-## hold within the limit (the clock then stands `limit` minutes on). While the
-## player is up, the wait also ends at the calendar's collapse minute, where
-## they collapse, with -1, even when the condition would hold there. A
-## condition that is not a valid query moves nothing.
+## hold within the limit (the clock then stands `limit` minutes on). The wait
+## also ends, with -1, at a minute a registered stop holds for
+## (`register_wait_stop()`: lifesim's late night, where a player who is still
+## up passes out), even when the condition would hold there. A condition that
+## is not a valid query moves nothing.
 func advance_until(condition: String, limit: int) -> int:
 	var problems := GameRules.validate_query(condition)
 	if not GameEvent.find_arg_uses(PackedStringArray([condition])).is_empty():
@@ -52,15 +55,30 @@ func advance_until(condition: String, limit: int) -> int:
 	if not problems.is_empty():
 		push_warning("GameClock: cannot wait until '%s': %s" % [condition, "; ".join(problems)])
 		return -1
-	var collapse_minute := GameCalendar.current().collapse_minute
 	for passed: int in range(maxi(limit, 0) + 1):
-		if passed > 0 and minute_of_day == collapse_minute and get_tree().get_first_node_in_group(&"player") != null:
+		if passed > 0 and _is_wait_stop():
 			return -1
 		if GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day}):
 			return passed
 		if passed < limit:
 			_advance_one_minute()
 	return -1
+
+## Registers `stop`, called with a day and a minute of it: a wait
+## (`advance_until()`) that reaches a minute it returns true for ends there.
+## Registering the same callable again changes nothing.
+func register_wait_stop(stop: Callable) -> void:
+	if not _wait_stops.has(stop):
+		_wait_stops.append(stop)
+
+func unregister_wait_stop(stop: Callable) -> void:
+	_wait_stops.erase(stop)
+
+func _is_wait_stop() -> bool:
+	for stop: Callable in _wait_stops:
+		if stop.is_valid() and bool(stop.call(day, minute_of_day)):
+			return true
+	return false
 
 func set_time(new_day: int, new_minute_of_day: int) -> void:
 	var normalized_day := maxi(new_day, 1)

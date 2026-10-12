@@ -6,10 +6,9 @@ extends CharacterBody2D
 ## (`GameStats`). It keeps the nodes it reaches with (`reach_nodes`, such as
 ## its `InteractionController`) `reach` in front of where it faces. It stands
 ## still while anything holds the controls (`InputLock`) or its
-## `actor_visual` plays an action, and that visual plays `hurt` or `death`
-## when the player loses health. A game adds its own actions in
-## `_unhandled_input`, checking `is_input_locked()` first, and an `_ready()`
-## of its own calls `super()`.
+## `actor_visual` plays an action (combat's `PlayerHurtbox` plays `hurt` and
+## `death` on it). A game adds its own actions in
+## `_unhandled_input`, checking `is_input_locked()` first.
 
 ## Emitted when the player turns to face another way, not while it keeps
 ## walking the way it faces.
@@ -30,12 +29,7 @@ const MOVE_SPEED_STAT := &"move_speed"
 ## The way the player faces, a unit vector.
 var facing := Vector2.DOWN
 
-var _previous_health := 0
 var _stagger_left := 0.0
-
-func _ready() -> void:
-	_previous_health = PlayerState.health
-	PlayerState.health_changed.connect(_on_health_changed)
 
 func _physics_process(delta: float) -> void:
 	if _stagger_left > 0.0:
@@ -77,8 +71,3 @@ func face(direction: Vector2) -> void:
 ## dialogue, a minigame) or the player's own action is still playing.
 func is_input_locked() -> bool:
 	return InputLock.is_locked() or (actor_visual != null and actor_visual.is_action_playing())
-
-func _on_health_changed(current: int, _maximum: int) -> void:
-	if current < _previous_health and actor_visual != null:
-		actor_visual.play_action(&"death" if current <= 0 else &"hurt")
-	_previous_health = current

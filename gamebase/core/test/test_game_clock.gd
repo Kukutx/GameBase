@@ -1,5 +1,7 @@
 extends GutTest
 
+const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+
 func test_clock_wraps_to_next_day() -> void:
 	var clock := GameClock.new()
 	clock.paused = true
@@ -26,10 +28,19 @@ func test_night_boundaries() -> void:
 
 func test_sleep_spot_blocks_day_changed_reentrancy() -> void:
 	var clock_snapshot := WorldClock.to_save_data()
-	var player_snapshot := PlayerState.to_save_data()
+	var vitals_snapshot := Vitals.to_save_data()
+	var rest := VitalData.new()
+	rest.id = &"fixture_rest"
+	rest.display_name = "Rest"
+	var focus := VitalData.new()
+	focus.id = &"fixture_focus"
+	focus.display_name = "Focus"
+	focus.refill_on_sleep = false
+	ContentFixture.use(self, [rest, focus])
+	Vitals.reset_new_game()
 	WorldClock.set_time(10, 22 * 60)
-	PlayerState.energy = 1
-	PlayerState.health = 1
+	Vitals.set_value(rest.id, 1)
+	Vitals.set_value(focus.id, 1)
 	var scene := load("res://gamebase/core/player/sleep_spot.tscn") as PackedScene
 	var sleep_spot := scene.instantiate() as SleepSpot
 	add_child_autofree(sleep_spot)
@@ -47,10 +58,11 @@ func test_sleep_spot_blocks_day_changed_reentrancy() -> void:
 	assert_true(bool(observed["entered"]))
 	assert_eq(WorldClock.day, 11)
 	assert_eq(WorldClock.minute_of_day, 6 * 60)
-	assert_eq(PlayerState.energy, PlayerState.max_energy)
-	assert_eq(PlayerState.health, PlayerState.max_health)
+	assert_true(Vitals.is_full(rest.id), "sleep refills what it refills")
+	assert_eq(Vitals.get_value(focus.id), 1, "and nothing else")
+	ContentRegistry.active = ContentDB
 	WorldClock.load_save_data(clock_snapshot)
-	PlayerState.load_save_data(player_snapshot)
+	Vitals.load_save_data(vitals_snapshot)
 
 func test_an_absolute_minute_orders_every_moment_of_the_world() -> void:
 	assert_eq(GameClock.absolute_minute(1, 0), 0)

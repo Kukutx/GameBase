@@ -41,11 +41,10 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 - `WeatherState.weather_changed(day: int, weather_id: StringName)`
 
-## PlayerState (core)
+## Vitals (core)
 
-- `PlayerState.energy_changed(current: int, maximum: int)`
-- `PlayerState.health_changed(current: int, maximum: int)`
-- `PlayerState.money_changed(amount: int)`
+- `Vitals.changed(vital_id: StringName, current: int, maximum: int)`
+- `Vitals.depleted(vital_id: StringName)`
 
 ## WorldState (core)
 
@@ -63,6 +62,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `CombatEvents.attack_swung(weapon_item_id: StringName)`: The player swung the weapon `weapon_item_id`, hitting or not.
 - `CombatEvents.enemy_hurt(enemy_id: StringName, amount: int)`: A hostile creature was hurt for `amount`.
 - `CombatEvents.player_hurt(amount: int)`: The player was hurt for `amount`.
+- `CombatEvents.player_defeated(money_lost: int)`: The player lost all their health and woke up again; `money_lost` is what the defeat cost (`CombatSettings.defeat_money_loss_percent`).
 
 ## ItemsEvents (items)
 
@@ -74,6 +74,10 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `InventoryState.item_added(item_id: StringName, quantity: int)`: Every item that enters the inventory.
 - `InventoryState.item_gained(item_id: StringName, quantity: int)`: An item the player gains in play: found, harvested, bought, crafted or given. Their own items coming back (`return_items_atomic`) are added but not gained, so nothing that counts gains counts them twice.
 - `InventoryState.item_removed(item_id: StringName, quantity: int)`
+
+## Wallet (items)
+
+- `Wallet.money_changed(amount: int)`
 
 ## Hotbar (items)
 
@@ -112,6 +116,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `LifesimEvents.fish_caught(fish_id: StringName, item_id: StringName)`: A biting fish was landed.
 - `LifesimEvents.resource_mined(mining_node_id: StringName, item_id: StringName, quantity: int)`: A mining node broke and dropped `quantity` of `item_id`.
 - `LifesimEvents.item_processed(processing_recipe_id: StringName, item_id: StringName, quantity: int)`: A processing station's output was collected.
+- `LifesimEvents.stayed_up_late(woke_at_home: bool)`: The player stayed up past the late night minute, passed out and woke up again (`LateNight`): at home, or where they fell when home could not open.
 
 ## EventState (lifesim)
 
@@ -255,8 +260,8 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `GameSession.new_game_started()`: Emitted when a new game is ready to play: its start location is open with the player placed.
 - `GameSession.new_game_failed()`: Emitted when a new game that started cannot open its start location. Its steps already reset the services and its slot was replaced, so the player stays where they started it (the title screen).
 - `GameSession.play_started()`: Emitted when play starts after the session changed: a new game is ready, or a save finished loading. Mail checks its deliveries again here. What is announced while the session changes (`is_changing()`) is not replayed: `GameTriggers` and the quests drop it, since a load or a new game's steps set the state those events stand for.
-- `GameSession.player_collapsed(money_lost: int)`
-- `GameSession.late_night_collapse()`
+- `GameSession.passing_out(cause: StringName)`: Emitted when the player starts to pass out (`pass_out()`), before anything changes: a run in progress ends with it.
+- `GameSession.passed_out(cause: StringName, woke_at_home: bool)`: Emitted when the player has passed out, woken and been saved: at home, or where they fell when home could not open.
 
 ## Playthrough (core)
 

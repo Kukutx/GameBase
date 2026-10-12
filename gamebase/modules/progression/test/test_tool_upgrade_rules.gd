@@ -8,11 +8,13 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	var bar := ItemData.new()
 	bar.id = &"fixture_bar"
@@ -34,20 +36,21 @@ func after_each() -> void:
 	# GUT frees the fixture after this; restore against the game's content.
 	ContentRegistry.active = ContentDB
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_an_upgrade_replaces_the_tool_in_inventory_and_hotbar_atomically() -> void:
 	InventoryState.add_item_by_id(&"fixture_pickaxe", 1)
 	InventoryState.add_item_by_id(&"fixture_bar", 2)
-	PlayerState.money = 500
+	Wallet.money = 500
 	Hotbar.set_slot_item(2, &"fixture_pickaxe")
 
 	assert_true(UpgradeState.upgrade(&"fixture_pickaxe_upgrade"))
 	assert_eq(InventoryState.get_quantity(&"fixture_pickaxe"), 0)
 	assert_eq(InventoryState.get_quantity(&"fixture_strong_pickaxe"), 1)
 	assert_eq(InventoryState.get_quantity(&"fixture_bar"), 0)
-	assert_eq(PlayerState.money, 200)
+	assert_eq(Wallet.money, 200)
 	assert_eq(Hotbar.slots[2], &"fixture_strong_pickaxe")
 
 func _pickaxe(id: StringName, power: int) -> ItemData:

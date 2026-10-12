@@ -7,6 +7,7 @@ const HEN_PRICE := 800
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _clock_day: int
@@ -15,7 +16,8 @@ var _inventory_slots: int
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
 	_clock_day = WorldClock.day
@@ -24,8 +26,9 @@ func before_each() -> void:
 	ContentFixture.use(self, _content())
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
-	PlayerState.money = 10000
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
+	Wallet.money = 10000
 	WorldClock.set_time(1, 8 * 60)
 	AnimalState.register_housing(&"fixture_coop", &"fixture_farm", &"coop", 4, "Coop")
 	AnimalState.register_housing(&"fixture_barn", &"fixture_farm", &"barn", 4, "Barn")
@@ -43,7 +46,8 @@ func after_each() -> void:
 	WorldClock.set_time(_clock_day, _clock_minute)
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	InventoryState.max_slots = _inventory_slots
 
@@ -116,10 +120,10 @@ func test_malformed_ownership_records_and_state_do_not_block_housing() -> void:
 	assert_eq(AnimalState.get_housing_occupancy(&"fixture_coop"), 2)
 
 func test_purchase_uses_correct_housing_and_money_and_respects_capacity() -> void:
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	var hen_id := AnimalState.purchase(&"fixture_hen", &"fixture_farm")
 	assert_ne(hen_id, &"")
-	assert_eq(PlayerState.money, money_before - HEN_PRICE)
+	assert_eq(Wallet.money, money_before - HEN_PRICE)
 	assert_eq(AnimalState.get_housing_occupancy(&"fixture_coop"), 2)
 	assert_eq(AnimalState.get_housing_occupancy(&"fixture_barn"), 1)
 
@@ -130,23 +134,23 @@ func test_purchase_uses_correct_housing_and_money_and_respects_capacity() -> voi
 
 func test_animal_purchase_blocks_money_callback_reentrancy() -> void:
 	AnimalState.register_housing(&"race_coop", &"race_town", &"coop", 1, "Coop")
-	PlayerState.money = 5000
+	Wallet.money = 5000
 	var observed := {"entered": false, "inner_id": StringName()}
 	var race_purchase := func(_money: int) -> void:
 		if bool(observed["entered"]):
 			return
 		observed["entered"] = true
 		observed["inner_id"] = AnimalState.purchase(&"fixture_hen", &"race_town")
-	PlayerState.money_changed.connect(race_purchase)
+	Wallet.money_changed.connect(race_purchase)
 
 	var outer_id := AnimalState.purchase(&"fixture_hen", &"race_town")
-	if PlayerState.money_changed.is_connected(race_purchase):
-		PlayerState.money_changed.disconnect(race_purchase)
+	if Wallet.money_changed.is_connected(race_purchase):
+		Wallet.money_changed.disconnect(race_purchase)
 	assert_ne(outer_id, &"")
 	assert_eq(observed["inner_id"] as StringName, &"")
 	assert_eq(AnimalState.get_housing_occupancy(&"race_coop"), 1)
 	assert_eq(AnimalState.get_housing_capacity(&"race_coop"), 1)
-	assert_eq(PlayerState.money, 5000 - HEN_PRICE)
+	assert_eq(Wallet.money, 5000 - HEN_PRICE)
 	AnimalState.unregister_housing(&"race_coop")
 
 func test_shop_sells_animals_as_offers_that_move_into_free_housing() -> void:
@@ -160,13 +164,13 @@ func test_shop_sells_animals_as_offers_that_move_into_free_housing() -> void:
 	assert_true(cow_offer.can_buy(context))
 	assert_false(cow_offer.can_buy({}), "an animal is bought for a location")
 
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(ShopState.buy_offer(shop, cow_offer, context))
-	assert_eq(PlayerState.money, money_before - FarmAnimalData.find(&"fixture_cow").purchase_price)
+	assert_eq(Wallet.money, money_before - FarmAnimalData.find(&"fixture_cow").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"fixture_barn"), 2)
-	money_before = PlayerState.money
+	money_before = Wallet.money
 	assert_true(ShopState.buy_offer(shop, pig_offer, context))
-	assert_eq(PlayerState.money, money_before - FarmAnimalData.find(&"fixture_pig").purchase_price)
+	assert_eq(Wallet.money, money_before - FarmAnimalData.find(&"fixture_pig").purchase_price)
 	assert_eq(AnimalState.get_housing_occupancy(&"fixture_barn"), 3)
 	assert_false(ShopState.buy_offer(shop, _offer(&"fixture_cow"), context), "an offer the shop does not list is not sold")
 	assert_eq(AnimalState.get_housing_occupancy(&"fixture_barn"), 3)
@@ -428,11 +432,11 @@ func test_animals_can_be_renamed_and_sold_with_half_price_refund() -> void:
 	assert_false(AnimalState.rename_animal(instance_id, ""))
 	var record := AnimalState.get_record(instance_id)
 	assert_eq(String(record.get("custom_name", "")), "Pip")
-	var money_before_sale := PlayerState.money
+	var money_before_sale := Wallet.money
 	var expected_refund := int(round(float(HEN_PRICE) * 0.5))
 	var refund := AnimalState.sell_animal(instance_id)
 	assert_eq(refund, expected_refund)
-	assert_eq(PlayerState.money, money_before_sale + expected_refund)
+	assert_eq(Wallet.money, money_before_sale + expected_refund)
 	assert_true(AnimalState.get_record(instance_id).is_empty())
 	assert_eq(AnimalState.get_housing_occupancy(&"fixture_coop"), 1)
 	assert_eq(WorldState.get_value(StringName("animal:%s" % String(instance_id)), null), null)

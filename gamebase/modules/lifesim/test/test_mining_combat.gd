@@ -1,11 +1,13 @@
 extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+## The vital the life-sim work spends here.
+const ENERGY := &"fixture_energy"
 const MINING_NODE_SCENE := preload("res://gamebase/modules/lifesim/mining/mining_node.tscn")
 
 var _clock_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
-var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _skill_snapshot: Dictionary
@@ -14,15 +16,16 @@ var _inventory_slots: int
 func before_each() -> void:
 	_clock_snapshot = WorldClock.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
 	_skill_snapshot = Skills.to_save_data()
 	_inventory_slots = InventoryState.max_slots
-	ContentFixture.use(self, _fixture_content())
+	ContentFixture.use(self, _fixture_content() + [ContentFixture.vital(ENERGY)])
+	_use_energy()
 	InventoryState.clear()
 	WorldState.clear()
-	PlayerState.reset_new_game()
+	Vitals.reset_new_game()
 	Skills.reset_new_game()
 	InventoryState.add_item_by_id(&"fixture_pick", 1)
 
@@ -32,7 +35,7 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	WorldClock.load_save_data(_clock_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	Skills.load_save_data(_skill_snapshot)
@@ -76,15 +79,15 @@ func test_mining_node_blocks_energy_and_drop_signal_reentrancy() -> void:
 	await get_tree().process_frame
 
 	var energy_observed := {"entered": false, "inner_result": true}
-	var energy_listener := func(_current: int, _maximum: int) -> void:
+	var energy_listener := func(_vital_id: StringName, _current: int, _maximum: int) -> void:
 		if bool(energy_observed["entered"]):
 			return
 		energy_observed["entered"] = true
 		energy_observed["inner_result"] = node.use_item(&"fixture_pick")
-	PlayerState.energy_changed.connect(energy_listener)
+	Vitals.changed.connect(energy_listener)
 	assert_true(node.use_item(&"fixture_pick"))
-	if PlayerState.energy_changed.is_connected(energy_listener):
-		PlayerState.energy_changed.disconnect(energy_listener)
+	if Vitals.changed.is_connected(energy_listener):
+		Vitals.changed.disconnect(energy_listener)
 	assert_true(bool(energy_observed["entered"]))
 	assert_false(bool(energy_observed["inner_result"]))
 	assert_eq(node.durability_left, 1)
@@ -184,3 +187,9 @@ func _fixture_content() -> Array:
 	rock.drop_quantity = 2
 	rock.respawn_days = 1
 	return [pick, pebble, rock]
+
+# Makes `ENERGY` the vital the life-sim work spends.
+func _use_energy() -> void:
+	var settings := LifesimSettings.new()
+	settings.energy_vital_id = ENERGY
+	ContentFixture.use_settings(self, [settings])

@@ -12,6 +12,9 @@
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/move_down.tres" id="11_move_down"]
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/move_left.tres" id="12_move_left"]
 [ext_resource type="Resource" path="res://gamebase/core/input/controls/move_right.tres" id="13_move_right"]
+[ext_resource type="Script" path="res://gamebase/modules/items/items_settings.gd" id="14_items_settings"]
+[ext_resource type="Script" path="res://gamebase/modules/combat/combat_settings.gd" id="15_combat_settings"]
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/lifesim_settings.gd" id="16_lifesim_settings"]
 
 [sub_resource type="Resource" id="Control_use_tool"]
 script = ExtResource("4_control")
@@ -94,21 +97,10 @@ real_seconds_per_game_minute = 0.7
 night_starts_at = 1200
 night_ends_at = 360
 wake_minute = 360
-collapse_minute = 120
 
-[resource]
-script = ExtResource("1_definition")
-content = [ExtResource("2_content")]
-start_location_id = &"starter_town"
-home_location_id = &"player_home"
-home_spawn_id = &"from_town"
-defeat_money_loss_percent = 10
-calendar = SubResource("Calendar")
-start_day = 1
-start_minute_of_day = 480
-world_seed = 93017
-weather_odds = Array[ExtResource("8_weather_odds")]([SubResource("Weather_spring"), SubResource("Weather_summer"), SubResource("Weather_autumn"), SubResource("Weather_winter")])
-clear_weather_id = &"clear"
+[sub_resource type="Resource" id="Settings_items"]
+script = ExtResource("14_items_settings")
+start_money = 500
 start_items = Dictionary[StringName, int]({
 &"hoe": 1,
 &"watering_can": 1,
@@ -118,6 +110,32 @@ start_items = Dictionary[StringName, int]({
 &"turnip_seeds": 10,
 &"hay": 20
 })
+start_hotbar = Array[StringName]([&"hoe", &"watering_can", &"pickaxe", &"rusty_sword", &"turnip_seeds", &"fishing_rod", &"berry"])
+
+[sub_resource type="Resource" id="Settings_combat"]
+script = ExtResource("15_combat_settings")
+health_vital_id = &"hp"
+attack_vital_id = &"energy"
+defeat_money_loss_percent = 10
+
+[sub_resource type="Resource" id="Settings_lifesim"]
+script = ExtResource("16_lifesim_settings")
+energy_vital_id = &"energy"
+late_night_minute = 120
+late_night_energy_percent = 50
+
+[resource]
+script = ExtResource("1_definition")
+content = [ExtResource("2_content")]
+start_location_id = &"starter_town"
+home_location_id = &"player_home"
+home_spawn_id = &"from_town"
+calendar = SubResource("Calendar")
+start_day = 1
+start_minute_of_day = 480
+world_seed = 93017
+weather_odds = Array[ExtResource("8_weather_odds")]([SubResource("Weather_spring"), SubResource("Weather_summer"), SubResource("Weather_autumn"), SubResource("Weather_winter")])
+clear_weather_id = &"clear"
 event_cues = Dictionary[StringName, StringName]({
 &"ItemsEvents.item_foraged": &"sfx_pickup",
 &"LifesimEvents.crop_harvested": &"sfx_harvest",
@@ -134,6 +152,5 @@ event_cues = Dictionary[StringName, StringName]({
 &"ShopState.purchase_completed": &"sfx_purchase",
 &"ShopState.sale_completed": &"sfx_sale"
 })
-start_money = 500
-start_hotbar = Array[StringName]([&"hoe", &"watering_can", &"pickaxe", &"rusty_sword", &"turnip_seeds", &"fishing_rod", &"berry"])
 controls = Array[Resource]([ExtResource("10_move_up"), ExtResource("11_move_down"), ExtResource("12_move_left"), ExtResource("13_move_right"), ExtResource("5_interact"), SubResource("Control_use_tool"), SubResource("Control_give_gift"), SubResource("Control_remove_building"), SubResource("Control_open_menu"), ExtResource("6_quick_save"), ExtResource("7_quick_load"), SubResource("Control_hotbar_prev"), SubResource("Control_hotbar_next")])
+module_settings = Array[Resource]([SubResource("Settings_items"), SubResource("Settings_combat"), SubResource("Settings_lifesim")])

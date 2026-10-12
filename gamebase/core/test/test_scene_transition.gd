@@ -44,7 +44,7 @@ func test_a_change_while_the_screen_clears_starts_at_once() -> void:
 	assert_true(transition.change_scene(_scene_path))
 	await get_tree().scene_changed
 	# The screen clears after the scene opened; a travel that follows at once
-	# (a collapse right after arriving) is not refused.
+	# (passing out right after arriving) is not refused.
 	assert_true(transition.change_scene(_scene_path))
 	await get_tree().scene_changed
 	await transition.wait_until_clear()

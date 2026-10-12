@@ -3,8 +3,8 @@ extends RefCounted
 
 ## Condition and action keys of the core (see `GameRulesService`): the world's
 ## flags, the day, season, weekday, time and weather, where the player is,
-## money, the playthrough, and the arguments of the event that set off a
-## trigger.
+## the player's vitals, the playthrough, and the arguments of the event that
+## set off a trigger.
 
 static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"TRUE", _always.bind(true), 0, 0)
@@ -20,14 +20,14 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"WEATHER", _weather, 1, -1, [WeatherData.KIND])
 	rules.register_condition(&"LOCATION", _location.bind(rules), 1, -1, [WorldLocationData.KIND])
 	rules.register_condition(&"REGION", _region.bind(rules), 1, -1, [RegionData.KIND])
-	rules.register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [GameRulesService.ARG_INT])
+	rules.register_condition(&"VITAL_AT_LEAST", _vital_at_least, 2, 2, [VitalData.KIND, GameRulesService.ARG_INT])
 	rules.register_condition(&"PLAYTHROUGH_AT_LEAST", _playthrough_at_least, 1, 1, [GameRulesService.ARG_COUNT])
 	rules.register_condition(&"EVENT_ARG", _event_arg, 2, -1, [GameRulesService.ARG_TEXT])
 	rules.register_condition(&"EVENT_ARG_AT_LEAST", _event_arg_at_least, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_NUMBER])
 	rules.register_action(&"SET_FLAG", _set_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_FLAG_VALUE])
 	rules.register_action(&"CLEAR_FLAG", _clear_flag, 1, 1, [GameRulesService.ARG_TEXT])
 	rules.register_action(&"ADD_FLAG", _add_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_INT])
-	rules.register_action(&"ADD_MONEY", _add_money, 1, 1, [GameRulesService.ARG_INT])
+	rules.register_action(&"RESTORE_VITAL", _restore_vital, 2, 2, [VitalData.KIND, GameRulesService.ARG_INT])
 
 ## TRUE: always holds.
 
@@ -99,9 +99,9 @@ static func _region(args: PackedStringArray, context: Dictionary, rules: GameRul
 		location = WorldLocationData.find_current(rules.get_tree())
 	return location != null and args.has(String(location.region_id))
 
-## MONEY_AT_LEAST <n>: the player has at least n money.
-static func _money_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
-	return PlayerState.money >= int(args[0])
+## VITAL_AT_LEAST <vital> <n>: the player has at least n of the vital.
+static func _vital_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
+	return Vitals.get_value(StringName(args[0])) >= int(args[1])
 
 ## PLAYTHROUGH_AT_LEAST <n>: this is the nth playthrough or a later one
 ## (`Playthrough`; new game plus).
@@ -138,8 +138,8 @@ static func _add_flag(args: PackedStringArray, _context: Dictionary) -> bool:
 	WorldState.add_int(StringName(args[0]), int(args[1]) if args.size() > 1 else 1)
 	return true
 
-## ADD_MONEY <n>: gives the player n money; an n of 0 or less gives nothing and
-## takes nothing, and the action still succeeds.
-static func _add_money(args: PackedStringArray, _context: Dictionary) -> bool:
-	PlayerState.add_money(int(args[0]))
+## RESTORE_VITAL <vital> <n>: restores n of the vital, up to its maximum; an
+## n of 0 or less restores nothing, and the action still succeeds.
+static func _restore_vital(args: PackedStringArray, _context: Dictionary) -> bool:
+	Vitals.restore(StringName(args[0]), int(args[1]))
 	return true

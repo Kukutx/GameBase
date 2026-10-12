@@ -13,7 +13,7 @@ func _run() -> void:
 	var event_state := root.get_node("EventState")
 	var contract_state := root.get_node("DailyContractState")
 	var save_manager := root.get_node("SaveManager")
-	var player_state := root.get_node("PlayerState")
+	var wallet := root.get_node("Wallet")
 	var world_state := root.get_node("WorldState")
 	var npc_memory := root.get_node("NpcMemory")
 	# The game's calendar, loaded rather than named: this script compiles before
@@ -65,7 +65,7 @@ func _run() -> void:
 		if day % days_per_season == 0:
 			var checkpoint_index := day / days_per_season
 			var marker_money := 20000 + day
-			player_state.money = marker_money
+			wallet.set_money(marker_money)
 			world_state.set_value(&"soak:checkpoint", checkpoint_index)
 
 			_check(save_manager.get_save_block_reason().is_empty(), "Save guard blocked soak checkpoint Day %d: %s" % [day, save_manager.get_save_block_reason()])
@@ -86,7 +86,7 @@ func _run() -> void:
 			# Deliberately corrupt in-memory state, then exercise the real disk
 			# load + scene reconstruction path.
 			world_clock.set_time(1, 0)
-			player_state.money = 0
+			wallet.set_money(0)
 			world_state.set_value(&"soak:last_day", -1)
 			world_state.set_value(&"soak:checkpoint", -1)
 			npc_memory.clear()
@@ -100,7 +100,7 @@ func _run() -> void:
 			_check(current_scene != null and current_scene.scene_file_path == "res://game/world/dev_world.tscn", "Checkpoint load restored wrong scene on Day %d" % day)
 			_check(get_first_node_in_group("player") != null, "Checkpoint load lost player on Day %d" % day)
 			_check(world_clock.day == day and world_clock.minute_of_day == MORNING_MINUTE, "Clock did not restore on Day %d" % day)
-			_check(player_state.money == marker_money, "Money did not restore on Day %d" % day)
+			_check(wallet.money == marker_money, "Money did not restore on Day %d" % day)
 			_check(int(world_state.get_value(&"soak:last_day", -1)) == day, "World state did not restore last day %d" % day)
 			_check(int(world_state.get_value(&"soak:checkpoint", -1)) == checkpoint_index, "World checkpoint did not restore on Day %d" % day)
 			var restored_memory: Array = npc_memory.get_recent_messages(&"mira")

@@ -7,13 +7,13 @@
 script = ExtResource("2_perk")
 level = 5
 description = "Fighter I · attack +10% · attack energy -10%"
-multipliers = Dictionary[StringName, float]({&"attack_damage": 1.1, &"attack_energy": 0.9})
+multipliers = Dictionary[StringName, float]({&"attack_damage": 1.1, &"attack_cost": 0.9})
 
 [sub_resource type="Resource" id="Resource_level10"]
 script = ExtResource("2_perk")
 level = 10
 description = "Fighter II · attack +25% · attack energy -20%"
-multipliers = Dictionary[StringName, float]({&"attack_damage": 1.25, &"attack_energy": 0.8})
+multipliers = Dictionary[StringName, float]({&"attack_damage": 1.25, &"attack_cost": 0.8})
 
 [resource]
 script = ExtResource("1_skill")

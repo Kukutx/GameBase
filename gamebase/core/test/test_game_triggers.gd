@@ -313,12 +313,12 @@ func test_an_event_value_is_checked_as_a_written_argument_is() -> void:
 	GameRules._actions.erase(&"FIXTURE_VISIT")
 
 func test_triggers_report_arguments_of_the_wrong_type_and_inside_any() -> void:
-	var wrong_type := _trigger(&"fixture_wrong_type", ["ADD_MONEY $crop"], "EVENT_ARG_AT_LEAST crop 3")
+	var wrong_type := _trigger(&"fixture_wrong_type", ["ADD_FLAG fixture:count $crop"], "EVENT_ARG_AT_LEAST crop 3")
 	var nested := _trigger(&"fixture_nested", ["ADD_FLAG fixture:x"], 'ANY "EVENT_ARG season Spring" "FALSE"')
-	var fine := _trigger(&"fixture_fine", ["ADD_MONEY $quantity", "SET_FLAG $crop"], "EVENT_ARG_AT_LEAST quantity 1")
+	var fine := _trigger(&"fixture_fine", ["ADD_FLAG fixture:count $quantity", "SET_FLAG $crop"], "EVENT_ARG_AT_LEAST quantity 1")
 	var registry := ContentFixture.use(self, [wrong_type, nested, fine])
 	var problems := "\n".join(registry.find_problems())
-	assert_string_contains(problems, "trigger 'fixture_wrong_type' passes argument 'crop' (StringName) to ADD_MONEY, which takes int")
+	assert_string_contains(problems, "trigger 'fixture_wrong_type' passes argument 'crop' (StringName) to ADD_FLAG, which takes int")
 	assert_string_contains(problems, "trigger 'fixture_wrong_type' passes argument 'crop' (StringName) to EVENT_ARG_AT_LEAST, which takes number")
 	assert_string_contains(problems, "trigger 'fixture_nested' reads argument 'season'")
 	assert_false(problems.contains("fixture_fine"), problems)
@@ -342,7 +342,7 @@ func test_only_content_that_listens_to_an_event_reads_its_arguments() -> void:
 	var trigger := _trigger(&"fixture_total", ["ADD_FLAG fixture:total $quantity"])
 	var minigame := MiniGameDefinition.new()
 	minigame.id = &"fixture_minigame"
-	minigame.success_actions = PackedStringArray(["ADD_MONEY $score"])
+	minigame.success_actions = PackedStringArray(["ADD_FLAG fixture:score $score"])
 	var registry := ContentFixture.use(self, [trigger, minigame])
 	var problems := "\n".join(GameRules.validate_content(registry))
 	assert_false(problems.contains("fixture_total"), problems)

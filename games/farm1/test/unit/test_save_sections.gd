@@ -6,7 +6,7 @@ func test_registered_sections_restore_in_the_documented_order() -> void:
 	# Shipping before the clock (no double payout), the clock before the world
 	# (saved day markers), quests after the world they read.
 	assert_eq(SaveManager.get_section_ids(), PackedStringArray([
-		"random", "session", "playthrough", "shipping", "clock", "buffs", "inventory", "player_state", "hotbar", "world",
+		"random", "session", "playthrough", "shipping", "clock", "buffs", "inventory", "wallet", "vitals", "hotbar", "world",
 		"relationships", "npc_memory", "quests", "skills", "fishing_state",
 	]))
 
@@ -33,6 +33,10 @@ func test_game_definition_supplies_the_games_facts() -> void:
 	assert_not_null(WorldLocationData.find(definition.start_location_id))
 	assert_eq(definition.home_location_id, PLAYER_HOME)
 	assert_not_null(WorldLocationData.find(definition.home_location_id))
-	for item_id: StringName in definition.start_items:
+	var start_items := ItemsSettings.current().start_items
+	assert_false(start_items.is_empty(), "the farm starts with a kit")
+	for item_id: StringName in start_items:
 		assert_not_null(ItemData.find(item_id), "start item %s exists" % item_id)
-		assert_gt(definition.start_items[item_id], 0)
+		assert_gt(start_items[item_id], 0)
+	assert_eq(LifesimSettings.current().energy_vital_id, &"energy")
+	assert_eq(CombatSettings.current().health_vital_id, &"hp")

@@ -30,12 +30,10 @@ static func current() -> GameDefinition:
 @export var content: Array[ContentPack] = []
 ## Location a new game starts in, and the fallback when a save's location is gone.
 @export var start_location_id: StringName = &""
-## Location the player is brought back to after collapsing or staying up too late.
+## Location the player wakes in after passing out (`GameSession.pass_out()`).
 @export var home_location_id: StringName = &""
 ## Spawn point used when the player is brought home.
 @export var home_spawn_id: StringName = &""
-## Share of their money, in percent, the player loses when defeated (0: none).
-@export_range(0, 100) var defeat_money_loss_percent := 0
 ## How the game counts its time: seasons, week, clock speed, night and the
 ## player's day (`GameCalendar`). None: the default calendar of four 28-day
 ## seasons.
@@ -52,17 +50,12 @@ static func current() -> GameDefinition:
 ## The weather (`WeatherData`) of a day the odds give no other; empty, with no
 ## odds, for a game without weather.
 @export var clear_weather_id: StringName = &""
-## Items granted at the start of a new game, as item id → amount.
-@export var start_items: Dictionary[StringName, int] = {}
 ## Audio cue played for an event, as `<Autoload>.<signal>`
 ## (`LifesimEvents.crop_harvested`) → cue id.
 @export var event_cues: Dictionary[StringName, StringName] = {}
 ## What a new playthrough or a sequel carries over from the game before it
 ## (`Playthrough`, `InheritanceRule`); empty carries nothing.
 @export var inheritance: Array[InheritanceRule] = []
-## Starting money and hotbar of a new game (item ids; empty for a free slot).
-@export_range(0, 999999) var start_money := 500
-@export var start_hotbar: Array[StringName] = []
 ## The game's input controls, `ControlAction` resources in the order the
 ## settings list them. The core's own controls (`GameSettingsService.CORE_CONTROLS`)
 ## follow, except one whose action the game lists: the game's control replaces
@@ -70,8 +63,14 @@ static func current() -> GameDefinition:
 ## array makes GDScript's shutdown skip scripts (a loop upstream has since
 ## rewritten), so every test run ends with leak errors.
 @export var controls: Array[Resource] = []
+## What the game sets for its modules (`ModuleSettings`), at most one of each
+## kind; a module whose settings the game does not list takes their defaults.
+## Typed `Resource` for the same reason as `controls`.
+@export var module_settings: Array[Resource] = []
 
 var _default_calendar: GameCalendar
+# Script -> the defaults of a kind of settings the game does not list.
+var _default_settings: Dictionary[Script, ModuleSettings] = {}
 
 ## The game's calendar, or the default one when it sets none.
 func get_calendar() -> GameCalendar:
@@ -80,3 +79,40 @@ func get_calendar() -> GameCalendar:
 	if _default_calendar == null:
 		_default_calendar = GameCalendar.new()
 	return _default_calendar
+
+## The game's settings of the kind `script` (a `ModuleSettings` subclass), or
+## that kind's defaults when the game lists none.
+func get_settings(script: Script) -> ModuleSettings:
+	for entry: Resource in module_settings:
+		if entry != null and entry.get_script() == script:
+			return entry as ModuleSettings
+	if not _default_settings.has(script):
+		_default_settings[script] = script.new() as ModuleSettings
+	return _default_settings[script]
+
+## Problems with `module_settings`: an entry that is no `ModuleSettings`, a
+## kind listed twice, and what the settings of each kind listed or in `kinds`
+## (those of the game's modules, `ContentRegistry.register_settings()`) report
+## about themselves, the kind's defaults when the game lists none.
+func find_settings_problems(registry: ContentRegistry, kinds: Array[Script] = []) -> PackedStringArray:
+	var problems := PackedStringArray()
+	var checked: Array[Script] = []
+	for entry: Resource in module_settings:
+		var settings := entry as ModuleSettings
+		if settings == null:
+			problems.append("the game lists module settings that are no ModuleSettings")
+		elif checked.has(settings.get_script()):
+			problems.append("the game lists %s twice" % _settings_label(settings.get_script()))
+		else:
+			checked.append(settings.get_script())
+	for script: Script in kinds:
+		if not checked.has(script):
+			checked.append(script)
+	for script: Script in checked:
+		for problem: String in get_settings(script).find_problems(registry):
+			problems.append("%s: %s" % [_settings_label(script), problem])
+	return problems
+
+static func _settings_label(script: Script) -> String:
+	var label := String(script.get_global_name()) if script != null else ""
+	return label if not label.is_empty() else "ModuleSettings"

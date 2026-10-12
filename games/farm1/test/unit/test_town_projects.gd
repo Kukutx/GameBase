@@ -6,21 +6,25 @@ extends GutTest
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
+var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
-	_player_snapshot = PlayerState.to_save_data()
+	_player_snapshot = Wallet.to_save_data()
+	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	WorldState.clear()
 	InventoryState.clear()
-	PlayerState.reset_new_game()
+	Wallet.reset_new_game()
+	Vitals.reset_new_game()
 
 func after_each() -> void:
 	WorldState.load_save_data(_world_snapshot)
 	InventoryState.load_save_data(_inventory_snapshot)
-	PlayerState.load_save_data(_player_snapshot)
+	Wallet.load_save_data(_player_snapshot)
+	Vitals.load_save_data(_vitals_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
 
 func test_project_chain_donates_materials_unlocks_the_next_and_rewards_once() -> void:
@@ -33,9 +37,9 @@ func test_project_chain_donates_materials_unlocks_the_next_and_rewards_once() ->
 	assert_eq(TownProjects.contribute_all_available(&"starter_garden_restoration"), 19)
 	assert_true(TownProjects.is_completed(&"starter_garden_restoration"))
 	assert_true(TownProjects.is_available(&"riverside_workshop_fund"))
-	var money_before := PlayerState.money
+	var money_before := Wallet.money
 	assert_true(TownProjects.claim_reward(&"starter_garden_restoration"))
-	assert_eq(PlayerState.money, money_before + 600)
+	assert_eq(Wallet.money, money_before + 600)
 	assert_eq(InventoryState.get_quantity(&"tomato_seeds"), 6)
 	assert_false(TownProjects.claim_reward(&"starter_garden_restoration"))
 
