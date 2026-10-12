@@ -9,7 +9,7 @@ extends Area2D
 ## changed by the `attack_cost` stat and
 ## swings again only after `cooldown_seconds`. A swing draws its arc
 ## (`SwingEffect`), is announced as `CombatEvents.attack_swung`, and a swing
-## that lands shakes the screen a little (`ScreenShake`). A child of the
+## that lands shakes the screen a little (`GameCamera.shake_view()`). A child of the
 ## player, kept in front of it (`TopDownPlayer.reach_nodes`); its collision
 ## mask picks the hurtboxes it can reach.
 
@@ -94,7 +94,7 @@ func _attack(weapon: ItemData) -> bool:
 		if hurtbox != null and hurtbox.receive(Damage.new(get_attack_damage(weapon), faction, get_parent(), _push_toward(hurtbox))):
 			hits += 1
 	if hits > 0:
-		ScreenShake.shake(self, SHAKE_STRENGTH, SHAKE_SECONDS)
+		GameCamera.shake_view(self, SHAKE_STRENGTH, SHAKE_SECONDS)
 	return true
 
 # The knockback of a hit on `hurtbox`: away from the swing's actor.

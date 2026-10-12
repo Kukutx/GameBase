@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_floor_controller.gd" id="12_floor_controller"]
 [ext_resource type="PackedScene" path="res://gamebase/modules/lifesim/mining/mine_ladder.tscn" id="13_ladder"]
 [ext_resource type="PackedScene" path="res://gamebase/modules/lifesim/mining/mine_elevator.tscn" id="14_elevator"]
+[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(720, 16)
@@ -130,3 +131,10 @@ position = Vector2(-54, -158)
 theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
 theme_override_font_sizes/font_size = 16
 text = "Old Mine"
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -360.0
+offset_top = -190.0
+offset_right = 360.0
+offset_bottom = 190.0
+script = ExtResource("91_bounds")

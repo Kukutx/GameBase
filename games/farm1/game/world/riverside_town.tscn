@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
@@ -19,6 +19,7 @@
 [ext_resource type="Script" path="res://gamebase/modules/progression/projects/project_completion_visual.gd" id="17_project_visual"]
 [ext_resource type="PackedScene" path="res://gamebase/modules/lifesim/calendar/calendar_event_booth.tscn" id="18_festival_booth"]
 [ext_resource type="PackedScene" path="res://game/npc/neri_npc.tscn" id="19_neri"]
+[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(760, 16)
@@ -222,3 +223,10 @@ position = Vector2(-62, -184)
 theme_override_colors/font_color = Color(0.86, 0.91, 0.82, 1)
 theme_override_font_sizes/font_size = 16
 text = "Riverside Town"
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -380.0
+offset_top = -210.0
+offset_right = 380.0
+offset_bottom = 210.0
+script = ExtResource("91_bounds")

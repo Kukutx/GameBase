@@ -5,7 +5,7 @@ extends Hurtbox
 ## player's health (`CombatSettings.health_vital_id`), staggers the player
 ## while its knockback carries them (`TopDownPlayer.stagger()`), plays `hurt`
 ## on the player's `TopDownPlayer.actor_visual` (`death` when it took the last
-## of it), shakes the screen (`ScreenShake`) and is announced as
+## of it), shakes the screen (`GameCamera.shake_view()`) and is announced as
 ## `CombatEvents.player_hurt`. A player without health left, or passing out,
 ## takes no more hits. A child of the player.
 
@@ -40,4 +40,4 @@ func _on_hurt(damage: Damage) -> void:
 	if player != null and player.actor_visual != null:
 		player.actor_visual.play_action(&"death" if Vitals.get_value(health) <= 0 else &"hurt")
 	CombatEvents.player_hurt.emit(taken)
-	ScreenShake.shake(self, SHAKE_STRENGTH, SHAKE_SECONDS)
+	GameCamera.shake_view(self, SHAKE_STRENGTH, SHAKE_SECONDS)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://game/world/world_hud.tscn" id="2_hud"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://gamebase/modules/items/storage/storage_chest.tscn" id="9_chest"]
 [ext_resource type="Script" path="res://gamebase/modules/items/building/build_zone.gd" id="10_build_zone"]
 [ext_resource type="Script" path="res://gamebase/core/world/simple_navigation_region.gd" id="11_nav"]
+[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(360, 16)
@@ -114,3 +115,10 @@ position = Vector2(-55, -88)
 theme_override_colors/font_color = Color(0.86, 0.76, 0.62, 1)
 theme_override_font_sizes/font_size = 14
 text = "Home Interior"
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -180.0
+offset_top = -115.0
+offset_right = 180.0
+offset_bottom = 115.0
+script = ExtResource("91_bounds")

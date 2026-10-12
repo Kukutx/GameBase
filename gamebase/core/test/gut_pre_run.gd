@@ -20,3 +20,5 @@ func run() -> void:
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	GameProfile.profile_path = TEST_PROFILE_PATH
 	GameProfile.load_profile()
+	# Travels change scenes behind the transition as in play, without its fades.
+	Transition.fade_seconds = 0.0

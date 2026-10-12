@@ -28,12 +28,17 @@ func test_invalid_travel_target_never_locks_world_travel() -> void:
 	# A resource that exists but is no scene: this script.
 	var not_a_scene := (get_script() as Script).resource_path
 
-	assert_false(bool(travel.call("_travel_scene", not_a_scene, &"bad_spawn")))
+	# The transition finds it is no scene, at once or once it has loaded.
+	if bool(travel.call("_travel_scene", not_a_scene, &"bad_spawn")):
+		assert_false(await travel.travel_ended)
 	assert_false(travel.is_traveling())
 	assert_eq(travel.get_pending_spawn_id(), &"")
+	assert_false(InputLock.is_held(&"travel"))
 	assert_eq(failures.size(), 1)
 	assert_eq(String(failures[0].get("scene", "")), not_a_scene)
-	assert_string_contains(String(failures[0].get("reason", "")), "not a PackedScene")
+	assert_string_contains(String(failures[0].get("reason", "")), "Scene change failed")
+	assert_push_warning("Transition: scene change failed")
+	await Transition.wait_until_clear()
 
 	assert_false(bool(travel.call("_travel_scene", "res://gamebase/core/test/definitely_missing_scene.tscn", &"missing")))
 	assert_false(travel.is_traveling())
@@ -101,6 +106,8 @@ func test_going_to_a_location_waits_until_the_player_stands_in_it() -> void:
 	assert_eq(get_tree().current_scene.scene_file_path, _scene_path)
 	var player := get_tree().get_first_node_in_group(&"player") as Node2D
 	assert_eq(player.global_position, Vector2(40, 24), "the player stands at the spawn point")
+	var camera := player.get_node("Camera") as GameCamera
+	assert_eq(camera.get_screen_center_position(), Vector2(40, 24), "and the view is on them at once")
 	assert_false(await travel.go_to(&"removed_future_location"), "a travel that cannot start")
 	assert_eq(ended, [true], "only a travel that started ends")
 
@@ -223,7 +230,8 @@ func _interactive_portal() -> InteractivePortal:
 	add_child_autofree(portal)
 	return portal
 
-## A location scene with the player and one spawn point, `ENTRY`.
+## A location scene with the player, whose camera follows them, and one spawn
+## point, `ENTRY`.
 static func _location_scene() -> PackedScene:
 	var root := Node2D.new()
 	root.name = "FixtureCellar"
@@ -232,6 +240,10 @@ static func _location_scene() -> PackedScene:
 	player.add_to_group(&"player", true)
 	root.add_child(player)
 	player.owner = root
+	var camera := GameCamera.new()
+	camera.name = "Camera"
+	player.add_child(camera)
+	camera.owner = root
 	var spawn := WorldSpawnPoint.new()
 	spawn.name = "Entry"
 	spawn.spawn_id = ENTRY

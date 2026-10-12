@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="2_spawn"]
 [ext_resource type="PackedScene" path="res://gamebase/core/player/sleep_spot.tscn" id="3_sleep"]
 [ext_resource type="PackedScene" path="res://gamebase/core/world/scene_portal.tscn" id="4_portal"]
+[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(380, 20)
@@ -84,3 +85,10 @@ text = "To the lookout"
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector2(0, 40)
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -400.0
+offset_top = -260.0
+offset_right = 400.0
+offset_bottom = 260.0
+script = ExtResource("91_bounds")
