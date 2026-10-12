@@ -41,7 +41,10 @@ func _run() -> void:
 
 	save_manager.save_directory = SMOKE_SAVE_DIRECTORY
 	save_manager.select_slot(1)
+	var profile := root.get_node("GameProfile")
+	profile.set("profile_path", SMOKE_SAVE_DIRECTORY + "/profile.json")
 	_cleanup_smoke_files()
+	profile.call("load_profile")
 
 	# New-game initialization must recompute Day 1 weather after resetting the
 	# world seed, even when the previous session was already on Day 1.
@@ -207,6 +210,8 @@ func _run() -> void:
 	_check(inventory.get_quantity(&"turnip") == 3, "Harvest output incorrect")
 	_check(quest_state.is_completed(&"first_harvest"), "First Harvest quest did not complete")
 	_check(skills.get_xp(&"farming") == 75, "Farming XP incorrect")
+	_check(profile.call("is_unlocked", &"green_thumb"), "The first harvest did not unlock Green Thumb")
+	_check(profile.call("get_int", &"crops_harvested") == 3, "The profile did not count the harvested crops")
 
 	_check(shop_state.sell(&"turnip", 1) == 1, "Selling harvest failed")
 	_check(player_state.money == 895, "Money after harvest reward and sale incorrect")
@@ -289,6 +294,7 @@ func _run() -> void:
 	_check(save_manager.save_path.begins_with(SMOKE_SAVE_DIRECTORY), "Title screen left the smoke save directory")
 	var loaded: bool = await save_manager.load_game()
 	_check(loaded, "SaveManager.load_game failed")
+	_check(profile.call("is_unlocked", &"green_thumb"), "Loading a save took back an achievement of the profile")
 	player = get_first_node_in_group("player") as Node2D
 	_check(world_clock.day == 5, "Clock did not restore")
 	_check(inventory.get_quantity(&"turnip") == 1, "Inventory did not restore")
@@ -417,6 +423,7 @@ func _run() -> void:
 	_check(river_fish_after == river_fish_before + 1, "Riverside fishing did not produce a river fish")
 	_check(skills.get_xp(&"fishing") == fishing_xp_before + 20, "Fishing skill XP did not advance")
 	_check(quest_state.is_completed(&"catch_first_fish"), "Fishing quest did not complete")
+	_check(profile.call("is_unlocked", &"angler"), "The first catch did not unlock Angler")
 	_check(quest_state.is_active(&"mine_stone"), "Mining quest did not unlock")
 	mail_state.call("refresh_deliveries")
 	_check(mail_state.call("is_received", &"neri_first_catch"), "Neri first-catch mail did not unlock from quest completion")
@@ -940,3 +947,9 @@ func _fail(message: String) -> void:
 func _cleanup_smoke_files() -> void:
 	for slot in range(1, 4):
 		root.get_node("SaveManager").delete_slot(slot)
+	# Written first, so nothing waits to be written when the smoke quits.
+	root.get_node("GameProfile").call("write_now")
+	var profile_path := String(root.get_node("GameProfile").get("profile_path"))
+	for path: String in [profile_path, profile_path + ".tmp"]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

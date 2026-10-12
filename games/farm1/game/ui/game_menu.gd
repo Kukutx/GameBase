@@ -207,6 +207,8 @@ func _collections_text() -> String:
 	for milestone: CollectionMilestoneData in CollectionMilestones.get_all_milestones():
 		lines.append("• %s" % CollectionMilestones.get_summary(milestone))
 	lines.append("")
+	lines.append_array(_achievement_lines())
+	lines.append("")
 	for category: StringName in CollectionService.CATEGORIES:
 		var entries := CollectionState.get_category_entries(category)
 		lines.append("[b]%s — %d/%d[/b]" % [CollectionState.get_category_name(category), CollectionState.get_discovered_count(category), entries.size()])
@@ -217,6 +219,22 @@ func _collections_text() -> String:
 				lines.append("  • ???")
 		lines.append("")
 	return "\n".join(lines)
+
+# The profile's achievements, which every save shares; a hidden one shows
+# nothing of itself until it is unlocked.
+func _achievement_lines() -> PackedStringArray:
+	var achievements := AchievementData.find_all()
+	var lines := PackedStringArray([""])
+	var unlocked_count := 0
+	for achievement: AchievementData in achievements:
+		var unlocked := GameProfile.is_unlocked(achievement.id)
+		unlocked_count += 1 if unlocked else 0
+		if achievement.hidden and not unlocked:
+			lines.append("  ○ ???")
+		else:
+			lines.append("  %s %s — %s" % ["✓" if unlocked else "○", tr(achievement.display_name), tr(achievement.description)])
+	lines[0] = "[b]%s — %d/%d[/b]" % [tr("Achievements"), unlocked_count, achievements.size()]
+	return lines
 
 func _rebuild_hotbar_editor() -> void:
 	item_select.clear()

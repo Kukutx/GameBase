@@ -145,7 +145,7 @@ test("a game runs the tests of the core, of each of its modules and its own", ()
   assert.equal(dirs[dirs.length - 1], "res://test/unit/");
   for (const dir of dirs.slice(1, -1)) assert.match(dir, /^res:\/\/gamebase\/modules\/(items|skills)\/test\/$/);
   const config = JSON.parse(syncedGutConfig('{"dirs": ["res://stale/"], "should_exit": true}', game, foundation));
-  assert.deepEqual(config, { dirs, should_exit: true });
+  assert.deepEqual(config, { dirs, should_exit: true, pre_run_script: "res://gamebase/core/test/gut_pre_run.gd" });
 });
 
 test("a module's autoloads follow the modules it requires, between the core's", () => {
@@ -153,7 +153,9 @@ test("a module's autoloads follow the modules it requires, between the core's", 
   assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "combat"]), ["items", "combat", "skills", "lifesim", "npc_social", "progression"]);
   const game = { id: "probe", root: rootPath("games", "probe"), modules: ["skills", "items"], addons: ["gut"], manifest: { autoloads: { ProbeTools: "res://game/probe_tools.gd" } } };
   const names = desiredAutoloads(game, foundation).map(([name]) => name);
-  assert.deepEqual(names.slice(names.indexOf("WorldState") + 1, names.indexOf("WorldTravel")), [...Object.keys(foundation.modules.items.autoloads), "Skills"]);
+  const lastBefore = Object.keys(foundation.autoloads.before_modules).at(-1);
+  const firstAfter = Object.keys(foundation.autoloads.after_modules)[0];
+  assert.deepEqual(names.slice(names.indexOf(lastBefore) + 1, names.indexOf(firstAfter)), [...Object.keys(foundation.modules.items.autoloads), "Skills"]);
   assert.equal(names[0], "Transition");
   assert.equal(names[names.length - 1], "ProbeTools");
   const project = syncedProject('config_version=5\n\n[autoload]\n\nStale="*res://old.gd"\n\n[application]\n\nconfig/name="Probe"\n', game, foundation);

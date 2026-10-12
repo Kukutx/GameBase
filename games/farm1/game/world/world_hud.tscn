@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://game/world/world_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://game/ui/game_menu.tscn" id="2_menu"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://gamebase/modules/progression/contracts/daily_contract_menu.tscn" id="7_contract_menu"]
 [ext_resource type="PackedScene" path="res://gamebase/modules/lifesim/animals/animal_management_menu.tscn" id="8_animal_menu"]
 [ext_resource type="PackedScene" path="res://gamebase/modules/progression/projects/town_project_menu.tscn" id="9_project_menu"]
+[ext_resource type="Script" path="res://gamebase/core/events/status_line.gd" id="10_status_line"]
 
 [node name="WorldHud" type="CanvasLayer"]
 layer = 5
@@ -62,6 +63,7 @@ theme_override_font_sizes/font_size = 9
 text = ""
 
 [node name="Status" type="Label" parent="."]
+script = ExtResource("10_status_line")
 offset_left = 120.0
 offset_top = 52.0
 offset_right = 464.0

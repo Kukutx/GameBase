@@ -38,6 +38,8 @@ const ARG_TEXT := &"text"
 const ARG_COUNT := &"count"
 ## A season of the game's calendar (`GameCalendar.season_names`).
 const ARG_SEASON := &"season"
+## A flag's value: true, false or an integer.
+const ARG_FLAG_VALUE := &"flag_value"
 ## How many values of its event arguments a clause's cross-argument check is
 ## tried with at most; one with more is checked when the event fires.
 const MAX_EVENT_ARG_VALUES := 256
@@ -294,7 +296,7 @@ func _arg_values(kind: StringName) -> PackedStringArray:
 		return PackedStringArray(["true", "false"])
 	if kind == ARG_SEASON:
 		return GameCalendar.current().season_names.duplicate()
-	if kind in [&"", ARG_INT, ARG_NUMBER, ARG_TEXT, ARG_COUNT]:
+	if kind in [&"", ARG_INT, ARG_NUMBER, ARG_TEXT, ARG_COUNT, ARG_FLAG_VALUE]:
 		return values
 	# A kind registered with its own check may still name content (a skill):
 	# its values are the entries that pass that check.
@@ -324,6 +326,8 @@ func _check_value(value: String, kind: StringName) -> String:
 			return ""
 		ARG_SEASON:
 			return "" if GameCalendar.current().has_season(value) else "unknown season '%s'" % value
+		ARG_FLAG_VALUE:
+			return "" if value.is_valid_int() or ["true", "false"].has(value.to_lower()) else "'%s' is not true, false or an integer" % value
 	if _arg_kinds.has(kind):
 		return String((_arg_kinds[kind] as Callable).call(value))
 	return "" if ContentRegistry.active.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
@@ -434,6 +438,8 @@ static func takes_type(kind: StringName, type: int) -> bool:
 			return type == TYPE_INT or type == TYPE_FLOAT
 		ARG_BOOL:
 			return type == TYPE_BOOL
+		ARG_FLAG_VALUE:
+			return type == TYPE_BOOL or type == TYPE_INT
 	return type == TYPE_STRING_NAME or type == TYPE_STRING
 
 static func _names_event_arg(args: PackedStringArray) -> bool:
@@ -501,10 +507,11 @@ func _register_core_rules() -> void:
 	register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [ARG_INT])
 	register_condition(&"EVENT_ARG", _event_arg, 2, -1, [ARG_TEXT])
 	register_condition(&"EVENT_ARG_AT_LEAST", _event_arg_at_least, 2, 2, [ARG_TEXT, ARG_NUMBER])
-	register_action(&"SET_FLAG", _set_flag, 1, 2, [ARG_TEXT])
+	register_action(&"SET_FLAG", _set_flag, 1, 2, [ARG_TEXT, ARG_FLAG_VALUE])
 	register_action(&"CLEAR_FLAG", _clear_flag, 1, 1, [ARG_TEXT])
 	register_action(&"ADD_FLAG", _add_flag, 1, 2, [ARG_TEXT, ARG_INT])
 	register_action(&"ADD_MONEY", _add_money, 1, 1, [ARG_INT])
+	ProfileRules.register(self)
 
 func _always(_args: PackedStringArray, _context: Dictionary, result: bool) -> bool:
 	return result

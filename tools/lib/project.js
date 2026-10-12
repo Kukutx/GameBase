@@ -12,7 +12,8 @@
 // Everything else in project.godot belongs to the game. In the game's
 // .gutconfig.json it writes "dirs": the tests of the core, of each listed
 // module (a module after the modules it requires) and the game's own
-// (test/unit/), so every game runs the tests of the foundation it uses.
+// (test/unit/), so every game runs the tests of the foundation it uses; and
+// "pre_run_script", the core's hook that sets up every test run.
 const fs = require("node:fs");
 const path = require("node:path");
 const { fail, rootPath } = require("./common");
@@ -123,6 +124,10 @@ function syncedProject(text, game, foundation = readFoundation()) {
   return formatSections(sections);
 }
 
+// The hook every game's test run starts with: English text and a profile of
+// the run's own.
+const GUT_PRE_RUN_SCRIPT = "res://gamebase/core/test/gut_pre_run.gd";
+
 // The .gutconfig.json text with the test directories as the manifests say.
 function syncedGutConfig(text, game, foundation = readFoundation()) {
   let config;
@@ -131,7 +136,7 @@ function syncedGutConfig(text, game, foundation = readFoundation()) {
   } catch (error) {
     fail(`${gamePath(game, ".gutconfig.json")} is not valid JSON: ${error.message}`);
   }
-  return `${JSON.stringify({ ...config, dirs: desiredTestDirs(game, foundation) }, null, 2)}\n`;
+  return `${JSON.stringify({ ...config, dirs: desiredTestDirs(game, foundation), pre_run_script: GUT_PRE_RUN_SCRIPT }, null, 2)}\n`;
 }
 
 // The managed files of the game, as [file, function of their text].

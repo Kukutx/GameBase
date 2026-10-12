@@ -47,6 +47,7 @@ func _init() -> void:
 	register_kind(AudioCueData.KIND, AudioCueData)
 	register_kind(MiniGameDefinition.KIND, MiniGameDefinition)
 	register_kind(TriggerData.KIND, TriggerData)
+	register_kind(AchievementData.KIND, AchievementData)
 
 func _enter_tree() -> void:
 	if active == null:
