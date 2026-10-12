@@ -58,7 +58,7 @@ func answer(topic: ChatTopicData, context: Dictionary, salt := 0) -> String:
 func placeholder_values(context: Dictionary) -> Dictionary:
 	var npc: Dictionary = context.get("npc", {})
 	var world: Dictionary = context.get("world", {})
-	var events: Array = world.get("active_events", [])
+	var events: Array = context.get("active_events", [])
 	var state: Dictionary = context.get("npc_state", {})
 	var values := {
 		"npc": String(npc.get("name", "")),

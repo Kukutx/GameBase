@@ -26,7 +26,7 @@ static func instructions(request: NpcAiRequest) -> String:
 			lines.append("%s: %s" % [field.capitalize(), npc[field]])
 	lines.append("Now: day %d, %s, %s, %s weather, at %s." % [int(world.get("day", 1)), _shown(world.get("season", "")), world.get("time_text", ""), _shown(world.get("weather", "")), _shown(world.get("location_name", ""))])
 	var events := PackedStringArray()
-	for event: Dictionary in world.get("active_events", []):
+	for event: Dictionary in context.get("active_events", []):
 		events.append(_shown(event.get("name", "")))
 	if not events.is_empty():
 		lines.append("On today: %s." % ", ".join(events))

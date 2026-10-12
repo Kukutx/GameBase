@@ -13,7 +13,8 @@ extends RefCounted
 ## and new-game steps (`GameSession`). Orders interleave with the core's own
 ## (`GameSaveManager.SECTION_ORDER_*`, `GameSessionService.NEW_GAME_ORDER_*`).
 ## `get_controls()` names the controls the module's systems read, which the
-## settings let the player rebind.
+## settings let the player rebind, and `get_facts()` tells the state of the
+## module's systems to whatever describes the game (`GameModules.get_facts()`).
 ##
 ## Modules install before any module service's `_ready()` and before content
 ## is indexed: `install()` only registers, and reads no content and no state.
@@ -28,3 +29,12 @@ func install() -> void:
 ## this only builds them.
 func get_controls() -> Array[ControlAction]:
 	return []
+
+## What the module's systems can tell about the game now, as plain data by
+## section (`{"inventory": {...}}`): what is under way, what the player has.
+## Whatever describes the game reads every module's at once
+## (`GameModules.get_facts()`), such as what an NPC knows when it talks, so a
+## module tells its own state without knowing who reads it. The section names
+## are the module's own.
+func get_facts() -> Dictionary:
+	return {}

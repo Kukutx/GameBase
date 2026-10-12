@@ -2,19 +2,14 @@ class_name NpcContextService
 extends Node
 
 ## What an NPC knows when it talks: who it is, the relationship, the world, the
-## player and its memory. Other modules add what an NPC should know about their
-## own systems, such as quests, with `register_section()`.
+## player and its memory, then what every module the game has tells about its
+## own systems (`GameModule.get_facts()`: the player's inventory, the events
+## under way, the quests), each section under its own key. A section named as
+## one of the context's own keys (npc, relationship, world, player, ...) is
+## left out.
 
-const CONTEXT_VERSION := 1
+const CONTEXT_VERSION := 2
 const MEMORY_LIMIT := 12
-
-## section key (String) -> Callable(npc_id: StringName) -> Variant
-var _sections: Dictionary = {}
-
-## Adds `key` to every context, its value `provider.call(npc_id)`. The key must
-## not be one of the context's own (npc, relationship, world, player, ...).
-func register_section(key: StringName, provider: Callable) -> void:
-	_sections[String(key)] = provider
 
 func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 	var profile := NpcProfileData.find(npc_id)
@@ -22,13 +17,6 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 		return {}
 	var location := WorldLocationData.find_current(get_tree())
 	var location_id := location.id if location != null else &""
-	var active_events: Array[Dictionary] = []
-	for event: CalendarEventData in EventState.get_active_events(location_id):
-		active_events.append({
-			"id": String(event.id),
-			"name": event.display_name,
-			"location_id": String(event.location_id),
-		})
 	var world_facts: Dictionary = {}
 	for world_key: StringName in profile.context_world_keys:
 		world_facts[String(world_key)] = WorldState.get_value(world_key)
@@ -67,15 +55,10 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 			"weather": WeatherState.get_weather_name(),
 			"location_id": String(location_id),
 			"location_name": location.display_name if location != null else "",
-			"active_events": active_events,
 			"facts": world_facts,
 		},
 		"player": {
 			"vitals": _vitals(),
-			"money": Wallet.money,
-			"selected_item_id": String(Hotbar.get_selected_item_id()),
-			"inventory": InventoryState.get_entries(),
-			"skills": Skills.to_save_data(),
 			"actor_name": actor.name if actor != null else "Player",
 		},
 		"npc_state": _get_runtime_npc_state(npc_id),
@@ -84,8 +67,10 @@ func build_context(npc_id: StringName, actor: Node = null) -> Dictionary:
 			"recent_messages": NpcMemory.get_recent_messages(npc_id, MEMORY_LIMIT),
 		},
 	}
-	for key: String in _sections:
-		context[key] = (_sections[key] as Callable).call(npc_id)
+	var module_facts := GameModules.get_facts()
+	for section: Variant in module_facts:
+		if not context.has(section):
+			context[section] = module_facts[section]
 	return context
 
 func build_context_json(npc_id: StringName, actor: Node = null) -> String:

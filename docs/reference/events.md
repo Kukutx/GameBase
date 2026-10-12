@@ -156,6 +156,22 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `FishingState.cast_state_changed(state: CastState, message: String)`
 - `FishingState.fishing_active_changed(active: bool)`
 
+## CollectionState (lifesim)
+
+- `CollectionState.collection_changed(category: StringName, item_id: StringName, count: int)`
+- `CollectionState.item_discovered(category: StringName, item_id: StringName)`: Emitted when an item is recorded in a category for the first time.
+
+## CollectionMilestones (lifesim)
+
+- `CollectionMilestones.milestone_ready(collection_milestone_id: StringName)`
+- `CollectionMilestones.milestone_claimed(collection_milestone_id: StringName)`
+
+## DailyContractState (lifesim)
+
+- `DailyContractState.contract_changed(contract: Dictionary)`
+- `DailyContractState.contract_completed(contract: Dictionary)`
+- `DailyContractState.contract_claimed(contract: Dictionary)`
+
 ## NpcAi (npc_ai)
 
 - `NpcAi.answered(npc_id: StringName, source: StringName)`: A request was answered, from `source` (`SOURCE_RULES` or a provider's).
@@ -201,22 +217,6 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 ## UpgradeState (progression)
 
 - `UpgradeState.tool_upgraded(tool_upgrade_id: StringName, source_item_id: StringName, result_item_id: StringName)`
-
-## CollectionState (progression)
-
-- `CollectionState.collection_changed(category: StringName, item_id: StringName, count: int)`
-- `CollectionState.item_discovered(category: StringName, item_id: StringName)`: Emitted when an item is recorded in a category for the first time.
-
-## CollectionMilestones (progression)
-
-- `CollectionMilestones.milestone_ready(collection_milestone_id: StringName)`
-- `CollectionMilestones.milestone_claimed(collection_milestone_id: StringName)`
-
-## DailyContractState (progression)
-
-- `DailyContractState.contract_changed(contract: Dictionary)`
-- `DailyContractState.contract_completed(contract: Dictionary)`
-- `DailyContractState.contract_claimed(contract: Dictionary)`
 
 ## TownProjects (progression)
 

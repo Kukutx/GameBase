@@ -380,6 +380,16 @@ function pluralProblem(available, singular, plural) {
 
 // Every layer's text needs a non-empty entry, for every locale the game
 // registers, in a registered catalog of that layer or of a layer below it.
+// What is wrong with a second catalog's entry for `text` after `first`'s, each
+// {res, layer, text: the translation}, or "": two layers of which neither is
+// below the other (two modules that do not require each other) may each
+// translate text both hold, alike; otherwise the lower one alone translates it.
+function repeatProblem(first, second, text) {
+  const related = first.layer === second.layer || first.layer.below.includes(second.layer.name) || second.layer.below.includes(first.layer.name);
+  if (related) return `${second.res} repeats "${text}", which ${first.res} already translates`;
+  return first.text === second.text ? "" : `${second.res} translates "${text}" otherwise than ${first.res} does`;
+}
+
 function checkLocalization(game, { reportOnly = false } = {}) {
   const layers = textLayers(game);
   const catalogs = registeredCatalogs(game, layers);
@@ -405,8 +415,12 @@ function checkLocalization(game, { reportOnly = false } = {}) {
       for (const key of entries.get(catalog).keys()) {
         if (key === "\u0000") continue; // the header
         const text = key.slice(key.indexOf("\u0000") + 1);
-        if (owners.has(key)) problems.push(`${catalog.res} repeats "${text}", which ${owners.get(key)} already translates`);
-        else owners.set(key, catalog.res);
+        const translation = { res: catalog.res, layer, text: JSON.stringify(entries.get(catalog).plurals.get(key) ?? entries.get(catalog).get(key)) };
+        if (!owners.has(key)) owners.set(key, translation);
+        else {
+          const problem = repeatProblem(owners.get(key), translation, text);
+          if (problem) problems.push(problem);
+        }
         const holders = layer.below
           .map((name) => layers.find((candidate) => candidate.name === name))
           .filter((candidate) => candidate && literals.get(candidate.name).has(text));
@@ -442,7 +456,7 @@ function checkLocalization(game, { reportOnly = false } = {}) {
   return problems.length > 0 && !reportOnly ? 1 : 0;
 }
 
-module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPluralKeys, collectPoEntries, layerLiterals, textLayers };
+module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPluralKeys, collectPoEntries, layerLiterals, repeatProblem, textLayers };
 
 if (require.main === module) {
   main(() => {

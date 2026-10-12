@@ -10,8 +10,8 @@ func test_entries_report_invalid_rewards_and_tool_changes() -> void:
 	var meadow := WorldLocationData.new()
 	meadow.id = &"fixture_meadow"
 	var berry := _item(&"fixture_berry")
-	var source_tool := _tool(&"fixture_source_tool", MiningNode.TOOL_ACTION, 2)
-	var result_tool := _tool(&"fixture_result_tool", FarmPlot.TILL_ACTION, 2)
+	var source_tool := _tool(&"fixture_source_tool", &"fixture_dig", 2)
+	var result_tool := _tool(&"fixture_result_tool", &"fixture_till", 2)
 	var bad_mail := MailData.new()
 	bad_mail.id = &"fixture_bad_mail"
 	bad_mail.subject = "Bad"
@@ -22,21 +22,15 @@ func test_entries_report_invalid_rewards_and_tool_changes() -> void:
 	bad_project.location_id = &"fixture_meadow"
 	bad_project.requirements = {"fixture_berry": 1}
 	bad_project.reward_items = {"fixture_berry": -1}
-	var bad_milestone := CollectionMilestoneData.new()
-	bad_milestone.id = &"fixture_bad_milestone"
-	bad_milestone.category = &"fixture_retired_category"
-	bad_milestone.reward_items = {"fixture_berry": 0}
 	var bad_upgrade := ToolUpgradeData.new()
 	bad_upgrade.id = &"fixture_bad_upgrade"
 	bad_upgrade.source_item_id = &"fixture_source_tool"
 	bad_upgrade.result_item_id = &"fixture_result_tool"
-	var entries: Array = [meadow, berry, source_tool, result_tool, bad_mail, bad_project, bad_milestone, bad_upgrade]
+	var entries: Array = [meadow, berry, source_tool, result_tool, bad_mail, bad_project, bad_upgrade]
 	var joined := _problems_of(ContentFixture.use(self, entries), entries)
 	assert_string_contains(joined, "mail 'fixture_bad_mail' has invalid reward quantity for 'fixture_berry'")
 	assert_string_contains(joined, "town project 'fixture_bad_project' has invalid reward quantity for 'fixture_berry'")
-	assert_string_contains(joined, "collection milestone 'fixture_bad_milestone' references unknown category 'fixture_retired_category'")
-	assert_string_contains(joined, "collection milestone 'fixture_bad_milestone' has invalid reward quantity for 'fixture_berry'")
-	assert_string_contains(joined, "tool upgrade 'fixture_bad_upgrade' changes tool action from 'mine' to 'till'")
+	assert_string_contains(joined, "tool upgrade 'fixture_bad_upgrade' changes tool action from 'fixture_dig' to 'fixture_till'")
 	assert_string_contains(joined, "tool upgrade 'fixture_bad_upgrade' result power 2 does not exceed source power 2")
 
 func test_quests_report_malformed_numbers_and_objectives_without_crashing() -> void:
@@ -52,12 +46,12 @@ func test_quests_report_malformed_numbers_and_objectives_without_crashing() -> v
 	gather.condition = "EVENT_ARG item_id fixture_berry fixture_retired_item"
 	gather.count_per = &"item_id"
 	gather.required_amount = 0
-	var dive := QuestObjective.new()
-	dive.event = &"MineState.deepest_floor_changed"
-	dive.measure = &"MineState.set_floor"
+	var hoard := QuestObjective.new()
+	hoard.event = &"InventoryState.changed"
+	hoard.measure = &"InventoryState.add_item_by_id"
 	var nowhere := QuestObjective.new()
 	nowhere.event = &"FixtureNoAutoload.happened"
-	quest.objectives = [gather, dive, nowhere]
+	quest.objectives = [gather, hoard, nowhere]
 	var empty := QuestData.new()
 	empty.id = &"fixture_empty_quest"
 	empty.title = "Empty"
@@ -68,7 +62,7 @@ func test_quests_report_malformed_numbers_and_objectives_without_crashing() -> v
 	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 1 compares argument 'item_id' with unknown item 'fixture_retired_item'")
 	assert_false(joined.contains("unknown item 'fixture_berry'"), "an id of the kind passes")
 	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 1 counts per 'item_id', which is no integer argument of 'InventoryState.item_gained'")
-	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 2 follows 'MineState.set_floor', which is no method of an autoload that takes no argument and returns an int")
+	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 2 follows 'InventoryState.add_item_by_id', which is no method of an autoload that takes no argument and returns an int")
 	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 3 listens to 'FixtureNoAutoload.happened', which is no signal of an autoload")
 	assert_string_contains(joined, "quest 'fixture_empty_quest' has no objectives")
 	assert_string_contains(joined, "quest 'fixture_bad_quest' objective 2 has no description; each of several objectives says what it asks")

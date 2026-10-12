@@ -5,10 +5,10 @@
     "res://gamebase/modules/damage/test/",
     "res://gamebase/modules/items/test/",
     "res://gamebase/modules/combat/test/",
-    "res://gamebase/modules/skills/test/",
-    "res://gamebase/modules/lifesim/test/",
     "res://gamebase/modules/npc_social/test/",
     "res://gamebase/modules/npc_ai/test/",
+    "res://gamebase/modules/skills/test/",
+    "res://gamebase/modules/lifesim/test/",
     "res://gamebase/modules/progression/test/",
     "res://test/unit/"
   ],

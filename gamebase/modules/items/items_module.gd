@@ -24,6 +24,15 @@ func install() -> void:
 	GameSession.register_new_game_step(&"buffs", 900, BuffState.clear)
 	GameSession.register_new_game_step(&"start_items", 1300, _grant_start_items)
 
+## What the player carries: their money, the item selected in the hotbar and
+## every stack in the inventory.
+func get_facts() -> Dictionary:
+	return {"inventory": {
+		"money": Wallet.money,
+		"selected_item_id": String(Hotbar.get_selected_item_id()),
+		"items": InventoryState.get_entries(),
+	}}
+
 ## The game's `ItemsSettings.start_items`, once the inventory is empty.
 func _grant_start_items() -> void:
 	var start_items := ItemsSettings.current().start_items

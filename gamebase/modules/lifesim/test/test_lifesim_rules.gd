@@ -28,3 +28,10 @@ func test_event_active_follows_the_calendar_at_the_day_and_minute_asked_about() 
 func test_event_active_names_a_calendar_event() -> void:
 	assert_eq(GameRules.validate_query("EVENT_ACTIVE fixture_fair"), PackedStringArray())
 	assert_string_contains("\n".join(GameRules.validate_query("EVENT_ACTIVE fixture_parade")), "unknown calendar_event 'fixture_parade'")
+
+func test_milestone_claimed_names_a_collection_milestone() -> void:
+	var milestone := CollectionMilestoneData.new()
+	milestone.id = &"fixture_archive"
+	ContentFixture.use(self, [milestone])
+	assert_eq(GameRules.validate_query("!MILESTONE_CLAIMED fixture_archive"), PackedStringArray())
+	assert_string_contains("\n".join(GameRules.validate_query("MILESTONE_CLAIMED fixture_garden")), "unknown collection_milestone 'fixture_garden'")

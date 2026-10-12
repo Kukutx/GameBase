@@ -50,6 +50,16 @@ func test_skill_load_drops_skills_the_game_does_not_have() -> void:
 	assert_false(skills.to_save_data().has("alchemy"))
 	assert_eq(skills.add_xp(&"alchemy", 10), 0, "experience of an unknown skill is ignored")
 
+func test_the_module_tells_each_skill_s_level_and_experience() -> void:
+	var saved := Skills.to_save_data()
+	Skills.load_save_data({"fixture_tilling": 120})
+	assert_eq(SkillsModule.new().get_facts(), {"skills": {
+		"fixture_gathering": {"level": 1, "xp": 0},
+		"fixture_tilling": {"level": 2, "xp": 120},
+	}})
+	ContentRegistry.active = ContentDB
+	Skills.load_save_data(saved)
+
 func test_skill_data_reports_broken_levels_and_perks() -> void:
 	ContentFixture.add_stat(self, STAT)
 	var skill := SkillData.new()

@@ -125,6 +125,14 @@ func test_refresh_after_loading_restores_the_active_event() -> void:
 	assert_true(EventState.is_active(&"fixture_spring_fair"))
 	assert_eq(EventState.get_summary(), "Spring Fair")
 
+func test_the_module_tells_the_events_under_way() -> void:
+	assert_eq(LifesimModule.new().get_facts(), {"active_events": []})
+	WorldClock.set_time(9, 10 * 60)
+	EventState.refresh(WorldClock.day, WorldClock.minute_of_day)
+	assert_eq(LifesimModule.new().get_facts(), {"active_events": [
+		{"id": "fixture_spring_fair", "name": "Spring Fair", "location_id": "fixture_town"},
+	]}, "outside any location, the events of every place")
+
 # A spring fair on day 9 that rewards money, items and skill experience, and a
 # summer fair on day 14 that rewards money.
 func _fixture_content() -> Array:

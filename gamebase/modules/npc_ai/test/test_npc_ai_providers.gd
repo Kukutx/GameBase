@@ -20,7 +20,8 @@ func test_a_topic_answer_is_a_rule_reply_whose_placeholders_have_values() -> voi
 	var rules := NpcRuleProvider.new()
 	var topic := _topic(["On today: {event}.", "I'm the {role} around {location}."])
 	assert_eq(rules.answer(topic, _context({}, [])), "I'm the Baker around Fixture Square.", "no event is on, so its reply is left out")
-	var context := _context({"active_events": [{"id": "fair", "name": "Fixture Fair"}]}, [])
+	var context := _context({}, [])
+	context["active_events"] = [{"id": "fair", "name": "Fixture Fair"}]
 	var answers := {}
 	for salt in 12:
 		answers[rules.answer(topic, context, salt)] = true
@@ -103,9 +104,9 @@ func test_a_request_goes_only_to_an_https_endpoint_or_an_http_one_on_this_machin
 	assert_eq(settings.find_problems(ContentRegistry.active), PackedStringArray(["endpoint 'http://localhost.chat.example/v1' is neither an https:// URL nor an http:// one on this machine"]))
 
 # What an NPC knows, as `NpcContext` builds it: day 5 at ten, with `world`'s
-# fields over those.
+# fields over those, and no module's facts.
 func _context(world: Dictionary, messages: Array) -> Dictionary:
-	var base_world := {"day": 5, "minute_of_day": 10 * 60, "time_text": "10:00", "season": "Spring", "weather": "Sunny", "location_name": "Fixture Square", "active_events": []}
+	var base_world := {"day": 5, "minute_of_day": 10 * 60, "time_text": "10:00", "season": "Spring", "weather": "Sunny", "location_name": "Fixture Square"}
 	base_world.merge(world, true)
 	return {
 		"npc": {"id": "fixture", "name": "Fixture", "role": "Baker", "personality": "Kind and curious.", "birthday_today": false},

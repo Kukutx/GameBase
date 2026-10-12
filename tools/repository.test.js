@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
-const { checkLocalization } = require("./check_localization");
+const { checkLocalization, repeatProblem } = require("./check_localization");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
 const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
@@ -122,6 +122,18 @@ test("a catalog entry translates text of its own layer, and the core's text in t
   assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Nobody says this", which no text of games/probe holds'));
 });
 
+test("text two modules hold is translated by the lower one, or alike by each when neither requires the other", () => {
+  const core = { name: "gamebase/core", below: [] };
+  const items = { name: "gamebase/modules/items", below: ["gamebase/core"] };
+  const farm = { name: "gamebase/modules/farm", below: ["gamebase/core", "gamebase/modules/items"] };
+  const quests = { name: "gamebase/modules/quests", below: ["gamebase/core", "gamebase/modules/items"] };
+  const entry = (layer, text) => ({ res: `res://${layer.name}.po`, layer, text });
+  assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(quests, '"已领取"'), "Claimed"), "");
+  assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(quests, '"领了"'), "Claimed"), 'res://gamebase/modules/quests.po translates "Claimed" otherwise than res://gamebase/modules/farm.po does');
+  assert.equal(repeatProblem(entry(items, '"已领取"'), entry(farm, '"已领取"'), "Claimed"), 'res://gamebase/modules/farm.po repeats "Claimed", which res://gamebase/modules/items.po already translates');
+  assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(core, '"已领取"'), "Claimed"), 'res://gamebase/core.po repeats "Claimed", which res://gamebase/modules/farm.po already translates');
+});
+
 test("a count's text needs a plural entry with every form its language has", () => {
   const out = tempFile("gamebase-plural-test");
   const log = console.log;
@@ -207,7 +219,7 @@ test("a battle on a grid or an open field needs no items", () => {
 
 test("a module's autoloads follow the modules it requires, between the core's", () => {
   const foundation = readFoundation();
-  assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "combat", "damage"]), ["damage", "items", "combat", "skills", "lifesim", "npc_social", "progression"]);
+  assert.deepEqual(moduleOrder(foundation, ["progression", "skills", "npc_social", "lifesim", "items", "combat", "damage"]), ["damage", "items", "combat", "npc_social", "skills", "lifesim", "progression"]);
   const game = { id: "probe", root: rootPath("games", "probe"), modules: ["skills", "items"], addons: ["gut"], manifest: { autoloads: { ProbeTools: "res://game/probe_tools.gd" } } };
   const names = desiredAutoloads(game, foundation).map(([name]) => name);
   const lastBefore = Object.keys(foundation.autoloads.before_modules).at(-1);
