@@ -114,8 +114,8 @@ func test_a_floor_table_reports_ids_that_are_not_content() -> void:
 	]))
 
 func test_malformed_mine_floor_state_falls_back_to_safe_bounds() -> void:
-	WorldState.set_value(MineRunState.CURRENT_FLOOR_KEY, {"bad": true})
-	WorldState.set_value(MineRunState.DEEPEST_FLOOR_KEY, [999])
+	WorldState.set_value(&"mine:depth", {"bad": true})
+	WorldState.set_value(&"mine:deepest", [999])
 	assert_eq(MineState.get_current_floor(), 1)
 	assert_eq(MineState.get_deepest_floor(), 1)
 	assert_eq(MineState.set_floor(5), 5)

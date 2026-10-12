@@ -14,7 +14,7 @@ signal save_completed(success: bool, message: String)
 signal load_completed(success: bool, message: String)
 signal active_slot_changed(slot: int)
 
-const SAVE_VERSION := 8
+const SAVE_VERSION := 9
 const SLOT_COUNT := 3
 
 ## Keys of the save dictionary that belong to the save manager itself, not to a section.
@@ -27,6 +27,8 @@ const HEADER_KEYS: Array[String] = [
 const SECTION_ORDER_RANDOM := 100
 ## `GameSession`'s own section (the time played), registered by the session.
 const SECTION_ORDER_SESSION := 150
+## `Playthrough`'s section (the playthrough's number).
+const SECTION_ORDER_PLAYTHROUGH := 160
 const SECTION_ORDER_CLOCK := 300
 const SECTION_ORDER_PLAYER_STATE := 600
 const SECTION_ORDER_WORLD := 700

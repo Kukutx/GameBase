@@ -100,7 +100,8 @@ func register_new_game_step(id: StringName, order: int, step: Callable) -> void:
 
 ## Registers `end`, which ends an activity the player may be in (fishing, a
 ## minigame) without its outcome. `end_activities()` calls it before something
-## takes the player out of play: a collapse, a defeat, a load, the title.
+## takes the player out of play: a collapse, a defeat, a load, a new game, the
+## title.
 func register_activity_end(end: Callable) -> void:
 	if not _activity_ends.has(end):
 		_activity_ends.append(end)
@@ -148,10 +149,11 @@ func _reset_clock() -> void:
 	var definition := GameDefinition.current()
 	WorldClock.set_time(definition.start_day, definition.start_minute_of_day)
 
-## Starts a new game in the selected slot: resets the services and opens the
-## start location; `new_game_started` follows once the player stands in it.
-## False when the start location cannot open, which is checked before the
-## slot's save or the session changes.
+## Starts a new game in the selected slot: ends what the player was doing
+## (`end_activities()`, for a new game started during play), resets the
+## services and opens the start location; `new_game_started` follows once the
+## player stands in it. False when the start location cannot open, which is
+## checked before the slot's save or the session changes.
 func start_new_game() -> bool:
 	var definition := GameDefinition.current()
 	# Validate the starting world before destroying the selected slot. A broken
@@ -164,6 +166,7 @@ func start_new_game() -> bool:
 	if SaveManager.has_files() and not SaveManager.delete_save():
 		GameEvents.toast("Could not replace the selected save slot")
 		return false
+	end_activities()
 	_starting_new_game = true
 	initialize_new_game_state()
 	WorldTravel.travel_ended.connect(_on_start_travel_ended, CONNECT_ONE_SHOT)

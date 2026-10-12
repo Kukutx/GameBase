@@ -24,6 +24,7 @@
       "SaveManager": "res://gamebase/core/save/game_save_manager.gd",
       "AutoSave": "res://gamebase/core/save/auto_save_service.gd",
       "GameSession": "res://gamebase/core/session/game_session.gd",
+      "Playthrough": "res://gamebase/core/playthrough/playthrough_service.gd",
       "MiniGameHost": "res://gamebase/core/minigames/minigame_host.gd",
       "GameTriggers": "res://gamebase/core/rules/game_triggers.gd",
       "GameDiagnostics": "res://gamebase/core/diagnostics/game_diagnostics.gd",
@@ -86,6 +87,12 @@
         "CollectionMilestones": "res://gamebase/modules/progression/collections/collection_milestone_service.gd",
         "DailyContractState": "res://gamebase/modules/progression/contracts/daily_contract_service.gd",
         "TownProjects": "res://gamebase/modules/progression/projects/town_project_service.gd"
+      }
+    },
+    "roguelite": {
+      "requires": [],
+      "autoloads": {
+        "RunState": "res://gamebase/modules/roguelite/runs/run_service.gd"
       }
     },
     "skills": {

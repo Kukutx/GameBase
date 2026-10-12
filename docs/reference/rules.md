@@ -23,11 +23,14 @@ The condition and action keys the core and the modules register with `GameRules`
 | `LOCATION` | core | 1 or more | `LOCATION <id>...` | the player is in one of the locations. |
 | `MILESTONE_CLAIMED` | progression | 1 | `MILESTONE_CLAIMED <collection_milestone>` | the player claimed the milestone's reward. |
 | `MONEY_AT_LEAST` | core | 1 | `MONEY_AT_LEAST <n>` | the player has at least n money. |
+| `PLAYTHROUGH_AT_LEAST` | core | 1 | `PLAYTHROUGH_AT_LEAST <n>` | this is the nth playthrough or a later one (`Playthrough`; new game plus). |
 | `PROFILE_FLAG` | core | 1 to 2 | `PROFILE_FLAG <key> [true\|false]` | the profile's boolean flag has the value (default true). |
 | `PROFILE_FLAG_AT_LEAST` | core | 2 | `PROFILE_FLAG_AT_LEAST <key> <n>` | the profile's counter is at least n. |
 | `PROJECT_COMPLETED` | progression | 1 | `PROJECT_COMPLETED <town_project>` | the town gathered everything the project needs. |
 | `QUEST_ACTIVE` | progression | 1 | `QUEST_ACTIVE <quest>` | the quest has started and is not completed yet. |
 | `QUEST_COMPLETED` | progression | 1 | `QUEST_COMPLETED <quest>` | the quest is completed and its reward was given. |
+| `RUN_ACTIVE` | roguelite | 0 | `RUN_ACTIVE` | a run goes on. |
+| `RUNS_AT_LEAST` | roguelite | 1 | `RUNS_AT_LEAST <count>` | this world started at least that many runs. |
 | `SEASON` | core | 1 or more | `SEASON <name>...` | the season is one of the names (the calendar's seasons). |
 | `SKILL_LEVEL` | skills | 2 | `SKILL_LEVEL <skill> <level>` | the skill has reached at least the level. |
 | `TIME_BETWEEN` | core | 2 | `TIME_BETWEEN <from> <to>` | the minute of the day is in [from, to). |

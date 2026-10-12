@@ -4,6 +4,7 @@
     "res://gamebase/core/test/",
     "res://gamebase/modules/items/test/",
     "res://gamebase/modules/combat/test/",
+    "res://gamebase/modules/roguelite/test/",
     "res://gamebase/modules/skills/test/",
     "res://test/unit/"
   ],

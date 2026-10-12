@@ -46,12 +46,14 @@ CraftingState="*res://gamebase/modules/items/crafting/crafting_service.gd"
 StorageState="*res://gamebase/modules/items/storage/storage_service.gd"
 BuildingState="*res://gamebase/modules/items/building/building_placement_service.gd"
 CombatEvents="*res://gamebase/modules/combat/combat_events.gd"
+RunState="*res://gamebase/modules/roguelite/runs/run_service.gd"
 Skills="*res://gamebase/modules/skills/skill_manager.gd"
 WorldTravel="*res://gamebase/core/world/world_travel.gd"
 GameAudio="*res://gamebase/core/audio/game_audio_service.gd"
 SaveManager="*res://gamebase/core/save/game_save_manager.gd"
 AutoSave="*res://gamebase/core/save/auto_save_service.gd"
 GameSession="*res://gamebase/core/session/game_session.gd"
+Playthrough="*res://gamebase/core/playthrough/playthrough_service.gd"
 MiniGameHost="*res://gamebase/core/minigames/minigame_host.gd"
 GameTriggers="*res://gamebase/core/rules/game_triggers.gd"
 GameDiagnostics="*res://gamebase/core/diagnostics/game_diagnostics.gd"
@@ -136,7 +138,7 @@ ui_down={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/combat/i18n/combat.zh_CN.po", "res://gamebase/modules/items/i18n/items.zh_CN.po", "res://gamebase/modules/skills/i18n/skills.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
+locale/translations=PackedStringArray("res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/combat/i18n/combat.zh_CN.po", "res://gamebase/modules/items/i18n/items.zh_CN.po", "res://gamebase/modules/roguelite/i18n/roguelite.zh_CN.po", "res://gamebase/modules/skills/i18n/skills.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
 
 [layer_names]
 

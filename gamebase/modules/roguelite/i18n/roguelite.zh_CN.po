@@ -1,0 +1,10 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase modules/roguelite\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Finish the run to save"
+msgstr "结束这一轮后才能存档"

@@ -2,73 +2,64 @@ class_name MineRunState
 extends Node
 
 ## The mine: the floor the player is on and the deepest floor they reached, from
-## 1 to `MAX_FLOOR`. It also lays out each generated floor's rocks and enemies
-## from the game's `floor_table` (`MineFloorTable`), and gives the elevator its
-## stops: floor 1 and every `CHECKPOINT_STEP`th floor down to the deepest.
+## 1 to `MAX_FLOOR`, kept by a `DepthTrack` (`mine:depth`, `mine:deepest` in
+## `WorldState`), so they are saved with the world and a new game starts on
+## floor 1. The first floor counts as reached from the start. It also lays out
+## each generated floor's rocks and enemies from the game's `floor_table`
+## (`MineFloorTable`), and gives the elevator its stops: floor 1 and every
+## `CHECKPOINT_STEP`th floor down to the deepest.
 ##
-## Both floors live in `WorldState` (`mine:current_floor`, `mine:deepest_floor`),
-## so they are saved with the world and a new game starts on floor 1. A floor's
-## layout comes from the world's seed (`GameRandom`), so the same floor of the
-## same world always has the same rocks and enemies. `deepest_floor_changed`
-## fires when the player goes deeper than ever before, which quests follow.
+## A floor's layout comes from the world's seed (`DepthTrack.stream()`), so the
+## same floor of the same world always has the same rocks and enemies.
+## `deepest_floor_changed` fires when the player goes deeper than ever before,
+## their first entry to floor 1 included, which quests follow.
 
 signal floor_changed(floor: int)
 signal deepest_floor_changed(floor: int)
 
-const CURRENT_FLOOR_KEY := &"mine:current_floor"
-const DEEPEST_FLOOR_KEY := &"mine:deepest_floor"
+const TRACK_KEY := &"mine"
 const CHECKPOINT_STEP := 5
 const MAX_FLOOR := 120
 
 ## The rocks and enemies of generated floors; the game assigns it.
 var floor_table: MineFloorTable
+## The mine's floors.
+var track := DepthTrack.new(TRACK_KEY, MAX_FLOOR, CHECKPOINT_STEP)
+
+func _ready() -> void:
+	track.depth_changed.connect(floor_changed.emit)
+	track.deepest_changed.connect(deepest_floor_changed.emit)
 
 func get_current_floor() -> int:
-	return clampi(SaveValues.whole_number_or(WorldState.get_value(CURRENT_FLOOR_KEY, 1), 1), 1, MAX_FLOOR)
+	return track.get_depth()
 
 func get_deepest_floor() -> int:
-	return clampi(SaveValues.whole_number_or(WorldState.get_value(DEEPEST_FLOOR_KEY, 1), 1), 1, MAX_FLOOR)
+	return maxi(track.get_deepest(), 1)
 
 func enter_from_surface() -> void:
 	set_floor(1)
 
 func set_floor(floor: int) -> int:
-	var next_floor := clampi(floor, 1, MAX_FLOOR)
-	var previous := get_current_floor()
-	WorldState.set_value(CURRENT_FLOOR_KEY, next_floor)
-	if next_floor > get_deepest_floor():
-		WorldState.set_value(DEEPEST_FLOOR_KEY, next_floor)
-		deepest_floor_changed.emit(next_floor)
-	if previous != next_floor:
-		floor_changed.emit(next_floor)
-	return next_floor
+	return track.set_depth(floor)
 
 func descend() -> int:
-	return set_floor(get_current_floor() + 1)
+	return track.descend()
 
 func can_use_elevator_floor(floor: int) -> bool:
-	if floor == 1:
-		return true
-	return floor > 0 and floor <= get_deepest_floor() and floor % CHECKPOINT_STEP == 0
+	return track.can_return_to(floor)
 
 func get_elevator_floors() -> PackedInt32Array:
-	var result := PackedInt32Array([1])
-	var floor := CHECKPOINT_STEP
-	while floor <= get_deepest_floor():
-		result.append(floor)
-		floor += CHECKPOINT_STEP
-	return result
+	return track.get_checkpoints()
 
 func is_checkpoint_floor(floor: int) -> bool:
-	return floor >= CHECKPOINT_STEP and floor % CHECKPOINT_STEP == 0
+	return track.is_checkpoint(floor)
 
 func get_deepest_checkpoint() -> int:
-	var deepest := get_deepest_floor()
-	return int(deepest / CHECKPOINT_STEP) * CHECKPOINT_STEP if deepest >= CHECKPOINT_STEP else 1
+	return track.get_deepest_checkpoint()
 
 func generate_floor_layout(floor: int) -> Dictionary:
 	var resolved := clampi(floor, 2, MAX_FLOOR)
-	var rng := GameRandom.stream("mine_floor:%d" % resolved)
+	var rng := track.stream(resolved)
 	var rocks: Array[Dictionary] = []
 	var enemies: Array[Dictionary] = []
 	var occupied: Array[Vector2] = []

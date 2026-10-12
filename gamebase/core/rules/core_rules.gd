@@ -3,7 +3,8 @@ extends RefCounted
 
 ## Condition and action keys of the core (see `GameRulesService`): the world's
 ## flags, the day, season, weekday, time and weather, where the player is,
-## money, and the arguments of the event that set off a trigger.
+## money, the playthrough, and the arguments of the event that set off a
+## trigger.
 
 static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"TRUE", _always.bind(true), 0, 0)
@@ -19,6 +20,7 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"WEATHER", _weather, 1, -1, [GameRulesService.ARG_TEXT])
 	rules.register_condition(&"LOCATION", _location.bind(rules), 1, -1, [WorldLocationData.KIND])
 	rules.register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [GameRulesService.ARG_INT])
+	rules.register_condition(&"PLAYTHROUGH_AT_LEAST", _playthrough_at_least, 1, 1, [GameRulesService.ARG_COUNT])
 	rules.register_condition(&"EVENT_ARG", _event_arg, 2, -1, [GameRulesService.ARG_TEXT])
 	rules.register_condition(&"EVENT_ARG_AT_LEAST", _event_arg_at_least, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_NUMBER])
 	rules.register_action(&"SET_FLAG", _set_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_FLAG_VALUE])
@@ -89,6 +91,11 @@ static func _location(args: PackedStringArray, context: Dictionary, rules: GameR
 ## MONEY_AT_LEAST <n>: the player has at least n money.
 static func _money_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
 	return PlayerState.money >= int(args[0])
+
+## PLAYTHROUGH_AT_LEAST <n>: this is the nth playthrough or a later one
+## (`Playthrough`; new game plus).
+static func _playthrough_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
+	return Playthrough.get_playthrough() >= int(args[0])
 
 ## EVENT_ARG <name> <value>...: the argument of the event that set off the
 ## trigger is one of the values (see `TriggerData`).

@@ -8,7 +8,7 @@ GameBase is the single repository for a family of Godot 4.x games: a shared, gen
 gamebase/core/        Genre-agnostic foundation services (save, content, session, rules, settings,
                       input, audio, world travel, time, randomness, stats, profile, interactions,
                       minigames, diagnostics, and the title, pause and settings menus)
-gamebase/modules/     Optional gameplay modules: items, skills, combat, lifesim, npc_social, progression
+gamebase/modules/     Optional gameplay modules: items, skills, combat, lifesim, npc_social, progression, roguelite
 gamebase/templates/   The template tools/new_game.js creates a game from
 gamebase/gamebase.json  The core's autoloads, the modules with the modules each one requires and the
                       addons and autoloads each one uses, and the addons every game links
