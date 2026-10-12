@@ -19,6 +19,8 @@ enum Order {
 
 var data: RtsUnitData
 var faction: StringName
+## Its faction's place among the factions of its battle (`RtsBattle.are_foes()`).
+var side := 0
 ## Its place among the battle's units (`RtsBattle.units`).
 var index := 0
 var position := Vector2.ZERO
