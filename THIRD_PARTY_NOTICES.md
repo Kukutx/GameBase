@@ -26,6 +26,15 @@ Games that use the `npc_social` module include Dialogue Manager 4.1.0 by Nathan
 Hoad and contributors, licensed under the MIT license. Its license is distributed as
 `licenses/DIALOGUE_MANAGER_LICENSE.txt`.
 
+## Noto Sans SC
+
+Every game shows its text in Noto Sans SC (`gamebase/core/ui/fonts/`) unless its
+theme names another font. The font is cut down to Latin, Chinese punctuation,
+the characters of GB 2312 and those the games use (`tools/subset_font.js`). It is
+Copyright 2014-2021 Adobe, with Reserved Font Name 'Source', licensed under the
+SIL Open Font License 1.1, which is distributed as
+`licenses/NOTO_SANS_SC_LICENSE.txt`.
+
 ## Development-only dependencies
 
 GUT is used for automated tests and is explicitly excluded from release

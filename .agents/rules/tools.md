@@ -62,5 +62,6 @@ node tools/sync_licensed_assets.js [--game <id>]
 node tools/update_engine_baseline.js --version <x.y.z>
 node tools/update_game_version.js [--game <id>] --version <semver>
 node tools/check_addon_updates.js
+node tools/subset_font.js --source <NotoSansSC-Regular.ttf>
 npm run --prefix tools/web_smoke smoke:web -- [--game <id>]
 ```

@@ -2,7 +2,7 @@ class_name SettingsMenu
 extends CanvasLayer
 
 ## The settings every game shares (`GameSettings`): volume, display, autosave,
-## language, accessibility and the game's controls, whose key and gamepad
+## text speed, language, accessibility and the game's controls, whose key and gamepad
 ## button the player can rebind. Its pages scroll inside one panel that fits
 ## the game's view; `ui_cancel` or Back leaves a page, then the menu.
 
@@ -29,6 +29,7 @@ const BINDING_WIDTH := 76.0
 @onready var integer_scaling_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/IntegerScaling
 @onready var autosave_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/Autosave
 @onready var pause_on_focus_loss_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/PauseOnFocusLoss
+@onready var text_speed_select: OptionButton = $Dim/Panel/Layout/Pages/Page/Main/TextSpeed/Select
 @onready var language_select: OptionButton = $Dim/Panel/Layout/Pages/Page/Main/Language/Select
 @onready var accessibility_button: Button = $Dim/Panel/Layout/Pages/Page/Main/AccessibilityButton
 @onready var controls_button: Button = $Dim/Panel/Layout/Pages/Page/Main/ControlsButton
@@ -77,6 +78,9 @@ func _ready() -> void:
 	controls_button.pressed.connect(show_page.bind(Page.CONTROLS))
 	reset_all_button.pressed.connect(confirm_reset.popup_centered)
 	confirm_reset.confirmed.connect(_reset_all)
+	for speed_name: String in GameSettings.TEXT_SPEED_NAMES:
+		text_speed_select.add_item(speed_name)
+	text_speed_select.item_selected.connect(_on_text_speed_selected)
 	_build_language_selector()
 	language_select.item_selected.connect(_on_language_selected)
 	_build_controls()
@@ -167,6 +171,7 @@ func _sync_from_settings() -> void:
 	integer_scaling_check.button_pressed = GameSettings.integer_scaling
 	autosave_check.button_pressed = GameSettings.autosave
 	pause_on_focus_loss_check.button_pressed = GameSettings.pause_on_focus_loss
+	text_speed_select.select(GameSettings.text_speed)
 	weather_effects_check.button_pressed = GameSettings.weather_effects
 	reduced_motion_check.button_pressed = GameSettings.reduced_motion
 	_select_current_language()
@@ -301,6 +306,10 @@ func _on_autosave_toggled(value: bool) -> void:
 func _on_pause_on_focus_loss_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_pause_on_focus_loss(value)
+
+func _on_text_speed_selected(index: int) -> void:
+	if not _syncing:
+		GameSettings.set_text_speed(index as GameSettingsService.TextSpeed)
 
 func _on_weather_effects_toggled(value: bool) -> void:
 	if not _syncing:

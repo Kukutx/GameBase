@@ -60,6 +60,8 @@ function expectations(game) {
   ]);
   const project = fs.readFileSync(path.join(game.root, "project.godot"), "utf8");
   for (const match of project.matchAll(/^\w+="\*(res:\/\/[^"]+)"$/gm)) required.add(match[1]);
+  // The font GameSettings loads by path as every game's fallback font.
+  required.add("res://gamebase/core/ui/fonts/noto_sans_sc.woff2");
   const files = ["res://.gutconfig.json", "res://game.json", "res://BUILD_INFO.json"];
   const dirs = [
     "res://test",

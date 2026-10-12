@@ -31,6 +31,7 @@ const REQUIRED = [
   "licenses/GODOT_COPYRIGHT.txt",
   "licenses/GODOT_VERSION.txt",
   "licenses/DIALOGUE_MANAGER_LICENSE.txt",
+  "licenses/NOTO_SANS_SC_LICENSE.txt",
   "tools/install_export_templates.js",
   "tools/update_game_version.js",
   "tools/update_engine_baseline.js",

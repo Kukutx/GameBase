@@ -7,16 +7,21 @@ extends Node
 ## set an `ai_provider`, turned on `prefer_ai` and the NPC allows it, else the
 ## NPC's lines for its hearts.
 ##
-## Only one scripted conversation runs at a time. Its balloon comes from the
-## `DialogueManager` addon and holds the player's controls (`InputLock`, reason
-## `dialogue`) until it closes, without pausing the world. The service saves
-## nothing of its own.
+## Only one scripted conversation runs at a time. The `DialogueManager` addon
+## runs it in a `DialogueBalloon`, which holds the player's controls and pauses
+## the world (`InputLock`, reason `dialogue`) until it closes, so the clock
+## stands still while the player reads. The addon runs while the world is
+## paused, so its mutations and their waits do too; a node a mutation waits on
+## (a tween, an animation) has to run while paused as well (`process_mode`).
+## The service saves nothing of its own.
 
 signal conversation_requested(npc_id: StringName, actor: Node)
 signal context_prepared(npc_id: StringName, context: Dictionary)
 
 ## The `InputLock` reason a conversation holds the player's controls under.
 const DIALOGUE_LOCK := &"dialogue"
+## The balloon a scripted conversation shows in.
+const BALLOON_SCENE := preload("res://gamebase/modules/npc_social/dialogue/dialogue_balloon.tscn")
 
 var ai_provider: Node
 var prefer_ai := false
@@ -26,6 +31,11 @@ var _active_balloon_id := 0
 var _active_dialogue: DialogueResource
 var _active_heart_event: HeartEventData
 var _active_heart_dialogue: DialogueResource
+
+func _ready() -> void:
+	var manager := get_node_or_null("/root/DialogueManager")
+	if manager != null:
+		manager.process_mode = Node.PROCESS_MODE_ALWAYS
 
 func start_conversation(npc: GameNpc, actor: Node, dialogue: DialogueResource, title: String = "start") -> void:
 	if npc == null or _starting:
@@ -72,12 +82,12 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 		GameEvents.toast("Finish the current conversation first")
 		return
 	var manager := get_node_or_null("/root/DialogueManager")
-	if manager == null or not manager.has_method("show_example_dialogue_balloon"):
+	if manager == null or not manager.has_method("show_dialogue_balloon_scene"):
 		return
 	var ended_callback := Callable(self, "_on_dialogue_ended")
 	if manager.has_signal("dialogue_ended") and not manager.is_connected("dialogue_ended", ended_callback):
 		manager.connect("dialogue_ended", ended_callback)
-	var balloon: Variant = manager.call("show_example_dialogue_balloon", dialogue, resolved_title, [actor, npc])
+	var balloon: Variant = manager.call("show_dialogue_balloon_scene", BALLOON_SCENE, dialogue, resolved_title, [actor, npc])
 	if balloon == null or not is_instance_valid(balloon):
 		return
 	_hold_controls(balloon as Node, dialogue)
@@ -85,13 +95,14 @@ func _start_conversation_internal(npc: GameNpc, actor: Node, dialogue: DialogueR
 		_active_heart_event = heart_event
 		_active_heart_dialogue = dialogue
 
-# The player stays put while `balloon` shows `dialogue`: the lock is given back
-# when the dialogue ends or the balloon leaves the tree, whichever comes first.
+# The player stays put and the world waits while `balloon` shows `dialogue`:
+# the lock is given back when the dialogue ends or the balloon leaves the tree,
+# whichever comes first.
 func _hold_controls(balloon: Node, dialogue: DialogueResource) -> void:
 	_active_balloon = balloon
 	_active_balloon_id = balloon.get_instance_id()
 	_active_dialogue = dialogue
-	InputLock.lock(DIALOGUE_LOCK, false, balloon)
+	InputLock.lock(DIALOGUE_LOCK, true, balloon)
 	balloon.tree_exited.connect(_on_scripted_balloon_exited.bind(_active_balloon_id), CONNECT_ONE_SHOT)
 
 func _on_dialogue_ended(resource: DialogueResource) -> void:

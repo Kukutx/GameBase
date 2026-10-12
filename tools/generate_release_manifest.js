@@ -14,6 +14,7 @@ const REQUIRED_PACKAGE_FILES = [
   "licenses/GODOT_COPYRIGHT.txt",
   "licenses/GODOT_VERSION.txt",
   "licenses/DIALOGUE_MANAGER_LICENSE.txt",
+  "licenses/NOTO_SANS_SC_LICENSE.txt",
 ];
 function targetRequiredFiles(name) {
   return {

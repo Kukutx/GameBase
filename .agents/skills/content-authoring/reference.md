@@ -19,7 +19,7 @@ Read this only when a task crosses systems and the owner, the consumers or the v
 | Runtime state of a system | the autoload service that owns it; a scene only presents it |
 | What a save contains | `GameSaveManager` and the `to_save_data()` / `load_save_data()` pair of the owning service |
 | Player-visible text | the string literal at its call site or in the scene or resource, the catalog of the owning layer (`gamebase/core/i18n/`, `gamebase/modules/<module>/i18n/` or the game's `game/i18n/`), `tools/check_localization.js` |
-| Input actions | the `ControlAction` resources of the game's `GameDefinition.controls` and the core's `CORE_CONTROLS` in `gamebase/core/settings/game_settings.gd` |
+| Input actions | the `ControlAction` resources of the game's `GameDefinition.controls` and the core's `GameControls.CORE` in `gamebase/core/input/game_controls.gd` |
 | Travel between locations | `WorldTravel`, the `WorldLocationData` resources and the `WorldSpawnPoint` nodes |
 | Audio | `GameAudio`, the `AudioCueData` resources, `docs/AUDIO.md` |
 | Engine and application versions | `.godot-version`, `config/version` in `games/<id>/project.godot`; whether to change them follows the officially supported facts |

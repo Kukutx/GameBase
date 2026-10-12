@@ -70,7 +70,7 @@ Any node that assigns visible text from code connects `GameSettings.locale_chang
 
 ## Dialogue
 
-Dialogue Manager remains the authored-dialogue layer. Dialogue source files under `games/farm1/game/dialogue/` are registered as translation sources in `games/farm1/project.godot`. The current Mira, Neri and Rowan authored dialogue lines and player responses have Simplified Chinese coverage in Farm1's `games/farm1/game/i18n/ui.zh_CN.po`; character names use the `dialogue` PO context expected by the Dialogue Manager balloon.
+Dialogue Manager remains the authored-dialogue layer. Dialogue source files under `games/farm1/game/dialogue/` are registered as translation sources in `games/farm1/project.godot`. The current Mira, Neri and Rowan authored dialogue lines and player responses have Simplified Chinese coverage in Farm1's `games/farm1/game/i18n/ui.zh_CN.po`; character names use the `dialogue` PO context that the npc_social module's `DialogueBalloon` translates them with.
 
 Keep dialogue translation data separate from gameplay state. Translation changes must not alter dialogue title IDs used by heart events or NPC progression.
 
@@ -80,4 +80,4 @@ Keep dialogue translation data separate from gameplay state. Translation changes
 2. Run `node tools/link.js`, which registers them in the game's `locale/translations`; the locale then appears in the language picker. If `GameSettingsService.LOCALE_NAMES` lacks the language's own name, add it there.
 3. Add/extend automated translation tests.
 4. Verify the locale through the settings menu and a real exported build.
-5. Verify fonts cover all glyphs required by the locale.
+5. Run the game's GUT tests: `test_theme_font` names every character of the new catalogs that the game's font lacks (its theme's, else the core's). The core's font (`gamebase/core/ui/fonts/noto_sans_sc.woff2`) holds Simplified Chinese; for characters it lacks, run `node tools/subset_font.js --source <the full Noto Sans SC>` after adding the text, or give the game's theme a font of the locale's script.

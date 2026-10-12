@@ -120,6 +120,18 @@ text = "Autosave"
 layout_mode = 2
 text = "Pause When Unfocused"
 
+[node name="TextSpeed" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Main"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Dim/Panel/Layout/Pages/Page/Main/TextSpeed"]
+custom_minimum_size = Vector2(92, 0)
+layout_mode = 2
+text = "Text Speed"
+
+[node name="Select" type="OptionButton" parent="Dim/Panel/Layout/Pages/Page/Main/TextSpeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="Language" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 

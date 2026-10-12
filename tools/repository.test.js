@@ -20,7 +20,7 @@ test("the engine baseline is a stable Godot 4 release and the legal bundle match
   const baseline = read(".godot-version").trim();
   assert.match(baseline, ENGINE_VERSION_RE);
   assert.equal(read("licenses", "GODOT_VERSION.txt").trim(), baseline);
-  for (const file of ["GODOT_LICENSE.txt", "GODOT_COPYRIGHT.txt", "GAMEBASE_LICENSE.txt", "DIALOGUE_MANAGER_LICENSE.txt"]) {
+  for (const file of ["GODOT_LICENSE.txt", "GODOT_COPYRIGHT.txt", "GAMEBASE_LICENSE.txt", "DIALOGUE_MANAGER_LICENSE.txt", "NOTO_SANS_SC_LICENSE.txt"]) {
     assert.ok(fs.existsSync(rootPath("licenses", file)), file);
   }
 });
