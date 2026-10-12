@@ -184,7 +184,7 @@ func get_location_summary(location_id: StringName) -> String:
 		parts.append(get_project_summary(project.id))
 	return " · ".join(parts)
 
-## Every project's state as plain data, for an NPC's conversation context.
+## Every project's state as plain data (`ProgressionModule.get_facts()`).
 func get_context_entries() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for project: TownProjectData in TownProjectData.find_all():

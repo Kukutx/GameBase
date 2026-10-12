@@ -4,12 +4,13 @@ extends GameModule
 ## Wires the life-sim module into the core (see `GameModule`).
 
 func install() -> void:
-	for kind_script: Script in [CalendarEventData, CropData, FarmAnimalData, FarmExpansionData, FishData,
-			ForageEntryData, MiningNodeData, ProcessingRecipeData]:
+	for kind_script: Script in [CalendarEventData, CollectionMilestoneData, CropData, FarmAnimalData, FarmExpansionData,
+			FishData, ForageEntryData, MiningNodeData, ProcessingRecipeData]:
 		ContentDB.register_kind(kind_script.KIND, kind_script)
 	ContentDB.register_settings(LifesimSettings)
 	ContentDB.register_check(CropData.find_seed_problems)
 	ContentDB.register_check(FarmExpansionData.find_cycle_problems)
+	ContentDB.register_check(CollectionMilestoneData.find_cycle_problems)
 	ContentDB.register_check(_find_slot_problems)
 	LifesimRules.register(GameRules)
 	for action: StringName in [FarmPlot.TILL_ACTION, FarmPlot.WATER_ACTION, MiningNode.TOOL_ACTION, FishingSpot.TOOL_ACTION]:
@@ -32,6 +33,14 @@ func install() -> void:
 	GameSession.register_new_game_step(&"animals", 300, AnimalState.reset_new_game)
 	GameSession.register_new_game_step(&"shipping", 1000, ShippingState.reset_new_game)
 	GameSession.register_new_game_step(&"fishing_state", 1100, FishingState.reset_new_game)
+
+## The calendar events under way where the player is, or everywhere.
+func get_facts() -> Dictionary:
+	var location := WorldLocationData.find_current(EventState.get_tree())
+	var events: Array[Dictionary] = []
+	for event: CalendarEventData in EventState.get_active_events(location.id if location != null else &""):
+		events.append({"id": String(event.id), "name": event.display_name, "location_id": String(event.location_id)})
+	return {"active_events": events}
 
 ## The content the game puts in the module's slots must exist.
 func _find_slot_problems(registry: ContentRegistry) -> PackedStringArray:

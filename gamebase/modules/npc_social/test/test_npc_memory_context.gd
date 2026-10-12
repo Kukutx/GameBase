@@ -66,7 +66,9 @@ func test_npc_context_contains_stable_world_and_profile_data() -> void:
 	assert_eq(String(context["npc"]["id"]), "fixture_npc")
 	assert_eq(String(context["npc"]["role"]), "Fixture gardener")
 	assert_true(context["world"].has("weather"))
-	assert_true(context["world"].has("active_events"))
-	assert_true(context["player"].has("inventory"))
+	assert_true(context["player"].has("vitals"))
 	assert_true(context.has("memory"))
+	var facts := GameModules.get_facts()
+	for section: String in facts:
+		assert_eq(context[section], facts[section], "what the game's modules tell about the game: %s" % section)
 	assert_true(NpcContext.build_context(&"no_such_npc").is_empty(), "an unknown NPC has no context")

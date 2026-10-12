@@ -30,6 +30,14 @@ func _ready() -> void:
 	for problem: String in GameRules.validate_content(ContentDB):
 		push_error("GameRules: " + problem)
 
+## What every installed module tells about the game now
+## (`GameModule.get_facts()`), its sections merged in install order.
+func get_facts() -> Dictionary:
+	var facts := {}
+	for module: GameModule in _modules:
+		facts.merge(module.get_facts(), true)
+	return facts
+
 ## The class names of the installed modules.
 func get_installed() -> PackedStringArray:
 	var names := PackedStringArray()

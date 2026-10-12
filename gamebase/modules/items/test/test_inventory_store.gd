@@ -4,12 +4,14 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 
 var _inventory_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
+var _wallet_snapshot: Dictionary
 var _stone: ItemData
 var _chest: ItemData
 
 func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
+	_wallet_snapshot = Wallet.to_save_data()
 	_stone = _item(&"fixture_stone", "Pebble", 99)
 	_chest = _item(&"fixture_chest", "Crate", 1)
 	ContentFixture.use(self, [_stone, _chest, _item(&"fixture_plank", "Plank", 99), _item(&"fixture_ore", "Ore", 99)])
@@ -20,6 +22,7 @@ func after_each() -> void:
 	WorldTravel.set("_traveling", false)
 	InventoryState.load_save_data(_inventory_snapshot)
 	Hotbar.load_save_data(_hotbar_snapshot)
+	Wallet.load_save_data(_wallet_snapshot)
 
 func test_inventory_respects_single_slot_stack_limit() -> void:
 	var inventory := InventoryStore.new()
@@ -160,6 +163,17 @@ func test_a_new_game_that_cannot_start_leaves_the_inventory_and_hotbar_alone() -
 	assert_false(GameSession.start_new_game())
 	assert_eq(InventoryState.to_save_data(), inventory_before)
 	assert_eq(Hotbar.to_save_data(), hotbar_before)
+
+func test_the_module_tells_what_the_player_carries() -> void:
+	InventoryState.clear()
+	InventoryState.add_item(_stone, 4)
+	Hotbar.load_save_data({"slots": ["fixture_stone"], "selected_slot": 0})
+	Wallet.set_money(35)
+	assert_eq(ItemsModule.new().get_facts(), {"inventory": {
+		"money": 35,
+		"selected_item_id": "fixture_stone",
+		"items": [{"id": "fixture_stone", "display_name": "Pebble", "quantity": 4, "max_stack": 99, "slots": 1}],
+	}})
 
 static func _item(id: StringName, display_name: String, max_stack: int) -> ItemData:
 	var item := ItemData.new()

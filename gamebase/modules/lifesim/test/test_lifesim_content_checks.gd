@@ -69,6 +69,17 @@ func test_calendar_events_report_malformed_numbers_without_crashing() -> void:
 	assert_string_contains(joined, "calendar event 'fixture_bad_event' has negative reward money")
 	assert_string_contains(joined, "calendar event 'fixture_bad_event' has invalid reward quantity for 'fixture_berry'")
 
+func test_a_collection_milestone_reports_an_unknown_category_and_invalid_rewards() -> void:
+	var berry := _item(&"fixture_berry")
+	var milestone := CollectionMilestoneData.new()
+	milestone.id = &"fixture_bad_milestone"
+	milestone.category = &"fixture_retired_category"
+	milestone.reward_items = {"fixture_berry": 0}
+	var entries: Array = [berry, milestone]
+	var joined := _problems_of(ContentFixture.use(self, entries), entries)
+	assert_string_contains(joined, "collection milestone 'fixture_bad_milestone' references unknown category 'fixture_retired_category'")
+	assert_string_contains(joined, "collection milestone 'fixture_bad_milestone' has invalid reward quantity for 'fixture_berry'")
+
 func test_expansion_tiers_must_climb_within_one_housing() -> void:
 	var big := _expansion(&"fixture_big", &"fixture_coop", 8, [])
 	var deluxe := _expansion(&"fixture_deluxe", &"fixture_coop", 12, [&"fixture_big"])

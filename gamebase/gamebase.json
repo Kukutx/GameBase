@@ -66,7 +66,10 @@
         "MineState": "res://gamebase/modules/lifesim/mining/mine_run_state.gd",
         "AnimalState": "res://gamebase/modules/lifesim/animals/animal_ownership_service.gd",
         "FishingState": "res://gamebase/modules/lifesim/fishing/fishing_service.gd",
-        "LateNight": "res://gamebase/modules/lifesim/rest/late_night_service.gd"
+        "LateNight": "res://gamebase/modules/lifesim/rest/late_night_service.gd",
+        "CollectionState": "res://gamebase/modules/lifesim/collections/collection_service.gd",
+        "CollectionMilestones": "res://gamebase/modules/lifesim/collections/collection_milestone_service.gd",
+        "DailyContractState": "res://gamebase/modules/lifesim/contracts/daily_contract_service.gd"
       }
     },
     "npc_ai": {
@@ -77,7 +80,7 @@
       }
     },
     "npc_social": {
-      "requires": ["items", "lifesim", "skills"],
+      "requires": ["items"],
       "addons": ["dialogue_manager"],
       "autoloads": {
         "NpcSocialEvents": "res://gamebase/modules/npc_social/npc_social_events.gd",
@@ -90,15 +93,12 @@
       }
     },
     "progression": {
-      "requires": ["combat", "items", "lifesim", "npc_social", "skills"],
+      "requires": ["items", "npc_social", "skills"],
       "autoloads": {
         "ProgressionEvents": "res://gamebase/modules/progression/progression_events.gd",
         "QuestState": "res://gamebase/modules/progression/quests/quest_manager.gd",
         "MailState": "res://gamebase/modules/progression/mail/mail_service.gd",
         "UpgradeState": "res://gamebase/modules/progression/upgrades/tool_upgrade_service.gd",
-        "CollectionState": "res://gamebase/modules/progression/collections/collection_service.gd",
-        "CollectionMilestones": "res://gamebase/modules/progression/collections/collection_milestone_service.gd",
-        "DailyContractState": "res://gamebase/modules/progression/contracts/daily_contract_service.gd",
         "TownProjects": "res://gamebase/modules/progression/projects/town_project_service.gd"
       }
     },

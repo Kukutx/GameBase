@@ -114,6 +114,6 @@ func _tool(id: StringName, power: int) -> ItemData:
 	tool.display_name = String(id).capitalize()
 	tool.kind = ItemData.Kind.TOOL
 	tool.max_stack = 1
-	tool.tool_action = MiningNode.TOOL_ACTION
+	tool.tool_action = &"fixture_dig"
 	tool.tool_power = power
 	return tool

@@ -119,17 +119,17 @@ func test_received_mail_grants_the_reward_promised_at_delivery() -> void:
 	assert_eq(InventoryState.get_quantity(&"fixture_seeds"), 0)
 
 func test_quest_mail_unlocks_from_completed_quest_conditions() -> void:
-	assert_false(MailState.is_received(&"fixture_after_slime"))
-	assert_false(MailState.is_received(&"fixture_after_catch"))
+	assert_false(MailState.is_received(&"fixture_after_talk"))
+	assert_false(MailState.is_received(&"fixture_after_gift"))
 	QuestState.load_save_data({
-		"fixture_slime_quest": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
-		"fixture_catch_quest": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
+		"fixture_talk_quest": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
+		"fixture_gift_quest": {"status": QuestManager.Status.COMPLETED, "progress": [1]},
 	})
 	var delivered := MailState.refresh_deliveries()
-	assert_true(delivered.has(&"fixture_after_slime"))
-	assert_true(delivered.has(&"fixture_after_catch"))
-	assert_true(MailState.is_received(&"fixture_after_slime"))
-	assert_true(MailState.is_received(&"fixture_after_catch"))
+	assert_true(delivered.has(&"fixture_after_talk"))
+	assert_true(delivered.has(&"fixture_after_gift"))
+	assert_true(MailState.is_received(&"fixture_after_talk"))
+	assert_true(MailState.is_received(&"fixture_after_gift"))
 
 func test_mail_flags_round_trip_through_world_state() -> void:
 	WorldClock.set_time(2, 8 * 60)
@@ -171,11 +171,12 @@ func test_mail_delivers_once_the_friendship_reaches_its_hearts() -> void:
 	assert_true(MailState.is_received(&"fixture_friend"))
 
 func test_mail_delivers_from_live_quest_completion() -> void:
-	assert_false(MailState.is_received(&"fixture_after_dive"))
-	assert_true(QuestState.start_quest(&"fixture_dive_quest"))
-	MineState.set_floor(3)
-	assert_true(QuestState.is_completed(&"fixture_dive_quest"))
-	assert_true(MailState.is_received(&"fixture_after_dive"))
+	assert_false(MailState.is_received(&"fixture_after_hoard"))
+	assert_true(QuestState.start_quest(&"fixture_hoard_quest"))
+	for item_id: StringName in [&"fixture_seeds", &"fixture_twig", &"fixture_pebble"]:
+		InventoryState.add_item_by_id(item_id, 1)
+	assert_true(QuestState.is_completed(&"fixture_hoard_quest"))
+	assert_true(MailState.is_received(&"fixture_after_hoard"))
 
 func test_mail_condition_gates_delivery() -> void:
 	var mail := MailData.new()
@@ -194,26 +195,27 @@ func _content() -> Array:
 	var welcome := _mail(WELCOME)
 	welcome.condition = "DAY_AT_LEAST 2"
 	welcome.reward_items = {"fixture_seeds": 3}
-	var after_slime := _mail(&"fixture_after_slime")
-	after_slime.condition = "QUEST_COMPLETED fixture_slime_quest"
-	var after_catch := _mail(&"fixture_after_catch")
-	after_catch.condition = "QUEST_COMPLETED fixture_catch_quest"
-	var after_dive := _mail(&"fixture_after_dive")
-	after_dive.condition = "QUEST_COMPLETED fixture_dive_quest"
+	var after_talk := _mail(&"fixture_after_talk")
+	after_talk.condition = "QUEST_COMPLETED fixture_talk_quest"
+	var after_gift := _mail(&"fixture_after_gift")
+	after_gift.condition = "QUEST_COMPLETED fixture_gift_quest"
+	var after_hoard := _mail(&"fixture_after_hoard")
+	after_hoard.condition = "QUEST_COMPLETED fixture_hoard_quest"
 	var garden := _mail(&"fixture_garden_restored")
 	garden.condition = "WORLD_FLAG %s" % GARDEN_FLAG
 	var friend := _mail(&"fixture_friend")
 	friend.condition = "HEARTS fixture_npc 2"
-	var dive := _quest(&"fixture_dive_quest", &"MineState.deepest_floor_changed")
-	dive.objectives[0].measure = &"MineState.get_deepest_floor"
-	dive.objectives[0].required_amount = 3
+	var hoard := _quest(&"fixture_hoard_quest", &"InventoryState.changed")
+	hoard.objectives[0].measure = &"InventoryState.get_used_slots"
+	hoard.objectives[0].required_amount = 3
 	return [
-		npc, welcome, after_slime, after_catch, after_dive, garden, friend,
-		_quest(&"fixture_slime_quest", &"CombatEvents.enemy_defeated"),
-		_quest(&"fixture_catch_quest", &"LifesimEvents.fish_caught"),
-		dive,
+		npc, welcome, after_talk, after_gift, after_hoard, garden, friend,
+		_quest(&"fixture_talk_quest", &"NpcSocialEvents.npc_talked"),
+		_quest(&"fixture_gift_quest", &"NpcSocialEvents.gift_given"),
+		hoard,
 		_item(&"fixture_seeds"),
 		_item(&"fixture_twig"),
+		_item(&"fixture_pebble"),
 	]
 
 func _mail(id: StringName) -> MailData:

@@ -57,7 +57,7 @@ func _pickaxe(id: StringName, power: int) -> ItemData:
 	var pickaxe := ItemData.new()
 	pickaxe.id = id
 	pickaxe.kind = ItemData.Kind.TOOL
-	pickaxe.tool_action = MiningNode.TOOL_ACTION
+	pickaxe.tool_action = &"fixture_dig"
 	pickaxe.tool_power = power
 	pickaxe.max_stack = 1
 	return pickaxe

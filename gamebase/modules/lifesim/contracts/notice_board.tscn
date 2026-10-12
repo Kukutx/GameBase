@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3]
 
-[ext_resource type="Script" path="res://gamebase/modules/progression/contracts/notice_board.gd" id="1_board"]
+[ext_resource type="Script" path="res://gamebase/modules/lifesim/contracts/notice_board.gd" id="1_board"]
 [ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="2_interactable"]
 
 [sub_resource type="RectangleShape2D" id="Rect_interact"]

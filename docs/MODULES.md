@@ -62,6 +62,8 @@ What a module can register:
 
 Each registration that takes an order interleaves with the core's own (`GameSaveManager.SECTION_ORDER_*`, `GameSessionService.NEW_GAME_ORDER_*`) and the other modules'; read the comments on the existing ones before choosing one.
 
+Two more methods of `<Module>Module` answer rather than register. `get_controls()` names the controls the module's systems read (`ControlAction`), which the settings let the player rebind. `get_facts()` tells the state of the module's systems as plain data by section (`SkillsModule`: `{"skills": {"farming": {"level": 3, "xp": 420}}}`), which `GameModules.get_facts()` gathers for whatever describes the game without knowing its modules, such as what an NPC knows when it talks (`NpcContext`). A lower module tells its own state this way instead of a higher one reaching down for it.
+
 ## Content
 
 Each kind of content is a class that extends `ContentEntry`, declares `const KIND`, and gives static `find(id)` and `find_all()` that read `ContentRegistry.active`. Its `find_problems(registry)` returns what is wrong with an entry: missing fields and references to unknown ids. A node in a location's scene that refers to content implements `find_scene_problems(registry, location)`. `ContentDB` asks both while it indexes, and a problem fails validation. Code always reads content through these classes, never through `ContentDB` directly, so a test's fixture content reaches it.

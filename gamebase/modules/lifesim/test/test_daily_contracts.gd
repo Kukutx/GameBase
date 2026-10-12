@@ -273,8 +273,8 @@ func test_incomplete_accepted_contract_expires_and_refreshes_after_deadline() ->
 	assert_false(bool(refreshed["accepted"]))
 
 func test_notice_board_and_menu_scenes_are_available() -> void:
-	assert_true(ResourceLoader.exists("res://gamebase/modules/progression/contracts/notice_board.tscn"))
-	assert_true(ResourceLoader.exists("res://gamebase/modules/progression/contracts/daily_contract_menu.tscn"))
+	assert_true(ResourceLoader.exists("res://gamebase/modules/lifesim/contracts/notice_board.tscn"))
+	assert_true(ResourceLoader.exists("res://gamebase/modules/lifesim/contracts/daily_contract_menu.tscn"))
 
 ## The target items of the `objective_type` candidates on `day`.
 func _targets_of(objective_type: StringName, day: int) -> Array[String]:

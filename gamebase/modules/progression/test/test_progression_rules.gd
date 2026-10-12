@@ -17,16 +17,12 @@ func test_quest_keys_are_registered_and_checked_against_content() -> void:
 	assert_eq(GameRules.validate_actions(PackedStringArray(["START_QUEST fixture_first_quest"])), PackedStringArray())
 	assert_string_contains("\n".join(GameRules.validate_query("QUEST_ACTIVE no_such_quest")), "unknown quest 'no_such_quest'")
 
-func test_project_and_milestone_keys_are_checked_against_content() -> void:
+func test_project_keys_are_checked_against_content() -> void:
 	var project := TownProjectData.new()
 	project.id = &"fixture_garden"
-	var milestone := CollectionMilestoneData.new()
-	milestone.id = &"fixture_archive"
-	ContentFixture.use(self, [project, milestone])
-	assert_eq(GameRules.validate_query("PROJECT_COMPLETED fixture_garden, !MILESTONE_CLAIMED fixture_archive"), PackedStringArray())
-	var problems := "\n".join(GameRules.validate_query("PROJECT_COMPLETED fixture_archive, MILESTONE_CLAIMED fixture_garden"))
-	assert_string_contains(problems, "unknown town_project 'fixture_archive'")
-	assert_string_contains(problems, "unknown collection_milestone 'fixture_garden'")
+	ContentFixture.use(self, [project])
+	assert_eq(GameRules.validate_query("PROJECT_COMPLETED fixture_garden"), PackedStringArray())
+	assert_string_contains("\n".join(GameRules.validate_query("PROJECT_COMPLETED fixture_orchard")), "unknown town_project 'fixture_orchard'")
 
 func test_content_validation_finds_conditions_in_nested_resources() -> void:
 	var item := ItemData.new()

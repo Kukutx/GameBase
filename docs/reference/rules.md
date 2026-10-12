@@ -21,7 +21,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `HEARTS` | npc_social | 2 | `HEARTS <npc> <n>` | the friendship with the NPC has at least n hearts. |
 | `ITEM_TAG` | items | 2 | `ITEM_TAG <item> <tag>` | the item has the tag, as an objective that counts every fish caught asks of the event's item (`ITEM_TAG $item_id fish`). |
 | `LOCATION` | core | 1 or more | `LOCATION <id>...` | the player is in one of the locations. |
-| `MILESTONE_CLAIMED` | progression | 1 | `MILESTONE_CLAIMED <collection_milestone>` | the player claimed the milestone's reward. |
+| `MILESTONE_CLAIMED` | lifesim | 1 | `MILESTONE_CLAIMED <collection_milestone>` | the player claimed the milestone's reward. |
 | `MONEY_AT_LEAST` | items | 1 | `MONEY_AT_LEAST <n>` | the player has at least n money. |
 | `PLAYTHROUGH_AT_LEAST` | core | 1 | `PLAYTHROUGH_AT_LEAST <n>` | this is the nth playthrough or a later one (`Playthrough`; new game plus). |
 | `PROFILE_FLAG` | core | 1 to 2 | `PROFILE_FLAG <key> [true\|false]` | the profile's boolean flag has the value (default true). |

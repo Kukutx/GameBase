@@ -54,7 +54,7 @@ func test_game_menu_keeps_selected_tab_focusable() -> void:
 func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> void:
 	var cases: Array[Dictionary] = [
 		{"path": "res://gamebase/modules/lifesim/animals/animal_management_menu.tscn", "kind": "animal"},
-		{"path": "res://gamebase/modules/progression/contracts/daily_contract_menu.tscn", "kind": "contract"},
+		{"path": "res://gamebase/modules/lifesim/contracts/daily_contract_menu.tscn", "kind": "contract"},
 		{"path": "res://gamebase/modules/items/crafting/crafting_menu.tscn", "kind": "crafting"},
 		{"path": "res://gamebase/modules/items/shop/shop_menu.tscn", "kind": "shop"},
 		{"path": "res://gamebase/modules/items/storage/storage_menu.tscn", "kind": "storage"},

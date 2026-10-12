@@ -458,3 +458,138 @@ msgstr "购买 %s — %dg  ·  %s 空位 %d"
 
 msgid "Finish fishing before saving"
 msgstr "请先结束钓鱼再保存"
+
+msgid "Town Notice Board"
+msgstr "城镇公告板"
+
+msgid "No notice available today."
+msgstr "今天没有新的公告。"
+
+msgid "Unavailable"
+msgstr "不可用"
+
+msgid "[b]%s[/b]\n\n%s\n\nProgress: %d/%d\nReward: %dg\nDeadline: Day %d"
+msgstr "[b]%s[/b]\n\n%s\n\n进度：%d/%d\n奖励：%dg\n截止：第 %d 天"
+
+msgid "Accepted"
+msgstr "已接受"
+
+msgid "Available"
+msgstr "可接受"
+
+msgid "In Progress"
+msgstr "进行中"
+
+msgid "Accept Contract"
+msgstr "接受委托"
+
+msgid "Read notice board"
+msgstr "查看公告板"
+
+msgid "Check notice board"
+msgstr "查看公告板"
+
+msgid "Notice Board"
+msgstr "公告板"
+
+msgid "Notice Board\nDone today"
+msgstr "公告板\n今日已完成"
+
+msgid "Notice Board\nReward ready"
+msgstr "公告板\n奖励可领取"
+
+msgid "Notice Board\n%d/%d"
+msgstr "公告板\n%d/%d"
+
+msgid "Notice Board\nNew request"
+msgstr "公告板\n有新委托"
+
+msgid "Archive reward: %s"
+msgstr "收藏奖励：%s"
+
+msgid "Archive milestone ready: %s"
+msgstr "收藏里程碑可领取：%s"
+
+msgid "Accepted: %s"
+msgstr "已接受：%s"
+
+msgid "Contract complete · +%dg"
+msgstr "委托完成 · +%dg"
+
+msgid "Daily contract expired"
+msgstr "每日委托已过期"
+
+msgid "Daily contract complete — return to the notice board"
+msgstr "每日委托已完成——返回公告板领取奖励"
+
+msgid "Notice board UI is unavailable"
+msgstr "公告板界面不可用"
+
+msgid "Daily contract"
+msgstr "每日委托"
+
+msgid "Crops"
+msgstr "作物"
+
+msgid "Animals"
+msgstr "畜产"
+
+msgid "Processed"
+msgstr "加工品"
+
+msgid "Forage"
+msgstr "采集物"
+
+msgid "Shipped"
+msgstr "已出货"
+
+msgid "%s — Claimed"
+msgstr "%s — 已领取"
+
+msgid "%s — Ready"
+msgstr "%s — 可领取"
+
+msgid "No notice available"
+msgstr "暂无公告"
+
+msgid "Daily contract claimed"
+msgstr "每日委托奖励已领取"
+
+msgid "Offer: %s"
+msgstr "新委托：%s"
+
+msgid "%s · Complete — claim at board · due Day %d"
+msgstr "%s · 已完成——到公告板领取 · 截止第 %d 天"
+
+msgid "%s · %d/%d · due Day %d"
+msgstr "%s · %d/%d · 截止第 %d 天"
+
+msgid "Forage %d %s"
+msgstr "采集 %d 个%s"
+
+msgid "Catch %d %s"
+msgstr "钓到 %d 条%s"
+
+msgid "Mine %d %s"
+msgstr "开采 %d 个%s"
+
+msgid "Ship %d %s"
+msgstr "出货 %d 个%s"
+
+msgid "Harvest %d %s"
+msgstr "收获 %d 个%s"
+
+msgid "Collect %d %s"
+msgstr "收集 %d 个%s"
+
+msgid "%s for the town request."
+msgstr "%s，完成城镇的委托。"
+
+msgid "Mining"
+msgstr "采矿"
+
+msgid "Claim Reward"
+msgstr "领取奖励"
+
+msgid "Claimed"
+msgstr "已领取"
