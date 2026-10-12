@@ -12,6 +12,10 @@ var _pending_spawn_id: StringName = &""
 var _pending_scene_path := ""
 var _traveling := false
 var _portal_grace_until_msec := 0
+# Travels that started, and that ended, so far; `go_to` waits for its own.
+var _travels_started := 0
+var _travels_ended := 0
+var _last_arrived := false
 
 const ARRIVAL_PORTAL_GRACE_MSEC := 450
 
@@ -62,13 +66,20 @@ func travel_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 		return false
 	return _travel_scene(location.scene_path, target_spawn)
 
-## Travels as `travel_to` does and waits until the travel ends: true once the
-## player stands in the location, false when the travel could not start or
-## failed.
+## Travels as `travel_to` does and waits until this travel ends: true once
+## the player stands in the location, false when it could not start or failed.
 func go_to(location_id: StringName, spawn_id: StringName = &"") -> bool:
 	if not travel_to(location_id, spawn_id):
 		return false
-	return await travel_ended
+	var travel := _travels_started
+	while _travels_ended < travel:
+		await travel_ended
+	return _last_arrived
+
+## Waits until the travel under way, if any, ends.
+func wait_until_arrived() -> void:
+	while _traveling:
+		await travel_ended
 
 func _travel_scene(scene_path: String, spawn_id: StringName = &"") -> bool:
 	if _traveling:
@@ -82,6 +93,8 @@ func _travel_scene(scene_path: String, spawn_id: StringName = &"") -> bool:
 		return false
 
 	_traveling = true
+	_travels_started += 1
+	var travel := _travels_started
 	_pending_scene_path = scene_path
 	_pending_spawn_id = spawn_id
 	travel_started.emit(scene_path, spawn_id)
@@ -98,7 +111,8 @@ func _travel_scene(scene_path: String, spawn_id: StringName = &"") -> bool:
 		if not bool(transition.call("change_scene", scene_path)):
 			_fail_pending_travel("Another scene change is under way")
 			return false
-	return true
+	# A change that fails at once (with no fade to wait for) ended the travel.
+	return _travels_ended < travel
 
 func _on_scene_changed() -> void:
 	if not _traveling:
@@ -111,6 +125,7 @@ func _on_scene_changed() -> void:
 	_pending_spawn_id = &""
 	_traveling = false
 	_portal_grace_until_msec = Time.get_ticks_msec() + ARRIVAL_PORTAL_GRACE_MSEC
+	_end_travel(true)
 	travel_finished.emit(scene_path, spawn_id)
 	travel_ended.emit(true)
 
@@ -124,9 +139,14 @@ func _fail_pending_travel(reason: String) -> void:
 	_pending_scene_path = ""
 	_pending_spawn_id = &""
 	_traveling = false
+	_end_travel(false)
 	travel_failed.emit(scene_path, spawn_id, reason)
 	travel_ended.emit(false)
 	GameEvents.toast("Travel failed")
+
+func _end_travel(arrived: bool) -> void:
+	_travels_ended = _travels_started
+	_last_arrived = arrived
 
 func _apply_pending_spawn() -> void:
 	if _pending_spawn_id == &"":

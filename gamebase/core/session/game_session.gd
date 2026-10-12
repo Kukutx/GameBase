@@ -13,6 +13,10 @@ const NEW_GAME_ORDER_FINISH := 10000
 ## Emitted when a new game is ready to play: its start location is open with
 ## the player placed.
 signal new_game_started
+## Emitted when a new game that started cannot open its start location. Its
+## steps already reset the services and its slot was replaced, so the player
+## stays where they started it (the title screen).
+signal new_game_failed
 signal continue_started(success: bool)
 signal player_collapsed(money_lost: int)
 signal late_night_collapse
@@ -55,12 +59,16 @@ func end_activities() -> void:
 			end.call()
 
 ## Leaves the session for the title screen (the game's main scene): ends the
-## player's activities and gives back every lock first.
-func return_to_title() -> void:
+## player's activities and gives back every lock first. False while a travel,
+## a load or a new game changes the scene: that change would replace the title.
+func return_to_title() -> bool:
+	if is_starting_new_game() or GameSaveManager.is_restoring() or WorldTravel.is_traveling():
+		return false
 	end_activities()
 	# Nothing of the session holds the controls on the title screen.
 	InputLock.clear()
 	get_tree().change_scene_to_file(String(ProjectSettings.get_setting("application/run/main_scene")))
+	return true
 
 func initialize_new_game_state() -> void:
 	var starting := _starting_new_game
@@ -98,27 +106,23 @@ func start_new_game() -> bool:
 		return false
 	_starting_new_game = true
 	initialize_new_game_state()
-	WorldTravel.travel_finished.connect(_on_start_location_opened)
-	WorldTravel.travel_failed.connect(_on_start_location_failed)
+	WorldTravel.travel_ended.connect(_on_start_travel_ended, CONNECT_ONE_SHOT)
 	if not WorldTravel.travel_to(definition.start_location_id):
-		_end_new_game_setup()
-		GameEvents.toast("Could not start the new game location")
+		# Still connected: the travel never started, so nothing announced it.
+		if WorldTravel.travel_ended.is_connected(_on_start_travel_ended):
+			WorldTravel.travel_ended.disconnect(_on_start_travel_ended)
+			_starting_new_game = false
+			GameEvents.toast("Could not start the new game location")
 		return false
 	return true
 
-func _on_start_location_opened(_scene_path: String, _spawn_id: StringName) -> void:
-	_end_new_game_setup()
-	new_game_started.emit()
-
-func _on_start_location_failed(_scene_path: String, _spawn_id: StringName, _reason: String) -> void:
-	_end_new_game_setup()
-
-func _end_new_game_setup() -> void:
+func _on_start_travel_ended(arrived: bool) -> void:
 	_starting_new_game = false
-	if WorldTravel.travel_finished.is_connected(_on_start_location_opened):
-		WorldTravel.travel_finished.disconnect(_on_start_location_opened)
-	if WorldTravel.travel_failed.is_connected(_on_start_location_failed):
-		WorldTravel.travel_failed.disconnect(_on_start_location_failed)
+	if arrived:
+		new_game_started.emit()
+	else:
+		GameEvents.toast("Could not start the new game location")
+		new_game_failed.emit()
 
 func continue_game() -> bool:
 	if not SaveManager.has_save():
@@ -165,6 +169,11 @@ func _handle_late_night(day: int) -> void:
 # Takes the player to the game's home spawn unless they are home already.
 # True when they stand at home after it.
 func _return_home() -> bool:
+	# A travel under way (a portal the player stepped through as it happened)
+	# arrives first; the player is then where it took them.
+	if WorldTravel.is_traveling():
+		await WorldTravel.wait_until_arrived()
+		await get_tree().process_frame
 	if _is_home():
 		return true
 	var definition := GameDefinition.current()

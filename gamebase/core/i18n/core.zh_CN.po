@@ -195,6 +195,9 @@ msgstr "返回标题画面"
 msgid "Unsaved progress will be lost. Return to the title screen?"
 msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
 
+msgid "Cannot return to the title while the scene changes"
+msgstr "场景切换中，无法返回标题画面"
+
 msgid "Master"
 msgstr "主音量"
 

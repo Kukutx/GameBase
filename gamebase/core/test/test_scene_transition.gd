@@ -49,7 +49,7 @@ func test_a_change_while_the_screen_clears_starts_at_once() -> void:
 	assert_false(transition.is_covering())
 	assert_false((transition.get_node("FadeOverlay") as ColorRect).visible)
 
-func test_a_scene_that_cannot_load_is_refused() -> void:
+func test_a_change_without_a_scene_is_refused() -> void:
 	var transition := _transition()
 	assert_false(transition.change_scene(""))
 	assert_false(transition.is_covering())

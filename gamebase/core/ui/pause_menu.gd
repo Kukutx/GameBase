@@ -43,8 +43,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()
 
+## Opens the menu, unless a travel is changing the scene: what the menu
+## offers (a load, the title) would race it.
 func open() -> void:
-	if visible:
+	if visible or WorldTravel.is_traveling():
 		return
 	visible = true
 	InputLock.lock(&"pause_menu", true, self)
@@ -85,7 +87,8 @@ func _confirm_return_to_title() -> void:
 	confirm_title.popup_centered()
 
 func _return_to_title() -> void:
-	GameSession.return_to_title()
+	if not GameSession.return_to_title():
+		status_label.text = tr("Cannot return to the title while the scene changes")
 
 func _on_save_completed(success: bool, message: String) -> void:
 	if visible:

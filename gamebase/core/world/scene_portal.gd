@@ -21,10 +21,20 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _start_travel() -> void:
 	if target_location_id == &"":
-		_travel_requested = false
-		enabled = true
+		_reopen()
 		GameEvents.toast("Portal target is unavailable")
 		return
 	if not WorldTravel.travel_to(target_location_id, target_spawn_id):
-		_travel_requested = false
-		enabled = true
+		_reopen()
+		return
+	# Not awaited: an arrival frees this portal with its location.
+	WorldTravel.travel_ended.connect(_on_travel_ended, CONNECT_ONE_SHOT)
+
+# A travel that failed after it started leaves the player here.
+func _on_travel_ended(arrived: bool) -> void:
+	if not arrived:
+		_reopen()
+
+func _reopen() -> void:
+	_travel_requested = false
+	enabled = true

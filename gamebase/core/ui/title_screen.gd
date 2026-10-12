@@ -37,6 +37,7 @@ func _ready() -> void:
 	confirm_new_game.confirmed.connect(_start_new_game)
 	confirm_delete.confirmed.connect(_confirm_delete_save)
 	GameSession.continue_started.connect(_on_continue_started)
+	GameSession.new_game_failed.connect(_on_new_game_failed)
 	_refresh_slot_ui()
 	(new_game_button if continue_button.disabled else continue_button).grab_focus()
 
@@ -92,9 +93,13 @@ func _start_new_game() -> void:
 	# GameSession owns replacement of the selected slot so it can preflight the
 	# starting Location before any destructive save operation occurs.
 	if not GameSession.start_new_game():
-		status_label.text = tr("Could not open the starting location")
-		_set_buttons_disabled(false)
-		_refresh_slot_ui()
+		_on_new_game_failed()
+
+# The start location did not open, at once or once its scene failed to load.
+func _on_new_game_failed() -> void:
+	status_label.text = tr("Could not open the starting location")
+	_set_buttons_disabled(false)
+	_refresh_slot_ui()
 
 func _continue_game() -> void:
 	_set_buttons_disabled(true)

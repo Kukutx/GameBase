@@ -106,6 +106,32 @@ func test_going_to_a_location_waits_until_the_player_stands_in_it() -> void:
 	assert_false(await travel.go_to(&"removed_future_location"), "a travel that cannot start")
 	assert_eq(ended, [true], "only a travel that started ends")
 
+func test_a_travel_started_as_the_last_one_arrives_waits_for_its_own_arrival() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
+	assert_eq(ResourceSaver.save(_location_scene(), _scene_path), OK)
+	var location := WorldLocationData.new()
+	location.id = LOCATION
+	location.display_name = "Cellar"
+	location.scene_path = _scene_path
+	location.default_spawn_id = ENTRY
+	ContentFixture.use(self, [location]).find_problems()
+	var travel := WorldTravelService.new()
+	add_child_autofree(travel)
+	var results: Array[bool] = []
+	# Someone travels on the moment the player arrives.
+	var travel_on := func(_scene_path: String, _spawn_id: StringName) -> void:
+		results.append(await travel.go_to(LOCATION))
+	travel.travel_finished.connect(travel_on, CONNECT_ONE_SHOT)
+
+	assert_true(travel.travel_to(LOCATION))
+	await travel.travel_ended
+	assert_true(travel.is_traveling(), "the second travel is under way")
+	assert_eq(results, [] as Array[bool], "its wait did not end with the first travel")
+	await travel.wait_until_arrived()
+	await get_tree().process_frame
+	assert_eq(results, [true] as Array[bool])
+	assert_false(travel.is_traveling())
+
 func test_portal_reenables_itself_when_travel_cannot_start() -> void:
 	ContentFixture.use(self, [])
 	var portal := ScenePortal.new()

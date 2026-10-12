@@ -19,6 +19,15 @@ func test_the_title_screen_shows_the_slot_summary_by_the_calendar() -> void:
 	summary["recoverable"] = false
 	assert_eq(String(title.call("_format_slot_summary", summary)), "Day 68 · 10:00 · 4321g")
 
+func test_a_new_game_that_fails_after_it_started_gives_the_menu_back() -> void:
+	var title := (load("res://gamebase/core/ui/title_screen.tscn") as PackedScene).instantiate()
+	add_child_autofree(title)
+	title.call("_set_buttons_disabled", true)
+	# The start location's scene failed to load after the travel started.
+	GameSession.new_game_failed.emit()
+	assert_false((title.get_node("Center/Menu/NewGame") as Button).disabled)
+	assert_eq((title.get("status_label") as Label).text, "Could not open the starting location")
+
 func test_a_slot_this_version_cannot_open_is_shown_and_replaced_only_after_asking() -> void:
 	var save_directory := SaveManager.save_directory
 	var active_slot := SaveManager.active_slot
