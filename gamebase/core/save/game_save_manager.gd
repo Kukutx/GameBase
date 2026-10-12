@@ -381,7 +381,8 @@ func _write_dictionary(path: String, data: Dictionary) -> bool:
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		return false
-	var stored := file.store_string(JSON.stringify(data, "\t"))
+	# Every digit, so a float comes back as it was saved.
+	var stored := file.store_string(JSON.stringify(data, "\t", true, true))
 	file.close()
 	return stored
 

@@ -27,15 +27,18 @@ const MAX_DEPTH := 8
 ## {"type": its Variant.Type, "value": the value as JSON holds it}}}}}.
 const STATE_KEY := &"triggers:state"
 ## The types of value an event of a once trigger may pass: those a save keeps
-## for a pending trigger. A once trigger whose event passes another (an object,
-## or nothing) does not run, with a warning; content checks reject an event
-## that declares another.
+## for a pending trigger. Content checks reject an event that declares another,
+## and a once trigger whose event passes a value that is not of its declared
+## type (or one it converts to without loss) or that a save could not keep
+## exactly does not run, with a warning.
 const SAVED_TYPES: Array[int] = [TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME]
 
 # event -> Array[TriggerData]
 var _by_event: Dictionary = {}
 # event -> argument names, in their order
 var _arg_names: Dictionary = {}
+# event -> {argument name: its declared type}
+var _arg_types: Dictionary = {}
 # event -> the callable connected to its signal
 var _connections: Dictionary = {}
 var _depth := 0
@@ -59,7 +62,8 @@ func connect_triggers() -> void:
 			continue
 		if not _by_event.has(trigger.event):
 			_by_event[trigger.event] = []
-			_arg_names[trigger.event] = PackedStringArray(trigger.get_event_args().keys())
+			_arg_types[trigger.event] = trigger.get_event_args()
+			_arg_names[trigger.event] = PackedStringArray(_arg_types[trigger.event].keys())
 			var callable := _on_event.bind(trigger.event)
 			source.connect(String(trigger.event).get_slice(".", 1), callable)
 			_connections[trigger.event] = [source, callable]
@@ -94,13 +98,14 @@ func fire(event: StringName, args: Dictionary) -> void:
 			if _running.has(trigger.id) or has_fired(trigger.id):
 				continue
 			var pending := _pending(trigger)
-			if pending.is_empty() and not _can_keep(trigger, args):
-				continue
-			if pending.is_empty() and not GameRules.check(trigger.condition, context):
-				continue
+			var declared: Variant = null
+			if pending.is_empty():
+				declared = _as_declared(trigger, args, _arg_types.get(event, {}))
+				if declared == null or not GameRules.check(trigger.condition, {"event": declared}):
+					continue
 			_running[trigger.id] = true
 			if pending.is_empty():
-				completed = _run_once(trigger, args, 0)
+				completed = _run_once(trigger, declared, 0)
 			else:
 				completed = _run_once(trigger, pending["event"], pending["done"])
 			_running.erase(trigger.id)
@@ -158,13 +163,15 @@ func _disconnect_all() -> void:
 	_connections.clear()
 	_by_event.clear()
 	_arg_names.clear()
+	_arg_types.clear()
 
 # A cleared or loaded world keeps only what current once triggers left: the
 # ones that fired, and the pending ones that have not and can resume
 # (`_resume_point()`). A save names current content only: a pending trigger
 # whose stored value is an id the content no longer has is dropped.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
-	if key != &"" or WorldState.get_value(STATE_KEY) == null:
+	# A state saved as null, or of any shape, is reconciled like any other.
+	if key != &"" or not WorldState.has_value(STATE_KEY):
 		return
 	var saved := _get_state()
 	var kept := {"fired": [], "pending": {}}
@@ -213,7 +220,8 @@ func _resume_point(trigger: TriggerData, entry: Variant) -> Dictionary:
 	var event := {}
 	for name: String in names:
 		var value := _loaded_value((values as Dictionary).get(name))
-		if value.is_empty():
+		# A value of a type the event no longer declares is not what it passes.
+		if value.is_empty() or typeof(value[0]) != int(names[name]):
 			return {}
 		event[name] = value[0]
 	if not GameRules.can_run_actions_from(trigger.actions, int(done), {"event": event}):
@@ -228,15 +236,32 @@ static func _saved_pending(trigger: TriggerData, done: int, event: Dictionary) -
 		values[name] = _saved_value(event[name])
 	return {"done": done, "actions": get_actions_fingerprint(trigger), "event": values}
 
-# Whether a save could keep every value of `args`, the event's arguments, were
-# `trigger` left pending; warns when it could not.
-static func _can_keep(trigger: TriggerData, args: Dictionary) -> bool:
-	for name: String in args:
-		var value: Variant = args[name]
-		if not SAVED_TYPES.has(typeof(value)) or (value is float and not is_finite(value)):
-			push_warning("GameTriggers: once trigger '%s' does not run: '%s' passed %s = %s, which a save cannot keep" % [trigger.id, trigger.event, name, value])
-			return false
-	return true
+# `args`, the event's arguments, each in the type `types` declares for it, so
+# what a once trigger runs on is what a save keeps and gives back if it is
+# left pending; null, with a warning, when a value is not of its declared type
+# or one it converts to without loss (an int for a float, a String for a
+# StringName and back), or a save could not keep it exactly.
+static func _as_declared(trigger: TriggerData, args: Dictionary, types: Dictionary) -> Variant:
+	var declared := {}
+	for name: String in types:
+		var value: Variant = args.get(name)
+		var type := int(types[name])
+		if type == TYPE_FLOAT and value is int:
+			value = float(value)
+		elif type == TYPE_STRING_NAME and value is String:
+			value = StringName(value)
+		elif type == TYPE_STRING and value is StringName:
+			value = String(value)
+		var exact := typeof(value) == type and SAVED_TYPES.has(type)
+		if exact and value is float:
+			exact = is_finite(value)
+		elif exact and value is int:
+			exact = value <= SaveValues.MAX_WHOLE_INT and value >= -SaveValues.MAX_WHOLE_INT
+		if not exact:
+			push_warning("GameTriggers: once trigger '%s' does not run: '%s' passed %s = %s, which is not a %s a save keeps" % [trigger.id, trigger.event, name, value, type_string(type)])
+			return null
+		declared[name] = value
+	return declared
 
 # An event's value (`SAVED_TYPES`) as a save keeps it: its type, and the value
 # as JSON holds it.

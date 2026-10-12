@@ -5,8 +5,10 @@ extends RefCounted
 ## gives every number back as a float, and a file can be edited by hand, so a
 ## value is taken only in the shape it was written in.
 
-## Beyond 2^53 a float no longer holds every whole number exactly.
+## Beyond 2^53 a float no longer holds every whole number exactly, so an int
+## further from 0 does not come back from JSON as it went in.
 const MAX_WHOLE_NUMBER := 9007199254740992.0
+const MAX_WHOLE_INT := 9007199254740992
 
 ## `value` as an int when it is a whole number: an int, or a float JSON gave
 ## back for one; otherwise null.

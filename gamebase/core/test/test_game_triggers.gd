@@ -123,13 +123,16 @@ func test_a_once_trigger_given_a_value_a_save_cannot_keep_does_not_run() -> void
 	var first := _trigger(&"fixture_first_harvest", ["ADD_FLAG fixture:first"])
 	first.once = true
 	var service := _start([first])
-	# What a sloppy emitter could pass for a typed argument.
+	# What a sloppy emitter could pass for a typed argument, and an int JSON
+	# would not give back as it went in.
 	service.fire(&"FixtureEvents.harvested", {"quantity": Vector2.ONE, "crop": &"fixture_radish"})
 	service.fire(&"FixtureEvents.harvested", {"quantity": INF, "crop": &"fixture_radish"})
-	assert_push_warning_count(2)
+	service.fire(&"FixtureEvents.harvested", {"quantity": SaveValues.MAX_WHOLE_INT + 1, "crop": &"fixture_radish"})
+	assert_push_warning_count(3)
 	assert_eq(WorldState.get_int(&"fixture:first"), 0)
 	assert_false(service.has_fired(&"fixture_first_harvest"))
-	_events.harvested.emit(1, &"fixture_radish")
+	# Text for a StringName converts without loss.
+	service.fire(&"FixtureEvents.harvested", {"quantity": 1, "crop": "fixture_radish"})
 	assert_true(service.has_fired(&"fixture_first_harvest"))
 
 func test_a_pending_trigger_whose_actions_changed_fires_anew() -> void:
@@ -186,12 +189,14 @@ func test_a_loaded_world_keeps_only_what_current_once_triggers_left() -> void:
 		{"quantity": {"type": float(TYPE_INT), "value": 1.5}, "crop": event["crop"]},
 		{"quantity": {"type": float(TYPE_OBJECT), "value": 1.0}, "crop": event["crop"]},
 		{"quantity": event["quantity"], "crop": {"type": float(TYPE_STRING_NAME), "value": 4.0}},
+		{"quantity": event["quantity"], "crop": {"type": float(TYPE_INT), "value": 4.0}},
 	]
 	for values: Dictionary in malformed:
 		WorldState.load_save_data({GameTriggerService.STATE_KEY: {"fired": [], "pending": {"fixture_halfway": pending.call(halfway, 1.0, values)}}})
 		assert_null(WorldState.get_value(GameTriggerService.STATE_KEY), "%s is no event value a save keeps" % values)
-	WorldState.load_save_data({GameTriggerService.STATE_KEY: true})
-	assert_null(WorldState.get_value(GameTriggerService.STATE_KEY))
+	for malformed_state: Variant in [true, null]:
+		WorldState.load_save_data({GameTriggerService.STATE_KEY: malformed_state})
+		assert_false(WorldState.has_value(GameTriggerService.STATE_KEY), "%s is no state of the triggers" % malformed_state)
 
 func test_a_loaded_world_drops_a_pending_trigger_whose_saved_value_is_no_longer_content() -> void:
 	GameRules.register_action(&"FIXTURE_VISIT", func(_args: PackedStringArray, _context: Dictionary) -> bool: return true,

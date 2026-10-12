@@ -45,6 +45,7 @@ func after_each() -> void:
 
 func test_silent_save_writes_the_slot_without_emitting_a_status() -> void:
 	await _enter_fixture_location()
+	WorldState.set_value(&"fixture:ratio", 0.1 + 0.2)
 	var emitted := {"count": 0}
 	_manager.save_completed.connect(func(_success: bool, _message: String) -> void:
 		emitted["count"] = int(emitted["count"]) + 1
@@ -60,6 +61,7 @@ func test_silent_save_writes_the_slot_without_emitting_a_status() -> void:
 	assert_eq(String(saved.get("location_id", "")), String(LOCATION))
 	for section_id: String in _manager.get_section_ids():
 		assert_true(saved.get(section_id) is Dictionary, "section %s is saved" % section_id)
+	assert_eq(saved["world"]["fixture:ratio"], 0.1 + 0.2, "a float comes back with every digit")
 
 func test_each_slot_has_its_own_files_in_the_save_directory() -> void:
 	var slot1 := _manager.get_slot_paths(1)
