@@ -18,14 +18,14 @@ func _ready() -> void:
 
 func open() -> void:
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"tool_upgrade_menu", true, self)
 	_rebuild()
 
 func close() -> void:
 	if not visible:
 		return
 	visible = false
-	get_tree().paused = false
+	InputLock.unlock(&"tool_upgrade_menu")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):

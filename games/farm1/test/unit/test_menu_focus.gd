@@ -1,7 +1,7 @@
 extends GutTest
 
 func after_each() -> void:
-	get_tree().paused = false
+	InputLock.clear()
 	var focus := get_viewport().gui_get_focus_owner()
 	if focus != null:
 		focus.release_focus()

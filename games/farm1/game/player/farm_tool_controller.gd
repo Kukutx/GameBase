@@ -8,7 +8,7 @@ const SUPPORTED_TOOL_ACTIONS: Array[StringName] = [ItemData.ACTION_TILL, ItemDat
 var _action_busy := false
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed(action):
+	if not event.is_action_pressed(action) or InputLock.is_locked():
 		return
 	var selected := Hotbar.get_selected_item()
 	if selected == null:

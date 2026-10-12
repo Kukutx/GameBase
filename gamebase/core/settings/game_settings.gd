@@ -5,7 +5,12 @@ signal changed
 signal controls_changed
 signal locale_changed(locale: String)
 
-const DEFAULT_SETTINGS_PATH := "user://settings.cfg"
+## The settings are JSON: unlike `ConfigFile` or `str_to_var()`, whose text
+## can name a resource to load or an object to build, JSON a file someone
+## drops into the player's data folder can only hold values.
+const DEFAULT_SETTINGS_PATH := "user://settings.json"
+## The layout of the settings file; a file of another version is not read.
+const SETTINGS_VERSION := 1
 ## Source text is English; the other locales are those the game registers
 ## translations for.
 const SOURCE_LOCALE := "en"
@@ -244,40 +249,71 @@ func apply() -> void:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
 
 func save_settings() -> void:
-	var config := ConfigFile.new()
-	config.set_value("audio", "master", master_volume)
-	config.set_value("audio", "music", music_volume)
-	config.set_value("audio", "sounds", sounds_volume)
-	config.set_value("display", "fullscreen", fullscreen)
-	config.set_value("display", "vsync", vsync)
-	config.set_value("gameplay", "autosave", autosave)
-	config.set_value("accessibility", "weather_effects", weather_effects)
-	config.set_value("accessibility", "reduced_motion", reduced_motion)
-	config.set_value("localization", "locale", locale)
+	var controls := {}
 	for action: StringName in get_rebindable_actions():
-		config.set_value("controls", String(action), int(get_key_binding(action)))
-	config.save(settings_path)
+		controls[String(action)] = int(get_key_binding(action))
+	var data := {
+		"settings_version": SETTINGS_VERSION,
+		"audio": {"master": master_volume, "music": music_volume, "sounds": sounds_volume},
+		"display": {"fullscreen": fullscreen, "vsync": vsync},
+		"gameplay": {"autosave": autosave},
+		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
+		"localization": {"locale": locale},
+		"controls": controls,
+	}
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(settings_path.get_base_dir()))
+	var file := FileAccess.open(settings_path, FileAccess.WRITE)
+	if file == null:
+		push_warning("GameSettings: could not write '%s' (%d)" % [settings_path, FileAccess.get_open_error()])
+		return
+	file.store_string(JSON.stringify(data, "\t"))
+	file.close()
 
+## Reads the settings from `settings_path`. A missing, unreadable or other
+## version's file changes nothing. In a file that is read, a value of the wrong
+## type keeps the current one, except that a locale the game does not support
+## reads as the source language and a control without a usable key as its
+## default key.
 func load_settings() -> void:
 	if key_bindings.is_empty():
 		_reset_control_values()
-	var config := ConfigFile.new()
-	if config.load(settings_path) != OK:
+	var json := JSON.new()
+	if not FileAccess.file_exists(settings_path) or json.parse(FileAccess.get_file_as_string(settings_path)) != OK:
 		return
-	master_volume = clampf(float(config.get_value("audio", "master", 1.0)), 0.0, 1.0)
-	music_volume = clampf(float(config.get_value("audio", "music", 0.8)), 0.0, 1.0)
-	sounds_volume = clampf(float(config.get_value("audio", "sounds", 0.9)), 0.0, 1.0)
-	fullscreen = bool(config.get_value("display", "fullscreen", false))
-	vsync = bool(config.get_value("display", "vsync", true))
-	autosave = bool(config.get_value("gameplay", "autosave", true))
-	weather_effects = bool(config.get_value("accessibility", "weather_effects", true))
-	reduced_motion = bool(config.get_value("accessibility", "reduced_motion", false))
-	var loaded_locale := String(config.get_value("localization", "locale", SOURCE_LOCALE))
-	locale = loaded_locale if get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
+	var data: Variant = json.data
+	if not (data is Dictionary) or _read_number(data, "settings_version", "", 0.0) != SETTINGS_VERSION:
+		return
+	master_volume = clampf(_read_number(data, "audio", "master", master_volume), 0.0, 1.0)
+	music_volume = clampf(_read_number(data, "audio", "music", music_volume), 0.0, 1.0)
+	sounds_volume = clampf(_read_number(data, "audio", "sounds", sounds_volume), 0.0, 1.0)
+	fullscreen = _read_bool(data, "display", "fullscreen", fullscreen)
+	vsync = _read_bool(data, "display", "vsync", vsync)
+	autosave = _read_bool(data, "gameplay", "autosave", autosave)
+	weather_effects = _read_bool(data, "accessibility", "weather_effects", weather_effects)
+	reduced_motion = _read_bool(data, "accessibility", "reduced_motion", reduced_motion)
+	var loaded_locale: Variant = _read(data, "localization", "locale")
+	locale = loaded_locale if loaded_locale is String and get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
 	for action: StringName in get_rebindable_actions():
 		var fallback := int(get_control(action).key)
-		var value := int(config.get_value("controls", String(action), fallback))
+		var whole: Variant = SaveValues.whole_number(_read(data, "controls", String(action)))
+		var value := int(whole) if whole != null else fallback
 		key_bindings[String(action)] = value if value > 0 and not _is_fixed_key(value as Key, action) else fallback
+
+# The value under `section` and `key` of the settings file's `data`, or null
+# (`key` "" reads `section` itself).
+static func _read(data: Dictionary, section: String, key: String) -> Variant:
+	if key.is_empty():
+		return data.get(section)
+	var values: Variant = data.get(section)
+	return (values as Dictionary).get(key) if values is Dictionary else null
+
+static func _read_number(data: Dictionary, section: String, key: String, fallback: float) -> float:
+	var value: Variant = _read(data, section, key)
+	return float(value) if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT else fallback
+
+static func _read_bool(data: Dictionary, section: String, key: String, fallback: bool) -> bool:
+	var value: Variant = _read(data, section, key)
+	return value if typeof(value) == TYPE_BOOL else fallback
 
 ## Whether a control other than `action`'s holds `key` in a way the player
 ## cannot swap: as its second key, or as the key of a control that is not

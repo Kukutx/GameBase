@@ -45,7 +45,7 @@ The bundle is opt-in and contains:
 - up to five recent game logs, capped at 2 MiB each;
 - a README describing the bundle contents.
 
-Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw `savegame*.json/.tmp/.bak`, `settings.cfg`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
+Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw `savegame*.json/.tmp/.bak`, `settings.json`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
 
 ## When investigating a report
 

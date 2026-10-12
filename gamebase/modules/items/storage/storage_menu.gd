@@ -35,7 +35,7 @@ func open(container_id: StringName, display_name: String, max_slots: int) -> voi
 	_display_name = display_name
 	_max_slots = maxi(max_slots, 1)
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"storage_menu", true, self)
 	_rebuild()
 	if inventory_list.item_count > 0:
 		inventory_list.select(0)
@@ -49,7 +49,7 @@ func close() -> void:
 		return
 	visible = false
 	_container_id = &""
-	get_tree().paused = false
+	InputLock.unlock(&"storage_menu")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):

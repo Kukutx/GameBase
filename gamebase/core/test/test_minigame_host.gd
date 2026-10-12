@@ -28,7 +28,7 @@ func after_each() -> void:
 	# GUT frees the fixture content only after this hook.
 	ContentRegistry.active = ContentDB
 	MiniGameHost.cancel()
-	get_tree().paused = false
+	InputLock.clear()
 
 func _active_minigame() -> _FixtureMiniGame:
 	return MiniGameHost.get("_active") as _FixtureMiniGame

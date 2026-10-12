@@ -31,14 +31,14 @@ func open() -> void:
 		return
 	_index = _first_unread_index()
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"mailbox_menu", true, self)
 	_show_current()
 
 func close() -> void:
 	if not visible:
 		return
 	visible = false
-	get_tree().paused = false
+	InputLock.unlock(&"mailbox_menu")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):

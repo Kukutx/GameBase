@@ -127,6 +127,7 @@ func _start_cast_internal(location_id: StringName, energy_cost: int) -> bool:
 	var max_delay := maxf(bite_delay_range.x, bite_delay_range.y)
 	_time_remaining = rng.randf_range(maxf(min_delay, 0.05), maxf(max_delay, 0.05)) * get_effective_wait_multiplier()
 	cast_state = CastState.WAITING
+	InputLock.lock(&"fishing_cast")
 	fishing_active_changed.emit(true)
 	cast_state_changed.emit(cast_state, tr("Waiting for a bite..."))
 	GameEvents.toast("Cast the line... wait for a bite")
@@ -233,6 +234,7 @@ func _finish_session(success: bool, message: String) -> void:
 		GameEvents.toast(message)
 
 func _reset_session() -> void:
+	InputLock.unlock(&"fishing_cast")
 	cast_state = CastState.IDLE
 	_time_remaining = 0.0
 	_pending_fish = null

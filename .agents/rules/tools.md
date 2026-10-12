@@ -50,6 +50,7 @@ node tools/validate.js [--game <id>]... [--no-repository] [--no-games] [--skip-s
 node tools/validate_rules.js --strict [--report]
 node --test "tools/*.test.js"
 node tools/check_layers.js
+node tools/check_code.js
 node tools/check_localization.js [--game <id>]...
 node tools/export.js [--game <id> | --all] [--preset "Windows Desktop"|Linux|Web] [--skip-validation] [--allow-engine-drift]
 node tools/smoke_export.js [--game <id>]

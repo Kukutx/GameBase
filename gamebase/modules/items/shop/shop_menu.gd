@@ -24,7 +24,7 @@ func open(shop: ShopData) -> void:
 		return
 	_shop = shop
 	visible = true
-	get_tree().paused = true
+	InputLock.lock(&"shop_menu", true, self)
 	_rebuild()
 
 func close() -> void:
@@ -32,7 +32,7 @@ func close() -> void:
 		return
 	visible = false
 	_shop = null
-	get_tree().paused = false
+	InputLock.unlock(&"shop_menu")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):
