@@ -23,9 +23,12 @@ const KIND := &"trigger"
 ## (`quantity`: once per crop harvested); empty runs them once.
 @export var repeat_per: StringName
 ## Whether the trigger fires only once in a world: once all its actions ran.
-## An action that failed (a full inventory) leaves it to fire again, from that
-## action: the ones before it ran and stay done. It cannot repeat per an
-## argument, which would make how much it gives depend on the retry.
+## An action that failed (a full inventory) after others ran leaves it
+## pending: the next time the event fires, it resumes at that action with the
+## arguments of the event that set it off and without checking the condition
+## again, so the ones before it are not given twice. One whose first action
+## failed gave nothing and fires anew. It cannot repeat per an argument, which
+## would make how much it gives depend on the retry.
 @export var once := false
 
 ## The trigger with `entry_id` in the running game's content, or null.
@@ -66,7 +69,7 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 	if get_source() == null:
 		problems.append("listens to '%s', which is no signal of an autoload (<Autoload>.<signal>)" % event)
 		return problems
-	if actions.is_empty():
+	if GameRules.count_actions(actions) == 0:
 		problems.append("has no actions")
 	var args := get_event_args()
 	if repeat_per != &"" and int(args.get(String(repeat_per), TYPE_NIL)) != TYPE_INT:

@@ -68,6 +68,7 @@ func test_a_once_trigger_whose_action_fails_resumes_at_that_action() -> void:
 	_events.harvested.emit(1, &"fixture_radish")
 	_events.harvested.emit(1, &"fixture_radish")
 	assert_false(service.has_fired(&"fixture_reward"), "its action failed")
+	assert_true(service.is_pending(&"fixture_reward"))
 	assert_signal_not_emitted(service, "trigger_fired")
 	assert_eq(WorldState.get_int(&"fixture:given"), 1, "what ran before the failed action is not given again")
 	WorldState.set_value(&"fixture:allowed", true)
@@ -76,25 +77,53 @@ func test_a_once_trigger_whose_action_fails_resumes_at_that_action() -> void:
 	assert_true(service.has_fired(&"fixture_reward"))
 	assert_signal_emit_count(service, "trigger_fired", 1)
 	assert_eq([WorldState.get_int(&"fixture:given"), WorldState.get_int(&"fixture:after")], [1, 1], "resumed at the failed action, then done")
-	assert_false(WorldState.to_save_data().has("trigger:fixture_reward:progress"), "a fired trigger keeps no progress")
+	assert_false(service.is_pending(&"fixture_reward"), "a fired trigger is not pending")
 	GameRules._actions.erase(&"FIXTURE_WHEN_ALLOWED")
 
-func test_a_loaded_world_keeps_only_what_current_once_triggers_fired() -> void:
+func test_a_pending_trigger_resumes_with_the_event_that_set_it_off_and_without_its_condition() -> void:
+	GameRules.register_action(&"FIXTURE_WHEN_ALLOWED", func(_args: PackedStringArray, _context: Dictionary) -> bool:
+		return WorldState.get_bool(&"fixture:allowed"), 0, 0)
+	# Its first action makes its own condition false.
+	var reward := _trigger(&"fixture_pending", ["CLEAR_FLAG fixture:open", "FIXTURE_WHEN_ALLOWED", "ADD_FLAG fixture:quantity $quantity"], "WORLD_FLAG fixture:open")
+	reward.once = true
+	var service := _start([reward])
+	WorldState.set_value(&"fixture:open", true)
+	_events.harvested.emit(3, &"fixture_radish")
+	assert_true(service.is_pending(&"fixture_pending"))
+	WorldState.set_value(&"fixture:allowed", true)
+	_events.harvested.emit(7, &"fixture_radish")
+	assert_true(service.has_fired(&"fixture_pending"), "it resumed though its condition no longer holds")
+	assert_eq(WorldState.get_int(&"fixture:quantity"), 3, "with the arguments of the event that set it off")
+	GameRules._actions.erase(&"FIXTURE_WHEN_ALLOWED")
+
+func test_a_loaded_world_keeps_only_what_current_once_triggers_left() -> void:
 	var first := _trigger(&"fixture_first_harvest", ["ADD_FLAG fixture:first"])
 	first.once = true
-	var second := _trigger(&"fixture_second_harvest", ["ADD_FLAG fixture:second"])
+	var second := _trigger(&"fixture_second_harvest", ["ADD_FLAG fixture:second", "ADD_FLAG fixture:second"])
 	second.once = true
 	var every := _trigger(&"fixture_every_harvest", ["ADD_FLAG fixture:every"])
 	var halfway := _trigger(&"fixture_halfway", ["ADD_FLAG fixture:a", "ADD_FLAG fixture:b", "ADD_FLAG fixture:c"])
 	halfway.once = true
 	_start([first, second, every, halfway])
+	var event := {"quantity": "1", "crop": "fixture_radish"}
 	# A saved count comes back as a float.
-	WorldState.load_save_data({"trigger:fixture_first_harvest:fired": true, "trigger:fixture_second_harvest:fired": 1,
-		"trigger:fixture_every_harvest:fired": true, "trigger:fixture_removed:fired": true, "fixture:kept": 1,
-		"trigger:fixture_halfway:progress": 2.0, "trigger:fixture_first_harvest:progress": 1, "trigger:fixture_second_harvest:progress": 9,
-		"trigger:fixture_every_harvest:progress": 1})
-	assert_eq(WorldState.to_save_data().keys(), ["trigger:fixture_first_harvest:fired", "fixture:kept", "trigger:fixture_halfway:progress"],
-		"a fired mark is true and a count is short of all the actions of a once trigger that has not fired")
+	WorldState.load_save_data({"fixture:kept": 1, GameTriggerService.STATE_KEY: {
+		"fired": ["fixture_first_harvest", "fixture_every_harvest", "fixture_removed", 3, "fixture_first_harvest"],
+		"pending": {
+			"fixture_halfway": {"done": 2.0, "event": event},
+			"fixture_first_harvest": {"done": 1.0, "event": event},
+			"fixture_every_harvest": {"done": 1.0, "event": event},
+			"fixture_removed": {"done": 1.0, "event": event},
+			"fixture_second_harvest": {"done": 1.0, "event": {"quantity": "1"}},
+		}}})
+	assert_eq(WorldState.get_value(GameTriggerService.STATE_KEY), {"fired": ["fixture_first_harvest"], "pending": {"fixture_halfway": {"done": 2, "event": event}}},
+		"what current once triggers fired, and where one that has not can resume with every argument of its event")
+	assert_eq(WorldState.get_int(&"fixture:kept"), 1)
+	for done: Variant in [0, 3, 1.5]:
+		WorldState.load_save_data({GameTriggerService.STATE_KEY: {"fired": [], "pending": {"fixture_halfway": {"done": done, "event": event}}}})
+		assert_null(WorldState.get_value(GameTriggerService.STATE_KEY), "%s actions done is not where it can resume" % done)
+	WorldState.load_save_data({GameTriggerService.STATE_KEY: true})
+	assert_null(WorldState.get_value(GameTriggerService.STATE_KEY))
 
 func test_what_a_restore_or_a_new_game_announces_fires_nothing() -> void:
 	_start([_trigger(&"fixture_every_harvest", ["ADD_FLAG fixture:every"])])
@@ -110,6 +139,16 @@ func test_what_a_restore_or_a_new_game_announces_fires_nothing() -> void:
 	_events.harvested.emit(1, &"fixture_radish")
 	assert_eq(WorldState.get_int(&"fixture:every"), 1, "play fires it again")
 
+func test_a_condition_on_an_event_value_that_fails_its_check_does_not_hold_negated() -> void:
+	var away := _trigger(&"fixture_away", ["ADD_FLAG fixture:away"], "!LOCATION $crop")
+	var any_away := _trigger(&"fixture_any_away", ["ADD_FLAG fixture:any_away"], '!ANY "LOCATION $crop" "FALSE"')
+	ContentFixture.use(self, [_location(&"fixture_field"), away, any_away])
+	_service()
+	_events.harvested.emit(1, &"fixture_nowhere")
+	assert_eq([WorldState.get_int(&"fixture:away"), WorldState.get_int(&"fixture:any_away")], [0, 0], "an id the content does not have")
+	_events.harvested.emit(1, &"fixture_field")
+	assert_eq([WorldState.get_int(&"fixture:away"), WorldState.get_int(&"fixture:any_away")], [1, 1], "the player is not in the field")
+
 func test_a_trigger_that_sets_itself_off_stops() -> void:
 	var loop := _trigger(&"fixture_loop", ["ADD_FLAG fixture:loops"])
 	loop.event = &"WorldState.changed"
@@ -121,13 +160,15 @@ func test_triggers_report_events_and_arguments_they_cannot_have() -> void:
 	var unknown := _trigger(&"fixture_unknown_event", ["ADD_FLAG fixture:x"])
 	unknown.event = &"FixtureEvents.grown"
 	var idle := _trigger(&"fixture_idle", [])
+	var blank := _trigger(&"fixture_blank", ["", " "])
 	var per_crop_name := _trigger(&"fixture_per_name", ["ADD_FLAG fixture:x"])
 	per_crop_name.repeat_per = &"crop"
 	var missing := _trigger(&"fixture_missing", ["ADD_FLAG fixture:x $weight"], "EVENT_ARG season Spring")
-	var registry := ContentFixture.use(self, [unknown, idle, per_crop_name, missing])
+	var registry := ContentFixture.use(self, [unknown, idle, blank, per_crop_name, missing])
 	var problems := "\n".join(registry.find_problems())
 	assert_string_contains(problems, "trigger 'fixture_unknown_event' listens to 'FixtureEvents.grown', which is no signal of an autoload")
 	assert_string_contains(problems, "trigger 'fixture_idle' has no actions")
+	assert_string_contains(problems, "trigger 'fixture_blank' has no actions")
 	assert_string_contains(problems, "trigger 'fixture_per_name' repeats per 'crop', which is no integer argument")
 	assert_string_contains(problems, "trigger 'fixture_missing' reads argument 'weight'")
 	assert_string_contains(problems, "trigger 'fixture_missing' reads argument 'season'")
@@ -154,16 +195,18 @@ func test_an_event_value_is_checked_as_a_written_argument_is() -> void:
 	GameRules.register_action(&"FIXTURE_VISIT", func(args: PackedStringArray, _context: Dictionary) -> bool:
 		WorldState.add_int(StringName("fixture:visited:%s" % args[0]), 1)
 		return true, 1, 1, [WorldLocationData.KIND])
-	var visit := _trigger(&"fixture_visit", ["FIXTURE_VISIT $crop"])
+	var visit := _trigger(&"fixture_visit", ["ADD_FLAG fixture:before", "FIXTURE_VISIT $crop"])
 	visit.once = true
 	ContentFixture.use(self, [_location(&"fixture_field"), visit])
 	var service := _service()
 	_events.harvested.emit(1, &"fixture_nowhere")
 	assert_false(service.has_fired(&"fixture_visit"), "an id the content does not have fails the action")
 	assert_false(WorldState.to_save_data().has("fixture:visited:fixture_nowhere"))
+	assert_eq(WorldState.get_int(&"fixture:before"), 0, "no action runs when one cannot")
+	assert_false(service.is_pending(&"fixture_visit"), "it gave nothing, so it fires anew")
 	_events.harvested.emit(1, &"fixture_field")
 	assert_true(service.has_fired(&"fixture_visit"))
-	assert_eq(WorldState.get_int(&"fixture:visited:fixture_field"), 1)
+	assert_eq([WorldState.get_int(&"fixture:before"), WorldState.get_int(&"fixture:visited:fixture_field")], [1, 1])
 	GameRules._actions.erase(&"FIXTURE_VISIT")
 
 func test_triggers_report_arguments_of_the_wrong_type_and_inside_any() -> void:

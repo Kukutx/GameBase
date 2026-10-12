@@ -6,14 +6,23 @@ extends Node
 ## condition holds. The condition and the actions see the event's arguments
 ## by name under the context's "event" key. What the services announce while a
 ## save is restored or a new game resets them is not play and fires nothing.
-## A once trigger whose action failed keeps in the world how many of its
-## actions ran, and its next firing resumes at the one that failed.
+##
+## The world keeps, under `STATE_KEY`, the once triggers that fired and the
+## pending ones: those whose actions stopped at one that failed (a full
+## inventory) after others ran. The next time its event fires, a pending
+## trigger resumes at the failed action with the arguments of the event that
+## set it off, without checking its condition again, so it gives what it
+## promised once. One whose first action failed gave nothing and fires anew.
 
 signal trigger_fired(trigger_id: StringName)
 
 ## How deep triggers may set off one another (a trigger's action firing an
 ## event another trigger listens to) before the chain is cut as a loop.
 const MAX_DEPTH := 8
+## The world's key of the triggers' state: {"fired": [trigger id], "pending":
+## {trigger id: {"done": how many actions ran, "event": {argument: value as
+## text}}}}.
+const STATE_KEY := &"triggers:state"
 
 # event -> Array[TriggerData]
 var _by_event: Dictionary = {}
@@ -50,7 +59,12 @@ func connect_triggers() -> void:
 
 ## Whether the trigger already fired in this world, for one that fires once.
 func has_fired(trigger_id: StringName) -> bool:
-	return WorldState.get_bool(_fired_key(trigger_id))
+	return (_read_state(&"fired", []) as Array).has(String(trigger_id))
+
+## Whether a once trigger's actions stopped at one that failed and wait for
+## its event to fire again.
+func is_pending(trigger_id: StringName) -> bool:
+	return (_read_state(&"pending", {}) as Dictionary).has(String(trigger_id))
 
 ## Fires the triggers on `event` with the event's arguments by name.
 func fire(event: StringName, args: Dictionary) -> void:
@@ -62,14 +76,24 @@ func fire(event: StringName, args: Dictionary) -> void:
 	_depth += 1
 	var context := {"event": args}
 	for trigger: TriggerData in _by_event.get(event, []):
-		if trigger.once and (has_fired(trigger.id) or _running.has(trigger.id)):
-			continue
-		var times := 1 if trigger.repeat_per == &"" else int(args.get(String(trigger.repeat_per), 0))
-		if times <= 0 or not GameRules.check(trigger.condition, context):
-			continue
-		_running[trigger.id] = true
-		var completed := _run_once(trigger, context) if trigger.once else _run(trigger, times, context)
-		_running.erase(trigger.id)
+		var completed := false
+		if trigger.once:
+			if _running.has(trigger.id) or has_fired(trigger.id):
+				continue
+			var pending: Dictionary = (_read_state(&"pending", {}) as Dictionary).get(String(trigger.id), {})
+			if pending.is_empty() and not GameRules.check(trigger.condition, context):
+				continue
+			_running[trigger.id] = true
+			if pending.is_empty():
+				completed = _run_once(trigger, args, 0)
+			else:
+				completed = _run_once(trigger, pending["event"], int(pending["done"]))
+			_running.erase(trigger.id)
+		else:
+			var times := 1 if trigger.repeat_per == &"" else int(args.get(String(trigger.repeat_per), 0))
+			if times <= 0 or not GameRules.check(trigger.condition, context):
+				continue
+			completed = _run(trigger, times, context)
 		if completed:
 			trigger_fired.emit(trigger.id)
 	_depth -= 1
@@ -80,18 +104,26 @@ func _run(trigger: TriggerData, times: int, context: Dictionary) -> bool:
 			return false
 	return true
 
-# Runs a once trigger's actions from the first that has not run in this world.
-# An action that failed (a full inventory) leaves it to fire again from there;
-# only one whose actions all ran counts as fired.
-func _run_once(trigger: TriggerData, context: Dictionary) -> bool:
-	var total := GameRules.count_actions(trigger.actions)
-	var done := GameRules.run_actions_from(trigger.actions, WorldState.get_int(_progress_key(trigger.id)), context)
-	if done < total:
-		WorldState.set_value(_progress_key(trigger.id), done)
+# Runs a once trigger's actions from the one at `first` with the event's
+# arguments `event`. When one fails after others ran, the trigger is pending
+# at it; when all ran, it fired.
+func _run_once(trigger: TriggerData, event: Dictionary, first: int) -> bool:
+	var done := GameRules.run_actions_from(trigger.actions, first, {"event": event})
+	var completed := done >= GameRules.count_actions(trigger.actions)
+	if done == 0:
 		return false
-	WorldState.erase(_progress_key(trigger.id))
-	WorldState.set_value(_fired_key(trigger.id), true)
-	return true
+	var state := _get_state()
+	var id := String(trigger.id)
+	if completed:
+		(state["pending"] as Dictionary).erase(id)
+		(state["fired"] as Array).append(id)
+	else:
+		var texts := {}
+		for name: String in event:
+			texts[name] = str(event[name])
+		(state["pending"] as Dictionary)[id] = {"done": done, "event": texts}
+	_set_state(state)
+	return completed
 
 func _on_event(...values: Array) -> void:
 	var event: StringName = values.pop_back()
@@ -113,31 +145,58 @@ func _disconnect_all() -> void:
 	_by_event.clear()
 	_arg_names.clear()
 
-# A cleared or loaded world keeps only the marks of current once triggers: that
-# one fired, exactly true, and how many actions of one that has not ran, a
-# count short of all of them. A save names current content only.
+# A cleared or loaded world keeps only what current once triggers left: the
+# ones that fired, and the pending ones that have not, each past its first
+# action and short of all of them, with a text value for every argument of
+# its event. A save names current content only.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
-	if key != &"":
+	if key != &"" or WorldState.get_value(STATE_KEY) == null:
 		return
-	var world := WorldState.to_save_data()
-	for world_key: String in world:
-		var parts := world_key.split(":")
-		if parts.size() != 3 or parts[0] != "trigger" or not (parts[2] == "fired" or parts[2] == "progress"):
-			continue
-		var trigger := TriggerData.find(StringName(parts[1]))
-		var mark: Variant = world[world_key]
-		var kept := trigger != null and trigger.once
-		if kept and parts[2] == "fired":
-			kept = mark is bool and mark
-		elif kept:
-			# A saved count comes back as a float.
-			var count := WorldState.get_int(StringName(world_key))
-			kept = (mark is int or mark is float) and count == mark and count > 0 and count < GameRules.count_actions(trigger.actions) and not has_fired(trigger.id)
-		if not kept:
-			WorldState.erase(StringName(world_key))
+	var saved := _get_state()
+	var kept := {"fired": [], "pending": {}}
+	for id: Variant in saved["fired"]:
+		if (id is String or id is StringName) and _is_once(id) and not (kept["fired"] as Array).has(String(id)):
+			(kept["fired"] as Array).append(String(id))
+	var pending: Dictionary = saved["pending"]
+	for id: Variant in pending:
+		if _is_once(id) and not (kept["fired"] as Array).has(String(id)) and _is_resumable(TriggerData.find(StringName(String(id))), pending[id]):
+			(kept["pending"] as Dictionary)[String(id)] = {"done": int(pending[id]["done"]), "event": pending[id]["event"]}
+	_set_state(kept)
 
-func _fired_key(trigger_id: StringName) -> StringName:
-	return StringName("trigger:%s:fired" % trigger_id)
+func _is_once(id: Variant) -> bool:
+	var trigger := TriggerData.find(StringName(String(id))) if id is String or id is StringName else null
+	return trigger != null and trigger.once
 
-func _progress_key(trigger_id: StringName) -> StringName:
-	return StringName("trigger:%s:progress" % trigger_id)
+# Whether `entry` is where `trigger` can resume: a whole count of the actions
+# that ran, at least one and short of all of them, and a text value for each
+# argument its event has. A saved count comes back as a float.
+func _is_resumable(trigger: TriggerData, entry: Variant) -> bool:
+	if not (entry is Dictionary):
+		return false
+	var done: Variant = (entry as Dictionary).get("done")
+	var event: Variant = (entry as Dictionary).get("event")
+	if not (done is int or done is float) or done != int(done) or int(done) < 1 or int(done) >= GameRules.count_actions(trigger.actions):
+		return false
+	if not (event is Dictionary) or (event as Dictionary).size() != trigger.get_event_args().size():
+		return false
+	for name: String in trigger.get_event_args():
+		if not ((event as Dictionary).get(name) is String):
+			return false
+	return true
+
+# A part of the triggers' state as the world holds it, or `empty` when it is
+# not of that shape. Read only: `_get_state()` gives a copy to change.
+func _read_state(part: StringName, empty: Variant) -> Variant:
+	var saved: Variant = WorldState.get_value(STATE_KEY)
+	var value: Variant = (saved as Dictionary).get(String(part)) if saved is Dictionary else null
+	return value if typeof(value) == typeof(empty) else empty
+
+# A copy of the triggers' state, each part of it in its shape.
+func _get_state() -> Dictionary:
+	return {"fired": (_read_state(&"fired", []) as Array).duplicate(true), "pending": (_read_state(&"pending", {}) as Dictionary).duplicate(true)}
+
+func _set_state(state: Dictionary) -> void:
+	if (state["fired"] as Array).is_empty() and (state["pending"] as Dictionary).is_empty():
+		WorldState.erase(STATE_KEY)
+	else:
+		WorldState.set_value(STATE_KEY, state)

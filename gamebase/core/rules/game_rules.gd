@@ -34,6 +34,8 @@ const ARG_INT := &"int"
 const ARG_NUMBER := &"number"
 const ARG_BOOL := &"bool"
 const ARG_TEXT := &"text"
+## A whole number of at least 1 (how many items).
+const ARG_COUNT := &"count"
 ## How many values of its event arguments a clause's cross-argument check is
 ## tried with at most; one with more is checked when the event fires.
 const MAX_EVENT_ARG_VALUES := 256
@@ -78,14 +80,11 @@ func get_action_keys() -> PackedStringArray:
 
 ## True when every clause of `query` holds. An empty query is true; a query
 ## that does not parse or names an unknown key is false.
+## A value an event gave that does not pass its argument's check makes the
+## query false, whatever negates the clause.
 func check(query: String, context: Dictionary = {}) -> bool:
-	var parsed := _parse(query)
-	if not String(parsed["error"]).is_empty():
-		return false
-	for clause: Dictionary in parsed["clauses"]:
-		if _evaluate_clause(clause, context) == bool(clause["negate"]):
-			return false
-	return true
+	var holds: Variant = _holds(query, context)
+	return holds is bool and holds
 
 ## What `query` requires, in words a player reads: the description of each
 ## clause whose condition registered one. Negated clauses and conditions
@@ -115,25 +114,34 @@ func count_actions(actions: PackedStringArray) -> int:
 
 ## Runs the actions from the one at `first` (each clause of each text counts,
 ## from 0) in order and stops at the first one that fails. Returns how many,
-## from the start, have run then: `count_actions()` when every one did.
+## from the start, have run then: `count_actions()` when every one did. The
+## actions are looked up and the values an event gives them checked before
+## any runs, so an action list that cannot run as written runs none.
 func run_actions_from(actions: PackedStringArray, first: int, context: Dictionary = {}) -> int:
+	var calls: Array[Array] = []
 	var index := 0
 	for action_text: String in actions:
 		var parsed := _parse(action_text)
 		if not String(parsed["error"]).is_empty():
 			push_error("GameRules: %s" % parsed["error"])
-			return maxi(index, first)
+			return first
 		for clause: Dictionary in parsed["clauses"]:
 			if index >= first:
 				var entry: Dictionary = _actions.get(clause["key"], {})
 				if entry.is_empty():
 					push_error("GameRules: unknown action '%s'" % clause["key"])
-					return index
+					return first
 				var args: Variant = _resolve_clause_args(entry, clause, context)
-				if args == null or not bool((entry["call"] as Callable).call(args, context)):
-					return index
+				if args == null:
+					return first
+				calls.append([entry["call"], args])
 			index += 1
-	return index
+	var done := mini(first, index)
+	for action_call: Array in calls:
+		if not bool((action_call[0] as Callable).call(action_call[1], context)):
+			return done
+		done += 1
+	return done
 
 ## Problems with `query`: parse errors, unknown keys, argument counts and kinds.
 func validate_query(query: String) -> PackedStringArray:
@@ -263,7 +271,7 @@ func _arg_values(kind: StringName) -> PackedStringArray:
 	var values := PackedStringArray()
 	if kind == ARG_BOOL:
 		return PackedStringArray(["true", "false"])
-	if kind == &"" or kind == ARG_INT or kind == ARG_NUMBER or kind == ARG_TEXT or _arg_kinds.has(kind):
+	if kind in [&"", ARG_INT, ARG_NUMBER, ARG_TEXT, ARG_COUNT] or _arg_kinds.has(kind):
 		return values
 	for entry: Variant in ContentRegistry.active.get_entries(kind):
 		if entry is ContentEntry:
@@ -281,6 +289,8 @@ func _check_value(value: String, kind: StringName) -> String:
 			return "" if value.is_valid_int() else "'%s' is not an integer" % value
 		ARG_NUMBER:
 			return "" if value.is_valid_float() else "'%s' is not a number" % value
+		ARG_COUNT:
+			return "" if value.is_valid_int() and int(value) >= 1 else "'%s' is not a count (a whole number of at least 1)" % value
 		ARG_BOOL:
 			return "" if ["true", "false"].has(value.to_lower()) else "'%s' is not true or false" % value
 		ARG_TEXT:
@@ -289,19 +299,38 @@ func _check_value(value: String, kind: StringName) -> String:
 		return String((_arg_kinds[kind] as Callable).call(value))
 	return "" if ContentRegistry.active.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
 
-func _evaluate_clause(clause: Dictionary, context: Dictionary) -> bool:
+# Whether every clause of `query` holds: true or false, or null when a value
+# an event gave a clause does not pass its check, which no negation turns
+# into a pass.
+func _holds(query: String, context: Dictionary) -> Variant:
+	var parsed := _parse(query)
+	if not String(parsed["error"]).is_empty():
+		return false
+	for clause: Dictionary in parsed["clauses"]:
+		var holds: Variant = _evaluate_clause(clause, context)
+		if holds == null:
+			return null
+		if holds == bool(clause["negate"]):
+			return false
+	return true
+
+# Whether the clause holds, before its negation; null as `_holds()` says.
+func _evaluate_clause(clause: Dictionary, context: Dictionary) -> Variant:
 	var key: StringName = clause["key"]
 	var args: PackedStringArray = clause["args"]
 	if key == &"ANY":
 		for sub_query: String in args:
-			if check(sub_query, context):
-				return true
+			var holds: Variant = _holds(sub_query, context)
+			if holds == null or holds:
+				return holds
 		return false
 	var entry: Dictionary = _conditions.get(key, {})
 	if entry.is_empty():
 		return false
 	var resolved: Variant = _resolve_clause_args(entry, clause, context)
-	return resolved != null and bool((entry["call"] as Callable).call(resolved, context))
+	if resolved == null:
+		return null
+	return bool((entry["call"] as Callable).call(resolved, context))
 
 func _parse(text: String) -> Dictionary:
 	if not _parsed.has(text):
@@ -366,7 +395,7 @@ static func takes_type(kind: StringName, type: int) -> bool:
 	if type == TYPE_NIL or kind == &"" or kind == ARG_TEXT:
 		return true
 	match kind:
-		ARG_INT:
+		ARG_INT, ARG_COUNT:
 			return type == TYPE_INT
 		ARG_NUMBER:
 			return type == TYPE_INT or type == TYPE_FLOAT
