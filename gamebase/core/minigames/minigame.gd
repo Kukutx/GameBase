@@ -16,6 +16,14 @@ var _finished := false
 func setup(_settings: Dictionary) -> void:
 	pass
 
+## What is wrong with `settings` a definition gives this minigame, checked with
+## the rest of the content (`MiniGameDefinition.find_problems()`) on a scene
+## that is not in the tree: an id of content that `registry` lacks, a value out
+## of range. A setting left out is no problem, as the caller's context may
+## give it.
+func find_settings_problems(_settings: Dictionary, _registry: ContentRegistry) -> PackedStringArray:
+	return PackedStringArray()
+
 func finish(result: MiniGameResult) -> void:
 	if _finished:
 		return

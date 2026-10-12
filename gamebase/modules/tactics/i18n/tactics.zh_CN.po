@@ -1,0 +1,49 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GameBase modules/tactics\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "%s is defeated."
+msgstr "%s 被击倒了。"
+
+msgid "%s moves."
+msgstr "%s 移动了。"
+
+msgid "%s uses %s."
+msgstr "%s 使用了%s。"
+
+msgid "%s's turn."
+msgstr "轮到 %s 行动。"
+
+msgid "Attack %d · Defense %d · Move %d"
+msgstr "攻击 %d · 防御 %d · 移动 %d"
+
+msgid "Cancel again to give up the battle."
+msgstr "再按一次取消即放弃这场战斗。"
+
+msgid "Defeat."
+msgstr "战败。"
+
+msgid "End Turn"
+msgstr "结束回合"
+
+msgid "HP %d/%d"
+msgstr "生命 %d/%d"
+
+msgid "Move"
+msgstr "移动"
+
+msgid "Pick a command."
+msgstr "选择指令。"
+
+msgid "Pick what it aims at. Cancel goes back."
+msgstr "选择目标格。取消可返回。"
+
+msgid "Pick where it moves. Cancel goes back."
+msgstr "选择要移动到的格子。取消可返回。"
+
+msgid "Victory!"
+msgstr "胜利！"

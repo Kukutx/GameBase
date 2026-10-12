@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/minigames/minigame_station.gd" id="1_station"]
+[ext_resource type="Script" path="res://gamebase/core/interactions/interactable.gd" id="2_interactable"]
+
+[sub_resource type="RectangleShape2D" id="Rect_interact"]
+size = Vector2(32, 28)
+
+[node name="MiniGameStation" type="Node2D"]
+z_index = 4
+script = ExtResource("1_station")
+
+[node name="Interactable" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("2_interactable")
+prompt_text = "Play"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("Rect_interact")

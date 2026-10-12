@@ -1,0 +1,73 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Iron Banners\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Lead your banners in grid tactics and field battles."
+msgstr "率领你的旗帜，进行格子战术与野战。"
+
+msgid "Lookout"
+msgstr "瞭望台"
+
+msgid "To the lookout"
+msgstr "前往瞭望台"
+
+msgid "The whole valley lies below."
+msgstr "整个山谷尽收眼底。"
+
+msgid "Back to the start"
+msgstr "返回起点"
+
+msgid "%s move · %s use · %s save · %s load"
+msgstr "%s 移动 · %s 使用 · %s 存档 · %s 读档"
+
+msgid "Camp"
+msgstr "营地"
+
+msgid "Welcome to camp! Plan the battle at the ford on the war table."
+msgstr "欢迎来到营地！在战术桌上筹划渡口之战。"
+
+msgid "War Table"
+msgstr "战术桌"
+
+msgid "Plan the Battle"
+msgstr "筹划战斗"
+
+msgid "Border Ford"
+msgstr "边境渡口"
+
+msgid "Strike"
+msgstr "斩击"
+
+msgid "Shoot"
+msgstr "射击"
+
+msgid "Mend"
+msgstr "治疗"
+
+msgid "Smash"
+msgstr "重砸"
+
+msgid "Firepot"
+msgstr "火罐"
+
+msgid "Swordsman"
+msgstr "剑士"
+
+msgid "Archer"
+msgstr "弓手"
+
+msgid "Cleric"
+msgstr "牧师"
+
+msgid "Raider"
+msgstr "劫掠者"
+
+msgid "Brute"
+msgstr "蛮兵"
+
+msgid "Slinger"
+msgstr "投石手"

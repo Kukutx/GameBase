@@ -4,7 +4,7 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 const MINIGAME := &"fixture_target"
 
 ## A minigame the test plays itself: it keeps the settings it was given and
-## ends when the test finishes it.
+## ends when the test finishes it. It needs a round at least.
 class _FixtureMiniGame:
 	extends MiniGame
 
@@ -12,6 +12,12 @@ class _FixtureMiniGame:
 
 	func setup(given: Dictionary) -> void:
 		settings = given
+
+	func find_settings_problems(given: Dictionary, _registry: ContentRegistry) -> PackedStringArray:
+		var problems := PackedStringArray()
+		if int(given.get("rounds", 1)) < 1:
+			problems.append("plays %s rounds, fewer than one" % given["rounds"])
+		return problems
 
 func before_each() -> void:
 	var minigame := _FixtureMiniGame.new()
@@ -47,8 +53,11 @@ func test_ending_the_player_s_activities_cancels_the_minigame() -> void:
 	assert_false(MiniGameHost.is_running())
 	assert_false(InputLock.is_held(&"minigame"))
 
-func test_the_fixture_minigame_is_valid_content() -> void:
-	assert_eq(MiniGameDefinition.find(MINIGAME).find_problems(ContentRegistry.active), PackedStringArray())
+func test_the_fixture_minigame_is_valid_content_and_the_minigame_checks_its_settings() -> void:
+	var definition := MiniGameDefinition.find(MINIGAME)
+	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray())
+	definition.settings["rounds"] = 0
+	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(["plays 0 rounds, fewer than one"]))
 
 func test_host_pauses_the_world_blocks_saving_and_restores_both() -> void:
 	var outcome := {}

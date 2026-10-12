@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"swordsman"
+display_name = "Swordsman"
+color = Color(0.35, 0.5, 0.8, 1)
+max_health = 24
+attack = 5
+defense = 3
+speed = 30.0
+move = 3
+action_ids = Array[StringName]([&"strike"])

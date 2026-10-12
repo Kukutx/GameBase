@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleUnitData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"archer"
+display_name = "Archer"
+color = Color(0.3, 0.62, 0.48, 1)
+max_health = 16
+attack = 4
+defense = 1
+speed = 28.0
+move = 3
+action_ids = Array[StringName]([&"shoot"])

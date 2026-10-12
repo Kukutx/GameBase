@@ -8,7 +8,7 @@ GameBase is the single repository for a family of Godot 4.x games: a shared, gen
 gamebase/core/        Genre-agnostic foundation services (save, content, session, rules, settings,
                       input, audio, world travel, time, randomness, stats, profile, interactions,
                       minigames, diagnostics, and the title, pause and settings menus)
-gamebase/modules/     Optional gameplay modules: items, skills, combat, lifesim, npc_social, npc_ai, progression, roguelite
+gamebase/modules/     Optional gameplay modules: items, skills, combat, lifesim, npc_social, npc_ai, progression, roguelite, tactics
 gamebase/templates/   The template tools/new_game.js creates a game from
 gamebase/gamebase.json  The core's autoloads, the modules with the modules each one requires and the
                       addons and autoloads each one uses, and the addons every game links
@@ -27,6 +27,7 @@ The registered games:
 | --- | --- | --- |
 | Farm1 | `games/farm1/` | The first-generation farming life-sim; see [games/farm1/README.md](games/farm1/README.md) |
 | Ember Depths | `games/dungeon1/` | A dungeon delve on the core, items, skills and combat; see [games/dungeon1/README.md](games/dungeon1/README.md) |
+| Iron Banners | `games/strategy1/` | Strategy battles on a grid in active time, on the core, combat, items and tactics; see [games/strategy1/README.md](games/strategy1/README.md) |
 
 A game is registered by its `games/<id>/game.json`, which lists the foundation modules it uses (with every module they require) and any extra shared addons. Inside a game project, `res://game/` is that game's code, `res://gamebase/` the foundation and `res://addons/` the addons. Dependencies point one way: a game may use the core and its listed modules, a module may use the core and the modules it declares, and the core uses neither; `tools/check_layers.js` enforces this. See [gamebase/README.md](gamebase/README.md).
 

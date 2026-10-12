@@ -233,6 +233,11 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `Skills.skill_xp_changed(skill_id: StringName, xp: int, level: int)`
 - `Skills.skill_leveled_up(skill_id: StringName, level: int)`
 
+## TacticsEvents (tactics)
+
+- `TacticsEvents.battle_ended(battle_map_id: StringName, won: bool)`: A grid battle on `battle_map_id` ended: won, or lost or given up.
+- `TacticsEvents.foe_defeated(battle_unit_id: StringName)`: A unit of the player's side defeated a foe of kind `battle_unit_id`.
+
 ## WorldTravel (core)
 
 - `WorldTravel.travel_started(scene_path: String, spawn_id: StringName)`
