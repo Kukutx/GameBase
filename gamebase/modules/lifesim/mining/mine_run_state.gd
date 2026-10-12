@@ -20,6 +20,14 @@ signal deepest_floor_changed(floor: int)
 const TRACK_KEY := &"mine"
 const CHECKPOINT_STEP := 5
 const MAX_FLOOR := 120
+# Where a floor's rocks and enemies stand, how far apart, and how far from its
+# way in and its way down.
+const FLOOR_AREA := Rect2(-205, -132, 450, 264)
+const SPACING := 42.0
+const ENTRANCE := Vector2(-305, 0)
+const ENTRANCE_CLEARANCE := 95.0
+const EXIT := Vector2(300, 0)
+const EXIT_CLEARANCE := 70.0
 
 ## The rocks and enemies of generated floors; the game assigns it.
 var floor_table: MineFloorTable
@@ -62,7 +70,6 @@ func generate_floor_layout(floor: int) -> Dictionary:
 	var rng := track.stream(resolved)
 	var rocks: Array[Dictionary] = []
 	var enemies: Array[Dictionary] = []
-	var occupied: Array[Vector2] = []
 	var rock_count := clampi(3 + int(resolved / 2), 4, 10)
 	var enemy_count := clampi(1 + int(resolved / 3), 1, 4)
 	var tiers: Array[Dictionary] = []
@@ -78,9 +85,13 @@ func generate_floor_layout(floor: int) -> Dictionary:
 		if bool(tier["unlocked"]):
 			guaranteed = tier["id"]
 			break
-	for index in range(rock_count if floor_table != null else 0):
-		var position := _pick_position(rng, occupied)
-		occupied.append(position)
+	if floor_table == null:
+		rock_count = 0
+	var enemy_kind := floor_table.get_enemy_id(resolved) if floor_table != null else StringName()
+	if enemy_kind.is_empty():
+		enemy_count = 0
+	var positions := rng.scatter(FLOOR_AREA, rock_count + enemy_count, SPACING, PackedVector2Array(), Vector2(8, 8), _is_clear_of_doorways, 64)
+	for index in range(rock_count):
 		var roll := rng.randf()
 		var kind := default_rock
 		# A new ore tier is guaranteed on its unlock floor so progression never
@@ -99,30 +110,17 @@ func generate_floor_layout(floor: int) -> Dictionary:
 					break
 		rocks.append({
 			"kind": String(kind),
-			"position": position,
+			"position": positions[index],
 			"persistent_id": "mine_f%03d_rock_%02d" % [resolved, index + 1],
 		})
-	var enemy_kind := floor_table.get_enemy_id(resolved) if floor_table != null else StringName()
-	for index in range(enemy_count if not enemy_kind.is_empty() else 0):
-		var position := _pick_position(rng, occupied)
-		occupied.append(position)
+	for index in range(enemy_count):
 		enemies.append({
 			"kind": String(enemy_kind),
-			"position": position,
+			"position": positions[rock_count + index],
 			"persistent_id": "mine_f%03d_enemy_%02d" % [resolved, index + 1],
 		})
 	return {"floor": resolved, "rocks": rocks, "enemies": enemies}
 
-func _pick_position(rng: GameRandomStream, occupied: Array[Vector2]) -> Vector2:
-	for _attempt in range(64):
-		var candidate := Vector2(rng.randf_range(-205.0, 245.0), rng.randf_range(-132.0, 132.0)).snapped(Vector2(8, 8))
-		if candidate.distance_to(Vector2(-305, 0)) < 95.0 or candidate.distance_to(Vector2(300, 0)) < 70.0:
-			continue
-		var clear := true
-		for point: Vector2 in occupied:
-			if candidate.distance_to(point) < 42.0:
-				clear = false
-				break
-		if clear:
-			return candidate
-	return Vector2(rng.randf_range(-180.0, 220.0), rng.randf_range(-120.0, 120.0)).snapped(Vector2(8, 8))
+# Whether `point` keeps clear of the floor's way in and its way down.
+static func _is_clear_of_doorways(point: Vector2) -> bool:
+	return point.distance_to(ENTRANCE) >= ENTRANCE_CLEARANCE and point.distance_to(EXIT) >= EXIT_CLEARANCE

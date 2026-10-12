@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://game/world/world_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://game/ui/game_menu.tscn" id="2_menu"]
@@ -11,6 +11,9 @@
 [ext_resource type="PackedScene" path="res://gamebase/modules/progression/projects/town_project_menu.tscn" id="9_project_menu"]
 [ext_resource type="Script" path="res://gamebase/core/events/status_line.gd" id="10_status_line"]
 [ext_resource type="Script" path="res://gamebase/core/ui/save_indicator.gd" id="11_save_indicator"]
+[ext_resource type="Script" path="res://game/world/clock_line.gd" id="12_clock_line"]
+[ext_resource type="Script" path="res://gamebase/modules/items/hotbar/hotbar_line.gd" id="13_hotbar_line"]
+[ext_resource type="Script" path="res://gamebase/core/ui/hud/controls_line.gd" id="14_controls_line"]
 
 [node name="WorldHud" type="CanvasLayer"]
 layer = 5
@@ -36,6 +39,9 @@ theme_override_font_sizes/font_size = 12
 text = ""
 
 [node name="Clock" type="Label" parent="."]
+script = ExtResource("12_clock_line")
+shows_place = false
+shows_weather = true
 offset_left = 218.0
 offset_top = 10.0
 offset_right = 464.0
@@ -106,6 +112,7 @@ text = ""
 horizontal_alignment = 1
 
 [node name="Hotbar" type="Label" parent="."]
+script = ExtResource("13_hotbar_line")
 offset_left = 16.0
 offset_top = 199.0
 offset_right = 464.0
@@ -126,6 +133,17 @@ text = ""
 clip_text = true
 
 [node name="Info" type="Label" parent="."]
+script = ExtResource("14_controls_line")
+hints = Dictionary[StringName, String]({
+&"move": "move",
+&"interact": "interact/reel",
+&"use_tool": "tool/item",
+&"give_gift": "gift",
+&"remove_building": "pack",
+&"open_menu": "menu",
+&"hotbar": "hotbar",
+&"quick_save/quick_load": "save/load"
+})
 offset_left = 16.0
 offset_top = 245.0
 offset_right = 468.0

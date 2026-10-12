@@ -207,6 +207,7 @@ func test_the_content_check_names_cues_the_definition_or_a_cue_gets_wrong() -> v
 	definition.event_cues = {&"FixtureEvents.fixture_happened": &"fixture_missing"}
 	definition.menu_open_cue_id = &"fixture_music"
 	assert_eq(AudioCueData.find_definition_problems(definition, registry), PackedStringArray([
+		"the event cues name 'FixtureEvents.fixture_happened', which is no signal of an autoload (<Autoload>.<signal>)",
 		"the cue of event FixtureEvents.fixture_happened names unknown audio cue 'fixture_missing'",
 		"the menu open sound names audio cue 'fixture_music', which is no sound",
 	]))

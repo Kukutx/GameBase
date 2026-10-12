@@ -54,6 +54,43 @@ func test_ranges_stay_inside_their_bounds() -> void:
 	assert_eq(stream.randi_range(5, 5), 5)
 	assert_between(stream.randi_range(9, 2), 2, 9)
 
+func test_a_weighted_pick_follows_the_weights_and_never_takes_a_zero() -> void:
+	GameRandom.set_seed(1)
+	var stream := GameRandom.stream("fixture:weights")
+	var counts := [0, 0, 0, 0]
+	for _roll: int in range(4000):
+		counts[stream.pick_weighted(PackedFloat64Array([1.0, 0.0, 3.0, -2.0]))] += 1
+	assert_eq(counts[1] + counts[3], 0, "a weight of 0 or less is never picked")
+	assert_almost_eq(float(counts[2]) / counts[0], 3.0, 0.4, "three times the weight, about three times as often")
+	assert_eq(stream.pick_weighted(PackedFloat64Array()), -1)
+	assert_eq(stream.pick_weighted(PackedFloat64Array([0.0, -1.0])), -1, "nothing to pick")
+	assert_eq(stream.pick_weighted(PackedFloat64Array([0.0, 2.0])), 1)
+	assert_null(stream.pick([]))
+	var picked := {}
+	for _roll: int in range(60):
+		picked[stream.pick([&"a", &"b", &"c"])] = true
+	assert_eq(picked.size(), 3, "each of a list comes up")
+
+func test_scattered_points_keep_their_spacing_inside_their_area() -> void:
+	GameRandom.set_seed(1)
+	var area := Rect2(-100, -50, 200, 100)
+	var taken := PackedVector2Array([Vector2.ZERO])
+	var keep_right := func(point: Vector2) -> bool: return point.x > -60.0
+	var points := GameRandom.stream("fixture:scatter").scatter(area, 6, 30.0, taken, Vector2(8, 8), keep_right)
+	assert_eq(points, GameRandom.stream("fixture:scatter").scatter(area, 6, 30.0, taken, Vector2(8, 8), keep_right), "the same stream scatters the same")
+	assert_eq(points.size(), 6)
+	var near := taken.duplicate()
+	for point: Vector2 in points:
+		assert_true(area.grow(4.0).has_point(point), "%s is in the area" % point)
+		assert_eq(point, point.snapped(Vector2(8, 8)))
+		assert_gt(point.x, -60.0, "%s is one `accept` takes" % point)
+		for other: Vector2 in near:
+			assert_gte(point.distance_to(other), 30.0, "%s keeps clear of %s" % [point, other])
+		near.append(point)
+	var crowded := GameRandom.stream("fixture:crowd").scatter(Rect2(0, 0, 10, 10), 4, 100.0)
+	assert_eq(crowded.size(), 4, "a crowded area still gets every point")
+	assert_eq(GameRandom.stream("fixture:none").scatter(area, 0, 10.0), PackedVector2Array())
+
 func test_changing_the_seed_changes_the_streams_and_says_so() -> void:
 	GameRandom.set_seed(1)
 	var before := _rolls(GameRandom.stream("fixture:dice"), 3)

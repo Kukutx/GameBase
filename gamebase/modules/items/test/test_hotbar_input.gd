@@ -84,6 +84,29 @@ func test_nothing_moves_while_the_player_acts() -> void:
 	input._unhandled_input(_key(KEY_4))
 	assert_eq(Hotbar.selected_slot, 3)
 
+func test_the_hotbar_names_how_to_pick_a_slot_while_it_is_in_the_tree() -> void:
+	var using_gamepad := InputPrompts.using_gamepad
+	InputPrompts.using_gamepad = false
+	_add_action(&"fixture_hotbar_next", KEY_PERIOD)
+	_add_action(&"fixture_hotbar_previous", KEY_COMMA)
+	var input := _hotbar_input()
+	input.next_action = &"fixture_hotbar_next"
+	input.previous_action = &"fixture_hotbar_previous"
+	assert_eq(InputPrompts.get_prompt(HotbarInput.PROMPT), "1–%d" % mini(HotbarService.SLOT_COUNT, 9), "the number keys on a keyboard")
+	var actions: Array[StringName] = [&"fixture_hotbar_previous", &"fixture_hotbar_next"]
+	var steps := InputPrompts.get_actions_prompt(actions)
+	InputPrompts.using_gamepad = true
+	assert_eq(InputPrompts.get_prompt(HotbarInput.PROMPT), steps, "the steps on a gamepad")
+	InputPrompts.using_gamepad = false
+	input.number_keys = false
+	assert_eq(InputPrompts.get_prompt(HotbarInput.PROMPT), steps, "the steps when the number keys are the game's")
+	input.next_action = &"fixture_action_no_game_has"
+	assert_eq(InputPrompts.get_prompt(HotbarInput.PROMPT), InputPrompts.get_action_prompt(&"fixture_hotbar_previous"))
+	remove_child(input)
+	assert_eq(InputPrompts.get_prompt(HotbarInput.PROMPT), "", "one out of the tree names nothing")
+	add_child(input)
+	InputPrompts.using_gamepad = using_gamepad
+
 func _hotbar_input() -> HotbarInput:
 	var input := HotbarInput.new()
 	add_child_autofree(input)

@@ -257,6 +257,8 @@ static func _location_scene() -> PackedScene:
 
 # The problems of the fixture's locations: the running game's own settings
 # (its weather, say) may name content the fixture leaves out.
+# The problems of the location entries, not of the game's places, which the
+# fixture content does not hold.
 func _location_problems(registry: ContentRegistry) -> PackedStringArray:
 	return PackedStringArray(Array(registry.find_problems()).filter(
-		func(problem: String) -> bool: return problem.contains("location")))
+		func(problem: String) -> bool: return problem.begins_with("location '")))

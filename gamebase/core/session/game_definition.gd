@@ -124,6 +124,25 @@ func find_settings_problems(registry: ContentRegistry, kinds: Array[Script] = []
 			problems.append("%s: %s" % [_settings_label(script), problem])
 	return problems
 
+## Problems with where a new game starts and where a player who passes out
+## wakes: the start location must be a location of `registry`, the home
+## location too when the game names one, and the home spawn a spawn point of
+## the home location.
+func find_place_problems(registry: ContentRegistry) -> PackedStringArray:
+	var problems := PackedStringArray()
+	if start_location_id == &"":
+		problems.append("the game names no start location (GameDefinition.start_location_id)")
+	elif not registry.has_entry(WorldLocationData.KIND, start_location_id):
+		problems.append("the start location '%s' is no location of the game" % start_location_id)
+	if home_location_id == &"":
+		if home_spawn_id != &"":
+			problems.append("the home spawn '%s' belongs to no home location (GameDefinition.home_location_id)" % home_spawn_id)
+	elif not registry.has_entry(WorldLocationData.KIND, home_location_id):
+		problems.append("the home location '%s' is no location of the game" % home_location_id)
+	elif home_spawn_id != &"" and not registry.has_location_spawn(home_location_id, home_spawn_id):
+		problems.append("the home spawn '%s' is no spawn point of location '%s'" % [home_spawn_id, home_location_id])
+	return problems
+
 static func _settings_label(script: Script) -> String:
 	var label := String(script.get_global_name()) if script != null else ""
 	return label if not label.is_empty() else "ModuleSettings"

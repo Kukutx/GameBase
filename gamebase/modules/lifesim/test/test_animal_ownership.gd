@@ -1,6 +1,7 @@
 extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+const MenuFit := preload("res://gamebase/core/test/menu_fit.gd")
 const ANIMAL_SCENE := preload("res://gamebase/modules/lifesim/animals/farm_animal.tscn")
 const MENU_SCENE := preload("res://gamebase/modules/lifesim/animals/animal_management_menu.tscn")
 const HEN_PRICE := 800
@@ -474,6 +475,23 @@ func test_animal_name_typed_by_the_player_is_shown_as_plain_text() -> void:
 	var details := menu.get_node("Panel/VBox/Details") as RichTextLabel
 	assert_true(details.text.contains("[lb]i]Bessie[lb]/i]"), details.text)
 	assert_true(details.get_parsed_text().contains("[i]Bessie[/i]"), details.get_parsed_text())
+
+func test_the_animal_ledger_holds_the_focus_and_fits_the_view() -> void:
+	var menu := MENU_SCENE.instantiate()
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	menu.open(&"fixture_farm")
+	await get_tree().process_frame
+	assert_eq(MenuFit.find_focus_problem(menu), "", "with animals")
+	await get_tree().process_frame
+	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
+	menu.close()
+	menu.open(&"fixture_empty_field")
+	await get_tree().process_frame
+	assert_eq(MenuFit.find_focus_problem(menu), "", "with no animal and no housing")
+	await get_tree().process_frame
+	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
+	menu.close()
 
 func _content() -> Array:
 	var hen := _animal(&"fixture_hen", "Hen", &"coop", HEN_PRICE, &"fixture_egg")

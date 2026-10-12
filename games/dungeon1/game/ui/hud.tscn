@@ -1,16 +1,19 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=9 format=3]
 
-[ext_resource type="Script" path="res://game/ui/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://game/ui/stats_line.gd" id="1_stats_line"]
 [ext_resource type="PackedScene" path="res://gamebase/modules/items/shop/shop_menu.tscn" id="2_shop"]
 [ext_resource type="PackedScene" path="res://gamebase/core/ui/pause_menu.tscn" id="3_pause"]
 [ext_resource type="Script" path="res://gamebase/core/events/status_line.gd" id="4_status_line"]
 [ext_resource type="Script" path="res://gamebase/core/ui/save_indicator.gd" id="5_save_indicator"]
+[ext_resource type="Script" path="res://game/ui/depth_line.gd" id="6_depth_line"]
+[ext_resource type="Script" path="res://gamebase/modules/items/hotbar/hotbar_line.gd" id="7_hotbar_line"]
+[ext_resource type="Script" path="res://gamebase/core/ui/hud/controls_line.gd" id="8_controls_line"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 20
-script = ExtResource("1_hud")
 
 [node name="Stats" type="Label" parent="."]
+script = ExtResource("1_stats_line")
 offset_left = 8.0
 offset_top = 6.0
 offset_right = 260.0
@@ -20,6 +23,8 @@ theme_override_font_sizes/font_size = 11
 text = ""
 
 [node name="Run" type="Label" parent="."]
+script = ExtResource("6_depth_line")
+shows_time = false
 offset_left = 260.0
 offset_top = 6.0
 offset_right = 472.0
@@ -61,6 +66,7 @@ text = ""
 horizontal_alignment = 1
 
 [node name="Hotbar" type="Label" parent="."]
+script = ExtResource("7_hotbar_line")
 offset_left = 8.0
 offset_top = 232.0
 offset_right = 472.0
@@ -70,6 +76,14 @@ text = ""
 horizontal_alignment = 1
 
 [node name="Controls" type="Label" parent="."]
+script = ExtResource("8_controls_line")
+hints = Dictionary[StringName, String]({
+&"move": "move",
+&"attack": "attack",
+&"drink_potion": "potion",
+&"interact": "use",
+&"next_item": "next item"
+})
 offset_left = 8.0
 offset_top = 251.0
 offset_right = 472.0

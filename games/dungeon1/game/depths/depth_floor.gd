@@ -8,6 +8,8 @@ extends Node2D
 ## the rope back up to camp with what the player found.
 
 const ENEMY_SCENE := preload("res://gamebase/modules/combat/combat/hostile_creature.tscn")
+# How far apart the enemies of a floor stand.
+const ENEMY_SPACING := 28.0
 
 ## The enemies floors spawn, each from its minimum depth on; deeper tiers come
 ## up more often.
@@ -56,27 +58,17 @@ func _spawn_enemies() -> void:
 		return
 	var rng := DepthRun.floor_stream()
 	var arrival := _spawn_position(arrival_spawn_id)
-	var taken: Array[Vector2] = []
-	for index: int in get_enemy_count(depth):
+	var clear_of_arrival := func(point: Vector2) -> bool: return point.distance_to(arrival) >= arrival_clearance
+	var positions := rng.scatter(arena, get_enemy_count(depth), ENEMY_SPACING, PackedVector2Array(), Vector2(8, 8), clear_of_arrival)
+	for index: int in positions.size():
 		# The larger of two rolls, so the deeper of the reached tiers come up more.
 		var kind := kinds[maxi(rng.randi_range(0, kinds.size() - 1), rng.randi_range(0, kinds.size() - 1))]
 		var enemy := ENEMY_SCENE.instantiate() as HostileCreature
 		enemy.name = "Enemy%02d" % (index + 1)
 		enemy.data = EnemyData.find(kind)
-		enemy.position = _pick_position(rng, arrival, taken)
-		taken.append(enemy.position)
+		enemy.position = positions[index]
 		add_child(enemy)
 		_enemies.append(enemy)
-
-func _pick_position(rng: GameRandomStream, arrival: Vector2, taken: Array[Vector2]) -> Vector2:
-	var candidate := arena.get_center()
-	for _attempt: int in 32:
-		candidate = Vector2(rng.randf_range(arena.position.x, arena.end.x), rng.randf_range(arena.position.y, arena.end.y)).snapped(Vector2(8, 8))
-		if candidate.distance_to(arrival) < arrival_clearance:
-			continue
-		if taken.all(func(other: Vector2) -> bool: return candidate.distance_to(other) >= 28.0):
-			return candidate
-	return candidate
 
 func _spawn_position(spawn_id: StringName) -> Vector2:
 	for child: Node in get_children():

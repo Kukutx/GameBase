@@ -96,20 +96,13 @@ func roll_catch(location_id: StringName) -> FishData:
 	var available := get_available_fish(location_id)
 	if available.is_empty():
 		return null
-	var total_weight := 0.0
+	var weights := PackedFloat64Array()
 	for fish: FishData in available:
-		total_weight += maxf(fish.catch_weight, 0.0)
-	if total_weight <= 0.0:
-		return null
+		weights.append(fish.catch_weight)
 	var rng := GameRandom.stream("fish:%d:%d:%s" % [WorldClock.day, cast_count, location_id])
 	cast_count += 1
-	var roll := rng.randf_range(0.0, total_weight)
-	var cursor := 0.0
-	for fish: FishData in available:
-		cursor += maxf(fish.catch_weight, 0.0)
-		if roll <= cursor:
-			return fish
-	return available.back()
+	var picked := rng.pick_weighted(weights)
+	return available[picked] if picked >= 0 else null
 
 func start_cast(location_id: StringName, energy_cost: int = 4) -> bool:
 	if _action_busy:

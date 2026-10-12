@@ -22,9 +22,6 @@ msgstr "整个山谷尽收眼底。"
 msgid "Back to the start"
 msgstr "返回起点"
 
-msgid "%s move · %s use · %s save · %s load"
-msgstr "%s 移动 · %s 使用 · %s 存档 · %s 读档"
-
 msgid "Camp"
 msgstr "营地"
 

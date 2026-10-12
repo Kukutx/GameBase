@@ -26,6 +26,14 @@ func _init(id: StringName) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 
+## A button for one entry of a menu's list (a recipe, an item to buy): its
+## text wraps at the menu's width instead of widening the menu past the view.
+static func list_button(text := "") -> Button:
+	var button := Button.new()
+	button.text = text
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return button
+
 ## Whether the menu shows.
 func is_open() -> bool:
 	return visible

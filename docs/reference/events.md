@@ -19,6 +19,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 - `InputPrompts.input_method_changed(using_gamepad: bool)`
 - `InputPrompts.gamepad_disconnected()`
+- `InputPrompts.prompts_changed()`: A module named or took back the prompt of a control (`register_prompt()`), so a line that names the controls names them anew.
 
 ## InputLock (core)
 

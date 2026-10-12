@@ -432,3 +432,15 @@ msgstr "请按一个按键或鼠标键。按 Esc 或单击左键取消。"
 
 msgid "Pause"
 msgstr "暂停"
+
+msgid "move"
+msgstr "移动"
+
+msgid "use"
+msgstr "使用"
+
+msgid "save"
+msgstr "存档"
+
+msgid "load"
+msgstr "读档"

@@ -55,15 +55,6 @@ msgstr "生命"
 msgid "Combat Lv %d"
 msgstr "战斗 %d 级"
 
-msgid "%s · Depth %d"
-msgstr "%s · 第 %d 层"
-
-msgid "%s · Deepest %d"
-msgstr "%s · 最深 %d 层"
-
-msgid "%s move · %s attack · %s potion · %s use · %s next item"
-msgstr "%s 移动 · %s 攻击 · %s 药水 · %s 使用 · %s 下一个物品"
-
 msgid "Depth %d · Deepest %d"
 msgstr "第 %d 层 · 最深 %d 层"
 
@@ -203,3 +194,15 @@ msgstr "再会。"
 msgctxt "dialogue"
 msgid "Mind the embers."
 msgstr "小心余烬。"
+
+msgid "Depth %d"
+msgstr "第 %d 层"
+
+msgid "attack"
+msgstr "攻击"
+
+msgid "potion"
+msgstr "药水"
+
+msgid "next item"
+msgstr "下一个物品"

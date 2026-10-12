@@ -79,7 +79,7 @@ func _rebuild_housing_rows() -> void:
 		_expansion_buttons[housing_id] = _add_row_button(expansion_row, _purchase_next_expansion.bind(housing_id))
 
 func _add_row_button(row: HBoxContainer, action: Callable) -> Button:
-	var button := Button.new()
+	var button := MenuLayer.list_button()
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.pressed.connect(action)
 	row.add_child(button)

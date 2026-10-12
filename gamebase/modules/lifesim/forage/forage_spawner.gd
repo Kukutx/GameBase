@@ -29,20 +29,21 @@ func generate_plan(day: int, target_location_id: StringName = &"") -> Array[Dict
 	if eligible.is_empty() or spawn_count <= 0 or spawner_id == &"":
 		return []
 
+	var weights := PackedFloat64Array()
+	for entry: ForageEntryData in eligible:
+		weights.append(entry.weight)
 	var rng := GameRandom.stream("forage:%d:%s:%s" % [maxi(day, 1), spawner_id, resolved_location])
 	var result: Array[Dictionary] = []
 	for index in range(spawn_count):
-		var entry := _weighted_pick(eligible, rng)
-		if entry == null:
+		var picked := rng.pick_weighted(weights)
+		if picked < 0:
 			continue
+		var entry := eligible[picked]
 		result.append({
 			"index": index,
 			"item_id": String(entry.item_id),
 			"quantity": roundi(GameStats.apply(&"forage_quantity", entry.get_quantity(rng))),
-			"position": Vector2(
-				rng.randf_range(spawn_rect.position.x, spawn_rect.end.x),
-				rng.randf_range(spawn_rect.position.y, spawn_rect.end.y)
-			),
+			"position": rng.point_in(spawn_rect),
 		})
 	return result
 
@@ -89,20 +90,6 @@ func _on_pickup_collected(_item_id: StringName, _collected: int, remaining: int,
 		return
 	(state["left"] as Dictionary)[str(index)] = maxi(remaining, 0)
 	_set_state(state)
-
-func _weighted_pick(entries: Array[ForageEntryData], rng: GameRandomStream) -> ForageEntryData:
-	var total := 0.0
-	for entry: ForageEntryData in entries:
-		total += maxf(entry.weight, 0.0)
-	if total <= 0.0:
-		return null
-	var roll := rng.randf_range(0.0, total)
-	var cursor := 0.0
-	for entry: ForageEntryData in entries:
-		cursor += maxf(entry.weight, 0.0)
-		if roll <= cursor:
-			return entry
-	return entries.back()
 
 # {"day", "left"}: the day the spawns belong to and what is left of each.
 func _get_state() -> Dictionary:

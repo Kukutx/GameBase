@@ -37,6 +37,12 @@ func _on_contract_changed(_contract: Dictionary) -> void:
 		_refresh()
 
 func _refresh() -> void:
+	_show_contract()
+	# An action that no longer applies hands the focus to closing.
+	if action_button.disabled and action_button.has_focus():
+		close_button.grab_focus()
+
+func _show_contract() -> void:
 	var state := DailyContractState.get_contract()
 	if state.is_empty():
 		title_label.text = tr("Town Notice Board")

@@ -2,7 +2,7 @@ class_name CraftingMenu
 extends MenuLayer
 
 @onready var title_label: Label = $Panel/VBox/Title
-@onready var recipes_container: VBoxContainer = $Panel/VBox/Recipes
+@onready var recipes_container: VBoxContainer = $Panel/VBox/Scroll/Recipes
 @onready var close_button: Button = $Panel/VBox/Close
 
 var current_category: RecipeData.Category = RecipeData.Category.CRAFTING
@@ -30,7 +30,7 @@ func _rebuild() -> void:
 	for recipe: RecipeData in CraftingState.get_all_recipes():
 		if recipe.category != current_category:
 			continue
-		var button := Button.new()
+		var button := MenuLayer.list_button()
 		button.text = _recipe_text(recipe)
 		button.disabled = not CraftingState.can_craft(recipe)
 		button.pressed.connect(_craft.bind(recipe.id))

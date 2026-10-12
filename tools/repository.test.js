@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
-const { checkLocalization, repeatProblem } = require("./check_localization");
+const { checkLocalization, collectNonDialogueKeys, layerLiterals, repeatProblem } = require("./check_localization");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
 const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
@@ -12,6 +12,7 @@ const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, pr
 const { createGame } = require("./new_game");
 const { selectGames } = require("./ci");
 const { callArguments, pages, ruleKeys, signalsOf, stalePages } = require("./generate_reference");
+const { findTestScripts } = require("./validate");
 
 const read = (...parts) => fs.readFileSync(rootPath(...parts), "utf8");
 const pluginVersion = (addon) => (/^version="([^"]+)"$/m.exec(read("addons", addon, "plugin.cfg")) || [])[1];
@@ -357,4 +358,61 @@ test("the reference pages name every autoload with what it does and every rule k
     { name: "done", params: "(at: int)", doc: "Done." },
     { name: "bare", params: "()", doc: "" },
   ]);
+});
+
+test("validate --test finds a GUT script in the test directories a game runs, and only there", () => {
+  const root = tempFile("gamebase-test-script");
+  try {
+    for (const dir of ["shared/test/menus", "test/unit", "other"]) fs.mkdirSync(path.join(root, dir), { recursive: true });
+    fs.writeFileSync(path.join(root, "shared/test/menus/test_shop.gd"), "");
+    fs.writeFileSync(path.join(root, "test/unit/test_shop_sign.gd"), "");
+    fs.writeFileSync(path.join(root, "other/test_lonely.gd"), "");
+    const config = { include_subdirs: true, dirs: ["res://shared/test/", "res://test/unit"] };
+    fs.writeFileSync(path.join(root, ".gutconfig.json"), JSON.stringify(config));
+    const game = { root };
+    assert.deepEqual(findTestScripts(game, "test_shop.gd"), ["res://shared/test/menus/test_shop.gd"]);
+    assert.deepEqual(findTestScripts(game, "test_shop_sign.gd"), ["res://test/unit/test_shop_sign.gd"]);
+    assert.deepEqual(findTestScripts(game, "test_lonely.gd"), [], "a directory the game does not test");
+    assert.deepEqual(findTestScripts(game, "res://other/test_lonely.gd"), [], "nor by its path");
+    // A module's script and the game's may share a name: both are found, and
+    // each can be named by its path.
+    fs.writeFileSync(path.join(root, "test/unit/test_shop.gd"), "");
+    assert.deepEqual(findTestScripts(game, "test_shop.gd"), ["res://shared/test/menus/test_shop.gd", "res://test/unit/test_shop.gd"]);
+    assert.deepEqual(findTestScripts(game, "res://test/unit/test_shop.gd"), ["res://test/unit/test_shop.gd"]);
+    assert.deepEqual(findTestScripts(game, "res://test/unit/test_gone.gd"), []);
+    fs.writeFileSync(path.join(root, ".gutconfig.json"), JSON.stringify({ ...config, include_subdirs: false }));
+    assert.deepEqual(findTestScripts(game, "test_shop.gd"), ["res://test/unit/test_shop.gd"], "without subdirectories");
+    assert.deepEqual(findTestScripts(game, "res://shared/test/menus/test_shop.gd"), []);
+  } finally {
+    removeRecursive(root);
+  }
+});
+
+test("the localization check reads what each control on a HUD does from scenes and script defaults", () => {
+  const root = tempFile("gamebase-hint-text");
+  try {
+    fs.mkdirSync(root, { recursive: true });
+    fs.writeFileSync(path.join(root, "hud.tscn"), [
+      '[node name="Controls" type="Label" parent="."]',
+      "hints = Dictionary[StringName, String]({",
+      '&"move": "walk",',
+      '&"quick_save/quick_load": "save/load"',
+      "})",
+      'text = ""',
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(root, "line.gd"), [
+      "@export var hints: Dictionary[StringName, String] = {",
+      '\t&"interact": "use",',
+      "}",
+      "",
+    ].join("\n"));
+    const layer = { name: "fixture", root };
+    const keys = collectNonDialogueKeys(layer);
+    for (const text of ["walk", "save/load", "use"]) assert.ok(keys.has(text), text);
+    assert.ok(!keys.has("move") && !keys.has("interact"), "a control's id is no text");
+    assert.ok(layerLiterals(layer).has("save/load"));
+  } finally {
+    removeRecursive(root);
+  }
 });

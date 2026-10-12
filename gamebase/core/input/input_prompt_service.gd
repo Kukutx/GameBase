@@ -19,6 +19,9 @@ extends Node
 
 signal input_method_changed(using_gamepad: bool)
 signal gamepad_disconnected
+## A module named or took back the prompt of a control (`register_prompt()`),
+## so a line that names the controls names them anew.
+signal prompts_changed
 
 ## How a gamepad's maker names its buttons.
 enum GamepadStyle { XBOX, PLAYSTATION, NINTENDO }
@@ -93,6 +96,8 @@ var gamepad_style := GamepadStyle.XBOX
 
 # The device of the gamepad last used, or -1.
 var _gamepad_device := -1
+# name -> how a module prompts it (`register_prompt()`).
+var _prompts: Dictionary[StringName, Callable] = {}
 
 ## The style of a gamepad named `joy_name` (`Input.get_joy_name()`).
 static func style_of(joy_name: String) -> GamepadStyle:
@@ -155,6 +160,35 @@ func get_action_prompt(action: StringName) -> String:
 		if control.gamepad_axis != JOY_AXIS_INVALID:
 			return gamepad_axis_name(control.gamepad_axis, gamepad_style)
 	return bindings.get_binding_text(action)
+
+## The prompt of `control` on the device in use, as the HUD names a control
+## (`ControlsLine`): what a module registered under that name
+## (`register_prompt()`: the hotbar's number keys), the movement for `move`,
+## the actions of `quick_save/quick_load` joined by "/", else the action's
+## own. Empty for a name that is no control of the game.
+func get_prompt(control: StringName) -> String:
+	if _prompts.has(control):
+		return String(_prompts[control].call())
+	if control == &"move":
+		return get_move_prompt()
+	var actions: Array[StringName] = []
+	for action: String in String(control).split("/", false):
+		if GameSettings.bindings.get_control(StringName(action)) != null:
+			actions.append(StringName(action))
+	return get_actions_prompt(actions)
+
+## Names the prompt of a control that is no single action, such as the slots
+## of a hotbar: `prompt` returns its text on the device in use, empty while
+## the player cannot use it. A later registration of `name` replaces it.
+func register_prompt(name: StringName, prompt: Callable) -> void:
+	_prompts[name] = prompt
+	prompts_changed.emit()
+
+## Takes back `prompt` of `name` unless another has replaced it since.
+func unregister_prompt(name: StringName, prompt: Callable) -> void:
+	if _prompts.get(name) == prompt:
+		_prompts.erase(name)
+		prompts_changed.emit()
 
 ## The prompts of `actions` on the device in use, joined by "/".
 func get_actions_prompt(actions: Array[StringName]) -> String:

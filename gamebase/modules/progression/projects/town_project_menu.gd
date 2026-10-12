@@ -44,7 +44,7 @@ func _rebuild() -> void:
 		body.bbcode_enabled = true
 		body.text = _project_text(project)
 		block.add_child(body)
-		var action := Button.new()
+		var action := MenuLayer.list_button()
 		_configure_action(action, project)
 		block.add_child(action)
 		projects_container.add_child(block)

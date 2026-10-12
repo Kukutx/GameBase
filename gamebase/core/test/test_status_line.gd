@@ -58,6 +58,16 @@ func test_a_line_that_shows_hints_keeps_each_one_longer() -> void:
 	hints._process(1.0)
 	assert_eq(hints.text, "Saved")
 
+func test_a_line_says_how_a_save_went_unless_another_line_does() -> void:
+	var line := _line()
+	SaveManager.save_completed.emit(true, "Fixture saved")
+	assert_eq(line.text, "Fixture saved")
+	var quiet := StatusLine.new()
+	quiet.shows_saves = false
+	add_child_autofree(quiet)
+	SaveManager.save_completed.emit(true, "Fixture saved again")
+	assert_eq(quiet.text, "")
+
 func _line() -> StatusLine:
 	var line := StatusLine.new()
 	line.seconds_per_message = 2.0

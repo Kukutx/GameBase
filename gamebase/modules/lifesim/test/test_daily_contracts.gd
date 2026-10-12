@@ -1,6 +1,7 @@
 extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+const MenuFit := preload("res://gamebase/core/test/menu_fit.gd")
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
@@ -272,9 +273,25 @@ func test_incomplete_accepted_contract_expires_and_refreshes_after_deadline() ->
 	assert_eq(int(refreshed["generated_day"]), expires + 1)
 	assert_false(bool(refreshed["accepted"]))
 
-func test_notice_board_and_menu_scenes_are_available() -> void:
+func test_the_notice_board_menu_holds_the_focus_and_fits_the_view() -> void:
 	assert_true(ResourceLoader.exists("res://gamebase/modules/lifesim/contracts/notice_board.tscn"))
-	assert_true(ResourceLoader.exists("res://gamebase/modules/lifesim/contracts/daily_contract_menu.tscn"))
+	var menu := (load("res://gamebase/modules/lifesim/contracts/daily_contract_menu.tscn") as PackedScene).instantiate() as DailyContractMenu
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	menu.open()
+	await get_tree().process_frame
+	assert_false(menu.action_button.disabled, "an offer to accept")
+	assert_true(menu.action_button.has_focus())
+	assert_eq(MenuFit.find_focus_problem(menu), "")
+	await get_tree().process_frame
+	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
+	menu.action_button.pressed.emit()
+	await get_tree().process_frame
+	assert_true(menu.action_button.disabled, "a contract under way")
+	assert_true(menu.close_button.has_focus(), "the focus leaves the button that went out")
+	assert_eq(MenuFit.find_focus_problem(menu), "")
+	menu.close()
+	InputLock.clear()
 
 ## The target items of the `objective_type` candidates on `day`.
 func _targets_of(objective_type: StringName, day: int) -> Array[String]:

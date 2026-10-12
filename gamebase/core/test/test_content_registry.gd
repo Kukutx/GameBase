@@ -148,6 +148,25 @@ func test_a_spawn_point_the_node_list_does_not_show_is_a_problem() -> void:
 	var problems := registry.find_problems()
 	assert_true(Array(problems).any(func(problem: String) -> bool: return problem.begins_with("location 'fixture_field'") and problem.contains("node list does not show")), str(problems))
 
+func test_a_game_starts_and_wakes_in_locations_of_its_own() -> void:
+	var registry := ContentFixture.use(self, [_location_with_spawn(&"fixture_home", &"bed")])
+	var definition := GameDefinition.new()
+	assert_eq(definition.find_place_problems(registry), PackedStringArray(["the game names no start location (GameDefinition.start_location_id)"]))
+	definition.start_location_id = &"fixture_home"
+	assert_eq(definition.find_place_problems(registry), PackedStringArray(), "a game need not name a home")
+	definition.home_spawn_id = &"bed"
+	assert_eq(definition.find_place_problems(registry), PackedStringArray(["the home spawn 'bed' belongs to no home location (GameDefinition.home_location_id)"]))
+	definition.home_location_id = &"fixture_home"
+	assert_eq(definition.find_place_problems(registry), PackedStringArray())
+	definition.home_spawn_id = &"door"
+	assert_eq(definition.find_place_problems(registry), PackedStringArray(["the home spawn 'door' is no spawn point of location 'fixture_home'"]))
+	definition.start_location_id = &"fixture_nowhere"
+	definition.home_location_id = &"fixture_nowhere"
+	assert_eq(definition.find_place_problems(registry), PackedStringArray([
+		"the start location 'fixture_nowhere' is no location of the game",
+		"the home location 'fixture_nowhere' is no location of the game",
+	]))
+
 func test_dependency_cycle_detector_accepts_acyclic_graph_and_ignores_unknown_edges() -> void:
 	var graph := {
 		"a": ["b"],
@@ -166,3 +185,24 @@ func test_custom_fields_return_their_value_or_the_default() -> void:
 	location.custom_fields = {"rarity": "rare"}
 	assert_eq(location.get_custom_field(&"rarity"), "rare")
 	assert_eq(location.get_custom_field(&"missing", 3), 3)
+
+# A location whose scene holds one spawn point, `spawn_id`.
+func _location_with_spawn(id: StringName, spawn_id: StringName) -> WorldLocationData:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
+	var root := Node2D.new()
+	root.name = "Place"
+	var spawn := WorldSpawnPoint.new()
+	spawn.name = "Spawn"
+	spawn.spawn_id = spawn_id
+	root.add_child(spawn)
+	spawn.owner = root
+	var scene := PackedScene.new()
+	assert_eq(scene.pack(root), OK)
+	root.free()
+	var path := SCENE_DIRECTORY.path_join("%s.tscn" % id)
+	assert_eq(ResourceSaver.save(scene, path), OK)
+	var location := WorldLocationData.new()
+	location.id = id
+	location.scene_path = path
+	location.default_spawn_id = spawn_id
+	return location

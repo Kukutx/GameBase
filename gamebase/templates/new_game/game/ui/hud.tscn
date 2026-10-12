@@ -1,15 +1,16 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://game/ui/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://gamebase/core/ui/hud/place_line.gd" id="1_place_line"]
 [ext_resource type="Script" path="res://gamebase/core/events/status_line.gd" id="2_status_line"]
 [ext_resource type="Script" path="res://gamebase/core/ui/save_indicator.gd" id="3_save_indicator"]
 [ext_resource type="PackedScene" path="res://gamebase/core/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="Script" path="res://gamebase/core/ui/hud/controls_line.gd" id="5_controls_line"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 20
-script = ExtResource("1_hud")
 
 [node name="Place" type="Label" parent="."]
+script = ExtResource("1_place_line")
 offset_left = 8.0
 offset_top = 6.0
 offset_right = 360.0
@@ -48,6 +49,7 @@ text = ""
 horizontal_alignment = 1
 
 [node name="Controls" type="Label" parent="."]
+script = ExtResource("5_controls_line")
 offset_left = 8.0
 offset_top = 251.0
 offset_right = 472.0
