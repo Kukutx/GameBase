@@ -61,13 +61,13 @@ func test_an_item_is_discovered_once() -> void:
 	assert_eq(CollectionState.get_total_count(CollectionService.CROPS), 1)
 
 func test_collection_records_gameplay_categories_and_accumulates_counts() -> void:
-	LifesimEvents.crop_harvested.emit(&"fixture_radish_crop", &"fixture_radish", 2)
-	LifesimEvents.crop_harvested.emit(&"fixture_radish_crop", &"fixture_radish", 1)
+	LifesimEvents.crop_harvested.emit(&"fixture_radish_crop", &"fixture_radish", 2, Vector2.ZERO)
+	LifesimEvents.crop_harvested.emit(&"fixture_radish_crop", &"fixture_radish", 1, Vector2.ZERO)
 	LifesimEvents.fish_caught.emit(&"fixture_trout_fish", &"fixture_trout")
-	LifesimEvents.resource_mined.emit(&"fixture_pebble_rock", &"fixture_pebble", 3)
-	LifesimEvents.animal_product_collected.emit(&"fixture_hen", &"fixture_egg", 2)
-	LifesimEvents.item_processed.emit(&"fixture_press", &"fixture_oil", 1)
-	ItemsEvents.item_foraged.emit(&"fixture_berry", 4)
+	LifesimEvents.resource_mined.emit(&"fixture_pebble_rock", &"fixture_pebble", 3, Vector2.ZERO)
+	LifesimEvents.animal_product_collected.emit(&"fixture_hen", &"fixture_egg", 2, Vector2.ZERO)
+	LifesimEvents.item_processed.emit(&"fixture_press", &"fixture_oil", 1, Vector2.ZERO)
+	ItemsEvents.item_foraged.emit(&"fixture_berry", 4, Vector2.ZERO)
 
 	assert_eq(CollectionState.get_count(CollectionService.CROPS, &"fixture_radish"), 3)
 	assert_eq(CollectionState.get_count(CollectionService.FISH, &"fixture_trout"), 1)

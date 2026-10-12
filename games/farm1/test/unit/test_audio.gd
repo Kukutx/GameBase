@@ -8,7 +8,7 @@ func test_audio_cues_and_location_music_are_registered() -> void:
 	var errors := ContentDB.rebuild()
 	assert_eq(errors.size(), 0)
 	var cues := AudioCueData.find_all()
-	assert_eq(cues.size(), 18)
+	assert_eq(cues.size(), 23)
 
 	var expected_sfx: Array[StringName] = [
 		&"sfx_pickup",
@@ -24,6 +24,10 @@ func test_audio_cues_and_location_music_are_registered() -> void:
 		&"sfx_hurt",
 		&"sfx_purchase",
 		&"sfx_sale",
+		&"sfx_menu_focus",
+		&"sfx_menu_press",
+		&"sfx_menu_open",
+		&"sfx_menu_close",
 	]
 	for cue_id: StringName in expected_sfx:
 		var cue := AudioCueData.find(cue_id)
@@ -51,6 +55,13 @@ func test_audio_cues_and_location_music_are_registered() -> void:
 			assert_true(cue.is_music())
 			assert_eq(cue.get_bus(), &"Music")
 
+func test_the_menus_and_a_fight_have_their_sounds() -> void:
+	var definition := GameDefinition.current()
+	assert_eq([definition.menu_focus_cue_id, definition.menu_press_cue_id, definition.menu_open_cue_id, definition.menu_close_cue_id], [&"sfx_menu_focus", &"sfx_menu_press", &"sfx_menu_open", &"sfx_menu_close"])
+	var fight_music := AudioCueData.find(CombatSettings.current().fight_music_cue_id)
+	assert_not_null(fight_music)
+	assert_true(fight_music.is_music())
+
 func test_the_game_bus_layout_has_music_and_sounds_buses() -> void:
 	assert_gte(AudioServer.get_bus_index(&"Master"), 0)
 	assert_gte(AudioServer.get_bus_index(&"Music"), 0)
@@ -64,7 +75,7 @@ func test_gameplay_audio_mapping_requests_stable_cue_ids() -> void:
 	# Call GameAudio's own handlers only; emitting the signals would also
 	# advance quests, contracts and collections.
 	_call_audio_handler(&"LifesimEvents.fish_caught", [&"river_trout", &"river_trout"])
-	_call_audio_handler(&"LifesimEvents.resource_mined", [&"stone_rock", &"stone", 1])
+	_call_audio_handler(&"LifesimEvents.resource_mined", [&"stone_rock", &"stone", 1, Vector2(40, 8)])
 	_call_audio_handler(&"ProgressionEvents.tool_upgraded", [&"copper_pickaxe", &"copper_pickaxe"])
 	assert_eq(requested, [&"sfx_fish_caught", &"sfx_resource_mined", &"sfx_tool_upgraded"])
 	GameAudio.cue_requested.disconnect(on_requested)

@@ -11,6 +11,9 @@ extends CanvasLayer
 
 signal closed
 
+## The settings menu's name in `GameEvents.menu_opened` and `menu_closed`.
+const MENU_ID := &"settings_menu"
+
 enum Page { MAIN, ACCESSIBILITY, CONTROLS }
 
 const PAGE_TITLES := {
@@ -100,8 +103,11 @@ func _ready() -> void:
 
 func open() -> void:
 	_sync_from_settings()
+	var opened := not visible
 	visible = true
 	show_page(Page.MAIN)
+	if opened:
+		GameEvents.menu_opened.emit(MENU_ID)
 
 func close() -> void:
 	if not visible:
@@ -109,6 +115,7 @@ func close() -> void:
 	_cancel_rebind()
 	confirm_reset.hide()
 	visible = false
+	GameEvents.menu_closed.emit(MENU_ID)
 	closed.emit()
 
 ## Leaves the page that is open, or the menu from the main page.

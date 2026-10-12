@@ -1,6 +1,12 @@
 class_name GameMenu
 extends Control
 
+## The farmer's menu of tabs. Its opening and closing are told as
+## `GameEvents.menu_opened` and `menu_closed`, which the menu sounds play on.
+
+## The menu's name: the reason of its lock and its name in `GameEvents`.
+const MENU_ID := &"game_menu"
+
 @onready var content: RichTextLabel = $Panel/Layout/Content
 @onready var inventory_button: Button = $Panel/Layout/Tabs/Inventory
 @onready var quests_button: Button = $Panel/Layout/Tabs/Quests
@@ -67,15 +73,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func open() -> void:
+	var opened := not visible
 	visible = true
-	InputLock.lock(&"game_menu", true, self)
+	InputLock.lock(MENU_ID, true, self)
 	_show_tab(_tab)
+	if opened:
+		GameEvents.menu_opened.emit(MENU_ID)
 
 func close() -> void:
 	if not visible:
 		return
 	visible = false
-	InputLock.unlock(&"game_menu")
+	InputLock.unlock(MENU_ID)
+	GameEvents.menu_closed.emit(MENU_ID)
 
 func _show_tab(tab: String) -> void:
 	_tab = tab

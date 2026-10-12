@@ -95,7 +95,7 @@ func _climb(_actor: Node) -> void:
 	if is_cleared() and WorldTravel.travel_to(camp_location_id, camp_spawn_id):
 		DepthRun.return_to_camp()
 
-func _on_enemy_defeated(_enemy_id: StringName, _combat_xp: int) -> void:
+func _on_enemy_defeated(_enemy_id: StringName, _combat_xp: int, _position: Vector2) -> void:
 	_refresh.call_deferred()
 
 func _on_locale_changed(_locale: String) -> void:

@@ -5,8 +5,9 @@ extends CanvasLayer
 ## stays hidden until it shows (`show_menu()`), pauses the world and holds the
 ## player's controls while it shows (an `InputLock` lock named `menu_id`,
 ## given back when the menu leaves the tree), and `ui_cancel` closes it while
-## the menu is on top (`InputLock.is_top()`). A menu is found by its id as a
-## group:
+## the menu is on top (`InputLock.is_top()`). Its opening and closing are
+## told as `GameEvents.menu_opened` and `menu_closed`, which the game's menu
+## sounds play on (`GameAudio`). A menu is found by its id as a group:
 ## `get_tree().get_first_node_in_group(&"shop_menu")`.
 ##
 ## A menu passes its id to the constructor (`super(&"shop_menu")` in its
@@ -31,8 +32,11 @@ func is_open() -> bool:
 
 ## Shows the menu over the paused world, holding the player's controls.
 func show_menu() -> void:
+	var opened := not visible
 	visible = true
 	InputLock.lock(menu_id, true, self)
+	if opened:
+		GameEvents.menu_opened.emit(menu_id)
 
 ## Hides the menu and gives the controls back.
 func close() -> void:
@@ -40,6 +44,7 @@ func close() -> void:
 		return
 	visible = false
 	InputLock.unlock(menu_id)
+	GameEvents.menu_closed.emit(menu_id)
 	closed.emit()
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -10,3 +10,4 @@ scene_path = "res://game/world/depths.tscn"
 type = 3
 weather_exposed = false
 default_spawn_id = &"arrival"
+music_cue_id = &"music_depths"

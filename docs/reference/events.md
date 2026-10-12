@@ -28,6 +28,8 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 - `GameEvents.toast_requested(message: String)`
 - `GameEvents.hint_requested(message: String)`: A hint for the player, translated and its controls named (`HintData.get_message()`); the rule action `SHOW_HINT` sends it.
+- `GameEvents.menu_opened(menu_id: StringName)`: A menu over the world opened (`MenuLayer`, the settings); `menu_id` is its name (`MenuLayer.menu_id`).
+- `GameEvents.menu_closed(menu_id: StringName)`: A menu closed.
 
 ## GameRandom (core)
 
@@ -60,11 +62,13 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 ## CombatEvents (combat)
 
-- `CombatEvents.enemy_defeated(enemy_id: StringName, combat_xp: int)`: A hostile creature was defeated; `combat_xp` is its `EnemyData.combat_xp`.
+- `CombatEvents.enemy_defeated(enemy_id: StringName, combat_xp: int, position: Vector2)`: A hostile creature was defeated at `position`; `combat_xp` is its `EnemyData.combat_xp`.
 - `CombatEvents.attack_swung(weapon_item_id: StringName)`: The player swung the weapon `weapon_item_id`, hitting or not.
-- `CombatEvents.enemy_hurt(enemy_id: StringName, amount: int)`: A hostile creature was hurt for `amount`.
+- `CombatEvents.enemy_hurt(enemy_id: StringName, amount: int, position: Vector2)`: A hostile creature was hurt for `amount` at `position`.
 - `CombatEvents.player_hurt(amount: int)`: The player was hurt for `amount`.
 - `CombatEvents.player_defeated(money_lost: int)`: The player lost all their health and woke up again; `money_lost` is what the defeat cost (`CombatSettings.defeat_money_loss_percent`).
+- `CombatEvents.fight_started()`: A creature began hunting the player, who was in no fight (`FightState`).
+- `CombatEvents.fight_ended()`: No creature has hunted the player for `CombatSettings.fight_calm_seconds`, or the player left them behind.
 
 ## Dialogue (dialogue)
 
@@ -72,7 +76,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 ## ItemsEvents (items)
 
-- `ItemsEvents.item_foraged(item_id: StringName, quantity: int)`: Items picked up from the world (forage, drops).
+- `ItemsEvents.item_foraged(item_id: StringName, quantity: int, position: Vector2)`: Items picked up from the world (forage, drops).
 
 ## InventoryState (items)
 
@@ -117,11 +121,11 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 ## LifesimEvents (lifesim)
 
-- `LifesimEvents.crop_harvested(crop_id: StringName, item_id: StringName, quantity: int)`: A grown crop was harvested into `quantity` of `item_id`.
-- `LifesimEvents.animal_product_collected(farm_animal_id: StringName, item_id: StringName, quantity: int)`: A farm animal's product was collected.
+- `LifesimEvents.crop_harvested(crop_id: StringName, item_id: StringName, quantity: int, position: Vector2)`: A grown crop was harvested into `quantity` of `item_id`.
+- `LifesimEvents.animal_product_collected(farm_animal_id: StringName, item_id: StringName, quantity: int, position: Vector2)`: A farm animal's product was collected.
 - `LifesimEvents.fish_caught(fish_id: StringName, item_id: StringName)`: A biting fish was landed.
-- `LifesimEvents.resource_mined(mining_node_id: StringName, item_id: StringName, quantity: int)`: A mining node broke and dropped `quantity` of `item_id`.
-- `LifesimEvents.item_processed(processing_recipe_id: StringName, item_id: StringName, quantity: int)`: A processing station's output was collected.
+- `LifesimEvents.resource_mined(mining_node_id: StringName, item_id: StringName, quantity: int, position: Vector2)`: A mining node broke and dropped `quantity` of `item_id`.
+- `LifesimEvents.item_processed(processing_recipe_id: StringName, item_id: StringName, quantity: int, position: Vector2)`: A processing station's output was collected.
 - `LifesimEvents.stayed_up_late(woke_at_home: bool)`: The player stayed up past the late night minute, passed out and woke up again (`LateNight`): at home, or where they fell when home could not open.
 
 ## EventState (lifesim)

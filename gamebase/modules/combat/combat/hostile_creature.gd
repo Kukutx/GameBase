@@ -8,7 +8,8 @@ extends CharacterBody2D
 ## it back and stuns it for `HURT_SECONDS` from that hit. At 0 health it is defeated, drops
 ## its loot and comes back after `respawn_days`. A `StateMachine` runs it
 ## (idle, chase, hurt, defeated), and with a `persistent_id` its state saves
-## with the world.
+## with the world. Chasing the player or stunned by their hit, it hunts them,
+## which makes a fight (`FightState`).
 
 const PICKUP_SCENE := preload("res://gamebase/modules/items/items/item_pickup.tscn")
 ## How long a hit stops it.
@@ -56,6 +57,7 @@ func _ready() -> void:
 		.add_state(STATE_CHASE, _chase) \
 		.add_state(STATE_HURT, _hurt, _stop) \
 		.add_state(STATE_DEFEATED, _rest, _stop)
+	_machine.state_changed.connect(_on_state_changed)
 	_load_state()
 	_apply_data()
 	hurtbox.hurt.connect(_on_hurt)
@@ -73,12 +75,19 @@ func _ready() -> void:
 	_refresh_health_label()
 	_restore_pending_drop.call_deferred()
 
+func _exit_tree() -> void:
+	FightState.set_hunting(self, false)
+
 func _physics_process(delta: float) -> void:
 	_advance_animation(delta)
 	if data == null:
 		return
 	_attack_time_left = maxf(_attack_time_left - delta, 0.0)
 	_machine.update(delta)
+
+# Chasing the player, or stunned by their hit, it hunts them (`FightState`).
+func _on_state_changed(_from: StringName, to: StringName) -> void:
+	FightState.set_hunting(self, to == STATE_CHASE or to == STATE_HURT)
 
 ## The state its `StateMachine` is in: `STATE_IDLE`, `STATE_CHASE`,
 ## `STATE_HURT` or `STATE_DEFEATED`.
@@ -222,7 +231,7 @@ func _apply_data() -> void:
 func _on_hurt(damage: Damage) -> void:
 	if is_defeated or data == null:
 		return
-	CombatEvents.enemy_hurt.emit(data.id, mini(damage.amount, health.current))
+	CombatEvents.enemy_hurt.emit(data.id, mini(damage.amount, health.current), global_position)
 	take_damage(damage.amount)
 	if not is_defeated:
 		# A hit while it is still stunned stuns it again from now.
@@ -237,7 +246,7 @@ func _die() -> void:
 	hurtbox.enabled = false
 	_persist()
 	_drop_loot()
-	CombatEvents.enemy_defeated.emit(data.id, data.combat_xp)
+	CombatEvents.enemy_defeated.emit(data.id, data.combat_xp, global_position)
 	_set_animation(AnimationState.DEATH)
 	_death_time_left = float(data.death_to - data.death_from + 1) / float(maxi(data.animation_fps, 1))
 	_machine.change(STATE_DEFEATED)

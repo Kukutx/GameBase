@@ -131,7 +131,7 @@ func _get_floor_rocks() -> Array[MiningNode]:
 func _get_floor_enemies() -> Array[HostileCreature]:
 	return _generated_enemies if current_floor > 1 else _placed_enemies
 
-func _on_floor_progress_event(_a: Variant, _b: Variant = null, _c: Variant = null) -> void:
+func _on_floor_progress_event(_a: Variant, _b: Variant = null, _c: Variant = null, _d: Variant = null) -> void:
 	_refresh_ladder.call_deferred()
 
 func _on_node_state_changed(_node_id: StringName) -> void:

@@ -12,6 +12,9 @@ const KIND := &"minigame"
 ## Actions (`GameRules` syntax) run when the player wins or loses.
 @export var success_actions: PackedStringArray = PackedStringArray()
 @export var failure_actions: PackedStringArray = PackedStringArray()
+## The music it plays over the world's while it runs (`GameAudio.push_music()`);
+## empty: the world's plays on.
+@export var music_cue_id: StringName = &""
 ## Tuning passed to the minigame's `setup()`; the caller's context overrides it.
 ## The minigame checks it (`MiniGame.find_settings_problems()`).
 @export var settings: Dictionary = {}
@@ -27,11 +30,12 @@ static func find_all() -> Array[MiniGameDefinition]:
 	return result
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
+	var problems := AudioCueData.find_reference_problems(registry, "its music", music_cue_id, AudioCueData.CueType.MUSIC)
 	if scene == null:
-		return PackedStringArray(["has no scene"])
+		problems.append("has no scene")
+		return problems
 	var root := scene.instantiate()
 	var minigame := root as MiniGame
-	var problems := PackedStringArray()
 	if minigame == null:
 		problems.append("scene root does not extend MiniGame")
 	else:

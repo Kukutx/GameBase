@@ -198,7 +198,7 @@ func _harvest() -> void:
 	if InventoryState.add_item(item, crop.harvest_quantity) > 0:
 		return
 	var collected := crop.harvest_quantity
-	LifesimEvents.crop_harvested.emit(crop.id, crop.harvest_item_id, collected)
+	LifesimEvents.crop_harvested.emit(crop.id, crop.harvest_item_id, collected, global_position)
 	if crop.regrow_days > 0:
 		growth_days = maxi(crop.days_to_mature - crop.regrow_days, 0)
 	else:

@@ -35,6 +35,8 @@ func after_each() -> void:
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	GameSettings.reduced_motion = _reduced_motion
+	# The creatures the test left go after this hook; their fight goes now.
+	FightState.end_fight()
 
 func test_loaded_enemy_state_clamps_future_respawn_markers() -> void:
 	WorldClock.set_time(10, 8 * 60)
@@ -68,7 +70,7 @@ func test_creature_takes_damage_drops_loot_and_reports_its_defeat() -> void:
 	assert_true(slime.is_defeated)
 	assert_eq(InventoryState.get_quantity(&"fixture_gel"), 1)
 	assert_signal_emit_count(CombatEvents, "enemy_defeated", 1)
-	assert_signal_emitted_with_parameters(CombatEvents, "enemy_defeated", [&"fixture_slime", 20])
+	assert_signal_emitted_with_parameters(CombatEvents, "enemy_defeated", [&"fixture_slime", 20, Vector2(10000, 10000)])
 
 func test_a_creature_chases_and_strikes_the_player_s_hurtbox() -> void:
 	GameSettings.reduced_motion = true
@@ -89,6 +91,9 @@ func test_a_creature_chases_and_strikes_the_player_s_hurtbox() -> void:
 	assert_eq(Vitals.get_value(&"fixture_hp"), 100 - slime.data.contact_damage)
 	assert_signal_emit_count(CombatEvents, "player_hurt", 1)
 	assert_true(target.is_invincible(), "the next strike waits for the player's moment")
+	assert_eq(FightState.get_hunter_count(), 1, "a creature that chases the player hunts them")
+	slime.free()
+	assert_eq(FightState.get_hunter_count(), 0, "one that leaves hunts no more")
 
 func test_a_hit_stuns_the_creature_for_a_moment() -> void:
 	var slime := _add_slime(&"")
@@ -98,7 +103,7 @@ func test_a_hit_stuns_the_creature_for_a_moment() -> void:
 	assert_true(slime.hurtbox.receive(Damage.new(12, FactionData.PLAYER, null, Vector2(100, 0))))
 	assert_eq(slime.health.current, 18)
 	assert_eq(slime.get_state(), HostileCreature.STATE_HURT)
-	assert_signal_emitted_with_parameters(CombatEvents, "enemy_hurt", [&"fixture_slime", 12])
+	assert_signal_emitted_with_parameters(CombatEvents, "enemy_hurt", [&"fixture_slime", 12, Vector2(-5000, -5000)])
 	await wait_until(func() -> bool: return not slime.hurtbox.is_invincible(), 1.0)
 	assert_true(slime.hurtbox.receive(Damage.new(1, FactionData.PLAYER)), "the next hit after its invincibility")
 	await wait_seconds(HostileCreature.HURT_SECONDS * 0.75)

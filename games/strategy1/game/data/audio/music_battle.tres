@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AudioCueData" format=3]
+
+[ext_resource type="Script" path="res://gamebase/core/audio/audio_cue_data.gd" id="1_audio"]
+
+[resource]
+script = ExtResource("1_audio")
+id = &"music_battle"
+cue_type = 1
+fade_seconds = 0.5

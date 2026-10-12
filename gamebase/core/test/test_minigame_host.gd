@@ -1,6 +1,7 @@
 extends GutTest
 
 const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
+const AudioFixture := preload("res://gamebase/core/test/audio_fixture.gd")
 const MINIGAME := &"fixture_target"
 
 ## A minigame the test plays itself: it keeps the settings it was given and
@@ -28,13 +29,15 @@ func before_each() -> void:
 	definition.id = MINIGAME
 	definition.scene = scene
 	definition.settings = {"difficulty": 1, "rounds": 3}
-	ContentFixture.use(self, [definition])
+	var music := AudioFixture.cue(&"fixture_minigame_music", AudioCueData.CueType.MUSIC, AudioFixture.stream())
+	ContentFixture.use(self, [definition, music])
 
 func after_each() -> void:
 	# GUT frees the fixture content only after this hook.
 	ContentRegistry.active = ContentDB
 	MiniGameHost.cancel()
 	InputLock.clear()
+	GameAudio.stop_music()
 
 func _active_minigame() -> _FixtureMiniGame:
 	return MiniGameHost.get("_active") as _FixtureMiniGame
@@ -128,3 +131,41 @@ func test_a_second_run_while_one_is_running_fails_at_once() -> void:
 	MiniGameHost.cancel()
 	await get_tree().process_frame
 	assert_false(MiniGameHost.is_running())
+
+func test_a_minigame_plays_its_music_over_the_world_s_while_it_runs() -> void:
+	var definition := MiniGameDefinition.find(MINIGAME)
+	definition.music_cue_id = &"fixture_minigame_music"
+	var runner := func() -> void:
+		await MiniGameHost.run(MINIGAME)
+	runner.call()
+	assert_true(GameAudio.has_pushed_music(MiniGameHostService.MUSIC_LAYER))
+	assert_eq(GameAudio.get_current_music_cue_id(), &"fixture_minigame_music")
+	_active_minigame().finish(MiniGameResult.won())
+	await get_tree().process_frame
+	assert_false(GameAudio.has_pushed_music(MiniGameHostService.MUSIC_LAYER), "its music goes with it")
+	definition.music_cue_id = &"fixture_missing_music"
+	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(["its music names unknown audio cue 'fixture_missing_music'"]))
+
+func test_a_minigame_taken_away_before_it_ends_ends_cancelled() -> void:
+	var definition := MiniGameDefinition.find(MINIGAME)
+	definition.music_cue_id = &"fixture_minigame_music"
+	var outcome := {}
+	var runner := func() -> void:
+		outcome["result"] = await MiniGameHost.run(MINIGAME)
+	runner.call()
+	_active_minigame().free()
+	var result := outcome.get("result") as MiniGameResult
+	assert_not_null(result)
+	assert_true(result != null and result.cancelled)
+	assert_false(MiniGameHost.is_running())
+	assert_false(InputLock.is_held(&"minigame"))
+	assert_false(GameAudio.has_pushed_music(MiniGameHostService.MUSIC_LAYER), "its music goes with it")
+	# One that ends leaves a frame later, when the next may run already.
+	runner.call()
+	_active_minigame().finish(MiniGameResult.won())
+	runner.call()
+	var next := _active_minigame()
+	assert_not_null(next)
+	await get_tree().process_frame
+	assert_true(MiniGameHost.is_running(), "a minigame that ended and left cancels no other")
+	assert_true(next != null and not next.is_finished())

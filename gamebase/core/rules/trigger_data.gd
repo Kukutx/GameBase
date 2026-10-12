@@ -30,7 +30,7 @@ const KIND := &"trigger"
 ## again, so the ones before it are not given twice. One whose first action
 ## failed gave nothing and fires anew. It cannot repeat per an argument, which
 ## would make how much it gives depend on the retry, and its event declares
-## only what a save keeps: booleans, numbers and text.
+## only what a save keeps: booleans, numbers, text and positions.
 @export var once := false
 
 ## The trigger with `entry_id` in the running game's content, or null.
@@ -60,5 +60,5 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		for name: String in args:
 			var type := int(args[name])
 			if not GameTriggerService.SAVED_TYPES.has(type):
-				problems.append("fires once, so a save may keep its event's arguments, and '%s' is %s; an event of a once trigger declares booleans, numbers or text" % [name, "untyped" if type == TYPE_NIL else "of type " + type_string(type)])
+				problems.append("fires once, so a save may keep its event's arguments, and '%s' is %s; an event of a once trigger declares booleans, numbers, text or positions" % [name, "untyped" if type == TYPE_NIL else "of type " + type_string(type)])
 	return problems

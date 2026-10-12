@@ -303,16 +303,16 @@ func _set_state(state: Dictionary) -> void:
 func _on_day_changed(_day: int) -> void:
 	_ensure_contract()
 
-func _on_item_foraged(item_id: StringName, quantity: int) -> void:
+func _on_item_foraged(item_id: StringName, quantity: int, _position: Vector2) -> void:
 	_advance_progress(FORAGE, item_id, quantity)
 
 func _on_fish_caught(_fish_id: StringName, item_id: StringName) -> void:
 	_advance_progress(FISH, item_id, 1)
 
-func _on_resource_mined(_node_id: StringName, item_id: StringName, quantity: int) -> void:
+func _on_resource_mined(_node_id: StringName, item_id: StringName, quantity: int, _position: Vector2) -> void:
 	_advance_progress(MINE, item_id, quantity)
 
-func _on_crop_harvested(_crop_id: StringName, item_id: StringName, quantity: int) -> void:
+func _on_crop_harvested(_crop_id: StringName, item_id: StringName, quantity: int, _position: Vector2) -> void:
 	_advance_progress(HARVEST, item_id, quantity)
 
 func _on_item_shipped(item_id: StringName, quantity: int, _value: int) -> void:
