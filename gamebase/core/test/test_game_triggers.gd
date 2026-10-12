@@ -9,6 +9,7 @@ const ContentFixture := preload("res://gamebase/core/test/content_fixture.gd")
 class FixtureEvents:
 	extends Node
 	signal harvested(quantity: int, crop: StringName)
+	signal found(item: Resource)
 
 var _events: FixtureEvents
 var _world_snapshot: Dictionary
@@ -96,6 +97,46 @@ func test_a_pending_trigger_resumes_with_the_event_that_set_it_off_and_without_i
 	assert_eq(WorldState.get_int(&"fixture:quantity"), 3, "with the arguments of the event that set it off")
 	GameRules._actions.erase(&"FIXTURE_WHEN_ALLOWED")
 
+func test_a_pending_trigger_resumes_through_a_save_with_the_event_s_values_in_their_types() -> void:
+	var seen := []
+	# Records what it is given, and succeeds once the world allows it.
+	GameRules.register_action(&"FIXTURE_RECORD", func(_args: PackedStringArray, context: Dictionary) -> bool:
+		seen.append(context["event"].duplicate())
+		return WorldState.get_bool(&"fixture:allowed"), 0, 0)
+	var reward := _trigger(&"fixture_record", ["ADD_FLAG fixture:before", "FIXTURE_RECORD"])
+	reward.once = true
+	var service := _start([reward])
+	_events.harvested.emit(3, &"fixture_radish")
+	assert_true(service.is_pending(&"fixture_record"))
+	# Saved and loaded as JSON.
+	WorldState.load_save_data(JSON.parse_string(JSON.stringify(WorldState.to_save_data())))
+	WorldState.set_value(&"fixture:allowed", true)
+	_events.harvested.emit(7, &"fixture_gourd")
+	assert_true(service.has_fired(&"fixture_record"))
+	assert_eq(seen.size(), 2)
+	assert_eq(seen[1], {"quantity": 3, "crop": &"fixture_radish"})
+	assert_eq([typeof(seen[1]["quantity"]), typeof(seen[1]["crop"])], [TYPE_INT, TYPE_STRING_NAME], "as the event gave them")
+	GameRules._actions.erase(&"FIXTURE_RECORD")
+
+func test_a_pending_trigger_whose_actions_changed_fires_anew() -> void:
+	GameRules.register_action(&"FIXTURE_WHEN_ALLOWED", func(_args: PackedStringArray, _context: Dictionary) -> bool:
+		return WorldState.get_bool(&"fixture:allowed"), 0, 0)
+	var reward := _trigger(&"fixture_reward", ["ADD_FLAG fixture:given", "FIXTURE_WHEN_ALLOWED"])
+	reward.once = true
+	var service := _start([reward])
+	_events.harvested.emit(1, &"fixture_radish")
+	assert_true(service.is_pending(&"fixture_reward"))
+	# A content update puts a new reward where the trigger stopped.
+	reward.actions = PackedStringArray(["ADD_FLAG fixture:given", "ADD_FLAG fixture:new", "FIXTURE_WHEN_ALLOWED"])
+	assert_false(service.is_pending(&"fixture_reward"), "where it stopped no longer means the same")
+	WorldState.load_save_data(WorldState.to_save_data())
+	assert_null(WorldState.get_value(GameTriggerService.STATE_KEY), "a loaded world drops it")
+	WorldState.set_value(&"fixture:allowed", true)
+	_events.harvested.emit(1, &"fixture_radish")
+	assert_true(service.has_fired(&"fixture_reward"))
+	assert_eq([WorldState.get_int(&"fixture:given"), WorldState.get_int(&"fixture:new")], [2, 1], "it ran its actions as they are now")
+	GameRules._actions.erase(&"FIXTURE_WHEN_ALLOWED")
+
 func test_a_loaded_world_keeps_only_what_current_once_triggers_left() -> void:
 	var first := _trigger(&"fixture_first_harvest", ["ADD_FLAG fixture:first"])
 	first.once = true
@@ -105,23 +146,36 @@ func test_a_loaded_world_keeps_only_what_current_once_triggers_left() -> void:
 	var halfway := _trigger(&"fixture_halfway", ["ADD_FLAG fixture:a", "ADD_FLAG fixture:b", "ADD_FLAG fixture:c"])
 	halfway.once = true
 	_start([first, second, every, halfway])
-	var event := {"quantity": "1", "crop": "fixture_radish"}
-	# A saved count comes back as a float.
+	# As JSON gives a save back: every number a float.
+	var event := {"quantity": {"type": float(TYPE_INT), "value": 1.0}, "crop": {"type": float(TYPE_STRING_NAME), "value": "fixture_radish"}}
+	var halfway_actions := GameTriggerService.get_actions_fingerprint(halfway)
+	var pending := func(trigger: TriggerData, done: Variant, values: Dictionary) -> Dictionary:
+		return {"done": done, "actions": GameTriggerService.get_actions_fingerprint(trigger), "event": values}
 	WorldState.load_save_data({"fixture:kept": 1, GameTriggerService.STATE_KEY: {
 		"fired": ["fixture_first_harvest", "fixture_every_harvest", "fixture_removed", 3, "fixture_first_harvest"],
 		"pending": {
-			"fixture_halfway": {"done": 2.0, "event": event},
-			"fixture_first_harvest": {"done": 1.0, "event": event},
-			"fixture_every_harvest": {"done": 1.0, "event": event},
-			"fixture_removed": {"done": 1.0, "event": event},
-			"fixture_second_harvest": {"done": 1.0, "event": {"quantity": "1"}},
+			"fixture_halfway": pending.call(halfway, 2.0, event),
+			"fixture_first_harvest": pending.call(first, 1.0, event),
+			"fixture_every_harvest": pending.call(every, 1.0, event),
+			"fixture_removed": {"done": 1.0, "actions": halfway_actions, "event": event},
+			"fixture_second_harvest": pending.call(second, 1.0, {"quantity": event["quantity"]}),
 		}}})
-	assert_eq(WorldState.get_value(GameTriggerService.STATE_KEY), {"fired": ["fixture_first_harvest"], "pending": {"fixture_halfway": {"done": 2, "event": event}}},
+	var kept := {"quantity": {"type": TYPE_INT, "value": 1}, "crop": {"type": TYPE_STRING_NAME, "value": "fixture_radish"}}
+	assert_eq(WorldState.get_value(GameTriggerService.STATE_KEY), {"fired": ["fixture_first_harvest"], "pending": {"fixture_halfway": {"done": 2, "actions": halfway_actions, "event": kept}}},
 		"what current once triggers fired, and where one that has not can resume with every argument of its event")
 	assert_eq(WorldState.get_int(&"fixture:kept"), 1)
 	for done: Variant in [0, 3, 1.5]:
-		WorldState.load_save_data({GameTriggerService.STATE_KEY: {"fired": [], "pending": {"fixture_halfway": {"done": done, "event": event}}}})
+		WorldState.load_save_data({GameTriggerService.STATE_KEY: {"fired": [], "pending": {"fixture_halfway": pending.call(halfway, done, event)}}})
 		assert_null(WorldState.get_value(GameTriggerService.STATE_KEY), "%s actions done is not where it can resume" % done)
+	var malformed := [
+		{"quantity": "1", "crop": "fixture_radish"},
+		{"quantity": {"type": float(TYPE_INT), "value": 1.5}, "crop": event["crop"]},
+		{"quantity": {"type": float(TYPE_OBJECT), "value": 1.0}, "crop": event["crop"]},
+		{"quantity": event["quantity"], "crop": {"type": float(TYPE_STRING_NAME), "value": 4.0}},
+	]
+	for values: Dictionary in malformed:
+		WorldState.load_save_data({GameTriggerService.STATE_KEY: {"fired": [], "pending": {"fixture_halfway": pending.call(halfway, 1.0, values)}}})
+		assert_null(WorldState.get_value(GameTriggerService.STATE_KEY), "%s is no event value a save keeps" % values)
 	WorldState.load_save_data({GameTriggerService.STATE_KEY: true})
 	assert_null(WorldState.get_value(GameTriggerService.STATE_KEY))
 
@@ -132,7 +186,8 @@ func test_a_loaded_world_drops_a_pending_trigger_whose_saved_value_is_no_longer_
 	visit.once = true
 	var service := _start([_location(&"fixture_field"), visit])
 	for crop: String in ["fixture_field", "fixture_removed"]:
-		var pending := {"fixture_visit": {"done": 1.0, "event": {"quantity": "1", "crop": crop}}}
+		var event := {"quantity": {"type": float(TYPE_INT), "value": 1.0}, "crop": {"type": float(TYPE_STRING_NAME), "value": crop}}
+		var pending := {"fixture_visit": {"done": 1.0, "actions": GameTriggerService.get_actions_fingerprint(visit), "event": event}}
 		WorldState.load_save_data({GameTriggerService.STATE_KEY: {"fired": [], "pending": pending}})
 		assert_eq(service.is_pending(&"fixture_visit"), crop == "fixture_field", crop)
 	GameRules._actions.erase(&"FIXTURE_VISIT")
@@ -190,12 +245,19 @@ func test_triggers_report_events_and_arguments_they_cannot_have() -> void:
 	assert_string_contains(problems, "trigger 'fixture_missing' reads argument 'weight'")
 	assert_string_contains(problems, "trigger 'fixture_missing' reads argument 'season'")
 
-func test_a_once_trigger_cannot_repeat() -> void:
+func test_a_once_trigger_cannot_repeat_nor_listen_to_what_a_save_cannot_keep() -> void:
 	var repeated := _trigger(&"fixture_repeated_once", ["ADD_FLAG fixture:x"])
 	repeated.once = true
 	repeated.repeat_per = &"quantity"
-	var problems := "\n".join(ContentFixture.use(self, [repeated]).find_problems())
+	var found := _trigger(&"fixture_found_once", ["ADD_FLAG fixture:x"])
+	found.event = &"FixtureEvents.found"
+	found.once = true
+	var found_every := _trigger(&"fixture_found_every", ["ADD_FLAG fixture:x"])
+	found_every.event = &"FixtureEvents.found"
+	var problems := "\n".join(ContentFixture.use(self, [repeated, found, found_every]).find_problems())
 	assert_string_contains(problems, "trigger 'fixture_repeated_once' fires once, so it cannot repeat per 'quantity'")
+	assert_string_contains(problems, "trigger 'fixture_found_once' fires once, so a save may keep its event's arguments, and 'item' is of type Object")
+	assert_false(problems.contains("fixture_found_every"), problems)
 
 func test_a_check_of_arguments_together_runs_for_every_value_an_event_id_can_take() -> void:
 	GameRules.register_condition(&"FIXTURE_AT_MOST", func(_args: PackedStringArray, _context: Dictionary) -> bool: return true,

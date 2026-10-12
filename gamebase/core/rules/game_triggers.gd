@@ -11,8 +11,10 @@ extends Node
 ## pending ones: those whose actions stopped at one that failed (a full
 ## inventory) after others ran. The next time its event fires, a pending
 ## trigger resumes at the failed action with the arguments of the event that
-## set it off, without checking its condition again, so it gives what it
-## promised once. One whose first action failed gave nothing and fires anew.
+## set it off, each in its type, without checking its condition again, so it
+## gives what it promised once. One whose first action failed gave nothing and
+## fires anew, and so does one whose actions changed since it stopped (a
+## content update), since where it stopped no longer means the same.
 
 signal trigger_fired(trigger_id: StringName)
 
@@ -20,9 +22,13 @@ signal trigger_fired(trigger_id: StringName)
 ## event another trigger listens to) before the chain is cut as a loop.
 const MAX_DEPTH := 8
 ## The world's key of the triggers' state: {"fired": [trigger id], "pending":
-## {trigger id: {"done": how many actions ran, "event": {argument: value as
-## text}}}}.
+## {trigger id: {"done": how many actions ran, "actions": the fingerprint of
+## the actions it ran (`get_actions_fingerprint()`), "event": {argument:
+## {"type": its Variant.Type, "value": the value as JSON holds it}}}}}.
 const STATE_KEY := &"triggers:state"
+## The types of event value a pending trigger keeps. Another, an object, is
+## kept as null.
+const SAVED_TYPES: Array[int] = [TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME]
 
 # event -> Array[TriggerData]
 var _by_event: Dictionary = {}
@@ -64,7 +70,12 @@ func has_fired(trigger_id: StringName) -> bool:
 ## Whether a once trigger's actions stopped at one that failed and wait for
 ## its event to fire again.
 func is_pending(trigger_id: StringName) -> bool:
-	return (_read_state(&"pending", {}) as Dictionary).has(String(trigger_id))
+	return not _pending(TriggerData.find(trigger_id)).is_empty()
+
+## What identifies `trigger`'s actions as they are: a pending trigger resumes
+## only at the actions it stopped in.
+static func get_actions_fingerprint(trigger: TriggerData) -> String:
+	return ("%s\n%s" % [trigger.event, "\n".join(trigger.actions)]).sha256_text()
 
 ## Fires the triggers on `event` with the event's arguments by name.
 func fire(event: StringName, args: Dictionary) -> void:
@@ -80,14 +91,14 @@ func fire(event: StringName, args: Dictionary) -> void:
 		if trigger.once:
 			if _running.has(trigger.id) or has_fired(trigger.id):
 				continue
-			var pending: Dictionary = (_read_state(&"pending", {}) as Dictionary).get(String(trigger.id), {})
+			var pending := _pending(trigger)
 			if pending.is_empty() and not GameRules.check(trigger.condition, context):
 				continue
 			_running[trigger.id] = true
 			if pending.is_empty():
 				completed = _run_once(trigger, args, 0)
 			else:
-				completed = _run_once(trigger, pending["event"], int(pending["done"]))
+				completed = _run_once(trigger, pending["event"], pending["done"])
 			_running.erase(trigger.id)
 		else:
 			var times := 1 if trigger.repeat_per == &"" else int(args.get(String(trigger.repeat_per), 0))
@@ -120,10 +131,7 @@ func _run_once(trigger: TriggerData, event: Dictionary, first: int) -> bool:
 		(state["pending"] as Dictionary).erase(id)
 		(state["fired"] as Array).append(id)
 	else:
-		var texts := {}
-		for name: String in event:
-			texts[name] = str(event[name])
-		(state["pending"] as Dictionary)[id] = {"done": done, "event": texts}
+		(state["pending"] as Dictionary)[id] = _saved_pending(trigger, done, event)
 	_set_state(state)
 	return completed
 
@@ -148,11 +156,9 @@ func _disconnect_all() -> void:
 	_arg_names.clear()
 
 # A cleared or loaded world keeps only what current once triggers left: the
-# ones that fired, and the pending ones that have not, each past its first
-# action and short of all of them, with a text value for every argument of
-# its event that the remaining actions take. A save names current content
-# only: a pending trigger whose stored value is an id the content no longer
-# has is dropped.
+# ones that fired, and the pending ones that have not and can resume
+# (`_resume_point()`). A save names current content only: a pending trigger
+# whose stored value is an id the content no longer has is dropped.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
 	if key != &"" or WorldState.get_value(STATE_KEY) == null:
 		return
@@ -163,31 +169,98 @@ func _on_world_state_changed(key: StringName, _value: Variant) -> void:
 			(kept["fired"] as Array).append(String(id))
 	var pending: Dictionary = saved["pending"]
 	for id: Variant in pending:
-		if _is_once(id) and not (kept["fired"] as Array).has(String(id)) and _is_resumable(TriggerData.find(StringName(String(id))), pending[id]):
-			(kept["pending"] as Dictionary)[String(id)] = {"done": int(pending[id]["done"]), "event": pending[id]["event"]}
+		if not _is_once(id) or (kept["fired"] as Array).has(String(id)):
+			continue
+		var trigger := TriggerData.find(StringName(String(id)))
+		var point := _resume_point(trigger, pending[id])
+		if not point.is_empty():
+			(kept["pending"] as Dictionary)[String(id)] = _saved_pending(trigger, point["done"], point["event"])
 	_set_state(kept)
 
 func _is_once(id: Variant) -> bool:
 	var trigger := TriggerData.find(StringName(String(id))) if id is String or id is StringName else null
 	return trigger != null and trigger.once
 
-# Whether `entry` is where `trigger` can resume: a whole count of the actions
-# that ran, at least one and short of all of them, and a text value for each
-# argument its event has, which the remaining actions take. A saved count
-# comes back as a float.
-func _is_resumable(trigger: TriggerData, entry: Variant) -> bool:
-	if not (entry is Dictionary):
-		return false
-	var done: Variant = (entry as Dictionary).get("done")
-	var event: Variant = (entry as Dictionary).get("event")
-	if not (done is int or done is float) or done != int(done) or int(done) < 1 or int(done) >= GameRules.count_actions(trigger.actions):
-		return false
-	if not (event is Dictionary) or (event as Dictionary).size() != trigger.get_event_args().size():
-		return false
-	for name: String in trigger.get_event_args():
-		if not ((event as Dictionary).get(name) is String):
-			return false
-	return GameRules.can_run_actions_from(trigger.actions, int(done), {"event": event})
+# Where `trigger` resumes, as {"done": int, "event": the event's values in
+# their types}; empty when it is not pending.
+func _pending(trigger: TriggerData) -> Dictionary:
+	if trigger == null:
+		return {}
+	return _resume_point(trigger, (_read_state(&"pending", {}) as Dictionary).get(String(trigger.id)))
+
+# Where `trigger` resumes from the pending `entry` (`_saved_pending()`), as
+# {"done": int, "event": the event's values in their types}; empty unless the
+# entry was written for the actions as they are, ran at least one of them and
+# not all, keeps a value of each argument of the event, and the remaining
+# actions can run with those values. A saved number comes back as a float.
+func _resume_point(trigger: TriggerData, entry: Variant) -> Dictionary:
+	if trigger == null or not trigger.once or not (entry is Dictionary):
+		return {}
+	var fingerprint: Variant = (entry as Dictionary).get("actions")
+	if not (fingerprint is String) or fingerprint != get_actions_fingerprint(trigger):
+		return {}
+	var done: Variant = SaveValues.whole_number((entry as Dictionary).get("done"))
+	if done == null or int(done) < 1 or int(done) >= GameRules.count_actions(trigger.actions):
+		return {}
+	var values: Variant = (entry as Dictionary).get("event")
+	var names := trigger.get_event_args()
+	if not (values is Dictionary) or (values as Dictionary).size() != names.size():
+		return {}
+	var event := {}
+	for name: String in names:
+		var value := _loaded_value((values as Dictionary).get(name))
+		if value.is_empty():
+			return {}
+		event[name] = value[0]
+	if not GameRules.can_run_actions_from(trigger.actions, int(done), {"event": event}):
+		return {}
+	return {"done": int(done), "event": event}
+
+# The pending entry of `trigger`, stopped after `done` of its actions ran on
+# `event`, as the world keeps it.
+static func _saved_pending(trigger: TriggerData, done: int, event: Dictionary) -> Dictionary:
+	var values := {}
+	for name: String in event:
+		values[name] = _saved_value(event[name])
+	return {"done": done, "actions": get_actions_fingerprint(trigger), "event": values}
+
+# An event's value as a save keeps it: its type, and the value as JSON holds
+# it. A value of a type JSON cannot hold, an object, is kept as null.
+static func _saved_value(value: Variant) -> Dictionary:
+	match typeof(value):
+		TYPE_BOOL, TYPE_INT, TYPE_STRING:
+			return {"type": typeof(value), "value": value}
+		TYPE_STRING_NAME:
+			return {"type": TYPE_STRING_NAME, "value": String(value)}
+		TYPE_FLOAT:
+			if is_finite(value):
+				return {"type": TYPE_FLOAT, "value": value}
+	return {"type": TYPE_NIL, "value": null}
+
+# The value `saved` (`_saved_value()`) keeps, back in its type, as [value];
+# empty when `saved` is not of that shape.
+static func _loaded_value(saved: Variant) -> Array:
+	if not (saved is Dictionary):
+		return []
+	var type: Variant = SaveValues.whole_number((saved as Dictionary).get("type"))
+	var value: Variant = (saved as Dictionary).get("value")
+	if type == null:
+		return []
+	match int(type):
+		TYPE_NIL:
+			return [null] if value == null else []
+		TYPE_BOOL:
+			return [value] if value is bool else []
+		TYPE_INT:
+			var number: Variant = SaveValues.whole_number(value)
+			return [] if number == null else [int(number)]
+		TYPE_FLOAT:
+			return [float(value)] if (value is float or value is int) and is_finite(float(value)) else []
+		TYPE_STRING:
+			return [value] if value is String else []
+		TYPE_STRING_NAME:
+			return [StringName(value)] if value is String else []
+	return []
 
 # A part of the triggers' state as the world holds it, or `empty` when it is
 # not of that shape. Read only: `_get_state()` gives a copy to change.

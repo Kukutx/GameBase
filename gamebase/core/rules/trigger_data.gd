@@ -28,7 +28,8 @@ const KIND := &"trigger"
 ## arguments of the event that set it off and without checking the condition
 ## again, so the ones before it are not given twice. One whose first action
 ## failed gave nothing and fires anew. It cannot repeat per an argument, which
-## would make how much it gives depend on the retry.
+## would make how much it gives depend on the retry, and its event passes only
+## what a save keeps: booleans, numbers and text.
 @export var once := false
 
 ## The trigger with `entry_id` in the running game's content, or null.
@@ -76,6 +77,10 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 		problems.append("repeats per '%s', which is no integer argument of '%s'" % [repeat_per, event])
 	if once and repeat_per != &"":
 		problems.append("fires once, so it cannot repeat per '%s'" % repeat_per)
+	if once:
+		for name: String in args:
+			if not GameTriggerService.SAVED_TYPES.has(int(args[name])):
+				problems.append("fires once, so a save may keep its event's arguments, and '%s' is of type %s; an event of a once trigger passes booleans, numbers and text" % [name, type_string(int(args[name]))])
 	var texts := actions.duplicate()
 	texts.append(condition)
 	for use: Dictionary in GameRulesService.find_event_arg_uses(texts):
