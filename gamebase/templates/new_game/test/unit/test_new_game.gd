@@ -12,3 +12,12 @@ func test_definition_names_registered_locations() -> void:
 func test_content_passes_the_rules_check() -> void:
 	var problems := GameRules.validate_content(ContentDB)
 	assert_true(problems.is_empty(), "Content rule problems: %s" % [problems])
+
+func test_the_player_walks_and_uses_what_is_near() -> void:
+	var player := (load("res://game/player/player.tscn") as PackedScene).instantiate() as TopDownPlayer
+	add_child_autofree(player)
+	assert_not_null(player, "the player is a TopDownPlayer")
+	var controller := player.get_node("InteractionController") as InteractionController
+	assert_not_null(controller.prompt_label, "the HUD shows what is near")
+	player.face(Vector2.RIGHT)
+	assert_eq(controller.position, Vector2.RIGHT * player.reach, "what the player uses is in front of them")

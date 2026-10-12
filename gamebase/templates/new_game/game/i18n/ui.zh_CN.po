@@ -11,3 +11,21 @@ msgstr "基于 GameBase 的新游戏"
 
 msgid "Starting Point"
 msgstr "起点"
+
+msgid "Lookout"
+msgstr "瞭望台"
+
+msgid "Welcome! The path north leads to the lookout."
+msgstr "欢迎！往北的小路通向瞭望台。"
+
+msgid "To the lookout"
+msgstr "前往瞭望台"
+
+msgid "The whole valley lies below."
+msgstr "整个山谷尽收眼底。"
+
+msgid "Back to the start"
+msgstr "返回起点"
+
+msgid "%s move · %s use · %s save · %s load"
+msgstr "%s 移动 · %s 使用 · %s 存档 · %s 读档"
