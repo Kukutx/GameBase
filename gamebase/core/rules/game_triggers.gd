@@ -6,6 +6,8 @@ extends Node
 ## condition holds. The condition and the actions see the event's arguments
 ## by name under the context's "event" key. What the services announce while a
 ## save is restored or a new game resets them is not play and fires nothing.
+## A once trigger whose action failed keeps in the world how many of its
+## actions ran, and its next firing resumes at the one that failed.
 
 signal trigger_fired(trigger_id: StringName)
 
@@ -66,19 +68,30 @@ func fire(event: StringName, args: Dictionary) -> void:
 		if times <= 0 or not GameRules.check(trigger.condition, context):
 			continue
 		_running[trigger.id] = true
-		var completed := true
-		for _time: int in times:
-			if not GameRules.run_actions(trigger.actions, context):
-				completed = false
-				break
+		var completed := _run_once(trigger, context) if trigger.once else _run(trigger, times, context)
 		_running.erase(trigger.id)
-		# An action that failed (a full inventory) leaves a once trigger to fire
-		# again; only one whose actions all ran counts as fired.
 		if completed:
-			if trigger.once:
-				WorldState.set_value(_fired_key(trigger.id), true)
 			trigger_fired.emit(trigger.id)
 	_depth -= 1
+
+func _run(trigger: TriggerData, times: int, context: Dictionary) -> bool:
+	for _time: int in times:
+		if not GameRules.run_actions(trigger.actions, context):
+			return false
+	return true
+
+# Runs a once trigger's actions from the first that has not run in this world.
+# An action that failed (a full inventory) leaves it to fire again from there;
+# only one whose actions all ran counts as fired.
+func _run_once(trigger: TriggerData, context: Dictionary) -> bool:
+	var total := GameRules.count_actions(trigger.actions)
+	var done := GameRules.run_actions_from(trigger.actions, WorldState.get_int(_progress_key(trigger.id)), context)
+	if done < total:
+		WorldState.set_value(_progress_key(trigger.id), done)
+		return false
+	WorldState.erase(_progress_key(trigger.id))
+	WorldState.set_value(_fired_key(trigger.id), true)
+	return true
 
 func _on_event(...values: Array) -> void:
 	var event: StringName = values.pop_back()
@@ -100,19 +113,31 @@ func _disconnect_all() -> void:
 	_by_event.clear()
 	_arg_names.clear()
 
-# A cleared or loaded world keeps only the marks of current once triggers
-# that fired, each exactly true: a save names current content only.
+# A cleared or loaded world keeps only the marks of current once triggers: that
+# one fired, exactly true, and how many actions of one that has not ran, a
+# count short of all of them. A save names current content only.
 func _on_world_state_changed(key: StringName, _value: Variant) -> void:
 	if key != &"":
 		return
 	var world := WorldState.to_save_data()
 	for world_key: String in world:
-		if not (world_key.begins_with("trigger:") and world_key.ends_with(":fired")):
+		var parts := world_key.split(":")
+		if parts.size() != 3 or parts[0] != "trigger" or not (parts[2] == "fired" or parts[2] == "progress"):
 			continue
-		var trigger := TriggerData.find(StringName(world_key.trim_prefix("trigger:").trim_suffix(":fired")))
+		var trigger := TriggerData.find(StringName(parts[1]))
 		var mark: Variant = world[world_key]
-		if trigger == null or not trigger.once or not (mark is bool and mark):
+		var kept := trigger != null and trigger.once
+		if kept and parts[2] == "fired":
+			kept = mark is bool and mark
+		elif kept:
+			# A saved count comes back as a float.
+			var count := WorldState.get_int(StringName(world_key))
+			kept = (mark is int or mark is float) and count == mark and count > 0 and count < GameRules.count_actions(trigger.actions) and not has_fired(trigger.id)
+		if not kept:
 			WorldState.erase(StringName(world_key))
 
 func _fired_key(trigger_id: StringName) -> StringName:
 	return StringName("trigger:%s:fired" % trigger_id)
+
+func _progress_key(trigger_id: StringName) -> StringName:
+	return StringName("trigger:%s:progress" % trigger_id)
