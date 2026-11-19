@@ -9,7 +9,7 @@ const { androidIconPaths, expectedRecord, staleAndroidIcon } = require("./lib/an
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
 const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
-const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, poTranslation, projectInSync, syncedExportPresets, syncedGutConfig, syncedProject } = require("./lib/project");
+const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, poTranslation, projectInSync, stampedProject, syncedExportPresets, syncedGutConfig, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
 const { PRESET_NAMES, androidVersionCode, applicationId } = require("./lib/targets");
 const { selectGames } = require("./ci");
@@ -236,6 +236,14 @@ test("a changed icon asks for its launcher layers to be drawn again, and a game 
   } finally {
     removeRecursive(root);
   }
+});
+
+test("an export's project names the build it is made as, and nothing else changes", () => {
+  const project = read("games", "mfarm", "project.godot");
+  const stamped = stampedProject(project, "4c812db-dirty");
+  assert.match(stamped, /^\[tiamat\]\n\nbuild="4c812db-dirty"\n/m);
+  assert.equal(stamped.replace('build="4c812db-dirty"\n', ""), project);
+  assert.equal(stampedProject(stamped, "4c812db-dirty"), stamped, "a stamp twice is one stamp");
 });
 
 test("a game runs the tests of the core, of each of its modules and its own", () => {

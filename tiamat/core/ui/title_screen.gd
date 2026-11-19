@@ -25,7 +25,7 @@ func _ready() -> void:
 	title_label.text = String(ProjectSettings.get_setting("application/config/name", ""))
 	subtitle_label.text = String(ProjectSettings.get_setting("application/config/description", ""))
 	subtitle_label.visible = not subtitle_label.text.is_empty()
-	version_label.text = "v%s" % String(ProjectSettings.get_setting("application/config/version", "unknown"))
+	version_label.text = GameDiagnosticsService.version_text()
 	_build_slot_selector()
 	slot_select.item_selected.connect(_on_slot_selected)
 	continue_button.pressed.connect(_continue_game)

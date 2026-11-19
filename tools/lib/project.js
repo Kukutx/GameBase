@@ -406,6 +406,16 @@ function syncedExportPresets(text, game, foundation = readFoundation()) {
   });
 }
 
+// The project.godot text with the build an export is made as ([tiamat]
+// build): the commit, and "-dirty" when the files had changes. The game shows
+// it beside its version and in its diagnostics (GameDiagnosticsService), so a
+// report names the very build. tools/export.js writes it for the export alone.
+function stampedProject(text, build) {
+  const sections = parseSections(text);
+  setValue(sections, "tiamat", "build", JSON.stringify(build));
+  return formatSections(sections);
+}
+
 // The managed files of the game, as [file, function of their text].
 function managedFiles(game, foundation) {
   return [
@@ -437,4 +447,4 @@ function projectInSync(game, foundation = readFoundation()) {
   });
 }
 
-module.exports = { formatSections, parseSections, poTranslation, desiredAddonExcludes, desiredAutoloads, desiredCatalogs, desiredPlugins, desiredTestDirs, moduleOrder, projectInSync, syncProject, syncedExportPresets, syncedGutConfig, syncedProject };
+module.exports = { formatSections, parseSections, poTranslation, stampedProject, desiredAddonExcludes, desiredAutoloads, desiredCatalogs, desiredPlugins, desiredTestDirs, moduleOrder, projectInSync, syncProject, syncedExportPresets, syncedGutConfig, syncedProject };
