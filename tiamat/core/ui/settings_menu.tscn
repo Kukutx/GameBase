@@ -112,6 +112,10 @@ text = "VSync"
 layout_mode = 2
 text = "Integer Scaling"
 
+[node name="BatterySaver" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
+layout_mode = 2
+text = "Battery Saver"
+
 [node name="Autosave" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 text = "Autosave"

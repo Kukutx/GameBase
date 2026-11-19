@@ -268,6 +268,9 @@ msgstr "按钮 %d"
 msgid "Integer Scaling"
 msgstr "整数倍缩放"
 
+msgid "Battery Saver"
+msgstr "省电模式"
+
 msgid "Pause When Unfocused"
 msgstr "失去焦点时暂停"
 

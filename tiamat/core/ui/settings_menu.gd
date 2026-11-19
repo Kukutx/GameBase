@@ -34,6 +34,7 @@ const BINDING_WIDTH := 76.0
 @onready var fullscreen_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/Fullscreen
 @onready var vsync_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/VSync
 @onready var integer_scaling_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/IntegerScaling
+@onready var battery_saver_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/BatterySaver
 @onready var autosave_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/Autosave
 @onready var pause_on_focus_loss_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/PauseOnFocusLoss
 @onready var hints_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/Hints
@@ -77,6 +78,7 @@ func _ready() -> void:
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	vsync_check.toggled.connect(_on_vsync_toggled)
 	integer_scaling_check.toggled.connect(_on_integer_scaling_toggled)
+	battery_saver_check.toggled.connect(_on_battery_saver_toggled)
 	autosave_check.toggled.connect(_on_autosave_toggled)
 	pause_on_focus_loss_check.toggled.connect(_on_pause_on_focus_loss_toggled)
 	hints_check.toggled.connect(_on_hints_toggled)
@@ -204,6 +206,7 @@ func _sync_from_settings() -> void:
 	fullscreen_check.button_pressed = GameSettings.fullscreen
 	vsync_check.button_pressed = GameSettings.vsync
 	integer_scaling_check.button_pressed = GameSettings.integer_scaling
+	battery_saver_check.button_pressed = GameSettings.battery_saver
 	autosave_check.button_pressed = GameSettings.autosave
 	pause_on_focus_loss_check.button_pressed = GameSettings.pause_on_focus_loss
 	hints_check.button_pressed = GameSettings.hints
@@ -369,6 +372,10 @@ func _on_vsync_toggled(value: bool) -> void:
 func _on_integer_scaling_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_integer_scaling(value)
+
+func _on_battery_saver_toggled(value: bool) -> void:
+	if not _syncing:
+		GameSettings.set_battery_saver(value)
 
 func _on_autosave_toggled(value: bool) -> void:
 	if not _syncing:
