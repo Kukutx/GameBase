@@ -128,3 +128,11 @@ func test_the_menu_holds_while_a_game_opens_and_fits_the_view() -> void:
 	title.call("_set_buttons_disabled", false)
 	await get_tree().process_frame
 	assert_eq(MenuFit.find_overflow(title, get_viewport().get_visible_rect()), PackedStringArray())
+
+func test_a_browser_that_keeps_no_saves_is_named_on_the_paper() -> void:
+	var persist := GameSaveManager.saves_persist
+	GameSaveManager.saves_persist = false
+	var title := _title()
+	await wait_process_frames(1)
+	GameSaveManager.saves_persist = persist
+	assert_eq((title.get("status_label") as Label).text, tr(GameTitleBase.SAVES_LOST))

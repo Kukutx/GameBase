@@ -115,3 +115,17 @@ func test_opening_a_slot_that_holds_an_unreadable_save_asks_and_deleting_one_ask
 	assert_false(SaveManager.has_files(2), "and deletes once the player agrees")
 	SaveManager.save_directory = save_directory
 	SaveManager.select_slot(active_slot)
+
+func test_a_browser_that_keeps_no_saves_is_named_as_the_title_opens() -> void:
+	var persist := GameSaveManager.saves_persist
+	var title := (load("res://tiamat/core/ui/title_screen.tscn") as PackedScene).instantiate()
+	add_child_autofree(title)
+	await wait_process_frames(1)
+	assert_eq(title.status_label.text, "", "saves that last need no word")
+	GameSaveManager.saves_persist = false
+	var forgetful := (load("res://tiamat/core/ui/title_screen.tscn") as PackedScene).instantiate()
+	add_child_autofree(forgetful)
+	await wait_process_frames(1)
+	GameSaveManager.saves_persist = persist
+	assert_eq(forgetful.status_label.text, GameTitleBase.SAVES_LOST)
+

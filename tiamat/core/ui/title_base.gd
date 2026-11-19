@@ -14,9 +14,13 @@ extends ColorRect
 ##
 ## The questions it asks and the settings menu are the scene's own
 ## `ConfirmNewGame`, `ConfirmDelete` and `SettingsMenu` when it has them, or
-## are made here when it has not.
+## are made here when it has not. In a browser that keeps no saves
+## (`GameSaveManager.saves_persist`) the status line says so as the title
+## opens, before the player plays a game they would lose.
 
 const SETTINGS_MENU := preload("res://tiamat/core/ui/settings_menu.tscn")
+## What the status line says in a browser that keeps no saves.
+const SAVES_LOST := "This browser keeps no saves: your progress ends when the page closes. Private browsing can cause this."
 
 var settings_menu: SettingsMenu
 var confirm_new_game: ConfirmationDialog
@@ -35,6 +39,9 @@ func _ready() -> void:
 	confirm_delete.confirmed.connect(_confirm_delete_save)
 	SaveManager.load_completed.connect(_on_load_completed)
 	GameSession.new_game_failed.connect(_on_new_game_failed)
+	# Once the title that extends this one has built its status line.
+	if not GameSaveManager.saves_persist:
+		_show_status.call_deferred(tr(SAVES_LOST))
 
 ## Whether this platform can quit from a menu: a web page is left by closing
 ## its tab.
