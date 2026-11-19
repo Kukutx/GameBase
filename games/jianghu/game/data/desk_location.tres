@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WorldLocationData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/world/world_location_data.gd" id="1_location"]
+
+[resource]
+script = ExtResource("1_location")
+id = &"desk"
+display_name = "Desk"
+scene_path = "res://game/pet/desk.tscn"
+weather_exposed = false
+default_spawn_id = &"perch"
+music_cue_id = &"music_mountain"

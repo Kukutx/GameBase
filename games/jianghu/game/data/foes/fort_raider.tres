@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="JianghuFoeData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/foe_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"fort_raider"
+display_name = "Fort Raider"
+attack_scale = 1.0
+health_scale = 1.1
+silver_scale = 1.0
+robe = Color(0.22, 0.22, 0.25, 1)

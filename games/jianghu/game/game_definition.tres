@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="GameDefinition" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/session/game_definition.gd" id="1_definition"]
+[ext_resource type="Resource" path="res://game/data/content.tres" id="2_content"]
+
+[resource]
+script = ExtResource("1_definition")
+content = [ExtResource("2_content")]
+start_location_id = &"desk"
+home_location_id = &"desk"
+home_spawn_id = &"perch"
+start_day = 1
+start_minute_of_day = 480
+world_seed = 1
+menu_press_cue_id = &"sfx_tap"
+menu_open_cue_id = &"sfx_scroll"
+menu_close_cue_id = &"sfx_scroll"
+location_music_delay = Vector2(4, 8)

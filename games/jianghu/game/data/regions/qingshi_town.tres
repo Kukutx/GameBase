@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JianghuRegionData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/region_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"qingshi_town"
+display_name = "Bluestone Town"
+description = "A sleepy market town where every hero's road begins."
+order = 0
+foe_ids = Array[StringName]([&"thug", &"stray_dog"])
+boss_id = &"town_bully"
+sky = Color(0.95, 0.91, 0.82, 1)
+hills = Color(0.45, 0.52, 0.47, 1)

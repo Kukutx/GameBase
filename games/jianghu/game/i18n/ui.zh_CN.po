@@ -1,0 +1,431 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Pocket Jianghu\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "A wuxia companion who trains on your desktop"
+msgstr "一位在你桌面上修炼的武侠小伙伴"
+
+msgid "%s level %d"
+msgstr "%s 第%d重"
+
+msgid "%s · level %d"
+msgstr "%s · 第%d重"
+
+msgid "+%s silver"
+msgstr "+%s 两"
+
+msgid "A body like diamond. Greatly raises health."
+msgstr "身如金刚，大幅提升气血。"
+
+msgid "A mountain stronghold that has robbed travellers for years."
+msgstr "盘踞山头多年、劫掠过往客商的山寨。"
+
+msgid "A school could be founded on these hands."
+msgstr "凭这双手，足以开宗立派。"
+
+msgid "A sleepy market town where every hero's road begins."
+msgstr "一座慵懒的小镇，每位大侠的路都从这里开始。"
+
+msgid "A sword is only as sharp as the hand that holds it."
+msgstr "剑利不利，在于持剑之人。"
+
+msgid "A sword that flows like cloud. Greatly raises attack."
+msgstr "剑势如流云，大幅提升攻击。"
+
+msgid "Adept"
+msgstr "登堂入室"
+
+msgid "Ahem. A true master never panics."
+msgstr "咳，真正的高手从不慌张。"
+
+msgid "All qi returns to its source. Greatly speeds cultivation."
+msgstr "万气归元，大幅加快修炼。"
+
+msgid "Apprentice"
+msgstr "初窥门径"
+
+msgid "Back from seclusion"
+msgstr "出关"
+
+msgid "Bamboo Path"
+msgstr "竹林小径"
+
+msgid "Bamboo Viper"
+msgstr "竹叶青"
+
+msgid "Bandit Chief"
+msgstr "山贼头目"
+
+msgid "Beyond the jianghu, beyond the void."
+msgstr "超脱江湖，破碎虚空。"
+
+msgid "Blackwind Fort"
+msgstr "黑风寨"
+
+msgid "Bluestone Town"
+msgstr "青石镇"
+
+msgid "Break through"
+msgstr "冲击境界"
+
+msgid "Breakthrough! I have entered %s!"
+msgstr "突破了！我已踏入%s！"
+
+msgid "Breathing Method"
+msgstr "吐纳法"
+
+msgid "Cold River Ferry"
+msgstr "寒江渡"
+
+msgid "Cultivation %s/%s (+%s/s)   Silver %s"
+msgstr "修为 %s/%s（+%s/秒）  银两 %s"
+
+msgid "Cultivation ×2"
+msgstr "修炼 ×2"
+
+msgid "Defeated, resting"
+msgstr "落败，歇息片刻"
+
+msgid "Desk"
+msgstr "书案"
+
+msgid "Drifting Cloud Sword"
+msgstr "流云剑法"
+
+msgid "Every sect gathers to name the first under heaven."
+msgstr "各大门派齐聚，共推天下第一。"
+
+msgid "Few in the jianghu would dare to cross blades."
+msgstr "江湖之中，敢与之交手者寥寥。"
+
+msgid "Fights won %s, lost %s. Regions beaten %d of %d."
+msgstr "胜 %s 场，负 %s 场。已平定 %d/%d 处江湖。"
+
+msgid "First under heaven"
+msgstr "天下第一"
+
+msgid "Foes beaten %d/%d, then the boss."
+msgstr "已击败 %d/%d 名对手，之后便是首领。"
+
+msgid "Fort Archer"
+msgstr "寨中弓手"
+
+msgid "Fort Raider"
+msgstr "寨中小卒"
+
+msgid "Good"
+msgstr "好"
+
+msgid "Grandmaster"
+msgstr "一代宗师"
+
+msgid "Great Grandmaster"
+msgstr "大宗师"
+
+msgid "Green shade, soft wind, and bandits behind every stalk."
+msgstr "绿荫清风，每根竹子后都可能藏着山贼。"
+
+msgid "Gu Master"
+msgstr "蛊师"
+
+msgid "Have some tea and rest your eyes."
+msgstr "喝口茶，歇歇眼睛吧。"
+
+msgid "Heaven and the self move as one."
+msgstr "天与我同行，人与天合一。"
+
+msgid "Hero: attack %s · health %s · double blow %d%%"
+msgstr "小侠：攻 %s · 血 %s · 连击 %d%%"
+
+msgid "Hey! Put me down!"
+msgstr "喂！放我下来！"
+
+msgid "Horse Thief"
+msgstr "马贼"
+
+msgid "Innate Master"
+msgstr "先天高手"
+
+msgid "Inner breath flows on its own, day and night."
+msgstr "内息自行流转，昼夜不息。"
+
+msgid "Inspired %s"
+msgstr "振奋中 %s"
+
+msgid "Iron Shirt"
+msgstr "铁布衫"
+
+msgid "Knowing who pays and who lies. More silver from fights."
+msgstr "识得谁付钱、谁撒谎。战斗所得银两更多。"
+
+msgid "Latest fights"
+msgstr "最近战斗"
+
+msgid "Layer %d of %d"
+msgstr "第 %d 层（共 %d 层）"
+
+msgid "Layer %d!"
+msgstr "第%d层！"
+
+msgid "Leader of the Martial Alliance"
+msgstr "武林盟主"
+
+msgid "Light steps that leave no trace. Fights come sooner."
+msgstr "步履轻盈，踏雪无痕。出手更快。"
+
+msgid "Light-body skill? No, it's you!"
+msgstr "轻功？不，是你在拎我！"
+
+msgid "Live on the desktop"
+msgstr "住在桌面上（桌宠模式）"
+
+msgid "Lone Wolf of the Desert"
+msgstr "大漠孤狼"
+
+msgid "Lonely Desert"
+msgstr "大漠孤烟"
+
+msgid "Long Fist"
+msgstr "长拳"
+
+msgid "Lord of Blackwind Fort"
+msgstr "黑风寨主"
+
+msgid "Martial Assembly"
+msgstr "武林大会"
+
+msgid "Martial arts"
+msgstr "武学"
+
+msgid "Mastered"
+msgstr "已大成"
+
+msgid "Matron of Five Venoms"
+msgstr "五毒婆婆"
+
+msgid "Miao Hills"
+msgstr "苗岭"
+
+msgid "Mist on the water, and knives under the oilcloth."
+msgstr "江上起雾，油布下藏着刀。"
+
+msgid "Mountain Bandit"
+msgstr "山贼"
+
+msgid "Needs %s"
+msgstr "需%s"
+
+msgid "Next fight in %s"
+msgstr "%s后再战"
+
+msgid "Next: %s · attack %s · health %s"
+msgstr "下一战：%s · 攻 %s · 血 %s"
+
+msgid "Night Assassin"
+msgstr "夜行刺客"
+
+msgid "No fights yet."
+msgstr "尚未交手。"
+
+msgid "Old Angler of Cold River"
+msgstr "寒江钓叟"
+
+msgid "On the desktop the hero stands on the taskbar and clicks pass through. Drag the hero to move them."
+msgstr "桌宠模式下，小侠站在任务栏上，其他地方的点击会穿透。拖动小侠可以换个位置。"
+
+msgid "One more round of breathing..."
+msgstr "再运一个周天……"
+
+msgid "One plume of smoke rises straight above endless sand."
+msgstr "大漠孤烟直，黄沙望不尽。"
+
+msgid "One strike like a startled swan. Chance of a double blow."
+msgstr "一剑惊鸿，有几率造成双倍伤害。"
+
+msgid "One with Heaven"
+msgstr "天人合一"
+
+msgid "Pat (cultivation ×2)"
+msgstr "鼓舞（修炼 ×2）"
+
+msgid "Pat again in %s"
+msgstr "%s后可再鼓舞"
+
+msgid "Plain, honest fists. Raises attack."
+msgstr "朴实无华的拳法。提升攻击。"
+
+msgid "Pockmark Wang, Town Bully"
+msgstr "镇霸王麻子"
+
+msgid "Rest for today (quit)"
+msgstr "今日到此（退出）"
+
+msgid "Resting from wounds: %s"
+msgstr "养伤中：%s"
+
+msgid "Return to Origin"
+msgstr "归元功"
+
+msgid "River Pirate"
+msgstr "水匪"
+
+msgid "Roaming"
+msgstr "闯荡"
+
+msgid "Sand Scorpion"
+msgstr "沙蝎"
+
+msgid "Sect Disciple"
+msgstr "名门弟子"
+
+msgid "Shh, I'm circulating my qi."
+msgstr "嘘，我在运功。"
+
+msgid "Skin like leather, bones like iron."
+msgstr "皮如革，骨如铁。"
+
+msgid "Snow Treading"
+msgstr "踏雪步"
+
+msgid "Snow Wolf"
+msgstr "雪狼"
+
+msgid "Snowy Tianshan"
+msgstr "天山雪顶"
+
+msgid "Someday I'll be first under heaven."
+msgstr "总有一天，我要天下第一。"
+
+msgid "Sound, language and more"
+msgstr "声音、语言等设置"
+
+msgid "Startled Swan Strike"
+msgstr "惊鸿一剑"
+
+msgid "Steady breaths gather inner qi faster."
+msgstr "呼吸绵长，聚气更快。"
+
+msgid "Street Thug"
+msgstr "地痞"
+
+msgid "Study %s silver"
+msgstr "修习 %s两"
+
+msgid "Sword Servant"
+msgstr "剑奴"
+
+msgid "Sword light flashes on the eternal snow."
+msgstr "万年积雪之上，剑光闪烁。"
+
+msgid "Swordsman of Tianshan"
+msgstr "天山剑客"
+
+msgid "Tempered Body"
+msgstr "后天武者"
+
+msgid "Terraced hills where strange insects are kept in jars."
+msgstr "层层梯田之间，有人在罐中养着奇虫。"
+
+msgid "Thank you! I'll work twice as hard!"
+msgstr "多谢！我加倍努力！"
+
+msgid "The Leader of the Martial Alliance has fallen. All the jianghu now knows your little hero's name. The road goes on: keep training, and the assembly will keep testing you."
+msgstr "武林盟主已败。从此整个江湖都知道了你家小侠的名字。路还很长：继续修炼，武林大会仍会不断考验你。"
+
+msgid "The basics are sound; the body starts to obey."
+msgstr "根基已稳，身随意动。"
+
+msgid "The boss %s bars the way."
+msgstr "首领%s拦住了去路。"
+
+msgid "The first steps: stance, breath and patience."
+msgstr "第一步：站桩、吐纳与耐心。"
+
+msgid "The jianghu isn't all fighting. It's people, too."
+msgstr "江湖不只是打打杀杀，还有人情世故。"
+
+msgid "The road"
+msgstr "江湖路"
+
+msgid "This device shows the hero in a window."
+msgstr "此设备上，小侠住在窗口里。"
+
+msgid "To break through, first defeat %s in %s."
+msgstr "若要突破，须先击败%s（位于%s）。"
+
+msgid "Too strong... I need more training."
+msgstr "太强了……我还得多练练。"
+
+msgid "Toughens the body. Raises health."
+msgstr "锤炼筋骨。提升气血。"
+
+msgid "Transcendent"
+msgstr "破碎虚空"
+
+msgid "Vajra Body"
+msgstr "金刚体"
+
+msgid "Venom Spider"
+msgstr "毒蛛"
+
+msgid "Vicious Dog"
+msgstr "恶犬"
+
+msgid "Wandering Master"
+msgstr "江湖名宿"
+
+msgid "Whoa, flying!"
+msgstr "哇，飞起来了！"
+
+msgid "Worldly Wisdom"
+msgstr "江湖阅历"
+
+msgid "You work hard, and I'll train hard!"
+msgstr "你好好干活，我也好好练功！"
+
+msgid "Zzz... the moon is bright tonight..."
+msgstr "呼……今晚月色真好……"
+
+msgid "%dh %dm"
+msgstr "%d小时%d分"
+
+msgid "%dm %ds"
+msgstr "%d分%d秒"
+
+msgid "%ds"
+msgstr "%d秒"
+
+msgid "Cultivation +%d%% → +%d%%"
+msgstr "修炼 +%d%% → +%d%%"
+
+msgid "Attack +%d%% → +%d%%"
+msgstr "攻击 +%d%% → +%d%%"
+
+msgid "Vitality +%d%% → +%d%%"
+msgstr "气血 +%d%% → +%d%%"
+
+msgid "Fight pace +%d%% → +%d%%"
+msgstr "出手速度 +%d%% → +%d%%"
+
+msgid "Silver +%d%% → +%d%%"
+msgstr "银两 +%d%% → +%d%%"
+
+msgid "Double blow %d%% → %d%%"
+msgstr "连击 %d%% → %d%%"
+
+msgid "Beat %s, +%s silver"
+msgstr "击败%s，+%s两"
+
+msgid "Lost to %s"
+msgstr "败于%s"
+
+msgid "You were away %s. Your hero cultivated %s qi and climbed %d layers, won %d fights (lost %d) and earned %s silver."
+msgstr "你离开了%s。小侠修得修为 %s，提升了 %d 层，闯荡胜 %d 场（负 %d 场），赚得银两 %s。"
+
+msgid "Bosses defeated: %d!"
+msgstr "击败首领：%d 名！"
