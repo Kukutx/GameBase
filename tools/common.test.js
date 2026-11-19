@@ -3,7 +3,7 @@ const test = require("node:test");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { engineErrorLines, godotUserDataDir, quietAddonUpdateChecks } = require("./lib/common");
+const { engineErrorLines, godotUserDataDir, quietAddonUpdateChecks, runGodotStep } = require("./lib/common");
 
 test("engine errors fail a step, GUT's online version check does not", () => {
   const output = [
@@ -52,6 +52,27 @@ test("a Godot step tells the project's addons not to ask the network for updates
   } finally {
     if (before === undefined) delete process.env.XDG_DATA_HOME;
     else process.env.XDG_DATA_HOME = before;
+    fs.rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+test("a Godot step a signal stops says so, and a step safe to repeat runs once more", { skip: process.platform === "win32" }, async () => {
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "tiamat-signal-"));
+  const log = console.log;
+  console.log = () => {};
+  try {
+    // A stand-in for Godot that crashes on its first run and works after.
+    const marker = path.join(scratch, "ran-once");
+    const godot = path.join(scratch, "godot.sh");
+    fs.writeFileSync(godot, `#!/bin/sh\nif [ -e "${marker}" ]; then echo imported; exit 0; fi\ntouch "${marker}"\nkill -SEGV $$\n`);
+    fs.chmodSync(godot, 0o755);
+    await assert.rejects(runGodotStep(godot, "probe: import", ["--import"], { quiet: true }), /probe: import was stopped by SIGSEGV/);
+    fs.rmSync(marker);
+    const result = await runGodotStep(godot, "probe: import", ["--import"], { quiet: true, retryAfterSignal: true });
+    assert.equal(result.code, 0);
+    assert.match(result.output, /imported/);
+  } finally {
+    console.log = log;
     fs.rmSync(scratch, { recursive: true, force: true });
   }
 });
