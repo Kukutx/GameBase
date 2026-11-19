@@ -1,3 +1,4 @@
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
@@ -16,21 +17,12 @@ const {
   removeRecursive,
   resolveGodotBin,
   rootPath,
+  run,
   runGodotStep,
+  tempFile,
 } = require("./lib/common");
-const { artifactName, buildPath, gameVersion, resolveGame, resolveGames } = require("./lib/games");
-
-const PRESET_NAMES = ["Windows Desktop", "Linux", "Web"];
-
-// Where each preset of a game exports to: build/<game>/<platform>/.
-function presetsFor(game) {
-  const name = artifactName(game);
-  return {
-    "Windows Desktop": { output: buildPath(game, "windows", `${name}.exe`), pack: buildPath(game, "windows", `${name}.pck`) },
-    Linux: { output: buildPath(game, "linux", `${name}.x86_64`), pack: buildPath(game, "linux", `${name}.pck`) },
-    Web: { output: buildPath(game, "web", "index.html"), pack: buildPath(game, "web", "index.pck") },
-  };
-}
+const { gameVersion, resolveGame, resolveGames } = require("./lib/games");
+const { PRESET_NAMES, exportedPack, targetOfPreset, targetsFor } = require("./lib/targets");
 const LICENSE_FILES = [
   "GODOT_LICENSE.txt",
   "GODOT_COPYRIGHT.txt",
@@ -64,6 +56,62 @@ async function prepareDriftLegalBundle(engineSemVer) {
     fail(`Downloaded legal bundle for Godot ${engineSemVer} failed validation.`);
   }
   return temporaryRoot;
+}
+
+// What an Android release export signs with. The release keystore, from the
+// secret store, stays the same from release to release: the engine's
+// GODOT_ANDROID_KEYSTORE_RELEASE_PATH, _USER and _PASSWORD, or in CI the
+// keystore file itself as TIAMAT_ANDROID_KEYSTORE_BASE64 in place of the
+// path. Without one the export makes a throwaway key for this build alone,
+// which installs and runs but cannot update an install signed with another.
+const ANDROID_KEYSTORE_ENV = ["GODOT_ANDROID_KEYSTORE_RELEASE_PATH", "GODOT_ANDROID_KEYSTORE_RELEASE_USER", "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD"];
+const ANDROID_KEYSTORE_BASE64_ENV = "TIAMAT_ANDROID_KEYSTORE_BASE64";
+
+async function androidSigning() {
+  const directory = tempFile("tiamat-android-key");
+  const env = { ...process.env };
+  const encoded = (env[ANDROID_KEYSTORE_BASE64_ENV] || "").trim();
+  if (encoded !== "") {
+    if (env.GODOT_ANDROID_KEYSTORE_RELEASE_PATH) fail(`Set ${ANDROID_KEYSTORE_BASE64_ENV} or GODOT_ANDROID_KEYSTORE_RELEASE_PATH, not both.`);
+    fs.mkdirSync(directory, { recursive: true });
+    env.GODOT_ANDROID_KEYSTORE_RELEASE_PATH = path.join(directory, "release.keystore");
+    fs.writeFileSync(env.GODOT_ANDROID_KEYSTORE_RELEASE_PATH, Buffer.from(encoded, "base64"), { mode: 0o600 });
+  }
+  const given = ANDROID_KEYSTORE_ENV.filter((name) => (env[name] || "") !== "");
+  if (given.length === ANDROID_KEYSTORE_ENV.length) {
+    if (!fs.existsSync(env.GODOT_ANDROID_KEYSTORE_RELEASE_PATH)) {
+      fail("GODOT_ANDROID_KEYSTORE_RELEASE_PATH names no file.");
+    }
+    return { signing: "release-keystore", env, cleanup: () => removeRecursive(directory) };
+  }
+  removeRecursive(directory);
+  if (given.length > 0) {
+    fail(`An Android release keystore needs all of ${ANDROID_KEYSTORE_ENV.join(", ")} (or ${ANDROID_KEYSTORE_BASE64_ENV} for the path); set none for a throwaway key.`);
+  }
+  fs.mkdirSync(directory, { recursive: true });
+  const keystore = path.join(directory, "throwaway.keystore");
+  const password = crypto.randomBytes(18).toString("base64url");
+  const keytool = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, "bin", process.platform === "win32" ? "keytool.exe" : "keytool") : "keytool";
+  // prettier-ignore
+  const result = await run(keytool, [
+    "-genkeypair", "-noprompt", "-keystore", keystore, "-storetype", "PKCS12", "-storepass", password, "-keypass", password,
+    "-alias", "tiamat", "-keyalg", "RSA", "-keysize", "2048", "-validity", "10000", "-dname", "CN=Tiamat throwaway build key",
+  ], { quiet: true });
+  if (result.code !== 0 || !fs.existsSync(keystore)) {
+    removeRecursive(directory);
+    fail("Could not make a throwaway Android keystore with keytool; set JAVA_HOME to a JDK 17 or later.");
+  }
+  console.warn("WARNING: No Android release keystore is set; this APK is signed with a throwaway key made for this build.");
+  return {
+    signing: "throwaway-key",
+    env: {
+      ...process.env,
+      GODOT_ANDROID_KEYSTORE_RELEASE_PATH: keystore,
+      GODOT_ANDROID_KEYSTORE_RELEASE_USER: "tiamat",
+      GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: password,
+    },
+    cleanup: () => removeRecursive(directory),
+  };
 }
 
 function gitIdentity() {
@@ -114,33 +162,30 @@ async function exportPresets({ game, presets = PRESET_NAMES, godotBin, skipValid
     );
   }
   const identity = gitIdentity();
-  const outputs = presetsFor(game);
+  const targets = targetsFor(game);
 
   try {
     // Exporting needs an imported project; the import is quick when nothing changed.
     await importProject(godot, game.root, `${game.id}: import`);
     for (const name of presets) {
-      const preset = outputs[name];
-      const label = path.relative(rootPath(), preset.output).split(path.sep).join("/");
-      const parent = path.dirname(preset.output);
+      const target = targets[targetOfPreset(name)];
+      const label = path.relative(rootPath(), target.output).split(path.sep).join("/");
+      const parent = path.dirname(target.output);
       removeRecursive(parent);
       fs.mkdirSync(parent, { recursive: true });
 
-      await runGodotStep(godot, `${game.id}: exporting ${name} -> ${label}`, [
-        "--headless",
-        "--path",
-        game.root,
-        "--export-release",
-        name,
-        preset.output,
-      ]);
-      if (!fs.existsSync(preset.output)) {
+      const signing = target.name === "Android" ? await androidSigning() : null;
+      try {
+        await runGodotStep(godot, `${game.id}: exporting ${name} -> ${label}`, ["--headless", "--path", game.root, "--export-release", name, target.output], {
+          env: signing ? signing.env : process.env,
+        });
+      } finally {
+        if (signing) signing.cleanup();
+      }
+      if (!fs.existsSync(target.output)) {
         fail(`Export '${name}' did not create '${label}'.`);
       }
-      if (!fs.existsSync(preset.pack)) {
-        fail(`Export '${name}' did not create expected resource pack '${preset.pack}'.`);
-      }
-      await verifyExportContents({ game, pckPath: preset.pack, godotBin: godot });
+      await verifyExportContents({ game, pckPath: exportedPack(target), godotBin: godot });
 
       // Distribution licenses stay beside the executable or Web payload rather
       // than inside the PCK, which keeps legal documents out of res:// while
@@ -161,6 +206,7 @@ async function exportPresets({ game, presets = PRESET_NAMES, godotBin, skipValid
         git_commit: identity.commit,
         dirty: identity.dirty,
         target: name,
+        ...(signing ? { signing: signing.signing } : {}),
       };
       fs.writeFileSync(path.join(parent, "BUILD_INFO.json"), `${JSON.stringify(buildInfo, null, 2)}\n`, "utf8");
     }
@@ -173,7 +219,7 @@ async function exportPresets({ game, presets = PRESET_NAMES, godotBin, skipValid
   }
 }
 
-module.exports = { PRESET_NAMES, presetsFor, exportPresets };
+module.exports = { PRESET_NAMES, exportPresets };
 
 if (require.main === module) {
   main(async () => {

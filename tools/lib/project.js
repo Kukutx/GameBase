@@ -11,19 +11,28 @@
 //   [editor_plugins]       the plugin of every addon the game links;
 //   untyped_declaration    a declaration without a type is an error
 //                          ([debug] gdscript/warnings), in the game's code
-//                          and the foundation's alike.
+//                          and the foundation's alike;
+//   import_etc2_astc       textures also import for phones and Apple
+//                          silicon ([rendering] textures/vram_compression),
+//                          which the Android and macOS exports need.
 // Everything else in project.godot belongs to the game. In the game's
 // .gutconfig.json it writes "dirs": the tests of the core, of each listed
 // module (a module after the modules it requires) and the game's own
 // (test/unit/), so every game runs the tests of the foundation it uses; and
 // "pre_run_script", the core's hook that sets up every test run. In its
-// export_presets.cfg it writes each preset's exclude_filter: the game's own
-// filters, then the editor files of every addon it links, which its exported
-// packs must not carry (tools/verify_export_contents.js).
+// export_presets.cfg it adds the preset of every export target the game
+// lacks, from the new-game template (tools/lib/targets.js), and writes what
+// follows from the game: where each preset exports to, its application id,
+// Android's version code from the game's version and empty keystore fields
+// (signing keys come from the environment, never from the repository); and
+// each preset's exclude_filter: the game's own filters, then the editor files
+// of every addon it links, which its exported packs must not carry
+// (tools/verify_export_contents.js).
 const fs = require("node:fs");
 const path = require("node:path");
 const { fail, rootPath } = require("./common");
-const { gamePath, readFoundation } = require("./games");
+const { gamePath, gameVersion, readFoundation } = require("./games");
+const { PRESET_NAMES, androidVersionCode, applicationId, targetOfPreset, targetsFor } = require("./targets");
 
 // The game's modules, each after the modules it requires, otherwise by name.
 function moduleOrder(foundation, modules) {
@@ -138,6 +147,7 @@ function syncedProject(text, game, foundation = readFoundation()) {
   setValue(sections, "internationalization", "locale/translations", packedStrings(desiredCatalogs(game)));
   setValue(sections, "editor_plugins", "enabled", packedStrings(desiredPlugins(game)));
   setValue(sections, "debug", "gdscript/warnings/untyped_declaration", "2");
+  setValue(sections, "rendering", "textures/vram_compression/import_etc2_astc", "true");
   return formatSections(sections);
 }
 
@@ -187,13 +197,86 @@ function desiredAddonExcludes(game) {
   return game.addons.flatMap((addon) => ADDON_EXPORT_EXCLUDES[addon] || []);
 }
 
-// The export_presets.cfg text with every preset's exclude_filter as the
-// manifests say: the game's own filters, then its addons'; the filters of an
-// addon the game no longer links go.
-function syncedExportPresets(text, game) {
+// The presets of an export_presets.cfg as sections: [{ name, header, options }].
+function presetsOf(sections) {
+  return sections
+    .filter((section) => /^preset\.\d+$/.test(section.name))
+    .map((header) => {
+      const line = header.lines.find((candidate) => candidate.startsWith("name="));
+      return {
+        name: line ? JSON.parse(line.slice("name=".length)) : null,
+        header,
+        options: sections.find((section) => section.name === `${header.name}.options`) || null,
+      };
+    });
+}
+
+// The presets of the new-game template, from which a game gets a preset of
+// a target it lacks.
+function templatePresets() {
+  return presetsOf(parseSections(fs.readFileSync(rootPath("tiamat", "templates", "new_game", "export_presets.cfg"), "utf8")));
+}
+
+// The Android permissions of the game's modules, each a permissions/<name>
+// option of its Android preset: on when a module of the game needs it (the
+// npc_ai module's language model reaches the internet), off when none does.
+function androidPermissions(game, foundation) {
+  const declared = (module) => foundation.modules[module].android_permissions || [];
+  const wanted = new Set(game.modules.flatMap(declared));
+  const managed = [...new Set(Object.keys(foundation.modules).flatMap(declared))].sort();
+  return Object.fromEntries(managed.map((permission) => [`permissions/${permission}`, String(wanted.has(permission))]));
+}
+
+// What the game decides for none of its presets.
+function derivedPresetValues(game, preset, targets, foundation) {
+  const target = targetOfPreset(preset.name);
+  if (!target) return { header: {}, options: {} };
+  const exportPath = path.relative(game.root, targets[target].output).split(path.sep).join("/");
+  const options = {};
+  if (target === "macOS") options["application/bundle_identifier"] = JSON.stringify(applicationId(game));
+  if (target === "Android") {
+    options["package/unique_name"] = JSON.stringify(applicationId(game));
+    options["version/code"] = String(androidVersionCode(gameVersion(game)));
+    Object.assign(options, androidPermissions(game, foundation));
+    for (const key of ["keystore/debug", "keystore/debug_user", "keystore/debug_password", "keystore/release", "keystore/release_user", "keystore/release_password"]) {
+      options[key] = '""';
+    }
+  }
+  return { header: { export_path: JSON.stringify(exportPath) }, options };
+}
+
+// The export_presets.cfg text as the manifests and the targets say: a preset
+// for every target, what follows from the game in each, and every
+// exclude_filter the game's own filters, then its addons'; the filters of an
+// addon the game no longer links go. The new-game template, which is no game,
+// keeps its presets as they are written.
+function syncedExportPresets(text, game, foundation = readFoundation()) {
+  const sections = parseSections(text);
+  if (!game.template) {
+    const presets = presetsOf(sections);
+    let template = null;
+    for (const name of PRESET_NAMES) {
+      if (presets.some((preset) => preset.name === name)) continue;
+      template = template || templatePresets();
+      const source = template.find((preset) => preset.name === name);
+      if (!source || !source.options) fail(`tiamat/templates/new_game/export_presets.cfg has no '${name}' preset to give games/${game.id}.`);
+      const index = presets.length;
+      const header = { name: `preset.${index}`, lines: [...source.header.lines] };
+      const options = { name: `preset.${index}.options`, lines: [...source.options.lines] };
+      sections.push(header, options);
+      presets.push({ name, header, options });
+    }
+    const targets = targetsFor(game);
+    for (const preset of presets) {
+      const values = derivedPresetValues(game, preset, targets, foundation);
+      for (const [key, value] of Object.entries(values.header)) setValue(sections, preset.header.name, key, value);
+      if (!preset.options) continue;
+      for (const [key, value] of Object.entries(values.options)) setValue(sections, preset.options.name, key, value);
+    }
+  }
   const managed = new Set(Object.values(ADDON_EXPORT_EXCLUDES).flat());
   const addons = desiredAddonExcludes(game);
-  return text.replace(/^exclude_filter="([^"]*)"$/gm, (_line, filters) => {
+  return formatSections(sections).replace(/^exclude_filter="([^"]*)"$/gm, (_line, filters) => {
     const own = filters.split(",").filter((filter) => filter !== "" && !managed.has(filter));
     return `exclude_filter="${[...own, ...addons].join(",")}"`;
   });
@@ -204,12 +287,12 @@ function managedFiles(game, foundation) {
   return [
     [gamePath(game, "project.godot"), (text) => syncedProject(text, game, foundation)],
     [gamePath(game, ".gutconfig.json"), (text) => syncedGutConfig(text, game, foundation)],
-    [gamePath(game, "export_presets.cfg"), (text) => syncedExportPresets(text, game)],
+    [gamePath(game, "export_presets.cfg"), (text) => syncedExportPresets(text, game, foundation)],
   ];
 }
 
-// Writes the managed parts of the game's project.godot and .gutconfig.json;
-// returns whether either changed.
+// Writes the managed parts of the game's project.godot, .gutconfig.json and
+// export_presets.cfg; returns whether any changed.
 function syncProject(game, foundation = readFoundation()) {
   let changed = false;
   for (const [file, sync] of managedFiles(game, foundation)) {

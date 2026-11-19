@@ -168,6 +168,9 @@ function extractZip(zipPath, destination) {
       }
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(target, zip.read(entry));
+      // An archive made on Unix keeps its permissions: an executable stays one.
+      const permissions = entry.mode & 0o777;
+      if (permissions !== 0 && process.platform !== "win32") fs.chmodSync(target, permissions);
     }
   } finally {
     zip.close();

@@ -5,18 +5,13 @@ const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { buildZip, buildTar, gzipDeterministic, openZip, readTar } = require("./lib/archive");
 const { fail, git, main } = require("./lib/common");
-const { artifactName, buildPath, distPath, resolveGame } = require("./lib/games");
-
-const FORMATS = { Windows: "zip", Linux: "tar.gz", Web: "zip" };
+const { resolveGame } = require("./lib/games");
+const { PACKAGE_FORMATS: FORMATS, TARGET_NAMES, targetsFor: exportTargetsFor } = require("./lib/targets");
 
 // The packages of one game: build/<game>/<platform>/ -> dist/<game>/<Name>-<platform>.
 function targetsFor(game) {
-  const name = artifactName(game);
-  return {
-    Windows: { source: buildPath(game, "windows"), output: distPath(game, `${name}-windows-x86_64.zip`) },
-    Linux: { source: buildPath(game, "linux"), output: distPath(game, `${name}-linux-x86_64.tar.gz`) },
-    Web: { source: buildPath(game, "web"), output: distPath(game, `${name}-web.zip`) },
-  };
+  const targets = exportTargetsFor(game);
+  return Object.fromEntries(TARGET_NAMES.map((target) => [target, { source: path.dirname(targets[target].output), output: targets[target].package }]));
 }
 
 function sourceDateEpoch() {
@@ -56,9 +51,12 @@ function sourceFiles(source) {
   return files.sort((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b)));
 }
 
-// The Linux executable sits at the top of its payload.
+// The Linux executable sits at the top of its payload, the macOS one in its
+// application bundle.
 function canonicalMode(target, relative) {
-  return target === "Linux" && !relative.includes("/") && relative.endsWith(".x86_64") ? 0o755 : 0o644;
+  if (target === "Linux") return !relative.includes("/") && relative.endsWith(".x86_64") ? 0o755 : 0o644;
+  if (target === "macOS") return /^[^/]+\.app\/Contents\/MacOS\/[^/]+$/.test(relative) ? 0o755 : 0o644;
+  return 0o644;
 }
 
 function packageTarget(target, source, output, epoch) {
@@ -103,6 +101,16 @@ function runSelfTest() {
     Linux: {
       [`${name}.x86_64`]: Buffer.from("linux-binary\0".repeat(100)),
       [`${name}.pck`]: Buffer.from("pack-data".repeat(200)),
+      "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
+    },
+    macOS: {
+      [`${name}.app/Contents/Info.plist`]: Buffer.from("<plist/>\n"),
+      [`${name}.app/Contents/MacOS/${name}`]: Buffer.from("macos-binary\0".repeat(100)),
+      [`${name}.app/Contents/Resources/${name}.pck`]: Buffer.from("pack-data".repeat(200)),
+      "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
+    },
+    Android: {
+      [`${name}.apk`]: Buffer.from("android-package".repeat(200)),
       "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
     },
   };
@@ -152,6 +160,10 @@ function runSelfTest() {
             if (!zip.read(entry).equals(files[entry.name])) {
               fail(`${target} ZIP content differs: ${entry.name}`);
             }
+            const executable = target === "macOS" && entry.name === `${name}.app/Contents/MacOS/${name}`;
+            if ((entry.mode & 0o777) !== (executable ? 0o755 : 0o644)) {
+              fail(`${target} ZIP mode of ${entry.name} is ${(entry.mode & 0o777).toString(8)}`);
+            }
           }
         } finally {
           zip.close();
@@ -181,7 +193,7 @@ function cli() {
     return runSelfTest();
   }
   if (values.target !== "All" && !FORMATS[values.target]) {
-    fail(`Unknown --target '${values.target}'. Use Windows, Linux, Web or All.`);
+    fail(`Unknown --target '${values.target}'. Use ${TARGET_NAMES.join(", ")} or All.`);
   }
   if ((values.source === undefined) !== (values.output === undefined)) {
     fail("--source and --output must be provided together");

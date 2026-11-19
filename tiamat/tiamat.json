@@ -84,6 +84,7 @@
     "npc_ai": {
       "requires": ["dialogue", "npc_social"],
       "addons": ["dialogue_manager"],
+      "android_permissions": ["internet"],
       "autoloads": {
         "NpcAi": "res://tiamat/modules/npc_ai/ai/npc_ai_service.gd"
       }

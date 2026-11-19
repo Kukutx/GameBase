@@ -39,7 +39,7 @@ This keeps builds reproducible while allowing regular engine upgrades. `.github/
 
 ## Current baseline
 
-The current shared validation baseline is Godot 4.7.2. Each game's feature marker is 4.7 because the test stack now uses GUT 9.7.1, which targets Godot 4.7.x. Every game uses the Compatibility renderer so the same 2D codebase can target Windows, Linux and Web; Godot 4 Web exports require the Compatibility/WebGL 2 rendering path.
+The current shared validation baseline is Godot 4.7.2. Each game's feature marker is 4.7 because the test stack now uses GUT 9.7.1, which targets Godot 4.7.x. Every game uses the Compatibility renderer so the same 2D codebase can target Windows, Linux, macOS, Android and Web; Godot 4 Web exports require the Compatibility/WebGL 2 rendering path.
 
 ## Addon policy
 

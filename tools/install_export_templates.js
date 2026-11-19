@@ -5,7 +5,7 @@ const { parseArgs } = require("node:util");
 const { extractZip } = require("./lib/archive");
 const { ENGINE_VERSION_RE, download, fail, main, readTrimmed, removeRecursive, rootPath } = require("./lib/common");
 
-const REQUIRED_TEMPLATES = ["windows_release_x86_64.exe", "linux_release.x86_64", "web_nothreads_release.zip"];
+const REQUIRED_TEMPLATES = ["windows_release_x86_64.exe", "linux_release.x86_64", "macos.zip", "android_release.apk", "web_nothreads_release.zip"];
 
 // Where the Godot editor looks for export templates on each platform.
 function templatesRoot() {

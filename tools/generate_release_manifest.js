@@ -5,6 +5,7 @@ const { parseArgs } = require("node:util");
 const { openZip, readTar } = require("./lib/archive");
 const { fail, git, main, readTrimmed, rootPath } = require("./lib/common");
 const { artifactName, distPath, gameVersion, resolveGame } = require("./lib/games");
+const { TARGET_NAMES, TARGET_PRESETS } = require("./lib/targets");
 const { targetsFor } = require("./package_release");
 const REQUIRED_PACKAGE_FILES = [
   "BUILD_INFO.json",
@@ -16,14 +17,17 @@ const REQUIRED_PACKAGE_FILES = [
   "licenses/DIALOGUE_MANAGER_LICENSE.txt",
   "licenses/NOTO_SANS_SC_LICENSE.txt",
 ];
+// What each target's package holds besides the distribution files, and the
+// file in it that must be executable.
 function targetRequiredFiles(name) {
   return {
-    windows: [`${name}.exe`, `${name}.pck`],
-    linux: [`${name}.x86_64`, `${name}.pck`],
-    web: ["index.html", "index.js", "index.wasm", "index.pck"],
+    Windows: [`${name}.exe`, `${name}.pck`],
+    Linux: [`${name}.x86_64`, `${name}.pck`],
+    macOS: [`${name}.app/Contents/Info.plist`, `${name}.app/Contents/_CodeSignature/CodeResources`],
+    Android: [`${name}.apk`],
+    Web: ["index.html", "index.js", "index.wasm", "index.pck"],
   };
 }
-const EXPECTED_TARGET = { windows: "Windows Desktop", linux: "Linux", web: "Web" };
 
 function sha256(file) {
   const hash = crypto.createHash("sha256");
@@ -62,6 +66,7 @@ function packageMembers(file) {
       for (const entry of zip.entries) {
         const name = normalizeMember(entry.name);
         names.add(name);
+        modes.set(name, entry.mode & 0o7777);
         if (REQUIRED_PACKAGE_FILES.includes(name)) {
           payloads.set(name, zip.read(entry));
         }
@@ -95,9 +100,17 @@ function validatePackage(target, file, expected) {
   if (missing.length > 0) {
     fail(`${label} is missing distribution/runtime files: ${missing.join(", ")}`);
   }
-  const executable = `${expected.name}.x86_64`;
-  if (target === "linux" && (modes.get(executable) & 0o111) === 0) {
-    fail(`${label} ${executable} is not executable (mode ${modes.get(executable).toString(8)})`);
+  const executables = {
+    Linux: [`${expected.name}.x86_64`],
+    macOS: [...names].filter((name) => name.startsWith(`${expected.name}.app/Contents/MacOS/`)),
+  }[target];
+  if (executables && executables.length === 0) {
+    fail(`${label} has no executable in ${expected.name}.app/Contents/MacOS/`);
+  }
+  for (const executable of executables || []) {
+    if ((modes.get(executable) & 0o111) === 0) {
+      fail(`${label} ${executable} is not executable (mode ${modes.get(executable).toString(8)})`);
+    }
   }
 
   let buildInfo;
@@ -110,7 +123,7 @@ function validatePackage(target, file, expected) {
     game: expected.game,
     game_version: expected.gameVersion,
     git_commit: expected.commit,
-    target: EXPECTED_TARGET[target],
+    target: TARGET_PRESETS[target],
     legal_bundle_version: expected.legalVersion,
   };
   for (const [field, wanted] of Object.entries(checks)) {
@@ -130,7 +143,7 @@ function validatePackage(target, file, expected) {
   if (packagedLegalVersion !== expected.legalVersion) {
     fail(`${label} legal marker='${packagedLegalVersion}', expected '${expected.legalVersion}'`);
   }
-  return { name: label, target, size_bytes: fs.statSync(file).size, sha256: sha256(file) };
+  return { name: label, target: target.toLowerCase(), size_bytes: fs.statSync(file).size, sha256: sha256(file) };
 }
 
 function cli() {
@@ -156,9 +169,7 @@ function cli() {
 
   const packages = targetsFor(game);
   const expected = { game: game.id, name, gameVersion: version, engineVersion, commit, legalVersion };
-  const artifacts = Object.entries({ windows: packages.Windows, linux: packages.Linux, web: packages.Web }).map(([target, entry]) =>
-    validatePackage(target, path.join(dist, path.basename(entry.output)), expected),
-  );
+  const artifacts = TARGET_NAMES.map((target) => validatePackage(target, path.join(dist, path.basename(packages[target].output)), expected));
   const manifest = {
     schema: 1,
     game: game.id,

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <radialGradient id="glow" cx="128" cy="150" r="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff8a2a" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ff8a2a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#e8401c"/>
+      <stop offset="0.55" stop-color="#ff9f2e"/>
+      <stop offset="1" stop-color="#ffe9a0"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#17101c"/>
+  <circle cx="128" cy="150" r="104" fill="url(#glow)"/>
+  <path d="M44 236 V128 A84 84 0 0 1 212 128 V236 H182 V128 A54 54 0 0 0 74 128 V236 Z" fill="#4b3b55"/>
+  <path d="M74 128 A54 54 0 0 1 182 128 V236 H74 Z" fill="#221729"/>
+  <rect x="74" y="214" width="108" height="22" fill="#35263d"/>
+  <rect x="86" y="196" width="84" height="18" fill="#2c1f33"/>
+  <rect x="98" y="181" width="60" height="15" fill="#261a2c"/>
+  <path d="M128 78 C143 99 162 113 162 139 C162 159 147 172 128 172 C109 172 94 159 94 139 C94 122 107 113 112 98 C118 109 121 117 127 120 C127 105 124 92 128 78 Z" fill="url(#flame)"/>
+  <path d="M128 118 C136 130 146 137 146 150 C146 161 138 168 128 168 C118 168 110 161 110 150 C110 140 119 134 128 118 Z" fill="#fff4c8"/>
+</svg>

@@ -1,24 +1,31 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
-const { extractTar, extractZip } = require("./lib/archive");
+const { extractTar, extractZip, openZip } = require("./lib/archive");
 const { engineErrorLines, fail, main, removeRecursive, run } = require("./lib/common");
 const { artifactName, artifactsPath, buildPath, resolveGame } = require("./lib/games");
-const { targetsFor } = require("./package_release");
+const { macBundle, targetsFor } = require("./lib/targets");
 
-function nativeFor(game) {
+// The executable of a native build in the directory that holds it.
+function executableIn(game, target, directory) {
   const name = artifactName(game);
-  const packages = targetsFor(game);
-  return {
-    Windows: { executable: `${name}.exe`, build: buildPath(game, "windows"), archive: packages.Windows.output },
-    Linux: { executable: `${name}.x86_64`, build: buildPath(game, "linux"), archive: packages.Linux.output },
-  };
+  if (target === "Windows") return path.join(directory, `${name}.exe`);
+  if (target === "Linux") return path.join(directory, `${name}.x86_64`);
+  return macBundle(path.join(directory, `${name}.app`)).executable;
+}
+
+// The native target of the machine the smoke runs on.
+function hostTarget() {
+  return { win32: "Windows", darwin: "macOS" }[process.platform] || "Linux";
 }
 
 async function smokeNative(game, name, directory) {
-  const executable = path.join(directory, nativeFor(game)[name].executable);
+  const executable = executableIn(game, name, directory);
   if (!fs.existsSync(executable)) {
     fail(`${name} export not found: ${executable}`);
+  }
+  if (name !== hostTarget()) {
+    fail(`A ${name} build runs on ${name}; this machine runs ${hostTarget()} builds.`);
   }
   if (process.platform !== "win32") {
     fs.chmodSync(executable, 0o755);
@@ -38,6 +45,55 @@ async function smokeNative(game, name, directory) {
   console.log(`${name} exported-build smoke passed.`);
 }
 
+// The newest apksigner of the Android SDK the environment names, or null.
+function findApksigner() {
+  const sdk = process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT;
+  const tools = sdk ? path.join(sdk, "build-tools") : null;
+  if (!tools || !fs.existsSync(tools)) return null;
+  const versions = fs.readdirSync(tools).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+  for (const version of versions) {
+    const candidate = path.join(tools, version, "apksigner");
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+// No phone runs in CI: an Android package is checked for what a phone
+// needs from it (the manifest, the code, the engine for 64-bit ARM, the
+// game's project settings), and its signature with the SDK's apksigner when
+// the environment names an SDK.
+async function smokeAndroid(game, directory) {
+  const apk = path.join(directory, `${artifactName(game)}.apk`);
+  if (!fs.existsSync(apk)) {
+    fail(`Android export not found: ${apk}`);
+  }
+  console.log("==> Android package smoke");
+  const zip = openZip(apk);
+  let names;
+  try {
+    names = new Set(zip.entries.map((entry) => entry.name));
+  } finally {
+    zip.close();
+  }
+  const missing = ["AndroidManifest.xml", "classes.dex", "lib/arm64-v8a/libgodot_android.so", "assets/project.binary"].filter((name) => !names.has(name));
+  if (missing.length > 0) {
+    fail(`${path.basename(apk)} is missing ${missing.join(", ")}.`);
+  }
+  const apksigner = findApksigner();
+  if (apksigner) {
+    const result = await run(apksigner, ["verify", apk], { quiet: true });
+    if (result.code !== 0) {
+      fail(`apksigner does not accept the signature of ${path.basename(apk)}:\n${result.output}`);
+    }
+    console.log("Android package signature verified.");
+  } else if (process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT) {
+    fail("The Android SDK the environment names has no build-tools apksigner to verify the package with.");
+  } else {
+    console.log("No Android SDK named by ANDROID_HOME: the signature was not verified.");
+  }
+  console.log("Android package smoke passed.");
+}
+
 function smokeWebPayload(game) {
   const webRoot = buildPath(game, "web");
   if (!fs.existsSync(path.join(webRoot, "index.html"))) {
@@ -55,35 +111,38 @@ function smokeWebPayload(game) {
 // With fromPackage the packaged archive in dist/ is unpacked and run, which is
 // what a player downloads; otherwise the build/ directory is run in place.
 async function smokeExport({ game, targets, fromPackage = false }) {
-  const native = nativeFor(game);
+  const exports = targetsFor(game);
   for (const name of targets) {
     if (name === "Web") {
       smokeWebPayload(game);
       continue;
     }
-    if (!native[name]) {
-      fail(`Unknown --target '${name}'. Use Windows, Linux or Web.`);
+    if (!exports[name]) {
+      fail(`Unknown --target '${name}'. Use ${Object.keys(exports).join(", ")}.`);
     }
-    if (!fromPackage) {
-      await smokeNative(game, name, native[name].build);
-      continue;
+    let directory = path.dirname(exports[name].output);
+    if (fromPackage) {
+      const archive = exports[name].package;
+      if (!fs.existsSync(archive)) {
+        fail(`${name} package not found: ${archive}`);
+      }
+      directory = artifactsPath(game, "release-smoke", `package-${name.toLowerCase()}`);
+      removeRecursive(directory);
+      if (archive.endsWith(".zip")) {
+        extractZip(archive, directory);
+      } else {
+        extractTar(archive, directory);
+      }
     }
-    const archive = native[name].archive;
-    if (!fs.existsSync(archive)) {
-      fail(`${name} package not found: ${archive}`);
-    }
-    const unpacked = artifactsPath(game, "release-smoke", `package-${name.toLowerCase()}`);
-    removeRecursive(unpacked);
-    if (archive.endsWith(".zip")) {
-      extractZip(archive, unpacked);
+    if (name === "Android") {
+      await smokeAndroid(game, directory);
     } else {
-      extractTar(archive, unpacked);
+      await smokeNative(game, name, directory);
     }
-    await smokeNative(game, name, unpacked);
   }
 }
 
-module.exports = { smokeExport };
+module.exports = { hostTarget, smokeExport };
 
 if (require.main === module) {
   main(async () => {
@@ -94,7 +153,7 @@ if (require.main === module) {
         "from-package": { type: "boolean", default: false },
       },
     });
-    const defaults = process.platform === "win32" ? ["Windows", "Web"] : ["Linux", "Web"];
+    const defaults = [hostTarget(), "Web"];
     await smokeExport({
       game: resolveGame(values.game),
       targets: values.target && values.target.length > 0 ? values.target : defaults,
