@@ -8,7 +8,7 @@ const { checkLocalization, collectNonDialogueKeys, layerLiterals, repeatProblem 
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
 const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
-const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, projectInSync, syncedExportPresets, syncedGutConfig, syncedProject } = require("./lib/project");
+const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, poTranslation, projectInSync, syncedExportPresets, syncedGutConfig, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
 const { PRESET_NAMES, androidVersionCode, applicationId } = require("./lib/targets");
 const { selectGames } = require("./ci");
@@ -293,6 +293,24 @@ test("a module's autoloads follow the modules it requires, between the core's", 
   assert.ok(!project.includes("Stale="), "the autoloads are replaced, not merged");
   assert.ok(project.includes('[application]\n\nconfig/name="Probe"\n'), "the game's own settings stay");
   assert.ok(project.includes('[editor_plugins]\n\nenabled=PackedStringArray("res://addons/gut/plugin.cfg")'));
+});
+
+test("a game's name in each language its own catalogs give names its window and its phone app", () => {
+  const root = tempFile("tiamat-name");
+  try {
+    fs.mkdirSync(path.join(root, "game", "i18n"), { recursive: true });
+    fs.writeFileSync(path.join(root, "game", "i18n", "ui.zh_CN.po"), 'msgid ""\nmsgstr ""\n"Language: zh_CN\\n"\n\nmsgid "Probe"\nmsgstr "探针"\n');
+    const game = { id: "probe", root, modules: [], addons: [], manifest: {} };
+    const before = 'config_version=5\n\n[application]\n\nconfig/name="Probe"\nconfig/name_localized={\n"ja": "プローブ",\n"zh_CN": "旧名"\n}\nconfig/version="1.0.0"\n';
+    const project = syncedProject(before, game, readFoundation());
+    assert.ok(project.includes('config/name_localized={\n"ja": "プローブ",\n"zh_CN": "探针"\n}\nconfig/quit_on_go_back=false\nconfig/version="1.0.0"'), "the catalog's name, and a language named by hand stays");
+    assert.equal(syncedProject(project, game, readFoundation()), project, "linking again changes nothing");
+    const unnamed = syncedProject('config_version=5\n\n[application]\n\nconfig/name="Other"\n', game, readFoundation());
+    assert.ok(!unnamed.includes("name_localized"), "a name no catalog translates is left as it is");
+    assert.equal(poTranslation('msgid "A"\nmsgstr ""\n', "A"), "", "an entry left empty translates nothing");
+  } finally {
+    removeRecursive(root);
+  }
 });
 
 test("the manifests reject autoloads that would break a linked game", () => {

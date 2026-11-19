@@ -7,6 +7,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgid "Ember Depths"
+msgstr "余烬深渊"
+
 msgid "A dungeon delve on Tiamat"
 msgstr "基于 Tiamat 的地城探险"
 

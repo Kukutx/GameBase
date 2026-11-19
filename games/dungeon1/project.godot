@@ -16,6 +16,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Ember Depths"
 config/description="A dungeon delve on Tiamat"
+config/name_localized={
+"zh_CN": "余烬深渊"
+}
 config/quit_on_go_back=false
 config/version="0.1.0"
 run/main_scene="res://tiamat/core/ui/title_screen.tscn"
