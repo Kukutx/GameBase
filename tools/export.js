@@ -4,7 +4,8 @@
 // --skip-validation, refuses an engine other than the baseline in
 // .godot-version unless --allow-engine-drift (a test build only), signs the
 // Android package, checks what each pack holds and puts the licenses beside
-// each build.
+// each build. Each build knows the commit it was made from (its project.godot
+// names it for the export alone), which the game shows beside its version.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -28,7 +29,8 @@ const {
   runGodotStep,
   tempFile,
 } = require("./lib/common");
-const { gameVersion, resolveGame, resolveGames } = require("./lib/games");
+const { gamePath, gameVersion, resolveGame, resolveGames } = require("./lib/games");
+const { stampedProject } = require("./lib/project");
 const { PRESET_NAMES, exportedPack, targetOfPreset, targetsFor } = require("./lib/targets");
 const LICENSE_FILES = [
   "GODOT_LICENSE.txt",
@@ -170,6 +172,12 @@ async function exportPresets({ game, presets = PRESET_NAMES, godotBin, skipValid
   }
   const identity = gitIdentity();
   const targets = targetsFor(game);
+  // The game knows the build it is (GameDiagnosticsService.get_build()): its
+  // project.godot names it for the export alone, and is put back after.
+  const projectFile = gamePath(game, "project.godot");
+  const project = fs.readFileSync(projectFile, "utf8");
+  const build = `${identity.commit.slice(0, 7)}${identity.dirty ? "-dirty" : ""}`;
+  fs.writeFileSync(projectFile, stampedProject(project, build), "utf8");
 
   try {
     // Exporting needs an imported project; the import is quick when nothing changed.
@@ -220,6 +228,7 @@ async function exportPresets({ game, presets = PRESET_NAMES, godotBin, skipValid
     console.log("");
     console.log("Requested exports completed.");
   } finally {
+    fs.writeFileSync(projectFile, project, "utf8");
     if (temporaryLegalRoot !== null) {
       removeRecursive(temporaryLegalRoot);
     }

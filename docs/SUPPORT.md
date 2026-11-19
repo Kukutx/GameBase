@@ -15,7 +15,7 @@ Typical host locations:
 - Windows: `%APPDATA%\Godot\app_userdata\<Game Name>\logs\`
 - Linux: `$XDG_DATA_HOME/godot/app_userdata/<Game Name>/logs/`, usually `~/.local/share/godot/app_userdata/<Game Name>/logs/`
 
-The Web build uses the browser console instead of desktop file logging.
+The Web build uses the browser console instead of file logging; Android and iOS log to a file like a computer.
 
 ## Diagnostic context
 
@@ -24,9 +24,9 @@ The Web build uses the browser console instead of desktop file logging.
 The diagnostic payload contains only technical game context:
 
 - diagnostic schema version
-- game application version
+- game application version, and the build: the commit an export was made from (seven characters, `-dirty` when the files had changes), which the title screen also shows beside the version; empty when the game runs from its project
 - Godot engine version
-- operating system name
+- operating system name and version (such as the Android version)
 - active locale
 - save schema and active save slot
 - in-game day/time
