@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JianghuArtData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/art_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"snow_step"
+display_name = "Snow Treading"
+description = "Light steps that leave no trace. Fights come sooner."
+seal = "踏"
+effect = 3
+per_level = 0.06
+base_cost = 120.0
+cost_growth = 1.8
+max_level = 25
+unlock_realm = 1
+order = 3

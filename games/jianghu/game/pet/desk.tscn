@@ -1,0 +1,55 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/pet/desk.gd" id="1_desk"]
+[ext_resource type="Script" path="res://game/pet/scenery.gd" id="2_scenery"]
+[ext_resource type="PackedScene" path="res://game/pet/pet.tscn" id="3_pet"]
+[ext_resource type="Script" path="res://game/ui/panel.gd" id="4_panel"]
+[ext_resource type="Script" path="res://game/ui/report_card.gd" id="5_report"]
+[ext_resource type="Script" path="res://game/pet/desk_window.gd" id="6_window"]
+[ext_resource type="Script" path="res://tiamat/core/world/world_spawn_point.gd" id="7_spawn"]
+
+[node name="Desk" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_desk")
+
+[node name="Scenery" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_scenery")
+
+[node name="Pet" parent="." instance=ExtResource("3_pet")]
+
+[node name="Floaters" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 0
+script = ExtResource("4_panel")
+
+[node name="Report" type="PanelContainer" parent="."]
+layout_mode = 0
+script = ExtResource("5_report")
+
+[node name="DeskWindow" type="Node" parent="."]
+script = ExtResource("6_window")
+
+[node name="Perch" type="Marker2D" parent="."]
+script = ExtResource("7_spawn")
+spawn_id = &"perch"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JianghuRegionData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/region_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"miao_hills"
+display_name = "Miao Hills"
+description = "Terraced hills where strange insects are kept in jars."
+order = 5
+foe_ids = Array[StringName]([&"gu_master", &"venom_spider"])
+boss_id = &"venom_matron"
+sky = Color(0.9, 0.93, 0.86, 1)
+hills = Color(0.36, 0.45, 0.33, 1)
