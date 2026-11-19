@@ -1,8 +1,10 @@
+// Moves the engine baseline (.godot-version) to another stable Godot release
+// and brings that release's official LICENSE and COPYRIGHT into licenses/.
+// With --godot-bin it then validates every game with that engine.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { validate } = require("./validate");
-const { ENGINE_VERSION_RE, download, fail, main, rootPath } = require("./lib/common");
+const { ENGINE_VERSION_RE, download, fail, main, parseToolArgs, rootPath } = require("./lib/common");
 
 async function updateEngineBaseline({ version, godotBin }) {
   if (!version || !ENGINE_VERSION_RE.test(version)) {
@@ -47,7 +49,7 @@ async function updateEngineBaseline({ version, godotBin }) {
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: { version: { type: "string" }, "godot-bin": { type: "string" } },
     });
     await updateEngineBaseline({ version: values.version, godotBin: values["godot-bin"] });

@@ -19,7 +19,6 @@
 // keeps only its tests whose names contain <name>.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { checkLocalization } = require("./check_localization");
 const { runSelfTest } = require("./package_release");
 const { runCli: runRulesCheck } = require("./validate_rules");
@@ -33,6 +32,7 @@ const {
   godotVersion,
   importProject,
   main,
+  parseToolArgs,
   readTrimmed,
   removeRecursive,
   resolveGodotBin,
@@ -268,7 +268,7 @@ module.exports = { findTestScripts, validate, validateProject };
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: {
         game: { type: "string", multiple: true },
         "no-repository": { type: "boolean", default: false },

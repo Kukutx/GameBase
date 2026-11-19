@@ -12,9 +12,8 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { extractZip } = require("./lib/archive");
-const { fail, main } = require("./lib/common");
+const { fail, main, parseToolArgs } = require("./lib/common");
 const { gamePath, resolveGame } = require("./lib/games");
 
 function selectFiles(folder, files) {
@@ -60,7 +59,7 @@ function syncLicensedAssets({ game, overrides }) {
 
 if (require.main === module) {
   main(() => {
-    const { values } = parseArgs({ options: { game: { type: "string" }, source: { type: "string", multiple: true } } });
+    const { values } = parseToolArgs({ options: { game: { type: "string" }, source: { type: "string", multiple: true } } });
     const overrides = {};
     for (const entry of values.source || []) {
       const separator = entry.indexOf("=");

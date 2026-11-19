@@ -1,7 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
-const { fail, main, removeRecursive, rootPath, run, tempFile } = require("./lib/common");
+const { fail, main, parseToolArgs, removeRecursive, rootPath, run, tempFile } = require("./lib/common");
 
 // Builds the font every game shows its text in unless its theme names another:
 // Noto Sans SC (licenses/NOTO_SANS_SC_LICENSE.txt) cut down to Latin, the
@@ -105,7 +104,7 @@ async function subsetFont(source) {
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({ options: { source: { type: "string" } } });
+    const { values } = parseToolArgs({ options: { source: { type: "string" } } });
     if (!values.source) fail("Usage: node tools/subset_font.js --source <NotoSansSC-Regular.ttf>");
     await subsetFont(values.source);
   });

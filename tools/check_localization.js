@@ -1,7 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
-const { fail, main, rootPath } = require("./lib/common");
+const { fail, main, parseToolArgs, rootPath } = require("./lib/common");
 const { gamePath, projectSetting, projectString, readFoundation, resolveGames } = require("./lib/games");
 
 // Player-visible text is translated in the layer that owns it: the core and
@@ -487,7 +486,7 @@ module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKey
 
 if (require.main === module) {
   main(() => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: { game: { type: "string", multiple: true }, "report-only": { type: "boolean", default: false } },
     });
     let failed = 0;

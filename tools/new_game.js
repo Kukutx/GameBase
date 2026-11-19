@@ -19,8 +19,7 @@
 // GameModule class).
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
-const { fail, main, rootPath } = require("./lib/common");
+const { fail, main, parseToolArgs, rootPath } = require("./lib/common");
 const { GAME_ID_RE, GAMES_ROOT, readFoundation } = require("./lib/games");
 const { linkGame } = require("./link");
 
@@ -87,7 +86,7 @@ module.exports = { createGame };
 
 if (require.main === module) {
   main(() => {
-    const { values } = parseArgs({ options: { id: { type: "string" }, name: { type: "string" }, description: { type: "string" } } });
+    const { values } = parseToolArgs({ options: { id: { type: "string" }, name: { type: "string" }, description: { type: "string" } } });
     if (!values.id || !values.name) fail('Usage: node tools/new_game.js --id <id> --name "<Game Name>" [--description "<One line>"]');
     const game = createGame({ id: values.id, name: values.name, description: values.description });
     console.log(`Created ${values.name} in games/${game.id}. Validate it with: node tools/validate.js --game ${game.id}`);

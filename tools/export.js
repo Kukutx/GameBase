@@ -1,7 +1,13 @@
+// Exports one game (--game, or every game with --all) for each target preset
+// (Windows, Linux, macOS, Android, Web, or the --preset ones) into
+// build/<id>/<platform>/. It validates the game first unless
+// --skip-validation, refuses an engine other than the baseline in
+// .godot-version unless --allow-engine-drift (a test build only), signs the
+// Android package, checks what each pack holds and puts the licenses beside
+// each build.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { linkGame } = require("./link");
 const { validate } = require("./validate");
 const { verifyExportContents } = require("./verify_export_contents");
@@ -13,6 +19,7 @@ const {
   godotVersion,
   importProject,
   main,
+  parseToolArgs,
   readTrimmed,
   removeRecursive,
   resolveGodotBin,
@@ -223,7 +230,7 @@ module.exports = { PRESET_NAMES, exportPresets };
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: {
         game: { type: "string" },
         all: { type: "boolean", default: false },
