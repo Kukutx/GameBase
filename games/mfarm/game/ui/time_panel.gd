@@ -36,10 +36,12 @@ func _ready() -> void:
 	for index: int in BLOCKS:
 		var block := MFarmUiArt.image(MFarmUiArt.texture("ui_time_%02d" % (5 + index)), Vector2(33, 33))
 		_blocks.append(MFarmUiArt.place(self, block, Vector2(30, 12)) as TextureRect)
-	_date = MFarmUiArt.label("", 8, DATE_COLOR)
+	# The old game's date was 6 points high, so 2023年01月01日 fits the plank.
+	_date = MFarmUiArt.label("", 6, DATE_COLOR)
 	_date.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_date.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_date.size = Vector2(60, 10)
-	MFarmUiArt.place(self, _date, Vector2(12.5, 50))
+	MFarmUiArt.place(self, _date, Vector2(12.5, 47.5))
 	MFarmUiArt.place(self, MFarmUiArt.panel("ui_time_18", Vector2(50, 20)), Vector2(18.6, 64.3)).mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_time = MFarmUiArt.label("", 8, DATE_COLOR)
 	_time.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
