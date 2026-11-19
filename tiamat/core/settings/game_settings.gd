@@ -145,12 +145,15 @@ func _ready() -> void:
 	ensure_audio_buses()
 	locale = nearest_locale(system_locale, get_supported_locales())
 	load_settings()
+	WindowMemory.restore()
 	apply()
 
-# A change the frame did not write yet is written as the game quits.
+# A change the frame did not write yet is written as the game quits, and the
+# window is remembered where the player left it.
 func _exit_tree() -> void:
 	if _save_pending:
 		save_settings()
+	WindowMemory.remember()
 
 func set_master_volume(value: float) -> void:
 	master_volume = clampf(value, 0.0, 1.0)
@@ -169,8 +172,7 @@ func set_sounds_volume(value: float) -> void:
 
 func set_fullscreen(value: bool) -> void:
 	fullscreen = value
-	if DisplayServer.get_name() != "headless":
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)
+	_apply_window_mode()
 	_save_and_emit()
 
 func set_vsync(value: bool) -> void:
@@ -188,6 +190,16 @@ func set_battery_saver(value: bool) -> void:
 	battery_saver = value
 	_apply_frame_rate()
 	_save_and_emit()
+
+## The window mode `fullscreen` asks of a window now in `current`, or -1 to
+## leave it: a full screen, or a window that leaves full screen (a maximized
+## window stays maximized). A phone keeps the mode its export gives it, its
+## system bars hidden, which any window mode would end on Android.
+static func window_mode_for(full: bool, current: DisplayServer.WindowMode, phone: bool) -> int:
+	var is_full := current == DisplayServer.WINDOW_MODE_FULLSCREEN or current == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+	if phone or full == is_full:
+		return -1
+	return DisplayServer.WINDOW_MODE_FULLSCREEN if full else DisplayServer.WINDOW_MODE_WINDOWED
 
 ## The most frames a second the game draws (`Engine.max_fps`; 0 for no
 ## limit, where vsync holds it to the screen): the game's own limit
@@ -334,9 +346,16 @@ func apply() -> void:
 	bindings.apply_to_input_map()
 	_apply_scaling()
 	_apply_frame_rate()
+	_apply_window_mode()
 	if DisplayServer.get_name() != "headless":
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
+
+func _apply_window_mode() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var mode := window_mode_for(fullscreen, DisplayServer.window_get_mode(), OS.has_feature("mobile"))
+	if mode >= 0:
+		DisplayServer.window_set_mode(mode as DisplayServer.WindowMode)
 
 ## The settings as the file holds them.
 func to_data() -> Dictionary:
