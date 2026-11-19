@@ -61,6 +61,10 @@ func test_in_play_the_stick_walks_and_the_game_s_buttons_show() -> void:
 	assert_false(actions.has(&"move_up"), "the moves are the stick's")
 	assert_false(actions.has(&"pause"), "the pause is the corner's")
 	assert_eq(actions, TouchControlsService.game_touch_actions())
+	var view := get_viewport().get_visible_rect()
+	assert_true(view.encloses(TouchControls.safe_rect()), "the clear part of the screen lies in the view")
+	for control: Control in [TouchControls.get_stick(), TouchControls.get_node("Back"), TouchControls.get_node("Button_interact")]:
+		assert_true(view.encloses(control.get_rect()), "%s lies in the view" % control.name)
 	var stick := TouchControls.get_stick()
 	assert_true(stick.visible, "something walks, so the stick shows")
 	var center := stick.get_center()

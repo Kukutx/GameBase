@@ -236,23 +236,46 @@ func _layout() -> void:
 	var view := get_viewport().get_visible_rect().size
 	var unit := view.y
 	var margin := unit * MARGIN
+	# Placed in the part of the screen a notch or rounded corners leave clear.
+	var clear := safe_rect()
+	var left := clear.position.x + margin
+	var right := clear.end.x - margin
+	var top := clear.position.y + margin
+	var bottom := clear.end.y - margin
 	_stick.radius = unit * STICK_RADIUS
-	_place(_stick, Vector2(margin + _stick.radius * 1.15, view.y - margin - _stick.radius * 1.15), _stick.radius)
+	_place(_stick, Vector2(left + _stick.radius * 1.15, bottom - _stick.radius * 1.15), _stick.radius)
 	_corner.radius = unit * CORNER_RADIUS
 	# In play the HUD fills the top corners, so the pause button sits at the
 	# left edge above the stick; over a menu the close button takes the top
 	# right corner, as a menu's close button does.
 	if _corner.sign_shown == TouchButton.Sign.PAUSE:
-		_place(_corner, Vector2(margin + _corner.radius, view.y * PAUSE_HEIGHT), _corner.radius)
+		_place(_corner, Vector2(left + _corner.radius, view.y * PAUSE_HEIGHT), _corner.radius)
 	else:
-		_place(_corner, Vector2(view.x - margin - _corner.radius, margin + _corner.radius), _corner.radius)
+		_place(_corner, Vector2(right - _corner.radius, top + _corner.radius), _corner.radius)
 	var radius := unit * BUTTON_RADIUS
-	var first := Vector2(view.x - margin - radius * 1.2, view.y - margin - radius * 1.2)
+	var first := Vector2(right - radius * 1.2, bottom - radius * 1.2)
 	for index: int in _buttons.size():
 		var button := _buttons[index]
 		button.radius = radius if index > 0 else radius * 1.2
 		var at := first if index == 0 else first + BUTTON_PLACES[index - 1] * radius
 		_place(button, at, button.radius)
+
+## The part of the view that the screen's notch, rounded corners and system
+## bars leave clear (`DisplayServer.get_display_safe_area()`), in the view's
+## coordinates; the whole view where the screen tells nothing useful.
+func safe_rect() -> Rect2:
+	var full := get_viewport().get_visible_rect()
+	var safe := DisplayServer.get_display_safe_area()
+	if safe.size.x <= 0 or safe.size.y <= 0:
+		return full
+	var window := Rect2(Vector2(safe.position - DisplayServer.window_get_position()), Vector2(safe.size))
+	var clear := get_tree().root.get_final_transform().affine_inverse() * window
+	clear = clear.intersection(full)
+	# A clear part that leaves too little is a screen that says something
+	# else (a window half off it): the whole view then.
+	if clear.size.x < full.size.x * 0.6 or clear.size.y < full.size.y * 0.6:
+		return full
+	return clear
 
 func _place(control: Control, center: Vector2, radius: float) -> void:
 	control.size = Vector2.ONE * radius * 2.0
