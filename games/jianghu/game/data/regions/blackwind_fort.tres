@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JianghuRegionData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/region_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"blackwind_fort"
+display_name = "Blackwind Fort"
+description = "A mountain stronghold that has robbed travellers for years."
+order = 2
+foe_ids = Array[StringName]([&"fort_raider", &"fort_archer"])
+boss_id = &"blackwind_lord"
+sky = Color(0.86, 0.84, 0.82, 1)
+hills = Color(0.28, 0.27, 0.3, 1)

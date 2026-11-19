@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JianghuArtData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/art_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"breathing"
+display_name = "Breathing Method"
+description = "Steady breaths gather inner qi faster."
+seal = "吐"
+effect = 0
+per_level = 0.25
+base_cost = 8.0
+cost_growth = 1.6
+max_level = 50
+unlock_realm = 0
+order = 0

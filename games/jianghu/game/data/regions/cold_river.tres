@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JianghuRegionData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/region_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"cold_river"
+display_name = "Cold River Ferry"
+description = "Mist on the water, and knives under the oilcloth."
+order = 3
+foe_ids = Array[StringName]([&"river_pirate", &"assassin"])
+boss_id = &"old_angler"
+sky = Color(0.86, 0.9, 0.93, 1)
+hills = Color(0.3, 0.4, 0.48, 1)

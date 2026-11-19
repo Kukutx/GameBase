@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JianghuArtData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/art_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"origin_qi"
+display_name = "Return to Origin"
+description = "All qi returns to its source. Greatly speeds cultivation."
+seal = "元"
+effect = 0
+per_level = 0.5
+base_cost = 4000.0
+cost_growth = 1.75
+max_level = 50
+unlock_realm = 3
+order = 6

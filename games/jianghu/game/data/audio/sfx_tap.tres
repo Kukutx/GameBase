@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AudioCueData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/audio/audio_cue_data.gd" id="1_cue"]
+[ext_resource type="AudioStream" path="res://game/audio/tap.wav" id="2_stream"]
+
+[resource]
+script = ExtResource("1_cue")
+id = &"sfx_tap"
+cue_type = 0
+stream = ExtResource("2_stream")
+volume_db = -6.0
+pitch_min = 0.95
+pitch_max = 1.08
+fade_seconds = 3.0
+max_voices = 1

@@ -67,3 +67,12 @@ and is explicitly excluded from release resource packs. Tiamat runtime
 components fall back to committed project visuals when those local assets are
 unavailable. Do not add those raw source files to release packages without a
 separate license review.
+
+## Pocket Jianghu
+
+Pocket Jianghu (`games/jianghu/`) carries no third-party art or audio. Its
+hero, landscape and icons are drawn in code, and its sounds and music under
+`games/jianghu/game/audio/` were synthesised for it by
+`games/jianghu/source/synth_audio.py`; both are part of this repository under
+its licence. Its text shows in the core's Noto Sans SC, listed above.
+

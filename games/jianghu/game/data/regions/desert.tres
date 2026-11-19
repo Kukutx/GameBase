@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JianghuRegionData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/region_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"desert"
+display_name = "Lonely Desert"
+description = "One plume of smoke rises straight above endless sand."
+order = 4
+foe_ids = Array[StringName]([&"horse_thief", &"sand_scorpion"])
+boss_id = &"desert_wolf"
+sky = Color(0.98, 0.9, 0.75, 1)
+hills = Color(0.72, 0.55, 0.35, 1)
