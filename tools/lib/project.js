@@ -37,8 +37,9 @@
 // export_presets.cfg it adds the preset of every export target the game
 // lacks, from the new-game template (tools/lib/targets.js), and writes what
 // follows from the game: where each preset exports to, its application id,
-// Android's version code from the game's version and empty keystore fields
-// (signing keys come from the environment, never from the repository); and
+// Android's version code from the game's version, its launcher icon's layers
+// (tools/render_android_icon.js) and empty keystore fields (signing keys come
+// from the environment, never from the repository); and
 // each preset's exclude_filter: the game's own filters, then the editor files
 // of every addon it links, which its exported packs must not carry
 // (tools/verify_export_contents.js).
@@ -47,6 +48,7 @@ const path = require("node:path");
 const { fail, rootPath } = require("./common");
 const { gamePath, gameVersion, readFoundation } = require("./games");
 const { PRESET_NAMES, androidVersionCode, applicationId, targetOfPreset, targetsFor } = require("./targets");
+const { androidIconPaths, hasAndroidIcon } = require("./android_icon");
 
 // The game's modules, each after the modules it requires, otherwise by name.
 function moduleOrder(foundation, modules) {
@@ -351,6 +353,11 @@ function derivedPresetValues(game, preset, targets, foundation) {
     options["package/unique_name"] = JSON.stringify(applicationId(game));
     options["version/code"] = String(androidVersionCode(gameVersion(game)));
     Object.assign(options, androidPermissions(game, foundation));
+    // The layers of the launcher icon, when the game has them; without them
+    // Godot makes the whole icon the foreground, which a launcher cuts down.
+    const icon = hasAndroidIcon(game) ? androidIconPaths() : { foreground: "", background: "" };
+    options["launcher_icons/adaptive_foreground_432x432"] = JSON.stringify(icon.foreground);
+    options["launcher_icons/adaptive_background_432x432"] = JSON.stringify(icon.background);
     for (const key of ["keystore/debug", "keystore/debug_user", "keystore/debug_password", "keystore/release", "keystore/release_user", "keystore/release_password"]) {
       options[key] = '""';
     }

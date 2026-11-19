@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const { checkLocalization, collectNonDialogueKeys, layerLiterals, repeatProblem } = require("./check_localization");
+const { androidIconPaths, expectedRecord, staleAndroidIcon } = require("./lib/android_icon");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
 const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
 const { desiredLinks } = require("./link");
@@ -203,6 +204,38 @@ test("a resource's player-facing text needs a translation, such as a control's n
 test("every game's project.godot, .gutconfig.json and export filters hold what its manifests give", () => {
   for (const id of listGameIds()) assert.ok(projectInSync(loadGame(id)), `games/${id}: run node tools/link.js`);
   assert.ok(projectInSync(templateGame()), "tiamat/templates/new_game: run node tools/link.js");
+});
+
+test("every game's Android launcher icon is drawn from its icon as it is now, and its preset names it", () => {
+  const { foreground, background } = androidIconPaths();
+  for (const game of [...listGameIds().map(loadGame), templateGame()]) {
+    assert.equal(staleAndroidIcon(game), null);
+    const presets = fs.readFileSync(gamePath(game, "export_presets.cfg"), "utf8");
+    assert.ok(presets.includes(`launcher_icons/adaptive_foreground_432x432="${foreground}"`), `${game.id} names its foreground`);
+    assert.ok(presets.includes(`launcher_icons/adaptive_background_432x432="${background}"`), `${game.id} names its background`);
+  }
+});
+
+test("a changed icon asks for its launcher layers to be drawn again, and a game without them names none", () => {
+  const root = tempFile("tiamat-android-icon-test");
+  const game = { id: "probe", root, modules: [], addons: [], manifest: {} };
+  try {
+    fs.mkdirSync(path.join(root, "android_icon"), { recursive: true });
+    fs.writeFileSync(path.join(root, "project.godot"), '[application]\n\nconfig/name="Probe"\nconfig/version="0.1.0"\nconfig/icon="res://icon.svg"\n');
+    fs.writeFileSync(path.join(root, "icon.svg"), "<svg/>");
+    assert.match(staleAndroidIcon(game), /has no android_icon/);
+    const presets = read("tiamat", "templates", "new_game", "export_presets.cfg");
+    const bare = syncedExportPresets(presets, game);
+    assert.ok(bare.includes('launcher_icons/adaptive_foreground_432x432=""'), "without layers Godot draws the whole icon");
+    for (const name of ["foreground.png", "background.png"]) fs.writeFileSync(path.join(root, "android_icon", name), "");
+    fs.writeFileSync(path.join(root, "android_icon", "icon.json"), JSON.stringify(expectedRecord(game)));
+    assert.equal(staleAndroidIcon(game), null);
+    assert.ok(syncedExportPresets(presets, game).includes('launcher_icons/adaptive_foreground_432x432="res://android_icon/foreground.png"'));
+    fs.writeFileSync(path.join(root, "icon.svg"), "<svg width='2'/>");
+    assert.match(staleAndroidIcon(game), /icon changed .*render_android_icon\.js --game probe/);
+  } finally {
+    removeRecursive(root);
+  }
 });
 
 test("a game runs the tests of the core, of each of its modules and its own", () => {
