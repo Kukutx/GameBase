@@ -16,7 +16,11 @@ extends MiniGame
 ## selection as a group that the digit selects again. With the keys or a
 ## gamepad, the arrows
 ## or the stick move a cursor, and accept or interact at it does what fits:
-## selects the player's unit there, or sends the selection there. Cancel drops
+## selects the player's unit there, or sends the selection there. A finger's
+## tap does the same where it lands (`tap()`), since a touchscreen has no
+## right click: a tap on the player's unit selects it, a second tap on it
+## every unit of its kind, and a tap elsewhere sends the selection there; a
+## dragged box selects, and the touch controls' corner button cancels. Cancel drops
 ## an armed attack-move, then the selection, and pressed twice gives the battle
 ## up. It ends won or lost a moment after the battle does (`END_SECONDS`), with
 ## the units of the player's side left as its score, and tells `RtsEvents`.
@@ -144,6 +148,14 @@ func click(point: Vector2, additive := false, double := false) -> void:
 		_set_selection(rest)
 	else:
 		select([unit] as Array[RtsUnit], additive)
+
+## What a finger's tap at `point` of the field does: what accept does at the
+## cursor, selecting the player's unit there (every unit of its kind when it
+## is the only one selected), else sending the selection there, after the foe
+## there or, with an attack-move armed, fighting on the way.
+func tap(point: Vector2) -> void:
+	if battle != null and not battle.is_over():
+		_confirm(point)
 
 ## What a right click at `point` of the field does: sends the selection after
 ## the foe there, else to that place.
@@ -306,7 +318,11 @@ func _build() -> void:
 	_field = RtsBattleField.new()
 	_field.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_field.clicked.connect(func(point: Vector2, additive: bool, double: bool) -> void:
-		if has_input():
+		if not has_input():
+			return
+		if InputPrompts.using_touch:
+			tap(point)
+		else:
 			click(point, additive, double))
 	_field.box_dragged.connect(func(rect: Rect2, additive: bool) -> void:
 		if has_input():
@@ -342,4 +358,7 @@ func _build() -> void:
 func _show_command_names() -> void:
 	for which: int in _buttons.size():
 		var action := COMMAND_ACTIONS[which]
-		_buttons[which].text = "%s [%s]" % [GameSettings.bindings.get_label(action), InputPrompts.get_action_prompt(action)]
+		var label := GameSettings.bindings.get_label(action)
+		var prompt := InputPrompts.get_action_prompt(action)
+		# On a touchscreen the button is the control, named by its label alone.
+		_buttons[which].text = label if prompt == label or prompt.is_empty() else "%s [%s]" % [label, prompt]
