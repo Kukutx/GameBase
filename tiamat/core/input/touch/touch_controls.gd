@@ -251,6 +251,9 @@ func _show(wanted: Dictionary) -> void:
 func _set_buttons(actions: Array[StringName]) -> void:
 	for button: TouchButton in _buttons:
 		button.release()
+		# Out of the tree at once, so the new button of the same action takes
+		# its name (`Button_<action>`).
+		remove_child(button)
 		button.queue_free()
 	_buttons.clear()
 	_button_actions = actions.duplicate()
