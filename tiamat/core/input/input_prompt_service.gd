@@ -148,6 +148,11 @@ func _ready() -> void:
 	using_touch = starts_on_touch()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 
+## Whether a mouse event is a finger's: one the engine makes of the first
+## finger, or one `TouchControls` makes of a second.
+static func is_from_finger(event: InputEvent) -> bool:
+	return event.device == InputEvent.DEVICE_ID_EMULATION or event.device == TouchControlsService.FINGER_MOUSE_DEVICE
+
 ## The name of gamepad `button` on the gamepad in use.
 func get_button_name(button: JoyButton) -> String:
 	return gamepad_button_name(button, gamepad_style)
@@ -157,7 +162,7 @@ func _input(event: InputEvent) -> void:
 		if event.pressed:
 			_set_using_touch(true)
 		return
-	if event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION:
+	if event is InputEventMouse and is_from_finger(event):
 		return
 	if event is InputEventJoypadButton:
 		if event.pressed:

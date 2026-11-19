@@ -29,6 +29,11 @@ extends CanvasLayer
 ##
 ## The HUD keeps clear of the controls that show (`get_covered_rects()`,
 ## `layout_changed`): a HUD line with a `TouchClearance` draws back from them.
+##
+## The engine makes mouse events of the first finger only. While that finger
+## holds a control (a thumb on the stick), a second finger that taps beside
+## the controls makes them here instead (`FINGER_MOUSE_DEVICE`), so the player
+## taps a field, a slot or a person while walking.
 
 ## The controls that show, or where they sit, changed.
 signal layout_changed
@@ -41,6 +46,14 @@ const MOVER_GROUP := &"touch_mover"
 ## The action that closes what is open, and the one that pauses.
 const CANCEL_ACTION := &"ui_cancel"
 const PAUSE_ACTION := &"pause"
+## The device of the mouse events a second finger makes while the first
+## holds a control; read as a finger's, like the engine's own
+## (`InputPromptService.is_from_finger()`).
+const FINGER_MOUSE_DEVICE := -8
+## How often, in seconds, the controls look whether the screen's clear part
+## moved (`safe_rect()`): a phone turned over keeps its size but takes its
+## notch to the other side.
+const SAFE_AREA_CHECK := 0.5
 ## The most buttons a game's controls get.
 const MAX_BUTTONS := 5
 ## Sizes against the height of the view, at the normal touch size
@@ -69,6 +82,14 @@ var _applied := false
 # The game's touch actions (`game_touch_actions()`), until the controls change.
 var _game_actions: Array[StringName] = []
 var _game_actions_known := false
+# The finger whose touches go on as mouse events (`FINGER_MOUSE_DEVICE`), or
+# -1; and where it last was, in the view.
+var _mouse_finger := -1
+var _mouse_at := Vector2.ZERO
+# The clear part of the screen the controls were last placed in, and the
+# time to the next look at it.
+var _laid_out_safe := Rect2()
+var _safe_check_in := 0.0
 
 func _ready() -> void:
 	layer = LAYER
@@ -92,8 +113,13 @@ func _notification(what: int) -> void:
 		NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED:
 			_release_all()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_show(_wanted())
+	_safe_check_in -= delta
+	if visible and _safe_check_in <= 0.0:
+		_safe_check_in = SAFE_AREA_CHECK
+		if safe_rect() != _laid_out_safe:
+			_layout()
 
 ## Goes back, as Android's back button does: closes what is open (a menu, a
 ## dialogue, a minigame, a dialog window) with the cancel action, pauses play,
@@ -173,6 +199,8 @@ func _input(event: InputEvent) -> void:
 		if _fingers.has(drag.index):
 			_fingers[drag.index].call(&"drag", drag.index, drag.position)
 			get_viewport().set_input_as_handled()
+		elif drag.index == _mouse_finger:
+			_send_mouse_motion(drag.position)
 	elif event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION:
 		# The click the engine makes of the first finger: the control's too.
 		if _fingers.has(0) or _control_at((event as InputEventMouse).position) != null:
@@ -182,6 +210,12 @@ func _on_touch(touch: InputEventScreenTouch) -> void:
 	if touch.pressed:
 		var control := _control_at(touch.position)
 		if control == null:
+			# Beside the controls, a finger the engine makes no mouse of
+			# while the first holds one.
+			if _mouse_finger < 0 and touch.index != 0 and _fingers.has(0):
+				_send_mouse_motion(touch.position)
+				_mouse_finger = touch.index
+				_send_mouse_button(true)
 			return
 		_fingers[touch.index] = control
 		control.call(&"press", touch.index, touch.position)
@@ -191,6 +225,9 @@ func _on_touch(touch: InputEventScreenTouch) -> void:
 		_fingers.erase(touch.index)
 		control.call(&"lift", touch.index)
 		get_viewport().set_input_as_handled()
+	elif touch.index == _mouse_finger:
+		_send_mouse_motion(touch.position)
+		_lift_mouse_finger()
 
 # The control that shows under `point`, or null.
 func _control_at(point: Vector2) -> Control:
@@ -274,7 +311,42 @@ func _drop_fingers(control: Control) -> void:
 		if _fingers[index] == control:
 			_fingers.erase(index)
 
+func _send_mouse_motion(at: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.device = FINGER_MOUSE_DEVICE
+	motion.button_mask = MOUSE_BUTTON_MASK_LEFT if _mouse_finger >= 0 else 0
+	motion.position = _to_window(at)
+	motion.global_position = motion.position
+	motion.relative = motion.position - _to_window(_mouse_at)
+	_mouse_at = at
+	_send(motion)
+
+func _send_mouse_button(pressed: bool) -> void:
+	var button := InputEventMouseButton.new()
+	button.device = FINGER_MOUSE_DEVICE
+	button.button_index = MOUSE_BUTTON_LEFT
+	button.button_mask = MOUSE_BUTTON_MASK_LEFT if pressed else 0
+	button.pressed = pressed
+	button.position = _to_window(_mouse_at)
+	button.global_position = button.position
+	_send(button)
+
+func _lift_mouse_finger() -> void:
+	if _mouse_finger < 0:
+		return
+	_mouse_finger = -1
+	_send_mouse_button(false)
+
+# Sent once the event at hand is done, as the engine's own come.
+func _send(event: InputEvent) -> void:
+	Input.parse_input_event.call_deferred(event)
+
+# A point of the view in the window, where the engine's events are.
+func _to_window(at: Vector2) -> Vector2:
+	return get_tree().root.get_final_transform() * at
+
 func _release_all() -> void:
+	_lift_mouse_finger()
 	_fingers.clear()
 	if _stick != null:
 		_stick.release()
@@ -289,6 +361,7 @@ func _layout() -> void:
 	var margin := unit * MARGIN
 	# Placed in the part of the screen a notch or rounded corners leave clear.
 	var clear := safe_rect()
+	_laid_out_safe = clear
 	var left := clear.position.x + margin
 	var right := clear.end.x - margin
 	var top := clear.position.y + margin
