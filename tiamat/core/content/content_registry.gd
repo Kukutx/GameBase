@@ -10,7 +10,7 @@ extends Node
 ## every entry of the game's `ContentPack`s (`GameDefinition.content`) under
 ## the kind its class is registered as, and reports what is wrong:
 ## - every entry's own `ContentEntry.find_problems()`;
-## - every location's scene: exactly one player, unique spawn points, portals
+## - every location's scene: at most one player, unique spawn points, portals
 ##   that lead to existing spawn points, and what its nodes report about
 ##   themselves (`find_scene_problems()`). A node with a
 ##   `get_persistent_keys() -> PackedStringArray` method names the world state
@@ -386,9 +386,11 @@ func _check_locations(problems: PackedStringArray) -> void:
 			continue
 		var root: Node = roots[String(location.id)]
 		var spawn_counts: Dictionary = _location_spawn_ids[String(location.id)]
+		# One player walks a location, or none in a game nobody walks (cards, a
+		# desk pet), whose save keeps the location alone (`SavePlace`).
 		var player_count := _count_group_nodes(root, &"player")
-		if player_count != 1:
-			problems.append("location '%s' scene must contain exactly one player node, found %d" % [location.id, player_count])
+		if player_count > 1:
+			problems.append("location '%s' scene must contain at most one player node, found %d" % [location.id, player_count])
 		for raw_spawn_id: Variant in spawn_counts.keys():
 			var spawn_id := String(raw_spawn_id)
 			if spawn_id.is_empty():

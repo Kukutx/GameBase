@@ -8,14 +8,18 @@ const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
 const TEST_DIRECTORY := "user://test_menus"
 
 var _save_directory := ""
+# The game's own aspect, which a test that sets another gives back.
+var _aspect := Window.CONTENT_SCALE_ASPECT_IGNORE
 
 func before_each() -> void:
+	_aspect = get_tree().root.content_scale_aspect
 	_save_directory = SaveManager.save_directory
 	SaveManager.save_directory = TEST_DIRECTORY
 	SaveManager.select_slot(SaveManager.active_slot)
 	SaveManager.delete_save()
 
 func after_each() -> void:
+	get_tree().root.content_scale_aspect = _aspect
 	SaveManager.delete_save()
 	SaveManager.save_directory = _save_directory
 	SaveManager.select_slot(SaveManager.active_slot)
@@ -288,6 +292,11 @@ func test_quitting_from_the_pause_menu_asks_first() -> void:
 	menu.confirm_quit.hide()
 
 func test_the_core_menus_and_their_questions_fit_the_view() -> void:
+	# The menus fit the game's own view, its base size, whatever more a window
+	# of another shape shows of a game whose aspect expands.
+	_aspect = get_tree().root.content_scale_aspect
+	get_tree().root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP
+	await get_tree().process_frame
 	var view := get_viewport().get_visible_rect()
 	var base := Vector2(ProjectSettings.get_setting("display/window/size/viewport_width"), ProjectSettings.get_setting("display/window/size/viewport_height"))
 	assert_eq(view.size, base, "the tests see the game's own view")
