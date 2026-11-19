@@ -24,8 +24,7 @@ var _turn: Tween
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	size = SIZE
-	position = Vector2(640 - SIZE.x, 0)
+	MFarmUiArt.pin(self, SIZE, Vector2(1, 0), Vector2(-SIZE.x, 0))
 	MFarmUiArt.place(self, MFarmUiArt.image(MFarmUiArt.texture("ui_time_16"), SIZE), Vector2.ZERO)
 	var window := MFarmUiArt.image(MFarmUiArt.texture("ui_time_17"), Vector2(25, 25))
 	window.clip_children = CanvasItem.CLIP_CHILDREN_ONLY

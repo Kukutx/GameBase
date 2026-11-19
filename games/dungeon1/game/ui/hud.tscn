@@ -25,10 +25,13 @@ text = ""
 [node name="Run" type="Label" parent="."]
 script = ExtResource("6_depth_line")
 shows_time = false
-offset_left = 260.0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
 offset_top = 6.0
-offset_right = 472.0
+offset_right = -8.0
 offset_bottom = 22.0
+grow_horizontal = 0
 theme_override_colors/font_color = Color(0.98, 0.62, 0.36, 1)
 theme_override_font_sizes/font_size = 11
 text = ""
@@ -38,9 +41,10 @@ horizontal_alignment = 2
 script = ExtResource("4_status_line")
 seconds_per_message = 3.0
 shows_hints = true
+anchor_right = 1.0
 offset_left = 8.0
 offset_top = 24.0
-offset_right = 472.0
+offset_right = -8.0
 offset_bottom = 40.0
 theme_override_font_sizes/font_size = 10
 text = ""
@@ -48,18 +52,22 @@ horizontal_alignment = 1
 
 [node name="SaveIndicator" type="Label" parent="."]
 script = ExtResource("5_save_indicator")
-offset_left = 380.0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -100.0
 offset_top = 42.0
-offset_right = 472.0
+offset_right = -8.0
 offset_bottom = 56.0
+grow_horizontal = 0
 theme_override_font_sizes/font_size = 9
 horizontal_alignment = 2
 
 [node name="Prompt" type="Label" parent="."]
 visible = false
+anchor_right = 1.0
 offset_left = 8.0
 offset_top = 212.0
-offset_right = 472.0
+offset_right = -8.0
 offset_bottom = 228.0
 theme_override_font_sizes/font_size = 11
 text = ""
@@ -67,9 +75,10 @@ horizontal_alignment = 1
 
 [node name="Hotbar" type="Label" parent="."]
 script = ExtResource("7_hotbar_line")
+anchor_right = 1.0
 offset_left = 8.0
 offset_top = 232.0
-offset_right = 472.0
+offset_right = -8.0
 offset_bottom = 248.0
 theme_override_font_sizes/font_size = 10
 text = ""
@@ -84,9 +93,10 @@ hints = Dictionary[StringName, String]({
 &"interact": "use",
 &"next_item": "next item"
 })
+anchor_right = 1.0
 offset_left = 8.0
 offset_top = 251.0
-offset_right = 472.0
+offset_right = -8.0
 offset_bottom = 266.0
 theme_override_colors/font_color = Color(0.72, 0.7, 0.66, 1)
 theme_override_font_sizes/font_size = 8
