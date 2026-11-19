@@ -167,6 +167,37 @@ func test_a_finger_on_the_stick_as_it_hides_lets_go_and_moves_nothing() -> void:
 	Input.flush_buffered_events()
 	assert_false(Input.is_action_pressed(&"move_right"), "and moving it walks nothing")
 
+func test_a_second_finger_taps_beside_the_controls_while_the_first_walks() -> void:
+	_play()
+	_use_touch()
+	var view := get_viewport().get_visible_rect()
+	# The mouse events that reach the game, where they land in the view.
+	var clicks: Array[bool] = []
+	var landed: Array[Vector2] = []
+	var watch := func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			clicks.append(event.pressed)
+			landed.append(get_tree().root.get_final_transform().affine_inverse() * (event as InputEventMouseButton).position)
+	get_tree().root.window_input.connect(watch)
+	var stick := TouchControls.get_stick()
+	TouchControls._input(_touch(0, stick.get_center(), true))
+	var at := view.get_center()
+	TouchControls._input(_touch(1, at, true))
+	await wait_process_frames(2)
+	assert_eq(clicks, [true] as Array[bool], "the second finger presses where it taps")
+	assert_true(landed.size() == 1 and landed[0].distance_to(at) < 1.0, "at %s" % [landed])
+	assert_true(get_viewport().get_mouse_position().distance_to(at) < 1.0, "the pointer is there")
+	assert_true(InputPrompts.using_touch, "and is read as a finger")
+	TouchControls._input(_touch(1, at, false))
+	await wait_process_frames(2)
+	assert_eq(clicks, [true, false] as Array[bool], "and lets go where it lifts")
+	TouchControls._input(_touch(0, stick.get_center(), false))
+	TouchControls._input(_touch(0, at, true))
+	TouchControls._input(_touch(0, at, false))
+	await wait_process_frames(2)
+	assert_eq(clicks, [true, false] as Array[bool], "the first finger is the engine's to make a mouse of")
+	get_tree().root.window_input.disconnect(watch)
+
 func test_going_back_pauses_play_and_closes_what_is_open() -> void:
 	_play()
 	_use_touch()
