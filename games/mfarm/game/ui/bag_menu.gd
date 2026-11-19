@@ -11,7 +11,8 @@ extends Control
 const LOCK := &"mfarm_bag"
 const BAG_COLUMNS := 4
 const BASE_COLUMNS := 4
-const SCREEN := Vector2(640, 360)
+## The middle of the screen, where the bags open (`MFarmUiArt.pin()`).
+const MIDDLE := Vector2(0.5, 0.5)
 
 var _action_bar: Control
 var _player_bag: Control
@@ -25,7 +26,7 @@ var _trade: MFarmTradePanel
 
 func _ready() -> void:
 	add_to_group(&"mfarm_bag_menu")
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_action_bar()
 	_build_player_bag()
@@ -35,7 +36,7 @@ func _ready() -> void:
 	_tooltip = MFarmItemTooltip.new()
 	add_child(_tooltip)
 	_trade = MFarmTradePanel.new()
-	_trade.position = Vector2((SCREEN.x - _trade.size.x) * 0.5, SCREEN.y * 0.5 + 75)
+	MFarmUiArt.pin(_trade, _trade.size, MIDDLE, Vector2(-_trade.size.x * 0.5, 75))
 	add_child(_trade)
 	Bags.bag_changed.connect(_on_bag_changed)
 	Bags.selected_changed.connect(func(_index: int) -> void: _refresh_slots(Bags.PLAYER))
@@ -55,7 +56,7 @@ func toggle_bag() -> void:
 		close()
 	else:
 		_player_bag.visible = not _player_bag.visible
-		_player_bag.position = (SCREEN - _player_bag.size) * 0.5
+		MFarmUiArt.centre(_player_bag, _player_bag.size)
 		_tooltip.hide_item()
 
 ## Opens a box's bag beside the player's.
@@ -136,16 +137,16 @@ func _open_base(bag_key: StringName) -> void:
 	for index: int in count:
 		var slot := _make_slot(bag_key, index)
 		MFarmUiArt.place(holder, slot, Vector2(7 + (index % BASE_COLUMNS) * 20, 4 + (index / BASE_COLUMNS) * 20))
-	_base_bag.position = Vector2(SCREEN.x * 0.5 - _base_bag.size.x - 8, (SCREEN.y - _base_bag.size.y) * 0.5)
+	MFarmUiArt.pin(_base_bag, _base_bag.size, MIDDLE, Vector2(-_base_bag.size.x - 8, -_base_bag.size.y * 0.5))
 	_base_bag.visible = true
 	_player_bag.visible = true
-	_player_bag.position = Vector2(SCREEN.x * 0.5 + 8, (SCREEN.y - _player_bag.size.y) * 0.5)
+	MFarmUiArt.pin(_player_bag, _player_bag.size, MIDDLE, Vector2(8, -_player_bag.size.y * 0.5))
 	_refresh_slots(bag_key)
 	InputLock.lock(LOCK, false, self)
 
 func _build_action_bar() -> void:
 	_action_bar = MFarmUiArt.panel("ui_slot_frame", Vector2(222, 24))
-	_action_bar.position = Vector2((SCREEN.x - 222) * 0.5, SCREEN.y - 24)
+	MFarmUiArt.pin(_action_bar, _action_bar.size, Vector2(0.5, 1), Vector2(-_action_bar.size.x * 0.5, -_action_bar.size.y))
 	add_child(_action_bar)
 	var bag_button := TextureButton.new()
 	bag_button.texture_normal = MFarmUiArt.texture("ui_pack_03")

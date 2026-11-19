@@ -53,18 +53,31 @@ static func label(text: String, font_size := 8, color := TEXT_COLOR) -> Label:
 ## Keeps `control` (of `size`) in the middle of its parent, `below` pixels
 ## lower, whatever the window's width: the title's and the pause menu's paper.
 static func centre(control: Control, size: Vector2, below := 0.0) -> void:
-	control.set_anchors_preset(Control.PRESET_CENTER)
-	var corner := (-size / 2).floor() + Vector2(0, below)
-	control.offset_left = corner.x
-	control.offset_top = corner.y
-	control.offset_right = corner.x + size.x
-	control.offset_bottom = corner.y + size.y
+	pin(control, size, Vector2(0.5, 0.5), -size / 2 + Vector2(0, below))
 
 ## Puts `child` under `parent` with its top left at `at`.
 static func place(parent: Control, child: Control, at: Vector2) -> Control:
 	child.position = at
 	parent.add_child(child)
 	return child
+
+## Pins `control`, `size` big, to a point of its parent named as a share of
+## the parent's width and height (`point`: (0.5, 0.5) the middle, (1, 0) the
+## top right corner, (0.5, 1) the middle of the bottom), its top left corner
+## `from_point` away from it (on whole pixels). It keeps to that point
+## however wide the screen is: a phone held sideways shows more of the world
+## beside the old game's 640 x 360, and the panels stay at its corners and in
+## its middle.
+static func pin(control: Control, size: Vector2, point: Vector2, from_point: Vector2) -> void:
+	var corner := from_point.floor()
+	control.anchor_left = point.x
+	control.anchor_right = point.x
+	control.anchor_top = point.y
+	control.anchor_bottom = point.y
+	control.offset_left = corner.x
+	control.offset_top = corner.y
+	control.offset_right = corner.x + size.x
+	control.offset_bottom = corner.y + size.y
 
 ## A button drawn with one of the old textures, tinted as the old game's
 ## buttons were (a little darker under the mouse, darker while pressed, faded

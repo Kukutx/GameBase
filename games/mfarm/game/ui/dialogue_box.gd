@@ -29,8 +29,7 @@ func _ready() -> void:
 	add_to_group(&"mfarm_dialogue_box")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	size = PANEL_SIZE
-	position = Vector2((640 - PANEL_SIZE.x) * 0.5, 180 + 40 - PANEL_SIZE.y * 0.5)
+	MFarmUiArt.centre(self, PANEL_SIZE, 40)
 	visible = false
 	var box := MFarmUiArt.panel("ui_dialogue", Vector2(180, 40))
 	MFarmUiArt.place(self, box, Vector2(5, 24))

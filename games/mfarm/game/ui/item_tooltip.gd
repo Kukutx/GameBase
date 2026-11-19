@@ -48,7 +48,7 @@ func show_item(item: MFarmItemData, slot_rect: Rect2, in_shop: bool) -> void:
 	_price.visible = priced
 	_price.text = str(item.price if in_shop else item.get_sell_price())
 	_show_resources(MFarmBlueprintData.find(item.id) if item.item_type == MFarmItemData.ItemType.FURNITURE else null)
-	position = Vector2(clampf(slot_rect.get_center().x - WIDTH * 0.5, 2, 640 - WIDTH - 2), slot_rect.position.y - size.y - 4)
+	position = Vector2(clampf(slot_rect.get_center().x - WIDTH * 0.5, 2, get_parent_area_size().x - WIDTH - 2), slot_rect.position.y - size.y - 4)
 	if position.y < 24:
 		position.y = slot_rect.end.y + 4
 	visible = true

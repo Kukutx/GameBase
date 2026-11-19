@@ -1,0 +1,183 @@
+extends RefCounted
+
+## Whether a game's screens, its HUD and its menus, keep to the edges of a
+## view wider than the one they were laid out in, for the test of every
+## game's screens (`test_screens_fit.gd`). A phone held sideways is about
+## 20:9, and a game that keeps its height (`window/stretch/aspect`
+## `keep_height` or `expand`) shows it a view that much wider: what sat at a
+## corner must still sit at that corner, a line across the view must still
+## reach both sides, and what sat in the middle must still sit in the
+## middle. Anchors do this (a right corner's `anchor_left` and `anchor_right`
+## at 1, the middle's at 0.5); offsets alone keep a control where it was.
+##
+##     const ScreenFit := preload("res://tiamat/core/test/screen_fit.gd")
+##     assert_eq(await ScreenFit.find_drift(self, HUD), PackedStringArray())
+
+## How much wider than tall a phone held sideways shows the game.
+const PHONE_ASPECT := 20.0 / 9.0
+## How far, in pixels of the view, a part may drift from where it belongs.
+const TOLERANCE := 1.0
+## A line across the view keeps each side's gap under this share of its width.
+const LINE_GAP := 0.05
+## A part in the middle has gaps that differ by less than this share.
+const MIDDLE_SKEW := 0.05
+
+## Whether a wider screen shows the game a wider view, rather than bars
+## beside it.
+static func widens() -> bool:
+	var mode := String(ProjectSettings.get_setting("display/window/stretch/mode", "disabled"))
+	var aspect := String(ProjectSettings.get_setting("display/window/stretch/aspect", "keep"))
+	return mode != "disabled" and aspect in ["keep_height", "expand"]
+
+## The size the game's screens are laid out in (`window/size/viewport_*`).
+static func base_size() -> Vector2:
+	return Vector2(ProjectSettings.get_setting("display/window/size/viewport_width", 1152),
+		ProjectSettings.get_setting("display/window/size/viewport_height", 648))
+
+## The scenes under `folders` that are screens: a `CanvasLayer`, or a control
+## stretched over the whole view, at their root. A `test` folder is passed by.
+static func find_screens(folders: PackedStringArray) -> PackedStringArray:
+	var found := PackedStringArray()
+	for folder: String in folders:
+		_find_scenes(folder, found)
+	var screens := PackedStringArray()
+	for path: String in found:
+		var state := (load(path) as PackedScene).get_state()
+		var kind := state.get_node_type(0)
+		if kind == &"":
+			continue
+		if ClassDB.is_parent_class(kind, &"CanvasLayer") or (ClassDB.is_parent_class(kind, &"Control") and _fills_view(state)):
+			screens.append(path)
+	return screens
+
+## The parts of the screen `scene` that drift from their side, or from the
+## middle, when the view widens from `base` (the game's own, by default) to a
+## phone's shape; each named with where it sat and where it went. A part is
+## each control the screen's layer holds, seen as the box of what it draws; a
+## control that fills the view (a menu's backdrop) or a layer of its own (a
+## menu on its own `CanvasLayer`) is no part, the controls it holds are, named
+## by their path from the screen.
+##
+## A part that shows must lie inside the view it was laid out in (a closed
+## menu is measured but not held to it). A part with both gaps
+## to the view's sides small (`LINE_GAP`) is a line
+## across the view: it must reach as near both sides as before. One with its
+## gaps alike (`MIDDLE_SKEW`) sits in the middle: it must keep its distance
+## from the middle (a line in the middle may do either). Any other part keeps
+## its gap to the nearer side. `test` hosts the views while they lay out.
+static func find_drift(test: Node, scene: PackedScene, base := Vector2.ZERO) -> PackedStringArray:
+	if base == Vector2.ZERO:
+		base = base_size()
+	var wide := Vector2(roundf(base.y * PHONE_ASPECT), base.y)
+	var shown := {}
+	var at_base := await _boxes(test, scene, base, shown)
+	var at_wide := await _boxes(test, scene, wide, {})
+	var problems := PackedStringArray()
+	for part: String in at_base:
+		if not at_wide.has(part):
+			continue
+		var before: Rect2 = at_base[part]
+		var after: Rect2 = at_wide[part]
+		if shown.has(part) and not Rect2(Vector2.ZERO, base).grow(TOLERANCE).encloses(before):
+			problems.append("%s: %s reaches outside the view %s" % [part, before, base])
+			continue
+		var wanted := _places(before, after.size.x, base.x, wide.x)
+		var fits := false
+		for place: Vector2 in wanted:
+			if absf(after.position.x - place.x) <= TOLERANCE and absf(after.end.x - place.y) <= TOLERANCE:
+				fits = true
+		if not fits:
+			problems.append("%s: %s in %s, %s in %s (wanted from x %.0f to %.0f)" % [part, before, base, after, wide, wanted[0].x, wanted[0].y])
+	return problems
+
+# Where, from x to x, a part that sat at `before` in a view `base` wide may sit
+# in a view `wide` wide, now `width` wide itself; the likeliest first.
+static func _places(before: Rect2, width: float, base: float, wide: float) -> Array[Vector2]:
+	var left := before.position.x
+	var right := base - before.end.x
+	var line := left <= base * LINE_GAP and right <= base * LINE_GAP
+	var middle := absf(left - right) <= base * MIDDLE_SKEW
+	var places: Array[Vector2] = []
+	if line:
+		places.append(Vector2(left, wide - right))
+	if middle:
+		var centre := before.get_center().x + (wide - base) / 2.0
+		places.append(Vector2(centre - width / 2.0, centre + width / 2.0))
+	if places.is_empty():
+		if left < right:
+			places.append(Vector2(left, left + width))
+		else:
+			places.append(Vector2(wide - right - width, wide - right))
+	return places
+
+# Part name -> the box of what each part of the screen draws, the screen
+# shown in a view of `size`; the parts that show are added to `shown`.
+static func _boxes(test: Node, scene: PackedScene, size: Vector2, shown: Dictionary) -> Dictionary:
+	var view := SubViewport.new()
+	view.size = Vector2i(size)
+	view.disable_3d = true
+	view.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	test.add_child(view)
+	var screen := scene.instantiate()
+	view.add_child(screen)
+	await test.get_tree().process_frame
+	await test.get_tree().process_frame
+	var boxes := {}
+	_add_parts(screen, "", Rect2(Vector2.ZERO, size), boxes)
+	for part: String in boxes:
+		if _shows(screen.get_node(part)):
+			shown[part] = true
+	view.queue_free()
+	return boxes
+
+# Adds to `boxes` the parts among the children of `holder`, named from `path`.
+static func _add_parts(holder: Node, path: String, whole: Rect2, boxes: Dictionary) -> void:
+	for child: Node in holder.get_children():
+		var part := path + String(child.name)
+		if child is CanvasLayer:
+			_add_parts(child, part + "/", whole, boxes)
+		elif child is Control:
+			var control := child as Control
+			var own := control.get_global_rect()
+			if own.position.is_equal_approx(whole.position) and own.size.is_equal_approx(whole.size):
+				_add_parts(control, part + "/", whole, boxes)
+				continue
+			var box := _box(control)
+			if box.has_area() or box.size.x > 0.0:
+				boxes[part] = box
+
+# Whether `node` shows, no control or layer above it hidden.
+static func _shows(node: Node) -> bool:
+	while node != null:
+		if (node is CanvasItem and not (node as CanvasItem).visible) or (node is CanvasLayer and not (node as CanvasLayer).visible):
+			return false
+		node = node.get_parent()
+	return true
+
+# The box around `control` and every control it holds and shows, in the view.
+static func _box(control: Control) -> Rect2:
+	var box := control.get_global_rect()
+	var found := box.has_area()
+	for child: Node in control.get_children():
+		if child is Control and (child as Control).visible and not (child as Control).top_level:
+			var inner := _box(child)
+			if inner.has_area():
+				box = inner if not found else box.merge(inner)
+				found = true
+	return box if found else Rect2()
+
+static func _find_scenes(folder: String, found: PackedStringArray) -> void:
+	for sub: String in DirAccess.get_directories_at(folder):
+		if not sub.begins_with(".") and sub != "test":
+			_find_scenes(folder.path_join(sub), found)
+	for file: String in DirAccess.get_files_at(folder):
+		if file.get_extension() == "tscn":
+			found.append(folder.path_join(file))
+
+# Whether the root of the scene `state` is anchored to the view's four sides.
+static func _fills_view(state: SceneState) -> bool:
+	var anchors := {}
+	for index: int in state.get_node_property_count(0):
+		anchors[state.get_node_property_name(0, index)] = state.get_node_property_value(0, index)
+	return is_equal_approx(float(anchors.get(&"anchor_right", 0.0)), 1.0) and is_equal_approx(float(anchors.get(&"anchor_bottom", 0.0)), 1.0) \
+		and is_zero_approx(float(anchors.get(&"anchor_left", 0.0))) and is_zero_approx(float(anchors.get(&"anchor_top", 0.0)))
