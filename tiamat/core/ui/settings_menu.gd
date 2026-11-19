@@ -154,13 +154,13 @@ func show_page(next: Page) -> void:
 	pages.scroll_vertical = 0
 	match next:
 		Page.MAIN:
-			master_slider.grab_focus()
+			MenuLayer.focus(master_slider)
 		Page.ACCESSIBILITY:
-			(weather_effects_check if weather_effects_check.visible else reduced_motion_check).grab_focus()
+			MenuLayer.focus(weather_effects_check if weather_effects_check.visible else reduced_motion_check)
 		Page.CONTROLS:
 			# The touch controls' rows head the page where they show.
 			var first: Control = touch_size_select if touch_size_row.visible else _first_binding_button()
-			(first if first != null else controls_reset).grab_focus()
+			MenuLayer.focus(first if first != null else controls_reset)
 
 # A rebind reads the next key, mouse button or gamepad button before the
 # focused button can take it as a press.

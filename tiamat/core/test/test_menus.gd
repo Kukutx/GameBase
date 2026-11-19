@@ -60,6 +60,16 @@ func test_the_settings_pages_open_from_the_main_page_and_lead_back() -> void:
 	assert_false(menu.visible)
 	assert_signal_emit_count(menu, "closed", 1)
 
+func test_a_page_opens_at_its_top_once_the_menu_is_laid_out() -> void:
+	var menu := _settings()
+	menu.open()
+	await wait_process_frames(2)
+	assert_eq(menu.pages.scroll_vertical, 0, "the first row shows")
+	assert_eq(_focus(), menu.master_slider)
+	menu.show_page(SettingsMenu.Page.CONTROLS)
+	await wait_process_frames(2)
+	assert_eq(menu.pages.scroll_vertical, 0)
+
 func test_a_key_and_a_gamepad_button_are_rebound_on_the_controls_page() -> void:
 	var menu := _settings()
 	menu.open()
