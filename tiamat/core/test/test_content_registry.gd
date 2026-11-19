@@ -187,7 +187,7 @@ func test_custom_fields_return_their_value_or_the_default() -> void:
 	assert_eq(location.get_custom_field(&"missing", 3), 3)
 
 func test_a_location_holds_one_player_or_none() -> void:
-	var registry := ContentFixture.use(self, [_location_with_spawn(&"fixture_desk", &"desk")])
+	var registry := ContentFixture.use(self, [_location_with_spawn(&"fixture_still", &"fixture_spot")])
 	assert_eq(_player_problems(registry), PackedStringArray(), "a game nobody walks (a desk pet, cards) has no player")
 	registry = ContentFixture.use(self, [_location_with_spawn(&"fixture_walked", &"gate", 1)])
 	assert_eq(_player_problems(registry), PackedStringArray())
