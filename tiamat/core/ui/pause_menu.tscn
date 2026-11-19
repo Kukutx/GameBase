@@ -79,6 +79,7 @@ dialog_autowrap = true
 title = "Load Game"
 dialog_text = "Unsaved progress will be lost. Load your last save?"
 ok_button_text = "Load"
+cancel_button_text = "Cancel"
 
 [node name="ConfirmTitle" type="ConfirmationDialog" parent="."]
 size = Vector2i(300, 100)
@@ -86,6 +87,7 @@ dialog_autowrap = true
 title = "Return to Title"
 dialog_text = "Unsaved progress will be lost. Return to the title screen?"
 ok_button_text = "Return to Title"
+cancel_button_text = "Cancel"
 
 [node name="ConfirmQuit" type="ConfirmationDialog" parent="."]
 size = Vector2i(300, 100)
@@ -93,3 +95,4 @@ dialog_autowrap = true
 title = "Quit to Desktop"
 dialog_text = "Unsaved progress will be lost. Quit the game?"
 ok_button_text = "Quit"
+cancel_button_text = "Cancel"

@@ -116,6 +116,7 @@ size = Vector2i(300, 100)
 dialog_autowrap = true
 dialog_text = "This save slot already contains a game. Starting a new game will replace it. Continue?"
 ok_button_text = "Start New Game"
+cancel_button_text = "Cancel"
 
 [node name="ConfirmDelete" type="ConfirmationDialog" parent="."]
 title = "Delete Save"
@@ -123,3 +124,4 @@ size = Vector2i(300, 100)
 dialog_autowrap = true
 dialog_text = "Delete this save slot and its backup?"
 ok_button_text = "Delete"
+cancel_button_text = "Cancel"

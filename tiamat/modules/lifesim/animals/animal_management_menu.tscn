@@ -85,3 +85,4 @@ dialog_autowrap = true
 title = "Sell Animal"
 dialog_text = "Sell this animal?"
 ok_button_text = "Sell"
+cancel_button_text = "Cancel"

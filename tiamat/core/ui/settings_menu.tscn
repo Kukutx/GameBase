@@ -257,3 +257,4 @@ dialog_autowrap = true
 title = "Reset All Settings"
 dialog_text = "Restore every setting except the language to its default?"
 ok_button_text = "Reset"
+cancel_button_text = "Cancel"
