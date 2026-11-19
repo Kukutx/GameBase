@@ -49,6 +49,9 @@ const BINDING_WIDTH := 76.0
 @onready var support_export: Button = $Dim/Panel/Layout/Pages/Page/Accessibility/ExportSupportBundle
 @onready var support_open: Button = $Dim/Panel/Layout/Pages/Page/Accessibility/OpenSupportFolder
 @onready var controls_page: VBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls
+@onready var touch_size_row: HBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls/TouchSize
+@onready var touch_size_select: OptionButton = $Dim/Panel/Layout/Pages/Page/Controls/TouchSize/Select
+@onready var touch_stick_right_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Controls/TouchStickRight
 @onready var controls_list: VBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls/List
 @onready var controls_reset: Button = $Dim/Panel/Layout/Pages/Page/Controls/Reset
 @onready var hint_label: Label = $Dim/Panel/Layout/Hint
@@ -94,6 +97,10 @@ func _ready() -> void:
 	for speed_name: String in GameSettings.TEXT_SPEED_NAMES:
 		text_speed_select.add_item(speed_name)
 	text_speed_select.item_selected.connect(_on_text_speed_selected)
+	for size_name: String in GameSettings.TOUCH_SIZE_NAMES:
+		touch_size_select.add_item(size_name)
+	touch_size_select.item_selected.connect(_on_touch_size_selected)
+	touch_stick_right_check.toggled.connect(_on_touch_stick_right_toggled)
 	_build_language_selector()
 	language_select.item_selected.connect(_on_language_selected)
 	_build_controls()
@@ -201,6 +208,11 @@ func _sync_from_settings() -> void:
 	# Offered only while the game uses a service that goes online.
 	online_services_check.visible = GameSettings.uses_online_services()
 	online_services_check.button_pressed = GameSettings.online_services
+	# Offered on a device that plays by touch.
+	touch_size_row.visible = TouchControlsService.is_offered()
+	touch_stick_right_check.visible = touch_size_row.visible
+	touch_size_select.select(GameSettings.touch_size)
+	touch_stick_right_check.button_pressed = GameSettings.touch_stick_right
 	_select_current_language()
 	_syncing = false
 	if _waiting_action == &"":
@@ -366,6 +378,14 @@ func _on_hints_toggled(value: bool) -> void:
 func _on_text_speed_selected(index: int) -> void:
 	if not _syncing:
 		GameSettings.set_text_speed(index as GameSettingsService.TextSpeed)
+
+func _on_touch_size_selected(index: int) -> void:
+	if not _syncing:
+		GameSettings.set_touch_size(index as GameSettingsService.TouchSize)
+
+func _on_touch_stick_right_toggled(value: bool) -> void:
+	if not _syncing:
+		GameSettings.set_touch_stick_right(value)
 
 func _on_weather_effects_toggled(value: bool) -> void:
 	if not _syncing:

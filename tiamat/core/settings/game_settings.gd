@@ -2,8 +2,8 @@ class_name GameSettingsService
 extends Node
 
 ## The player's settings: the volumes, the display, autosave, how fast text
-## types out, hints, accessibility, the language and the bindings of the
-## controls (`bindings`).
+## types out, hints, accessibility, the language, the size and sides of the
+## touch controls and the bindings of the controls (`bindings`).
 ## It applies them to the audio buses, the window, the translation server and
 ## the input map, and writes them to `settings_path` (JSON) once the frame of a
 ## change is done: a slider dragged across writes once a frame, not once a step.
@@ -57,6 +57,13 @@ const TEXT_SPEED_NAMES: Array[String] = ["Slow", "Normal", "Fast", "Instant"]
 # Characters a second of each text speed; 0 shows a line at once.
 const _CHARACTERS_PER_SECOND: Array[float] = [25.0, 50.0, 100.0, 0.0]
 
+## How large the touch controls show (`TouchControls`, `get_touch_scale()`).
+enum TouchSize { SMALL, NORMAL, LARGE }
+## Each touch size's name, as the settings file holds it and the menu shows it.
+const TOUCH_SIZE_NAMES: Array[String] = ["Small", "Normal", "Large"]
+# How much larger than its normal size each touch size draws the controls.
+const _TOUCH_SCALES: Array[float] = [0.8, 1.0, 1.25]
+
 ## The buses `GameAudio` plays on, each sending to Master. A game's bus
 ## layout may add effects to them; the core adds the ones it lacks.
 const AUDIO_BUSES: Array[StringName] = [&"Music", &"Sounds"]
@@ -86,6 +93,11 @@ var reduced_motion: bool
 ## language model: `register_online_service()`); off until they turn it on.
 var online_services: bool
 var locale := SOURCE_LOCALE
+## How large the touch controls show.
+var touch_size: TouchSize
+## Whether the touch controls swap sides: the stick at the lower right, the
+## buttons at the lower left.
+var touch_stick_right: bool
 ## The controls of the running game and the player's bindings of them. Read
 ## them here; change them with `bind_control()`, `bind_gamepad_button()` and
 ## `reset_controls()`, which save and apply the change.
@@ -191,6 +203,18 @@ func get_seconds_per_character() -> float:
 	var per_second := _CHARACTERS_PER_SECOND[text_speed]
 	return 1.0 / per_second if per_second > 0.0 else 0.0
 
+func set_touch_size(value: TouchSize) -> void:
+	touch_size = clampi(value, 0, TouchSize.size() - 1) as TouchSize
+	_save_and_emit()
+
+## How much larger than their normal size the touch controls show.
+func get_touch_scale() -> float:
+	return _TOUCH_SCALES[touch_size]
+
+func set_touch_stick_right(value: bool) -> void:
+	touch_stick_right = value
+	_save_and_emit()
+
 func set_weather_effects(value: bool) -> void:
 	weather_effects = value
 	_save_and_emit()
@@ -277,6 +301,7 @@ func to_data() -> Dictionary:
 		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss, "text_speed": TEXT_SPEED_NAMES[text_speed].to_lower(), "hints": hints},
 		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
 		"privacy": {"online_services": online_services},
+		"touch": {"size": TOUCH_SIZE_NAMES[touch_size].to_lower(), "stick_right": touch_stick_right},
 		"localization": {"locale": locale},
 		"controls": controls["controls"],
 		"gamepad": controls["gamepad"],
@@ -315,6 +340,11 @@ func load_settings() -> void:
 	weather_effects = _read_bool(data, "accessibility", "weather_effects", weather_effects)
 	reduced_motion = _read_bool(data, "accessibility", "reduced_motion", reduced_motion)
 	online_services = _read_bool(data, "privacy", "online_services", online_services)
+	var size: Variant = _read(data, "touch", "size")
+	for index: int in TOUCH_SIZE_NAMES.size():
+		if size is String and size == TOUCH_SIZE_NAMES[index].to_lower():
+			touch_size = index as TouchSize
+	touch_stick_right = _read_bool(data, "touch", "stick_right", touch_stick_right)
 	var loaded_locale: Variant = _read(data, "localization", "locale")
 	locale = loaded_locale if loaded_locale is String and get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
 	bindings.read_data(data.get("controls"), data.get("gamepad"))
@@ -349,6 +379,8 @@ func _reset_values() -> void:
 	weather_effects = true
 	reduced_motion = false
 	online_services = false
+	touch_size = TouchSize.NORMAL
+	touch_stick_right = false
 
 # Set only on a change: each change lays out every embedded window again.
 func _apply_scaling() -> void:

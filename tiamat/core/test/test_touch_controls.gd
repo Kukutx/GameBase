@@ -6,8 +6,9 @@ extends GutTest
 ## menu only the corner button shows, and it cancels; on the title nothing
 ## shows; going back, as Android's back button does, closes what is open or
 ## pauses play, and on the title has the scene go back a step before the game
-## quits; and a HUD line with a `TouchClearance` draws back from the controls
-## that show.
+## quits; a HUD line with a `TouchClearance` draws back from the controls that
+## show; and the player's size and side of them, which the settings offer on a
+## device played by touch, place them.
 
 # A scene with a page to go back from, as a title's other page.
 class PagedScene extends Node:
@@ -20,12 +21,18 @@ class PagedScene extends Node:
 		return true
 
 var _menu: PauseMenu
+var _touch_size: GameSettingsService.TouchSize
+var _touch_stick_right := false
 
 func before_each() -> void:
+	_touch_size = GameSettings.touch_size
+	_touch_stick_right = GameSettings.touch_stick_right
 	InputPrompts.call("_set_using_touch", false)
 	TouchControls._process(0.0)
 
 func after_each() -> void:
+	GameSettings.touch_size = _touch_size
+	GameSettings.touch_stick_right = _touch_stick_right
 	InputPrompts.call("_set_using_touch", false)
 	InputPrompts.call("_set_using_gamepad", false)
 	InputLock.clear()
@@ -176,6 +183,38 @@ func test_a_hud_line_draws_back_from_the_controls_that_show() -> void:
 	assert_eq(TouchControls.get_covered_rects(), [] as Array[Rect2])
 	assert_eq([line.position.x, line.size.x], [0.0, view.size.x], "the line goes back when they hide")
 	assert_eq(clearance.get_drawn_back(), Vector2.ZERO)
+
+func test_the_player_s_size_and_side_place_the_controls() -> void:
+	_play()
+	_use_touch()
+	var view := get_viewport().get_visible_rect()
+	var stick := TouchControls.get_stick()
+	var button := TouchControls.get_node("Button_interact") as TouchButton
+	var corner := TouchControls.get_node("Back") as TouchButton
+	var normal := stick.radius
+	assert_lt(stick.get_center().x, view.get_center().x, "the stick at the left")
+	assert_gt(button.get_center().x, view.get_center().x, "the buttons at the right")
+	GameSettings.touch_size = GameSettingsService.TouchSize.LARGE
+	GameSettings.touch_stick_right = true
+	TouchControls._layout()
+	assert_gt(stick.radius, normal, "a larger size draws them larger")
+	assert_gt(stick.get_center().x, view.get_center().x, "the stick at the right")
+	assert_lt(button.get_center().x, view.get_center().x, "the buttons at the left")
+	assert_gt(corner.get_center().x, view.get_center().x, "the pause button above the stick")
+	for control: Control in [stick, button, corner]:
+		assert_true(view.encloses(control.get_rect()), "%s lies in the view" % control.name)
+
+func test_the_settings_offer_the_touch_controls_on_a_device_played_by_touch() -> void:
+	var menu := (load("res://tiamat/core/ui/settings_menu.tscn") as PackedScene).instantiate() as SettingsMenu
+	add_child_autofree(menu)
+	menu.open()
+	assert_eq(menu.touch_size_row.visible, TouchControlsService.is_offered())
+	InputPrompts.call("_set_using_touch", true)
+	GameSettings.touch_size = GameSettingsService.TouchSize.SMALL
+	menu.open()
+	assert_true(menu.touch_size_row.visible, "a finger on the screen offers them")
+	assert_true(menu.touch_stick_right_check.visible)
+	assert_eq(menu.touch_size_select.selected, GameSettingsService.TouchSize.SMALL)
 
 func test_a_minigame_is_tapped_unless_it_asks_for_buttons() -> void:
 	var minigame := MiniGame.new()

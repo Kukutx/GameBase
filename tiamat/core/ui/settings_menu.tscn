@@ -209,6 +209,24 @@ visible = false
 layout_mode = 2
 theme_override_constants/separation = 3
 
+[node name="TouchSize" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Controls"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Dim/Panel/Layout/Pages/Page/Controls/TouchSize"]
+custom_minimum_size = Vector2(92, 0)
+layout_mode = 2
+text = "Touch Controls"
+
+[node name="Select" type="OptionButton" parent="Dim/Panel/Layout/Pages/Page/Controls/TouchSize"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TouchStickRight" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Controls"]
+visible = false
+layout_mode = 2
+text = "Stick on the Right"
+
 [node name="Header" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Controls"]
 layout_mode = 2
 

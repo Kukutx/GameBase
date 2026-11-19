@@ -29,6 +29,8 @@ func test_settings_round_trip() -> void:
 	source.weather_effects = false
 	source.reduced_motion = true
 	source.text_speed = GameSettingsService.TextSpeed.FAST
+	source.touch_size = GameSettingsService.TouchSize.LARGE
+	source.touch_stick_right = true
 	source.locale = "zh_CN"
 	source.save_settings()
 
@@ -45,7 +47,29 @@ func test_settings_round_trip() -> void:
 	assert_false(restored.weather_effects)
 	assert_true(restored.reduced_motion)
 	assert_eq(restored.text_speed, GameSettingsService.TextSpeed.FAST)
+	assert_eq(restored.touch_size, GameSettingsService.TouchSize.LARGE)
+	assert_true(restored.touch_stick_right)
 	assert_eq(restored.locale, "zh_CN")
+
+func test_the_touch_size_scales_the_controls_and_an_unknown_one_keeps_the_current() -> void:
+	var settings := GameSettingsService.new()
+	settings.settings_path = TEST_PATH
+	add_child_autofree(settings)
+	assert_eq(settings.touch_size, GameSettingsService.TouchSize.NORMAL, "the default")
+	assert_false(settings.touch_stick_right, "the stick at the left by default")
+	assert_eq(settings.get_touch_scale(), 1.0)
+	settings.set_touch_size(GameSettingsService.TouchSize.SMALL)
+	assert_lt(settings.get_touch_scale(), 1.0)
+	settings.set_touch_size(GameSettingsService.TouchSize.LARGE)
+	assert_gt(settings.get_touch_scale(), 1.0)
+	var file := FileAccess.open(TEST_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify({"settings_version": GameSettingsService.SETTINGS_VERSION, "touch": {"size": "huge", "stick_right": "yes"}}))
+	file.close()
+	settings.load_settings()
+	assert_eq(settings.touch_size, GameSettingsService.TouchSize.LARGE, "an unknown size keeps the current one")
+	assert_false(settings.touch_stick_right, "a value of the wrong type keeps the current one")
+	settings.reset_all()
+	assert_eq(settings.touch_size, GameSettingsService.TouchSize.NORMAL)
 
 func test_text_speed_sets_how_long_each_character_shows() -> void:
 	var settings := GameSettingsService.new()
