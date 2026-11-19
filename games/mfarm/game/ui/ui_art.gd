@@ -8,6 +8,12 @@ const FONT: Font = preload("res://game/unity/fonts/unifont-14.0.01.ttf")
 const UI := "res://game/unity/art/UI/%s.tres"
 const TEXT_COLOR := Color(0.27, 0.16, 0.1)
 const LIGHT_TEXT_COLOR := Color(1, 0.96, 0.86)
+## The old game's button tints (Unity's own): under the mouse, pressed and
+## disabled; and the outline of the button the keys point at.
+const HOVER_TINT := Color(0.96, 0.96, 0.96)
+const PRESSED_TINT := Color(0.78, 0.78, 0.78)
+const DISABLED_TINT := Color(0.78, 0.78, 0.78, 0.5)
+const FOCUS_COLOR := Color(0.667, 0.392, 0.176)
 
 static func texture(texture_name: String) -> Texture2D:
 	return load(UI % texture_name) as Texture2D
@@ -49,3 +55,37 @@ static func place(parent: Control, child: Control, at: Vector2) -> Control:
 	child.position = at
 	parent.add_child(child)
 	return child
+
+## A button drawn with one of the old textures, tinted as the old game's
+## buttons were (a little darker under the mouse, darker while pressed, faded
+## while disabled), with a thin outline while the keys or a gamepad point at
+## it. Its text, if any, is in the old font.
+static func button(texture_name: String, size: Vector2, text := "", font_size := 8, color := TEXT_COLOR) -> Button:
+	var result := Button.new()
+	var art := texture(texture_name)
+	var border: Vector4i = art.get_meta(&"border", Vector4i.ZERO)
+	for state: Array in [[&"normal", Color.WHITE], [&"hover", HOVER_TINT], [&"pressed", PRESSED_TINT], [&"hover_pressed", PRESSED_TINT], [&"disabled", DISABLED_TINT]]:
+		var style := StyleBoxTexture.new()
+		style.texture = art
+		style.texture_margin_left = border.x
+		style.texture_margin_top = border.y
+		style.texture_margin_right = border.z
+		style.texture_margin_bottom = border.w
+		style.modulate_color = state[1]
+		result.add_theme_stylebox_override(state[0], style)
+	var focus := StyleBoxFlat.new()
+	focus.draw_center = false
+	focus.set_border_width_all(1)
+	focus.border_color = FOCUS_COLOR
+	focus.set_expand_margin_all(1)
+	focus.anti_aliasing = false
+	result.add_theme_stylebox_override(&"focus", focus)
+	result.add_theme_font_override(&"font", FONT)
+	result.add_theme_font_size_override(&"font_size", font_size)
+	for color_name: StringName in [&"font_color", &"font_hover_color", &"font_pressed_color", &"font_hover_pressed_color", &"font_focus_color"]:
+		result.add_theme_color_override(color_name, color)
+	result.add_theme_color_override(&"font_disabled_color", Color(color, 0.5))
+	result.text = text
+	result.custom_minimum_size = size
+	result.size = size
+	return result

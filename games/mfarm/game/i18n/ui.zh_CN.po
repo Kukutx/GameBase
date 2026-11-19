@@ -100,6 +100,9 @@ msgstr "阔叶木头"
 msgid "Bundle of Hay"
 msgstr "一捆草"
 
+msgid "Click to begin anew"
+msgstr "点一下重新开始"
+
 msgid "Collect ripe crops with it."
 msgstr "收割工具，用来采收成熟的作物。"
 
@@ -116,7 +119,7 @@ msgid "Farm"
 msgstr "农场"
 
 msgid "Field"
-msgstr "田野"
+msgstr "农场"
 
 msgid "Furniture"
 msgstr "家具"
@@ -145,11 +148,14 @@ msgstr "你好我是商人"
 msgid "Hello, I am the mayor."
 msgstr "你好我是镇长"
 
+msgid "Help"
+msgstr "说明"
+
 msgid "Hoe"
 msgstr "锄头"
 
 msgid "Home"
-msgstr "家"
+msgstr "小木屋"
 
 msgid "How many"
 msgstr "数量"
@@ -173,7 +179,7 @@ msgid "Make"
 msgstr "Make"
 
 msgid "Market"
-msgstr "集市"
+msgstr "市场"
 
 msgid "Mayor"
 msgstr "镇长"
@@ -259,11 +265,20 @@ msgstr "需要二十个针叶木头才能建造。"
 msgid "Talk to %s"
 msgstr "和%s说话"
 
+msgid "The dream has not started"
+msgstr "梦还没开始"
+
 msgid "The shop does not buy that"
 msgstr "商店不收这个"
 
 msgid "The shop does not have that many"
 msgstr "商店没有那么多"
+
+msgid "This save cannot be opened"
+msgstr "这个存档打不开"
+
+msgid "This world has not begun"
+msgstr "这个世界还没有开始"
 
 msgid "Tool"
 msgstr "工具"
@@ -277,11 +292,11 @@ msgstr "白萝卜种子"
 msgid "Use Item"
 msgstr "使用物品"
 
-msgid "WASD to move · T to speed up time · G to move on a day"
-msgstr "WSAD 控制人物移动 · T 时间加速 · G 天数更新"
-
 msgid "Walk Slowly"
 msgstr "慢走"
+
+msgid "WASD to walk\nCheats: T speeds up time | G next day"
+msgstr "WSAD 控制人物移动\n作弊按钮 T    时间加速 | G 天速更新"
 
 msgid "Water dug soil so the crops grow."
 msgstr "给翻好的土浇水，作物才会生长。"

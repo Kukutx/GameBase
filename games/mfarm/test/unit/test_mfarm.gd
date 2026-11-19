@@ -112,6 +112,37 @@ func test_the_grid_redraws_only_the_soil_a_change_touches() -> void:
 	await wait_physics_frames(1)
 	assert_eq(soil.get_child_count(), 0, "soil that filled in goes")
 
+func test_a_tool_sounds_its_own_unless_the_crop_has_a_sound_of_its_own() -> void:
+	for type: MFarmItemData.ItemType in MFarmItemData.USE_SOUNDS:
+		var cue := MFarmItemData.USE_SOUNDS[type]
+		assert_eq(AudioCueData.find_reference_problems(ContentRegistry.active, "use sound", cue, AudioCueData.CueType.SFX), PackedStringArray(), cue)
+	assert_eq(MFarmItemData.find(&"hoe").get_use_sound(), &"sfx_hoe")
+	assert_eq(MFarmItemData.find(&"stone").get_use_sound(), &"", "a harvest makes no sound of its own")
+	var location := MFarmLocation.new()
+	location.location_id = &"field"
+	var grid := MFarmFarmGrid.new()
+	location.add_child(grid)
+	add_child_autofree(location)
+	var cell := Vector2i(16, 2)
+	var at := MFarmMapData.cell_center(cell)
+	var from := MFarmMapData.cell_center(cell + Vector2i.LEFT)
+	var cues: Array[StringName] = []
+	var hear := func(cue_id: StringName) -> void: cues.append(cue_id)
+	GameAudio.cue_requested.connect(hear)
+	assert_true(grid.use_item(MFarmItemData.find(&"hoe"), at, from))
+	assert_eq(cues, [&"sfx_hoe"] as Array[StringName])
+	Farmland.plant(&"field", cell, &"potato_seed")
+	var crop := MFarmCropData.find(&"potato_seed")
+	for _day: int in crop.get_total_days():
+		Farmland.call("_on_day_changed", 0)
+	var own_sound := crop.sound_cue_id
+	crop.sound_cue_id = &""
+	cues.clear()
+	assert_true(grid.use_item(MFarmItemData.find(&"basket"), at, from))
+	crop.sound_cue_id = own_sound
+	GameAudio.cue_requested.disconnect(hear)
+	assert_eq(cues, [&"sfx_basket"] as Array[StringName], "a crop with no sound of its own sounds the basket")
+
 func test_only_the_map_s_diggable_cells_dig() -> void:
 	assert_true(Farmland.can_dig(&"field", Vector2i(12, 1)))
 	assert_false(Farmland.can_dig(&"field", Vector2i(0, 0)))

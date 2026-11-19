@@ -31,8 +31,11 @@ function textLayers(game) {
     res: `res://tiamat/modules/${module}/`,
     below: [core.name, ...[...required(module)].sort().map((name) => `tiamat/modules/${name}`)],
   }));
-  // The title screen shows the game's description from its project.godot.
+  // The title screen shows the game's name and description from its
+  // project.godot: the description is text to translate, and the game's
+  // catalog may translate its name too (MFarm is 麦田物语 in Chinese).
   const description = projectString(game, "application", "config/description");
+  const gameName = projectString(game, "application", "config/name");
   const own = {
     name: `games/${game.id}`,
     root: gamePath(game, "game"),
@@ -40,6 +43,7 @@ function textLayers(game) {
     below: [core.name, ...modules.map((layer) => layer.name)],
     game: true,
     projectText: description ? [description] : [],
+    projectNames: gameName ? [gameName] : [],
   };
   return [core, ...modules, own];
 }
@@ -234,7 +238,7 @@ function dictionaryTexts(text, re) {
 // as data, such as a season name or a fallback label, is found here although the
 // translation calls never name it.
 function layerLiterals(layer) {
-  const literals = new Set([...collectDialogueKeys(layer), ...(layer.projectText || [])]);
+  const literals = new Set([...collectDialogueKeys(layer), ...(layer.projectText || []), ...(layer.projectNames || [])]);
   const add = (raw) => {
     const value = decodeString(raw);
     if (value && !/^(?:res|uid|user):\/\//.test(value)) literals.add(value);

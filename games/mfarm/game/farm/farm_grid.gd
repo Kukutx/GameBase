@@ -98,7 +98,7 @@ func use_item(item: MFarmItemData, target: Vector2, from: Vector2) -> bool:
 	match item.item_type:
 		MFarmItemData.ItemType.SEED:
 			if Bags.remove_item(Bags.PLAYER, item.id, 1) and Farmland.plant(location_id, cell, item.id):
-				GameAudio.play_cue(&"sfx_plant")
+				_sound(item.get_use_sound())
 				return true
 		MFarmItemData.ItemType.COMMODITY:
 			if Bags.remove_item(Bags.PLAYER, item.id, 1):
@@ -107,10 +107,10 @@ func use_item(item: MFarmItemData, target: Vector2, from: Vector2) -> bool:
 		MFarmItemData.ItemType.FURNITURE:
 			return _build(item, cell)
 		MFarmItemData.ItemType.HOE_TOOL:
-			GameAudio.play_cue(&"sfx_hoe")
+			_sound(item.get_use_sound())
 			return Farmland.dig(location_id, cell)
 		MFarmItemData.ItemType.WATER_TOOL:
-			GameAudio.play_cue(&"sfx_water")
+			_sound(item.get_use_sound())
 			return Farmland.water(location_id, cell)
 		MFarmItemData.ItemType.CHOP_TOOL, MFarmItemData.ItemType.BREAK_TOOL, MFarmItemData.ItemType.COLLECT_TOOL:
 			return _work_crop(cell, item, from)
@@ -133,8 +133,8 @@ func _work_crop(cell: Vector2i, item: MFarmItemData, from: Vector2) -> bool:
 	var center := MFarmMapData.cell_center(cell)
 	var from_left := from.x < center.x
 	var node: MFarmCrop = _crop_node(cell)
-	if crop.sound_cue_id != &"":
-		GameAudio.play_cue(crop.sound_cue_id)
+	# The crop's own sound, else the tool's.
+	_sound(crop.sound_cue_id if crop.sound_cue_id != &"" else item.get_use_sound())
 	if crop.effect != MFarmCropData.Effect.NONE:
 		MFarmHarvestEffect.spawn(self, crop.effect, center + crop.effect_offset)
 	if not result.harvested:
@@ -200,9 +200,13 @@ func _reap(target: Vector2, item: MFarmItemData, from: Vector2) -> bool:
 			sound = crop.sound_cue_id
 		MFarmHarvestEffect.spawn(self, crop.effect, at + crop.effect_offset)
 		_give(crop, at, from, from.x < at.x)
-	if sound != &"":
-		GameAudio.play_cue(sound)
+	if reaped > 0:
+		_sound(sound if sound != &"" else item.get_use_sound())
 	return reaped > 0
+
+func _sound(cue_id: StringName) -> void:
+	if cue_id != &"":
+		GameAudio.play_cue(cue_id)
 
 func _reapables_near(target: Vector2, item: MFarmItemData) -> Array[MFarmWorldItem]:
 	var result: Array[MFarmWorldItem] = []

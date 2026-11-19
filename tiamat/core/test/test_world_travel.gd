@@ -31,6 +31,8 @@ func test_invalid_travel_target_never_locks_world_travel() -> void:
 	# The transition finds it is no scene, at once or once it has loaded.
 	if bool(travel.call("_travel_scene", not_a_scene, &"bad_spawn")):
 		assert_false(await travel.travel_ended)
+		# Go on outside the signal, which the travel is still emitting.
+		await get_tree().process_frame
 	assert_false(travel.is_traveling())
 	assert_eq(travel.get_pending_spawn_id(), &"")
 	assert_false(InputLock.is_held(&"travel"))

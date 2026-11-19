@@ -1,8 +1,9 @@
 extends GutTest
 
 ## What the old game showed and played around the rules: the opening comic
-## and talk of a new game, weeds that sway, a harvest held up, boxes opened
-## with the right mouse button and the time keys.
+## and talk of a new game, a place heard alone before its music, weeds that
+## sway, a harvest held up, boxes opened with the right mouse button and the
+## time keys.
 
 const IntroScene := preload("res://game/ui/intro.tscn")
 const PlayerScene := preload("res://game/player/player.tscn")
@@ -83,6 +84,12 @@ func test_after_the_comic_the_farmer_looks_about_talks_and_looks_up() -> void:
 	assert_eq(player.facing, Vector2.UP)
 	assert_false(intro.is_playing())
 	assert_false(InputLock.is_locked(), "the player has the controls back")
+
+func test_a_place_is_heard_alone_for_5_to_15_seconds_before_its_music() -> void:
+	assert_eq(GameDefinition.current().location_music_delay, Vector2(5, 15), "the old game's wait")
+	GameAudio.play_cue(&"music_calm_2")
+	GameAudio._play_location_music(&"music_calm_4")
+	assert_eq(GameAudio.get_current_music_cue_id(), &"", "the field's music waits while the home's fades out")
 
 func test_a_weed_sways_away_and_stands_up_again() -> void:
 	var weed := MFarmWorldItem.new()

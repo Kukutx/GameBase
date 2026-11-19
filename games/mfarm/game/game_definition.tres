@@ -39,4 +39,5 @@ start_day = 1
 start_minute_of_day = 420
 save_slots = 3
 world_seed = 1
+location_music_delay = Vector2(5, 15)
 controls = Array[Resource]([ExtResource("c0"), ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4"), ExtResource("c5"), ExtResource("c6"), ExtResource("c7"), ExtResource("c8"), ExtResource("c9"), ExtResource("c10"), ExtResource("c11"), ExtResource("c12"), ExtResource("c13")])
