@@ -6,7 +6,10 @@ extends Control
 ## smaller than a fingertip (`FINGERTIP_MM`) answers a finger anywhere in a
 ## fingertip-sized square around its middle. Such a tap reaches the button as
 ## if it fell on the button's nearest edge: the button lights up, presses and
-## takes the focus as it does under the finger.
+## takes the focus as it does under the finger. A control of a game's own
+## that the player taps (MFarm's bag slots) gets one too: it joins `GROUP`
+## before it enters the tree (in `_init()` or in its scene), and the tap
+## reaches its `_gui_input()` on its edge.
 ##
 ## A reach takes no tap:
 ## - while the player is not playing by touch (`InputPrompts.using_touch`),
@@ -25,6 +28,8 @@ const FINGERTIP_MM := 7.0
 ## The most a fingertip is of the view's height, whatever the screen says of
 ## its pixels.
 const MAX_REACH := 0.15
+## The group of the controls of a game's own that get a reach as buttons do.
+const GROUP := &"touch_target"
 
 ## The size of a fingertip in the view's pixels: how wide and tall the square
 ## a button smaller than that answers taps in is. 0 turns every reach off.
@@ -42,7 +47,8 @@ static func fingertip(dpi: float, window_per_view: float, view_height: float) ->
 		return 0.0
 	return minf(FINGERTIP_MM / 25.4 * dpi / window_per_view, view_height * MAX_REACH)
 
-## Gives every button in `tree`, and each one added to it later, a reach,
+## Gives every button in `tree` and every control in `GROUP`, and each one
+## added to it later, a reach,
 ## and tracks the controls a tap may be meant for (`track()`); with `on`
 ## false, stops (the reaches given stay, and take taps while `reach` is above
 ## 0).
@@ -60,29 +66,29 @@ static func watch(tree: SceneTree, on := true) -> void:
 static func measure(viewport: Viewport) -> void:
 	reach = fingertip(DisplayServer.screen_get_dpi(), viewport.get_final_transform().get_scale().y, viewport.get_visible_rect().size.y)
 
-## Gives `button` a reach, unless it has one, and tracks it.
-static func attach(button: BaseButton) -> void:
-	track(button)
-	for child: Node in button.get_children(true):
-		if child is TouchTarget:
-			return
+## Gives `control` (a button, or a control in `GROUP`) a reach, unless it has
+## one, and tracks it.
+static func attach(control: Control) -> void:
+	track(control)
+	if of(control) != null:
+		return
 	var target := TouchTarget.new()
 	target.name = "TouchTarget"
-	button.add_child(target, false, Node.INTERNAL_MODE_BACK)
+	control.add_child(target, false, Node.INTERNAL_MODE_BACK)
 
-## The reach of `button`, or null.
-static func of(button: BaseButton) -> TouchTarget:
-	for child: Node in button.get_children(true):
+## The reach of `control`, or null.
+static func of(control: Control) -> TouchTarget:
+	for child: Node in control.get_children(true):
 		if child is TouchTarget:
 			return child
 	return null
 
 ## Whether a tap on `node` may be meant for it: a button, a slider or a scroll
-## bar, a number or text field, a list, a tree or a row of tabs. A reach takes
-## no tap that lands on one.
+## bar, a number or text field, a list, a tree, a row of tabs or a control in
+## `GROUP`. A reach takes no tap that lands on one.
 static func is_worked(node: Node) -> bool:
 	return node is BaseButton or node is Slider or node is ScrollBar or node is SpinBox or node is LineEdit \
-			or node is TextEdit or node is ItemList or node is Tree or node is TabBar
+			or node is TextEdit or node is ItemList or node is Tree or node is TabBar or node.is_in_group(GROUP)
 
 ## Keeps `control` among the controls a reach takes no tap from (as long as it
 ## lives; one that leaves the tree and comes back stays tracked).
@@ -105,16 +111,23 @@ static func area_of(button: Control) -> Rect2:
 	return own.grow_individual(grow.x, grow.y, grow.x, grow.y)
 
 static func _on_node_added(node: Node) -> void:
-	if node is BaseButton:
-		# Once the button is in: its parent may be busy adding it.
+	if node is BaseButton or node.is_in_group(GROUP):
+		# Once it is in: its parent may be busy adding it.
 		_attach_to.call_deferred(node.get_instance_id())
 	elif is_worked(node):
 		track(node)
 
 static func _attach_to(id: int) -> void:
-	var button := instance_from_id(id) as BaseButton
-	if button != null and button.is_inside_tree():
-		attach(button)
+	var control := instance_from_id(id) as Control
+	if control != null and control.is_inside_tree():
+		attach(control)
+
+# Whether `control` takes taps now: shown, enabled, and not letting the mouse
+# through.
+static func _answers(control: Control) -> bool:
+	if control is BaseButton and (control as BaseButton).disabled:
+		return false
+	return control.mouse_filter != Control.MOUSE_FILTER_IGNORE
 
 func _init() -> void:
 	# The button's part: what it does not take goes on to the button.
@@ -122,10 +135,8 @@ func _init() -> void:
 	focus_mode = Control.FOCUS_NONE
 
 func _has_point(point: Vector2) -> bool:
-	var button := get_parent() as BaseButton
-	if reach <= 0.0 or button == null or not InputPrompts.using_touch:
-		return false
-	if button.disabled or button.mouse_filter == Control.MOUSE_FILTER_IGNORE:
+	var button := get_parent() as Control
+	if reach <= 0.0 or button == null or not InputPrompts.using_touch or not _answers(button):
 		return false
 	var own := Rect2(Vector2.ZERO, button.size)
 	if own.has_point(point) or not area_of(button).has_point(point):
@@ -160,7 +171,7 @@ static func _onto(button: Control, point: Vector2) -> Vector2:
 
 # Whether a tap at `at`, in the view, `distance` from the button, is another
 # control's: it lands on one on the same canvas, or nearer another button.
-static func _claimed_by_other(button: BaseButton, at: Vector2, distance: float) -> bool:
+static func _claimed_by_other(button: Control, at: Vector2, distance: float) -> bool:
 	var canvas := button.get_canvas()
 	for id: int in _tracked.keys():
 		var other := instance_from_id(id) as Control
@@ -173,7 +184,7 @@ static func _claimed_by_other(button: BaseButton, at: Vector2, distance: float) 
 		var rect := to_view * Rect2(Vector2.ZERO, other.size)
 		if rect.has_point(at):
 			return true
-		if other is BaseButton and not (other as BaseButton).disabled and _distance(rect, at) < distance:
+		if (other is BaseButton or other.is_in_group(GROUP)) and _answers(other) and _distance(rect, at) < distance:
 			if (to_view * area_of(other)).has_point(at):
 				return true
 	return false
