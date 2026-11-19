@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/place_line.gd" id="1_place_line"]
 [ext_resource type="Script" path="res://tiamat/core/events/status_line.gd" id="2_status_line"]
 [ext_resource type="Script" path="res://tiamat/core/ui/save_indicator.gd" id="3_save_indicator"]
 [ext_resource type="PackedScene" path="res://tiamat/core/ui/pause_menu.tscn" id="4_pause"]
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/controls_line.gd" id="5_controls_line"]
+[ext_resource type="Script" path="res://tiamat/core/ui/hud/hud_safe_area.gd" id="6_safe_area"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 20
@@ -65,3 +66,6 @@ text = ""
 horizontal_alignment = 1
 
 [node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="SafeArea" type="Node" parent="."]
+script = ExtResource("6_safe_area")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://game/world/world_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://game/ui/game_menu.tscn" id="2_menu"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://tiamat/modules/items/hotbar/hotbar_line.gd" id="13_hotbar_line"]
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/controls_line.gd" id="14_controls_line"]
 [ext_resource type="Script" path="res://tiamat/core/input/touch/touch_clearance.gd" id="15_touch_clearance"]
+[ext_resource type="Script" path="res://tiamat/core/ui/hud/hud_safe_area.gd" id="16_safe_area"]
 
 [node name="WorldHud" type="CanvasLayer"]
 layer = 5
@@ -192,3 +193,6 @@ script = ExtResource("15_touch_clearance")
 
 [node name="TouchClearance" type="Node" parent="Info"]
 script = ExtResource("15_touch_clearance")
+
+[node name="SafeArea" type="Node" parent="."]
+script = ExtResource("16_safe_area")
