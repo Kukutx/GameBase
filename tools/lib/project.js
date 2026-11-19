@@ -23,7 +23,12 @@
 //                          config/name_localized) in its own catalogs
 //                          (game/i18n/), which names the window and a
 //                          phone's app; a language the game names by hand
-//                          and no catalog translates stays.
+//                          and no catalog translates stays;
+//   orientation            a phone held either way up shows the game the
+//                          right way up ([display] window/handheld/
+//                          orientation): sensor landscape for a view wider
+//                          than tall, sensor portrait otherwise; a game that
+//                          names an orientation keeps it.
 // Everything else in project.godot belongs to the game. In the game's
 // .gutconfig.json it writes "dirs": the tests of the core, of each listed
 // module (a module after the modules it requires) and the game's own
@@ -220,6 +225,17 @@ function parseLocalizedNames(value) {
   return names;
 }
 
+// Godot's DisplayServer.ScreenOrientation for a phone, from the shape of the
+// game's view (Godot's default view, 1152x648, when the game sets none).
+const SCREEN_SENSOR_LANDSCAPE = 4;
+const SCREEN_SENSOR_PORTRAIT = 5;
+
+function handheldOrientation(sections) {
+  const width = Number(getValue(sections, "display", "window/size/viewport_width") ?? 1152);
+  const height = Number(getValue(sections, "display", "window/size/viewport_height") ?? 648);
+  return width >= height ? SCREEN_SENSOR_LANDSCAPE : SCREEN_SENSOR_PORTRAIT;
+}
+
 // The project.godot text with the managed parts as the manifests say.
 function syncedProject(text, game, foundation = readFoundation()) {
   const sections = parseSections(text);
@@ -239,6 +255,10 @@ function syncedProject(text, game, foundation = readFoundation()) {
     }
     const names = { ...parseLocalizedNames(getValue(sections, "application", "config/name_localized")), ...(gameName ? localizedNames(game, gameName) : {}) };
     if (Object.keys(names).length > 0) setValue(sections, "application", "config/name_localized", localizedNamesValue(names));
+  }
+  // The template leaves it to the game, whose view may not keep the template's shape.
+  if (!game.template && getValue(sections, "display", "window/handheld/orientation") === null) {
+    setValue(sections, "display", "window/handheld/orientation", String(handheldOrientation(sections)));
   }
   return formatSections(sections);
 }
