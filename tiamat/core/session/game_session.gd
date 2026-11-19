@@ -9,6 +9,11 @@ extends Node
 ## night). While the session changes (`is_changing()`: a new game is set up or
 ## a save loads), what the services announce is not play; `play_started` marks
 ## the end of it.
+##
+## The screen stays on while the time played runs, and is let sleep as the
+## system says on the title and under the pause menu, so a phone left on a
+## menu saves its battery (`is_keeping_screen_on()`). A game whose project
+## turns `display/window/energy_saving/keep_screen_on` off never keeps it on.
 
 const NEW_GAME_FLAG := &"system:new_game_initialized"
 ## The session's section of a save: the time played.
@@ -54,6 +59,9 @@ var _activity_ends: Array[Callable] = []
 # `play_started` until the title.
 var _play_seconds := 0.0
 var _playing := false
+# Whether the screen is kept on now; as the project starts it until the
+# first frame says otherwise.
+var _screen_kept_on := bool(ProjectSettings.get_setting("display/window/energy_saving/keep_screen_on", true))
 
 func _ready() -> void:
 	# It counts the time played while the world is paused for play.
@@ -68,8 +76,22 @@ func _ready() -> void:
 	SaveManager.load_completed.connect(_on_load_completed)
 
 func _process(delta: float) -> void:
-	if _playing and not is_changing() and not InputLock.is_held(PauseMenu.MENU_ID):
+	var counting := _playing and not is_changing() and not InputLock.is_held(PauseMenu.MENU_ID)
+	if counting:
 		_play_seconds += delta
+	_keep_screen_on(counting and bool(ProjectSettings.get_setting("display/window/energy_saving/keep_screen_on", true)))
+
+## Whether the screen is kept from sleeping now: while the time played runs.
+func is_keeping_screen_on() -> bool:
+	return _screen_kept_on
+
+func _keep_screen_on(value: bool) -> void:
+	if value == _screen_kept_on:
+		return
+	_screen_kept_on = value
+	# A browser and a test run have no screen to keep on (the engine warns).
+	if DisplayServer.get_name() != "headless" and not OS.has_feature("web"):
+		DisplayServer.screen_set_keep_on(value)
 
 ## Whole seconds played in the running game: counted while play runs (from
 ## `play_started` until the title), a minigame, a dialogue or a menu that
