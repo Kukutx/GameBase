@@ -163,6 +163,9 @@ msgstr "Koyo"
 msgid "Large Rock"
 msgstr "大石头"
 
+msgid "MFarm"
+msgstr "麦田物语"
+
 msgid "Make"
 msgstr "Make"
 
@@ -270,6 +273,9 @@ msgstr "白萝卜种子"
 
 msgid "Use Item"
 msgstr "使用物品"
+
+msgid "WASD to move · T to speed up time · G to move on a day"
+msgstr "WSAD 控制人物移动 · T 时间加速 · G 天数更新"
 
 msgid "Walk Slowly"
 msgstr "慢走"

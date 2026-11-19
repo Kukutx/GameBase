@@ -1,0 +1,60 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://tiamat/core/ui/title_screen.tscn" id="1_title"]
+[ext_resource type="Script" path="res://game/ui/title.gd" id="2_title"]
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_paper_01.tres" id="3_paper"]
+[ext_resource type="FontFile" path="res://game/unity/fonts/Gongfan.ttf" id="4_gongfan"]
+
+[node name="TitleScreen" instance=ExtResource("1_title")]
+color = Color(0.149, 0.149, 0.149, 1)
+script = ExtResource("2_title")
+
+[node name="Paper" type="TextureRect" parent="." index="0"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -243.0
+offset_top = -163.0
+offset_right = 243.0
+offset_bottom = 159.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_paper")
+expand_mode = 1
+
+[node name="Title" parent="Center/Menu" index="0"]
+theme_override_colors/font_color = Color(0.667, 0.392, 0.176, 1)
+theme_override_fonts/font = ExtResource("4_gongfan")
+theme_override_font_sizes/font_size = 40
+text = "MFarm"
+
+[node name="SlotInfo" parent="Center/Menu" index="4"]
+theme_override_colors/font_color = Color(0.196, 0.196, 0.196, 1)
+
+[node name="Status" parent="Center/Menu" index="7"]
+theme_override_colors/font_color = Color(0.55, 0.2, 0.1, 1)
+
+[node name="Version" parent="." index="2"]
+theme_override_colors/font_color = Color(0.75, 0.66, 0.52, 1)
+
+[node name="Keys" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -16.0
+offset_right = 200.0
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.75, 0.66, 0.52, 1)
+theme_override_font_sizes/font_size = 9
+text = "WASD to move · T to speed up time · G to move on a day"
+horizontal_alignment = 1
