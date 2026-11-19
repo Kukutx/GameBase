@@ -49,7 +49,7 @@ content_margin_right = 8.0
 content_margin_bottom = 4.0
 
 [sub_resource type="StyleBoxFlat" id="Panel"]
-bg_color = Color(0.055, 0.09, 0.09, 0.96)
+bg_color = Color(0.055, 0.09, 0.09, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
