@@ -4,8 +4,9 @@ extends GutTest
 ## touch and names the controls by their buttons; in play the stick walks, the
 ## game's buttons press their actions and the corner button pauses; under a
 ## menu only the corner button shows, and it cancels; on the title nothing
-## shows; and going back, as Android's back button does, closes what is open or
-## pauses play.
+## shows; going back, as Android's back button does, closes what is open or
+## pauses play; and a HUD line with a `TouchClearance` draws back from the
+## controls that show.
 
 var _menu: PauseMenu
 
@@ -119,6 +120,34 @@ func test_going_back_pauses_play_and_closes_what_is_open() -> void:
 	TouchControls._input(_touch(3, corner.get_center(), false))
 	Input.flush_buffered_events()
 	assert_false(_menu.visible, "and so does back")
+
+func test_a_hud_line_draws_back_from_the_controls_that_show() -> void:
+	_play()
+	var view := get_viewport().get_visible_rect()
+	var hud := CanvasLayer.new()
+	add_child_autofree(hud)
+	var line := Label.new()
+	line.clip_text = true
+	hud.add_child(line)
+	var clearance := TouchClearance.new()
+	line.add_child(clearance)
+	_use_touch()
+	var stick := TouchControls.get_stick().get_rect()
+	line.position = Vector2(0.0, stick.get_center().y - 8.0)
+	line.size = Vector2(view.size.x, 16.0)
+	TouchControls._layout()
+	assert_true(TouchControls.get_covered_rects().has(stick))
+	var rect := line.get_global_rect()
+	assert_almost_eq(rect.position.x, stick.end.x, 0.5, "the line's left side draws back from the stick")
+	assert_lt(rect.end.x, view.end.x, "and its right side from the buttons")
+	for covered: Rect2 in TouchControls.get_covered_rects():
+		assert_false(covered.intersects(rect.grow(-0.5)), "no control sits on the line")
+	assert_almost_eq(clearance.get_drawn_back().x, stick.end.x, 0.5)
+	InputPrompts.call("_set_using_touch", false)
+	TouchControls._process(0.0)
+	assert_eq(TouchControls.get_covered_rects(), [] as Array[Rect2])
+	assert_eq([line.position.x, line.size.x], [0.0, view.size.x], "the line goes back when they hide")
+	assert_eq(clearance.get_drawn_back(), Vector2.ZERO)
 
 func test_a_minigame_is_tapped_unless_it_asks_for_buttons() -> void:
 	var minigame := MiniGame.new()

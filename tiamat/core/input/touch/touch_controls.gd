@@ -24,6 +24,12 @@ extends CanvasLayer
 ## Android's back button is `go_back()` too, the game told not to quit on it
 ## (`application/config/quit_on_go_back`, which `tools/link.js` turns off);
 ## with nothing to close or pause, as on the title, it quits.
+##
+## The HUD keeps clear of the controls that show (`get_covered_rects()`,
+## `layout_changed`): a HUD line with a `TouchClearance` draws back from them.
+
+## The controls that show, or where they sit, changed.
+signal layout_changed
 
 ## Above the minigames (`MiniGameHostService.LAYER`) and the menus.
 const LAYER := 110
@@ -113,6 +119,19 @@ func is_showing() -> bool:
 ## The actions of the buttons that show, in order.
 func get_shown_actions() -> Array[StringName]:
 	return _button_actions.duplicate() if is_showing() else []
+
+## Where the controls that show sit, in the view's coordinates: the stick's,
+## each button's and the corner button's square. Empty while none shows.
+func get_covered_rects() -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	if not is_showing():
+		return rects
+	var controls: Array[Control] = [_stick, _corner]
+	controls.append_array(_buttons)
+	for control: Control in controls:
+		if control.visible:
+			rects.append(control.get_rect())
+	return rects
 
 ## The stick, for tests that drag it.
 func get_stick() -> TouchStick:
@@ -259,6 +278,7 @@ func _layout() -> void:
 		button.radius = radius if index > 0 else radius * 1.2
 		var at := first if index == 0 else first + BUTTON_PLACES[index - 1] * radius
 		_place(button, at, button.radius)
+	layout_changed.emit()
 
 ## The part of the view that the screen's notch, rounded corners and system
 ## bars leave clear (`DisplayServer.get_display_safe_area()`), in the view's

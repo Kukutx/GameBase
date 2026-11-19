@@ -21,7 +21,9 @@ extends Node
 ## button or a gamepad is used again; the mouse clicks the engine makes of a
 ## finger keep touch. On touch a control is named as its button on the screen
 ## names it (its name in the settings) and moving as the stick, since the
-## `TouchControls` show; `input_method_changed` fires on that switch too.
+## `TouchControls` show; `input_method_changed` fires on that switch too. A
+## phone or a tablet, or a browser on one, starts on touch (`starts_on_touch()`),
+## so the first hint names the stick, not keys it has none of.
 
 signal input_method_changed(using_gamepad: bool)
 signal gamepad_disconnected
@@ -133,8 +135,17 @@ static func gamepad_axis_name(axis: JoyAxis, style := GamepadStyle.XBOX) -> Stri
 	var labels: Dictionary = STYLE_AXIS_LABELS.get(style, {})
 	return String(labels.get(axis, GAMEPAD_AXIS_LABELS.get(axis, "Pad")))
 
+## Whether the device the game runs on is played by touch before anything is
+## pressed: a phone or a tablet, or a browser on one.
+static func starts_on_touch() -> bool:
+	for feature: String in ["mobile", "web_android", "web_ios"]:
+		if OS.has_feature(feature):
+			return true
+	return false
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	using_touch = starts_on_touch()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 
 ## The name of gamepad `button` on the gamepad in use.

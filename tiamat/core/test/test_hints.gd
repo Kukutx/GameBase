@@ -2,7 +2,8 @@ extends GutTest
 
 ## The hints a player reads once (`HintData`): `SHOW_HINT` shows one unless it
 ## showed before in any save or the player turned hints off, and its text
-## names each control as the device in use performs it.
+## names each control as the device in use performs it, anew on a line that
+## shows it when the player picks up another device.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TEST_PATH := "user://test_hints/profile.json"
@@ -24,6 +25,7 @@ func before_each() -> void:
 	ContentFixture.use(self, [_hint(&"fixture_walk", "Walk with {move}, talk with {interact}.")])
 
 func after_each() -> void:
+	InputPrompts.call("_set_using_touch", false)
 	GameEvents.hint_requested.disconnect(_on_hint)
 	ContentRegistry.active = ContentDB
 	GameSettings.hints = _hints_setting
@@ -38,6 +40,24 @@ func test_a_hint_names_each_control_as_the_device_in_use_performs_it() -> void:
 	var expected := "Walk with %s, talk with %s." % [InputPrompts.get_move_prompt(), InputPrompts.get_action_prompt(&"interact")]
 	assert_eq(HintData.find(&"fixture_walk").get_message(), expected)
 	assert_eq(HintData.get_controls("{interact} {move} {interact}"), PackedStringArray(["interact", "move"]))
+
+func test_a_hint_on_a_line_names_its_controls_anew_on_another_device() -> void:
+	var line := StatusLine.new()
+	line.shows_hints = true
+	line.shows_toasts = false
+	add_child_autofree(line)
+	line.set_process(false)
+	line.show_message("Fixture first")
+	GameRules.run_actions(PackedStringArray(["SHOW_HINT fixture_walk"]))
+	assert_eq(line.get_waiting(), PackedStringArray([HintData.find(&"fixture_walk").get_message()]))
+	var on_touch := "Walk with %s, talk with %s." % [tr("Stick"), GameSettings.bindings.get_label(&"interact")]
+	InputPrompts.call("_set_using_touch", true)
+	assert_eq(line.text, "Fixture first", "a message that is no hint stays as it is")
+	line._process(line.seconds_per_message)
+	assert_eq(line.text, on_touch, "a waiting hint names the controls of the device in use when it shows")
+	InputPrompts.call("_set_using_touch", false)
+	assert_eq(line.text, HintData.find(&"fixture_walk").get_message(), "and the one on show, when the player picks up the keyboard")
+	assert_ne(line.text, on_touch)
 
 func test_a_hint_shows_once_across_every_save() -> void:
 	assert_false(GameRules.check("HINT_SHOWN fixture_walk"))
@@ -70,5 +90,5 @@ func _hint(id: StringName, text: String) -> HintData:
 	hint.text = text
 	return hint
 
-func _on_hint(message: String) -> void:
+func _on_hint(message: String, _hint_id: StringName) -> void:
 	_shown.append(message)

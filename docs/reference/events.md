@@ -28,7 +28,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 ## GameEvents (core)
 
 - `GameEvents.toast_requested(message: String)`
-- `GameEvents.hint_requested(message: String)`: A hint for the player, translated and its controls named (`HintData.get_message()`); the rule action `SHOW_HINT` sends it.
+- `GameEvents.hint_requested(message: String, hint_id: StringName)`: A hint for the player, translated and its controls named (`HintData.get_message()`), and the hint's id, so a line that shows it can name its controls anew when the player picks up another device; the rule action `SHOW_HINT` sends it.
 - `GameEvents.menu_opened(menu_id: StringName)`: A menu over the world opened (`MenuLayer`, the settings); `menu_id` is its name (`MenuLayer.menu_id`).
 - `GameEvents.menu_closed(menu_id: StringName)`: A menu closed.
 
@@ -296,6 +296,10 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 - `MiniGameHost.minigame_started(minigame_id: StringName)`
 - `MiniGameHost.minigame_finished(minigame_id: StringName, result: MiniGameResult)`
+
+## TouchControls (core)
+
+- `TouchControls.layout_changed()`: The controls that show, or where they sit, changed.
 
 ## GameTriggers (core)
 
