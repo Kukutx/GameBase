@@ -5,8 +5,24 @@ extends GutTest
 ## a fingertip-sized square around its middle, and a tap there presses it as
 ## one on it does, while a tap further off, one that slides away, one on
 ## another control or nearer another button's edge, one beside a disabled
-## button and one while the player uses the mouse do not; and watching the
-## tree gives every button added a reach the game does not see.
+## button and one while the player uses the mouse do not; a control of the
+## game's own in `TouchTarget.GROUP` gets a reach as a button does, the tap
+## reaching it on its edge; and watching the tree gives every button added a
+## reach the game does not see.
+
+# A control of a game's own that the player taps, as MFarm's bag slot.
+class Tapped extends Control:
+	var taps: Array[Vector2] = []
+
+	func _init() -> void:
+		add_to_group(TouchTarget.GROUP)
+		mouse_filter = Control.MOUSE_FILTER_STOP
+
+	func _gui_input(event: InputEvent) -> void:
+		var click := event as InputEventMouseButton
+		if click != null and click.pressed:
+			taps.append(click.position)
+			accept_event()
 
 const REACH := 40.0
 
@@ -106,6 +122,25 @@ func test_a_tap_beside_a_small_button_presses_it() -> void:
 	assert_eq(presses.size(), 2, "the mouse clicks only on the button")
 	_tap(Vector2(105, 105), 0)
 	assert_eq(presses.size(), 3)
+
+func test_a_control_of_the_game_s_own_in_the_group_gets_a_reach() -> void:
+	_hide_layers_over_the_test()
+	TouchTarget.watch(get_tree())
+	var slot := Tapped.new()
+	slot.position = Vector2(120, 100)
+	_layer.add_child(slot)
+	slot.size = Vector2(10, 10)
+	var plain := Control.new()
+	_layer.add_child(plain)
+	await get_tree().process_frame
+	assert_not_null(TouchTarget.of(slot), "a control in the group gets a reach")
+	assert_null(TouchTarget.of(plain), "one outside it does not")
+	_tap(Vector2(114, 105))
+	assert_eq(slot.taps.size(), 1, "a tap beside it reaches it")
+	assert_true(slot.taps.size() == 1 and Rect2(Vector2.ZERO, slot.size).has_point(slot.taps[0]), "on its edge: %s" % [slot.taps])
+	var button := _button(Vector2(100, 100), Vector2(10, 10))
+	assert_false(TouchTarget.of(button)._has_point(Vector2(17, 5)), "it keeps from a button the taps nearer it")
+	assert_true(TouchTarget.of(slot)._has_point(Vector2(-3, 5)))
 
 func test_watching_the_tree_gives_every_button_added_a_reach() -> void:
 	TouchTarget.watch(get_tree())

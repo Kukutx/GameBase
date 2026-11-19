@@ -25,6 +25,8 @@ func _init(slot_bag: StringName, slot_index: int, slot_size := SIZE) -> void:
 	custom_minimum_size = slot_size
 	size = slot_size
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	# A finger beside a slot on a phone still taps it.
+	add_to_group(TouchTarget.GROUP)
 	var background := MFarmUiArt.image(MFarmUiArt.texture("ui_slot"), slot_size)
 	background.stretch_mode = TextureRect.STRETCH_SCALE
 	add_child(background)
