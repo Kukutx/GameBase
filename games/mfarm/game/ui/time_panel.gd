@@ -63,22 +63,27 @@ func _ready() -> void:
 	_sun_moon.rotation_degrees = _dial_angle(WorldClock.get_hour())
 
 ## The date as the old game wrote it: year, month and day, thirty days to a
-## month and twelve months, three to a season, to a year.
-static func date_text(day: int) -> String:
+## month and twelve months, three to a season, to a year, laid out by
+## `format` (the old game's 2023年01月01日 in Chinese).
+static func date_text(day: int, format := "%d.%02d.%02d") -> String:
 	var days := maxi(day, 1) - 1
 	var month := days / DAYS_PER_MONTH
-	return "%d.%02d.%02d" % [START_YEAR + month / 12, month % 12 + 1, days % DAYS_PER_MONTH + 1]
+	return format % [START_YEAR + month / 12, month % 12 + 1, days % DAYS_PER_MONTH + 1]
 
 ## How many of the dial's blocks are lit at `hour`: one more for every four
 ## hours (the old game left the dial dark until four, then skipped a block).
 static func lit_blocks(hour: int) -> int:
 	return clampi(hour / 4 + 1, 1, BLOCKS)
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and _date != null:
+		_date.text = date_text(WorldClock.day, tr("%d.%02d.%02d"))
+
 func _on_minute_changed(_day: int, minute_of_day: int) -> void:
 	_time.text = "%02d:%02d" % [minute_of_day / 60, minute_of_day % 60]
 
 func _on_hour_changed(day: int, hour: int) -> void:
-	_date.text = date_text(day)
+	_date.text = date_text(day, tr("%d.%02d.%02d"))
 	_season.texture = MFarmUiArt.texture(SEASONS[clampi(WorldClock.get_season_index(), 0, SEASONS.size() - 1)])
 	var lit := lit_blocks(hour)
 	for index: int in _blocks.size():

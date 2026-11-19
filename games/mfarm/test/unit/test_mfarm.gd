@@ -133,6 +133,7 @@ func test_the_clock_face_counts_the_old_calendar() -> void:
 	assert_eq(MFarmTimePanel.date_text(1), "2023.01.01")
 	assert_eq(MFarmTimePanel.date_text(31), "2023.02.01")
 	assert_eq(MFarmTimePanel.date_text(361), "2024.01.01")
+	assert_eq(MFarmTimePanel.date_text(31, "%d年%02d月%02d日"), "2023年02月01日", "as the old game wrote it in Chinese")
 	assert_eq(MFarmTimePanel.lit_blocks(0), 1)
 	assert_eq(MFarmTimePanel.lit_blocks(4), 2, "the old dial skipped from none to two blocks at four")
 	assert_eq(MFarmTimePanel.lit_blocks(23), 6)

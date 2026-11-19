@@ -8,7 +8,7 @@
 [ext_resource type="Script" path="res://tiamat/core/world/world_spawn_point.gd" id="6"]
 [ext_resource type="Script" path="res://tiamat/core/camera/camera_bounds.gd" id="7"]
 [ext_resource type="Script" path="res://game/world/teleport.gd" id="8"]
-[ext_resource type="AudioStream" path="res://game/unity/audio/AmbientSounds/indoors1.ogg" id="9"]
+[ext_resource type="AudioStream" path="res://game/unity/audio/AmbientSounds/countryside1.ogg" id="9"]
 [ext_resource type="FontFile" path="res://game/unity/fonts/unifont-14.0.01.ttf" id="10"]
 
 [node name="Home" type="Node2D"]

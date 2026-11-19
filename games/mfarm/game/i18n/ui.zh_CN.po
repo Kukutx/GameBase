@@ -10,6 +10,9 @@ msgstr ""
 msgid "A farm and a seaside town through the seasons, revived from the Unity MFarm demo"
 msgstr "四季流转的小农场和海边小镇，由 Unity 版 MFarm 演示重生而来"
 
+msgid "%d.%02d.%02d"
+msgstr "%d年%02d月%02d日"
+
 msgid "A bunch of sweet grapes."
 msgstr "一串甜甜的葡萄。"
 
