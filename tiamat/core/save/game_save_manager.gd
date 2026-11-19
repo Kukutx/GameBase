@@ -57,6 +57,11 @@ const SECTION_ORDER_CLOCK := 300
 const SECTION_ORDER_VITALS := 600
 const SECTION_ORDER_WORLD := 700
 
+## Whether the saves outlive the game: false in a browser that keeps no files
+## for the page (private browsing, or storage the player blocked), where every
+## save is lost with the tab and the title says so. A test sets it.
+static var saves_persist := not OS.has_feature("web") or OS.is_userfs_persistent()
+
 ## Where the slots are stored. A test points it at a directory of its own and
 ## calls `select_slot()` before saving.
 var save_directory := "user://saves"
