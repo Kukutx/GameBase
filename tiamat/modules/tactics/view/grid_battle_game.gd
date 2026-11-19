@@ -6,7 +6,11 @@ extends MiniGame
 ## (`GridBattleBoard`) beside the unit whose turn it is and its commands. When
 ## one of the player's units has its turn, the player moves it, has it take an
 ## action or ends its turn, picking a cell with the move keys and interact or
-## accept, or with the mouse; cancel goes back to the commands. Cancel at the
+## accept, or with the mouse; on a touchscreen a tap on a cell first shows
+## what picking it does (where the unit goes, what an action's area covers)
+## and a second tap on it picks it, so a finger's slip picks nothing. Cancel
+## (the touch controls' corner button on a touchscreen) goes back to the
+## commands. Cancel at the
 ## commands, pressed twice, gives the battle up. It ends won or lost a moment
 ## after the battle does (`END_SECONDS`), with the units of the player's side
 ## left as its score, and tells `TacticsEvents`.
@@ -46,6 +50,7 @@ var _message: Label
 func setup(settings: Dictionary) -> void:
 	map = BattleMapData.find(StringName(str(settings.get("map", ""))))
 	_build()
+	InputPrompts.input_method_changed.connect(_show_hint.unbind(1))
 	if map == null:
 		push_warning("GridBattleGame: unknown battle map '%s'" % settings.get("map", ""))
 		# Deferred: the host waits for `finished` only once setup returns.
@@ -149,15 +154,10 @@ func _set_mode(mode: Mode) -> void:
 	match _mode:
 		Mode.PICK_MOVE:
 			_board.choices = battle.get_moves(unit)
-			_hint.text = tr("Pick where it moves. Cancel goes back.")
 		Mode.PICK_TARGET:
 			_board.reach = battle.grid.cells_in_range(unit.cell, _action.min_range, _action.max_range)
 			_board.choices = battle.get_targets(unit, _action)
-			_hint.text = tr("Pick what it aims at. Cancel goes back.")
-		Mode.COMMAND:
-			_hint.text = tr("Pick a command.")
-		_:
-			_hint.text = ""
+	_show_hint()
 	if _board.show_cursor:
 		_move_cursor(_board.choices[0] if not _board.choices.is_empty() else unit.cell)
 	_fill_commands(unit if _mode == Mode.COMMAND else null)
@@ -219,6 +219,19 @@ func _refresh() -> void:
 			_board.choices = battle.get_targets(unit, _action)
 			_move_cursor(_board.cursor)
 	_show_info()
+
+# What the player does now, as the device in use does it.
+func _show_hint() -> void:
+	var touch := InputPrompts.using_touch
+	match _mode:
+		Mode.PICK_MOVE:
+			_hint.text = tr("Tap where it moves, then tap it again. × goes back.") if touch else tr("Pick where it moves. Cancel goes back.")
+		Mode.PICK_TARGET:
+			_hint.text = tr("Tap what it aims at, then tap it again. × goes back.") if touch else tr("Pick what it aims at. Cancel goes back.")
+		Mode.COMMAND:
+			_hint.text = tr("Pick a command.")
+		_:
+			_hint.text = ""
 
 func _move_cursor(cell: Vector2i) -> void:
 	if battle == null or not battle.grid.has_cell(cell):
@@ -290,8 +303,11 @@ func _build() -> void:
 		if _board.show_cursor:
 			_move_cursor(cell))
 	_board.cell_clicked.connect(func(cell: Vector2i) -> void:
-		if has_input() and _board.show_cursor:
-			_move_cursor(cell)
+		if not has_input() or not _board.show_cursor:
+			return
+		var shown := _board.cursor == cell
+		_move_cursor(cell)
+		if shown or not InputPrompts.using_touch:
 			pick(cell))
 	columns.add_child(_board)
 	var side := VBoxContainer.new()

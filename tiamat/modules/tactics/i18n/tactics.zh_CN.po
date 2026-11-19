@@ -39,3 +39,9 @@ msgstr "选择目标格。取消可返回。"
 
 msgid "Pick where it moves. Cancel goes back."
 msgstr "选择要移动到的格子。取消可返回。"
+
+msgid "Tap what it aims at, then tap it again. × goes back."
+msgstr "点选目标格，再点一次确认。点 × 返回。"
+
+msgid "Tap where it moves, then tap it again. × goes back."
+msgstr "点选要移动到的格子，再点一次确认。点 × 返回。"
