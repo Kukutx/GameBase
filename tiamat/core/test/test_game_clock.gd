@@ -19,11 +19,15 @@ func test_night_boundaries() -> void:
 	clock.paused = true
 	add_child_autofree(clock)
 
-	clock.set_time(1, 5 * 60)
+	# The running game's calendar decides when night falls.
+	var calendar := GameCalendar.current()
+	clock.set_time(1, posmod(calendar.night_ends_at - 1, GameClock.MINUTES_PER_DAY))
 	assert_true(clock.is_night())
-	clock.set_time(1, 12 * 60)
+	clock.set_time(1, calendar.night_ends_at)
 	assert_false(clock.is_night())
-	clock.set_time(1, 20 * 60)
+	clock.set_time(1, posmod(calendar.night_starts_at - 1, GameClock.MINUTES_PER_DAY))
+	assert_false(clock.is_night())
+	clock.set_time(1, calendar.night_starts_at)
 	assert_true(clock.is_night())
 
 func test_sleep_spot_blocks_day_changed_reentrancy() -> void:
@@ -57,7 +61,7 @@ func test_sleep_spot_blocks_day_changed_reentrancy() -> void:
 		WorldClock.day_changed.disconnect(listener)
 	assert_true(bool(observed["entered"]))
 	assert_eq(WorldClock.day, 11)
-	assert_eq(WorldClock.minute_of_day, 6 * 60)
+	assert_eq(WorldClock.minute_of_day, GameCalendar.current().wake_minute)
 	assert_true(Vitals.is_full(rest.id), "sleep refills what it refills")
 	assert_eq(Vitals.get_value(focus.id), 1, "and nothing else")
 	ContentRegistry.active = ContentDB

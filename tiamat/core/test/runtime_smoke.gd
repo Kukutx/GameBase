@@ -70,6 +70,21 @@ func _cleanup() -> void:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
+# Stops every sound, then waits for the audio server to let go of what
+# played: quitting while a stream still plays leaks its playback, which fails
+# the run.
+func _silence() -> void:
+	var audio := root.get_node("GameAudio")
+	audio.call("stop_music")
+	audio.call("stop_all_sfx")
+	for _frame: int in 3:
+		await process_frame
+	for node: Node in root.find_children("*", "AudioStreamPlayer", true, false) + root.find_children("*", "AudioStreamPlayer2D", true, false):
+		node.call("stop")
+		node.set("stream", null)
+	for _frame: int in 10:
+		await process_frame
+
 func _run_smoke() -> void:
 	# The checks compare text with the English source strings.
 	root.get_node("GameSettings").set("locale", "en")
@@ -86,6 +101,7 @@ func _run_smoke() -> void:
 	_cleanup()
 	profile.call("load_profile")
 	await _run()
+	await _silence()
 	_cleanup()
 	if _failed:
 		quit(1)
