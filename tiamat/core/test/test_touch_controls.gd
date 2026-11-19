@@ -136,7 +136,7 @@ func test_a_hud_line_draws_back_from_the_controls_that_show() -> void:
 	line.position = Vector2(0.0, stick.get_center().y - 8.0)
 	line.size = Vector2(view.size.x, 16.0)
 	TouchControls._layout()
-	assert_true(TouchControls.get_covered_rects().has(stick))
+	assert_true(TouchControls.get_covered_rects().any(func(covered: Rect2) -> bool: return covered.position.is_equal_approx(stick.position) and covered.size.distance_to(stick.size) < 0.01), "the stick covers its square")
 	var rect := line.get_global_rect()
 	assert_almost_eq(rect.position.x, stick.end.x, 0.5, "the line's left side draws back from the stick")
 	assert_lt(rect.end.x, view.end.x, "and its right side from the buttons")

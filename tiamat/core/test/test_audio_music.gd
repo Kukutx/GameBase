@@ -62,7 +62,9 @@ func test_pushed_music_plays_until_popped_and_the_music_beneath_comes_back_where
 	assert_eq(GameAudio.get_current_music_cue_id(), &"fixture_calm")
 	var back := _music_player(calm.stream)
 	assert_not_null(back)
-	assert_almost_eq(back.get_playback_position(), 1.5, 0.05, "it comes back where it stopped")
+	# The mixer runs on its own thread, so the music beneath may have played a
+	# moment past 1.5 before it stopped, and the one back a moment since.
+	assert_between(back.get_playback_position(), 1.45, 1.8, "it comes back where it stopped, not at the start")
 	assert_null(_music_player(fight.stream))
 
 func test_the_newest_pushed_music_plays_and_a_layer_below_it_goes_unheard() -> void:
