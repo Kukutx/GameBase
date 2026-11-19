@@ -18,6 +18,9 @@
 //   quit_on_go_back        Android's back button does not quit
 //                          ([application] config/quit_on_go_back): the
 //                          core's TouchControls go back with it;
+//   mobile_file_logging    a phone writes its log as a computer does
+//                          ([debug] file_logging/enable_file_logging.mobile),
+//                          so a support report copied there holds it;
 //   name_localized         the game's name in each language its catalogs
 //                          translate config/name to ([application]
 //                          config/name_localized) in its own catalogs
@@ -247,6 +250,7 @@ function syncedProject(text, game, foundation = readFoundation()) {
   setValue(sections, "debug", "gdscript/warnings/untyped_declaration", "2");
   setValue(sections, "rendering", "textures/vram_compression/import_etc2_astc", "true");
   setValue(sections, "application", "config/quit_on_go_back", "false");
+  setValue(sections, "debug", "file_logging/enable_file_logging.mobile", "true");
   const name = getValue(sections, "application", "config/name");
   if (name) {
     let gameName = "";

@@ -47,4 +47,4 @@ This file holds the domain invariants of the game base. Generic engineering rule
 
 ## Diagnostics and privacy
 
-- Support bundles are created only on the player's explicit request and contain sanitized logs, runtime and settings metadata and save-slot summaries. Raw saves, the raw settings file, licensed source art and absolute user paths are never included. Details: `docs/SUPPORT.md`.
+- Support bundles, and the support report a player copies, are created only on the player's explicit request and contain sanitized logs, runtime and settings metadata and save-slot summaries. Raw saves, the raw settings file, licensed source art and absolute user paths are never included. Details: `docs/SUPPORT.md`.

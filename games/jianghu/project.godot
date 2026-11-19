@@ -57,6 +57,7 @@ Cultivation="*res://game/idle/cultivation_service.gd"
 
 [debug]
 
+file_logging/enable_file_logging.mobile=true
 file_logging/log_path="user://logs/jianghu.log"
 gdscript/warnings/untyped_declaration=2
 settings/gdscript/always_track_call_stacks=true

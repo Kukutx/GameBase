@@ -198,7 +198,11 @@ custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 10
 autowrap_mode = 3
-text = "Support bundles contain technical logs and save summaries, never raw saves."
+text = "Support reports contain technical logs and save summaries, never your saves."
+
+[node name="CopySupportReport" type="Button" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
+layout_mode = 2
+text = "Copy Support Report"
 
 [node name="ExportSupportBundle" type="Button" parent="Dim/Panel/Layout/Pages/Page/Accessibility"]
 layout_mode = 2

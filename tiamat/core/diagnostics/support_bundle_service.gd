@@ -6,11 +6,18 @@ extends Node
 ## settings and bindings, and an outline of each save slot) and the end of the
 ## newest game logs.
 ##
-## It makes one only when asked (the settings menu has a button), and never in
-## a web build. It leaves out the save files and the settings file themselves,
-## and replaces the player's folder paths in the logs with placeholders. At most
-## `MAX_LOG_FILES` logs go in, the last `MAX_LOG_BYTES` of each. `bundle_created`
-## gives the zip's path, and `bundle_failed` says why it could not be made.
+## It makes one only when asked (the settings menu has a button), and only on
+## a computer: a browser keeps no files the player can reach, nor does a
+## phone, whose game files only the game reads. It leaves out the save files
+## and the settings file themselves, and replaces the player's folder paths in
+## the logs with placeholders. At most `MAX_LOG_FILES` logs go in, the last
+## `MAX_LOG_BYTES` of each. `bundle_created` gives the zip's path, and
+## `bundle_failed` says why it could not be made.
+##
+## Everywhere a clipboard is, the player can copy a report instead, to paste
+## into a message (`copy_report()`): the same summary and the end of the
+## newest log, as text. A phone writes its logs too
+## (`debug/file_logging/enable_file_logging.mobile`, which tools/link.js sets).
 
 signal bundle_created(path: String)
 signal bundle_failed(message: String)
@@ -18,6 +25,9 @@ signal bundle_failed(message: String)
 const BUNDLE_SCHEMA := 1
 const MAX_LOG_FILES := 5
 const MAX_LOG_BYTES := 2 * 1024 * 1024
+## How much of the newest log a copied report keeps, in bytes: what a message
+## holds.
+const REPORT_LOG_BYTES := 16 * 1024
 
 var output_directory := "user://support"
 ## Where the game writes its logs and the file name they start with, both from
@@ -30,12 +40,38 @@ func _init() -> void:
 	logs_directory = log_path.get_base_dir()
 	log_prefix = log_path.get_file().get_basename().to_lower()
 
+## Whether a bundle can be made where the player reaches it: on a computer.
 func is_supported() -> bool:
-	return OS.get_name() != "Web"
+	return OS.get_name() != "Web" and not OS.has_feature("mobile")
+
+## Whether a report can be copied: where there is a clipboard.
+func can_copy_report() -> bool:
+	return DisplayServer.has_feature(DisplayServer.FEATURE_CLIPBOARD)
+
+## Puts the report (`build_report()`) on the clipboard; whether it could.
+func copy_report() -> bool:
+	if not can_copy_report():
+		return false
+	DisplayServer.clipboard_set(build_report())
+	return true
+
+## A report to paste into a message: the summary, then the last `log_bytes`
+## of the newest log from a full line on, with the player's folder paths
+## replaced like a bundle's.
+func build_report(log_bytes := REPORT_LOG_BYTES) -> String:
+	var parts: PackedStringArray = [
+		"%s %s support report" % [ProjectSettings.get_setting("application/config/name", ""), ProjectSettings.get_setting("application/config/version", "")],
+		JSON.stringify(build_summary()),
+	]
+	var logs := _collect_logs()
+	if not logs.is_empty():
+		parts.append("--- %s ---" % String(logs[0].get("name", "")))
+		parts.append(_read_log_tail(String(logs[0].get("path", "")), log_bytes).get_string_from_utf8())
+	return "\n".join(parts)
 
 func create_bundle(custom_output_path: String = "") -> String:
 	if not is_supported():
-		_fail("Support bundles are unavailable in Web builds.")
+		_fail("Support bundles are made only on a computer.")
 		return ""
 
 	var output_path := custom_output_path
@@ -190,12 +226,12 @@ func _collect_logs() -> Array[Dictionary]:
 		result.resize(MAX_LOG_FILES)
 	return result
 
-func _read_log_tail(path: String) -> PackedByteArray:
+func _read_log_tail(path: String, max_bytes := MAX_LOG_BYTES) -> PackedByteArray:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return PackedByteArray()
 	var length := file.get_length()
-	var start := maxi(length - MAX_LOG_BYTES, 0)
+	var start := maxi(length - max_bytes, 0)
 	file.seek(start)
 	var bytes := file.get_buffer(length - start)
 	file.close()

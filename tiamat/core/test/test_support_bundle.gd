@@ -97,6 +97,38 @@ func test_truncated_log_tail_starts_at_a_full_line() -> void:
 	assert_false(tail.contains(char(0xFFFD)))
 	assert_lte(tail.to_utf8_buffer().size(), SupportBundleService.MAX_LOG_BYTES)
 
+func test_a_report_to_paste_holds_the_summary_and_the_end_of_the_newest_log() -> void:
+	assert_eq(DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(TEST_LOG_DIR)), OK)
+	var file := FileAccess.open(_test_log, FileAccess.WRITE)
+	assert_not_null(file)
+	if file == null:
+		return
+	file.store_string("first line, long gone\n")
+	for line: int in 200:
+		file.store_string("line %d\n" % line)
+	file.store_string("ERROR: the last error at %ssave.json\n" % ProjectSettings.globalize_path("user://"))
+	file.close()
+
+	var service := SupportBundleService.new()
+	service.logs_directory = TEST_LOG_DIR
+	add_child_autofree(service)
+	var report := service.build_report(512)
+	var lines := report.split("\n")
+	assert_true(lines[0].ends_with("support report"), lines[0])
+	var summary: Variant = JSON.parse_string(lines[1])
+	assert_true(summary is Dictionary and (summary as Dictionary).has("privacy"), "the summary, as JSON on one line")
+	assert_eq(lines[2], "--- %s ---" % _test_log_name)
+	assert_true(report.contains("ERROR: the last error at <USER_DATA>save.json"), "the end of the log, its paths left out")
+	assert_false(report.contains("first line"), "only the end of a long log")
+	assert_false(report.contains(ProjectSettings.globalize_path("user://")))
+	assert_true(lines[3].begins_with("line "), "from a full line on: %s" % lines[3])
+
+func test_a_report_is_copied_only_where_there_is_a_clipboard() -> void:
+	var service := SupportBundleService.new()
+	add_child_autofree(service)
+	assert_eq(service.copy_report(), service.can_copy_report())
+	assert_true(service.is_supported(), "a computer makes bundles")
+
 func _cleanup() -> void:
 	for path: String in [TEST_ZIP, _test_log]:
 		if FileAccess.file_exists(path):
