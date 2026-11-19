@@ -98,6 +98,10 @@ Before publishing, `tools/generate_release_manifest.js` opens every ZIP and TAR 
 
 The workflow can also be started manually, with a `game` input, to test packaging and smoke checks without publishing a GitHub Release. A manual `engine_version` override is treated as a compatibility build: exports explicitly use `--allow-engine-drift`, synchronize a temporary Godot legal bundle to that actual stable engine, and are not publishable release candidates. Tag-triggered releases use the committed `.godot-version` baseline.
 
+## The app icon
+
+A game's icon is its `application/config/icon`: the window's, the macOS bundle's and the one Android draws from. A phone's launcher draws an app's icon as two layers and shows only their middle two thirds, cut to its own shape (a circle, a rounded square), as does the splash screen of Android 12 and later; given the icon whole, it would cut off its edges. So `node tools/render_android_icon.js --game <id>` draws the icon into the middle of a foreground layer, a pixel-art icon kept crisp, over a background of the colour of the icon's edge, into `games/<id>/android_icon/` (which no pack carries), and `node tools/link.js` names the two layers in the game's Android preset. Run it again after changing the icon: `tools/repository.test.js` fails until it has, since the layers record the icon they were drawn from. A new game starts with the template's.
+
 ## Secrets and signing
 
 Signing and notarization credentials are never committed to the repository or printed in a log.
