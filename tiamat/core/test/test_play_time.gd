@@ -2,7 +2,8 @@ extends GutTest
 
 ## The time played (`GameSession.get_play_seconds()`): it runs while play does,
 ## a minigame or a dialogue that pauses the world included, stops while the
-## session changes or the pause menu is open, and a save keeps it.
+## session changes or the pause menu is open, and a save keeps it; the screen
+## stays on while it runs.
 
 var _play_seconds := 0.0
 var _playing := false
@@ -56,3 +57,20 @@ func test_a_save_keeps_the_time_and_a_new_game_starts_from_none() -> void:
 	assert_eq(reset.size(), 1, "a new game resets the time")
 	(reset[0]["step"] as Callable).call()
 	assert_eq(GameSession.get_play_seconds(), 0)
+
+func test_the_screen_stays_on_while_the_time_runs_and_may_sleep_on_menus() -> void:
+	GameSession.set("_playing", false)
+	GameSession._process(0.1)
+	assert_false(GameSession.is_keeping_screen_on(), "the title lets the screen sleep")
+	GameSession.set("_playing", true)
+	GameSession._process(0.1)
+	assert_true(GameSession.is_keeping_screen_on(), "play keeps it on")
+	InputLock.lock(PauseMenu.MENU_ID, true)
+	GameSession._process(0.1)
+	assert_false(GameSession.is_keeping_screen_on(), "the pause menu lets it sleep")
+	InputLock.unlock(PauseMenu.MENU_ID)
+	GameSession._process(0.1)
+	assert_true(GameSession.is_keeping_screen_on())
+	GameSession.set("_playing", false)
+	GameSession._process(0.0)
+
