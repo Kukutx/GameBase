@@ -42,6 +42,8 @@ func _init() -> void:
 	_amount.add_theme_stylebox_override(&"normal", StyleBoxEmpty.new())
 	_amount.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
 	_amount.placeholder_text = "How many"
+	# A phone shows its number keys for an amount.
+	_amount.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
 	_amount.size = Vector2(69, 15)
 	_amount.position = Vector2(2, 0)
 	_amount.text_submitted.connect(func(_text: String) -> void: _submit())
