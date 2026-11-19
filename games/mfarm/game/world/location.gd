@@ -2,7 +2,10 @@ class_name MFarmLocation
 extends Node2D
 
 ## The root of an MFarm location's scene: names the location its nodes belong
-## to and plays its ambient sound under the location's music.
+## to and plays its ambient sound under the location's music, over and over,
+## fading in over `AMBIENT_FADE_SECONDS` as the old game's did.
+
+const AMBIENT_FADE_SECONDS := 1.0
 
 @export var location_id: StringName
 @export var ambient: AudioStream
@@ -14,10 +17,13 @@ func _ready() -> void:
 		var player := AudioStreamPlayer.new()
 		player.name = "Ambient"
 		player.stream = ambient
-		player.volume_db = ambient_volume_db
+		player.volume_linear = 0.0
 		player.bus = &"Sounds"
 		add_child(player)
+		# The imported stream does not loop; the old game's ambient source did.
+		player.finished.connect(player.play)
 		player.play()
+		create_tween().tween_property(player, ^"volume_linear", db_to_linear(ambient_volume_db), AMBIENT_FADE_SECONDS)
 
 ## The id of the location whose scene holds `node`, or empty.
 static func id_of(node: Node) -> StringName:

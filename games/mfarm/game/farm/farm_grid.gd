@@ -165,6 +165,9 @@ func _give(crop: MFarmCropData, center: Vector2, from: Vector2, from_left: bool)
 		var amount := _random.randi_range(crop.produce_min[index], maxi(crop.produce_min[index], crop.produce_max[index]))
 		var item_id := crop.produced_items[index]
 		if crop.generate_at_player:
+			var player := get_tree().get_first_node_in_group(&"player") as MFarmPlayer
+			if player != null and amount > 0:
+				player.show_harvest(MFarmItemData.find(item_id))
 			var added := Bags.add_item(Bags.PLAYER, item_id, amount)
 			if added < amount:
 				GameEvents.toast("Your bag is full")
@@ -176,8 +179,10 @@ func _give(crop: MFarmCropData, center: Vector2, from: Vector2, from_left: bool)
 			var offset := Vector2(_random.randf_range(0.0, crop.spawn_radius.x) * side, _random.randf_range(-crop.spawn_radius.y, crop.spawn_radius.y)) * CELL
 			drop_item(item_id, center + offset, center)
 
+# One swing cuts up to `REAP_LIMIT` weeds and sounds once, as in the old game.
 func _reap(target: Vector2, item: MFarmItemData, from: Vector2) -> bool:
 	var reaped := 0
+	var sound := &""
 	for weed: MFarmWorldItem in _reapables_near(target, item):
 		if reaped >= REAP_LIMIT:
 			break
@@ -187,10 +192,12 @@ func _reap(target: Vector2, item: MFarmItemData, from: Vector2) -> bool:
 		reaped += 1
 		if crop == null:
 			continue
-		if crop.sound_cue_id != &"":
-			GameAudio.play_cue(crop.sound_cue_id)
+		if sound == &"":
+			sound = crop.sound_cue_id
 		MFarmHarvestEffect.spawn(self, crop.effect, at + crop.effect_offset)
 		_give(crop, at, from, from.x < at.x)
+	if sound != &"":
+		GameAudio.play_cue(sound)
 	return reaped > 0
 
 func _reapables_near(target: Vector2, item: MFarmItemData) -> Array[MFarmWorldItem]:

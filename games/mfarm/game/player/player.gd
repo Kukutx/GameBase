@@ -8,9 +8,12 @@ extends TopDownPlayer
 
 const RUN_SPEED := 100.0
 const WALK_SPEED := 50.0
+## The old game slowed each axis to 0.6 when walking diagonally (0.6 * √2).
+const DIAGONAL_FACTOR := 0.8485281
 ## How long into a swing the tool works the cell, and how long the swing lasts.
 const TOOL_HIT_SECONDS := 0.45
 const TOOL_END_SECONDS := 0.25
+const HARVEST_SHOW_SECONDS := 1.0
 const PARTS: Array[StringName] = [&"Body", &"Hair", &"Arm", &"Tool"]
 const LIBRARIES := "res://game/unity/animators/%s.tres"
 
@@ -34,6 +37,7 @@ var _look := &""
 var _using := false
 var _moving := false
 var _running := true
+var _showing_harvest := 0
 
 func _ready() -> void:
 	move_speed = RUN_SPEED
@@ -43,7 +47,9 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_running = not Input.is_action_pressed(&"walk")
-	move_speed = RUN_SPEED if _running else WALK_SPEED
+	var direction := Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
+	var diagonal := absf(direction.x) > 0.01 and absf(direction.y) > 0.01
+	move_speed = (RUN_SPEED if _running else WALK_SPEED) * (DIAGONAL_FACTOR if diagonal else 1.0)
 	super(delta)
 	_moving = velocity.length_squared() > 1.0
 	if not _using:
@@ -63,6 +69,20 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"use_item"):
 		if use_item(get_global_mouse_position()):
 			get_viewport().set_input_as_handled()
+
+## Holds a harvested item over their head for `HARVEST_SHOW_SECONDS`, as the
+## old game showed a crop picked with the basket; not while they carry an
+## item already.
+func show_harvest(item: MFarmItemData) -> void:
+	if item == null or _hold_item.visible:
+		return
+	MFarmSpritePivot.apply(_hold_item, item.get_world_texture())
+	_hold_item.visible = true
+	_showing_harvest += 1
+	await get_tree().create_timer(HARVEST_SHOW_SECONDS).timeout
+	_showing_harvest -= 1
+	if _showing_harvest == 0 and is_inside_tree():
+		_on_selection_changed(Bags.selected)
 
 ## Uses the item in the player's hands on the cell under `target`: a seed,
 ## a harvest or a blueprint at once, a tool after the swing toward it.
@@ -114,9 +134,11 @@ func _on_bag_changed(bag_key: StringName) -> void:
 func _on_selection_changed(_index: int) -> void:
 	var item := Bags.get_selected_item()
 	var look := _look_of(item)
-	_hold_item.visible = look == &"carry" and item != null
-	if _hold_item.visible:
+	if look == &"carry" and item != null:
+		_hold_item.visible = true
 		MFarmSpritePivot.apply(_hold_item, item.get_world_texture())
+	elif _showing_harvest == 0:
+		_hold_item.visible = false
 	if look == _look:
 		return
 	_look = look

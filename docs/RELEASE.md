@@ -7,7 +7,7 @@ Every game under `games/` has reproducible Windows, Linux and Web exports, stric
 - A valid SemVer in `config/version` of the game's `games/<id>/project.godot`.
 - A compatible stable Godot 4.x build. Normal release exports must match the shared `.godot-version` baseline; `licenses/GODOT_VERSION.txt` and the official Godot legal bundle must match that same baseline.
 - Matching Godot export templates.
-- Node.js 24+ for the repository tooling and the Playwright Web-export smoke test.
+- Node.js 26+ (the current LTS) for the repository tooling and the Playwright Web-export smoke test.
 
 Install the export templates for the current shared baseline with:
 

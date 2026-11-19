@@ -10,7 +10,10 @@ const MORNING_STARTS := 5 * 60
 const NIGHT_STARTS := 19 * 60
 const CHANGE_SECONDS := 25.0
 const SKY_DAY := Color.WHITE
-const SKY_NIGHT := Color(0.35, 0.4, 0.7)
+## The old project's night sky (`Outside Global Light`): colour
+## (0.216, 0.275, 0.647) at intensity 0.7. Every season shares it; the old
+## data had spring only, and lights stopped changing after spring.
+const SKY_NIGHT := Color(0.151, 0.192, 0.453)
 const LAMP_COLOR := Color(1.0, 0.843, 0.471)
 const LAMP_NIGHT_ENERGY := 1.5
 

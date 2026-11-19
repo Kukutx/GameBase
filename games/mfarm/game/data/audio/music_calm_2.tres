@@ -11,3 +11,4 @@ stream = ExtResource("2_Calm2___Childhood_Friends")
 volume_db = -1.9
 pitch_min = 1
 pitch_max = 1
+fade_seconds = 8.0

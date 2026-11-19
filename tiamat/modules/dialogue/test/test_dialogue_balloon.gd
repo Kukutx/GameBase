@@ -168,7 +168,7 @@ func test_a_dialogue_that_ran_is_freed_once_nothing_holds_it() -> void:
 	line = null
 	# The addon hands each line over on the next frame.
 	await wait_process_frames(1)
-	assert_null(held.get_ref(), "its lines do not hold it (the Tiamat fix in the addon's get_line)")
+	assert_null(held.get_ref(), "its lines do not hold it (the addon's get_line works on a copy of the line data)")
 
 # A balloon showing the fixture dialogue from `cue`, once its first line shows.
 func _start(cue: String, long_line := "") -> DialogueBalloon:
