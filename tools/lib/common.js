@@ -80,8 +80,10 @@ function run(command, args, options = {}) {
     child.on("error", (error) => {
       reject(new ToolError(`Could not run '${command}': ${error.message}`));
     });
-    child.on("close", (code) => {
-      resolve({ code: code === null ? 1 : code, output: Buffer.concat(chunks).toString("utf8") });
+    // A process a signal stopped (a crash, the out-of-memory killer) has no
+    // exit code: it reads as 1, and `signal` names the signal.
+    child.on("close", (code, signal) => {
+      resolve({ code: code === null ? 1 : code, signal: signal || null, output: Buffer.concat(chunks).toString("utf8") });
     });
   });
 }
@@ -148,12 +150,23 @@ function markGutChecked(project, userDir) {
   }
 }
 
+// Runs Godot with `args` as the step `name`, failing on a non-zero exit or an
+// engine error line. With `options.retryAfterSignal`, a run a signal stopped
+// (the engine crashed or was killed, often as it quit) runs once more: for a
+// step that is safe to repeat, such as an import, whose work stays on disk.
 async function runGodotStep(godotBin, name, args, options = {}) {
   console.log("");
   console.log(`==> ${name}`);
   const at = args.indexOf("--path");
   if (at >= 0 && args[at + 1]) quietAddonUpdateChecks(path.resolve(options.cwd || ROOT, args[at + 1]));
-  const result = await run(godotBin, args, options);
+  let result = await run(godotBin, args, options);
+  if (result.signal && options.retryAfterSignal) {
+    console.log(`${name}: Godot was stopped by ${result.signal}; running the step once more.`);
+    result = await run(godotBin, args, options);
+  }
+  if (result.signal) {
+    fail(`${name} was stopped by ${result.signal}`);
+  }
   if (result.code !== 0) {
     fail(`${name} failed with exit code ${result.code}`);
   }
@@ -190,12 +203,13 @@ async function prepareEditorSettings(godotBin) {
 // Imports a Godot project headless. A first import also initialises the editor
 // plugins, so it is preceded by prepareEditorSettings. The dedicated import mode
 // waits for importer and editor-plugin work to settle before exiting, which
-// launching the editor and quitting does not.
+// launching the editor and quitting does not. An import a signal stopped runs
+// once more: what it imported stays, so the second run finishes the rest.
 async function importProject(godotBin, project, label) {
   if (!fs.existsSync(path.join(project, ".godot"))) {
     await prepareEditorSettings(godotBin);
   }
-  await runGodotStep(godotBin, label, ["--headless", "--path", project, "--import"]);
+  await runGodotStep(godotBin, label, ["--headless", "--path", project, "--import"], { retryAfterSignal: true });
 }
 
 function godotVersion(godotBin) {
