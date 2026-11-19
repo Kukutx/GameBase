@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JianghuArtData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/art_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"startle_swan"
+display_name = "Startled Swan Strike"
+description = "One strike like a startled swan. Chance of a double blow."
+seal = "鸿"
+effect = 5
+per_level = 0.03
+base_cost = 25000.0
+cost_growth = 1.9
+max_level = 25
+unlock_realm = 4
+order = 7

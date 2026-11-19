@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="JianghuFoeData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/foe_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stray_dog"
+display_name = "Vicious Dog"
+attack_scale = 1.1
+health_scale = 0.8
+silver_scale = 0.8
+robe = Color(0.5, 0.4, 0.28, 1)

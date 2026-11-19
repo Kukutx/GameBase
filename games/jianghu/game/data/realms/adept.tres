@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="JianghuRealmData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/realm_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"adept"
+display_name = "Adept"
+description = "The basics are sound; the body starts to obey."
+order = 1
+gate_region_id = &"bamboo_path"
+aura = Color(0.9, 0.75, 0.4, 1)

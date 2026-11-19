@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JianghuRegionData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/region_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"tianshan"
+display_name = "Snowy Tianshan"
+description = "Sword light flashes on the eternal snow."
+order = 6
+foe_ids = Array[StringName]([&"snow_wolf", &"sword_servant"])
+boss_id = &"tianshan_swordsman"
+sky = Color(0.92, 0.94, 0.97, 1)
+hills = Color(0.55, 0.62, 0.7, 1)

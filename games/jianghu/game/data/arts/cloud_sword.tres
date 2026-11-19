@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JianghuArtData" format=3]
+
+[ext_resource type="Script" path="res://game/idle/art_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"cloud_sword"
+display_name = "Drifting Cloud Sword"
+description = "A sword that flows like cloud. Greatly raises attack."
+seal = "剑"
+effect = 1
+per_level = 0.3
+base_cost = 900.0
+cost_growth = 1.7
+max_level = 50
+unlock_realm = 2
+order = 5

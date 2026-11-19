@@ -1,0 +1,7 @@
+{
+  "id": "jianghu",
+  "modules": [],
+  "autoloads": {
+    "Cultivation": "res://game/idle/cultivation_service.gd"
+  }
+}
