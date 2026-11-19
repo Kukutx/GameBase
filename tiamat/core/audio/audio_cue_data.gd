@@ -2,7 +2,8 @@ class_name AudioCueData
 extends ContentEntry
 
 ## A sound or a piece of music the game plays by its id (`GameAudio`). A cue
-## without a stream is a slot waiting for its audio, and plays nothing.
+## without a stream is a slot waiting for its audio: nothing is heard, though a
+## sound that rumbles is still felt.
 
 enum CueType {
 	SFX,
@@ -24,6 +25,11 @@ const KIND := &"audio_cue"
 ## Sounds played at a place in the world: how far from the view's centre they
 ## are still heard, in pixels.
 @export_range(16.0, 4000.0, 1.0) var hearing_distance := 640.0
+## Sounds: how hard the player's gamepad or phone shakes as the sound plays,
+## from 0 (not at all) to 1 (`Haptics`), less the farther away a sound played
+## at a place is; and for how long.
+@export_range(0.0, 1.0, 0.05) var rumble := 0.0
+@export_range(0.01, 1.0, 0.01) var rumble_seconds := 0.1
 
 ## The audio cue with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> AudioCueData:
@@ -93,4 +99,10 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 		problems.append("plays at most %d at once" % max_voices)
 	if hearing_distance <= 0.0:
 		problems.append("is heard from no distance")
+	if rumble < 0.0 or rumble > 1.0:
+		problems.append("rumbles at %s, outside 0 to 1" % rumble)
+	elif rumble > 0.0 and is_music():
+		problems.append("is music, which never rumbles")
+	elif rumble > 0.0 and rumble_seconds <= 0.0:
+		problems.append("rumbles for no time")
 	return problems

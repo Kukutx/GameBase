@@ -20,8 +20,11 @@ extends Node
 ## cue at most `AudioCueData.max_voices` times at once; past either, the
 ## oldest stops. A sound played at a place in the world (`play_cue_at()`) is
 ## heard from there, fainter with distance up to its cue's
-## `hearing_distance`. Each event listed in `GameDefinition.event_cues` plays
-## its cue, where it happened when the event carries a `position`.
+## `hearing_distance`. A sound whose cue rumbles shakes the player's gamepad
+## or phone as it plays (`Haptics`), a sound at a place the less the fainter it
+## is heard, and even before the cue has its audio. Each event listed in
+## `GameDefinition.event_cues` plays its cue, where it happened when the event
+## carries a `position`.
 ##
 ## The menus sound as the game sets (`GameDefinition.menu_*_cue_id`): a menu
 ## opening and closing (`GameEvents.menu_opened`, `menu_closed`), a button
@@ -94,7 +97,7 @@ func _ready() -> void:
 ## Plays `cue_id`: a sound now, or music in the place of the location's.
 ## False when the content has no such cue or it has no stream yet.
 func play_cue(cue_id: StringName) -> bool:
-	var cue := _find_playable(cue_id)
+	var cue := _find_playable(cue_id, 1.0)
 	if cue == null:
 		return false
 	if cue.is_music():
@@ -107,7 +110,7 @@ func play_cue(cue_id: StringName) -> bool:
 ## Plays the sound `cue_id` from `position` in the world (global), heard
 ## fainter the farther the view is; a music cue plays as music.
 func play_cue_at(cue_id: StringName, position: Vector2) -> bool:
-	var cue := _find_playable(cue_id)
+	var cue := _find_playable(cue_id, _nearness(position, AudioCueData.find(cue_id)))
 	if cue == null:
 		return false
 	if cue.is_music():
@@ -248,13 +251,26 @@ func _on_focus_changed(_control: Control) -> void:
 	if _navigated_frame == Engine.get_process_frames():
 		play_menu_sound(MenuSound.FOCUS)
 
-# The cue `cue_id` when it can play; the request is announced either way.
-func _find_playable(cue_id: StringName) -> AudioCueData:
+# The cue `cue_id` when it can play; the request is announced either way,
+# and a sound that rumbles is felt `nearness` (0 to 1) as hard even when it has
+# no audio yet.
+func _find_playable(cue_id: StringName, nearness: float) -> AudioCueData:
 	if cue_id == &"":
 		return null
 	cue_requested.emit(cue_id)
 	var cue := AudioCueData.find(cue_id)
+	if cue != null and not cue.is_music():
+		Haptics.pulse(cue.rumble * nearness, cue.rumble_seconds)
 	return cue if cue != null and cue.stream != null else null
+
+# How near `position` (global) is to where the sounds of the world are heard
+# from, the centre of the view: 1 there, 0 at `cue`'s hearing distance.
+func _nearness(position: Vector2, cue: AudioCueData) -> float:
+	if cue == null:
+		return 0.0
+	var viewport := get_viewport()
+	var centre := viewport.get_canvas_transform().affine_inverse() * viewport.get_visible_rect().get_center()
+	return clampf(1.0 - centre.distance_to(position) / cue.hearing_distance, 0.0, 1.0)
 
 # A channel of `pool` for `cue`. A cue that plays its `max_voices` times
 # already stops its oldest; then a quiet channel serves, else the one that

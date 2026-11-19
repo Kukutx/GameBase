@@ -1,5 +1,6 @@
 {
   "addons": ["gut"],
+  "android_permissions": ["vibrate"],
   "autoloads": {
     "before_modules": {
       "Transition": "res://tiamat/core/world/scene_transition.gd",

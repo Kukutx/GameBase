@@ -248,6 +248,7 @@ test("linking gives a game a preset for every target, exporting to its build dir
     assert.ok(synced.includes('package/unique_name="io.github.kukutx.probe_game"'));
     assert.ok(synced.includes("version/code=100"), "0.1.0 is version code 100");
     assert.ok(synced.includes("permissions/internet=false"), "a game without npc_ai stays offline");
+    assert.ok(synced.includes("permissions/vibrate=true"), "the core shakes the phone (Haptics)");
     // A key typed into the file by hand goes: signing keys come from the environment.
     const leaked = synced.replace('keystore/release_password=""', 'keystore/release_password="hunter2"');
     assert.ok(!syncedExportPresets(leaked, game).includes("hunter2"));
@@ -263,12 +264,13 @@ test("an Android version code grows with the game's version", () => {
   assert.throws(() => androidVersionCode("1.100.0"), /at most 99/);
 });
 
-test("a game whose modules reach the internet may do so on Android, and only then", () => {
+test("a game whose modules reach the internet may do so on Android, and only then; every game may shake the phone", () => {
   for (const id of listGameIds()) {
     const game = loadGame(id);
     const presets = fs.readFileSync(gamePath(game, "export_presets.cfg"), "utf8");
     const online = game.modules.includes("npc_ai");
     assert.ok(presets.includes(`permissions/internet=${online}`), `${id} permissions/internet=${online}`);
+    assert.ok(presets.includes("permissions/vibrate=true"), `${id} permissions/vibrate=true`);
   }
 });
 

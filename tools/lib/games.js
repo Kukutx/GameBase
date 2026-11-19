@@ -99,9 +99,7 @@ function checkFoundation(manifest) {
     assertMap(module, `tiamat.json modules.${name}`);
     assertStringList(module.requires ?? [], `tiamat.json modules.${name}.requires`);
     const addons = assertStringList(module.addons ?? [], `tiamat.json modules.${name}.addons`);
-    for (const permission of assertStringList(module.android_permissions ?? [], `tiamat.json modules.${name}.android_permissions`)) {
-      if (!/^[a-z_]+$/.test(permission)) fail(`tiamat.json modules.${name}.android_permissions: '${permission}' is not an Android export permission such as internet.`);
-    }
+    assertAndroidPermissions(module.android_permissions ?? [], `tiamat.json modules.${name}.android_permissions`);
     claim(module.autoloads ?? {}, `tiamat.json modules.${name}.autoloads`, [`res://tiamat/modules/${name}/`, ...addonRoots(addons)]);
     for (const required of module.requires ?? []) {
       if (!modules[required]) fail(`tiamat.json modules.${name} requires unknown module ${required}.`);
@@ -110,9 +108,20 @@ function checkFoundation(manifest) {
   return {
     modules,
     addons: assertStringList(manifest.addons ?? [], "tiamat.json addons"),
+    androidPermissions: assertAndroidPermissions(manifest.android_permissions ?? [], "tiamat.json android_permissions"),
     autoloads: { before_modules: autoloads.before_modules ?? {}, after_modules: autoloads.after_modules ?? {} },
     owners,
   };
+}
+
+// The Android permissions a part of the foundation needs, each the name of a
+// permissions/<name> option of an Android preset.
+function assertAndroidPermissions(value, label) {
+  const permissions = assertStringList(value, label);
+  for (const permission of permissions) {
+    if (!/^[a-z_]+$/.test(permission)) fail(`${label}: '${permission}' is not an Android export permission such as internet.`);
+  }
+  return permissions;
 }
 
 // A game's own autoloads (game.json "autoloads"): scripts of the game or of

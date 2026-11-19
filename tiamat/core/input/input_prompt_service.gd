@@ -153,6 +153,11 @@ func _ready() -> void:
 static func is_from_finger(event: InputEvent) -> bool:
 	return event.device == InputEvent.DEVICE_ID_EMULATION or event.device == TouchControlsService.FINGER_MOUSE_DEVICE
 
+## The device of the gamepad the player is using, or -1 when they use
+## something else.
+func get_gamepad_in_use() -> int:
+	return _gamepad_device if using_gamepad else -1
+
 ## The name of gamepad `button` on the gamepad in use.
 func get_button_name(button: JoyButton) -> String:
 	return gamepad_button_name(button, gamepad_style)

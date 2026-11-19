@@ -33,6 +33,7 @@ func test_settings_round_trip() -> void:
 	source.touch_stick_right = true
 	source.touch_opacity = 0.45
 	source.battery_saver = true
+	source.vibration = false
 	source.locale = "zh_CN"
 	source.save_settings()
 
@@ -53,6 +54,7 @@ func test_settings_round_trip() -> void:
 	assert_true(restored.touch_stick_right)
 	assert_almost_eq(restored.touch_opacity, 0.45, 0.001)
 	assert_true(restored.battery_saver)
+	assert_false(restored.vibration)
 	assert_eq(restored.locale, "zh_CN")
 
 func test_the_touch_size_and_opacity_and_an_unknown_value_keeps_the_current() -> void:
@@ -62,6 +64,7 @@ func test_the_touch_size_and_opacity_and_an_unknown_value_keeps_the_current() ->
 	assert_eq(settings.touch_size, GameSettingsService.TouchSize.NORMAL, "the default")
 	assert_false(settings.touch_stick_right, "the stick at the left by default")
 	assert_eq(settings.touch_opacity, 1.0, "drawn as they are by default")
+	assert_true(settings.vibration, "shakes by default")
 	assert_eq(settings.get_touch_scale(), 1.0)
 	settings.set_touch_size(GameSettingsService.TouchSize.SMALL)
 	assert_lt(settings.get_touch_scale(), 1.0)

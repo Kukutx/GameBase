@@ -8,3 +8,5 @@ id = &"sfx_resource_mined"
 cue_type = 0
 pitch_min = 0.94
 pitch_max = 1.06
+rumble = 0.3
+rumble_seconds = 0.06

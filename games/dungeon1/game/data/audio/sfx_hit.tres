@@ -8,3 +8,5 @@ id = &"sfx_hit"
 cue_type = 0
 pitch_min = 0.96
 pitch_max = 1.04
+rumble = 0.35
+rumble_seconds = 0.06

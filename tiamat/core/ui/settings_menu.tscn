@@ -249,6 +249,11 @@ max_value = 100.0
 step = 5.0
 value = 100.0
 
+[node name="Vibration" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Controls"]
+visible = false
+layout_mode = 2
+text = "Vibration"
+
 [node name="Header" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Controls"]
 layout_mode = 2
 
