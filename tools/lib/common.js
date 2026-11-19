@@ -9,14 +9,14 @@ const ENGINE_VERSION_RE = /^4\.\d+\.\d+$/;
 // Godot exits with code 0 after parse errors, missing autoloads and push_error(),
 // so every Godot step is also judged by these line prefixes.
 const ENGINE_ERROR_RE = /^(?:ERROR|SCRIPT ERROR):/i;
-// GUT's editor plugin asks api.github.com for its newest version whenever the
-// editor opens a project it has not checked in a day. The repository follows
-// its addons' releases itself (tools/check_addon_updates.js), and that request
-// fails on a shared CI address over GitHub's rate limit or with a TLS error
-// that names no request, so before each Godot step the project's GUT cache is
-// marked as checked (markGutChecked()). Should the check run anyway, its own
-// line says nothing about the project, so it is reported and does not fail
-// the step.
+// The editor plugins of GUT and Dialogue Manager ask api.github.com for their
+// newest version when the editor opens a project. The repository follows its
+// addons' releases itself (tools/check_addon_updates.js) and updates them only
+// through that tool, and the request fails on a shared CI address over
+// GitHub's rate limit or with a TLS error that names no request, so before
+// each Godot step the project's addons are told not to ask
+// (quietAddonUpdateChecks()). Should GUT's check run anyway, its own line says
+// nothing about the project, so it is reported and does not fail the step.
 const UPDATE_CHECK_RE = /^ERROR: \[GUT\] (?:Could not get version info|An error occurred requesting version data)/;
 // How long a mark lasts; GUT checks again after a day.
 const GUT_CHECK_FRESH_SECONDS = 12 * 60 * 60;
@@ -97,19 +97,43 @@ function godotUserDataDir(name) {
   return path.join(process.env.XDG_DATA_HOME || path.join(home, ".local", "share"), "godot", "app_userdata", safe);
 }
 
-// Marks the GUT version check of the project at `project` as done now, from
-// the versions file GUT ships, so its editor plugin does not reach the
-// network; a project without GUT, or with a user folder of its own, is left
-// alone. A failure to write the mark only leaves the check to run.
-function markGutChecked(project) {
+// The user:// folder of the project at `project`, or null for one without a
+// name or with a user folder of its own.
+function projectUserDir(project) {
+  const settings = path.join(project, "project.godot");
+  if (!fs.existsSync(settings)) return null;
+  const text = fs.readFileSync(settings, "utf8");
+  const name = /^config\/name="([^"]*)"$/m.exec(text);
+  if (!name || /^config\/use_custom_user_dir=true$/m.test(text)) return null;
+  return godotUserDataDir(name[1]);
+}
+
+// Tells the editor plugins of the project at `project` not to ask the network
+// for their newest version: GUT's check is marked done now, from the versions
+// file GUT ships (it asks again a day later), and Dialogue Manager's is turned
+// off in its user settings, the rest of which stay. An addon the project does
+// not link is left alone, and a failure to write only leaves its check to run.
+function quietAddonUpdateChecks(project) {
+  const userDir = projectUserDir(project);
+  if (!userDir) return;
+  markGutChecked(project, userDir);
+  try {
+    if (!fs.existsSync(path.join(project, "addons", "dialogue_manager", "plugin.cfg"))) return;
+    const file = path.join(userDir, "dialogue_manager_user_config.json");
+    const config = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+    if (config && config.check_for_updates === false) return;
+    fs.mkdirSync(userDir, { recursive: true });
+    fs.writeFileSync(file, JSON.stringify({ ...(config || {}), check_for_updates: false }), "utf8");
+  } catch {
+    // The check runs.
+  }
+}
+
+function markGutChecked(project, userDir) {
   try {
     const local = path.join(project, "addons", "gut", "versions.json");
-    const settings = path.join(project, "project.godot");
-    if (!fs.existsSync(local) || !fs.existsSync(settings)) return;
-    const text = fs.readFileSync(settings, "utf8");
-    const name = /^config\/name="([^"]*)"$/m.exec(text);
-    if (!name || /^config\/use_custom_user_dir=true$/m.test(text)) return;
-    const file = path.join(godotUserDataDir(name[1]), "gut_temp_directory", "versions.json");
+    if (!fs.existsSync(local)) return;
+    const file = path.join(userDir, "gut_temp_directory", "versions.json");
     const now = Math.floor(Date.now() / 1000);
     if (fs.existsSync(file)) {
       const cached = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -128,7 +152,7 @@ async function runGodotStep(godotBin, name, args, options = {}) {
   console.log("");
   console.log(`==> ${name}`);
   const at = args.indexOf("--path");
-  if (at >= 0 && args[at + 1]) markGutChecked(path.resolve(options.cwd || ROOT, args[at + 1]));
+  if (at >= 0 && args[at + 1]) quietAddonUpdateChecks(path.resolve(options.cwd || ROOT, args[at + 1]));
   const result = await run(godotBin, args, options);
   if (result.code !== 0) {
     fail(`${name} failed with exit code ${result.code}`);
@@ -257,7 +281,7 @@ module.exports = {
   resolveGodotBin,
   engineErrorLines,
   godotUserDataDir,
-  markGutChecked,
+  quietAddonUpdateChecks,
   run,
   runGodotStep,
   importProject,
