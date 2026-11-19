@@ -41,15 +41,19 @@ MFarm (`games/mfarm/`) carries over everything its Unity predecessor
 MFarmDemo shipped, under `games/mfarm/game/unity/`:
 
 - the "Fantastic Farm RPG game assets" (characters, maps, buildings, items,
-  crops, trees, the interface) and the music and sounds, as provided with the
+  crops, trees, the interface) and the music and sounds that came with the
   Unity Learn China MFarm course (https://learn.u3d.cn/tutorial/MFarmCourse);
 - the Fantasy Cursor Pack;
-- the fonts GNU Unifont 14.0.01 (the interface font, licensed under the
+- the fonts Chusung and Gongfan;
+- the font GNU Unifont 14.0.01 (the interface font), licensed under the
   GNU GPL 2 or later with the font embedding exception, or the SIL Open Font
-  License 1.1), Chusung and Gongfan.
+  License 1.1.
 
-Their terms are those their authors set; check them before releasing MFarm
-outside of personal use.
+The project owner bought the art, music and sounds, the cursor pack and the
+Chusung and Gongfan fonts with licences that allow commercial use. Every asset
+the owner brings into this repository is either bought that way or free for
+commercial use. Bought licences belong to the owner and do not pass to anyone
+who copies these files from the repository.
 
 ## Development-only dependencies
 
