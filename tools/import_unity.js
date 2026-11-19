@@ -8,13 +8,15 @@
 // the folders whose every sprite gets an AtlasTexture, the scenes and prefabs
 // to convert (tilemaps into TileMapLayers of one shared TileSet, sprites,
 // colliders, animators, and the MonoBehaviours the game maps onto scenes of its
-// own), the animator controllers to turn into AnimationLibrary resources and
+// own), the animator controllers (and folders of loose clips) to turn into
+// AnimationLibrary resources and
 // the ScriptableObject folders to dump as JSON. Everything is written under
 // games/<id>/<destination>/, which the import owns and rewrites; the JSON
 // dumps of data and scene trees go to artifacts/<id>/unity_import/ for the
 // game's own porting work. Unity scripts are never translated: the game
 // rewrites its logic in GDScript and maps it in `scripts`.
 //
+// Godot's .import and .uid files in the destination survive a run.
 // --dry-run lists what would be written and writes nothing. WAV files larger
 // than `compress_audio_over_bytes`, or in a format Godot cannot import (such as
 // ADPCM), are re-encoded to Ogg Vorbis with ffmpeg, which must then be on PATH.
@@ -33,7 +35,7 @@ const { parseSingle } = require("./lib/unity_yaml");
 const COPIED = new Set([".png", ".jpg", ".jpeg", ".wav", ".ogg", ".mp3", ".ttf", ".otf"]);
 const CONFIG_KEYS = new Set([
   "source", "destination", "pixels_per_unit", "y_sort_layer", "copy", "sprites", "scenes", "prefabs",
-  "animations", "data", "scripts", "skip_objects", "compress_audio_over_bytes", "paths", "id_maps",
+  "animations", "clip_libraries", "data", "scripts", "skip_objects", "compress_audio_over_bytes", "paths", "id_maps",
 ]);
 
 const USAGE = "Usage: node tools/import_unity.js [--game <id>] [--source <unity project>] [--dry-run]";
@@ -96,6 +98,26 @@ function resolveReferences(value, project, assets, converted) {
   return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, resolveReferences(entry, project, assets, converted)]));
 }
 
+// Every `.import` and `.uid` file under `root`: path -> content.
+function readGodotFiles(root) {
+  const files = new Map();
+  if (!fs.existsSync(root)) return files;
+  for (const entry of fs.readdirSync(root, { withFileTypes: true, recursive: true })) {
+    if (!entry.isFile() || !/\.(import|uid)$/.test(entry.name)) continue;
+    const file = path.join(entry.parentPath, entry.name);
+    files.set(file, fs.readFileSync(file));
+  }
+  return files;
+}
+
+// Puts back the files `readGodotFiles` kept whose asset or script was
+// written again.
+function restoreGodotFiles(files) {
+  for (const [file, content] of files) {
+    if (fs.existsSync(file.replace(/\.(import|uid)$/, ""))) fs.writeFileSync(file, content);
+  }
+}
+
 async function importUnity({ game, source, dryRun }) {
   const config = readConfig(game);
   const projectRoot = path.resolve(source || config.source || "");
@@ -112,6 +134,10 @@ async function importUnity({ game, source, dryRun }) {
     for (const key of ["copy", "sprites", "scenes", "prefabs", "animations", "data"]) console.log(`  ${key}: ${JSON.stringify(config[key] ?? [])}`);
     return;
   }
+  // Godot's own files beside what the import writes (`.import` settings and
+  // `.uid` files) keep the ids Godot gave them, so that an import run again
+  // changes only what changed.
+  const godotFiles = readGodotFiles(outputRoot);
   fs.rmSync(outputRoot, { recursive: true, force: true });
   fs.rmSync(artifactRoot, { recursive: true, force: true });
   const assets = new AssetWriter(project, game.root, destination, ppu, config.paths ?? {});
@@ -125,7 +151,7 @@ async function importUnity({ game, source, dryRun }) {
       if (wav && (!plainWav(file) || (compressOver > 0 && fs.statSync(file).size > compressOver))) {
         assets.assetPath(file, {
           extension: ".ogg",
-          convert: (from, to) => pending.push(run("ffmpeg", ["-y", "-loglevel", "error", "-i", from, "-c:a", "libvorbis", "-q:a", "6", to], { quiet: true })
+          convert: (from, to) => pending.push(run("ffmpeg", ["-y", "-loglevel", "error", "-i", from, "-map_metadata", "-1", "-fflags", "+bitexact", "-flags:a", "+bitexact", "-c:a", "libvorbis", "-q:a", "6", "-serial_offset", "1", to], { quiet: true })
             .then((result) => { if (result.code !== 0) fail(`ffmpeg could not compress ${from}: ${result.output}`); })),
         });
       } else {
@@ -151,6 +177,13 @@ async function importUnity({ game, source, dryRun }) {
   };
   for (const folder of config.animations ?? []) {
     for (const file of walk(assetsDir(folder), (full) => /\.(controller|overrideController)$/.test(full))) library(file);
+  }
+  // Clips no controller plays, such as those a script starts, one library per folder.
+  for (const folder of config.clip_libraries ?? []) {
+    const clips = new Map(walk(assetsDir(folder), (full) => full.endsWith(".anim")).map((file) => [path.basename(file, ".anim"), file]));
+    const resPath = `${assets.resRoot}/${assets.outPath(assetsDir(folder))}.tres`;
+    assets.write(resPath, animations.clipsLibrary(clips));
+    libraries.set(folder, { path: resPath, defaultClip: null });
   }
 
   const layers = sortingLayers(projectRoot);
@@ -217,6 +250,7 @@ async function importUnity({ game, source, dryRun }) {
   }));
   fs.writeFileSync(path.join(artifactRoot, "trees.json"), `${JSON.stringify(Object.fromEntries(Object.entries(trees).map(([key, tree]) => [key, strip(tree)])), null, 1)}\n`);
   await Promise.all(pending);
+  restoreGodotFiles(godotFiles);
 
   for (const warning of [...assets.warnings].sort()) console.warn(`warning: ${warning}`);
   console.log(`Imported ${assets.copied.size} file(s), ${assets.atlases.size} sprite(s), ${libraries.size} animation librar(ies), ${converted.size} scene(s) and prefab(s) into ${outputRoot}.`);

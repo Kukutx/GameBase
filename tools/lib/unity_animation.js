@@ -208,7 +208,6 @@ class AnimationConverter {
   // (.overrideController): the base controller's clips by their names, each
   // replaced by its override.
   library(controllerFile) {
-    const file = new GodotFile("gd_resource", { type: "AnimationLibrary" });
     let clips;
     if (controllerFile.endsWith(".overrideController")) {
       const override = [...this.project.load(controllerFile).values()].find((document) => document.type === "AnimatorOverrideController");
@@ -222,6 +221,12 @@ class AnimationConverter {
     } else {
       clips = this.controllerClips(controllerFile);
     }
+    return this.clipsLibrary(clips);
+  }
+
+  // An AnimationLibrary of clips given as name -> .anim file.
+  clipsLibrary(clips) {
+    const file = new GodotFile("gd_resource", { type: "AnimationLibrary" });
     const entries = [];
     for (const [clipName, clipFile] of [...clips.entries()].sort()) {
       const reference = this.addClip(file, clipFile, clipName);

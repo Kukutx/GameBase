@@ -250,8 +250,15 @@ class SceneConverter {
       const rotation = horizontal ? [["rotation", Math.PI / 2]] : [];
       file.section(`[node name="${name}" type="CollisionShape2D" parent=${quote(parent)}]`, [...position, ...rotation, ["shape", shape]]);
     } else if (collider.type === "PolygonCollider2D") {
-      (data.m_Points?.m_Paths ?? []).forEach((points, index) => {
-        const polygon = points.map((point) => this.point(point).map(num).join(", ")).join(", ");
+      (data.m_Points?.m_Paths ?? []).forEach((path, index) => {
+        let points = path.map((point) => this.point(point));
+        // Unity tolerates a path that crosses itself; Godot cannot split one
+        // into convex parts, so such a path becomes its convex hull.
+        if (!isSimplePolygon(points)) {
+          this.assets.warn(`${parent}/${name}: a self-crossing collider path is replaced by its convex hull`);
+          points = convexHull(points);
+        }
+        const polygon = points.map((point) => point.map(num).join(", ")).join(", ");
         file.section(`[node name="${name}${index ? `_${index + 1}` : ""}" type="CollisionPolygon2D" parent=${quote(parent)}]`, [...position, ["polygon", raw(`PackedVector2Array(${polygon})`)]]);
       });
     } else if (collider.type === "EdgeCollider2D") {
@@ -344,6 +351,15 @@ class SceneConverter {
         return atlas ? file.extResource("Texture2D", atlas) : undefined;
       }
       default:
+        // `asset:<map>`: the asset's name, looked up in that id map.
+        if (String(kind).startsWith("asset:")) {
+          const asset = value?.guid ? this.project.asset(value.guid) : null;
+          if (!asset) return undefined;
+          const name = asset.relative.split("/").pop().replace(/\.[^.]+$/, "");
+          const id = this.options.idMaps?.[String(kind).slice(6)]?.[name];
+          if (id === undefined) this.assets.warn(`no ${kind} id for ${name}`);
+          return raw(`&${quote(id ?? name)}`);
+        }
         if (String(kind).startsWith("map:")) {
           const table = this.options.idMaps?.[String(kind).slice(4)] ?? {};
           // 0 and empty are Unity's "none".
@@ -361,4 +377,41 @@ class SceneConverter {
   }
 }
 
-module.exports = { SceneConverter, sanitize };
+// Whether no two edges of the closed path `points` ([x, y] each) cross,
+// other than neighbours meeting at their shared corner.
+function isSimplePolygon(points) {
+  const count = points.length;
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const intersects = (p1, p2, p3, p4) => {
+    const d1 = cross(p3, p4, p1);
+    const d2 = cross(p3, p4, p2);
+    const d3 = cross(p1, p2, p3);
+    const d4 = cross(p1, p2, p4);
+    return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+  };
+  for (let i = 0; i < count; i += 1) {
+    for (let j = i + 2; j < count; j += 1) {
+      if (i === 0 && j === count - 1) continue;
+      if (intersects(points[i], points[(i + 1) % count], points[j], points[(j + 1) % count])) return false;
+    }
+  }
+  return true;
+}
+
+// The convex hull of `points` ([x, y] each), counterclockwise (monotone chain).
+function convexHull(points) {
+  const sorted = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const half = (list) => {
+    const result = [];
+    for (const point of list) {
+      while (result.length >= 2 && cross(result[result.length - 2], result[result.length - 1], point) <= 0) result.pop();
+      result.push(point);
+    }
+    result.pop();
+    return result;
+  };
+  return half(sorted).concat(half([...sorted].reverse()));
+}
+
+module.exports = { SceneConverter, sanitize, isSimplePolygon, convexHull };
