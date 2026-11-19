@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Tree02/Tree02_Bottom.tres" id="2_Tree02_Bottom"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"broadleaf_stump"
+display_name = "Broadleaf Stump"
+description = "What is left of a broadleaf tree."
+item_type = 9
+icon = ExtResource("2_Tree02_Bottom")
+world_sprite = ExtResource("2_Tree02_Bottom")
+use_radius = 0
+can_pick_up = false
+can_drop = false
+can_carry = false
+price = 0
+sell_percentage = 0

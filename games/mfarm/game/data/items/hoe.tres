@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_Hoe.tres" id="2_icon_Hoe"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"hoe"
+display_name = "Hoe"
+description = "A hoe for digging the soil."
+item_type = 3
+icon = ExtResource("2_icon_Hoe")
+use_radius = 1
+can_pick_up = true
+can_drop = false
+can_carry = false
+price = 0
+sell_percentage = 0

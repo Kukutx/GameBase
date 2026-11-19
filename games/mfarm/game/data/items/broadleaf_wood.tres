@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_BroadleafWood.tres" id="2_icon_BroadleafWood"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Woods/BroadleafWood_Harvest.tres" id="3_BroadleafWood_Harvest"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"broadleaf_wood"
+display_name = "Broadleaf Wood"
+description = "Wood from a broadleaf tree."
+item_type = 1
+icon = ExtResource("2_icon_BroadleafWood")
+world_sprite = ExtResource("3_BroadleafWood_Harvest")
+use_radius = 2
+can_pick_up = true
+can_drop = true
+can_carry = true
+price = 15
+sell_percentage = 0.8

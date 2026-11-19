@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ControlAction" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/input/control_action.gd" id="1_control"]
+
+[resource]
+script = ExtResource("1_control")
+action = &"open_bag"
+display_name = "Bag"
+group = "Farm"
+key = 66
+secondary_key = 73

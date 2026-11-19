@@ -1,0 +1,59 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/events/status_line.gd" id="1_status_line"]
+[ext_resource type="Script" path="res://tiamat/core/ui/save_indicator.gd" id="2_save_indicator"]
+[ext_resource type="PackedScene" path="res://tiamat/core/ui/pause_menu.tscn" id="3_pause"]
+[ext_resource type="Script" path="res://game/ui/bag_menu.gd" id="4_bag_menu"]
+[ext_resource type="Script" path="res://game/ui/time_panel.gd" id="5_time_panel"]
+[ext_resource type="Script" path="res://game/ui/dialogue_box.gd" id="6_dialogue_box"]
+[ext_resource type="FontFile" path="res://game/unity/fonts/unifont-14.0.01.ttf" id="7_font"]
+
+[node name="HUD" type="CanvasLayer"]
+layer = 20
+
+[node name="SaveIndicator" type="Label" parent="."]
+script = ExtResource("2_save_indicator")
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 120.0
+offset_bottom = 16.0
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 8
+
+[node name="Status" type="Label" parent="."]
+script = ExtResource("1_status_line")
+shows_hints = true
+offset_left = 120.0
+offset_top = 6.0
+offset_right = 520.0
+offset_bottom = 20.0
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 8
+theme_override_colors/font_outline_color = Color(0.2, 0.12, 0.06, 1)
+theme_override_constants/outline_size = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="Prompt" type="Label" parent="."]
+visible = false
+offset_left = 120.0
+offset_top = 316.0
+offset_right = 520.0
+offset_bottom = 330.0
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 8
+theme_override_colors/font_outline_color = Color(0.2, 0.12, 0.06, 1)
+theme_override_constants/outline_size = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="TimePanel" type="Control" parent="."]
+script = ExtResource("5_time_panel")
+
+[node name="BagMenu" type="Control" parent="."]
+script = ExtResource("4_bag_menu")
+
+[node name="DialogueBox" type="Control" parent="."]
+script = ExtResource("6_dialogue_box")
+
+[node name="PauseMenu" parent="." instance=ExtResource("3_pause")]

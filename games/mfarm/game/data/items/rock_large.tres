@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Rocks/Rock01.tres" id="2_Rock01"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"rock_large"
+display_name = "Large Rock"
+description = "Break it with a pickaxe."
+item_type = 9
+icon = ExtResource("2_Rock01")
+world_sprite = ExtResource("2_Rock01")
+use_radius = 0
+can_pick_up = false
+can_drop = false
+can_carry = false
+price = 0
+sell_percentage = 0

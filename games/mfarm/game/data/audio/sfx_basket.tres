@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AudioCueData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/audio/audio_cue_data.gd" id="1_audio_cue_data"]
+[ext_resource type="AudioStream" path="res://game/unity/audio/Tools/Basket.wav" id="2_Basket"]
+
+[resource]
+script = ExtResource("1_audio_cue_data")
+id = &"sfx_basket"
+stream = ExtResource("2_Basket")
+volume_db = -14
+pitch_min = 1
+pitch_max = 1.2
+max_voices = 4

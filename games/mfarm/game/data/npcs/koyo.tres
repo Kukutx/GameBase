@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="MFarmNpcData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://game/npc/npc_data.gd" id="1_r"]
+[ext_resource type="Script" path="res://game/npc/schedule_entry.gd" id="2_r"]
+[ext_resource type="Script" path="res://game/npc/dialogue_line.gd" id="3_r"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animators/NPC/NPC_Girl_02.tres" id="4_r"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Shadow/Character_Shadow.tres" id="5_r"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Faces/Girl02-2.tres" id="6_r"]
+
+[sub_resource type="Resource" id="Entry_0"]
+script = ExtResource("2_r")
+hour = 3
+minute = 0
+location_id = &"market"
+cell = Vector2i(-10, -1)
+stop_animation = &""
+interactable = true
+
+[sub_resource type="Resource" id="Line_0"]
+script = ExtResource("3_r")
+speaker = "Koyo"
+text = "Hello, I am a merchant."
+portrait = ExtResource("6_r")
+on_left = true
+
+[resource]
+script = ExtResource("1_r")
+id = &"koyo"
+display_name = "Koyo"
+animations = ExtResource("4_r")
+clip_prefix = "Girl02_"
+shadow = ExtResource("5_r")
+walk_speed = 40.0
+start_location_id = &"market"
+start_cell = Vector2i(1, -1)
+schedule = Array[ExtResource("2_r")]([SubResource("Entry_0")])
+dialogue = Array[ExtResource("3_r")]([SubResource("Line_0")])
+shop_bag_id = &"koyo_shop"

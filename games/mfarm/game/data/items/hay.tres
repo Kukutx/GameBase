@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_Grass.tres" id="2_icon_Grass"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Grass/Grass_Harvest.tres" id="3_Grass_Harvest"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"hay"
+display_name = "Bundle of Hay"
+description = "Hay cut from weeds."
+item_type = 1
+icon = ExtResource("2_icon_Grass")
+world_sprite = ExtResource("3_Grass_Harvest")
+use_radius = 2
+can_pick_up = true
+can_drop = true
+can_carry = true
+price = 3
+sell_percentage = 1

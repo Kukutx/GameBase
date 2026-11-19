@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="MFarmNpcData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://game/npc/npc_data.gd" id="1_r"]
+[ext_resource type="Script" path="res://game/npc/schedule_entry.gd" id="2_r"]
+[ext_resource type="Script" path="res://game/npc/dialogue_line.gd" id="3_r"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animators/NPC/NPC_Girl_01.tres" id="4_r"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Shadow/Character_Shadow.tres" id="5_r"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Faces/Girl01-2.tres" id="6_r"]
+
+[sub_resource type="Resource" id="Entry_0"]
+script = ExtResource("2_r")
+hour = 8
+minute = 0
+location_id = &"beach"
+cell = Vector2i(-8, 6)
+stop_animation = &"Girl01_IdleDown"
+interactable = true
+
+[sub_resource type="Resource" id="Line_0"]
+script = ExtResource("3_r")
+speaker = "Mike"
+text = "Hello, I am Mike."
+portrait = ExtResource("6_r")
+on_left = true
+
+[resource]
+script = ExtResource("1_r")
+id = &"mike"
+display_name = "Mike"
+animations = ExtResource("4_r")
+clip_prefix = "Girl01_"
+shadow = ExtResource("5_r")
+walk_speed = 40.0
+start_location_id = &"beach"
+start_cell = Vector2i(0, -3)
+schedule = Array[ExtResource("2_r")]([SubResource("Entry_0")])
+dialogue = Array[ExtResource("3_r")]([SubResource("Line_0")])

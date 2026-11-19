@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MFarmCropData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/farm/crop_data.gd" id="1_crop_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Grass/Grass03.tres" id="2_Grass03"]
+[ext_resource type="PackedScene" path="res://game/unity/prefabs/item/Grass03.tscn" id="3_Grass03"]
+
+[resource]
+script = ExtResource("1_crop_data")
+id = &"grass_3"
+growth_days = PackedInt32Array(0)
+stage_sprites = Array[Texture2D]([ExtResource("2_Grass03")])
+stage_scenes = Array[PackedScene]([ExtResource("3_Grass03")])
+seasons = PackedInt32Array(0, 1, 2, 3)
+harvest_tools = Array[StringName]([&"sickle"])
+required_actions = PackedInt32Array(1)
+produced_items = Array[StringName]([&"hay"])
+produce_min = PackedInt32Array(1)
+produce_max = PackedInt32Array(2)
+spawn_radius = Vector2(0.5, 0.5)
+generate_at_player = false
+has_animation = false
+effect = 4
+effect_offset = Vector2(0, -20)
+sound_cue_id = &"sfx_reap"

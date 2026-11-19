@@ -636,7 +636,7 @@ offset = Vector2(-12, -28)
 z_index = 0
 z_as_relative = false
 script = ExtResource("21_storage_box")
-bag_id = &"ToolBox"
+bag_id = &"tool_box"
 box_index = 0
 
 [node name="Body" type="StaticBody2D" parent="Item Parent/Tool Box"]

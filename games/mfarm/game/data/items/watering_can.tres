@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_WateringCan.tres" id="2_icon_WateringCan"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"watering_can"
+display_name = "Watering Can"
+description = "Water dug soil so the crops grow."
+item_type = 7
+icon = ExtResource("2_icon_WateringCan")
+use_radius = 2
+can_pick_up = true
+can_drop = false
+can_carry = false
+price = 0
+sell_percentage = 0

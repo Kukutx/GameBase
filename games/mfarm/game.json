@@ -1,6 +1,10 @@
 {
   "id": "mfarm",
   "modules": [],
+  "autoloads": {
+    "Bags": "res://game/items/bag_service.gd",
+    "Farmland": "res://game/farm/farm_service.gd"
+  },
   "unity_import": {
     "source": "../MFarmDemo",
     "destination": "game/unity",
@@ -27,6 +31,9 @@
     "animations": [
       "Material Resources/Animators",
       "Material Resources/Animations/Item"
+    ],
+    "clip_libraries": [
+      "Material Resources/Animations/NPC/OldMan"
     ],
     "prefabs": [
       "Prefabs/Crop",
@@ -95,7 +102,7 @@
         "properties": {
           "boxBagData": [
             "bag_id",
-            "asset"
+            "asset:bags"
           ],
           "index": [
             "box_index",
@@ -172,6 +179,10 @@
         "1027": "hay",
         "1028": "chair_blueprint",
         "1029": "box_blueprint"
+      },
+      "bags": {
+        "ToolBox": "tool_box",
+        "ItemBox": "item_box"
       }
     }
   }

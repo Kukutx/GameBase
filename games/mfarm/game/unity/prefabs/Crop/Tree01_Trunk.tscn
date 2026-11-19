@@ -13,7 +13,7 @@ script = ExtResource("1_crop")
 [node name="Trigger" type="Area2D" parent="Tree01_Trunk"]
 
 [node name="Shape1" type="CollisionPolygon2D" parent="Tree01_Trunk/Trigger"]
-polygon = PackedVector2Array(12.146723, 6.058275, -10.213726, 6.486565, -6.998659, -25.974464, 6.514777, -25.633068, -9.257679, -5.950611, -0.125211, 6.621193, 10.902212, 6.791892, 10.980641, -6.984391)
+polygon = PackedVector2Array(-10.213726, 6.486565, -9.257679, -5.950611, -6.998659, -25.974464, 6.514777, -25.633068, 10.980641, -6.984391, 12.146723, 6.058275, 10.902212, 6.791892)
 
 [node name="Sprite" type="Sprite2D" parent="Tree01_Trunk"]
 texture = ExtResource("2_Tree01_Trunk")

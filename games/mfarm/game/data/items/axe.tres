@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_Chop.tres" id="2_icon_Chop"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"axe"
+display_name = "Axe"
+description = "An axe for chopping trees and stumps."
+item_type = 4
+icon = ExtResource("2_icon_Chop")
+use_radius = 1
+can_pick_up = true
+can_drop = false
+can_carry = false
+price = 0
+sell_percentage = 0
