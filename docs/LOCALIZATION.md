@@ -1,6 +1,6 @@
 # Localization
 
-GameBase separates interface localization from authored dialogue localization.
+Tiamat separates interface localization from authored dialogue localization.
 
 ## Supported UI locales
 
@@ -18,12 +18,12 @@ The settings menu exposes the locale selector and persists changes automatically
 Text is translated in the layer that owns it, so a string the foundation shows is translated once for every game:
 
 ```text
-gamebase/core/i18n/core.<locale>.po                 the core's text
-gamebase/modules/<module>/i18n/<module>.<locale>.po each module's text
+tiamat/core/i18n/core.<locale>.po                 the core's text
+tiamat/modules/<module>/i18n/<module>.<locale>.po each module's text
 games/<id>/game/i18n/ui.<locale>.po                 the game's own text, data and dialogue
 ```
 
-A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own; `node tools/link.js` writes that list from the catalogs under `gamebase/core/i18n/`, each listed module's `i18n/` and the game's `game/i18n/`. A module with no text of its own (`damage`) has no catalog. Farm1 registers the core, its eight module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; Ember Depths the core, `combat`, `dialogue`, `items`, `roguelite` and `skills` and its own; Iron Banners the core, `dialogue`, `rts` and `tactics` and its own; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
+A game registers, in `locale/translations` of its `project.godot`, the catalogs of the core, of every module it uses and its own; `node tools/link.js` writes that list from the catalogs under `tiamat/core/i18n/`, each listed module's `i18n/` and the game's `game/i18n/`. A module with no text of its own (`damage`) has no catalog. Farm1 registers the core, its eight module catalogs and `games/farm1/game/i18n/ui.zh_CN.po`; Ember Depths the core, `combat`, `dialogue`, `items`, `roguelite` and `skills` and its own; Iron Banners the core, `dialogue`, `rts` and `tactics` and its own; a game created by `node tools/new_game.js` starts with the core's catalog and its own.
 
 Scene-authored Control text participates in Godot translation automatically. Runtime-created text must use `tr(...)` or `TranslationServer.translate(...)` for translatable labels.
 
@@ -35,7 +35,7 @@ The check also keeps every entry in the right catalog. An entry has to translate
 
 ## What the coverage gate can and cannot see
 
-`tools/check_localization.js` reads a game's own `games/<id>/game/`, `gamebase/core/` and the modules the game uses (`gamebase/modules/<module>/`), and finds a string only in these positions:
+`tools/check_localization.js` reads a game's own `games/<id>/game/`, `tiamat/core/` and the modules the game uses (`tiamat/modules/<module>/`), and finds a string only in these positions:
 
 - in `.gd` scripts: every string literal that sits directly in the first argument of `tr("...")`, `GameEvents.toast("...")`, `GameEvents.toastf("...")` or `set_prompt("...")`, including both branches of a conditional, and the singular and plural literals of `tr_n("...", "...", count)`;
 - in `.gd` scripts: the default of an exported text property (`@export var display_name := "..."`) or text list (`@export var season_names := PackedStringArray([...])`) and a literal assigned to a text property from code (`interactable.prompt_text = "..."`);
@@ -93,4 +93,4 @@ Keep dialogue translation data separate from gameplay state. Translation changes
 2. Run `node tools/link.js`, which registers them in the game's `locale/translations`; the locale then appears in the language picker. If `GameSettingsService.LOCALE_NAMES` lacks the language's own name, add it there.
 3. Add/extend automated translation tests.
 4. Verify the locale through the settings menu and a real exported build.
-5. Run the game's GUT tests: `test_theme_font` names every character of the new catalogs that the game's font lacks (its theme's, else the core's). The core's font (`gamebase/core/ui/fonts/noto_sans_sc.woff2`) holds Simplified Chinese; for characters it lacks, run `node tools/subset_font.js --source <the full Noto Sans SC>` after adding the text, or give the game's theme a font of the locale's script.
+5. Run the game's GUT tests: `test_theme_font` names every character of the new catalogs that the game's font lacks (its theme's, else the core's). The core's font (`tiamat/core/ui/fonts/noto_sans_sc.woff2`) holds Simplified Chinese; for characters it lacks, run `node tools/subset_font.js --source <the full Noto Sans SC>` after adding the text, or give the game's theme a font of the locale's script.

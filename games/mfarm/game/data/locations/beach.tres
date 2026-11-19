@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WorldLocationData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/world/world_location_data.gd" id="1_location"]
+
+[resource]
+script = ExtResource("1_location")
+id = &"beach"
+display_name = "Beach"
+scene_path = "res://game/world/beach.tscn"
+type = 0
+weather_exposed = true
+default_spawn_id = &"arrival"

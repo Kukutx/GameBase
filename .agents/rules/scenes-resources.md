@@ -1,10 +1,10 @@
 ---
-path: "gamebase/**/*.tscn, gamebase/**/*.tres, games/*/game/**/*.tscn, games/*/game/**/*.tres"
+path: "tiamat/**/*.tscn, tiamat/**/*.tres, games/*/game/**/*.tscn, games/*/game/**/*.tres"
 ---
 
-# Scenes and resources (`gamebase/**/*.tscn`, `gamebase/**/*.tres`, `games/*/game/**/*.tscn`, `games/*/game/**/*.tres`)
+# Scenes and resources (`tiamat/**/*.tscn`, `tiamat/**/*.tres`, `games/*/game/**/*.tscn`, `games/*/game/**/*.tres`)
 
-The `.tscn` and `.tres` files under `gamebase/` and each game's `game/` were written as text rather than saved by the editor. Their headers carry `load_steps`, every `ext_resource` points at its file with `path=` and a readable id such as `id="1_player"`, none carries `uid=`, and nodes have no `unique_id`. New and edited files keep that shape. The engine behaviour described here was confirmed on Godot 4.7.2.
+The `.tscn` and `.tres` files under `tiamat/` and each game's `game/` were written as text rather than saved by the editor. Their headers carry `load_steps`, every `ext_resource` points at its file with `path=` and a readable id such as `id="1_player"`, none carries `uid=`, and nodes have no `unique_id`. New and edited files keep that shape. The engine behaviour described here was confirmed on Godot 4.7.2.
 
 ## P0
 

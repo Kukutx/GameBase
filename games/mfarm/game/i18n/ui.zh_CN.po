@@ -1,0 +1,302 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MFarm\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "A farm and a seaside town through the seasons, revived from the Unity MFarm demo"
+msgstr "四季流转的小农场和海边小镇，由 Unity 版 MFarm 演示重生而来"
+
+msgid "A bunch of sweet grapes."
+msgstr "一串甜甜的葡萄。"
+
+msgid "A fresh pink radish."
+msgstr "新鲜的紫萝卜。"
+
+msgid "A fresh potato."
+msgstr "新鲜的土豆。"
+
+msgid "A fresh turnip."
+msgstr "新鲜的白萝卜。"
+
+msgid "A hoe for digging the soil."
+msgstr "用来翻土的锄头。"
+
+msgid "A pickaxe for breaking rocks."
+msgstr "用来敲碎石头的十字镐。"
+
+msgid "A piece of stone."
+msgstr "一块石头。"
+
+msgid "Action Bar"
+msgstr "快捷栏"
+
+msgid "Action Bar Slot 1"
+msgstr "快捷栏第 1 格"
+
+msgid "Action Bar Slot 10"
+msgstr "快捷栏第 10 格"
+
+msgid "Action Bar Slot 2"
+msgstr "快捷栏第 2 格"
+
+msgid "Action Bar Slot 3"
+msgstr "快捷栏第 3 格"
+
+msgid "Action Bar Slot 4"
+msgstr "快捷栏第 4 格"
+
+msgid "Action Bar Slot 5"
+msgstr "快捷栏第 5 格"
+
+msgid "Action Bar Slot 6"
+msgstr "快捷栏第 6 格"
+
+msgid "Action Bar Slot 7"
+msgstr "快捷栏第 7 格"
+
+msgid "Action Bar Slot 8"
+msgstr "快捷栏第 8 格"
+
+msgid "Action Bar Slot 9"
+msgstr "快捷栏第 9 格"
+
+msgid "An axe for chopping trees and stumps."
+msgstr "这是砍树的斧头，也能砍树根。"
+
+msgid "Andy"
+msgstr "Andy"
+
+msgid "Axe"
+msgstr "斧头"
+
+msgid "Bag"
+msgstr "背包"
+
+msgid "Basket"
+msgstr "菜篮子"
+
+msgid "Beach"
+msgstr "海边"
+
+msgid "Break it with a pickaxe."
+msgstr "用十字镐敲碎它。"
+
+msgid "Broadleaf Seed"
+msgstr "阔叶种子"
+
+msgid "Broadleaf Stump"
+msgstr "阔叶树根"
+
+msgid "Broadleaf Wood"
+msgstr "阔叶木头"
+
+msgid "Bundle of Hay"
+msgstr "一捆草"
+
+msgid "Collect ripe crops with it."
+msgstr "收割工具，用来采收成熟的作物。"
+
+msgid "Cut them with a sickle."
+msgstr "用镰刀割掉它们。"
+
+msgid "Cut weeds with it."
+msgstr "用来割杂草。"
+
+msgid "Farm"
+msgstr "农场"
+
+msgid "Field"
+msgstr "田野"
+
+msgid "Furniture"
+msgstr "家具"
+
+msgid "Goods"
+msgstr "商品"
+
+msgid "Grape"
+msgstr "葡萄"
+
+msgid "Grape Seeds"
+msgstr "葡萄种子"
+
+msgid "Hay cut from weeds."
+msgstr "割杂草得到的草。"
+
+msgid "Hello, I am Make."
+msgstr "你好我是Make"
+
+msgid "Hello, I am Mike."
+msgstr "你好我是Mike"
+
+msgid "Hello, I am a merchant."
+msgstr "你好我是商人"
+
+msgid "Hello, I am the mayor."
+msgstr "你好我是镇长"
+
+msgid "Hoe"
+msgstr "锄头"
+
+msgid "Home"
+msgstr "家"
+
+msgid "How many"
+msgstr "数量"
+
+msgid "How many will you buy?"
+msgstr "要买多少？"
+
+msgid "How many will you sell?"
+msgstr "要卖多少？"
+
+msgid "Koyo"
+msgstr "Koyo"
+
+msgid "Large Rock"
+msgstr "大石头"
+
+msgid "Make"
+msgstr "Make"
+
+msgid "Market"
+msgstr "集市"
+
+msgid "Mayor"
+msgstr "镇长"
+
+msgid "Menu"
+msgstr "菜单"
+
+msgid "Mike"
+msgstr "Mike"
+
+msgid "Open the box"
+msgstr "打开箱子"
+
+msgid "Pickaxe"
+msgstr "十字镐"
+
+msgid "Pine Nut"
+msgstr "松子"
+
+msgid "Pine Stump"
+msgstr "针叶树根"
+
+msgid "Pine Wood"
+msgstr "针叶木头"
+
+msgid "Pink Radish"
+msgstr "紫萝卜"
+
+msgid "Pink Radish Seeds"
+msgstr "紫萝卜种子"
+
+msgid "Plant it to grow a broadleaf tree."
+msgstr "种下它会长成一棵阔叶树。"
+
+msgid "Plant it to grow a pine tree."
+msgstr "种下它会长成一棵针叶树。"
+
+msgid "Plant them in dug soil in spring or summer."
+msgstr "春天或夏天种在翻好的土里。"
+
+msgid "Plant them in dug soil in spring or summer. The vine bears fruit again after picking."
+msgstr "春天或夏天种在翻好的土里。采摘后葡萄藤还会再结果。"
+
+msgid "Plant them in dug soil in summer or winter."
+msgstr "夏天或冬天种在翻好的土里。"
+
+msgid "Potato"
+msgstr "土豆"
+
+msgid "Potato Seeds"
+msgstr "土豆种子"
+
+msgid "Press Space to continue"
+msgstr "按 空格 继续"
+
+msgid "Scenery"
+msgstr "景物"
+
+msgid "Seed"
+msgstr "种子"
+
+msgid "Sickle"
+msgstr "镰刀"
+
+msgid "Small Rock"
+msgstr "小石头"
+
+msgid "Stone"
+msgstr "石头"
+
+msgid "Storage Box Blueprint"
+msgstr "储物箱图纸"
+
+msgid "Takes 20 pine wood and 20 broadleaf wood to build. Stores items."
+msgstr "需要二十个针叶木头和二十个阔叶木头才能建造，可以用来存储物品。"
+
+msgid "Takes 20 pine wood to build."
+msgstr "需要二十个针叶木头才能建造。"
+
+msgid "Talk to %s"
+msgstr "和%s说话"
+
+msgid "The shop does not buy that"
+msgstr "商店不收这个"
+
+msgid "The shop does not have that many"
+msgstr "商店没有那么多"
+
+msgid "Tool"
+msgstr "工具"
+
+msgid "Turnip"
+msgstr "白萝卜"
+
+msgid "Turnip Seeds"
+msgstr "白萝卜种子"
+
+msgid "Use Item"
+msgstr "使用物品"
+
+msgid "Walk Slowly"
+msgstr "慢走"
+
+msgid "Water dug soil so the crops grow."
+msgstr "给翻好的土浇水，作物才会生长。"
+
+msgid "Watering Can"
+msgstr "水壶"
+
+msgid "Weeds"
+msgstr "杂草"
+
+msgid "What is left of a broadleaf tree."
+msgstr "阔叶树砍倒后剩下的树根。"
+
+msgid "What is left of a pine tree."
+msgstr "针叶树砍倒后剩下的树根。"
+
+msgid "Wood from a broadleaf tree."
+msgstr "阔叶树的木头。"
+
+msgid "Wood from a pine tree."
+msgstr "针叶树的木头。"
+
+msgid "Wooden Chair Blueprint"
+msgstr "木头椅子的图纸"
+
+msgid "You do not have enough money"
+msgstr "你的钱不够"
+
+msgid "You do not have that many"
+msgstr "你没有那么多"
+
+msgid "Your bag is full"
+msgstr "背包满了"

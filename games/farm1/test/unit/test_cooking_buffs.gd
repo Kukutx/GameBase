@@ -2,7 +2,7 @@ extends GutTest
 
 # Farm1's dishes, its buffs and how its player eats. How buffs change stats,
 # expire and are saved is tested on fixture content in
-# gamebase/modules/items/test/ and gamebase/modules/lifesim/test/
+# tiamat/modules/items/test/ and tiamat/modules/lifesim/test/
 # (test_cooking_buffs.gd).
 
 var _clock_snapshot: Dictionary

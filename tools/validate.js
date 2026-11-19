@@ -51,7 +51,7 @@ function step(title) {
 
 function checkEngine(version) {
   if (!version.startsWith("4.")) {
-    fail(`GameBase requires Godot 4.x; detected '${version}'.`);
+    fail(`Tiamat requires Godot 4.x; detected '${version}'.`);
   }
   const baseline = readTrimmed(".godot-version");
   if (!ENGINE_VERSION_RE.test(baseline)) {
@@ -108,10 +108,10 @@ async function validateProject(godot, game, { label, skipImport = false, skipSoa
 // games/ and runs every game check on it: the core must work on its own, and a
 // new game must pass validation as it is created.
 async function validateScaffold(godot) {
-  const out = tempFile("gamebase-new-game");
+  const out = tempFile("tiamat-new-game");
   try {
     const { createGame } = require("./new_game");
-    const game = createGame({ id: "scaffold-check", name: "GameBase New Game Check", out });
+    const game = createGame({ id: "scaffold-check", name: "Tiamat New Game Check", out });
     await validateGame(godot, game, {});
   } finally {
     removeRecursive(out);
@@ -202,11 +202,11 @@ async function validateRepository(godot, version) {
 
   step("Game project settings");
   const stale = listGameIds().filter((id) => !projectInSync(loadGame(id))).map((id) => `games/${id}`);
-  if (!projectInSync(templateGame())) stale.push("gamebase/templates/new_game");
+  if (!projectInSync(templateGame())) stale.push("tiamat/templates/new_game");
   if (stale.length > 0) {
     fail(`${stale.join(", ")}: project.godot or .gutconfig.json does not hold the autoloads, translation catalogs, addon plugins and test directories its manifests give. Run node tools/link.js and commit the result.`);
   }
-  console.log("Every game's and the template's autoloads, catalogs and plugins follow gamebase.json and game.json.");
+  console.log("Every game's and the template's autoloads, catalogs and plugins follow tiamat.json and game.json.");
 
   step("Reference pages");
   const staleReference = stalePages();

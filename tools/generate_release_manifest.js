@@ -9,7 +9,7 @@ const { targetsFor } = require("./package_release");
 const REQUIRED_PACKAGE_FILES = [
   "BUILD_INFO.json",
   "THIRD_PARTY_NOTICES.md",
-  "licenses/GAMEBASE_LICENSE.txt",
+  "licenses/TIAMAT_LICENSE.txt",
   "licenses/GODOT_LICENSE.txt",
   "licenses/GODOT_COPYRIGHT.txt",
   "licenses/GODOT_VERSION.txt",

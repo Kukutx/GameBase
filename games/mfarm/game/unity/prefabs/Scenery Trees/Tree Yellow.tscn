@@ -1,0 +1,62 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_01.tres" id="1_pink_01"]
+[ext_resource type="Script" path="res://game/world/item_fader.gd" id="2_item_fader"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animators/Scenery Tree/Tree Yellow.tres" id="3_Tree_Yellow"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/Tree_Trunk.tres" id="4_Tree_Trunk"]
+
+[sub_resource type="RectangleShape2D" id="Rect_1"]
+size = Vector2(180, 120)
+
+[sub_resource type="RectangleShape2D" id="Rect_2"]
+size = Vector2(26, 45)
+
+[sub_resource type="CircleShape2D" id="Circle_3"]
+radius = 14
+
+[node name="Tree Yellow" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Tree Yellow" type="Node2D" parent="."]
+position = Vector2(-192.59386, 189.24538)
+y_sort_enabled = true
+
+[node name="Trigger" type="Area2D" parent="Tree Yellow"]
+
+[node name="Shape1" type="CollisionShape2D" parent="Tree Yellow/Trigger"]
+position = Vector2(0, -72)
+shape = SubResource("Rect_1")
+
+[node name="Shape2" type="CollisionShape2D" parent="Tree Yellow/Trigger"]
+position = Vector2(-0.8, 7)
+shape = SubResource("Rect_2")
+
+[node name="Top" type="Sprite2D" parent="Tree Yellow"]
+texture = ExtResource("1_pink_01")
+centered = false
+offset = Vector2(-97, -135)
+z_index = 1
+z_as_relative = false
+script = ExtResource("2_item_fader")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Tree Yellow/Top"]
+root_node = NodePath("..")
+libraries = {
+&"": ExtResource("3_Tree_Yellow")
+}
+autoplay = "tree_yellow"
+
+[node name="Tree_Trunk" type="Sprite2D" parent="Tree Yellow"]
+position = Vector2(0, 41.2)
+texture = ExtResource("4_Tree_Trunk")
+centered = false
+offset = Vector2(-59.5, -78.4)
+z_index = 0
+z_as_relative = false
+script = ExtResource("2_item_fader")
+
+[node name="Body" type="StaticBody2D" parent="Tree Yellow/Tree_Trunk"]
+
+[node name="Shape1" type="CollisionShape2D" parent="Tree Yellow/Tree_Trunk/Body"]
+position = Vector2(0, -3.6)
+shape = SubResource("Circle_3")

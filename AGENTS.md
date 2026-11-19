@@ -20,11 +20,11 @@ This file is the smallest routing layer every task in this repository sees. It h
 
 | Target path | Read this rule first |
 | --- | --- |
-| `gamebase/**/*.gd`, `games/*/game/**/*.gd`, `games/*/test/**/*.gd` | `.agents/rules/gdscript.md` |
-| `gamebase/**/*.tscn`, `gamebase/**/*.tres`, `games/*/game/**/*.tscn`, `games/*/game/**/*.tres` | `.agents/rules/scenes-resources.md` |
-| `gamebase/core/save/**` | `.agents/rules/save.md` |
-| `gamebase/core/i18n/**`, `gamebase/modules/*/i18n/**`, `games/*/game/i18n/**` | `.agents/rules/localization.md` |
-| `gamebase/core/test/**`, `gamebase/modules/*/test/**`, `games/*/test/**` | `.agents/rules/testing.md` |
+| `tiamat/**/*.gd`, `games/*/game/**/*.gd`, `games/*/test/**/*.gd` | `.agents/rules/gdscript.md` |
+| `tiamat/**/*.tscn`, `tiamat/**/*.tres`, `games/*/game/**/*.tscn`, `games/*/game/**/*.tres` | `.agents/rules/scenes-resources.md` |
+| `tiamat/core/save/**` | `.agents/rules/save.md` |
+| `tiamat/core/i18n/**`, `tiamat/modules/*/i18n/**`, `games/*/game/i18n/**` | `.agents/rules/localization.md` |
+| `tiamat/core/test/**`, `tiamat/modules/*/test/**`, `games/*/test/**` | `.agents/rules/testing.md` |
 | `tools/**` | `.agents/rules/tools.md` |
 | `.github/workflows/**` | `.agents/rules/ci-performance.md` |
 | `docs/**` | `.agents/rules/docs.md` |
@@ -40,7 +40,7 @@ A path that matches several rows needs each matching rule. For paths not listed,
 | Adding or changing natural-language comments in project-owned code | `.agents/rules/project-profile.md#default-evolution-strategy-and-language`; generated files and vendored addon sources are not rewritten for this |
 | Authorization, high-risk actions, dependencies and versions, necessary-synchronization boundaries, evolution strategy or general engineering judgment | `.agents/rules/project.md` |
 | Player-visible structure, content ids, the save format, audio cues, world travel, dialogue, licensed art or other domain semantics | `.agents/rules/project-domain.md` |
-| The repository layout: the foundation, its modules, the games under `games/`, their links and registry, or adding a game | `gamebase/README.md` |
+| The repository layout: the foundation, its modules, the games under `games/`, their links and registry, or adding a game | `tiamat/README.md` |
 | Adding or changing player-visible text | `.agents/rules/localization.md` |
 | Licences and third-party notices, redistribution of code or assets, what diagnostics record, store or platform policy, compliance wording or a compliance review | `.agents/prompts/agent-compliance-policy-assistant.md`; then the necessary facts about what the build really contains and the target platform |
 | Adding persistent state, or touching save or load | `.agents/rules/save.md` |

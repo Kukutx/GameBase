@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="MineFloorTable" format=3]
 
-[ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_floor_table.gd" id="1_table"]
-[ext_resource type="Script" path="res://gamebase/modules/lifesim/mining/mine_rock_tier.gd" id="2_rock"]
-[ext_resource type="Script" path="res://gamebase/modules/combat/combat/enemy_tier.gd" id="3_enemy"]
+[ext_resource type="Script" path="res://tiamat/modules/lifesim/mining/mine_floor_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://tiamat/modules/lifesim/mining/mine_rock_tier.gd" id="2_rock"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="3_enemy"]
 
 [sub_resource type="Resource" id="rock_iridium_rock"]
 script = ExtResource("2_rock")

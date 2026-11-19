@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MFarmBlueprintData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/items/blueprint_data.gd" id="1_blueprint_data"]
+[ext_resource type="PackedScene" path="res://game/unity/prefabs/Furniture Item/Chair.tscn" id="2_Chair"]
+
+[resource]
+script = ExtResource("1_blueprint_data")
+id = &"chair_blueprint"
+resources = Array[StringName]([&"needle_wood"])
+amounts = PackedInt32Array(20)
+scene = ExtResource("2_Chair")

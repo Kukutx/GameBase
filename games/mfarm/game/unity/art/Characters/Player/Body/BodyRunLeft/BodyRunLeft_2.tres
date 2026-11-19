@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft.png" id="1_BodyRunLeft"]
+
+[resource]
+atlas = ExtResource("1_BodyRunLeft")
+region = Rect2(80, 0, 40, 60)
+filter_clip = true
+metadata/pivot = Vector2(20, 60)
+metadata/pixels_per_unit = 20

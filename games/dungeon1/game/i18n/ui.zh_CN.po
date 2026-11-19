@@ -7,8 +7,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-msgid "A dungeon delve on GameBase"
-msgstr "基于 GameBase 的地城探险"
+msgid "A dungeon delve on Tiamat"
+msgstr "基于 Tiamat 的地城探险"
 
 msgid "Ember Camp"
 msgstr "余烬营地"

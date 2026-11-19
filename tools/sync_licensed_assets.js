@@ -30,7 +30,7 @@ function syncLicensedAssets({ game, overrides }) {
   if (!config) fail(`games/${game.id}/game.json has no licensed_art.`);
   const sources = { ...config.sources, ...overrides };
   const destinationRoot = gamePath(game, "game", "art", "licensed");
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "gamebase-licensed-assets-"));
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "tiamat-licensed-assets-"));
   const extracted = new Map(); // archive path -> extraction directory
   fs.mkdirSync(destinationRoot, { recursive: true });
   try {

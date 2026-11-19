@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="GameDefinition" load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/session/game_definition.gd" id="1_definition"]
+[ext_resource type="Resource" path="res://game/data/content.tres" id="2_content"]
+[ext_resource type="Script" path="res://tiamat/core/time/game_calendar.gd" id="3_calendar"]
+[ext_resource type="Resource" path="res://game/data/controls/use_item.tres" id="c0"]
+[ext_resource type="Resource" path="res://game/data/controls/walk.tres" id="c1"]
+[ext_resource type="Resource" path="res://game/data/controls/open_bag.tres" id="c2"]
+[ext_resource type="Resource" path="res://game/data/controls/interact.tres" id="c3"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_1.tres" id="c4"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_2.tres" id="c5"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_3.tres" id="c6"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_4.tres" id="c7"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_5.tres" id="c8"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_6.tres" id="c9"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_7.tres" id="c10"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_8.tres" id="c11"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_9.tres" id="c12"]
+[ext_resource type="Resource" path="res://game/data/controls/slot_10.tres" id="c13"]
+
+[sub_resource type="Resource" id="Calendar"]
+script = ExtResource("3_calendar")
+season_names = PackedStringArray("Spring", "Summer", "Autumn", "Winter")
+days_per_season = 90
+days_per_week = 7
+real_seconds_per_game_minute = 6.0
+night_starts_at = 1140
+night_ends_at = 300
+wake_minute = 420
+
+[resource]
+script = ExtResource("1_definition")
+content = [ExtResource("2_content")]
+start_location_id = &"beach"
+home_location_id = &"home"
+home_spawn_id = &"arrival"
+calendar = SubResource("Calendar")
+start_day = 1
+start_minute_of_day = 420
+save_slots = 3
+world_seed = 1
+controls = Array[Resource]([ExtResource("c0"), ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4"), ExtResource("c5"), ExtResource("c6"), ExtResource("c7"), ExtResource("c8"), ExtResource("c9"), ExtResource("c10"), ExtResource("c11"), ExtResource("c12"), ExtResource("c13")])

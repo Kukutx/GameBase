@@ -12,13 +12,13 @@ func _read_text(path: String) -> String:
 func test_project_config_has_no_local_development_references() -> void:
 	var project := _read_text("res://project.godot")
 	assert_false(project.contains("res://.dev/"), "project.godot must never reference local .dev content")
-	assert_true(project.contains('Transition="*res://gamebase/core/world/scene_transition.gd"'))
+	assert_true(project.contains('Transition="*res://tiamat/core/world/scene_transition.gd"'))
 
 # The core, each module and the game translate their own text; the game
 # registers all of their catalogs and the strings of every layer translate.
 func test_layer_catalogs_are_registered_and_translate() -> void:
 	var catalogs: PackedStringArray = ProjectSettings.get_setting("internationalization/locale/translations", PackedStringArray())
-	for path: String in ["res://gamebase/core/i18n/core.zh_CN.po", "res://gamebase/modules/lifesim/i18n/lifesim.zh_CN.po", "res://game/i18n/ui.zh_CN.po"]:
+	for path: String in ["res://tiamat/core/i18n/core.zh_CN.po", "res://tiamat/modules/lifesim/i18n/lifesim.zh_CN.po", "res://game/i18n/ui.zh_CN.po"]:
 		assert_true(catalogs.has(path), "%s is registered" % path)
 		assert_true(ResourceLoader.exists(path), "%s exists" % path)
 	var previous := TranslationServer.get_locale()
@@ -30,10 +30,10 @@ func test_layer_catalogs_are_registered_and_translate() -> void:
 
 func test_input_audio_and_autosave_services_are_registered() -> void:
 	var project := _read_text("res://project.godot")
-	assert_true(project.contains('InputPrompts="*res://gamebase/core/input/input_prompt_service.gd"'))
-	assert_true(project.contains('GameAudio="*res://gamebase/core/audio/game_audio_service.gd"'))
-	assert_true(project.contains('AutoSave="*res://gamebase/core/save/auto_save_service.gd"'))
-	assert_true(project.contains('SupportBundle="*res://gamebase/core/diagnostics/support_bundle_service.gd"'))
+	assert_true(project.contains('InputPrompts="*res://tiamat/core/input/input_prompt_service.gd"'))
+	assert_true(project.contains('GameAudio="*res://tiamat/core/audio/game_audio_service.gd"'))
+	assert_true(project.contains('AutoSave="*res://tiamat/core/save/auto_save_service.gd"'))
+	assert_true(project.contains('SupportBundle="*res://tiamat/core/diagnostics/support_bundle_service.gd"'))
 
 func test_game_version_is_semver_and_reaches_diagnostics() -> void:
 	var version := String(ProjectSettings.get_setting("application/config/version", ""))
@@ -45,7 +45,7 @@ func test_game_version_is_semver_and_reaches_diagnostics() -> void:
 
 func test_release_diagnostics_are_configured() -> void:
 	var project := _read_text("res://project.godot")
-	assert_true(project.contains('GameDiagnostics="*res://gamebase/core/diagnostics/game_diagnostics.gd"'))
+	assert_true(project.contains('GameDiagnostics="*res://tiamat/core/diagnostics/game_diagnostics.gd"'))
 	assert_true(bool(ProjectSettings.get_setting("debug/file_logging/enable_file_logging.pc", true)))
 	assert_true(project.contains('file_logging/log_path="user://logs/farm1.log"'))
 	assert_eq(int(ProjectSettings.get_setting("debug/file_logging/max_log_files", 5)), 5)
@@ -59,7 +59,7 @@ func test_unit_run_does_not_inherit_the_saved_language_settings_or_profile() -> 
 	var config: Variant = JSON.parse_string(_read_text("res://.gutconfig.json"))
 	assert_true(config is Dictionary)
 	if config is Dictionary:
-		assert_eq(String((config as Dictionary).get("pre_run_script", "")), "res://gamebase/core/test/gut_pre_run.gd")
+		assert_eq(String((config as Dictionary).get("pre_run_script", "")), "res://tiamat/core/test/gut_pre_run.gd")
 	assert_eq(GameSettings.locale, "en")
 	assert_eq(TranslationServer.get_locale(), "en")
 	assert_eq(GameSettings.settings_path, "user://test_run/settings.json", "the run keeps settings of its own")
@@ -69,7 +69,7 @@ func test_unit_run_does_not_inherit_the_saved_language_settings_or_profile() -> 
 	for runtime_script: String in DirAccess.get_files_at("res://test/runtime"):
 		if runtime_script.get_extension() == "gd":
 			var script := load("res://test/runtime".path_join(runtime_script)) as Script
-			assert_eq(script.get_base_script().resource_path, "res://gamebase/core/test/runtime_smoke.gd", runtime_script)
+			assert_eq(script.get_base_script().resource_path, "res://tiamat/core/test/runtime_smoke.gd", runtime_script)
 
 func test_project_uses_web_compatible_renderer() -> void:
 	var project := _read_text("res://project.godot")
@@ -88,8 +88,8 @@ func test_export_presets_cover_supported_release_targets() -> void:
 	assert_eq(filters.size(), 3, "each of the three presets has an exclude filter")
 	for required_exclusion: String in [
 		"test/*",
-		"gamebase/core/test/*",
-		"gamebase/modules/*/test/*",
+		"tiamat/core/test/*",
+		"tiamat/modules/*/test/*",
 		"addons/gut/*",
 		"game/art/licensed/*",
 		".gutconfig.json",

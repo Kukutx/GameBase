@@ -1,0 +1,258 @@
+[gd_resource type="AnimationLibrary" load_steps=49 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolDown/ReapToolDown_0.tres" id="1_ReapToolDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolDown/ReapToolDown_1.tres" id="2_ReapToolDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolDown/ReapToolDown_2.tres" id="3_ReapToolDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolDown/ReapToolDown_3.tres" id="4_ReapToolDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolDown/ReapToolDown_4.tres" id="5_ReapToolDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolDown/ReapToolDown_5.tres" id="6_ReapToolDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolDown/ReapToolDown_6.tres" id="7_ReapToolDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolDown/ReapToolDown_7.tres" id="8_ReapToolDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolLeft/ReapToolLeft_0.tres" id="9_ReapToolLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolLeft/ReapToolLeft_1.tres" id="10_ReapToolLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolLeft/ReapToolLeft_2.tres" id="11_ReapToolLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolLeft/ReapToolLeft_3.tres" id="12_ReapToolLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolLeft/ReapToolLeft_4.tres" id="13_ReapToolLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolLeft/ReapToolLeft_5.tres" id="14_ReapToolLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolLeft/ReapToolLeft_6.tres" id="15_ReapToolLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolLeft/ReapToolLeft_7.tres" id="16_ReapToolLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolRight/ReapToolRight_0.tres" id="17_ReapToolRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolRight/ReapToolRight_1.tres" id="18_ReapToolRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolRight/ReapToolRight_2.tres" id="19_ReapToolRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolRight/ReapToolRight_3.tres" id="20_ReapToolRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolRight/ReapToolRight_4.tres" id="21_ReapToolRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolRight/ReapToolRight_5.tres" id="22_ReapToolRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolRight/ReapToolRight_6.tres" id="23_ReapToolRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolRight/ReapToolRight_7.tres" id="24_ReapToolRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolUp/ReapToolUp_0.tres" id="25_ReapToolUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolUp/ReapToolUp_1.tres" id="26_ReapToolUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolUp/ReapToolUp_2.tres" id="27_ReapToolUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolUp/ReapToolUp_3.tres" id="28_ReapToolUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolUp/ReapToolUp_4.tres" id="29_ReapToolUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolUp/ReapToolUp_5.tres" id="30_ReapToolUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolUp/ReapToolUp_6.tres" id="31_ReapToolUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Tools/Reap/ReapToolUp/ReapToolUp_7.tres" id="32_ReapToolUp_7"]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "IdleDown"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_2"]
+resource_name = "IdleLeft"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_3"]
+resource_name = "IdleRight"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_4"]
+resource_name = "IdleUp"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_5"]
+resource_name = "RunDown"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_6"]
+resource_name = "RunLeft"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_7"]
+resource_name = "RunRight"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_8"]
+resource_name = "RunUp"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_9"]
+resource_name = "ToolDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_ReapToolDown_0"), ExtResource("2_ReapToolDown_1"), ExtResource("3_ReapToolDown_2"), ExtResource("4_ReapToolDown_3"), ExtResource("5_ReapToolDown_4"), ExtResource("6_ReapToolDown_5"), ExtResource("7_ReapToolDown_6"), ExtResource("8_ReapToolDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_10"]
+resource_name = "ToolLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("9_ReapToolLeft_0"), ExtResource("10_ReapToolLeft_1"), ExtResource("11_ReapToolLeft_2"), ExtResource("12_ReapToolLeft_3"), ExtResource("13_ReapToolLeft_4"), ExtResource("14_ReapToolLeft_5"), ExtResource("15_ReapToolLeft_6"), ExtResource("16_ReapToolLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_11"]
+resource_name = "ToolRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("17_ReapToolRight_0"), ExtResource("18_ReapToolRight_1"), ExtResource("19_ReapToolRight_2"), ExtResource("20_ReapToolRight_3"), ExtResource("21_ReapToolRight_4"), ExtResource("22_ReapToolRight_5"), ExtResource("23_ReapToolRight_6"), ExtResource("24_ReapToolRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_12"]
+resource_name = "ToolUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("25_ReapToolUp_0"), ExtResource("26_ReapToolUp_1"), ExtResource("27_ReapToolUp_2"), ExtResource("28_ReapToolUp_3"), ExtResource("29_ReapToolUp_4"), ExtResource("30_ReapToolUp_5"), ExtResource("31_ReapToolUp_6"), ExtResource("32_ReapToolUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:z_index")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [-1, 0]
+}
+
+[sub_resource type="Animation" id="Animation_13"]
+resource_name = "WalkDown"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_14"]
+resource_name = "WalkLeft"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_15"]
+resource_name = "WalkRight"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_16"]
+resource_name = "WalkUp"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[resource]
+_data = {
+&"IdleDown": SubResource("Animation_1"),
+&"IdleLeft": SubResource("Animation_2"),
+&"IdleRight": SubResource("Animation_3"),
+&"IdleUp": SubResource("Animation_4"),
+&"RunDown": SubResource("Animation_5"),
+&"RunLeft": SubResource("Animation_6"),
+&"RunRight": SubResource("Animation_7"),
+&"RunUp": SubResource("Animation_8"),
+&"ToolDown": SubResource("Animation_9"),
+&"ToolLeft": SubResource("Animation_10"),
+&"ToolRight": SubResource("Animation_11"),
+&"ToolUp": SubResource("Animation_12"),
+&"WalkDown": SubResource("Animation_13"),
+&"WalkLeft": SubResource("Animation_14"),
+&"WalkRight": SubResource("Animation_15"),
+&"WalkUp": SubResource("Animation_16")
+}

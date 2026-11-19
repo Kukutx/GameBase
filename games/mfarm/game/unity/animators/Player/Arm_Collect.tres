@@ -1,0 +1,598 @@
+[gd_resource type="AnimationLibrary" load_steps=113 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkDown/ArmWalkDown_0.tres" id="1_ArmWalkDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkLeft/ArmWalkLeft_0.tres" id="2_ArmWalkLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkRight/ArmWalkRight_0.tres" id="3_ArmWalkRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkUp/ArmWalkUp_0.tres" id="4_ArmWalkUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunDown/ArmRunDown_0.tres" id="5_ArmRunDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunDown/ArmRunDown_1.tres" id="6_ArmRunDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunDown/ArmRunDown_2.tres" id="7_ArmRunDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunDown/ArmRunDown_3.tres" id="8_ArmRunDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunDown/ArmRunDown_4.tres" id="9_ArmRunDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunDown/ArmRunDown_5.tres" id="10_ArmRunDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunDown/ArmRunDown_6.tres" id="11_ArmRunDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunDown/ArmRunDown_7.tres" id="12_ArmRunDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunLeft/ArmRunLeft_0.tres" id="13_ArmRunLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunLeft/ArmRunLeft_1.tres" id="14_ArmRunLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunLeft/ArmRunLeft_2.tres" id="15_ArmRunLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunLeft/ArmRunLeft_3.tres" id="16_ArmRunLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunLeft/ArmRunLeft_4.tres" id="17_ArmRunLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunLeft/ArmRunLeft_5.tres" id="18_ArmRunLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunLeft/ArmRunLeft_6.tres" id="19_ArmRunLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunLeft/ArmRunLeft_7.tres" id="20_ArmRunLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunRight/ArmRunRight_0.tres" id="21_ArmRunRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunRight/ArmRunRight_1.tres" id="22_ArmRunRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunRight/ArmRunRight_2.tres" id="23_ArmRunRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunRight/ArmRunRight_3.tres" id="24_ArmRunRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunRight/ArmRunRight_4.tres" id="25_ArmRunRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunRight/ArmRunRight_5.tres" id="26_ArmRunRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunRight/ArmRunRight_6.tres" id="27_ArmRunRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunRight/ArmRunRight_7.tres" id="28_ArmRunRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunUp/ArmRunUp_0.tres" id="29_ArmRunUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunUp/ArmRunUp_1.tres" id="30_ArmRunUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunUp/ArmRunUp_2.tres" id="31_ArmRunUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunUp/ArmRunUp_3.tres" id="32_ArmRunUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunUp/ArmRunUp_4.tres" id="33_ArmRunUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunUp/ArmRunUp_5.tres" id="34_ArmRunUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunUp/ArmRunUp_6.tres" id="35_ArmRunUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmRunUp/ArmRunUp_7.tres" id="36_ArmRunUp_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullDown/ArmPullDown_0.tres" id="37_ArmPullDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullDown/ArmPullDown_1.tres" id="38_ArmPullDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullDown/ArmPullDown_2.tres" id="39_ArmPullDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullDown/ArmPullDown_3.tres" id="40_ArmPullDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullDown/ArmPullDown_4.tres" id="41_ArmPullDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullDown/ArmPullDown_5.tres" id="42_ArmPullDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullDown/ArmPullDown_6.tres" id="43_ArmPullDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullDown/ArmPullDown_7.tres" id="44_ArmPullDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullLeft/ArmPullLeft_0.tres" id="45_ArmPullLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullLeft/ArmPullLeft_1.tres" id="46_ArmPullLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullLeft/ArmPullLeft_2.tres" id="47_ArmPullLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullLeft/ArmPullLeft_3.tres" id="48_ArmPullLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullLeft/ArmPullLeft_4.tres" id="49_ArmPullLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullLeft/ArmPullLeft_5.tres" id="50_ArmPullLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullLeft/ArmPullLeft_6.tres" id="51_ArmPullLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullLeft/ArmPullLeft_7.tres" id="52_ArmPullLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullRight/ArmPullRight_0.tres" id="53_ArmPullRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullRight/ArmPullRight_1.tres" id="54_ArmPullRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullRight/ArmPullRight_2.tres" id="55_ArmPullRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullRight/ArmPullRight_3.tres" id="56_ArmPullRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullRight/ArmPullRight_4.tres" id="57_ArmPullRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullRight/ArmPullRight_5.tres" id="58_ArmPullRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullRight/ArmPullRight_6.tres" id="59_ArmPullRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullRight/ArmPullRight_7.tres" id="60_ArmPullRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullUp/ArmPullUp_0.tres" id="61_ArmPullUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullUp/ArmPullUp_1.tres" id="62_ArmPullUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullUp/ArmPullUp_2.tres" id="63_ArmPullUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullUp/ArmPullUp_3.tres" id="64_ArmPullUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullUp/ArmPullUp_4.tres" id="65_ArmPullUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullUp/ArmPullUp_5.tres" id="66_ArmPullUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullUp/ArmPullUp_6.tres" id="67_ArmPullUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmPullUp/ArmPullUp_7.tres" id="68_ArmPullUp_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkDown/ArmWalkDown_1.tres" id="69_ArmWalkDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkDown/ArmWalkDown_2.tres" id="70_ArmWalkDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkDown/ArmWalkDown_3.tres" id="71_ArmWalkDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkDown/ArmWalkDown_4.tres" id="72_ArmWalkDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkDown/ArmWalkDown_5.tres" id="73_ArmWalkDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkDown/ArmWalkDown_6.tres" id="74_ArmWalkDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkDown/ArmWalkDown_7.tres" id="75_ArmWalkDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkLeft/ArmWalkLeft_1.tres" id="76_ArmWalkLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkLeft/ArmWalkLeft_2.tres" id="77_ArmWalkLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkLeft/ArmWalkLeft_3.tres" id="78_ArmWalkLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkLeft/ArmWalkLeft_4.tres" id="79_ArmWalkLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkLeft/ArmWalkLeft_5.tres" id="80_ArmWalkLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkLeft/ArmWalkLeft_6.tres" id="81_ArmWalkLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkLeft/ArmWalkLeft_7.tres" id="82_ArmWalkLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkRight/ArmWalkRight_1.tres" id="83_ArmWalkRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkRight/ArmWalkRight_2.tres" id="84_ArmWalkRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkRight/ArmWalkRight_3.tres" id="85_ArmWalkRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkRight/ArmWalkRight_4.tres" id="86_ArmWalkRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkRight/ArmWalkRight_5.tres" id="87_ArmWalkRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkRight/ArmWalkRight_6.tres" id="88_ArmWalkRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkRight/ArmWalkRight_7.tres" id="89_ArmWalkRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkUp/ArmWalkUp_1.tres" id="90_ArmWalkUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkUp/ArmWalkUp_2.tres" id="91_ArmWalkUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkUp/ArmWalkUp_3.tres" id="92_ArmWalkUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkUp/ArmWalkUp_4.tres" id="93_ArmWalkUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkUp/ArmWalkUp_5.tres" id="94_ArmWalkUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkUp/ArmWalkUp_6.tres" id="95_ArmWalkUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Arm/ArmWalkUp/ArmWalkUp_7.tres" id="96_ArmWalkUp_7"]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "IdleDown"
+length = 0.1
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_ArmWalkDown_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_2"]
+resource_name = "IdleLeft"
+length = 1
+loop_mode = 1
+step = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_ArmWalkLeft_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_3"]
+resource_name = "IdleRight"
+length = 1
+loop_mode = 1
+step = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("3_ArmWalkRight_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_4"]
+resource_name = "IdleUp"
+length = 1
+loop_mode = 1
+step = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_ArmWalkUp_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_5"]
+resource_name = "RunDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("5_ArmRunDown_0"), ExtResource("6_ArmRunDown_1"), ExtResource("7_ArmRunDown_2"), ExtResource("8_ArmRunDown_3"), ExtResource("9_ArmRunDown_4"), ExtResource("10_ArmRunDown_5"), ExtResource("11_ArmRunDown_6"), ExtResource("12_ArmRunDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_6"]
+resource_name = "RunLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("13_ArmRunLeft_0"), ExtResource("14_ArmRunLeft_1"), ExtResource("15_ArmRunLeft_2"), ExtResource("16_ArmRunLeft_3"), ExtResource("17_ArmRunLeft_4"), ExtResource("18_ArmRunLeft_5"), ExtResource("19_ArmRunLeft_6"), ExtResource("20_ArmRunLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_7"]
+resource_name = "RunRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("21_ArmRunRight_0"), ExtResource("22_ArmRunRight_1"), ExtResource("23_ArmRunRight_2"), ExtResource("24_ArmRunRight_3"), ExtResource("25_ArmRunRight_4"), ExtResource("26_ArmRunRight_5"), ExtResource("27_ArmRunRight_6"), ExtResource("28_ArmRunRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_8"]
+resource_name = "RunUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("29_ArmRunUp_0"), ExtResource("30_ArmRunUp_1"), ExtResource("31_ArmRunUp_2"), ExtResource("32_ArmRunUp_3"), ExtResource("33_ArmRunUp_4"), ExtResource("34_ArmRunUp_5"), ExtResource("35_ArmRunUp_6"), ExtResource("36_ArmRunUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_9"]
+resource_name = "ToolDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("37_ArmPullDown_0"), ExtResource("38_ArmPullDown_1"), ExtResource("39_ArmPullDown_2"), ExtResource("40_ArmPullDown_3"), ExtResource("41_ArmPullDown_4"), ExtResource("42_ArmPullDown_5"), ExtResource("43_ArmPullDown_6"), ExtResource("44_ArmPullDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_10"]
+resource_name = "ToolLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("45_ArmPullLeft_0"), ExtResource("46_ArmPullLeft_1"), ExtResource("47_ArmPullLeft_2"), ExtResource("48_ArmPullLeft_3"), ExtResource("49_ArmPullLeft_4"), ExtResource("50_ArmPullLeft_5"), ExtResource("51_ArmPullLeft_6"), ExtResource("52_ArmPullLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_11"]
+resource_name = "ToolRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("53_ArmPullRight_0"), ExtResource("54_ArmPullRight_1"), ExtResource("55_ArmPullRight_2"), ExtResource("56_ArmPullRight_3"), ExtResource("57_ArmPullRight_4"), ExtResource("58_ArmPullRight_5"), ExtResource("59_ArmPullRight_6"), ExtResource("60_ArmPullRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_12"]
+resource_name = "ToolUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("61_ArmPullUp_0"), ExtResource("62_ArmPullUp_1"), ExtResource("63_ArmPullUp_2"), ExtResource("64_ArmPullUp_3"), ExtResource("65_ArmPullUp_4"), ExtResource("66_ArmPullUp_5"), ExtResource("67_ArmPullUp_6"), ExtResource("68_ArmPullUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_13"]
+resource_name = "WalkDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_ArmWalkDown_0"), ExtResource("69_ArmWalkDown_1"), ExtResource("70_ArmWalkDown_2"), ExtResource("71_ArmWalkDown_3"), ExtResource("72_ArmWalkDown_4"), ExtResource("73_ArmWalkDown_5"), ExtResource("74_ArmWalkDown_6"), ExtResource("75_ArmWalkDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_14"]
+resource_name = "WalkLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("2_ArmWalkLeft_0"), ExtResource("76_ArmWalkLeft_1"), ExtResource("77_ArmWalkLeft_2"), ExtResource("78_ArmWalkLeft_3"), ExtResource("79_ArmWalkLeft_4"), ExtResource("80_ArmWalkLeft_5"), ExtResource("81_ArmWalkLeft_6"), ExtResource("82_ArmWalkLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_15"]
+resource_name = "WalkRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("3_ArmWalkRight_0"), ExtResource("83_ArmWalkRight_1"), ExtResource("84_ArmWalkRight_2"), ExtResource("85_ArmWalkRight_3"), ExtResource("86_ArmWalkRight_4"), ExtResource("87_ArmWalkRight_5"), ExtResource("88_ArmWalkRight_6"), ExtResource("89_ArmWalkRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_16"]
+resource_name = "WalkUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("4_ArmWalkUp_0"), ExtResource("90_ArmWalkUp_1"), ExtResource("91_ArmWalkUp_2"), ExtResource("92_ArmWalkUp_3"), ExtResource("93_ArmWalkUp_4"), ExtResource("94_ArmWalkUp_5"), ExtResource("95_ArmWalkUp_6"), ExtResource("96_ArmWalkUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[resource]
+_data = {
+&"IdleDown": SubResource("Animation_1"),
+&"IdleLeft": SubResource("Animation_2"),
+&"IdleRight": SubResource("Animation_3"),
+&"IdleUp": SubResource("Animation_4"),
+&"RunDown": SubResource("Animation_5"),
+&"RunLeft": SubResource("Animation_6"),
+&"RunRight": SubResource("Animation_7"),
+&"RunUp": SubResource("Animation_8"),
+&"ToolDown": SubResource("Animation_9"),
+&"ToolLeft": SubResource("Animation_10"),
+&"ToolRight": SubResource("Animation_11"),
+&"ToolUp": SubResource("Animation_12"),
+&"WalkDown": SubResource("Animation_13"),
+&"WalkLeft": SubResource("Animation_14"),
+&"WalkRight": SubResource("Animation_15"),
+&"WalkUp": SubResource("Animation_16")
+}

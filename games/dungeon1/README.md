@@ -1,6 +1,6 @@
 # Ember Depths
 
-The second game built on GameBase, of another genre: a dungeon delve. From a camp the player goes down into the depths one floor at a time, clears each floor's enemies with the weapon in the hotbar, and climbs back up the rope with what they dropped, to sell it and buy a better blade. It uses the core and the `items`, `skills`, `damage`, `combat` and `roguelite` modules, and keeps the foundation honest for a game that is not a life-sim.
+The second game built on Tiamat, of another genre: a dungeon delve. From a camp the player goes down into the depths one floor at a time, clears each floor's enemies with the weapon in the hotbar, and climbs back up the rope with what they dropped, to sell it and buy a better blade. It uses the core and the `items`, `skills`, `damage`, `combat` and `roguelite` modules, and keeps the foundation honest for a game that is not a life-sim.
 
 ## Run
 
@@ -10,7 +10,7 @@ From the repository root, link the foundation and the addons once, then open `ga
 node tools/link.js --game dungeon1
 ```
 
-The main scene is the core title screen, `res://gamebase/core/ui/title_screen.tscn`. `node tools/validate.js --game dungeon1` runs this game's checks; its runtime check plays the loop and ends with `Delve smoke passed.`. The version lives in `config/version` of `project.godot`; a release is the tag `game/dungeon1/v<version>`.
+The main scene is the core title screen, `res://tiamat/core/ui/title_screen.tscn`. `node tools/validate.js --game dungeon1` runs this game's checks; its runtime check plays the loop and ends with `Delve smoke passed.`. The version lives in `config/version` of `project.godot`; a release is the tag `game/dungeon1/v<version>`.
 
 ## Layout
 

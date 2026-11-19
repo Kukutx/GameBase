@@ -24,7 +24,7 @@ const { stripComments } = require("./check_layers");
 const ROOT = path.resolve(__dirname, "..");
 const MAX_LINES = 500;
 const MAX_TEST_LINES = 1000;
-const PAUSE_OWNER = "gamebase/core/input/input_lock.gd";
+const PAUSE_OWNER = "tiamat/core/input/input_lock.gd";
 
 // A call that loads a resource from the path it is given.
 const RESOURCE_LOAD = /(?:(?<![\w.])(?:preload|load)|\bResourceLoader\.(?:load|load_threaded_request|load_threaded_get))\s*\(/g;
@@ -58,7 +58,7 @@ function walk(dir, extension, out = []) {
 // The files with `extension` the guardrails cover: the foundation's and each
 // game's own.
 function filesOf(root, extension) {
-  const files = walk(path.join(root, "gamebase"), extension);
+  const files = walk(path.join(root, "tiamat"), extension);
   const games = path.join(root, "games");
   if (fs.existsSync(games)) {
     for (const id of fs.readdirSync(games)) {

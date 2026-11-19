@@ -1,0 +1,51 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://game/world/location.gd" id="1"]
+[ext_resource type="PackedScene" path="res://game/unity/scenes/home.tscn" id="2"]
+[ext_resource type="Script" path="res://game/farm/farm_grid.gd" id="3"]
+[ext_resource type="Script" path="res://game/npc/townsfolk.gd" id="4"]
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="5"]
+[ext_resource type="Script" path="res://tiamat/core/world/world_spawn_point.gd" id="6"]
+[ext_resource type="Script" path="res://tiamat/core/camera/camera_bounds.gd" id="7"]
+[ext_resource type="Script" path="res://game/world/teleport.gd" id="8"]
+[ext_resource type="AudioStream" path="res://game/unity/audio/AmbientSounds/indoors1.ogg" id="9"]
+[ext_resource type="FontFile" path="res://game/unity/fonts/unifont-14.0.01.ttf" id="10"]
+
+[node name="Home" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1")
+location_id = &"home"
+ambient = ExtResource("9")
+
+[node name="Map" parent="." instance=ExtResource("2")]
+
+[node name="FarmGrid" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("3")
+
+[node name="Townsfolk" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("4")
+
+[node name="Player" parent="." instance=ExtResource("5")]
+position = Vector2(141, 141)
+
+[node name="SpawnPoints" type="Node2D" parent="."]
+
+[node name="arrival" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(141, 141)
+script = ExtResource("6")
+spawn_id = &"arrival"
+
+[node name="from_field" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(141, 141)
+script = ExtResource("6")
+spawn_id = &"from_field"
+
+[node name="CameraBounds" type="ReferenceRect" parent="."]
+offset_left = -420.0
+offset_top = -260.0
+offset_right = 420.0
+offset_bottom = 260.0
+mouse_filter = 2
+script = ExtResource("7")

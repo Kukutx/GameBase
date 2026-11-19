@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Furnitrue01/Furniture01/Furniture01_32 chair.tres" id="1_Furniture01_32_chair"]
+
+[sub_resource type="RectangleShape2D" id="Rect_1"]
+size = Vector2(15.98999, 17.049589)
+
+[node name="Chair" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Chair" type="Sprite2D" parent="."]
+texture = ExtResource("1_Furniture01_32_chair")
+centered = false
+offset = Vector2(-10, -36)
+z_index = 0
+z_as_relative = false
+
+[node name="Body" type="StaticBody2D" parent="Chair"]
+
+[node name="Shape1" type="CollisionShape2D" parent="Chair/Body"]
+position = Vector2(-0.095477, -10.485304)
+shape = SubResource("Rect_1")

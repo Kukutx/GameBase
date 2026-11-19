@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/player/cursor.gd" id="1_cursor"]
+
+[node name="Cursor" type="Node2D"]
+script = ExtResource("1_cursor")
+
+[node name="Preview" type="Sprite2D" parent="."]
+visible = false
+top_level = true
+z_index = 100
+centered = false
+
+[node name="Screen" type="CanvasLayer" parent="."]
+layer = 128
+
+[node name="Pointer" type="Sprite2D" parent="Screen"]
+centered = false

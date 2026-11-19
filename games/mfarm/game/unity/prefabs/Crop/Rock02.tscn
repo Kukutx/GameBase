@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/farm/crop.gd" id="1_crop"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Rocks/Rock02.tres" id="2_Rock02"]
+
+[node name="Rock02" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Rock02" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("1_crop")
+
+[node name="Trigger" type="Area2D" parent="Rock02"]
+
+[node name="Shape1" type="CollisionPolygon2D" parent="Rock02/Trigger"]
+polygon = PackedVector2Array(-0.084581, -28.74937, -13.884454, -9.408816, -12.405208, -3.560847, 3.025227, -0.372466, 13.67338, -5.278316, 13.292627, -13.625016)
+
+[node name="Sprite" type="Sprite2D" parent="Rock02"]
+texture = ExtResource("2_Rock02")
+centered = false
+offset = Vector2(-16.5, -29.039307)
+z_index = 0
+z_as_relative = false

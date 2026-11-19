@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Environments/Pool.png" id="1_Pool"]
+
+[resource]
+atlas = ExtResource("1_Pool")
+region = Rect2(0, 0, 82, 95)
+filter_clip = true
+metadata/pivot = Vector2(41, 66.5)
+metadata/pixels_per_unit = 20

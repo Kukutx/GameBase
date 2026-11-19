@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="ShopData" load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://gamebase/modules/items/shop/shop_data.gd" id="1_shop"]
-[ext_resource type="Script" path="res://gamebase/modules/items/shop/shop_offer.gd" id="2_offer"]
-[ext_resource type="Script" path="res://gamebase/modules/lifesim/animals/animal_offer.gd" id="3_animal"]
+[ext_resource type="Script" path="res://tiamat/modules/items/shop/shop_data.gd" id="1_shop"]
+[ext_resource type="Script" path="res://tiamat/modules/items/shop/shop_offer.gd" id="2_offer"]
+[ext_resource type="Script" path="res://tiamat/modules/lifesim/animals/animal_offer.gd" id="3_animal"]
 
 [sub_resource type="Resource" id="Offer_chicken"]
 script = ExtResource("3_animal")

@@ -5,7 +5,7 @@ extends GutTest
 
 func test_definition_names_registered_locations() -> void:
 	var definition := GameDefinition.current()
-	assert_not_null(definition, "gamebase/game_definition names a GameDefinition")
+	assert_not_null(definition, "tiamat/game_definition names a GameDefinition")
 	assert_not_null(WorldLocationData.find(definition.start_location_id), "The start location is registered")
 	assert_not_null(WorldLocationData.find(definition.home_location_id), "The home location is registered")
 

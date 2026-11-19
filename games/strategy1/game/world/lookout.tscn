@@ -1,9 +1,9 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
-[ext_resource type="Script" path="res://gamebase/core/world/world_spawn_point.gd" id="2_spawn"]
-[ext_resource type="PackedScene" path="res://gamebase/core/world/scene_portal.tscn" id="3_portal"]
-[ext_resource type="Script" path="res://gamebase/core/camera/camera_bounds.gd" id="91_bounds"]
+[ext_resource type="Script" path="res://tiamat/core/world/world_spawn_point.gd" id="2_spawn"]
+[ext_resource type="PackedScene" path="res://tiamat/core/world/scene_portal.tscn" id="3_portal"]
+[ext_resource type="Script" path="res://tiamat/core/camera/camera_bounds.gd" id="91_bounds"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(300, 20)

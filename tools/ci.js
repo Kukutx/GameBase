@@ -202,15 +202,15 @@ function releaseNotes(game, tag) {
   const commits = (paths) => git(["log", "--no-merges", "--format=- %s (%h)", range, "--", ...paths]).split(/\r?\n/).filter(Boolean);
   const own = commits([`games/${game.id}`]);
   const foundation = commits([
-    "gamebase/core",
-    ...game.modules.map((module) => `gamebase/modules/${module}`),
+    "tiamat/core",
+    ...game.modules.map((module) => `tiamat/modules/${module}`),
     ...game.addons.map((addon) => `addons/${addon}`),
     "tools",
     ".godot-version",
   ]).filter((line) => !own.includes(line));
   const lines = [`Changes since ${previous ? previous.trim() : "the start of the project"}.`, ""];
   lines.push(`## ${gameName(game)}`, "", ...(own.length > 0 ? own : ["- No change of its own."]), "");
-  lines.push("## GameBase foundation", "", ...(foundation.length > 0 ? foundation : ["- No change."]), "");
+  lines.push("## Tiamat foundation", "", ...(foundation.length > 0 ? foundation : ["- No change."]), "");
   return lines.join("\n");
 }
 

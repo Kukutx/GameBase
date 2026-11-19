@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Furniture02/Bench.png" id="1_Bench"]
+
+[resource]
+atlas = ExtResource("1_Bench")
+region = Rect2(110, 48, 61, 36)
+filter_clip = true
+metadata/pivot = Vector2(30.5, 25.2)
+metadata/pixels_per_unit = 20

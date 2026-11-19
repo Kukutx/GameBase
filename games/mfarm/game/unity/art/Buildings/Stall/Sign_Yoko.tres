@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Buildings/Stall/Sign_Yoko.png" id="1_Sign_Yoko"]
+
+[resource]
+atlas = ExtResource("1_Sign_Yoko")
+region = Rect2(0, 0, 29, 33)
+filter_clip = true
+metadata/pivot = Vector2(14.5, 33)
+metadata/pixels_per_unit = 20

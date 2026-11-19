@@ -1,0 +1,598 @@
+[gd_resource type="AnimationLibrary" load_steps=113 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkDown/HairWalkDown_0.tres" id="1_HairWalkDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkLeft/HairWalkLeft_0.tres" id="2_HairWalkLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkRight/HairArmWalkRight_0.tres" id="3_HairArmWalkRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunUp/HairRunUp_0.tres" id="4_HairRunUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunDown/HairRunDown_0.tres" id="5_HairRunDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunDown/HairRunDown_1.tres" id="6_HairRunDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunDown/HairRunDown_2.tres" id="7_HairRunDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunDown/HairRunDown_3.tres" id="8_HairRunDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunDown/HairRunDown_4.tres" id="9_HairRunDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunDown/HairRunDown_5.tres" id="10_HairRunDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunDown/HairRunDown_6.tres" id="11_HairRunDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunDown/HairRunDown_7.tres" id="12_HairRunDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunLeft/HairRunLeft_0.tres" id="13_HairRunLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunLeft/HairRunLeft_1.tres" id="14_HairRunLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunLeft/HairRunLeft_2.tres" id="15_HairRunLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunLeft/HairRunLeft_3.tres" id="16_HairRunLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunLeft/HairRunLeft_4.tres" id="17_HairRunLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunLeft/HairRunLeft_5.tres" id="18_HairRunLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunLeft/HairRunLeft_6.tres" id="19_HairRunLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunLeft/HairRunLeft_7.tres" id="20_HairRunLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunRight/HairRunRight_0.tres" id="21_HairRunRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunRight/HairRunRight_1.tres" id="22_HairRunRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunRight/HairRunRight_2.tres" id="23_HairRunRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunRight/HairRunRight_3.tres" id="24_HairRunRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunRight/HairRunRight_4.tres" id="25_HairRunRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunRight/HairRunRight_5.tres" id="26_HairRunRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunRight/HairRunRight_6.tres" id="27_HairRunRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunRight/HairRunRight_7.tres" id="28_HairRunRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunUp/HairRunUp_1.tres" id="29_HairRunUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunUp/HairRunUp_2.tres" id="30_HairRunUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunUp/HairRunUp_3.tres" id="31_HairRunUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunUp/HairRunUp_4.tres" id="32_HairRunUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunUp/HairRunUp_5.tres" id="33_HairRunUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunUp/HairRunUp_6.tres" id="34_HairRunUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairRunUp/HairRunUp_7.tres" id="35_HairRunUp_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapDown/HairReapDown_0.tres" id="36_HairReapDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapDown/HairReapDown_1.tres" id="37_HairReapDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapDown/HairReapDown_2.tres" id="38_HairReapDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapDown/HairReapDown_3.tres" id="39_HairReapDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapDown/HairReapDown_4.tres" id="40_HairReapDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapDown/HairReapDown_5.tres" id="41_HairReapDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapDown/HairReapDown_6.tres" id="42_HairReapDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapDown/HairReapDown_7.tres" id="43_HairReapDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapLeft/HairReapLeft_0.tres" id="44_HairReapLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapLeft/HairReapLeft_1.tres" id="45_HairReapLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapLeft/HairReapLeft_2.tres" id="46_HairReapLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapLeft/HairReapLeft_3.tres" id="47_HairReapLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapLeft/HairReapLeft_4.tres" id="48_HairReapLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapLeft/HairReapLeft_5.tres" id="49_HairReapLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapLeft/HairReapLeft_6.tres" id="50_HairReapLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapLeft/HairReapLeft_7.tres" id="51_HairReapLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapRight/HairReapRight_0.tres" id="52_HairReapRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapRight/HairReapRight_1.tres" id="53_HairReapRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapRight/HairReapRight_2.tres" id="54_HairReapRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapRight/HairReapRight_3.tres" id="55_HairReapRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapRight/HairReapRight_4.tres" id="56_HairReapRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapRight/HairReapRight_5.tres" id="57_HairReapRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapRight/HairReapRight_6.tres" id="58_HairReapRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapRight/HairReapRight_7.tres" id="59_HairReapRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapUp/HairReapUp_0.tres" id="60_HairReapUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapUp/HairReapUp_1.tres" id="61_HairReapUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapUp/HairReapUp_2.tres" id="62_HairReapUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapUp/HairReapUp_3.tres" id="63_HairReapUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapUp/HairReapUp_4.tres" id="64_HairReapUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapUp/HairReapUp_5.tres" id="65_HairReapUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapUp/HairReapUp_6.tres" id="66_HairReapUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairReapUp/HairReapUp_7.tres" id="67_HairReapUp_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkDown/HairWalkDown_1.tres" id="68_HairWalkDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkDown/HairWalkDown_2.tres" id="69_HairWalkDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkDown/HairWalkDown_3.tres" id="70_HairWalkDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkDown/HairWalkDown_4.tres" id="71_HairWalkDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkDown/HairWalkDown_5.tres" id="72_HairWalkDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkDown/HairWalkDown_6.tres" id="73_HairWalkDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkDown/HairWalkDown_7.tres" id="74_HairWalkDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkLeft/HairWalkLeft_1.tres" id="75_HairWalkLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkLeft/HairWalkLeft_2.tres" id="76_HairWalkLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkLeft/HairWalkLeft_3.tres" id="77_HairWalkLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkLeft/HairWalkLeft_4.tres" id="78_HairWalkLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkLeft/HairWalkLeft_5.tres" id="79_HairWalkLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkLeft/HairWalkLeft_6.tres" id="80_HairWalkLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkLeft/HairWalkLeft_7.tres" id="81_HairWalkLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkRight/HairArmWalkRight_1.tres" id="82_HairArmWalkRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkRight/HairArmWalkRight_2.tres" id="83_HairArmWalkRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkRight/HairArmWalkRight_3.tres" id="84_HairArmWalkRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkRight/HairArmWalkRight_4.tres" id="85_HairArmWalkRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkRight/HairArmWalkRight_5.tres" id="86_HairArmWalkRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkRight/HairArmWalkRight_6.tres" id="87_HairArmWalkRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkRight/HairArmWalkRight_7.tres" id="88_HairArmWalkRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkUp/HairWalkUp_0.tres" id="89_HairWalkUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkUp/HairWalkUp_1.tres" id="90_HairWalkUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkUp/HairWalkUp_2.tres" id="91_HairWalkUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkUp/HairWalkUp_3.tres" id="92_HairWalkUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkUp/HairWalkUp_4.tres" id="93_HairWalkUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkUp/HairWalkUp_5.tres" id="94_HairWalkUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkUp/HairWalkUp_6.tres" id="95_HairWalkUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Hair/HairWalkUp/HairWalkUp_7.tres" id="96_HairWalkUp_7"]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "IdleDown"
+length = 0.1
+loop_mode = 0
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_HairWalkDown_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_2"]
+resource_name = "IdleLeft"
+length = 0.1
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_HairWalkLeft_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_3"]
+resource_name = "IdleRight"
+length = 0.1
+loop_mode = 0
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("3_HairArmWalkRight_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_4"]
+resource_name = "IdleUp"
+length = 0.1
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_HairRunUp_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_5"]
+resource_name = "RunDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("5_HairRunDown_0"), ExtResource("6_HairRunDown_1"), ExtResource("7_HairRunDown_2"), ExtResource("8_HairRunDown_3"), ExtResource("9_HairRunDown_4"), ExtResource("10_HairRunDown_5"), ExtResource("11_HairRunDown_6"), ExtResource("12_HairRunDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_6"]
+resource_name = "RunLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("13_HairRunLeft_0"), ExtResource("14_HairRunLeft_1"), ExtResource("15_HairRunLeft_2"), ExtResource("16_HairRunLeft_3"), ExtResource("17_HairRunLeft_4"), ExtResource("18_HairRunLeft_5"), ExtResource("19_HairRunLeft_6"), ExtResource("20_HairRunLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_7"]
+resource_name = "RunRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("21_HairRunRight_0"), ExtResource("22_HairRunRight_1"), ExtResource("23_HairRunRight_2"), ExtResource("24_HairRunRight_3"), ExtResource("25_HairRunRight_4"), ExtResource("26_HairRunRight_5"), ExtResource("27_HairRunRight_6"), ExtResource("28_HairRunRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_8"]
+resource_name = "RunUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("4_HairRunUp_0"), ExtResource("29_HairRunUp_1"), ExtResource("30_HairRunUp_2"), ExtResource("31_HairRunUp_3"), ExtResource("32_HairRunUp_4"), ExtResource("33_HairRunUp_5"), ExtResource("34_HairRunUp_6"), ExtResource("35_HairRunUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_9"]
+resource_name = "ToolDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("36_HairReapDown_0"), ExtResource("37_HairReapDown_1"), ExtResource("38_HairReapDown_2"), ExtResource("39_HairReapDown_3"), ExtResource("40_HairReapDown_4"), ExtResource("41_HairReapDown_5"), ExtResource("42_HairReapDown_6"), ExtResource("43_HairReapDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_10"]
+resource_name = "ToolLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("44_HairReapLeft_0"), ExtResource("45_HairReapLeft_1"), ExtResource("46_HairReapLeft_2"), ExtResource("47_HairReapLeft_3"), ExtResource("48_HairReapLeft_4"), ExtResource("49_HairReapLeft_5"), ExtResource("50_HairReapLeft_6"), ExtResource("51_HairReapLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_11"]
+resource_name = "ToolRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("52_HairReapRight_0"), ExtResource("53_HairReapRight_1"), ExtResource("54_HairReapRight_2"), ExtResource("55_HairReapRight_3"), ExtResource("56_HairReapRight_4"), ExtResource("57_HairReapRight_5"), ExtResource("58_HairReapRight_6"), ExtResource("59_HairReapRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_12"]
+resource_name = "ToolUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("60_HairReapUp_0"), ExtResource("61_HairReapUp_1"), ExtResource("62_HairReapUp_2"), ExtResource("63_HairReapUp_3"), ExtResource("64_HairReapUp_4"), ExtResource("65_HairReapUp_5"), ExtResource("66_HairReapUp_6"), ExtResource("67_HairReapUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_13"]
+resource_name = "WalkDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_HairWalkDown_0"), ExtResource("68_HairWalkDown_1"), ExtResource("69_HairWalkDown_2"), ExtResource("70_HairWalkDown_3"), ExtResource("71_HairWalkDown_4"), ExtResource("72_HairWalkDown_5"), ExtResource("73_HairWalkDown_6"), ExtResource("74_HairWalkDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_14"]
+resource_name = "WalkLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("2_HairWalkLeft_0"), ExtResource("75_HairWalkLeft_1"), ExtResource("76_HairWalkLeft_2"), ExtResource("77_HairWalkLeft_3"), ExtResource("78_HairWalkLeft_4"), ExtResource("79_HairWalkLeft_5"), ExtResource("80_HairWalkLeft_6"), ExtResource("81_HairWalkLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_15"]
+resource_name = "WalkRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("3_HairArmWalkRight_0"), ExtResource("82_HairArmWalkRight_1"), ExtResource("83_HairArmWalkRight_2"), ExtResource("84_HairArmWalkRight_3"), ExtResource("85_HairArmWalkRight_4"), ExtResource("86_HairArmWalkRight_5"), ExtResource("87_HairArmWalkRight_6"), ExtResource("88_HairArmWalkRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_16"]
+resource_name = "WalkUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("89_HairWalkUp_0"), ExtResource("90_HairWalkUp_1"), ExtResource("91_HairWalkUp_2"), ExtResource("92_HairWalkUp_3"), ExtResource("93_HairWalkUp_4"), ExtResource("94_HairWalkUp_5"), ExtResource("95_HairWalkUp_6"), ExtResource("96_HairWalkUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[resource]
+_data = {
+&"IdleDown": SubResource("Animation_1"),
+&"IdleLeft": SubResource("Animation_2"),
+&"IdleRight": SubResource("Animation_3"),
+&"IdleUp": SubResource("Animation_4"),
+&"RunDown": SubResource("Animation_5"),
+&"RunLeft": SubResource("Animation_6"),
+&"RunRight": SubResource("Animation_7"),
+&"RunUp": SubResource("Animation_8"),
+&"ToolDown": SubResource("Animation_9"),
+&"ToolLeft": SubResource("Animation_10"),
+&"ToolRight": SubResource("Animation_11"),
+&"ToolUp": SubResource("Animation_12"),
+&"WalkDown": SubResource("Animation_13"),
+&"WalkLeft": SubResource("Animation_14"),
+&"WalkRight": SubResource("Animation_15"),
+&"WalkUp": SubResource("Animation_16")
+}

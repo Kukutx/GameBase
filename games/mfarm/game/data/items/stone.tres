@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_Rock.tres" id="2_icon_Rock"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Rocks/Rock_Harvest.tres" id="3_Rock_Harvest"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"stone"
+display_name = "Stone"
+description = "A piece of stone."
+item_type = 1
+icon = ExtResource("2_icon_Rock")
+world_sprite = ExtResource("3_Rock_Harvest")
+use_radius = 2
+can_pick_up = true
+can_drop = true
+can_carry = true
+price = 2
+sell_percentage = 1

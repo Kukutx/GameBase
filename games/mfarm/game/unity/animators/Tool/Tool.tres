@@ -1,0 +1,117 @@
+[gd_resource type="AnimationLibrary" load_steps=17 format=3]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "IdleDown"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_2"]
+resource_name = "IdleLeft"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_3"]
+resource_name = "IdleRight"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_4"]
+resource_name = "IdleUp"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_5"]
+resource_name = "RunDown"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_6"]
+resource_name = "RunLeft"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_7"]
+resource_name = "RunRight"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_8"]
+resource_name = "RunUp"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_9"]
+resource_name = "ToolDown"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_10"]
+resource_name = "ToolLeft"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_11"]
+resource_name = "ToolRight"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_12"]
+resource_name = "ToolUp"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_13"]
+resource_name = "WalkDown"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_14"]
+resource_name = "WalkLeft"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_15"]
+resource_name = "WalkRight"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_16"]
+resource_name = "WalkUp"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[resource]
+_data = {
+&"IdleDown": SubResource("Animation_1"),
+&"IdleLeft": SubResource("Animation_2"),
+&"IdleRight": SubResource("Animation_3"),
+&"IdleUp": SubResource("Animation_4"),
+&"RunDown": SubResource("Animation_5"),
+&"RunLeft": SubResource("Animation_6"),
+&"RunRight": SubResource("Animation_7"),
+&"RunUp": SubResource("Animation_8"),
+&"ToolDown": SubResource("Animation_9"),
+&"ToolLeft": SubResource("Animation_10"),
+&"ToolRight": SubResource("Animation_11"),
+&"ToolUp": SubResource("Animation_12"),
+&"WalkDown": SubResource("Animation_13"),
+&"WalkLeft": SubResource("Animation_14"),
+&"WalkRight": SubResource("Animation_15"),
+&"WalkUp": SubResource("Animation_16")
+}

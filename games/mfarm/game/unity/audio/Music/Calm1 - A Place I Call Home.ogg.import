@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bh2k1n85x8nfk"
+path="res://.godot/imported/Calm1 - A Place I Call Home.ogg-a7ba4c0e3545cdda2e6fa24289d525f2.oggvorbisstr"
+
+[deps]
+
+source_file="res://game/unity/audio/Music/Calm1 - A Place I Call Home.ogg"
+dest_files=["res://.godot/imported/Calm1 - A Place I Call Home.ogg-a7ba4c0e3545cdda2e6fa24289d525f2.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

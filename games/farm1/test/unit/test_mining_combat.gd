@@ -27,7 +27,7 @@ func after_each() -> void:
 	Skills.load_save_data(_skill_snapshot)
 
 func test_pickaxe_breaks_stone_and_awards_mining_xp() -> void:
-	var scene := load("res://gamebase/modules/lifesim/mining/mining_node.tscn") as PackedScene
+	var scene := load("res://tiamat/modules/lifesim/mining/mining_node.tscn") as PackedScene
 	var node := scene.instantiate() as MiningNode
 	node.data = MiningNodeData.find(&"stone_rock")
 	node.persistent_id = &""
@@ -41,7 +41,7 @@ func test_pickaxe_breaks_stone_and_awards_mining_xp() -> void:
 	assert_eq(Skills.get_xp(&"mining"), 24)
 
 func test_slime_takes_melee_damage_drops_loot_and_awards_combat_xp() -> void:
-	var scene := load("res://gamebase/modules/combat/combat/hostile_creature.tscn") as PackedScene
+	var scene := load("res://tiamat/modules/combat/combat/hostile_creature.tscn") as PackedScene
 	var slime := scene.instantiate() as HostileCreature
 	slime.data = EnemyData.find(&"green_slime")
 	slime.persistent_id = &""

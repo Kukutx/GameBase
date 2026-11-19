@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_PinkRadish.tres" id="2_icon_PinkRadish"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Plants/PinkRadish_grow/PinkRadish_grow_5.tres" id="3_PinkRadish_grow_5"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"pink_radish"
+display_name = "Pink Radish"
+description = "A fresh pink radish."
+item_type = 1
+icon = ExtResource("2_icon_PinkRadish")
+world_sprite = ExtResource("3_PinkRadish_grow_5")
+use_radius = 0
+can_pick_up = true
+can_drop = true
+can_carry = true
+price = 35
+sell_percentage = 1.0

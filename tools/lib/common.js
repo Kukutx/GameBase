@@ -92,7 +92,7 @@ async function runGodotStep(godotBin, name, args, options = {}) {
 // error. Launching the editor once on an empty throwaway project writes the
 // settings before the real import, without touching the repository.
 async function prepareEditorSettings(godotBin) {
-  const project = tempFile("gamebase-editor-settings");
+  const project = tempFile("tiamat-editor-settings");
   fs.mkdirSync(project, { recursive: true });
   try {
     fs.writeFileSync(path.join(project, "project.godot"), "config_version=5\n", "utf8");

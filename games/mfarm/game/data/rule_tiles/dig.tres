@@ -1,0 +1,72 @@
+[gd_resource type="Resource" script_class="MFarmRuleTile" load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://game/farm/rule_tile.gd" id="1_rule_tile"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Maps/BaseMap1@20.png" id="2_BaseMap1_20"]
+
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(420, 20, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_2"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(460, 60, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_3"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(500, 20, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_4"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(340, 60, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_5"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(460, 20, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_6"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(460, 40, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_7"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(340, 20, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_8"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(340, 40, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_9"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(420, 20, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_10"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(380, 60, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_11"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(420, 20, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_12"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(360, 60, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_13"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(380, 20, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_14"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(380, 40, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_15"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(360, 20, 20, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_16"]
+atlas = ExtResource("2_BaseMap1_20")
+region = Rect2(360, 40, 20, 20)
+
+[resource]
+script = ExtResource("1_rule_tile")
+textures = Array[Texture2D]([SubResource("Atlas_1"), SubResource("Atlas_2"), SubResource("Atlas_3"), SubResource("Atlas_4"), SubResource("Atlas_5"), SubResource("Atlas_6"), SubResource("Atlas_7"), SubResource("Atlas_8"), SubResource("Atlas_9"), SubResource("Atlas_10"), SubResource("Atlas_11"), SubResource("Atlas_12"), SubResource("Atlas_13"), SubResource("Atlas_14"), SubResource("Atlas_15"), SubResource("Atlas_16")])

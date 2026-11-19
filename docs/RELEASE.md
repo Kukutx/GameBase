@@ -15,7 +15,7 @@ Install the export templates for the current shared baseline with:
 node tools/install_export_templates.js
 ```
 
-Every tool below that works on one game takes `--game <id>`, else `GAMEBASE_GAME`, else the only registered game (`npm run --prefix tools/web_smoke smoke:web -- --game <id>` for the browser smoke). `node tools/validate.js` takes `--game <id>` as often as needed and validates every registered game without it.
+Every tool below that works on one game takes `--game <id>`, else `TIAMAT_GAME`, else the only registered game (`npm run --prefix tools/web_smoke smoke:web -- --game <id>` for the browser smoke). `node tools/validate.js` takes `--game <id>` as often as needed and validates every registered game without it.
 
 ## One-command local release check
 
@@ -28,8 +28,8 @@ node tools/release_readiness.js --game <id>
 It performs:
 
 1. repository, instruction and licensed-asset safety checks and `git diff --check` on project-owned files;
-2. the repository checks of `tools/validate.js`: the agent rules and routing check (`tools/validate_rules.js --strict`), the layer dependency check (`tools/check_layers.js`), the code guardrails (`tools/check_code.js`), each game's project settings against the manifests, the reference pages (`tools/generate_reference.js --check`), the tool tests (`node --test "tools/*.test.js"`), the engine baseline and its legal bundle, the deterministic packaging self-test, and a game freshly created from `gamebase/templates/new_game/` that must import, boot and run its runtime smoke;
-3. the game checks of `tools/validate.js`: its links, its version, Simplified Chinese localization coverage, a clean Godot import from a regenerated `.godot/` cache, GUT unit tests (which also load every script and scene under its `res://game` and `res://gamebase`), every runtime script under its `test/runtime/` (for Farm1 the life-simulation smoke and a three-year long-horizon soak with 336 day transitions, 12 real disk save and load round trips and the Year 4 boundary) and a main-scene boot;
+2. the repository checks of `tools/validate.js`: the agent rules and routing check (`tools/validate_rules.js --strict`), the layer dependency check (`tools/check_layers.js`), the code guardrails (`tools/check_code.js`), each game's project settings against the manifests, the reference pages (`tools/generate_reference.js --check`), the tool tests (`node --test "tools/*.test.js"`), the engine baseline and its legal bundle, the deterministic packaging self-test, and a game freshly created from `tiamat/templates/new_game/` that must import, boot and run its runtime smoke;
+3. the game checks of `tools/validate.js`: its links, its version, Simplified Chinese localization coverage, a clean Godot import from a regenerated `.godot/` cache, GUT unit tests (which also load every script and scene under its `res://game` and `res://tiamat`), every runtime script under its `test/runtime/` (for Farm1 the life-simulation smoke and a three-year long-horizon soak with 336 day transitions, 12 real disk save and load round trips and the Year 4 boundary) and a main-scene boot;
 4. Windows, Linux and Web release exports;
 5. resource-pack content verification: the main scene, the game definition, every autoload script, every translation and the runtime files of its addons must be present, while tests, GUT, `game.json`, `.gutconfig.json`, local licensed raw art, addon editor files and repository-only files must be absent;
 6. distribution license and notices copied beside each platform payload;

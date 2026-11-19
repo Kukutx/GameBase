@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_time_00.png" id="1_ui_time_00"]
+
+[resource]
+atlas = ExtResource("1_ui_time_00")
+region = Rect2(0, 0, 63, 63)
+filter_clip = true
+metadata/pivot = Vector2(31.5, 31.5)
+metadata/pixels_per_unit = 20

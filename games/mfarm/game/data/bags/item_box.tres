@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MFarmBagData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/items/bag_data.gd" id="1_bag_data"]
+
+[resource]
+script = ExtResource("1_bag_data")
+id = &"item_box"
+slot_count = 8
+items = Array[StringName]([&"potato_seed", &"turnip_seed", &"pink_radish_seed", &"grape_seed", &"broadleaf_seed", &"box_blueprint", &"needle_wood", &"broadleaf_wood"])
+amounts = PackedInt32Array(20, 20, 20, 20, 20, 20, 20, 20)

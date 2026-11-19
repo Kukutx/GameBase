@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_GrapeSeed.tres" id="2_icon_GrapeSeed"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Plants/GrapeSeed_hold.tres" id="3_GrapeSeed_hold"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"grape_seed"
+display_name = "Grape Seeds"
+description = "Plant them in dug soil in spring or summer. The vine bears fruit again after picking."
+item_type = 0
+icon = ExtResource("2_icon_GrapeSeed")
+world_sprite = ExtResource("3_GrapeSeed_hold")
+use_radius = 1
+can_pick_up = true
+can_drop = false
+can_carry = true
+price = 10
+sell_percentage = 0.5

@@ -96,7 +96,7 @@ function runSelfTest() {
       "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
     },
     Web: {
-      "index.html": Buffer.from("<html>GameBase</html>\n"),
+      "index.html": Buffer.from("<html>Tiamat</html>\n"),
       "index.wasm": Buffer.from("wasm".repeat(300)),
       "BUILD_INFO.json": Buffer.from('{"game_version":"0.1.0"}\n'),
     },
@@ -106,7 +106,7 @@ function runSelfTest() {
       "licenses/GODOT_VERSION.txt": Buffer.from("4.7.2\n"),
     },
   };
-  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "gamebase-package-selftest-"));
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "tiamat-package-selftest-"));
   try {
     for (const [target, files] of Object.entries(fixtures)) {
       const source = path.join(temp, target.toLowerCase());

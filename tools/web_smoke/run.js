@@ -6,7 +6,7 @@ const { chromium } = require("playwright");
 
 const { artifactsPath, buildPath, resolveGame } = require("../lib/games");
 
-// The game comes from --game <id>, else GAMEBASE_GAME, else is the only
+// The game comes from --game <id>, else TIAMAT_GAME, else is the only
 // registered one: npm run --prefix tools/web_smoke smoke:web -- --game <id>
 const { values: options } = parseArgs({ options: { game: { type: "string" } } });
 const game = resolveGame(options.game);
@@ -19,7 +19,7 @@ const viewportProfiles = [
 ];
 const webRoot = buildPath(game, "web");
 const host = "127.0.0.1";
-const port = Number(process.env.GAMEBASE_WEB_PORT || 8123);
+const port = Number(process.env.TIAMAT_WEB_PORT || 8123);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -122,7 +122,7 @@ async function main() {
   fs.mkdirSync(artifactDir, { recursive: true });
 
   let server = null;
-  const externalUrl = process.env.GAMEBASE_WEB_URL;
+  const externalUrl = process.env.TIAMAT_WEB_URL;
   const url = externalUrl || `http://${host}:${port}/index.html`;
   if (!externalUrl) {
     server = await createStaticServer();

@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Intro/Background/bg_05.png" id="1_bg_05"]
+
+[resource]
+atlas = ExtResource("1_bg_05")
+region = Rect2(0, 0, 76, 89)
+filter_clip = true
+metadata/pivot = Vector2(38, 44.5)
+metadata/pixels_per_unit = 20

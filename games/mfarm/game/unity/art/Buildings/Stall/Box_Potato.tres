@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Buildings/Stall/Box_Potato.png" id="1_Box_Potato"]
+
+[resource]
+atlas = ExtResource("1_Box_Potato")
+region = Rect2(0, 0, 23, 25)
+filter_clip = true
+metadata/pivot = Vector2(11.5, 25)
+metadata/pixels_per_unit = 20

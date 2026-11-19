@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ContentPack" load_steps=43 format=3]
 
-[ext_resource type="Script" path="res://gamebase/core/content/content_pack.gd" id="1_pack"]
+[ext_resource type="Script" path="res://tiamat/core/content/content_pack.gd" id="1_pack"]
 [ext_resource type="Resource" path="res://game/data/locations/camp.tres" id="2_camp"]
 [ext_resource type="Resource" path="res://game/data/locations/depths.tres" id="3_depths"]
 [ext_resource type="Resource" path="res://game/data/items/bone_shard.tres" id="4_bone_shard"]

@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="MFarmNpcData" load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://game/npc/npc_data.gd" id="1_r"]
+[ext_resource type="Script" path="res://game/npc/schedule_entry.gd" id="2_r"]
+[ext_resource type="Script" path="res://game/npc/dialogue_line.gd" id="3_r"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animators/NPC/NPC_Mayor.tres" id="4_r"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animations/NPC/OldMan.tres" id="5_r"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Shadow/Character_Shadow.tres" id="6_r"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Faces/Man_001_happy.tres" id="7_r"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Faces/Boy01-5.tres" id="8_r"]
+
+[sub_resource type="Resource" id="Entry_0"]
+script = ExtResource("2_r")
+hour = 8
+minute = 0
+location_id = &"field"
+cell = Vector2i(-8, 4)
+stop_animation = &"OldMan_Thinking"
+interactable = true
+
+[sub_resource type="Resource" id="Entry_1"]
+script = ExtResource("2_r")
+hour = 10
+minute = 0
+location_id = &"field"
+cell = Vector2i(3, -1)
+stop_animation = &"OldMan_Stretch"
+interactable = false
+
+[sub_resource type="Resource" id="Line_0"]
+script = ExtResource("3_r")
+speaker = "Andy"
+text = "Hello, I am the mayor."
+portrait = ExtResource("7_r")
+on_left = true
+
+[sub_resource type="Resource" id="Line_1"]
+script = ExtResource("3_r")
+speaker = "Make"
+text = "Hello, I am Make."
+portrait = ExtResource("8_r")
+on_left = false
+
+[resource]
+script = ExtResource("1_r")
+id = &"mayor"
+display_name = "Mayor"
+animations = ExtResource("4_r")
+clip_prefix = "OldMan_"
+extra_animations = ExtResource("5_r")
+shadow = ExtResource("6_r")
+walk_speed = 40.0
+start_location_id = &"field"
+start_cell = Vector2i(-2, -1)
+schedule = Array[ExtResource("2_r")]([SubResource("Entry_0"), SubResource("Entry_1")])
+dialogue = Array[ExtResource("3_r")]([SubResource("Line_0"), SubResource("Line_1")])

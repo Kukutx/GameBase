@@ -4,7 +4,7 @@
 //
 //   node tools/generate_reference.js [--check]
 //
-//   docs/reference/autoloads.md  every autoload of gamebase/gamebase.json, in
+//   docs/reference/autoloads.md  every autoload of tiamat/tiamat.json, in
 //                                the order a game loads them, with its layer,
 //                                script and what its class doc says it does;
 //   docs/reference/events.md     the signals of those autoloads: what a
@@ -105,7 +105,7 @@ function callArguments(source, start) {
 }
 
 function layerOf(file) {
-  const match = /^gamebase\/modules\/([^/]+)\//.exec(file);
+  const match = /^tiamat\/modules\/([^/]+)\//.exec(file);
   return match ? match[1] : "core";
 }
 
@@ -122,7 +122,7 @@ function walk(dir, out = []) {
 // meaning its doc comment gives ("## KEY <arg>: what it means").
 function ruleKeys() {
   const keys = [];
-  for (const full of walk(rootPath("gamebase")).sort()) {
+  for (const full of walk(rootPath("tiamat")).sort()) {
     const file = path.relative(rootPath(), full).split(path.sep).join("/");
     const source = fs.readFileSync(full, "utf8");
     for (const match of source.matchAll(/\bregister_(condition|action)\s*\(/g)) {
@@ -164,7 +164,7 @@ function autoloadsPage(foundation) {
     "",
     "# Autoloads",
     "",
-    "The services the foundation runs as autoloads. A game has the core's and those of the modules its `game.json` lists; `node tools/link.js` writes them into its `project.godot` in this order: the core's first group, the modules' (a module after the modules it requires), the core's second group, then the game's own. A module's autoloads come from `gamebase/gamebase.json`.",
+    "The services the foundation runs as autoloads. A game has the core's and those of the modules its `game.json` lists; `node tools/link.js` writes them into its `project.godot` in this order: the core's first group, the modules' (a module after the modules it requires), the core's second group, then the game's own. A module's autoloads come from `tiamat/tiamat.json`.",
     "",
     "| Autoload | Layer | Script | What it does |",
     "| --- | --- | --- | --- |",

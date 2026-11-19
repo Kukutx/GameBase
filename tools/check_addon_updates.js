@@ -64,7 +64,7 @@ function latestUpstreamVersion(repo) {
 function buildReport(rows) {
   const updates = rows.filter((row) => row.update_available);
   return [
-    "# GameBase addon freshness",
+    "# Tiamat addon freshness",
     "",
     "This report is advisory. Addon upgrades remain explicit migrations and must pass the full validation/export suite.",
     "",

@@ -1,0 +1,59 @@
+[gd_resource type="AnimationLibrary" load_steps=24 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_01.tres" id="1_pink_01"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_02.tres" id="2_pink_02"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_03.tres" id="3_pink_03"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_04.tres" id="4_pink_04"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_05.tres" id="5_pink_05"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_06.tres" id="6_pink_06"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_07.tres" id="7_pink_07"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_08.tres" id="8_pink_08"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_09.tres" id="9_pink_09"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_10.tres" id="10_pink_10"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_11.tres" id="11_pink_11"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_12.tres" id="12_pink_12"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_13.tres" id="13_pink_13"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_14.tres" id="14_pink_14"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_15.tres" id="15_pink_15"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_16.tres" id="16_pink_16"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_17.tres" id="17_pink_17"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_18.tres" id="18_pink_18"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_19.tres" id="19_pink_19"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_20.tres" id="20_pink_20"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_21.tres" id="21_pink_21"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/yellow/pink_22.tres" id="22_pink_22"]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "tree_yellow"
+length = 2.75
+loop_mode = 1
+step = 0.125
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625, 1.75, 1.875, 2, 2.125, 2.25, 2.375, 2.5, 2.625),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_pink_01"), ExtResource("2_pink_02"), ExtResource("3_pink_03"), ExtResource("4_pink_04"), ExtResource("5_pink_05"), ExtResource("6_pink_06"), ExtResource("7_pink_07"), ExtResource("8_pink_08"), ExtResource("9_pink_09"), ExtResource("10_pink_10"), ExtResource("11_pink_11"), ExtResource("12_pink_12"), ExtResource("13_pink_13"), ExtResource("14_pink_14"), ExtResource("15_pink_15"), ExtResource("16_pink_16"), ExtResource("17_pink_17"), ExtResource("18_pink_18"), ExtResource("19_pink_19"), ExtResource("20_pink_20"), ExtResource("21_pink_21"), ExtResource("22_pink_22")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625, 1.75, 1.875, 2, 2.125, 2.25, 2.375, 2.5, 2.625),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-96.5, -135), Vector2(-96.5, -135), Vector2(-96.5, -135), Vector2(-96.5, -135), Vector2(-96.5, -135), Vector2(-96.5, -135), Vector2(-96.5, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135), Vector2(-97, -135)]
+}
+
+[resource]
+_data = {
+&"tree_yellow": SubResource("Animation_1")
+}

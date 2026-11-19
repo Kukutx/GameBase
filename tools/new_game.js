@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Creates a new game in this repository on the GameBase foundation:
+// Creates a new game in this repository on the Tiamat foundation:
 //
 //   node tools/new_game.js --id <id> --name "<Game Name>" [--description "<One line>"]
 //
-// It copies gamebase/templates/new_game into games/<id>/: a project.godot with
+// It copies tiamat/templates/new_game into games/<id>/: a project.godot with
 // the core autoloads and the core and game translation catalogs, the Windows,
 // Linux and Web export presets, a game definition, the game's own empty
 // GameSetup module (game/game_setup.gd), a player and HUD, two locations
@@ -24,9 +24,9 @@ const { GAME_ID_RE, GAMES_ROOT, readFoundation } = require("./lib/games");
 const { presetsFor } = require("./export");
 const { linkGame } = require("./link");
 
-const TEMPLATE = rootPath("gamebase", "templates", "new_game");
+const TEMPLATE = rootPath("tiamat", "templates", "new_game");
 // The template's description, in its project.godot and its catalog.
-const TEMPLATE_DESCRIPTION = "New game on GameBase";
+const TEMPLATE_DESCRIPTION = "New game on Tiamat";
 
 function copyTree(from, to) {
   fs.mkdirSync(to, { recursive: true });

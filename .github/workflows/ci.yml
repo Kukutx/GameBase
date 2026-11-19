@@ -128,7 +128,7 @@ jobs:
             preset: Web
             dir: web
     env:
-      GAMEBASE_GAME: ${{ matrix.game }}
+      TIAMAT_GAME: ${{ matrix.game }}
 
     steps:
       - name: Checkout
@@ -207,7 +207,7 @@ jobs:
     runs-on: ${{ matrix.target.os }}
     timeout-minutes: 15
     env:
-      GAMEBASE_GAME: ${{ matrix.game }}
+      TIAMAT_GAME: ${{ matrix.game }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7

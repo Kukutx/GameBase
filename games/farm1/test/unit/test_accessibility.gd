@@ -13,7 +13,7 @@ func after_each() -> void:
 	GameSettings.changed.emit()
 
 func test_accessibility_page_opens_with_controller_focus() -> void:
-	var scene := load("res://gamebase/core/ui/settings_menu.tscn") as PackedScene
+	var scene := load("res://tiamat/core/ui/settings_menu.tscn") as PackedScene
 	var menu := scene.instantiate() as SettingsMenu
 	add_child_autofree(menu)
 	await get_tree().process_frame

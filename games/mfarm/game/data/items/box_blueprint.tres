@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Furnitrue01/Furniture01/Furniture01_19 paper.tres" id="2_Furniture01_19_paper"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Environments/Box_covered.tres" id="3_Box_covered"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"box_blueprint"
+display_name = "Storage Box Blueprint"
+description = "Takes 20 pine wood and 20 broadleaf wood to build. Stores items."
+item_type = 2
+icon = ExtResource("2_Furniture01_19_paper")
+world_sprite = ExtResource("3_Box_covered")
+use_radius = 4
+can_pick_up = false
+can_drop = true
+can_carry = true
+price = 300
+sell_percentage = 0.8

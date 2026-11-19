@@ -1,16 +1,16 @@
 // The game registry of the monorepo. Every directory games/<id>/ with a
 // game.json is a game: its own Godot project on the shared foundation in
-// gamebase/ and the shared addons in addons/. A game-scoped tool takes
-// --game <id>, else the GAMEBASE_GAME environment variable; with a single
+// tiamat/ and the shared addons in addons/. A game-scoped tool takes
+// --game <id>, else the TIAMAT_GAME environment variable; with a single
 // registered game it needs neither. Repository-wide checks walk every game.
 const fs = require("node:fs");
 const path = require("node:path");
 const { GAME_VERSION_RE, fail, rootPath } = require("./common");
 
 const GAMES_ROOT = rootPath("games");
-const FOUNDATION_MANIFEST = rootPath("gamebase", "gamebase.json");
+const FOUNDATION_MANIFEST = rootPath("tiamat", "tiamat.json");
 const GAME_ID_RE = /^[a-z][a-z0-9-]*$/;
-const GAME_KEYS = new Set(["id", "modules", "addons", "autoloads", "licensed_art"]);
+const GAME_KEYS = new Set(["id", "modules", "addons", "autoloads", "licensed_art", "unity_import"]);
 
 function readJson(file, label) {
   try {
@@ -54,16 +54,16 @@ function assertStringList(value, label) {
   return value;
 }
 
-// gamebase/gamebase.json: the modules, the modules each one requires, the
+// tiamat/tiamat.json: the modules, the modules each one requires, the
 // shared addons and the autoloads each one uses, the core's autoloads before
 // and after the modules', and the addons every game links (the test
 // framework). tools/lib/project.js writes a game's autoloads from it.
 function readFoundation() {
-  const foundation = checkFoundation(readJson(FOUNDATION_MANIFEST, "gamebase/gamebase.json"));
-  assertAutoloadScripts(foundation.autoloads.before_modules, "gamebase.json autoloads.before_modules");
-  assertAutoloadScripts(foundation.autoloads.after_modules, "gamebase.json autoloads.after_modules");
+  const foundation = checkFoundation(readJson(FOUNDATION_MANIFEST, "tiamat/tiamat.json"));
+  assertAutoloadScripts(foundation.autoloads.before_modules, "tiamat.json autoloads.before_modules");
+  assertAutoloadScripts(foundation.autoloads.after_modules, "tiamat.json autoloads.after_modules");
   for (const [name, module] of Object.entries(foundation.modules)) {
-    assertAutoloadScripts(module.autoloads ?? {}, `gamebase.json modules.${name}.autoloads`);
+    assertAutoloadScripts(module.autoloads ?? {}, `tiamat.json modules.${name}.autoloads`);
   }
   return foundation;
 }
@@ -82,9 +82,9 @@ function assertAutoloadScripts(autoloads, label, gameRoot = null) {
 // part of the manifest that declares it. The core loads its autoloads from
 // the core, a module from its own directory or an addon it uses.
 function checkFoundation(manifest) {
-  assertMap(manifest, "gamebase/gamebase.json");
-  const modules = assertMap(manifest.modules ?? {}, "gamebase.json modules");
-  const autoloads = assertMap(manifest.autoloads ?? {}, "gamebase.json autoloads");
+  assertMap(manifest, "tiamat/tiamat.json");
+  const modules = assertMap(manifest.modules ?? {}, "tiamat.json modules");
+  const autoloads = assertMap(manifest.autoloads ?? {}, "tiamat.json autoloads");
   const owners = new Map();
   const claim = (map, label, roots) => {
     for (const name of Object.keys(assertAutoloads(map, label, roots))) {
@@ -92,20 +92,20 @@ function checkFoundation(manifest) {
       owners.set(name, label);
     }
   };
-  claim(autoloads.before_modules ?? {}, "gamebase.json autoloads.before_modules", ["res://gamebase/core/"]);
-  claim(autoloads.after_modules ?? {}, "gamebase.json autoloads.after_modules", ["res://gamebase/core/"]);
+  claim(autoloads.before_modules ?? {}, "tiamat.json autoloads.before_modules", ["res://tiamat/core/"]);
+  claim(autoloads.after_modules ?? {}, "tiamat.json autoloads.after_modules", ["res://tiamat/core/"]);
   for (const [name, module] of Object.entries(modules)) {
-    assertMap(module, `gamebase.json modules.${name}`);
-    assertStringList(module.requires ?? [], `gamebase.json modules.${name}.requires`);
-    const addons = assertStringList(module.addons ?? [], `gamebase.json modules.${name}.addons`);
-    claim(module.autoloads ?? {}, `gamebase.json modules.${name}.autoloads`, [`res://gamebase/modules/${name}/`, ...addonRoots(addons)]);
+    assertMap(module, `tiamat.json modules.${name}`);
+    assertStringList(module.requires ?? [], `tiamat.json modules.${name}.requires`);
+    const addons = assertStringList(module.addons ?? [], `tiamat.json modules.${name}.addons`);
+    claim(module.autoloads ?? {}, `tiamat.json modules.${name}.autoloads`, [`res://tiamat/modules/${name}/`, ...addonRoots(addons)]);
     for (const required of module.requires ?? []) {
-      if (!modules[required]) fail(`gamebase.json modules.${name} requires unknown module ${required}.`);
+      if (!modules[required]) fail(`tiamat.json modules.${name} requires unknown module ${required}.`);
     }
   }
   return {
     modules,
-    addons: assertStringList(manifest.addons ?? [], "gamebase.json addons"),
+    addons: assertStringList(manifest.addons ?? [], "tiamat.json addons"),
     autoloads: { before_modules: autoloads.before_modules ?? {}, after_modules: autoloads.after_modules ?? {} },
     owners,
   };
@@ -163,19 +163,19 @@ function loadGame(id) {
   return { id, root, modules, addons: [...addons].sort(), manifest };
 }
 
-// The game a game-scoped tool acts on: the explicit id, else GAMEBASE_GAME,
+// The game a game-scoped tool acts on: the explicit id, else TIAMAT_GAME,
 // else the only registered game.
 function resolveGame(explicit) {
-  const requested = String(explicit || process.env.GAMEBASE_GAME || "").trim();
+  const requested = String(explicit || process.env.TIAMAT_GAME || "").trim();
   const ids = listGameIds();
   if (requested) return loadGame(requested);
   if (ids.length === 1) return loadGame(ids[0]);
   if (ids.length === 0) fail("No game is registered under games/<id>/game.json.");
-  return fail(`Several games are registered (${ids.join(", ")}). Choose one with --game <id> or GAMEBASE_GAME.`);
+  return fail(`Several games are registered (${ids.join(", ")}). Choose one with --game <id> or TIAMAT_GAME.`);
 }
 
 // The games a repository-wide step covers: the requested ones, else all of
-// them. GAMEBASE_GAME picks the game of a single-game tool and never narrows a
+// them. TIAMAT_GAME picks the game of a single-game tool and never narrows a
 // repository-wide step.
 function resolveGames(explicit = []) {
   const requested = explicit.length > 0 ? explicit : listGameIds();
@@ -244,13 +244,13 @@ function distPath(game, ...parts) {
   return rootPath("dist", game.id, ...parts);
 }
 
-// The new-game template (gamebase/templates/new_game) in the shape of a loaded
+// The new-game template (tiamat/templates/new_game) in the shape of a loaded
 // game with no module: its project.godot holds the core's managed settings,
 // which tools/link.js writes and tools/validate.js checks like a game's.
 function templateGame(foundation = readFoundation()) {
   return {
     id: "new_game",
-    root: rootPath("gamebase", "templates", "new_game"),
+    root: rootPath("tiamat", "templates", "new_game"),
     modules: [],
     addons: [...foundation.addons].sort(),
     manifest: { id: "new_game", modules: [] },

@@ -1,4 +1,4 @@
-extends "res://gamebase/core/test/runtime_smoke.gd"
+extends "res://tiamat/core/test/runtime_smoke.gd"
 
 const YEARS_TO_SOAK := 3
 const MORNING_MINUTE := 6 * 60
@@ -18,7 +18,7 @@ func _run() -> void:
 	var npc_memory := root.get_node("NpcMemory")
 	# The game's calendar, loaded rather than named: this script compiles before
 	# the autoloads exist. The checks below count its days independently.
-	var calendar: Resource = load("res://gamebase/core/time/game_calendar.gd").call("current")
+	var calendar: Resource = load("res://tiamat/core/time/game_calendar.gd").call("current")
 	var days_per_season := int(calendar.get("days_per_season"))
 	var seasons_per_year := (calendar.get("season_names") as PackedStringArray).size()
 	var total_days := YEARS_TO_SOAK * days_per_season * seasons_per_year

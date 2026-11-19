@@ -1,12 +1,12 @@
 [gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
-[ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
-[ext_resource type="Script" path="res://gamebase/modules/combat/combat/melee_attack.gd" id="3_melee"]
+[ext_resource type="Script" path="res://tiamat/core/interactions/interaction_controller.gd" id="2_interaction"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/melee_attack.gd" id="3_melee"]
 [ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="4_hud"]
-[ext_resource type="Script" path="res://gamebase/modules/items/hotbar/hotbar_input.gd" id="5_hotbar_input"]
-[ext_resource type="Script" path="res://gamebase/modules/combat/combat/player_hurtbox.gd" id="6_hurtbox"]
-[ext_resource type="Script" path="res://gamebase/core/camera/game_camera.gd" id="90_camera"]
+[ext_resource type="Script" path="res://tiamat/modules/items/hotbar/hotbar_input.gd" id="5_hotbar_input"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/player_hurtbox.gd" id="6_hurtbox"]
+[ext_resource type="Script" path="res://tiamat/core/camera/game_camera.gd" id="90_camera"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 6.0

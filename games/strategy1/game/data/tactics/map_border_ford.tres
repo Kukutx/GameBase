@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BattleMapData" load_steps=11 format=3]
 
-[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_map_data.gd" id="1_map"]
-[ext_resource type="Script" path="res://gamebase/modules/tactics/data/battle_placement.gd" id="2_placement"]
+[ext_resource type="Script" path="res://tiamat/modules/tactics/data/battle_map_data.gd" id="1_map"]
+[ext_resource type="Script" path="res://tiamat/modules/tactics/data/battle_placement.gd" id="2_placement"]
 
 [sub_resource type="Resource" id="Placement_1"]
 script = ExtResource("2_placement")

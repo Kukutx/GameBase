@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Enforces the dependency direction of the monorepo:
-//   gamebase/core         may not use a module, an addon or a game;
-//   gamebase/modules/<m>  may not use a game, and may use only the modules and
-//                         addons gamebase/gamebase.json lists for it, whose
+//   tiamat/core         may not use a module, an addon or a game;
+//   tiamat/modules/<m>  may not use a game, and may use only the modules and
+//                         addons tiamat/tiamat.json lists for it, whose
 //                         requires form no cycle, so a game can take a module
 //                         with only the modules below it;
 //   games/<id>/           may use the core, and only the modules and addons its
-//                         game.json lists (the addons of gamebase.json and of
+//                         game.json lists (the addons of tiamat.json and of
 //                         those modules come with them);
 // and no foundation file may name a content id of any game: an id a game gives
 // to `id` or to a `*_id` property in its data and scenes. A script "uses" the
@@ -45,8 +45,8 @@ function readJson(file) {
 
 // The layer of a repository file.
 function layerOf(file) {
-  if (file.startsWith("gamebase/core/")) return "core";
-  if (file.startsWith("gamebase/modules/")) return `module:${file.split("/")[2]}`;
+  if (file.startsWith("tiamat/core/")) return "core";
+  if (file.startsWith("tiamat/modules/")) return `module:${file.split("/")[2]}`;
   if (file.startsWith("games/")) return `game:${file.split("/")[1]}`;
   return "other";
 }
@@ -54,8 +54,8 @@ function layerOf(file) {
 // The layer of a res:// path seen from a project file; `game` is the id of the
 // game the file belongs to, or null for the foundation.
 function resLayer(resPath, game) {
-  if (resPath.startsWith("gamebase/core/")) return "core";
-  if (resPath.startsWith("gamebase/modules/")) return `module:${resPath.split("/")[2]}`;
+  if (resPath.startsWith("tiamat/core/")) return "core";
+  if (resPath.startsWith("tiamat/modules/")) return `module:${resPath.split("/")[2]}`;
   if (resPath.startsWith("addons/")) return `addon:${resPath.split("/")[1]}`;
   if (resPath.startsWith("game/") || resPath.startsWith("test/")) return game ? `game:${game}` : "game";
   return "other";
@@ -95,7 +95,7 @@ function classNameOf(file) {
 }
 
 function readFoundation(root) {
-  const manifest = readJson(path.join(root, "gamebase", "gamebase.json")) || {};
+  const manifest = readJson(path.join(root, "tiamat", "tiamat.json")) || {};
   return { modules: manifest.modules || {}, addons: manifest.addons || [] };
 }
 
@@ -130,7 +130,7 @@ function collectModel(root) {
   const foundation = readFoundation(root);
   const games = readGames(root, foundation);
   const classes = new Map(); // class_name -> repository file (foundation)
-  for (const file of walk(path.join(root, "gamebase", "core"), [".gd"]).concat(walk(path.join(root, "gamebase", "modules"), [".gd"]))) {
+  for (const file of walk(path.join(root, "tiamat", "core"), [".gd"]).concat(walk(path.join(root, "tiamat", "modules"), [".gd"]))) {
     const name = classNameOf(file);
     if (name) classes.set(name, rel(root, file));
   }
@@ -196,7 +196,7 @@ function usesOf(raw, isScript, symbolLayers, game) {
 function checkFoundation(root, model, problems) {
   const symbols = foundationSymbols(model);
   const contentIds = collectContentIds(root, model.games);
-  for (const file of walk(path.join(root, "gamebase", "core"), [".gd", ".tscn", ".tres"]).concat(walk(path.join(root, "gamebase", "modules"), [".gd", ".tscn", ".tres"]))) {
+  for (const file of walk(path.join(root, "tiamat", "core"), [".gd", ".tscn", ".tres"]).concat(walk(path.join(root, "tiamat", "modules"), [".gd", ".tscn", ".tres"]))) {
     const relative = rel(root, file);
     const from = layerOf(relative);
     const raw = fs.readFileSync(file, "utf8");
@@ -208,28 +208,28 @@ function checkFoundation(root, model, problems) {
       if (!allowed(from, use.layer)) {
         reported.add(`${relative} (${from}) must not use ${use.what}`);
       } else if (declared && use.layer.startsWith("module:") && use.layer !== from && !(declared.requires || []).includes(use.layer.slice(7))) {
-        reported.add(`gamebase/modules/${module} uses module ${use.layer.slice(7)}, which gamebase/gamebase.json does not list in its requires (${relative})`);
+        reported.add(`tiamat/modules/${module} uses module ${use.layer.slice(7)}, which tiamat/tiamat.json does not list in its requires (${relative})`);
       } else if (declared && use.layer.startsWith("addon:") && !(declared.addons || []).includes(use.layer.slice(6))) {
-        reported.add(`gamebase/modules/${module} uses addon ${use.layer.slice(6)}, which gamebase/gamebase.json does not list in its addons (${relative})`);
+        reported.add(`tiamat/modules/${module} uses addon ${use.layer.slice(6)}, which tiamat/tiamat.json does not list in its addons (${relative})`);
       }
     }
-    if (module && !declared) reported.add(`gamebase/modules/${module} is not listed under "modules" in gamebase/gamebase.json`);
+    if (module && !declared) reported.add(`tiamat/modules/${module} is not listed under "modules" in tiamat/tiamat.json`);
     for (const literal of idLiterals(raw, isScript)) {
       if (contentIds.has(literal)) reported.add(`${relative} (${from}) must not use literal:${literal}`);
     }
     for (const problem of reported) problems.add(problem);
   }
   for (const [module, entry] of Object.entries(model.foundation.modules)) {
-    if (!fs.existsSync(path.join(root, "gamebase", "modules", module))) problems.add(`gamebase/gamebase.json lists module ${module}, which does not exist`);
+    if (!fs.existsSync(path.join(root, "tiamat", "modules", module))) problems.add(`tiamat/tiamat.json lists module ${module}, which does not exist`);
     for (const required of entry.requires || []) {
-      if (!model.foundation.modules[required]) problems.add(`gamebase/gamebase.json: module ${module} requires unknown module ${required}`);
+      if (!model.foundation.modules[required]) problems.add(`tiamat/tiamat.json: module ${module} requires unknown module ${required}`);
     }
     for (const addon of entry.addons || []) {
-      if (!fs.existsSync(path.join(root, "addons", addon))) problems.add(`gamebase/gamebase.json: module ${module} uses addon ${addon}, which addons/ does not hold`);
+      if (!fs.existsSync(path.join(root, "addons", addon))) problems.add(`tiamat/tiamat.json: module ${module} uses addon ${addon}, which addons/ does not hold`);
     }
   }
   const cycle = findRequireCycle(model.foundation.modules);
-  if (cycle) problems.add(`gamebase/gamebase.json: modules require each other in a cycle (${cycle.join(" -> ")}); move the shared part down or invert the dependency`);
+  if (cycle) problems.add(`tiamat/tiamat.json: modules require each other in a cycle (${cycle.join(" -> ")}); move the shared part down or invert the dependency`);
 }
 
 // The first cycle in the modules' requires, as the module names around it
@@ -311,7 +311,7 @@ function runCli() {
   const problems = checkLayers();
   if (problems.length > 0) {
     for (const problem of problems) console.error(`ERROR: ${problem}`);
-    console.error(`Layer check failed with ${problems.length} problem(s). See gamebase/README.md.`);
+    console.error(`Layer check failed with ${problems.length} problem(s). See tiamat/README.md.`);
     return 1;
   }
   console.log("Layer dependencies OK.");

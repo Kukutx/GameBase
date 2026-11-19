@@ -1,6 +1,6 @@
 extends GutTest
 
-const MenuFit := preload("res://gamebase/core/test/menu_fit.gd")
+const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
 
 func after_each() -> void:
 	InputLock.clear()
@@ -47,15 +47,15 @@ func test_game_menu_keeps_selected_tab_focusable() -> void:
 
 func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> void:
 	var cases: Array[Dictionary] = [
-		{"path": "res://gamebase/modules/lifesim/animals/animal_management_menu.tscn", "kind": "animal"},
-		{"path": "res://gamebase/modules/lifesim/contracts/daily_contract_menu.tscn", "kind": "contract"},
-		{"path": "res://gamebase/modules/items/crafting/crafting_menu.tscn", "kind": "crafting"},
-		{"path": "res://gamebase/modules/items/shop/shop_menu.tscn", "kind": "shop"},
-		{"path": "res://gamebase/modules/items/storage/storage_menu.tscn", "kind": "storage"},
-		{"path": "res://gamebase/modules/progression/projects/town_project_menu.tscn", "kind": "projects"},
-		{"path": "res://gamebase/modules/progression/upgrades/tool_upgrade_menu.tscn", "kind": "upgrade"},
-		{"path": "res://gamebase/core/ui/settings_menu.tscn", "kind": "settings"},
-		{"path": "res://gamebase/core/ui/pause_menu.tscn", "kind": "pause"},
+		{"path": "res://tiamat/modules/lifesim/animals/animal_management_menu.tscn", "kind": "animal"},
+		{"path": "res://tiamat/modules/lifesim/contracts/daily_contract_menu.tscn", "kind": "contract"},
+		{"path": "res://tiamat/modules/items/crafting/crafting_menu.tscn", "kind": "crafting"},
+		{"path": "res://tiamat/modules/items/shop/shop_menu.tscn", "kind": "shop"},
+		{"path": "res://tiamat/modules/items/storage/storage_menu.tscn", "kind": "storage"},
+		{"path": "res://tiamat/modules/progression/projects/town_project_menu.tscn", "kind": "projects"},
+		{"path": "res://tiamat/modules/progression/upgrades/tool_upgrade_menu.tscn", "kind": "upgrade"},
+		{"path": "res://tiamat/core/ui/settings_menu.tscn", "kind": "settings"},
+		{"path": "res://tiamat/core/ui/pause_menu.tscn", "kind": "pause"},
 	]
 	for data: Dictionary in cases:
 		var menu := await _instantiate(String(data["path"]))

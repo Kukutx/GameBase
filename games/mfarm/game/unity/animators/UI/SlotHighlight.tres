@@ -1,0 +1,42 @@
+[gd_resource type="AnimationLibrary" load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_selected_highlight/ui_selected_highlight_0.tres" id="1_ui_selected_highlight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_selected_highlight/ui_selected_highlight_1.tres" id="2_ui_selected_highlight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_selected_highlight/ui_selected_highlight_2.tres" id="3_ui_selected_highlight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_selected_highlight/ui_selected_highlight_3.tres" id="4_ui_selected_highlight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_selected_highlight/ui_selected_highlight_4.tres" id="5_ui_selected_highlight_4"]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "slothighlight"
+length = 0.625
+loop_mode = 1
+step = 0.125
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_ui_selected_highlight_0"), ExtResource("2_ui_selected_highlight_1"), ExtResource("3_ui_selected_highlight_2"), ExtResource("4_ui_selected_highlight_3"), ExtResource("5_ui_selected_highlight_4")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-10, -10), Vector2(-10, -10), Vector2(-10, -10), Vector2(-10, -10), Vector2(-10, -10)]
+}
+
+[resource]
+_data = {
+&"slothighlight": SubResource("Animation_1")
+}

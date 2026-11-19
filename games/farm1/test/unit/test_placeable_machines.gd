@@ -2,7 +2,7 @@ extends GutTest
 
 # Farm1's placeable chest and furnace. How placed chests and processing
 # stations keep their state and are packed up is tested on fixture content in
-# gamebase/modules/items/test/ and gamebase/modules/lifesim/test/
+# tiamat/modules/items/test/ and tiamat/modules/lifesim/test/
 # (test_placeable_machines.gd).
 
 var _world_snapshot: Dictionary

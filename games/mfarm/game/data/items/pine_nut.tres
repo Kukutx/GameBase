@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MFarmItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/items/item_data.gd" id="1_item_data"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Icons/icon_NeedieSeed.tres" id="2_icon_NeedieSeed"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Tree01/Tree01_Fruitage.tres" id="3_Tree01_Fruitage"]
+
+[resource]
+script = ExtResource("1_item_data")
+id = &"pine_nut"
+display_name = "Pine Nut"
+description = "Plant it to grow a pine tree."
+item_type = 0
+icon = ExtResource("2_icon_NeedieSeed")
+world_sprite = ExtResource("3_Tree01_Fruitage")
+use_radius = 1
+can_pick_up = true
+can_drop = false
+can_carry = true
+price = 1
+sell_percentage = 1

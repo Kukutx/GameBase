@@ -1,0 +1,26 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Tiamat modules/combat\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Enemy"
+msgstr "敌人"
+
+msgid "You do not have %s"
+msgstr "你没有%s"
+
+msgid "You were defeated and lost %dg"
+msgstr "你被击倒了，损失了 %dg"
+
+msgid "You were defeated and woke up at home"
+msgstr "你被击倒了，随后在家中醒来"
+
+msgid "You were defeated, lost %dg, and recovered where you fell"
+msgstr "你被击倒了，损失了 %dg，并在原地恢复"
+
+msgid "You were defeated and recovered where you fell"
+msgstr "你被击倒了，并在原地恢复"

@@ -1,0 +1,105 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://tiamat/core/interactions/interaction_controller.gd" id="2_interaction"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="3_hud"]
+[ext_resource type="Script" path="res://tiamat/core/camera/game_camera.gd" id="4_camera"]
+[ext_resource type="Script" path="res://game/player/body_part.gd" id="5_part"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Shadow/Character_Shadow.tres" id="6_shadow"]
+[ext_resource type="PackedScene" path="res://game/player/cursor.tscn" id="7_cursor"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animators/Player/Body.tres" id="10_body"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animators/Player/Hair.tres" id="11_hair"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animators/Player/Arm.tres" id="12_arm"]
+[ext_resource type="AnimationLibrary" path="res://game/unity/animators/Tool/Tool.tres" id="13_tool"]
+
+[sub_resource type="RectangleShape2D" id="Rect_feet"]
+size = Vector2(10, 4)
+
+[sub_resource type="CircleShape2D" id="Circle_interaction"]
+radius = 14.0
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+collision_layer = 2
+collision_mask = 1
+motion_mode = 1
+script = ExtResource("1_player")
+reach = 14.0
+reach_nodes = Array[NodePath]([NodePath("InteractionController")])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -2)
+shape = SubResource("Rect_feet")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Shadow" type="Sprite2D" parent="Visual"]
+texture = ExtResource("6_shadow")
+
+[node name="Body" type="Sprite2D" parent="Visual"]
+centered = false
+script = ExtResource("5_part")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visual/Body"]
+root_node = NodePath("..")
+libraries = {
+&"": ExtResource("10_body")
+}
+autoplay = &"IdleDown"
+
+[node name="Hair" type="Sprite2D" parent="Visual"]
+centered = false
+script = ExtResource("5_part")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visual/Hair"]
+root_node = NodePath("..")
+libraries = {
+&"": ExtResource("11_hair")
+}
+autoplay = &"IdleDown"
+
+[node name="Arm" type="Sprite2D" parent="Visual"]
+centered = false
+script = ExtResource("5_part")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visual/Arm"]
+root_node = NodePath("..")
+libraries = {
+&"": ExtResource("12_arm")
+}
+autoplay = &"IdleDown"
+
+[node name="Tool" type="Sprite2D" parent="Visual"]
+centered = false
+script = ExtResource("5_part")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visual/Tool"]
+root_node = NodePath("..")
+libraries = {
+&"": ExtResource("13_tool")
+}
+autoplay = &"IdleDown"
+
+[node name="HoldItem" type="Sprite2D" parent="Visual"]
+visible = false
+position = Vector2(0, -30)
+centered = false
+
+[node name="InteractionController" type="Area2D" parent="." node_paths=PackedStringArray("actor", "prompt_label")]
+position = Vector2(0, 14)
+collision_layer = 0
+collision_mask = 16
+monitoring = true
+monitorable = false
+script = ExtResource("2_interaction")
+actor = NodePath("..")
+prompt_label = NodePath("../HUD/Prompt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionController"]
+shape = SubResource("Circle_interaction")
+
+[node name="Camera" type="Camera2D" parent="."]
+script = ExtResource("4_camera")
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="Cursor" parent="." instance=ExtResource("7_cursor")]

@@ -21,7 +21,7 @@ test("the engine baseline is a stable Godot 4 release and the legal bundle match
   const baseline = read(".godot-version").trim();
   assert.match(baseline, ENGINE_VERSION_RE);
   assert.equal(read("licenses", "GODOT_VERSION.txt").trim(), baseline);
-  for (const file of ["GODOT_LICENSE.txt", "GODOT_COPYRIGHT.txt", "GAMEBASE_LICENSE.txt", "DIALOGUE_MANAGER_LICENSE.txt", "NOTO_SANS_SC_LICENSE.txt"]) {
+  for (const file of ["GODOT_LICENSE.txt", "GODOT_COPYRIGHT.txt", "TIAMAT_LICENSE.txt", "DIALOGUE_MANAGER_LICENSE.txt", "NOTO_SANS_SC_LICENSE.txt"]) {
     assert.ok(fs.existsSync(rootPath("licenses", file)), file);
   }
 });
@@ -50,7 +50,7 @@ function assertCompleteGame(game) {
   for (const name of ["Windows Desktop", "Linux", "Web"]) assert.ok(presets.includes(`name="${name}"`), `${id} preset ${name}`);
   for (const filter of presets.matchAll(/^exclude_filter="([^"]*)"$/gm)) {
     const excluded = filter[1].split(",");
-    for (const required of ["test/*", "gamebase/core/test/*", "gamebase/modules/*/test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
+    for (const required of ["test/*", "tiamat/core/test/*", "tiamat/modules/*/test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
       assert.ok(excluded.includes(required), `${id} export excludes ${required}`);
     }
   }
@@ -74,7 +74,7 @@ test("every registered game is a complete game project", () => {
 });
 
 test("a new game is complete and translated as it is created", () => {
-  const out = tempFile("gamebase-new-game-test");
+  const out = tempFile("tiamat-new-game-test");
   try {
     const game = createGame({ id: "probe", name: "Probe Game", out });
     assertCompleteGame(game);
@@ -84,7 +84,7 @@ test("a new game is complete and translated as it is created", () => {
 
     // The core's catalog has to be registered: a game does not translate the core again.
     const project = gamePath(game, "project.godot");
-    fs.writeFileSync(project, fs.readFileSync(project, "utf8").replace('"res://gamebase/core/i18n/core.zh_CN.po", ', ""), "utf8");
+    fs.writeFileSync(project, fs.readFileSync(project, "utf8").replace('"res://tiamat/core/i18n/core.zh_CN.po", ', ""), "utf8");
     assert.equal(quietly(() => checkLocalization(game)), 1);
   } finally {
     removeRecursive(out);
@@ -92,13 +92,13 @@ test("a new game is complete and translated as it is created", () => {
 });
 
 test("a new game takes its description, with a catalog entry that keeps the English text until it is translated", () => {
-  const out = tempFile("gamebase-description-test");
+  const out = tempFile("tiamat-description-test");
   try {
     const game = createGame({ id: "probe", name: "Probe Game", description: "A probe of the template · 试", out });
     assert.equal(projectString(game, "application", "config/description"), "A probe of the template · 试");
     const catalog = fs.readFileSync(gamePath(game, "game", "i18n", "ui.zh_CN.po"), "utf8");
     assert.ok(catalog.includes('msgid "A probe of the template · 试"\nmsgstr "A probe of the template · 试"\n'));
-    assert.ok(!catalog.includes("New game on GameBase"));
+    assert.ok(!catalog.includes("New game on Tiamat"));
     assert.equal(quietly(() => checkLocalization(game)), 0);
   } finally {
     removeRecursive(out);
@@ -106,7 +106,7 @@ test("a new game takes its description, with a catalog entry that keeps the Engl
 });
 
 test("a catalog entry translates text of its own layer, and the core's text in the core", () => {
-  const out = tempFile("gamebase-catalog-test");
+  const out = tempFile("tiamat-catalog-test");
   const log = console.log;
   const lines = [];
   try {
@@ -119,24 +119,24 @@ test("a catalog entry translates text of its own layer, and the core's text in t
     console.log = log;
     removeRecursive(out);
   }
-  assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Spring" of gamebase/core: move it to that layer\'s catalog'));
+  assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Spring" of tiamat/core: move it to that layer\'s catalog'));
   assert.ok(lines.includes('LOCALIZATION_PROBLEM: res://game/i18n/ui.zh_CN.po translates "Nobody says this", which no text of games/probe holds'));
 });
 
 test("text two modules hold is translated by the lower one, or alike by each when neither requires the other", () => {
-  const core = { name: "gamebase/core", below: [] };
-  const items = { name: "gamebase/modules/items", below: ["gamebase/core"] };
-  const farm = { name: "gamebase/modules/farm", below: ["gamebase/core", "gamebase/modules/items"] };
-  const quests = { name: "gamebase/modules/quests", below: ["gamebase/core", "gamebase/modules/items"] };
+  const core = { name: "tiamat/core", below: [] };
+  const items = { name: "tiamat/modules/items", below: ["tiamat/core"] };
+  const farm = { name: "tiamat/modules/farm", below: ["tiamat/core", "tiamat/modules/items"] };
+  const quests = { name: "tiamat/modules/quests", below: ["tiamat/core", "tiamat/modules/items"] };
   const entry = (layer, text) => ({ res: `res://${layer.name}.po`, layer, text });
   assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(quests, '"已领取"'), "Claimed"), "");
-  assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(quests, '"领了"'), "Claimed"), 'res://gamebase/modules/quests.po translates "Claimed" otherwise than res://gamebase/modules/farm.po does');
-  assert.equal(repeatProblem(entry(items, '"已领取"'), entry(farm, '"已领取"'), "Claimed"), 'res://gamebase/modules/farm.po repeats "Claimed", which res://gamebase/modules/items.po already translates');
-  assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(core, '"已领取"'), "Claimed"), 'res://gamebase/core.po repeats "Claimed", which res://gamebase/modules/farm.po already translates');
+  assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(quests, '"领了"'), "Claimed"), 'res://tiamat/modules/quests.po translates "Claimed" otherwise than res://tiamat/modules/farm.po does');
+  assert.equal(repeatProblem(entry(items, '"已领取"'), entry(farm, '"已领取"'), "Claimed"), 'res://tiamat/modules/farm.po repeats "Claimed", which res://tiamat/modules/items.po already translates');
+  assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(core, '"已领取"'), "Claimed"), 'res://tiamat/core.po repeats "Claimed", which res://tiamat/modules/farm.po already translates');
 });
 
 test("a count's text needs a plural entry with every form its language has", () => {
-  const out = tempFile("gamebase-plural-test");
+  const out = tempFile("tiamat-plural-test");
   const log = console.log;
   const runs = [];
   try {
@@ -170,7 +170,7 @@ test("a count's text needs a plural entry with every form its language has", () 
 });
 
 test("a resource's player-facing text needs a translation, such as a control's name, a skill's short name or a calendar's seasons", () => {
-  const out = tempFile("gamebase-resource-text-test");
+  const out = tempFile("tiamat-resource-text-test");
   const log = console.log;
   const lines = [];
   try {
@@ -197,18 +197,18 @@ test("a resource's player-facing text needs a translation, such as a control's n
 
 test("every game's project.godot, .gutconfig.json and export filters hold what its manifests give", () => {
   for (const id of listGameIds()) assert.ok(projectInSync(loadGame(id)), `games/${id}: run node tools/link.js`);
-  assert.ok(projectInSync(templateGame()), "gamebase/templates/new_game: run node tools/link.js");
+  assert.ok(projectInSync(templateGame()), "tiamat/templates/new_game: run node tools/link.js");
 });
 
 test("a game runs the tests of the core, of each of its modules and its own", () => {
   const foundation = readFoundation();
   const game = { id: "probe", root: rootPath("games", "probe"), modules: ["skills", "items"], addons: ["gut"], manifest: {} };
   const dirs = desiredTestDirs(game, foundation);
-  assert.equal(dirs[0], "res://gamebase/core/test/");
+  assert.equal(dirs[0], "res://tiamat/core/test/");
   assert.equal(dirs[dirs.length - 1], "res://test/unit/");
-  for (const dir of dirs.slice(1, -1)) assert.match(dir, /^res:\/\/gamebase\/modules\/(items|skills)\/test\/$/);
+  for (const dir of dirs.slice(1, -1)) assert.match(dir, /^res:\/\/tiamat\/modules\/(items|skills)\/test\/$/);
   const config = JSON.parse(syncedGutConfig('{"dirs": ["res://stale/"], "should_exit": true}', game, foundation));
-  assert.deepEqual(config, { dirs, should_exit: true, pre_run_script: "res://gamebase/core/test/gut_pre_run.gd" });
+  assert.deepEqual(config, { dirs, should_exit: true, pre_run_script: "res://tiamat/core/test/gut_pre_run.gd" });
 });
 
 test("a game's exports keep out the editor files of the addons it links, and only those", () => {
@@ -248,27 +248,27 @@ test("a module's autoloads follow the modules it requires, between the core's", 
 });
 
 test("the manifests reject autoloads that would break a linked game", () => {
-  const core = { before_modules: { Events: "res://gamebase/core/events.gd" }, after_modules: {} };
+  const core = { before_modules: { Events: "res://tiamat/core/events.gd" }, after_modules: {} };
   const manifest = (modules, autoloads = core) => ({ autoloads, modules });
-  assert.throws(() => checkFoundation(manifest({}, [])), /gamebase\.json autoloads must be an object/);
-  assert.throws(() => checkFoundation(manifest({ a: { autoloads: { Probe: "res://gamebase/modules/b/probe.gd" } }, b: {} })), /modules\.a\.autoloads\.Probe must be a script under res:\/\/gamebase\/modules\/a\//);
+  assert.throws(() => checkFoundation(manifest({}, [])), /tiamat\.json autoloads must be an object/);
+  assert.throws(() => checkFoundation(manifest({ a: { autoloads: { Probe: "res://tiamat/modules/b/probe.gd" } }, b: {} })), /modules\.a\.autoloads\.Probe must be a script under res:\/\/tiamat\/modules\/a\//);
   const foundation = checkFoundation(manifest({ a: { addons: ["tool"], autoloads: { ToolService: "res://addons/tool/service.gd" } }, b: { requires: ["c"] }, c: { requires: ["b"] } }));
-  assert.throws(() => checkGameAutoloads({ Events: "res://game/events.gd" }, "game.json autoloads", ["gut"], foundation), /Events is already declared by gamebase\.json autoloads\.before_modules/);
-  assert.throws(() => checkGameAutoloads({ Probe: "res://gamebase/core/probe.gd" }, "game.json autoloads", ["gut"], foundation), /must be a script under res:\/\/game\/ or res:\/\/addons\/gut\//);
-  assert.throws(() => assertAutoloadScripts({ Probe: "res://gamebase/core/probe.gd" }, "gamebase.json autoloads.after_modules"), /autoloads\.after_modules\.Probe names res:\/\/gamebase\/core\/probe\.gd, which does not exist/);
+  assert.throws(() => checkGameAutoloads({ Events: "res://game/events.gd" }, "game.json autoloads", ["gut"], foundation), /Events is already declared by tiamat\.json autoloads\.before_modules/);
+  assert.throws(() => checkGameAutoloads({ Probe: "res://tiamat/core/probe.gd" }, "game.json autoloads", ["gut"], foundation), /must be a script under res:\/\/game\/ or res:\/\/addons\/gut\//);
+  assert.throws(() => assertAutoloadScripts({ Probe: "res://tiamat/core/probe.gd" }, "tiamat.json autoloads.after_modules"), /autoloads\.after_modules\.Probe names res:\/\/tiamat\/core\/probe\.gd, which does not exist/);
   assert.throws(() => assertAutoloadScripts({ Probe: "res://game/probe.gd" }, "game.json autoloads", rootPath("games", "farm1")), /Probe names res:\/\/game\/probe\.gd, which does not exist/);
-  assertAutoloadScripts({ SaveManager: "res://gamebase/core/save/game_save_manager.gd", Setup: "res://game/game_setup.gd" }, "probe", rootPath("games", "farm1"));
+  assertAutoloadScripts({ SaveManager: "res://tiamat/core/save/game_save_manager.gd", Setup: "res://game/game_setup.gd" }, "probe", rootPath("games", "farm1"));
   assert.throws(() => moduleOrder(foundation, ["a", "b", "c"]), /modules b, c cannot be ordered because their requires form a cycle/);
 });
 
-test("GAMEBASE_GAME picks one game but never narrows a repository-wide step", () => {
-  const saved = process.env.GAMEBASE_GAME;
-  process.env.GAMEBASE_GAME = listGameIds()[0];
+test("TIAMAT_GAME picks one game but never narrows a repository-wide step", () => {
+  const saved = process.env.TIAMAT_GAME;
+  process.env.TIAMAT_GAME = listGameIds()[0];
   try {
     assert.deepEqual(resolveGames().map((game) => game.id), listGameIds());
   } finally {
-    if (saved === undefined) delete process.env.GAMEBASE_GAME;
-    else process.env.GAMEBASE_GAME = saved;
+    if (saved === undefined) delete process.env.TIAMAT_GAME;
+    else process.env.TIAMAT_GAME = saved;
   }
 });
 
@@ -277,8 +277,8 @@ test("a game links the core, its modules and the addons they use", () => {
   const game = { id: "probe", root: rootPath("games", "probe"), modules: ["items"], addons: ["gut"] };
   const links = desiredLinks(game).map(([link, target]) => [path.relative(rootPath(), link), path.relative(rootPath(), target)].map((p) => p.split(path.sep).join("/")));
   assert.deepEqual(links, [
-    ["games/probe/gamebase/core", "gamebase/core"],
-    ["games/probe/gamebase/modules/items", "gamebase/modules/items"],
+    ["games/probe/tiamat/core", "tiamat/core"],
+    ["games/probe/tiamat/modules/items", "tiamat/modules/items"],
     ["games/probe/addons/gut", "addons/gut"],
   ]);
   assert.ok(foundation.addons.includes("gut"), "every game links the test framework");
@@ -332,7 +332,7 @@ test("a pull request runs the games it changes, every game for a shared change a
   assert.deepEqual(selectGames(all, []), all, "a push or a manual run");
   assert.deepEqual(selectGames(all, ["README.md", "docs/RELEASE.md", ".agents/rules/save.md"]), []);
   assert.deepEqual(selectGames(all, ["games/farm1/game/a.gd", "games/farm1/README.md", "docs/A.md"]), ["farm1"]);
-  assert.deepEqual(selectGames(all, ["gamebase/core/a.gd", "games/farm1/game/a.gd"]), all);
+  assert.deepEqual(selectGames(all, ["tiamat/core/a.gd", "games/farm1/game/a.gd"]), all);
   assert.deepEqual(selectGames(all, ["tools/ci.js"]), all);
 });
 
@@ -361,7 +361,7 @@ test("the reference pages name every autoload with what it does and every rule k
 });
 
 test("validate --test finds a GUT script in the test directories a game runs, and only there", () => {
-  const root = tempFile("gamebase-test-script");
+  const root = tempFile("tiamat-test-script");
   try {
     for (const dir of ["shared/test/menus", "test/unit", "other"]) fs.mkdirSync(path.join(root, dir), { recursive: true });
     fs.writeFileSync(path.join(root, "shared/test/menus/test_shop.gd"), "");
@@ -389,7 +389,7 @@ test("validate --test finds a GUT script in the test directories a game runs, an
 });
 
 test("the localization check reads what each control on a HUD does from scenes and script defaults", () => {
-  const root = tempFile("gamebase-hint-text");
+  const root = tempFile("tiamat-hint-text");
   try {
     fs.mkdirSync(root, { recursive: true });
     fs.writeFileSync(path.join(root, "hud.tscn"), [

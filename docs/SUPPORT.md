@@ -1,6 +1,6 @@
 # Support and diagnostics
 
-GameBase keeps release diagnostics intentionally small and local.
+Tiamat keeps release diagnostics intentionally small and local.
 
 ## Runtime logs
 
@@ -19,7 +19,7 @@ The Web build uses the browser console instead of desktop file logging.
 
 ## Diagnostic context
 
-`GameDiagnostics` writes `GAMEBASE_DIAGNOSTIC` JSON lines at startup and when a save (an autosave included), a load or a travel fails.
+`GameDiagnostics` writes `TIAMAT_DIAGNOSTIC` JSON lines at startup and when a save (an autosave included), a load or a travel fails.
 
 The diagnostic payload contains only technical game context:
 
@@ -58,7 +58,7 @@ Ask for:
 
 `BUILD_INFO.json` identifies the game and its version, exact Git commit, actual Godot engine used for the export, whether the source tree was dirty, and the target platform.
 
-Search the log for `GAMEBASE_DIAGNOSTIC`, `ERROR:`, and `SCRIPT ERROR:` first.
+Search the log for `TIAMAT_DIAGNOSTIC`, `ERROR:`, and `SCRIPT ERROR:` first.
 
 ## Save provenance and safety
 
