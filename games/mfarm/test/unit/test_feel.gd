@@ -7,6 +7,7 @@ extends GutTest
 const IntroScene := preload("res://game/ui/intro.tscn")
 const PlayerScene := preload("res://game/player/player.tscn")
 const TimeKeys := preload("res://game/ui/time_keys.gd")
+const MINUTES_PER_DAY := 24 * 60
 
 var _state: Dictionary
 var _day := 0
@@ -139,6 +140,25 @@ func test_g_moves_on_a_day_and_t_runs_the_clock_unless_the_controls_are_held() -
 	InputLock.unlock(&"test")
 	keys._unhandled_key_input(_key(KEY_T))
 	assert_true(keys.is_processing(), "holding T runs the clock")
+
+func test_night_falls_slowly_but_a_skipped_day_shows_its_light_at_once() -> void:
+	var light := (load("res://game/world/light_control.gd") as GDScript).new() as Node2D
+	light.set(&"pattern_id", &"Outside Global Light")
+	WorldClock.set_time(_day, 18 * 60 + 59)
+	add_child_autofree(light)
+	var sky := light.get_child(0) as CanvasModulate
+	assert_eq(sky.color, Color.WHITE)
+	WorldClock.advance_minutes(1)
+	await wait_physics_frames(2)
+	var night: Color = light.get(&"SKY_NIGHT")
+	assert_false(sky.color.is_equal_approx(night), "dusk takes its time")
+	await wait_physics_frames(2)
+	WorldClock.advance_minutes(MINUTES_PER_DAY)
+	assert_true(sky.color.is_equal_approx(night), "a day skipped to 19:00 is night at once")
+	WorldClock.set_time(_day, 7 * 60)
+	await wait_physics_frames(2)
+	WorldClock.advance_minutes(MINUTES_PER_DAY)
+	assert_true(sky.color.is_equal_approx(Color.WHITE), "and to 07:00 day at once")
 
 static func _key(code: Key) -> InputEventKey:
 	var key := InputEventKey.new()
