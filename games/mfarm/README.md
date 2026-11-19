@@ -46,7 +46,7 @@ test/unit/         GUT tests of the game's rules and of the feel the old game ha
 test/runtime/      The end-to-end smoke: the opening, beach, field, digging and watering, the market, a purchase, save and load
 ```
 
-The importer's settings for this game are `unity_import` in `game.json`; see [docs/UNITY_IMPORT.md](../../docs/UNITY_IMPORT.md).
+The importer's settings for this game are `unity_import` in `game.json`; see [docs/UNITY_IMPORT.md](../../docs/UNITY_IMPORT.md). The old Unity project is retired now that the port is complete, so `game/unity/` is the copy of its assets to keep; the importer runs again only with a copy of the old project beside the repository (`unity_import.source`).
 
 ## What the port fixed
 

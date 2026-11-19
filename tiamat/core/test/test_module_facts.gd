@@ -19,6 +19,11 @@ func test_the_modules_facts_are_gathered_in_install_order() -> void:
 
 func test_the_game_s_modules_tell_plain_data() -> void:
 	var facts := GameModules.get_facts()
+	if facts.is_empty():
+		# A game without modules (MFarm, the new-game template), or whose
+		# modules tell nothing, has nothing to check.
+		pass_test("the game's modules tell nothing: %s" % [GameModules.get_installed()])
+		return
 	for section: Variant in facts:
 		assert_true(section is String, "section %s is named by text" % [section])
 		assert_true(_is_plain(facts[section]), "section %s is plain data: %s" % [section, facts[section]])
