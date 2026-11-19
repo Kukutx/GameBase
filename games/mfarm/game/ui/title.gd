@@ -68,10 +68,17 @@ func show_sheet(sheet: Sheet) -> void:
 		contents[each].visible = each == sheet
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"ui_cancel") and shown != Sheet.TITLE and not settings_menu.visible:
+	if event.is_action_pressed(&"ui_cancel") and not settings_menu.visible and go_back():
 		get_viewport().set_input_as_handled()
-		show_sheet(Sheet.TITLE)
-		tabs[Sheet.SLOTS].grab_focus()
+
+## Goes back from the saves or the help to the title's first page, as Esc and
+## Android's back button do; false on the first page.
+func go_back() -> bool:
+	if shown == Sheet.TITLE:
+		return false
+	show_sheet(Sheet.TITLE)
+	tabs[Sheet.SLOTS].grab_focus()
+	return true
 
 func _on_tab_pressed(sheet: Sheet) -> void:
 	if sheet == Sheet.TITLE and can_quit():
@@ -115,6 +122,8 @@ func _on_settings_closed() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED and not cards.is_empty():
 		_refresh_slot_ui()
+	if what == NOTIFICATION_TRANSLATION_CHANGED and keys_label != null:
+		_name_keys()
 
 func _build() -> void:
 	paper = Control.new()
@@ -216,10 +225,26 @@ func _build_slots(content: Control) -> void:
 		delete_buttons.append(delete)
 
 func _build_keys(content: Control) -> void:
-	keys_label = MFarmUiArt.label("WASD to walk\nCheats: T speeds up time | G next day", 10, TEXT_COLOR)
+	keys_label = MFarmUiArt.label("", 10, TEXT_COLOR)
+	keys_label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	keys_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	keys_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	# The old text stood 1.8 lines apart.
 	keys_label.add_theme_constant_override(&"line_spacing", 8)
 	keys_label.size = Vector2(200, 40)
 	MFarmUiArt.place(content, keys_label, (PAPER_SIZE - keys_label.size) / 2)
+	_name_keys()
+	InputPrompts.input_method_changed.connect(_name_keys.unbind(1))
+
+## The help page as the device in use plays: the old game's keys and its two
+## time keys on a keyboard, the stick on a gamepad or a touchscreen, which
+## have no time keys.
+func keys_text() -> String:
+	if InputPrompts.using_touch:
+		return tr("Stick to walk")
+	if InputPrompts.using_gamepad:
+		return tr("Left Stick to walk")
+	return tr("WASD to walk\nCheats: T speeds up time | G next day")
+
+func _name_keys() -> void:
+	keys_label.text = keys_text()

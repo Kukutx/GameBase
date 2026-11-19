@@ -2,7 +2,8 @@ extends GutTest
 
 ## MFarm's title screen, the old game's paper menu: its three tabs where the
 ## old ones stood, the sheet each brings to the top, the slot cards with the
-## old words, and the 退出 tab that now quits.
+## old words, the 退出 tab that now quits, the help as the device in use plays
+## and going back from a sheet to the title.
 
 const TitleScene := preload("res://game/ui/title.tscn")
 const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
@@ -26,6 +27,7 @@ func after_each() -> void:
 	SaveManager.save_directory = _save_directory
 	SaveManager.select_slot(_active_slot)
 	TranslationServer.set_locale(_locale)
+	InputPrompts.call("_set_using_touch", false)
 
 func _title() -> Node:
 	var title := TitleScene.instantiate()
@@ -68,6 +70,18 @@ func test_a_tab_brings_its_sheet_to_the_top_and_esc_goes_back() -> void:
 	escape.pressed = true
 	title.call("_unhandled_input", escape)
 	assert_eq(title.get("shown"), 2, "Esc goes back to the title")
+	(tabs[1] as Button).pressed.emit()
+	assert_true(title.call("go_back"), "so does Android's back button (TouchControls.go_back())")
+	assert_eq(title.get("shown"), 2)
+	assert_false(title.call("go_back"), "which quits from the title")
+
+func test_the_help_names_the_stick_on_a_touchscreen() -> void:
+	var title := _title()
+	var keys := title.get("keys_label") as Label
+	InputPrompts.call("_set_using_touch", true)
+	assert_eq(keys.text, tr("Stick to walk"), "no keys and no time keys")
+	InputPrompts.call("_set_using_touch", false)
+	assert_string_contains(keys.text, "WASD")
 
 func test_an_empty_card_says_the_world_has_not_begun_as_the_old_one_did() -> void:
 	TranslationServer.set_locale("zh_CN")

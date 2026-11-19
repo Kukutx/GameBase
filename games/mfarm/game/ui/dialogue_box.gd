@@ -3,9 +3,10 @@ extends Control
 
 ## A conversation, line by line, as the old game showed it: the talk box low
 ## in the middle of the screen, the speaker's face and name on their side,
-## the words typed out over a second, then a note to press Space. Space (or
-## a click) finishes the line being typed, or goes on to the next. The world
-## stands still until the last line is read.
+## the words typed out over a second, then a note that says how to go on.
+## Space (or a click, or a tap) finishes the line being typed, or goes on to
+## the next; Esc, Android's back button or the close button on a touchscreen
+## ends the conversation. The world stands still until the last line is read.
 
 signal finished
 
@@ -19,6 +20,7 @@ var _faces: Array[TextureRect] = []
 var _names: Array[Label] = []
 var _name_plates: Array[Control] = []
 var _continue: Control
+var _continue_label: Label
 var _typing: Tween
 var _lines: Array[MFarmDialogueLine] = []
 var _index := -1
@@ -54,12 +56,28 @@ func _ready() -> void:
 	# The old box held three Chinese words; English needs it wider.
 	_continue = MFarmUiArt.panel("ui_paper_02", Vector2(120, 20))
 	_continue.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var hint := MFarmUiArt.label("Press Space to continue", 8, TEXT_COLOR)
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hint.size = Vector2(120, 20)
-	_continue.add_child(hint)
+	_continue_label = MFarmUiArt.label("", 8, TEXT_COLOR)
+	_continue_label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	_continue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_continue_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_continue_label.size = Vector2(120, 20)
+	_continue.add_child(_continue_label)
 	MFarmUiArt.place(self, _continue, Vector2(35, 67))
+	InputPrompts.input_method_changed.connect(_name_continue.unbind(1))
+	GameSettings.controls_changed.connect(_name_continue)
+	_name_continue()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and _continue_label != null:
+		_name_continue()
+
+## What the note under a read line says: a tap on a touchscreen, else the key
+## or button that goes on.
+func get_continue_text() -> String:
+	return _continue_label.text
+
+func _name_continue() -> void:
+	_continue_label.text = tr("Tap to continue") if InputPrompts.using_touch else tr("Press %s to continue") % InputPrompts.get_action_prompt(&"interact")
 
 func is_talking() -> bool:
 	return _index >= 0
@@ -110,6 +128,10 @@ func _end() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_talking():
+		return
+	if event.is_action_pressed(&"ui_cancel"):
+		get_viewport().set_input_as_handled()
+		stop()
 		return
 	var advance := event.is_action_pressed(&"interact") or event.is_action_pressed(&"use_item")
 	if not advance:

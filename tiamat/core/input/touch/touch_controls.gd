@@ -23,7 +23,9 @@ extends CanvasLayer
 ##
 ## Android's back button is `go_back()` too, the game told not to quit on it
 ## (`application/config/quit_on_go_back`, which `tools/link.js` turns off);
-## with nothing to close or pause, as on the title, it quits.
+## with nothing to close or pause, as on the title, the scene goes back a step
+## if it has one to go back (a `go_back() -> bool` of the current scene, as
+## `GameTitleBase` has), and the game quits when it has none.
 ##
 ## The HUD keeps clear of the controls that show (`get_covered_rects()`,
 ## `layout_changed`): a HUD line with a `TouchClearance` draws back from them.
@@ -91,17 +93,25 @@ func _process(_delta: float) -> void:
 
 ## Goes back, as Android's back button does: closes what is open (a menu, a
 ## dialogue, a minigame, a dialog window) with the cancel action, pauses play,
-## or, with neither, quits.
+## or, with neither, has the scene go back a step (a title's other page back
+## to its first) and quits when it has no step to go back.
 func go_back() -> void:
+	if not back_step():
+		get_tree().quit()
+
+## Goes back as `go_back()` does, short of quitting: false when there is
+## nothing to close, pause or go back to, where going back quits.
+func back_step() -> bool:
 	var action := back_action()
 	if action.is_empty():
-		get_tree().quit()
-		return
+		var scene := get_tree().current_scene
+		return scene != null and scene.has_method(&"go_back") and bool(scene.call(&"go_back"))
 	for pressed: bool in [true, false]:
 		var event := InputEventAction.new()
 		event.action = action
 		event.pressed = pressed
 		Input.parse_input_event(event)
+	return true
 
 ## What going back presses now: `CANCEL_ACTION` while something is open,
 ## `PAUSE_ACTION` in play, else nothing.
