@@ -41,7 +41,8 @@ extends CanvasLayer
 ## or the field loses the focus (`lift_for_keyboard()`).
 ##
 ## On a device played by touch, a button smaller than a fingertip takes the
-## taps that land just beside it (`TouchTarget`).
+## taps that land just beside it (`TouchTarget`), and a list scrolls under a
+## finger that drags it from one of its buttons (`TouchScroll`).
 
 ## The controls that show, or where they sit, changed.
 signal layout_changed
@@ -119,11 +120,13 @@ func _ready() -> void:
 	# The player's size, side and opacity of the controls.
 	GameSettings.changed.connect(_layout)
 	_show({})
-	# A button smaller than a fingertip takes the taps beside it.
+	# A button smaller than a fingertip takes the taps beside it, and a list
+	# scrolls under a finger that drags it from a button.
 	if DisplayServer.is_touchscreen_available() or InputPromptService.starts_on_touch():
-		TouchTarget.watch(get_tree())
 		TouchTarget.measure(get_viewport())
 		get_viewport().size_changed.connect(TouchTarget.measure.bind(get_viewport()))
+		TouchTarget.watch(get_tree())
+		TouchScroll.watch(get_tree())
 
 func _notification(what: int) -> void:
 	match what:
