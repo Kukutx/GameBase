@@ -51,10 +51,21 @@ func _ready() -> void:
 	_show_away_report.call_deferred()
 
 func _process(_delta: float) -> void:
-	# The hero is the location's player, which travel places at the perch; its
-	# place is the desk's to keep.
 	pet.position = _pet_spot()
 	_update_clickable()
+
+# Escape, or Android's back button, closes the card or the scroll first.
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed(&"ui_cancel") or InputLock.is_locked():
+		return
+	if report.visible:
+		report.visible = false
+		_update_clickable()
+	elif panel.visible:
+		_set_panel_open(false)
+	else:
+		return
+	get_viewport().set_input_as_handled()
 
 func _pet_spot() -> Vector2:
 	if desk_window.pet_mode:
