@@ -55,6 +55,7 @@ const BINDING_WIDTH := 76.0
 @onready var touch_stick_right_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Controls/TouchStickRight
 @onready var touch_opacity_row: HBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls/TouchOpacity
 @onready var touch_opacity_slider: HSlider = $Dim/Panel/Layout/Pages/Page/Controls/TouchOpacity/Slider
+@onready var vibration_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Controls/Vibration
 @onready var controls_list: VBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls/List
 @onready var controls_reset: Button = $Dim/Panel/Layout/Pages/Page/Controls/Reset
 @onready var hint_label: Label = $Dim/Panel/Layout/Hint
@@ -107,6 +108,7 @@ func _ready() -> void:
 	touch_stick_right_check.toggled.connect(_on_touch_stick_right_toggled)
 	touch_opacity_slider.min_value = GameSettingsService.TOUCH_OPACITY_MIN * 100.0
 	touch_opacity_slider.value_changed.connect(_on_touch_opacity_changed)
+	vibration_check.toggled.connect(_on_vibration_toggled)
 	_build_language_selector()
 	language_select.item_selected.connect(_on_language_selected)
 	_build_controls()
@@ -158,8 +160,13 @@ func show_page(next: Page) -> void:
 		Page.ACCESSIBILITY:
 			MenuLayer.focus(weather_effects_check if weather_effects_check.visible else reduced_motion_check)
 		Page.CONTROLS:
-			# The touch controls' rows head the page where they show.
-			var first: Control = touch_size_select if touch_size_row.visible else _first_binding_button()
+			# The touch controls' rows and vibration head the page where they
+			# show.
+			var first: Control = _first_binding_button()
+			if touch_size_row.visible:
+				first = touch_size_select
+			elif vibration_check.visible:
+				first = vibration_check
 			MenuLayer.focus(first if first != null else controls_reset)
 
 # A rebind reads the next key, mouse button or gamepad button before the
@@ -223,6 +230,9 @@ func _sync_from_settings() -> void:
 	touch_size_select.select(GameSettings.touch_size)
 	touch_stick_right_check.button_pressed = GameSettings.touch_stick_right
 	touch_opacity_slider.value = GameSettings.touch_opacity * 100.0
+	# Offered when the player holds something that shakes.
+	vibration_check.visible = Haptics.is_offered()
+	vibration_check.button_pressed = GameSettings.vibration
 	_select_current_language()
 	_syncing = false
 	if _waiting_action == &"":
@@ -404,6 +414,12 @@ func _on_touch_stick_right_toggled(value: bool) -> void:
 func _on_touch_opacity_changed(value: float) -> void:
 	if not _syncing:
 		GameSettings.set_touch_opacity(value / 100.0)
+
+# Turned on, it shakes once, so the player feels how it feels.
+func _on_vibration_toggled(value: bool) -> void:
+	if not _syncing:
+		GameSettings.set_vibration(value)
+		Haptics.pulse(0.5, 0.15)
 
 func _on_weather_effects_toggled(value: bool) -> void:
 	if not _syncing:

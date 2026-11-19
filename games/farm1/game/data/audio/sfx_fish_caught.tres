@@ -8,3 +8,5 @@ id = &"sfx_fish_caught"
 cue_type = 0
 pitch_min = 0.98
 pitch_max = 1.02
+rumble = 0.5
+rumble_seconds = 0.15

@@ -329,13 +329,14 @@ function templatePresets() {
   return presetsOf(parseSections(fs.readFileSync(rootPath("tiamat", "templates", "new_game", "export_presets.cfg"), "utf8")));
 }
 
-// The Android permissions of the game's modules, each a permissions/<name>
-// option of its Android preset: on when a module of the game needs it (the
-// npc_ai module's language model reaches the internet), off when none does.
+// The Android permissions of the core and the game's modules, each a
+// permissions/<name> option of its Android preset: on when the core needs it
+// (vibrate, which shakes the phone) or a module of the game does (the npc_ai
+// module's language model reaches the internet), off when neither does.
 function androidPermissions(game, foundation) {
   const declared = (module) => foundation.modules[module].android_permissions || [];
-  const wanted = new Set(game.modules.flatMap(declared));
-  const managed = [...new Set(Object.keys(foundation.modules).flatMap(declared))].sort();
+  const wanted = new Set([...foundation.androidPermissions, ...game.modules.flatMap(declared)]);
+  const managed = [...new Set([...foundation.androidPermissions, ...Object.keys(foundation.modules).flatMap(declared)])].sort();
   return Object.fromEntries(managed.map((permission) => [`permissions/${permission}`, String(wanted.has(permission))]));
 }
 

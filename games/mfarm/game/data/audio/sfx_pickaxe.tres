@@ -11,3 +11,5 @@ volume_db = -26.5
 pitch_min = 1
 pitch_max = 1.2
 max_voices = 4
+rumble = 0.25
+rumble_seconds = 0.05
