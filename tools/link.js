@@ -18,8 +18,7 @@
 // project.godot is brought in step too.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
-const { fail, main, rootPath } = require("./lib/common");
+const { fail, main, parseToolArgs, rootPath } = require("./lib/common");
 const { gamePath, resolveGames, templateGame } = require("./lib/games");
 const { syncProject } = require("./lib/project");
 
@@ -88,7 +87,7 @@ module.exports = { linkGame, desiredLinks, isLink };
 
 if (require.main === module) {
   main(() => {
-    const { values } = parseArgs({ options: { game: { type: "string", multiple: true } } });
+    const { values } = parseToolArgs({ options: { game: { type: "string", multiple: true } } });
     for (const game of resolveGames(values.game || [])) {
       const changed = linkGame(game);
       console.log(`${game.id}: foundation core, ${game.modules.length} module(s) and ${game.addons.length} addon(s) linked${changed ? ` (${changed} updated)` : ""}.`);

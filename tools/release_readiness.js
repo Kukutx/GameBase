@@ -1,11 +1,14 @@
+// The release gate of one game: clean Git whitespace, the full validation from
+// an empty import cache, the export of every target, the smoke runs of the
+// builds (and of the Web build in Chromium), the deterministic archives and
+// the release manifest. Each --skip-* option leaves one step out.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { PRESET_NAMES, exportPresets } = require("./export");
 const { packageTarget, targetsFor } = require("./package_release");
 const { hostTarget, smokeExport } = require("./smoke_export");
 const { validate } = require("./validate");
-const { fail, git, main, npmCommand, resolveGodotBin, rootPath, run } = require("./lib/common");
+const { fail, git, main, npmCommand, parseToolArgs, resolveGodotBin, rootPath, run } = require("./lib/common");
 const { distPath, gamePath, gameVersion, resolveGame } = require("./lib/games");
 
 const REQUIRED = [
@@ -150,7 +153,7 @@ async function releaseReadiness({ game, godotBin, skipValidation, skipExport, sk
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: {
         game: { type: "string" },
         "godot-bin": { type: "string" },

@@ -43,7 +43,7 @@ A Godot project only sees files inside its own directory, so the foundation and 
 node tools/link.js
 ```
 
-Then open `games/<id>/project.godot` in a stable Godot 4.x editor. The shared engine baseline is `.godot-version` (currently 4.7.2); newer stable 4.x releases are allowed locally. The tooling needs Node.js 26 (the current LTS) or newer and has no other dependency; tools use `--godot-bin <path>`, else `GODOT_BIN`, else `godot` from `PATH`.
+Then open `games/<id>/project.godot` in a stable Godot 4.x editor. The shared engine baseline is `.godot-version` (currently 4.7.2); newer stable 4.x releases are allowed locally. The tooling needs Node.js 26 (the current LTS) or newer and has no other dependency; tools use `--godot-bin <path>`, else `GODOT_BIN`, else `godot` from `PATH`. Every tool says what it does and lists its options with `--help` (`node tools/export.js --help`).
 
 Create a new game, a small one that plays on the core alone (no module), with:
 

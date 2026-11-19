@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawn, spawnSync } = require("node:child_process");
+const { parseArgs } = require("node:util");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const GAME_VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z-]+)*)?$/;
@@ -22,6 +23,10 @@ const UPDATE_CHECK_RE = /^ERROR: \[GUT\] (?:Could not get version info|An error 
 const GUT_CHECK_FRESH_SECONDS = 12 * 60 * 60;
 
 class ToolError extends Error {}
+
+// Thrown by parseToolArgs() for --help: main() prints its message, the help,
+// to standard output and ends the tool with exit code 0.
+class ToolHelp extends ToolError {}
 
 function fail(message) {
   throw new ToolError(message);
@@ -265,6 +270,54 @@ function tempFile(prefix) {
   return path.join(os.tmpdir(), `${prefix}-${process.pid}-${Date.now()}`);
 }
 
+// Lines of a tool's file that only bring in other modules.
+const IMPORT_LINE_RE = /^(?:#!.*|"use strict";|const .*require\(.*|const \{|\s+\w+,|\} = require\(.*|)$/;
+
+// The comment that opens a tool's file, before or after its imports, which
+// says what the tool does.
+function toolDescription(file) {
+  if (!file || !fs.existsSync(file)) return "";
+  const lines = [];
+  for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
+    if (line.startsWith("//")) {
+      lines.push(line.replace(/^\/\/ ?/, ""));
+    } else if (lines.length > 0 || !IMPORT_LINE_RE.test(line)) {
+      break;
+    }
+  }
+  return lines.join("\n").trim();
+}
+
+function toolHelp(options, file) {
+  const rows = Object.entries(options).map(([name, option]) => {
+    const flag = `${option.short ? `-${option.short}, ` : ""}--${name}${option.type === "string" ? ` <${name}>` : ""}`;
+    return `  ${flag}${option.multiple ? " (repeatable)" : ""}`;
+  });
+  const description = toolDescription(file);
+  return `${description ? `${description}\n\n` : ""}Options:\n${rows.join("\n")}`;
+}
+
+// A tool's command-line options, read like util.parseArgs(config). Every tool
+// also takes --help (-h), which prints its opening comment and its options, and
+// a wrong option ends the tool with one line rather than a stack trace.
+// `config.file` names the tool's file for the help (the running script by default).
+function parseToolArgs(config) {
+  const { file = require.main && require.main.filename, ...parseConfig } = config;
+  const options = { ...(parseConfig.options || {}), help: { type: "boolean", short: "h", default: false } };
+  let parsed;
+  try {
+    parsed = parseArgs({ ...parseConfig, options });
+  } catch (error) {
+    if (typeof error.code === "string" && error.code.startsWith("ERR_PARSE_ARGS_")) {
+      fail(`${error.message.split(". ")[0].replace(/\.$/, "")}. Run with --help to list the options.`);
+    }
+    throw error;
+  }
+  if (parsed.values.help) throw new ToolHelp(toolHelp(options, file));
+  delete parsed.values.help;
+  return parsed;
+}
+
 // Entry point wrapper: prints tool errors without a stack trace and sets the exit code.
 function main(entry) {
   Promise.resolve()
@@ -273,6 +326,11 @@ function main(entry) {
       process.exitCode = typeof code === "number" ? code : 0;
     })
     .catch((error) => {
+      if (error instanceof ToolHelp) {
+        console.log(error.message);
+        process.exitCode = 0;
+        return;
+      }
       if (error instanceof ToolError) {
         console.error(error.message);
       } else {
@@ -288,7 +346,10 @@ module.exports = {
   ENGINE_VERSION_RE,
   ENGINE_ERROR_RE,
   ToolError,
+  ToolHelp,
   fail,
+  parseToolArgs,
+  toolDescription,
   rootPath,
   readTrimmed,
   writeText,

@@ -22,8 +22,7 @@
 // ADPCM), are re-encoded to Ogg Vorbis with ffmpeg, which must then be on PATH.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
-const { fail, main, rootPath, run } = require("./lib/common");
+const { fail, main, parseToolArgs, rootPath, run } = require("./lib/common");
 const { gamePath, resolveGame } = require("./lib/games");
 const { UnityProject } = require("./lib/unity_project");
 const { SceneResolver } = require("./lib/unity_scene");
@@ -259,7 +258,7 @@ async function importUnity({ game, source, dryRun }) {
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: {
         game: { type: "string" },
         source: { type: "string" },

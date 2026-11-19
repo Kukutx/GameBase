@@ -1,8 +1,11 @@
+// Opens an exported pack (a .pck, or the one inside an .apk) with Godot and
+// fails when it lacks a runtime file of an addon the game links, or holds what
+// a release must not ship: the licensed art (game/art/licensed/) and addons'
+// editor-only files.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { buildZip, openZip } = require("./lib/archive");
-const { fail, main, removeRecursive, resolveGodotBin, run, tempFile } = require("./lib/common");
+const { fail, main, parseToolArgs, removeRecursive, resolveGodotBin, run, tempFile } = require("./lib/common");
 const { projectSetting, resolveGame } = require("./lib/games");
 
 const PROBE_PROJECT = `[application]
@@ -174,7 +177,7 @@ module.exports = { verifyExportContents, expectations };
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: { game: { type: "string" }, pck: { type: "string" }, "godot-bin": { type: "string" } },
     });
     if (!values.pck) {

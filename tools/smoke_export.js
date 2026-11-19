@@ -1,8 +1,11 @@
+// Runs a game's exported builds and fails on an engine error: the build for
+// this machine and the Web payload by default, or each --target (Android checks
+// the package and its signature). --from-package runs the build unpacked from
+// its release archive in dist/, which is what a player downloads.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { extractTar, extractZip, openZip } = require("./lib/archive");
-const { engineErrorLines, fail, main, removeRecursive, run } = require("./lib/common");
+const { engineErrorLines, fail, main, parseToolArgs, removeRecursive, run } = require("./lib/common");
 const { artifactName, artifactsPath, buildPath, resolveGame } = require("./lib/games");
 const { macBundle, targetsFor } = require("./lib/targets");
 
@@ -146,7 +149,7 @@ module.exports = { hostTarget, smokeExport };
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: {
         game: { type: "string" },
         target: { type: "string", multiple: true },

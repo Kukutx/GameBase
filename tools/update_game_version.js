@@ -1,7 +1,6 @@
 const fs = require("node:fs");
-const { parseArgs } = require("node:util");
 const { validate } = require("./validate");
-const { GAME_VERSION_RE, fail, main } = require("./lib/common");
+const { GAME_VERSION_RE, fail, main, parseToolArgs } = require("./lib/common");
 const { gameName, gamePath, resolveGame } = require("./lib/games");
 const { syncProject } = require("./lib/project");
 const { androidVersionCode } = require("./lib/targets");
@@ -37,7 +36,7 @@ async function updateGameVersion({ game, version, godotBin }) {
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: { game: { type: "string" }, version: { type: "string" }, "godot-bin": { type: "string" } },
     });
     await updateGameVersion({ game: resolveGame(values.game), version: values.version, godotBin: values["godot-bin"] });

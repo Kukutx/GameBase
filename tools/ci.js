@@ -2,8 +2,7 @@
 // inline shell block so the workflows contain no logic of their own.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
-const { ENGINE_VERSION_RE, fail, git, main, readTrimmed, rootPath, run } = require("./lib/common");
+const { ENGINE_VERSION_RE, fail, git, main, parseToolArgs, readTrimmed, rootPath, run } = require("./lib/common");
 const { distPath, gameName, gameVersion, listGameIds, loadGame, parseReleaseTag, releaseTag, resolveGame } = require("./lib/games");
 
 const ADDON_ISSUE_TITLE = "Addon updates available";
@@ -229,7 +228,7 @@ module.exports = { releaseNotes, selectGames };
 
 if (require.main === module) {
   main(async () => {
-    const { values, positionals } = parseArgs({
+    const { values, positionals } = parseToolArgs({
       allowPositionals: true,
       options: {
         latest: { type: "boolean", default: false },

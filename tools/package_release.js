@@ -1,10 +1,14 @@
+// Packs a game's builds (build/<id>/<platform>/) into its release archives in
+// dist/<id>/, deterministically: sorted paths, timestamps from the commit (or
+// SOURCE_DATE_EPOCH, or --epoch) and fixed permissions, so the same build always
+// gives the same bytes. --source and --output pack one --target from elsewhere;
+// --self-test checks the packing on made-up builds.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { buildZip, buildTar, gzipDeterministic, openZip, readTar } = require("./lib/archive");
-const { fail, git, main } = require("./lib/common");
+const { fail, git, main, parseToolArgs } = require("./lib/common");
 const { resolveGame } = require("./lib/games");
 const { PACKAGE_FORMATS: FORMATS, TARGET_NAMES, targetsFor: exportTargetsFor } = require("./lib/targets");
 
@@ -179,7 +183,7 @@ function runSelfTest() {
 }
 
 function cli() {
-  const { values } = parseArgs({
+  const { values } = parseToolArgs({
     options: {
       game: { type: "string" },
       target: { type: "string", default: "All" },

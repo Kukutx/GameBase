@@ -20,8 +20,7 @@
 // same commit.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
-const { fail, main, rootPath } = require("./lib/common");
+const { fail, main, parseToolArgs, rootPath } = require("./lib/common");
 const { readFoundation } = require("./lib/games");
 
 const REFERENCE_DIR = rootPath("docs", "reference");
@@ -250,7 +249,7 @@ module.exports = { callArguments, classSummary, pages, ruleKeys, signalsOf, stal
 
 if (require.main === module) {
   main(() => {
-    const { values } = parseArgs({ options: { check: { type: "boolean", default: false } } });
+    const { values } = parseToolArgs({ options: { check: { type: "boolean", default: false } } });
     if (values.check) {
       const stale = stalePages();
       if (stale.length > 0) fail(`${stale.join(", ")} no longer match the code. Run: node tools/generate_reference.js`);

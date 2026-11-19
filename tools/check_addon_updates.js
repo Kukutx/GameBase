@@ -1,7 +1,12 @@
+// Compares each vendored addon (GUT, Dialogue Manager) with its newest
+// upstream stable release and writes the table to artifacts/addon-updates.md.
+// It never changes an addon: the weekly addon-freshness workflow keeps one
+// reminder issue open while an update is out. --fail-on-update ends with code 2
+// when one is, --json also prints the rows, and --github-output names the file
+// the workflow reads the count from.
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
-const { fail, git, main, rootPath } = require("./lib/common");
+const { fail, git, main, parseToolArgs, rootPath } = require("./lib/common");
 
 const REPORT_PATH = rootPath("artifacts", "addon-updates.md");
 const SEMVER_RE = /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
@@ -83,7 +88,7 @@ function buildReport(rows) {
 }
 
 function cli() {
-  const { values } = parseArgs({
+  const { values } = parseToolArgs({
     options: {
       "github-output": { type: "string" },
       json: { type: "boolean", default: false },

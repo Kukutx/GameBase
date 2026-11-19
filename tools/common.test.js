@@ -3,7 +3,8 @@ const test = require("node:test");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { engineErrorLines, godotUserDataDir, quietAddonUpdateChecks, runGodotStep } = require("./lib/common");
+const { spawnSync } = require("node:child_process");
+const { ToolError, ToolHelp, engineErrorLines, godotUserDataDir, parseToolArgs, quietAddonUpdateChecks, runGodotStep, toolDescription } = require("./lib/common");
 
 test("engine errors fail a step, GUT's online version check does not", () => {
   const output = [
@@ -75,4 +76,82 @@ test("a Godot step a signal stops says so, and a step safe to repeat runs once m
     console.log = log;
     fs.rmSync(scratch, { recursive: true, force: true });
   }
+});
+
+test("a tool reads its options, says what it does with --help and names a wrong option in one line", () => {
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "tiamat-tool-args-"));
+  try {
+    const file = path.join(scratch, "tool.js");
+    fs.writeFileSync(file, [
+      "#!/usr/bin/env node",
+      "const fs = require(\"node:fs\");",
+      "const {",
+      "  fail,",
+      "} = require(\"./lib/common\");",
+      "",
+      "// Does one thing well.",
+      "//",
+      "//   node tools/tool.js --game <id>",
+      "const LATER = 1; // not part of the description",
+      "",
+    ].join("\n"));
+    const options = { game: { type: "string", multiple: true }, check: { type: "boolean", default: false } };
+
+    const { values } = parseToolArgs({ options, file, args: ["--game", "farm1", "--game", "mfarm", "--check"] });
+    assert.deepEqual({ ...values }, { game: ["farm1", "mfarm"], check: true });
+
+    for (const args of [["--help"], ["-h"]]) {
+      assert.throws(() => parseToolArgs({ options, file, args }), (error) => {
+        assert.ok(error instanceof ToolHelp);
+        assert.equal(error.message, [
+          "Does one thing well.",
+          "",
+          "  node tools/tool.js --game <id>",
+          "",
+          "Options:",
+          "  --game <game> (repeatable)",
+          "  --check",
+          "  -h, --help",
+        ].join("\n"));
+        return true;
+      });
+    }
+
+    const wrong = [
+      [["--bogus"], "Unknown option '--bogus'. Run with --help to list the options."],
+      [["--game"], "Option '--game <value>' argument missing. Run with --help to list the options."],
+      [["extra"], "Unexpected argument 'extra'. Run with --help to list the options."],
+    ];
+    for (const [args, message] of wrong) {
+      assert.throws(() => parseToolArgs({ options, file, args }), (error) => {
+        assert.ok(error instanceof ToolError && !(error instanceof ToolHelp));
+        assert.equal(error.message, message);
+        return true;
+      });
+    }
+  } finally {
+    fs.rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+test("every tool says what it does with --help, and does nothing else", () => {
+  const tools = fs.readdirSync(__dirname).filter((entry) => entry.endsWith(".js") && !entry.endsWith(".test.js"));
+  let checked = 0;
+  for (const name of tools) {
+    const file = path.join(__dirname, name);
+    const source = fs.readFileSync(file, "utf8");
+    if (!source.includes("require.main === module")) continue;
+    assert.ok(!/\bparseArgs\(/.test(source), `tools/${name} reads its options with util.parseArgs; use parseToolArgs so --help and wrong options work alike.`);
+    if (!source.includes("parseToolArgs(")) continue;
+    const description = toolDescription(file);
+    assert.ok(description.length > 0, `tools/${name} has no opening comment for --help to show.`);
+    // A tool that did its work as well would print more than its help, or fail.
+    const result = spawnSync(process.execPath, [file, "--help"], { encoding: "utf8", timeout: 30_000 });
+    assert.equal(result.status, 0, `node tools/${name} --help: ${result.stderr}`);
+    assert.equal(result.stderr, "", `node tools/${name} --help wrote to the error stream`);
+    assert.ok(result.stdout.startsWith(`${description}\n\nOptions:\n`), `node tools/${name} --help printed more than its help:\n${result.stdout}`);
+    assert.match(result.stdout, /\nOptions:\n(?: {2}.+\n)+$/, `node tools/${name} --help printed more than its help:\n${result.stdout}`);
+    checked += 1;
+  }
+  assert.ok(checked >= 15, `only ${checked} tools were checked`);
 });

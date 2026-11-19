@@ -1,9 +1,12 @@
+// Installs the official Godot export templates of the engine baseline
+// (.godot-version, or --version) where the editor looks for them. The download
+// is kept in .dev/export-templates (or --cache-directory); --force installs
+// them again.
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { extractZip } = require("./lib/archive");
-const { ENGINE_VERSION_RE, download, fail, main, readTrimmed, removeRecursive, rootPath } = require("./lib/common");
+const { ENGINE_VERSION_RE, download, fail, main, parseToolArgs, readTrimmed, removeRecursive, rootPath } = require("./lib/common");
 
 const REQUIRED_TEMPLATES = ["windows_release_x86_64.exe", "linux_release.x86_64", "macos.zip", "android_release.apk", "web_nothreads_release.zip"];
 
@@ -72,7 +75,7 @@ async function installExportTemplates({ version, cacheDirectory, force = false }
 
 if (require.main === module) {
   main(async () => {
-    const { values } = parseArgs({
+    const { values } = parseToolArgs({
       options: {
         version: { type: "string" },
         "cache-directory": { type: "string" },

@@ -1,9 +1,11 @@
+// Opens every package of a game in dist/<id>/ and checks its BUILD_INFO.json
+// (game, version, engine, commit, target), its licenses and notices; only then
+// writes RELEASE_MANIFEST.json and SHA256SUMS.txt beside them.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
-const { parseArgs } = require("node:util");
 const { openZip, readTar } = require("./lib/archive");
-const { fail, git, main, readTrimmed, rootPath } = require("./lib/common");
+const { fail, git, main, parseToolArgs, readTrimmed, rootPath } = require("./lib/common");
 const { artifactName, distPath, gameVersion, resolveGame } = require("./lib/games");
 const { TARGET_NAMES, TARGET_PRESETS } = require("./lib/targets");
 const { targetsFor } = require("./package_release");
@@ -147,7 +149,7 @@ function validatePackage(target, file, expected) {
 }
 
 function cli() {
-  const { values } = parseArgs({
+  const { values } = parseToolArgs({
     options: {
       game: { type: "string" },
       dist: { type: "string" },
