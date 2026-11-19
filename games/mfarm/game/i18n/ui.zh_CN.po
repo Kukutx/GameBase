@@ -106,6 +106,9 @@ msgstr "用镰刀割掉它们。"
 msgid "Cut weeds with it."
 msgstr "用来割杂草。"
 
+msgid "Esc to skip"
+msgstr "按 Esc 跳过"
+
 msgid "Farm"
 msgstr "农场"
 
@@ -168,6 +171,9 @@ msgstr "集市"
 
 msgid "Mayor"
 msgstr "镇长"
+
+msgid "Me"
+msgstr "主角"
 
 msgid "Menu"
 msgstr "菜单"
@@ -277,11 +283,17 @@ msgstr "水壶"
 msgid "Weeds"
 msgstr "杂草"
 
+msgid "What a beauty! I'm not dreaming, am I?"
+msgstr "大美女！我不是在做梦吧？"
+
 msgid "What is left of a broadleaf tree."
 msgstr "阔叶树砍倒后剩下的树根。"
 
 msgid "What is left of a pine tree."
 msgstr "针叶树砍倒后剩下的树根。"
+
+msgid "Where am I......."
+msgstr "我这是在哪儿......."
 
 msgid "Wood from a broadleaf tree."
 msgstr "阔叶树的木头。"
@@ -297,6 +309,12 @@ msgstr "你的钱不够"
 
 msgid "You do not have that many"
 msgstr "你没有那么多"
+
+msgid "You're awake? A storm came over the sea, and the wind seems to have blown your boat away..."
+msgstr "你醒啦？之前海上降临了风暴，你的船好像已经被大风吹跑了。。。"
+
+msgid "You're soaked through. Don't catch a cold. Go and run around the island first!"
+msgstr "你全身都湿了，小心感冒，先到处岛上跑一跑吧！"
 
 msgid "Your bag is full"
 msgstr "背包满了"

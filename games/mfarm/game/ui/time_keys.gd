@@ -1,15 +1,12 @@
 extends Node
 
-## The old game's two time keys, kept for testing in debug builds only (an
-## exported release has none): holding T runs the clock a minute a frame, G
-## moves on a whole day, so crops grow and the land changes.
+## The old game's two time keys, which its menu told of: holding T runs the
+## clock a minute a frame, G moves on a whole day, so crops grow and the land
+## changes. Neither works while anything holds the controls.
 
 const MINUTES_PER_DAY := 24 * 60
 
 func _ready() -> void:
-	if not OS.is_debug_build():
-		queue_free()
-		return
 	set_process(false)
 
 func _unhandled_key_input(event: InputEvent) -> void:
