@@ -51,6 +51,12 @@ func _ready() -> void:
 	_find_controls()
 	# A web page is left by closing its tab.
 	quit_button.visible = not OS.has_feature("web")
+	# A phone has no desktop to quit to.
+	if OS.has_feature("mobile"):
+		if quit_button.text == "Quit to Desktop":
+			quit_button.text = "Quit Game"
+		if confirm_quit.title == "Quit to Desktop":
+			confirm_quit.title = "Quit Game"
 	resume_button.pressed.connect(close)
 	save_button.pressed.connect(_save_game)
 	load_button.pressed.connect(request_load)

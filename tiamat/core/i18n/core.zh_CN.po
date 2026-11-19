@@ -169,6 +169,9 @@ msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
 msgid "Quit to Desktop"
 msgstr "退出到桌面"
 
+msgid "Quit Game"
+msgstr "退出游戏"
+
 msgid "Unsaved progress will be lost. Quit the game?"
 msgstr "未保存的进度将会丢失。确定退出游戏吗？"
 
