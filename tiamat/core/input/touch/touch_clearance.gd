@@ -11,10 +11,12 @@ extends Node
 ## needs.
 ##
 ## Add one as the child of each HUD line near the bottom of the screen; it
-## does nothing while the player plays with keys, a mouse or a gamepad.
+## does nothing while the player plays with keys, a mouse or a gamepad. It
+## moves the line by how much it draws back, so the line may be moved by
+## others meanwhile (`HudSafeArea`), who call `refresh()` after.
 
 var _parent: Control
-# The parent's offsets before it drew back, while it is drawn back.
+# How far, in the parent's offsets, each side drew back, while drawn back.
 var _left := 0.0
 var _right := 0.0
 var _drawn_back := false
@@ -38,8 +40,11 @@ func _exit_tree() -> void:
 func get_drawn_back() -> Vector2:
 	if not _drawn_back:
 		return Vector2.ZERO
-	var factor := _view_factor()
-	return Vector2(_parent.offset_left - _left, _right - _parent.offset_right) * factor
+	return Vector2(_left, _right) * _view_factor()
+
+## Measures the line again where it now is, as after anyone moved it.
+func refresh() -> void:
+	_update()
 
 func _update() -> void:
 	if _parent == null or not is_inside_tree():
@@ -61,12 +66,12 @@ func _update() -> void:
 	var factor := _view_factor()
 	if factor <= 0.0:
 		return
-	_left = _parent.offset_left
-	_right = _parent.offset_right
+	_left = (left - rect.position.x) / factor
+	_right = (rect.end.x - right) / factor
 	_drawn_back = true
 	_moving = true
-	_parent.offset_left += (left - rect.position.x) / factor
-	_parent.offset_right -= (rect.end.x - right) / factor
+	_parent.offset_left += _left
+	_parent.offset_right -= _right
 	_moving = false
 
 func _restore() -> void:
@@ -74,8 +79,8 @@ func _restore() -> void:
 		return
 	_drawn_back = false
 	_moving = true
-	_parent.offset_left = _left
-	_parent.offset_right = _right
+	_parent.offset_left -= _left
+	_parent.offset_right += _right
 	_moving = false
 
 # A resize the game made (not this node) moves the line: measure it again.

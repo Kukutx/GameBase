@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://game/ui/stats_line.gd" id="1_stats_line"]
 [ext_resource type="PackedScene" path="res://tiamat/modules/items/shop/shop_menu.tscn" id="2_shop"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://game/ui/depth_line.gd" id="6_depth_line"]
 [ext_resource type="Script" path="res://tiamat/modules/items/hotbar/hotbar_line.gd" id="7_hotbar_line"]
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/controls_line.gd" id="8_controls_line"]
+[ext_resource type="Script" path="res://tiamat/core/ui/hud/hud_safe_area.gd" id="9_safe_area"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 20
@@ -106,3 +107,6 @@ horizontal_alignment = 1
 [node name="ShopMenu" parent="." instance=ExtResource("2_shop")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("3_pause")]
+
+[node name="SafeArea" type="Node" parent="."]
+script = ExtResource("9_safe_area")

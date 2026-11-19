@@ -283,6 +283,36 @@ func test_a_hud_line_draws_back_from_the_controls_that_show() -> void:
 	assert_eq([line.position.x, line.size.x], [0.0, view.size.x], "the line goes back when they hide")
 	assert_eq(clearance.get_drawn_back(), Vector2.ZERO)
 
+func test_a_line_kept_clear_of_a_phone_s_camera_draws_back_from_the_controls_too() -> void:
+	_play()
+	var view := get_viewport().get_visible_rect()
+	var hud := CanvasLayer.new()
+	add_child_autofree(hud)
+	var line := Label.new()
+	line.clip_text = true
+	hud.add_child(line)
+	var clearance := TouchClearance.new()
+	line.add_child(clearance)
+	var safe_area := HudSafeArea.new()
+	hud.add_child(safe_area)
+	_use_touch()
+	var stick := TouchControls.get_stick().get_rect()
+	line.anchor_right = 1.0
+	line.offset_left = 0.0
+	line.offset_right = 0.0
+	line.offset_top = stick.get_center().y - 8.0
+	line.offset_bottom = stick.get_center().y + 8.0
+	clearance.refresh()
+	assert_almost_eq(line.get_global_rect().position.x, stick.end.x, 0.5, "the line starts right of the stick")
+	# The camera at the left, narrower than the stick's reach.
+	safe_area.fit_to(Rect2(20, 0, view.size.x - 20, view.size.y))
+	assert_almost_eq(line.get_global_rect().position.x, stick.end.x, 0.5, "still right of the stick, the camera's strip behind it")
+	InputPrompts.call("_set_using_touch", false)
+	TouchControls._process(0.0)
+	assert_almost_eq(line.offset_left, 20.0, 0.01, "the controls gone, the line keeps clear of the camera")
+	safe_area.fit_to(view)
+	assert_eq([line.offset_left, line.offset_right], [0.0, 0.0], "and goes back where it was laid out")
+
 func test_the_player_s_size_and_side_place_the_controls() -> void:
 	_play()
 	_use_touch()
