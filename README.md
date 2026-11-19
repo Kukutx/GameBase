@@ -2,6 +2,8 @@
 
 Tiamat is the single repository for a family of Godot 4.x games: a shared, genre-agnostic foundation and every game built on it, side by side. A fix to the foundation reaches every game in the same commit; there is no second repository, no copied foundation and no version pin to move.
 
+It is also where old projects come back to life: `tools/import_unity.js` brings a Unity 2D project's art, maps, animations and sounds into a game here, and the game is rewritten on the foundation (see [docs/UNITY_IMPORT.md](docs/UNITY_IMPORT.md)). MFarm is the first.
+
 ## Layout
 
 ```text
@@ -27,6 +29,7 @@ The registered games:
 | --- | --- | --- |
 | Farm1 | `games/farm1/` | The first-generation farming life-sim; see [games/farm1/README.md](games/farm1/README.md) |
 | Ember Depths | `games/dungeon1/` | A dungeon delve on the core, items, skills and combat; see [games/dungeon1/README.md](games/dungeon1/README.md) |
+| MFarm | `games/mfarm/` | A small farm and a seaside town through the seasons, revived from the Unity project MFarmDemo on the core alone; see [games/mfarm/README.md](games/mfarm/README.md) |
 | Iron Banners | `games/strategy1/` | Strategy battles on a grid in active time and in real time on an open field, on the core, damage, rts and tactics; see [games/strategy1/README.md](games/strategy1/README.md) |
 
 A game is registered by its `games/<id>/game.json`, which lists the foundation modules it uses (with every module they require) and any extra shared addons. Inside a game project, `res://game/` is that game's code, `res://tiamat/` the foundation and `res://addons/` the addons. Dependencies point one way: a game may use the core and its listed modules, a module may use the core and the modules it declares, and the core uses neither; `tools/check_layers.js` enforces this. See [tiamat/README.md](tiamat/README.md).

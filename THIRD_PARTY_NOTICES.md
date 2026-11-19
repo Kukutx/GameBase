@@ -35,6 +35,22 @@ Copyright 2014-2021 Adobe, with Reserved Font Name 'Source', licensed under the
 SIL Open Font License 1.1, which is distributed as
 `licenses/NOTO_SANS_SC_LICENSE.txt`.
 
+## MFarm's art, sounds and fonts
+
+MFarm (`games/mfarm/`) carries over everything its Unity predecessor
+MFarmDemo shipped, under `games/mfarm/game/unity/`:
+
+- the "Fantastic Farm RPG game assets" (characters, maps, buildings, items,
+  crops, trees, the interface) and the music and sounds, as provided with the
+  Unity Learn China MFarm course (https://learn.u3d.cn/tutorial/MFarmCourse);
+- the Fantasy Cursor Pack;
+- the fonts GNU Unifont 14.0.01 (the interface font, licensed under the
+  GNU GPL 2 or later with the font embedding exception, or the SIL Open Font
+  License 1.1), Chusung and Gongfan.
+
+Their terms are those their authors set; check them before releasing MFarm
+outside of personal use.
+
 ## Development-only dependencies
 
 GUT is used for automated tests and is explicitly excluded from release
