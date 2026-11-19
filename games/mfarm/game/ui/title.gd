@@ -120,7 +120,7 @@ func _build() -> void:
 	paper = Control.new()
 	paper.name = "Paper"
 	paper.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_centre(paper, PAPER_SIZE, 0.0)
+	MFarmUiArt.centre(paper, PAPER_SIZE, 0.0)
 	add_child(paper)
 	paper.add_child(MFarmUiArt.image(MFarmUiArt.texture("ui_paper_01"), PAPER_SIZE))
 	# The old menu's order: the keys at the bottom, the title on top.
@@ -143,18 +143,8 @@ func _build() -> void:
 	status_label.name = "Status"
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_centre(status_label, Vector2(PAPER_SIZE.x + 120, 24), PAPER_SIZE.y / 2 + 24)
+	MFarmUiArt.centre(status_label, Vector2(PAPER_SIZE.x + 120, 24), PAPER_SIZE.y / 2 + 24)
 	add_child(status_label)
-
-# Keeps `control` (of `size`) in the middle of the screen, `below` pixels
-# lower, whatever the window's width.
-static func _centre(control: Control, size: Vector2, below: float) -> void:
-	control.set_anchors_preset(Control.PRESET_CENTER)
-	var corner := (-size / 2).floor() + Vector2(0, below)
-	control.offset_left = corner.x
-	control.offset_top = corner.y
-	control.offset_right = corner.x + size.x
-	control.offset_bottom = corner.y + size.y
 
 func _build_sheet(sheet: Sheet) -> void:
 	var page := Control.new()

@@ -50,6 +50,16 @@ static func label(text: String, font_size := 8, color := TEXT_COLOR) -> Label:
 	result.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return result
 
+## Keeps `control` (of `size`) in the middle of its parent, `below` pixels
+## lower, whatever the window's width: the title's and the pause menu's paper.
+static func centre(control: Control, size: Vector2, below := 0.0) -> void:
+	control.set_anchors_preset(Control.PRESET_CENTER)
+	var corner := (-size / 2).floor() + Vector2(0, below)
+	control.offset_left = corner.x
+	control.offset_top = corner.y
+	control.offset_right = corner.x + size.x
+	control.offset_bottom = corner.y + size.y
+
 ## Puts `child` under `parent` with its top left at `at`.
 static func place(parent: Control, child: Control, at: Vector2) -> Control:
 	child.position = at
@@ -59,7 +69,7 @@ static func place(parent: Control, child: Control, at: Vector2) -> Control:
 ## A button drawn with one of the old textures, tinted as the old game's
 ## buttons were (a little darker under the mouse, darker while pressed, faded
 ## while disabled), with a thin outline while the keys or a gamepad point at
-## it. Its text, if any, is in the old font.
+## it. Its text, if any, is in the old font, in the middle of its old size.
 static func button(texture_name: String, size: Vector2, text := "", font_size := 8, color := TEXT_COLOR) -> Button:
 	var result := Button.new()
 	var art := texture(texture_name)
@@ -71,6 +81,9 @@ static func button(texture_name: String, size: Vector2, text := "", font_size :=
 		style.texture_margin_top = border.y
 		style.texture_margin_right = border.z
 		style.texture_margin_bottom = border.w
+		# The border slices the art; the words sit in the middle of the
+		# button's old size, unpadded, as the old ones did.
+		style.set_content_margin_all(0)
 		style.modulate_color = state[1]
 		result.add_theme_stylebox_override(state[0], style)
 	var focus := StyleBoxFlat.new()
@@ -88,4 +101,7 @@ static func button(texture_name: String, size: Vector2, text := "", font_size :=
 	result.text = text
 	result.custom_minimum_size = size
 	result.size = size
+	# Out of the tree the words are measured in the default font size, which
+	# grows the button; in the tree they take the old size again.
+	result.ready.connect(func() -> void: result.size = size, CONNECT_ONE_SHOT)
 	return result

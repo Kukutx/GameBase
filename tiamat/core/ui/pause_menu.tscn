@@ -40,30 +40,37 @@ text = "Paused"
 horizontal_alignment = 1
 
 [node name="Resume" type="Button" parent="Dim/Panel/Layout"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Resume"
 
 [node name="Save" type="Button" parent="Dim/Panel/Layout"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Save Game"
 
 [node name="Load" type="Button" parent="Dim/Panel/Layout"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Load Game"
 
 [node name="Settings" type="Button" parent="Dim/Panel/Layout"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Settings"
 
 [node name="ReturnTitle" type="Button" parent="Dim/Panel/Layout"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Return to Title"
 
 [node name="Quit" type="Button" parent="Dim/Panel/Layout"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Quit to Desktop"
 
 [node name="Status" type="Label" parent="Dim/Panel/Layout"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 14)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.88, 0.74, 0.52, 1)

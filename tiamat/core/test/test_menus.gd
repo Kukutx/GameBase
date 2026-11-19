@@ -259,6 +259,26 @@ func test_the_pause_menu_opens_when_the_gamepad_in_use_disconnects() -> void:
 	assert_false(menu.visible, "a menu on top already waits for the player")
 	InputLock.unlock(&"fixture_menu")
 
+func test_a_game_lays_out_its_own_pause_menu_and_the_core_adds_the_rest() -> void:
+	var menu := PauseMenu.new()
+	var layout := VBoxContainer.new()
+	menu.add_child(layout)
+	for node_name: String in ["Resume", "Save", "Load", "Settings", "ReturnTitle", "Quit", "Status"]:
+		var control: Control = Label.new() if node_name == "Status" else Button.new()
+		control.name = node_name
+		layout.add_child(control)
+		control.owner = menu
+		control.unique_name_in_owner = true
+	add_child_autofree(menu)
+	assert_eq(menu.resume_button, layout.get_node(^"Resume"), "found by its name, wherever it is")
+	assert_eq(menu.status_label, layout.get_node(^"Status"))
+	assert_not_null(menu.settings_menu, "the core's settings menu")
+	assert_eq(menu.confirm_title.dialog_text, "Unsaved progress will be lost. Return to the title screen?", "and its questions")
+	menu.open()
+	assert_eq(_focus(), menu.resume_button)
+	menu.resume_button.pressed.emit()
+	assert_false(menu.visible)
+
 func test_quitting_from_the_pause_menu_asks_first() -> void:
 	var menu := _pause()
 	menu.open()
