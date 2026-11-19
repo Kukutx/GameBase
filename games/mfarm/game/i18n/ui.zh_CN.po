@@ -13,6 +13,9 @@ msgstr "四季流转的小农场和海边小镇，由 Unity 版 MFarm 演示重�
 msgid "%d.%02d.%02d"
 msgstr "%d年%02d月%02d日"
 
+msgid "%s to skip"
+msgstr "按 %s 跳过"
+
 msgid "A bunch of sweet grapes."
 msgstr "一串甜甜的葡萄。"
 
@@ -121,9 +124,6 @@ msgstr "用镰刀割掉它们。"
 msgid "Cut weeds with it."
 msgstr "用来割杂草。"
 
-msgid "Esc to skip"
-msgstr "按 Esc 跳过"
-
 msgid "Farm"
 msgstr "农场"
 
@@ -180,6 +180,9 @@ msgstr "Koyo"
 
 msgid "Large Rock"
 msgstr "大石头"
+
+msgid "Left Stick to walk"
+msgstr "左摇杆控制人物移动"
 
 msgid "MFarm"
 msgstr "麦田物语"
@@ -247,8 +250,8 @@ msgstr "土豆"
 msgid "Potato Seeds"
 msgstr "土豆种子"
 
-msgid "Press Space to continue"
-msgstr "按 空格 继续"
+msgid "Press %s to continue"
+msgstr "按 %s 继续"
 
 msgid "Rest"
 msgstr "休息"
@@ -271,6 +274,9 @@ msgstr "镰刀"
 msgid "Small Rock"
 msgstr "小石头"
 
+msgid "Stick to walk"
+msgstr "摇杆控制人物移动"
+
 msgid "Stone"
 msgstr "石头"
 
@@ -285,6 +291,12 @@ msgstr "需要二十个针叶木头才能建造。"
 
 msgid "Talk to %s"
 msgstr "和%s说话"
+
+msgid "Tap to continue"
+msgstr "点一下继续"
+
+msgid "Tap × to skip"
+msgstr "点 × 跳过"
 
 msgid "The dream has not started"
 msgstr "梦还没开始"

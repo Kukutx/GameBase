@@ -5,7 +5,8 @@ extends Control
 ## comic of the storm that took the farmer's boat, picture by picture over
 ## Calm 4 (`COMIC`, timed as the old timeline was), then the farmer wakes,
 ## looks about and meets Mike (`lines`). The player cannot act and the clock
-## stands still until it is over. Esc skips it until the talk starts.
+## stands still until it is over. Esc (Android's back button, the close
+## button on a touchscreen) skips it until the talk starts, then ends the talk.
 
 signal finished
 
@@ -79,6 +80,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = false
 	GameSession.new_game_started.connect(_on_new_game_started)
+	InputPrompts.input_method_changed.connect(_name_skip.unbind(1))
 	# The comic covers the beach from the first frame of a new game, before
 	# the view fades in.
 	if GameSession.is_starting_new_game():
@@ -141,8 +143,10 @@ func _build_comic() -> Control:
 		var slide: Array = picture.get("slide", [])
 		rect.position = _view_corner(slide[0][1] if not slide.is_empty() else picture["at"], rect.size)
 		comic.add_child(rect)
-	var hint := MFarmUiArt.label("Esc to skip", 8, MFarmUiArt.LIGHT_TEXT_COLOR)
+	var hint := MFarmUiArt.label("", 8, MFarmUiArt.LIGHT_TEXT_COLOR)
 	hint.name = "SkipHint"
+	hint.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	hint.text = skip_text()
 	hint.modulate.a = 0.6
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	hint.size = Vector2(160, 12)
@@ -164,6 +168,17 @@ func _animate_comic() -> Tween:
 			step.set_trans(Tween.TRANS_CUBIC if key == 1 else Tween.TRANS_SINE).set_ease(Tween.EASE_OUT if key == 1 else Tween.EASE_IN_OUT)
 	tween.tween_property(_comic, ^"modulate:a", 0.0, COMIC_END - COMIC_FADE_FROM).set_delay(COMIC_FADE_FROM)
 	return tween
+
+## What the note on the comic says: the close button on a touchscreen, else
+## the key or button that pauses, which skips.
+static func skip_text() -> String:
+	if InputPrompts.using_touch:
+		return TranslationServer.translate("Tap × to skip")
+	return TranslationServer.translate("%s to skip") % InputPrompts.get_action_prompt(&"pause")
+
+func _name_skip() -> void:
+	if _comic != null and _comic.has_node(^"SkipHint"):
+		(_comic.get_node(^"SkipHint") as Label).text = skip_text()
 
 # The top left in the view of a picture of `size` (in the view) centred at
 # `centre` on the old canvas.

@@ -4,7 +4,8 @@ extends GutTest
 ## and talk of a new game, a place heard alone before its music and at the
 ## old mixer's levels, weeds that
 ## sway, a harvest held up, boxes opened with the right mouse button and the
-## time keys.
+## time keys; and the notes of the comic and the talk name what goes on on the
+## device in use, the close button of a touchscreen ending either.
 
 const IntroScene := preload("res://game/ui/intro.tscn")
 const PlayerScene := preload("res://game/player/player.tscn")
@@ -22,6 +23,7 @@ func before_each() -> void:
 	_minute = WorldClock.minute_of_day
 
 func after_each() -> void:
+	InputPrompts.call("_set_using_touch", false)
 	process_mode = Node.PROCESS_MODE_INHERIT
 	InputLock.clear()
 	WorldClock.paused = false
@@ -50,6 +52,37 @@ func test_the_intro_holds_the_player_and_the_clock_until_it_is_skipped() -> void
 	assert_false(InputLock.is_held(MFarmIntro.LOCK))
 	assert_false(WorldClock.paused)
 	assert_false(GameAudio.has_pushed_music(MFarmIntro.MUSIC_LAYER))
+
+func test_the_notes_name_how_to_go_on_with_the_device_in_use() -> void:
+	var intro := IntroScene.instantiate() as MFarmIntro
+	add_child_autofree(intro)
+	intro.play()
+	var skip := intro.get_node("Comic/SkipHint") as Label
+	assert_eq(skip.text, tr("%s to skip") % InputPrompts.get_action_prompt(&"pause"), "the key that pauses skips")
+	var box := MFarmDialogueBox.new()
+	add_child_autofree(box)
+	assert_eq(box.get_continue_text(), tr("Press %s to continue") % InputPrompts.get_action_prompt(&"interact"))
+	InputPrompts.call("_set_using_touch", true)
+	assert_eq(skip.text, tr("Tap × to skip"), "the close button skips on a touchscreen")
+	assert_eq(box.get_continue_text(), tr("Tap to continue"))
+	intro.skip()
+
+func test_going_back_ends_a_talk() -> void:
+	var box := MFarmDialogueBox.new()
+	add_child_autofree(box)
+	watch_signals(box)
+	var lines: Array[MFarmDialogueLine] = [MFarmDialogueLine.new(), MFarmDialogueLine.new()]
+	lines[0].text = "Fixture first"
+	lines[1].text = "Fixture second"
+	box.play(lines)
+	assert_true(box.is_talking())
+	var back := InputEventAction.new()
+	back.action = &"ui_cancel"
+	back.pressed = true
+	box._unhandled_input(back)
+	assert_false(box.is_talking(), "the close button, Esc or Android's back button ends it")
+	assert_signal_emitted(box, "finished")
+	assert_false(InputLock.is_held(MFarmDialogueBox.LOCK))
 
 func test_each_picture_of_the_comic_rests_in_view() -> void:
 	var view := Rect2(Vector2.ZERO, Vector2(640, 360))

@@ -41,6 +41,13 @@ func _ready() -> void:
 static func can_quit() -> bool:
 	return not OS.has_feature("web")
 
+## Goes back a step, as Android's back button does on the title
+## (`TouchControls.go_back()`): a title with pages of its own goes back to its
+## first and returns true; false when there is no step to go back, and the
+## game quits.
+func go_back() -> bool:
+	return false
+
 ## Opens `slot` the way the old games' slot cards did: it continues the game
 ## saved there, or starts a new game in it when it holds none (asking first
 ## when it holds a save this version cannot open).

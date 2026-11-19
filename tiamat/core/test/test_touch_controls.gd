@@ -5,8 +5,19 @@ extends GutTest
 ## game's buttons press their actions and the corner button pauses; under a
 ## menu only the corner button shows, and it cancels; on the title nothing
 ## shows; going back, as Android's back button does, closes what is open or
-## pauses play; and a HUD line with a `TouchClearance` draws back from the
-## controls that show.
+## pauses play, and on the title has the scene go back a step before the game
+## quits; and a HUD line with a `TouchClearance` draws back from the controls
+## that show.
+
+# A scene with a page to go back from, as a title's other page.
+class PagedScene extends Node:
+	var page := 1
+
+	func go_back() -> bool:
+		if page == 0:
+			return false
+		page = 0
+		return true
 
 var _menu: PauseMenu
 
@@ -120,6 +131,23 @@ func test_going_back_pauses_play_and_closes_what_is_open() -> void:
 	TouchControls._input(_touch(3, corner.get_center(), false))
 	Input.flush_buffered_events()
 	assert_false(_menu.visible, "and so does back")
+
+func test_on_the_title_going_back_takes_the_scene_s_step_before_quitting() -> void:
+	assert_eq(TouchControls.back_action(), &"", "nothing to close or pause")
+	var title := GameTitleBase.new()
+	assert_false(title.go_back(), "a title of one page has no step to go back")
+	title.free()
+	var scene := PagedScene.new()
+	get_tree().root.add_child(scene)
+	var before := get_tree().current_scene
+	get_tree().current_scene = scene
+	var stepped := TouchControls.back_step()
+	var again := TouchControls.back_step()
+	get_tree().current_scene = before
+	assert_true(stepped, "the scene goes back a step")
+	assert_eq(scene.page, 0)
+	assert_false(again, "and then going back quits")
+	scene.free()
 
 func test_a_hud_line_draws_back_from_the_controls_that_show() -> void:
 	_play()
