@@ -188,6 +188,20 @@ func test_a_box_opens_with_the_right_mouse_button_only_from_next_to_it() -> void
 	box._on_trigger(player, false)
 	assert_false(box.is_player_near())
 
+func test_the_pointer_hides_while_a_finger_plays() -> void:
+	var player := PlayerScene.instantiate() as MFarmPlayer
+	add_child_autofree(player)
+	var cursor := player.get_node("Cursor") as MFarmCursor
+	var pointer := cursor.get_node("Screen/Pointer") as Sprite2D
+	cursor._process(0.0)
+	assert_true(pointer.visible, "the mouse has its pointer")
+	InputPrompts.call("_set_using_touch", true)
+	cursor._process(0.0)
+	assert_false(pointer.visible, "a finger points for itself")
+	InputPrompts.call("_set_using_touch", false)
+	cursor._process(0.0)
+	assert_true(pointer.visible)
+
 func test_g_moves_on_a_day_and_t_runs_the_clock_unless_the_controls_are_held() -> void:
 	var keys := TimeKeys.new()
 	add_child_autofree(keys)

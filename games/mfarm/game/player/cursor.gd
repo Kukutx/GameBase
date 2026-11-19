@@ -5,7 +5,9 @@ extends Node2D
 ## arrow over the interface or with empty hands, and a seed, item or tool
 ## pointer for what the player holds. Where the held item cannot be used the
 ## pointer turns red. A blueprint in hand shows the piece of furniture on
-## the cell under the pointer, red where it cannot be built.
+## the cell under the pointer, red where it cannot be built. A finger points
+## for itself, so on a touchscreen (`InputPrompts.using_touch`) the pointer
+## does not show where the last one lifted.
 
 const NORMAL: Texture2D = preload("res://game/unity/art/cursors/cursor(11).tres")
 const TOOL: Texture2D = preload("res://game/unity/art/cursors/cursor(8).tres")
@@ -27,6 +29,7 @@ func _exit_tree() -> void:
 
 func _process(_delta: float) -> void:
 	var viewport := get_viewport()
+	_pointer.visible = not InputPrompts.using_touch
 	_pointer.position = viewport.get_mouse_position()
 	var item := Bags.get_selected_item()
 	var over_ui := viewport.gui_get_hovered_control() != null or get_tree().paused
