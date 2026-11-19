@@ -29,6 +29,10 @@ var _crop_nodes: Dictionary = {}
 var _busy_cells: Dictionary = {}
 ## dropped id -> MFarmWorldItem
 var _dropped_nodes: Dictionary = {}
+## The soil's sprites by cell, kept and given the tile that fits as the land
+## changes, so a change redraws only what it touches.
+var _soil_sprites: Dictionary[Vector2i, Sprite2D] = {}
+var _water_sprites: Dictionary[Vector2i, Sprite2D] = {}
 var _furniture_count := 0
 var _random: GameRandomStream
 
@@ -227,10 +231,10 @@ func _has_furniture_at(cell: Vector2i) -> bool:
 func _on_land_changed(changed_location: StringName, cell: Vector2i, all: bool) -> void:
 	if changed_location != location_id:
 		return
-	_refresh_soil()
 	if all:
 		_refresh_land()
 	else:
+		_refresh_soil()
 		_refresh_crop(cell)
 
 func _refresh_land() -> void:
@@ -244,8 +248,6 @@ func _refresh_land() -> void:
 		_refresh_crop(cell)
 
 func _refresh_soil() -> void:
-	for child: Node in _soil.get_children() + _water.get_children():
-		child.queue_free()
 	var dug: Dictionary = {}
 	var watered: Dictionary = {}
 	for cell: Vector2i in Farmland.get_cells(location_id):
@@ -253,17 +255,26 @@ func _refresh_soil() -> void:
 			dug[cell] = true
 			if Farmland.is_watered(location_id, cell):
 				watered[cell] = true
-	for cell: Vector2i in dug:
-		_soil.add_child(_soil_sprite(cell, DIG_TILE.texture_for(MFarmRuleTile.mask_of(cell, dug))))
-	for cell: Vector2i in watered:
-		_water.add_child(_soil_sprite(cell, WATER_TILE.texture_for(MFarmRuleTile.mask_of(cell, watered))))
+	_sync_soil(_soil, _soil_sprites, dug, DIG_TILE)
+	_sync_soil(_water, _water_sprites, watered, WATER_TILE)
 
-static func _soil_sprite(cell: Vector2i, texture: Texture2D) -> Sprite2D:
-	var sprite := Sprite2D.new()
-	sprite.texture = texture
-	sprite.centered = false
-	sprite.position = Vector2(cell * CELL)
-	return sprite
+# Shows `tile` on `cells` in `layer`: a sprite for each, its texture fitting
+# its neighbours; sprites of cells no longer in `cells` go.
+static func _sync_soil(layer: Node2D, sprites: Dictionary[Vector2i, Sprite2D], cells: Dictionary, tile: MFarmRuleTile) -> void:
+	for cell: Vector2i in sprites.keys():
+		if not cells.has(cell):
+			sprites[cell].queue_free()
+			sprites.erase(cell)
+	for cell: Vector2i in cells:
+		var texture := tile.texture_for(MFarmRuleTile.mask_of(cell, cells))
+		var sprite: Sprite2D = sprites.get(cell)
+		if sprite == null:
+			sprite = Sprite2D.new()
+			sprite.centered = false
+			sprite.position = Vector2(cell * CELL)
+			layer.add_child(sprite)
+			sprites[cell] = sprite
+		sprite.texture = texture
 
 func _refresh_crop(cell: Vector2i) -> void:
 	if _busy_cells.has(cell):

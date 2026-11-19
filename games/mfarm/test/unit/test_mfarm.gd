@@ -92,6 +92,26 @@ func test_dug_soil_left_empty_fills_in() -> void:
 		Farmland.call("_on_day_changed", 0)
 	assert_false(Farmland.is_dug(&"field", cell))
 
+func test_the_grid_redraws_only_the_soil_a_change_touches() -> void:
+	var location := MFarmLocation.new()
+	location.location_id = &"field"
+	var grid := MFarmFarmGrid.new()
+	location.add_child(grid)
+	add_child_autofree(location)
+	var soil := grid.get_node("Soil")
+	Farmland.dig(&"field", Vector2i(16, 2))
+	assert_eq(soil.get_child_count(), 1)
+	var first := soil.get_child(0) as Sprite2D
+	var alone := first.texture
+	Farmland.dig(&"field", Vector2i(17, 2))
+	assert_eq(soil.get_child_count(), 2)
+	assert_true(is_instance_valid(first) and first.get_parent() == soil, "the dug cell keeps its sprite")
+	assert_ne(first.texture, alone, "and turns to the tile that joins its neighbour")
+	for _day: int in MFarmFarmService.DAYS_SOIL_STAYS_DUG + 1:
+		Farmland.call("_on_day_changed", 0)
+	await wait_physics_frames(1)
+	assert_eq(soil.get_child_count(), 0, "soil that filled in goes")
+
 func test_only_the_map_s_diggable_cells_dig() -> void:
 	assert_true(Farmland.can_dig(&"field", Vector2i(12, 1)))
 	assert_false(Farmland.can_dig(&"field", Vector2i(0, 0)))
