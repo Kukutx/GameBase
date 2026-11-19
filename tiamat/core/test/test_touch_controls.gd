@@ -295,6 +295,18 @@ func test_the_player_s_opacity_draws_every_control_fainter() -> void:
 	for control: Control in controls:
 		assert_almost_eq(control.modulate.a, 0.5, 0.001, "%s fainter" % control.name)
 
+func test_the_controls_move_when_the_screen_s_clear_part_moves() -> void:
+	_play()
+	_use_touch()
+	watch_signals(TouchControls)
+	TouchControls._process(TouchControlsService.SAFE_AREA_CHECK)
+	assert_signal_not_emitted(TouchControls, "layout_changed", "nothing moved")
+	# A phone turned over: its notch on the other side, its size the same.
+	TouchControls.set("_laid_out_safe", Rect2(40, 0, 200, 100))
+	TouchControls._process(TouchControlsService.SAFE_AREA_CHECK)
+	assert_signal_emitted(TouchControls, "layout_changed", "placed again in the part now clear")
+	assert_eq(TouchControls.get("_laid_out_safe"), TouchControls.safe_rect())
+
 func test_the_settings_offer_the_touch_controls_on_a_device_played_by_touch() -> void:
 	var menu := (load("res://tiamat/core/ui/settings_menu.tscn") as PackedScene).instantiate() as SettingsMenu
 	add_child_autofree(menu)

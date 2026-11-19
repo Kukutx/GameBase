@@ -50,6 +50,10 @@ const PAUSE_ACTION := &"pause"
 ## holds a control; read as a finger's, like the engine's own
 ## (`InputPromptService.is_from_finger()`).
 const FINGER_MOUSE_DEVICE := -8
+## How often, in seconds, the controls look whether the screen's clear part
+## moved (`safe_rect()`): a phone turned over keeps its size but takes its
+## notch to the other side.
+const SAFE_AREA_CHECK := 0.5
 ## The most buttons a game's controls get.
 const MAX_BUTTONS := 5
 ## Sizes against the height of the view, at the normal touch size
@@ -82,6 +86,10 @@ var _game_actions_known := false
 # -1; and where it last was, in the view.
 var _mouse_finger := -1
 var _mouse_at := Vector2.ZERO
+# The clear part of the screen the controls were last placed in, and the
+# time to the next look at it.
+var _laid_out_safe := Rect2()
+var _safe_check_in := 0.0
 
 func _ready() -> void:
 	layer = LAYER
@@ -105,8 +113,13 @@ func _notification(what: int) -> void:
 		NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED:
 			_release_all()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_show(_wanted())
+	_safe_check_in -= delta
+	if visible and _safe_check_in <= 0.0:
+		_safe_check_in = SAFE_AREA_CHECK
+		if safe_rect() != _laid_out_safe:
+			_layout()
 
 ## Goes back, as Android's back button does: closes what is open (a menu, a
 ## dialogue, a minigame, a dialog window) with the cancel action, pauses play,
@@ -348,6 +361,7 @@ func _layout() -> void:
 	var margin := unit * MARGIN
 	# Placed in the part of the screen a notch or rounded corners leave clear.
 	var clear := safe_rect()
+	_laid_out_safe = clear
 	var left := clear.position.x + margin
 	var right := clear.end.x - margin
 	var top := clear.position.y + margin
