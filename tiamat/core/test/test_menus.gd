@@ -35,6 +35,16 @@ func test_every_menu_draws_with_the_project_theme() -> void:
 	assert_true(load(path) is Theme)
 	assert_eq(ThemeDB.get_project_theme().resource_path, path)
 
+func test_a_menu_s_panel_hides_the_screen_behind_it() -> void:
+	# The engine's own panels are see-through: a menu's text ran into the
+	# title or the world behind it. The core's theme draws them whole.
+	var theme := load("res://tiamat/core/ui/default_theme.tres") as Theme
+	for type: StringName in [&"PanelContainer", &"Panel"]:
+		var style := theme.get_stylebox(&"panel", type) as StyleBoxFlat
+		assert_not_null(style, "%s has a panel of its own" % type)
+		if style != null:
+			assert_eq(style.bg_color.a, 1.0, "%s is opaque" % type)
+
 func test_the_music_and_sounds_buses_send_to_master() -> void:
 	for bus: StringName in GameSettingsService.AUDIO_BUSES:
 		var index := AudioServer.get_bus_index(bus)
