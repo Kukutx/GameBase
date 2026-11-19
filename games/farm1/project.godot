@@ -97,6 +97,7 @@ settings/gdscript/always_track_call_stacks=true
 
 [display]
 
+window/handheld/orientation=4
 window/size/viewport_width=480
 window/size/viewport_height=270
 window/size/window_width_override=1280

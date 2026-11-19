@@ -313,6 +313,19 @@ test("a game's name in each language its own catalogs give names its window and 
   }
 });
 
+test("a phone held either way up shows a game the right way up", () => {
+  const game = { id: "probe", root: tempFile("tiamat-orientation"), modules: [], addons: [], manifest: {} };
+  const orientation = (display) => /window\/handheld\/orientation=(\d)/.exec(syncedProject(`config_version=5\n\n[display]\n\n${display}`, game, readFoundation()))?.[1];
+  assert.equal(orientation("window/size/viewport_width=480\nwindow/size/viewport_height=270\n"), "4", "a wide view turns with the phone in landscape");
+  assert.equal(orientation("window/size/viewport_width=360\nwindow/size/viewport_height=540\n"), "5", "a tall view turns with the phone in portrait");
+  assert.equal(orientation(""), "4", "Godot's default view is wide");
+  assert.equal(orientation("window/handheld/orientation=1\nwindow/size/viewport_width=480\n"), "1", "a game that names an orientation keeps it");
+  const wide = syncedProject("config_version=5\n\n[display]\n\nwindow/size/viewport_width=480\nwindow/size/viewport_height=270\n", game, readFoundation());
+  assert.ok(wide.includes("[display]\n\nwindow/handheld/orientation=4\nwindow/size/viewport_width=480\n"), "where the editor would write it");
+  assert.equal(syncedProject(wide, game, readFoundation()), wide, "linking again changes nothing");
+  assert.ok(!syncedProject("config_version=5\n", { ...game, template: true }, readFoundation()).includes("orientation"), "the template leaves it to each new game");
+});
+
 test("the manifests reject autoloads that would break a linked game", () => {
   const core = { before_modules: { Events: "res://tiamat/core/events.gd" }, after_modules: {} };
   const manifest = (modules, autoloads = core) => ({ autoloads, modules });
