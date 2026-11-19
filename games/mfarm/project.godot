@@ -19,6 +19,7 @@ config/description="A farm and a seaside town through the seasons, revived from 
 config/version="0.1.0"
 run/main_scene="res://game/ui/title.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://icon.png"
 
 [autoload]
 
@@ -145,3 +146,4 @@ locale/translations=PackedStringArray("res://tiamat/core/i18n/core.zh_CN.po", "r
 textures/canvas_textures/default_texture_filter=3
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true

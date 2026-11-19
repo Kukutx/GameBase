@@ -53,8 +53,8 @@ node tools/check_layers.js
 node tools/check_code.js
 node tools/check_localization.js [--game <id>]...
 node tools/generate_reference.js [--check]
-node tools/export.js [--game <id> | --all] [--preset "Windows Desktop"|Linux|Web] [--skip-validation] [--allow-engine-drift]
-node tools/smoke_export.js [--game <id>]
+node tools/export.js [--game <id> | --all] [--preset "Windows Desktop"|Linux|macOS|Android|Web] [--skip-validation] [--allow-engine-drift]
+node tools/smoke_export.js [--game <id>] [--target Windows|Linux|macOS|Android|Web]... [--from-package]
 node tools/release_readiness.js [--game <id>]
 node tools/package_release.js [--game <id>]
 node tools/generate_release_manifest.js [--game <id>]

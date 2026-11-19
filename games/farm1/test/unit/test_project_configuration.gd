@@ -78,14 +78,14 @@ func test_project_uses_web_compatible_renderer() -> void:
 
 func test_export_presets_cover_supported_release_targets() -> void:
 	var presets := _read_text("res://export_presets.cfg")
-	assert_true(presets.contains('name="Windows Desktop"'))
-	assert_true(presets.contains('name="Linux"'))
-	assert_true(presets.contains('name="Web"'))
+	var targets := ["Windows Desktop", "Linux", "macOS", "Android", "Web"]
+	for target: String in targets:
+		assert_true(presets.contains('name="%s"' % target), target)
 	var filters: Array[PackedStringArray] = []
 	for line: String in presets.split("\n"):
 		if line.begins_with("exclude_filter="):
 			filters.append(line.trim_prefix("exclude_filter=").trim_prefix("\"").trim_suffix("\"").split(","))
-	assert_eq(filters.size(), 3, "each of the three presets has an exclude filter")
+	assert_eq(filters.size(), targets.size(), "each preset has an exclude filter")
 	for required_exclusion: String in [
 		"test/*",
 		"tiamat/core/test/*",

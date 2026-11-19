@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
+const { buildZip, openZip } = require("./lib/archive");
 const { fail, main, removeRecursive, resolveGodotBin, run, tempFile } = require("./lib/common");
 const { projectSetting, resolveGame } = require("./lib/games");
 
@@ -120,14 +121,36 @@ func _initialize() -> void:
 	quit(0)
 `;
 
+// An Android package keeps the files of the game's pack under assets/; they
+// are written to a ZIP pack of their own, which the probe mounts like a PCK.
+function writeApkAssetsPack(apkPath, zipPath) {
+  const zip = openZip(apkPath);
+  try {
+    const entries = zip.entries
+      .filter((entry) => entry.name.startsWith("assets/") && !entry.name.endsWith("/"))
+      .map((entry) => ({ name: entry.name.slice("assets/".length), data: zip.read(entry), mode: 0o644 }))
+      .sort((a, b) => Buffer.compare(Buffer.from(a.name), Buffer.from(b.name)));
+    if (entries.length === 0) fail(`${apkPath} has no assets/ to check.`);
+    fs.writeFileSync(zipPath, buildZip(entries, 0));
+  } finally {
+    zip.close();
+  }
+}
+
+// Checks what the pack holds: a .pck, or the assets of an Android .apk.
 async function verifyExportContents({ game, pckPath, godotBin }) {
   const godot = resolveGodotBin(godotBin);
-  const resolvedPck = path.resolve(pckPath);
+  let resolvedPck = path.resolve(pckPath);
   if (!fs.existsSync(resolvedPck)) {
     fail(`Resource pack not found: ${pckPath}`);
   }
   const probeRoot = tempFile("tiamat-export-pack-probe");
   fs.mkdirSync(probeRoot, { recursive: true });
+  if (resolvedPck.toLowerCase().endsWith(".apk")) {
+    const assets = path.join(probeRoot, "apk-assets.zip");
+    writeApkAssetsPack(resolvedPck, assets);
+    resolvedPck = assets;
+  }
   fs.writeFileSync(path.join(probeRoot, "project.godot"), PROBE_PROJECT, "utf8");
   const probeScript = path.join(probeRoot, "probe.gd");
   fs.writeFileSync(probeScript, PROBE_SCRIPT, "utf8");
@@ -155,7 +178,7 @@ if (require.main === module) {
       options: { game: { type: "string" }, pck: { type: "string" }, "godot-bin": { type: "string" } },
     });
     if (!values.pck) {
-      fail("Usage: node tools/verify_export_contents.js [--game <id>] --pck <path> [--godot-bin <godot>]");
+      fail("Usage: node tools/verify_export_contents.js [--game <id>] --pck <path to a .pck or an .apk> [--godot-bin <godot>]");
     }
     await verifyExportContents({ game: resolveGame(values.game), pckPath: values.pck, godotBin: values["godot-bin"] });
   });

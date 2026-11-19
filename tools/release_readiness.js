@@ -3,7 +3,7 @@ const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { PRESET_NAMES, exportPresets } = require("./export");
 const { packageTarget, targetsFor } = require("./package_release");
-const { smokeExport } = require("./smoke_export");
+const { hostTarget, smokeExport } = require("./smoke_export");
 const { validate } = require("./validate");
 const { fail, git, main, npmCommand, resolveGodotBin, rootPath, run } = require("./lib/common");
 const { distPath, gamePath, gameVersion, resolveGame } = require("./lib/games");
@@ -118,7 +118,9 @@ async function releaseReadiness({ game, godotBin, skipValidation, skipExport, sk
 
   if (!skipExport) {
     await exportPresets({ game, presets: PRESET_NAMES, godotBin: godot, skipValidation: true });
-    await smokeExport({ game, targets: [process.platform === "win32" ? "Windows" : "Linux", "Web"] });
+    // The build of this machine's system runs; the Android package is checked
+    // for what a phone needs from it.
+    await smokeExport({ game, targets: [hostTarget(), "Android", "Web"] });
     if (!skipBrowserSmoke) {
       await browserSmoke(game);
     }

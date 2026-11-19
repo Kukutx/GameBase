@@ -55,7 +55,8 @@ function assertStringList(value, label) {
 }
 
 // tiamat/tiamat.json: the modules, the modules each one requires, the
-// shared addons and the autoloads each one uses, the core's autoloads before
+// shared addons, the Android permissions (an export preset's
+// permissions/<name>) and the autoloads each one uses, the core's autoloads before
 // and after the modules', and the addons every game links (the test
 // framework). tools/lib/project.js writes a game's autoloads from it.
 function readFoundation() {
@@ -98,6 +99,9 @@ function checkFoundation(manifest) {
     assertMap(module, `tiamat.json modules.${name}`);
     assertStringList(module.requires ?? [], `tiamat.json modules.${name}.requires`);
     const addons = assertStringList(module.addons ?? [], `tiamat.json modules.${name}.addons`);
+    for (const permission of assertStringList(module.android_permissions ?? [], `tiamat.json modules.${name}.android_permissions`)) {
+      if (!/^[a-z_]+$/.test(permission)) fail(`tiamat.json modules.${name}.android_permissions: '${permission}' is not an Android export permission such as internet.`);
+    }
     claim(module.autoloads ?? {}, `tiamat.json modules.${name}.autoloads`, [`res://tiamat/modules/${name}/`, ...addonRoots(addons)]);
     for (const required of module.requires ?? []) {
       if (!modules[required]) fail(`tiamat.json modules.${name} requires unknown module ${required}.`);
@@ -254,6 +258,7 @@ function templateGame(foundation = readFoundation()) {
     modules: [],
     addons: [...foundation.addons].sort(),
     manifest: { id: "new_game", modules: [] },
+    template: true,
   };
 }
 

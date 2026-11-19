@@ -79,6 +79,12 @@ jobs:
           - name: Linux
             preset: Linux
             package: "*-linux-x86_64.tar.gz"
+          - name: macOS
+            preset: macOS
+            package: "*-macos-universal.zip"
+          - name: Android
+            preset: Android
+            package: "*-android.zip"
           - name: Web
             preset: Web
             package: "*-web.zip"
@@ -103,8 +109,21 @@ jobs:
           use-dotnet: false
           include-templates: true
 
+      # Android signs with the release keystore of the repository's secrets
+      # (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_USER and
+      # ANDROID_KEYSTORE_PASSWORD), the same from release to release so an
+      # install updates; without them, with a throwaway key (BUILD_INFO.json
+      # says which).
       - name: Export
+        env:
+          TIAMAT_ANDROID_KEYSTORE_BASE64: ${{ matrix.name == 'Android' && secrets.ANDROID_KEYSTORE_BASE64 || '' }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ matrix.name == 'Android' && secrets.ANDROID_KEYSTORE_USER || '' }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ matrix.name == 'Android' && secrets.ANDROID_KEYSTORE_PASSWORD || '' }}
         run: node tools/export.js --godot-bin godot --preset "${{ matrix.preset }}" --skip-validation ${{ inputs.engine_version && '--allow-engine-drift' || '' }}
+
+      - name: Verify Android package
+        if: matrix.name == 'Android'
+        run: node tools/smoke_export.js --target Android
 
       - name: Verify Web payload
         if: matrix.name == 'Web'
@@ -155,6 +174,9 @@ jobs:
           - name: Linux
             os: ubuntu-latest
             artifact: release-Linux
+          - name: macOS
+            os: macos-latest
+            artifact: release-macOS
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     env:

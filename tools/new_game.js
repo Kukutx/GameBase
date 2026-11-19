@@ -4,14 +4,15 @@
 //   node tools/new_game.js --id <id> --name "<Game Name>" [--description "<One line>"]
 //
 // It copies tiamat/templates/new_game into games/<id>/: a project.godot with
-// the core autoloads and the core and game translation catalogs, the Windows,
-// Linux and Web export presets, a game definition, the game's own empty
-// GameSetup module (game/game_setup.gd), a player and HUD, two locations
-// joined by portals, a unit test and a new-game smoke script. It names the project, its
-// log, its catalog and its export paths, and its description (the title
-// screen's line under the name, with its catalog entry, which keeps the English
-// text until it is translated), writes games/<id>/game.json with no module, and
-// links the foundation in.
+// the core autoloads and the core and game translation catalogs, an export
+// preset for every target (tools/lib/targets.js), a game definition, the
+// game's own empty GameSetup module (game/game_setup.gd), a player and HUD,
+// two locations joined by portals, a unit test and a new-game smoke script.
+// It names the project, its log, its catalog and its description (the title
+// screen's line under the name, with its catalog entry, which keeps the
+// English text until it is translated), writes games/<id>/game.json with no
+// module, and links the foundation in, which also writes where each preset
+// exports to and the game's application id.
 // Enable a module by listing it (and the modules it requires) in game.json,
 // then run node tools/link.js: it links the module and registers its autoloads
 // and catalogs in project.godot, and the module installs itself (its
@@ -21,7 +22,6 @@ const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { fail, main, rootPath } = require("./lib/common");
 const { GAME_ID_RE, GAMES_ROOT, readFoundation } = require("./lib/games");
-const { presetsFor } = require("./export");
 const { linkGame } = require("./link");
 
 const TEMPLATE = rootPath("tiamat", "templates", "new_game");
@@ -65,15 +65,6 @@ function createGame({ id, name, description, out }) {
     if (description !== undefined) text = setValue(text, "config/description", description);
     return setValue(text, "file_logging/log_path", `user://logs/${id}.log`);
   });
-  // The editor's default export paths; tools/export.js passes the same ones.
-  const outputs = presetsFor({ id, root });
-  rewrite(path.join(root, "export_presets.cfg"), (text) =>
-    text.replace(/^name="([^"]+)"$([\s\S]*?)^export_path="[^"]*"$/gm, (match, preset, between) => {
-      if (!outputs[preset]) fail(`The template export_presets.cfg has an unknown preset '${preset}'.`);
-      const relative = path.relative(root, outputs[preset].output).split(path.sep).join("/");
-      return `name=${JSON.stringify(preset)}${between}export_path=${JSON.stringify(relative)}`;
-    }),
-  );
   rewrite(path.join(root, "game", "i18n", "ui.zh_CN.po"), (text) => {
     text = text.replace(/Project-Id-Version: [^\\]*/, `Project-Id-Version: ${name}`);
     if (description === undefined) return text;

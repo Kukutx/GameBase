@@ -124,6 +124,12 @@ jobs:
           - name: Linux
             preset: Linux
             dir: linux
+          - name: macOS
+            preset: macOS
+            dir: macos
+          - name: Android
+            preset: Android
+            dir: android
           - name: Web
             preset: Web
             dir: web
@@ -154,8 +160,14 @@ jobs:
           use-dotnet: false
           include-templates: true
 
+      # An Android build signs with a throwaway key: the runner's Android SDK
+      # and JDK export it, and apksigner verifies it.
       - name: Export
         run: node tools/export.js --godot-bin godot --preset "${{ matrix.target.preset }}" --skip-validation ${{ inputs.engine_version && '--allow-engine-drift' || '' }}
+
+      - name: Verify Android package
+        if: matrix.target.name == 'Android'
+        run: node tools/smoke_export.js --target Android
 
       - name: Verify Web payload
         if: matrix.target.name == 'Web'
@@ -204,6 +216,9 @@ jobs:
           - name: Linux
             os: ubuntu-latest
             dir: linux
+          - name: macOS
+            os: macos-latest
+            dir: macos
     runs-on: ${{ matrix.target.os }}
     timeout-minutes: 15
     env:

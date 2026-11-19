@@ -71,8 +71,8 @@ Builds go to `build/<id>/<platform>/`, packages to `dist/<id>/` and QA output to
 
 GitHub Actions:
 
-- `.github/workflows/ci.yml`: repository checks and per-game clean-import validation side by side, then Windows/Linux/Web exports, native Windows/Linux execution and Chromium Web smoke, judged by one `CI result` check. A pull request that changes only some games' own directories validates only those games, and one that changes only documentation runs the repository checks alone.
-- `.github/workflows/release.yml`: a `game/<id>/v<version>` tag builds that game's deterministic Windows/Linux/Web packages, smokes them, writes `RELEASE_MANIFEST.json` and SHA-256 checksums and publishes a GitHub Release whose notes list that game's changes and its foundation's since its previous release.
+- `.github/workflows/ci.yml`: repository checks and per-game clean-import validation side by side, then Windows/Linux/macOS/Android/Web exports, native Windows/Linux/macOS execution, an Android package check and Chromium Web smoke, judged by one `CI result` check. A pull request that changes only some games' own directories validates only those games, and one that changes only documentation runs the repository checks alone.
+- `.github/workflows/release.yml`: a `game/<id>/v<version>` tag builds that game's deterministic Windows/Linux/macOS/Android/Web packages, smokes them, writes `RELEASE_MANIFEST.json` and SHA-256 checksums and publishes a GitHub Release whose notes list that game's changes and its foundation's since its previous release.
 - `.github/workflows/engine-compat.yml`: weekly validation and exports of every game against the newest stable Godot 4.x release, without moving the shared baseline.
 - `.github/workflows/addon-freshness.yml`: weekly stable-tag comparison for the vendored addons; it maintains one reminder issue and never replaces addon code.
 

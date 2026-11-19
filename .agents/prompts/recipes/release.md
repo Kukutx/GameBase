@@ -8,7 +8,7 @@ Read only when the task is to prepare, check or publish a release, or to change 
 node tools/release_readiness.js --game <id>
 ```
 
-It requires a clean Git working tree, then runs the repository checks, a clean import, the full validation including the three-year save/load soak, the three exports with pack verification, the native and Web payload smoke, the Chromium smoke of the Web export, the deterministic archives and the release manifest. `--skip-browser-smoke` is for a machine without browser tooling; a release candidate passes without it. `node tools/validate.js --skip-soak` is for fast local iteration only.
+It requires a clean Git working tree, then runs the repository checks, a clean import, the full validation including the three-year save/load soak, the exports of every target with pack verification, the native and Web payload smoke, the Chromium smoke of the Web export, the deterministic archives and the release manifest. `--skip-browser-smoke` is for a machine without browser tooling; a release candidate passes without it. `node tools/validate.js --skip-soak` is for fast local iteration only.
 
 A Godot step fails on a non-zero exit code or on any `ERROR:` or `SCRIPT ERROR:` line, even when the engine exits with code 0.
 
@@ -23,7 +23,7 @@ A Godot step fails on a non-zero exit code or on any `ERROR:` or `SCRIPT ERROR:`
 node tools/update_game_version.js --game <id> --version <semver>
 ```
 
-changes `config/version` in `games/<id>/project.godot`, the only place the game's version lives. The release tag is exactly `game/<id>/v<version>`, for example `game/farm1/v0.1.0`; the Release workflow rejects any other tag. Commit the version change before tagging, so that `BUILD_INFO.json` in every package names one exact commit with `dirty` false.
+changes `config/version` in `games/<id>/project.godot`, the only place the game's version lives, and the Android version code in its `export_presets.cfg` that follows from it. The release tag is exactly `game/<id>/v<version>`, for example `game/farm1/v0.1.0`; the Release workflow rejects any other tag. Commit the version change before tagging, so that `BUILD_INFO.json` in every package names one exact commit with `dirty` false.
 
 ## What must be in and out of a package
 
@@ -33,7 +33,7 @@ changes `config/version` in `games/<id>/project.godot`, the only place the game'
 
 ## Publishing
 
-The Release workflow publishes a GitHub Release of one game for a `game/<id>/v<version>` tag after validation, the three builds, the browser smoke, the packaged-build smoke on Windows and Linux and the manifest check. Publishing by hand is not part of this recipe.
+The Release workflow publishes a GitHub Release of one game for a `game/<id>/v<version>` tag after validation, the builds of every target, the browser smoke, the packaged-build smoke on Windows, Linux and macOS, the Android package check and the manifest check. Publishing by hand is not part of this recipe.
 
 ## Reporting
 

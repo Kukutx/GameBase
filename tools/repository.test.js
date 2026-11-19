@@ -10,6 +10,7 @@ const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, ga
 const { desiredLinks } = require("./link");
 const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, projectInSync, syncedExportPresets, syncedGutConfig, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
+const { PRESET_NAMES, androidVersionCode, applicationId } = require("./lib/targets");
 const { selectGames } = require("./ci");
 const { callArguments, pages, ruleKeys, signalsOf, stalePages } = require("./generate_reference");
 const { findTestScripts } = require("./validate");
@@ -47,7 +48,11 @@ function assertCompleteGame(game) {
     assert.ok(fs.existsSync(gamePath(game, file)), `games/${id}/${file}`);
   }
   const presets = fs.readFileSync(gamePath(game, "export_presets.cfg"), "utf8");
-  for (const name of ["Windows Desktop", "Linux", "Web"]) assert.ok(presets.includes(`name="${name}"`), `${id} preset ${name}`);
+  for (const name of PRESET_NAMES) assert.ok(presets.includes(`name="${name}"`), `${id} preset ${name}`);
+  // A phone, a Mac and a window title show the game's own icon.
+  const icon = projectString(game, "application", "config/icon");
+  assert.ok(icon && icon.startsWith("res://"), `${id} sets config/icon`);
+  assert.ok(fs.existsSync(gamePath(game, icon.slice("res://".length))), `${id} icon ${icon} exists`);
   for (const filter of presets.matchAll(/^exclude_filter="([^"]*)"$/gm)) {
     const excluded = filter[1].split(",");
     for (const required of ["test/*", "tiamat/core/test/*", "tiamat/modules/*/test/*", "addons/gut/*", "game/art/licensed/*", ".gutconfig.json", "game.json"]) {
@@ -212,7 +217,7 @@ test("a game runs the tests of the core, of each of its modules and its own", ()
 });
 
 test("a game's exports keep out the editor files of the addons it links, and only those", () => {
-  const talking = { id: "probe", addons: ["gut", "dialogue_manager"] };
+  const talking = { id: "probe", addons: ["gut", "dialogue_manager"], template: true };
   const editorFiles = desiredAddonExcludes(talking);
   assert.ok(editorFiles.includes("addons/dialogue_manager/plugin.gd*"));
   const presets = 'name="Linux"\nexclude_filter="test/*,game.json"\n\nname="Web"\nexclude_filter="test/*,game.json"\n';
@@ -221,7 +226,50 @@ test("a game's exports keep out the editor files of the addons it links, and onl
     assert.deepEqual(filter[1].split(","), ["test/*", "game.json", ...editorFiles]);
   }
   assert.equal(syncedExportPresets(synced, talking), synced, "a synced file stays as it is");
-  assert.equal(syncedExportPresets(synced, { id: "probe", addons: ["gut"] }), presets, "an addon the game no longer links takes its filters along");
+  assert.equal(syncedExportPresets(synced, { id: "probe", addons: ["gut"], template: true }), presets, "an addon the game no longer links takes its filters along");
+});
+
+test("linking gives a game a preset for every target, exporting to its build directory under its application id", () => {
+  const out = tempFile("tiamat-presets-test");
+  try {
+    const game = createGame({ id: "probe-game", name: "Probe Game", out });
+    const file = gamePath(game, "export_presets.cfg");
+    const complete = fs.readFileSync(file, "utf8");
+    // A game made before macOS and Android were targets has three presets.
+    const old = complete.slice(0, complete.indexOf("[preset.3]")).replace(/\n+$/, "\n");
+    const synced = syncedExportPresets(old, game);
+    assert.equal(synced, complete, "the missing presets come from the template, filled in for the game");
+    assert.equal(syncedExportPresets(synced, game), synced, "a synced file stays as it is");
+    const relative = (...parts) => path.relative(out, rootPath("build", "probe-game", ...parts)).split(path.sep).join("/");
+    assert.ok(synced.includes(`export_path="${relative("macos", "ProbeGame.app")}"`));
+    assert.ok(synced.includes(`export_path="${relative("android", "ProbeGame.apk")}"`));
+    assert.equal(applicationId(game), "io.github.kukutx.probe_game", "a package name has no hyphen");
+    assert.ok(synced.includes('application/bundle_identifier="io.github.kukutx.probe_game"'));
+    assert.ok(synced.includes('package/unique_name="io.github.kukutx.probe_game"'));
+    assert.ok(synced.includes("version/code=100"), "0.1.0 is version code 100");
+    assert.ok(synced.includes("permissions/internet=false"), "a game without npc_ai stays offline");
+    // A key typed into the file by hand goes: signing keys come from the environment.
+    const leaked = synced.replace('keystore/release_password=""', 'keystore/release_password="hunter2"');
+    assert.ok(!syncedExportPresets(leaked, game).includes("hunter2"));
+  } finally {
+    removeRecursive(out);
+  }
+});
+
+test("an Android version code grows with the game's version", () => {
+  assert.equal(androidVersionCode("0.1.0"), 100);
+  assert.equal(androidVersionCode("1.2.3-beta.1"), 10203);
+  assert.ok(androidVersionCode("2.0.0") > androidVersionCode("1.99.99"));
+  assert.throws(() => androidVersionCode("1.100.0"), /at most 99/);
+});
+
+test("a game whose modules reach the internet may do so on Android, and only then", () => {
+  for (const id of listGameIds()) {
+    const game = loadGame(id);
+    const presets = fs.readFileSync(gamePath(game, "export_presets.cfg"), "utf8");
+    const online = game.modules.includes("npc_ai");
+    assert.ok(presets.includes(`permissions/internet=${online}`), `${id} permissions/internet=${online}`);
+  }
 });
 
 test("a battle on a grid or an open field needs no items", () => {
