@@ -7,8 +7,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-msgid "A farming life-sim on GameBase"
-msgstr "基于 GameBase 的农场生活模拟"
+msgid "A farming life-sim on Tiamat"
+msgstr "基于 Tiamat 的农场生活模拟"
 
 msgid "Items"
 msgstr "物品"

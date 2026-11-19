@@ -17,7 +17,7 @@ const { fail, main, removeRecursive, rootPath, run, tempFile } = require("./lib/
 //
 //   node tools/subset_font.js --source <NotoSansSC-Regular.ttf>
 
-const OUTPUT = rootPath("gamebase", "core", "ui", "fonts", "noto_sans_sc.woff2");
+const OUTPUT = rootPath("tiamat", "core", "ui", "fonts", "noto_sans_sc.woff2");
 // Files whose text a game shows: translations, dialogue, and the scripts and
 // resources that hold text of their own (the language names).
 const TEXT_EXTENSIONS = new Set([".po", ".dialogue", ".gd", ".tres", ".tscn"]);
@@ -69,7 +69,7 @@ function repositoryCharacters(found, directory) {
 function fontCharacters() {
   const found = new Set();
   gb2312Characters(found);
-  repositoryCharacters(found, rootPath("gamebase"));
+  repositoryCharacters(found, rootPath("tiamat"));
   repositoryCharacters(found, rootPath("games"));
   for (const [low, high] of RANGES) {
     for (let code = low; code <= high; code++) found.add(code);
@@ -81,7 +81,7 @@ function fontCharacters() {
 async function subsetFont(source) {
   if (!fs.existsSync(source)) fail(`Source font not found: ${source}`);
   const characters = fontCharacters();
-  const list = tempFile("gamebase-font-characters");
+  const list = tempFile("tiamat-font-characters");
   fs.writeFileSync(list, characters.map((code) => `U+${code.toString(16).toUpperCase().padStart(4, "0")}`).join("\n"), "utf8");
   try {
     // Characters the source lacks are left out; test_theme_font names any a

@@ -1,0 +1,32 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: New Game\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "New game on Tiamat"
+msgstr "基于 Tiamat 的新游戏"
+
+msgid "Starting Point"
+msgstr "起点"
+
+msgid "Lookout"
+msgstr "瞭望台"
+
+msgid "Welcome! The path north leads to the lookout."
+msgstr "欢迎！往北的小路通向瞭望台。"
+
+msgid "To the lookout"
+msgstr "前往瞭望台"
+
+msgid "The whole valley lies below."
+msgstr "整个山谷尽收眼底。"
+
+msgid "Back to the start"
+msgstr "返回起点"
+
+msgid "Move with {move}. Press {interact} to use what is near."
+msgstr "用 {move} 移动，按 {interact} 使用身旁的东西。"

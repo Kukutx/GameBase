@@ -88,14 +88,14 @@ const REQUIRED_PRESSURE_TESTS = [
 ];
 
 const REQUIRED_AGENT_PATH_ROUTES = [
-  ["`gamebase/**/*.gd`", "`.agents/rules/gdscript.md`"],
+  ["`tiamat/**/*.gd`", "`.agents/rules/gdscript.md`"],
   ["`games/*/game/**/*.gd`", "`.agents/rules/gdscript.md`"],
   ["`games/*/test/**/*.gd`", "`.agents/rules/gdscript.md`"],
-  ["`gamebase/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
-  ["`gamebase/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
+  ["`tiamat/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
+  ["`tiamat/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
   ["`games/*/game/**/*.tscn`", "`.agents/rules/scenes-resources.md`"],
   ["`games/*/game/**/*.tres`", "`.agents/rules/scenes-resources.md`"],
-  ["`gamebase/core/save/**`", "`.agents/rules/save.md`"],
+  ["`tiamat/core/save/**`", "`.agents/rules/save.md`"],
   ["`games/*/game/i18n/**`", "`.agents/rules/localization.md`"],
   ["`games/*/test/**`", "`.agents/rules/testing.md`"],
   ["`tools/**`", "`.agents/rules/tools.md`"],
@@ -130,7 +130,7 @@ const REPOSITORY_BACKTICK_PREFIXES = [
   ".github/",
   "addons/",
   "docs/",
-  "gamebase/",
+  "tiamat/",
   "games/",
   "licenses/",
   "tools/",

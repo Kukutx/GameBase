@@ -2,7 +2,7 @@ extends GutTest
 
 # Farm1's animals, its general store and the animals of its dev world. How
 # animals are owned, housed, fed and sold is tested on fixture content in
-# gamebase/modules/lifesim/test/test_animal_ownership.gd.
+# tiamat/modules/lifesim/test/test_animal_ownership.gd.
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary

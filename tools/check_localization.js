@@ -15,7 +15,7 @@ const { gamePath, projectSetting, projectString, readFoundation, resolveGames } 
 // the translation.
 function textLayers(game) {
   const foundation = readFoundation();
-  const core = { name: "gamebase/core", root: rootPath("gamebase", "core"), res: "res://gamebase/core/", below: [] };
+  const core = { name: "tiamat/core", root: rootPath("tiamat", "core"), res: "res://tiamat/core/", below: [] };
   const required = (module, seen = new Set()) => {
     for (const name of foundation.modules[module]?.requires || []) {
       if (!seen.has(name)) {
@@ -26,10 +26,10 @@ function textLayers(game) {
     return seen;
   };
   const modules = game.modules.map((module) => ({
-    name: `gamebase/modules/${module}`,
-    root: rootPath("gamebase", "modules", module),
-    res: `res://gamebase/modules/${module}/`,
-    below: [core.name, ...[...required(module)].sort().map((name) => `gamebase/modules/${name}`)],
+    name: `tiamat/modules/${module}`,
+    root: rootPath("tiamat", "modules", module),
+    res: `res://tiamat/modules/${module}/`,
+    below: [core.name, ...[...required(module)].sort().map((name) => `tiamat/modules/${name}`)],
   }));
   // The title screen shows the game's description from its project.godot.
   const description = projectString(game, "application", "config/description");
@@ -140,9 +140,9 @@ function decodeString(raw) {
   }
 }
 
-// A foundation layer's tests (gamebase/core/test/, gamebase/modules/<m>/test/),
+// A foundation layer's tests (tiamat/core/test/, tiamat/modules/<m>/test/),
 // which hold no text the player sees.
-const TESTS_RE = /[\\/]gamebase[\\/](?:core|modules[\\/][^\\/]+)[\\/]test$/;
+const TESTS_RE = /[\\/]tiamat[\\/](?:core|modules[\\/][^\\/]+)[\\/]test$/;
 
 // Skips directories with a .gdignore, which Godot does not import either, and
 // the foundation's tests.

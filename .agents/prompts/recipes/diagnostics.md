@@ -24,10 +24,10 @@ Do not print secret values, and do not change repository settings, a workflow, a
 
 ## Logs and diagnostic context
 
-A desktop build writes its log to `user://logs/<id>.log` and keeps five; the Web export uses the browser console instead and has no log file. `GameDiagnostics` writes `GAMEBASE_DIAGNOSTIC` JSON lines at startup and when a save, a load or a travel fails. Search a log in this order:
+A desktop build writes its log to `user://logs/<id>.log` and keeps five; the Web export uses the browser console instead and has no log file. `GameDiagnostics` writes `TIAMAT_DIAGNOSTIC` JSON lines at startup and when a save, a load or a travel fails. Search a log in this order:
 
 ```
-GAMEBASE_DIAGNOSTIC
+TIAMAT_DIAGNOSTIC
 ERROR:
 SCRIPT ERROR:
 ```

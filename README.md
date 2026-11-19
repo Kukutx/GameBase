@@ -1,16 +1,16 @@
-# GameBase
+# Tiamat
 
-GameBase is the single repository for a family of Godot 4.x games: a shared, genre-agnostic foundation and every game built on it, side by side. A fix to the foundation reaches every game in the same commit; there is no second repository, no copied foundation and no version pin to move.
+Tiamat is the single repository for a family of Godot 4.x games: a shared, genre-agnostic foundation and every game built on it, side by side. A fix to the foundation reaches every game in the same commit; there is no second repository, no copied foundation and no version pin to move.
 
 ## Layout
 
 ```text
-gamebase/core/        Genre-agnostic foundation services (save, content, session, rules, settings,
+tiamat/core/        Genre-agnostic foundation services (save, content, session, rules, settings,
                       input, audio, world travel, time, randomness, stats, profile, interactions,
                       minigames, diagnostics, and the title, pause and settings menus)
-gamebase/modules/     Optional gameplay modules: items, skills, combat, lifesim, npc_social, npc_ai, progression, roguelite, rts, tactics
-gamebase/templates/   The template tools/new_game.js creates a game from
-gamebase/gamebase.json  The core's autoloads, the modules with the modules each one requires and the
+tiamat/modules/     Optional gameplay modules: items, skills, combat, lifesim, npc_social, npc_ai, progression, roguelite, rts, tactics
+tiamat/templates/   The template tools/new_game.js creates a game from
+tiamat/tiamat.json  The core's autoloads, the modules with the modules each one requires and the
                       addons and autoloads each one uses, and the addons every game links
 addons/               Vendored third-party Godot addons shared by every game (Dialogue Manager, GUT)
 games/<id>/           One Godot project per game: game.json, project.godot, export_presets.cfg,
@@ -29,7 +29,7 @@ The registered games:
 | Ember Depths | `games/dungeon1/` | A dungeon delve on the core, items, skills and combat; see [games/dungeon1/README.md](games/dungeon1/README.md) |
 | Iron Banners | `games/strategy1/` | Strategy battles on a grid in active time and in real time on an open field, on the core, damage, rts and tactics; see [games/strategy1/README.md](games/strategy1/README.md) |
 
-A game is registered by its `games/<id>/game.json`, which lists the foundation modules it uses (with every module they require) and any extra shared addons. Inside a game project, `res://game/` is that game's code, `res://gamebase/` the foundation and `res://addons/` the addons. Dependencies point one way: a game may use the core and its listed modules, a module may use the core and the modules it declares, and the core uses neither; `tools/check_layers.js` enforces this. See [gamebase/README.md](gamebase/README.md).
+A game is registered by its `games/<id>/game.json`, which lists the foundation modules it uses (with every module they require) and any extra shared addons. Inside a game project, `res://game/` is that game's code, `res://tiamat/` the foundation and `res://addons/` the addons. Dependencies point one way: a game may use the core and its listed modules, a module may use the core and the modules it declares, and the core uses neither; `tools/check_layers.js` enforces this. See [tiamat/README.md](tiamat/README.md).
 
 ## Set up and run
 
@@ -55,7 +55,7 @@ node tools/validate.js
 
 runs the repository checks once (agent rules, layer dependencies, code guardrails, each game's project settings against its manifests, the reference pages, tool tests, the engine baseline and its legal bundle, the packaging self-test, and a game freshly created from the template) and then every game's checks (links, version, localization coverage, headless import, GUT, its runtime scripts and a main-scene boot). `--game <id>` limits the games; `--no-repository` and `--no-games` skip one half; `--clean-import` imports from an empty cache, `--skip-import` and `--skip-soak` skip those steps. `--test <script>` runs one GUT script and nothing else in each selected game that runs it (`node tools/validate.js --test test_save_slots --game farm1`); where a module and the game both have a script of that name it names them and takes the `res://` path of one instead. `--unit <name>` keeps only the script's tests whose names contain `<name>`.
 
-Tools that act on one game take `--game <id>` or `GAMEBASE_GAME`, which they need now that more than one game is registered:
+Tools that act on one game take `--game <id>` or `TIAMAT_GAME`, which they need now that more than one game is registered:
 
 ```text
 node tools/export.js [--game <id>] [--preset "<name>"]
@@ -78,7 +78,7 @@ See `docs/MODULES.md` (writing a module), `docs/RELEASE.md`, `docs/ENGINE_UPGRAD
 
 `AGENTS.md` is the entry point of the project constraints; it routes to the rules, skills and workflows under `.agents/`. `node tools/validate_rules.js --strict` checks that tree and runs as part of `node tools/validate.js`. In particular:
 
-- everything lives in this repository: a new game is a new `games/<id>/`, never a new repository, and a foundation change is made once in `gamebase/`;
+- everything lives in this repository: a new game is a new `games/<id>/`, never a new repository, and a foundation change is made once in `tiamat/`;
 - keep the projects on stable Godot 4.x and treat `.godot-version` as an updateable CI baseline rather than a permanent patch-version lock;
 - prefer built-in Godot features and established, maintained addons, kept under `addons/`;
 - preserve stable content, location and spawn ids; a save format change raises `SAVE_VERSION` instead of adding compatibility code;

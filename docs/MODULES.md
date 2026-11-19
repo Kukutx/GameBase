@@ -1,13 +1,13 @@
 # Writing a module
 
-A module is an optional piece of gameplay under `gamebase/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `damage`, `dialogue`, `combat`, `lifesim`, `npc_social`, `npc_ai`, `progression`, `roguelite`, `rts` and `tactics` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `gamebase/core/`.
+A module is an optional piece of gameplay under `tiamat/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `damage`, `dialogue`, `combat`, `lifesim`, `npc_social`, `npc_ai`, `progression`, `roguelite`, `rts` and `tactics` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `tiamat/core/`.
 
 The reference pages list what the foundation already offers: [autoloads](reference/autoloads.md), [events](reference/events.md) and [rule keys](reference/rules.md).
 
 ## Layout
 
 ```text
-gamebase/modules/<module>/
+tiamat/modules/<module>/
   <module>_module.gd        <Module>Module, a GameModule: install() wires the module into the core
   <module>_events.gd        <Module>Events, an autoload: the module's signals, if others react to it
   <module>_rules.gd         <Module>Rules: the condition and action keys content can name, if any
@@ -20,12 +20,12 @@ gamebase/modules/<module>/
 
 ## Declare it
 
-Add the module to `gamebase/gamebase.json`:
+Add the module to `tiamat/tiamat.json`:
 
 ```json
 "skills": {
   "requires": [],
-  "autoloads": { "Skills": "res://gamebase/modules/skills/skill_manager.gd" }
+  "autoloads": { "Skills": "res://tiamat/modules/skills/skill_manager.gd" }
 }
 ```
 

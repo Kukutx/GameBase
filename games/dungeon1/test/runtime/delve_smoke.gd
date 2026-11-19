@@ -1,4 +1,4 @@
-extends "res://gamebase/core/test/runtime_smoke.gd"
+extends "res://tiamat/core/test/runtime_smoke.gd"
 
 ## Plays Ember Depths' loop through its scenes: a new game at camp with its
 ## first hint and a word with the Old Delver, down into

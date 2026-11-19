@@ -1,8 +1,8 @@
 {
-  "name": "gamebase-tooling",
+  "name": "tiamat-tooling",
   "version": "0.0.0",
   "private": true,
-  "description": "Development-only QA tooling for the GameBase Godot project.",
+  "description": "Development-only QA tooling for the Tiamat Godot project.",
   "engines": {
     "node": ">=24"
   },

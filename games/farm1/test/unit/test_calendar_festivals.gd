@@ -68,7 +68,7 @@ func test_all_festival_booths_are_exposed_in_playable_town_scenes() -> void:
 	assert_not_null(starter.get_node_or_null("WinterLanternBooth"))
 	assert_not_null(riverside.get_node_or_null("SummerRiverFairBooth"))
 	assert_not_null(harbor.get_node_or_null("FallHarborDerbyBooth"))
-	assert_true(ResourceLoader.exists("res://gamebase/modules/lifesim/calendar/calendar_event_booth.tscn"))
+	assert_true(ResourceLoader.exists("res://tiamat/modules/lifesim/calendar/calendar_event_booth.tscn"))
 
 func test_spring_seed_fair_pays_150g_five_carrot_seeds_and_75_farming_xp_once() -> void:
 	WorldClock.set_time(9, 10 * 60)

@@ -18,14 +18,14 @@ const FOUNDATION = { addons: ["gut"], modules: { items: { requires: [] }, fishin
 const PROJECT = [
   "[autoload]",
   "",
-  'ContentDB="*res://gamebase/core/content/content_registry.gd"',
-  'Inventory="*res://gamebase/modules/items/inventory.gd"',
+  'ContentDB="*res://tiamat/core/content/content_registry.gd"',
+  'Inventory="*res://tiamat/modules/items/inventory.gd"',
   "",
 ].join("\n");
 
 test("layers follow the directory a file lives in", () => {
-  assert.equal(layerOf("gamebase/core/save/a.gd"), "core");
-  assert.equal(layerOf("gamebase/modules/items/a.gd"), "module:items");
+  assert.equal(layerOf("tiamat/core/save/a.gd"), "core");
+  assert.equal(layerOf("tiamat/modules/items/a.gd"), "module:items");
   assert.equal(layerOf("games/farm1/game/a.gd"), "game:farm1");
   assert.equal(resLayer("game/a.gd", "farm1"), "game:farm1");
   assert.equal(resLayer("game/a.gd", null), "game");
@@ -48,83 +48,83 @@ test("the real repository has no layer violation", () => {
 
 test("core using a module, a game path or a content id is reported", () => {
   const root = fixture({
-    "gamebase/gamebase.json": FOUNDATION,
+    "tiamat/tiamat.json": FOUNDATION,
     "games/one/game.json": { id: "one", modules: ["items"] },
     "games/one/project.godot": PROJECT,
-    "gamebase/modules/items/inventory.gd": "extends Node\n",
+    "tiamat/modules/items/inventory.gd": "extends Node\n",
     "games/one/game/data/berry.tres": '[resource]\nid = &"berry"\n',
-    "gamebase/core/a.gd": 'extends Node\nfunc f() -> void:\n\tInventory.clear()\n\tload("res://game/x.tres")\n\tprint(&"berry")\n',
+    "tiamat/core/a.gd": 'extends Node\nfunc f() -> void:\n\tInventory.clear()\n\tload("res://game/x.tres")\n\tprint(&"berry")\n',
   });
   const problems = checkLayers(root);
-  assert.ok(problems.includes("gamebase/core/a.gd (core) must not use Inventory"));
-  assert.ok(problems.includes("gamebase/core/a.gd (core) must not use path:game/x.tres"));
-  assert.ok(problems.includes("gamebase/core/a.gd (core) must not use literal:berry"));
+  assert.ok(problems.includes("tiamat/core/a.gd (core) must not use Inventory"));
+  assert.ok(problems.includes("tiamat/core/a.gd (core) must not use path:game/x.tres"));
+  assert.ok(problems.includes("tiamat/core/a.gd (core) must not use literal:berry"));
 });
 
 test("a module naming an id a game defines in its scenes is reported", () => {
   const root = fixture({
-    "gamebase/gamebase.json": FOUNDATION,
+    "tiamat/tiamat.json": FOUNDATION,
     "games/one/game.json": { id: "one", modules: ["items"] },
     "games/one/project.godot": PROJECT,
     "games/one/game/data/berry.tres": '[resource]\nid = &"berry"\n',
     "games/one/game/world/farm.tscn": '[node name="Coop" type="Node2D"]\nhousing_id = &"starter_coop"\n',
-    "gamebase/modules/items/inventory.gd": 'extends Node\nconst KIND := &"tool"\nfunc f() -> void:\n\tprint("starter_coop") # &"berry"\n',
-    "gamebase/modules/items/chest.tscn": '[node name="Chest" type="Node2D"]\ncontainer_id = &"berry"\ntext = "starter_coop"\n',
+    "tiamat/modules/items/inventory.gd": 'extends Node\nconst KIND := &"tool"\nfunc f() -> void:\n\tprint("starter_coop") # &"berry"\n',
+    "tiamat/modules/items/chest.tscn": '[node name="Chest" type="Node2D"]\ncontainer_id = &"berry"\ntext = "starter_coop"\n',
   });
   const problems = checkLayers(root);
-  assert.ok(problems.includes("gamebase/modules/items/inventory.gd (module:items) must not use literal:starter_coop"));
-  assert.ok(problems.includes("gamebase/modules/items/chest.tscn (module:items) must not use literal:berry"));
+  assert.ok(problems.includes("tiamat/modules/items/inventory.gd (module:items) must not use literal:starter_coop"));
+  assert.ok(problems.includes("tiamat/modules/items/chest.tscn (module:items) must not use literal:berry"));
   assert.ok(!problems.some((p) => p.includes("literal:tool") || p.includes("inventory.gd (module:items) must not use literal:berry") || p.includes("chest.tscn (module:items) must not use literal:starter_coop")));
 });
 
 test("a module using a module or addon it does not declare is reported", () => {
   const root = fixture({
-    "gamebase/gamebase.json": { modules: { items: {}, fishing: { requires: [] }, ghost: {} } },
+    "tiamat/tiamat.json": { modules: { items: {}, fishing: { requires: [] }, ghost: {} } },
     "games/one/game.json": { id: "one", modules: [] },
     "games/one/project.godot": PROJECT,
-    "gamebase/modules/items/inventory.gd": "extends Node\n",
-    "gamebase/modules/fishing/rod.gd": 'extends Node\nfunc f() -> void:\n\tInventory.clear()\n\tload("res://addons/gut/gut.gd")\n',
-    "gamebase/modules/combat/sword.gd": "extends Node\n",
+    "tiamat/modules/items/inventory.gd": "extends Node\n",
+    "tiamat/modules/fishing/rod.gd": 'extends Node\nfunc f() -> void:\n\tInventory.clear()\n\tload("res://addons/gut/gut.gd")\n',
+    "tiamat/modules/combat/sword.gd": "extends Node\n",
     "addons/gut/plugin.cfg": "",
   });
   const problems = checkLayers(root);
-  assert.ok(problems.some((p) => p.startsWith("gamebase/modules/fishing uses module items")));
-  assert.ok(problems.some((p) => p.startsWith("gamebase/modules/fishing uses addon gut")));
-  assert.ok(problems.includes('gamebase/modules/combat is not listed under "modules" in gamebase/gamebase.json'));
-  assert.ok(problems.includes("gamebase/gamebase.json lists module ghost, which does not exist"));
+  assert.ok(problems.some((p) => p.startsWith("tiamat/modules/fishing uses module items")));
+  assert.ok(problems.some((p) => p.startsWith("tiamat/modules/fishing uses addon gut")));
+  assert.ok(problems.includes('tiamat/modules/combat is not listed under "modules" in tiamat/tiamat.json'));
+  assert.ok(problems.includes("tiamat/tiamat.json lists module ghost, which does not exist"));
 });
 
 test("modules that require each other in a cycle are reported", () => {
   const root = fixture({
-    "gamebase/gamebase.json": { modules: { items: { requires: ["shop"] }, shop: { requires: ["town"] }, town: { requires: ["items"] }, base: { requires: [] } } },
+    "tiamat/tiamat.json": { modules: { items: { requires: ["shop"] }, shop: { requires: ["town"] }, town: { requires: ["items"] }, base: { requires: [] } } },
     "games/one/game.json": { id: "one", modules: [] },
     "games/one/project.godot": PROJECT,
-    "gamebase/modules/items/a.gd": "extends Node\n",
-    "gamebase/modules/shop/a.gd": "extends Node\n",
-    "gamebase/modules/town/a.gd": "extends Node\n",
-    "gamebase/modules/base/a.gd": "extends Node\n",
+    "tiamat/modules/items/a.gd": "extends Node\n",
+    "tiamat/modules/shop/a.gd": "extends Node\n",
+    "tiamat/modules/town/a.gd": "extends Node\n",
+    "tiamat/modules/base/a.gd": "extends Node\n",
   });
   const problems = checkLayers(root).filter((p) => p.includes("cycle"));
   assert.deepEqual(problems, [
-    "gamebase/gamebase.json: modules require each other in a cycle (items -> shop -> town -> items); move the shared part down or invert the dependency",
+    "tiamat/tiamat.json: modules require each other in a cycle (items -> shop -> town -> items); move the shared part down or invert the dependency",
   ]);
 });
 
 test("a game uses only the modules and addons its game.json lists", () => {
   const root = fixture({
-    "gamebase/gamebase.json": FOUNDATION,
+    "tiamat/tiamat.json": FOUNDATION,
     "addons/gut/plugin.cfg": "",
     "addons/dialogue/plugin.cfg": "",
     "games/one/game.json": { id: "one", modules: ["fishing"] },
     "games/one/project.godot": [
       "[autoload]",
-      'Inventory="*res://gamebase/modules/items/inventory.gd"',
+      'Inventory="*res://tiamat/modules/items/inventory.gd"',
       'Dialogue="*res://addons/dialogue/manager.gd"',
       "[editor_plugins]",
       'enabled=PackedStringArray("res://addons/gut/plugin.cfg")',
     ].join("\n"),
-    "gamebase/modules/items/inventory.gd": "extends Node\n",
-    "gamebase/modules/fishing/rod.gd": "class_name Rod\nextends Node\n",
+    "tiamat/modules/items/inventory.gd": "extends Node\n",
+    "tiamat/modules/fishing/rod.gd": "class_name Rod\nextends Node\n",
     "games/one/game/player.gd": "extends Node\nfunc f() -> void:\n\tInventory.clear()\n\tRod.new()\n",
   });
   const problems = checkLayers(root);

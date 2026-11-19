@@ -59,7 +59,7 @@ func test_iron_bar_smelt_and_pickaxe_upgrade_extend_mining_progression() -> void
 	assert_eq(Skills.get_level(&"mining"), 3)
 	InventoryState.add_item_by_id(&"iron_ore", 3)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
+	var station_scene := load("res://tiamat/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := station_scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_iron_furnace"
 	furnace.recipe_ids = [&"smelt_copper_bar", &"smelt_iron_bar"]
@@ -119,7 +119,7 @@ func test_gold_bar_smelt_and_pickaxe_upgrade_complete_deep_mining_chain() -> voi
 	assert_eq(Skills.get_level(&"mining"), 5)
 	InventoryState.add_item_by_id(&"gold_ore", 3)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
+	var station_scene := load("res://tiamat/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := station_scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_gold_furnace"
 	furnace.recipe_ids = [&"smelt_copper_bar", &"smelt_iron_bar", &"smelt_gold_bar"]
@@ -188,7 +188,7 @@ func test_iridium_bar_smelt_and_pickaxe_upgrade_complete_late_mining_chain() -> 
 	assert_eq(Skills.get_level(&"mining"), 7)
 	InventoryState.add_item_by_id(&"iridium_ore", 4)
 	InventoryState.add_item_by_id(&"wood", 1)
-	var station_scene := load("res://gamebase/modules/lifesim/processing/processing_station.tscn") as PackedScene
+	var station_scene := load("res://tiamat/modules/lifesim/processing/processing_station.tscn") as PackedScene
 	var furnace := station_scene.instantiate() as ProcessingStation
 	furnace.station_id = &"test_iridium_furnace"
 	furnace.recipe_ids = [&"smelt_iridium_bar"]

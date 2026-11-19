@@ -4,7 +4,7 @@
 //                          autoloads of each module the game lists (a module
 //                          after the modules it requires), the core's
 //                          autoloads after the modules, then the game's own
-//                          (gamebase/gamebase.json, the modules' entries and
+//                          (tiamat/tiamat.json, the modules' entries and
 //                          game.json "autoloads");
 //   locale/translations    the core's catalogs, each listed module's and the
 //                          game's own (game/i18n/);
@@ -31,7 +31,7 @@ function moduleOrder(foundation, modules) {
   const pending = [...modules].sort();
   while (pending.length > 0) {
     const index = pending.findIndex((module) => (foundation.modules[module].requires || []).every((required) => order.includes(required)));
-    if (index < 0) fail(`gamebase.json: modules ${pending.join(", ")} cannot be ordered because their requires form a cycle; move the shared part down or invert the dependency.`);
+    if (index < 0) fail(`tiamat.json: modules ${pending.join(", ")} cannot be ordered because their requires form a cycle; move the shared part down or invert the dependency.`);
     order.push(pending.splice(index, 1)[0]);
   }
   return order;
@@ -57,8 +57,8 @@ function catalogsIn(directory, res) {
 
 function desiredCatalogs(game) {
   return [
-    ...catalogsIn(rootPath("gamebase", "core", "i18n"), "res://gamebase/core/i18n"),
-    ...[...game.modules].sort().flatMap((module) => catalogsIn(rootPath("gamebase", "modules", module, "i18n"), `res://gamebase/modules/${module}/i18n`)),
+    ...catalogsIn(rootPath("tiamat", "core", "i18n"), "res://tiamat/core/i18n"),
+    ...[...game.modules].sort().flatMap((module) => catalogsIn(rootPath("tiamat", "modules", module, "i18n"), `res://tiamat/modules/${module}/i18n`)),
     ...catalogsIn(gamePath(game, "game", "i18n"), "res://game/i18n"),
   ];
 }
@@ -68,7 +68,7 @@ function desiredCatalogs(game) {
 function desiredTestDirs(game, foundation = readFoundation()) {
   const layers = [["core"], ...moduleOrder(foundation, game.modules).map((module) => ["modules", module])];
   return [
-    ...layers.filter((parts) => fs.existsSync(rootPath("gamebase", ...parts, "test"))).map((parts) => `res://gamebase/${parts.join("/")}/test/`),
+    ...layers.filter((parts) => fs.existsSync(rootPath("tiamat", ...parts, "test"))).map((parts) => `res://tiamat/${parts.join("/")}/test/`),
     "res://test/unit/",
   ];
 }
@@ -143,7 +143,7 @@ function syncedProject(text, game, foundation = readFoundation()) {
 
 // The hook every game's test run starts with: English text and a profile of
 // the run's own.
-const GUT_PRE_RUN_SCRIPT = "res://gamebase/core/test/gut_pre_run.gd";
+const GUT_PRE_RUN_SCRIPT = "res://tiamat/core/test/gut_pre_run.gd";
 
 // The .gutconfig.json text with the test directories as the manifests say.
 function syncedGutConfig(text, game, foundation = readFoundation()) {

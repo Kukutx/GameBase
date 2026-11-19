@@ -1,17 +1,17 @@
 # Third-party notices
 
-Release packages of the games built on GameBase include software covered by
+Release packages of the games built on Tiamat include software covered by
 the licenses below. The full license and copyright files are distributed in the adjacent `licenses/`
 directory.
 
-## GameBase / upstream project foundation
+## Tiamat / upstream project foundation
 
 The repository's root `LICENSE` is the project license currently carried by
-GameBase. A copy is distributed as `licenses/GAMEBASE_LICENSE.txt`.
+Tiamat. A copy is distributed as `licenses/TIAMAT_LICENSE.txt`.
 
 ## Godot Engine
 
-GameBase is built with Godot Engine. The shared build baseline is defined in
+Tiamat is built with Godot Engine. The shared build baseline is defined in
 `.godot-version`. The synchronized legal-bundle version is recorded in
 `licenses/GODOT_VERSION.txt` and must match that baseline.
 
@@ -28,7 +28,7 @@ Hoad and contributors, licensed under the MIT license. Its license is distribute
 
 ## Noto Sans SC
 
-Every game shows its text in Noto Sans SC (`gamebase/core/ui/fonts/`) unless its
+Every game shows its text in Noto Sans SC (`tiamat/core/ui/fonts/`) unless its
 theme names another font. The font is cut down to Latin, Chinese punctuation,
 the characters of GB 2312 and those the games use (`tools/subset_font.js`). It is
 Copyright 2014-2021 Adobe, with Reserved Font Name 'Source', licensed under the
@@ -43,7 +43,7 @@ resource packs.
 ## Locally licensed art
 
 Raw purchased/local source art under a game's `game/art/licensed/` is development-only
-and is explicitly excluded from release resource packs. GameBase runtime
+and is explicitly excluded from release resource packs. Tiamat runtime
 components fall back to committed project visuals when those local assets are
 unavailable. Do not add those raw source files to release packages without a
 separate license review.

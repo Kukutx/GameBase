@@ -1,0 +1,446 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Tiamat core\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Unbound"
+msgstr "未绑定"
+
+msgid "Could not open the starting location"
+msgstr "无法打开初始地点"
+
+msgid "Interact"
+msgstr "互动"
+
+msgid "Sleep until tomorrow"
+msgstr "睡到明天"
+
+msgid "Unknown location: %s"
+msgstr "未知地点：%s"
+
+msgid "Travel spawn is unavailable"
+msgstr "目的地出生点不可用"
+
+msgid "Travel failed"
+msgstr "旅行失败"
+
+msgid "Could not replace the selected save slot"
+msgstr "无法替换当前存档位"
+
+msgid "Could not start the new game location"
+msgstr "无法启动新游戏地点"
+
+msgid "Not enough %s"
+msgstr "%s不足"
+
+msgid "Portal target is unavailable"
+msgstr "传送目标不可用"
+
+msgid "Bed"
+msgstr "床"
+
+msgid "Cannot save while traveling"
+msgstr "旅行途中无法保存"
+
+msgid "Cannot save while a save loads"
+msgstr "读档时无法保存"
+
+msgid "Cannot save while a new game starts"
+msgstr "新游戏开始时无法保存"
+
+msgid "Save from a playable location"
+msgstr "请在可游玩的地点保存"
+
+msgid "Couldn't save: the save folder can't be written to. Check that the disk has free space."
+msgstr "无法保存：存档文件夹无法写入。请检查磁盘是否还有空间。"
+
+msgid "Game saved · Slot %d"
+msgstr "已保存 · 存档位 %d"
+
+msgid "Cannot load while traveling"
+msgstr "旅行途中无法读取"
+
+msgid "A save is already loading"
+msgstr "正在读取存档"
+
+msgid "Slot %d has no save to load"
+msgstr "存档位 %d 没有可读取的存档"
+
+msgid "This save can't be opened: a place it needs is missing from this version"
+msgstr "无法打开这个存档：当前版本缺少它所需的地点"
+
+msgid "Recovered Slot %d from temporary save"
+msgstr "已从临时存档恢复存档位 %d"
+
+msgid "Recovered Slot %d from backup"
+msgstr "已从备份恢复存档位 %d"
+
+msgid "Game loaded · Slot %d"
+msgstr "已读取 · 存档位 %d"
+
+msgid "Autosave loaded · Slot %d"
+msgstr "已读取自动存档 · 存档位 %d"
+
+msgid "Autosave · %s"
+msgstr "自动存档 · %s"
+
+msgid "Finish the minigame before saving"
+msgstr "请先完成小游戏再保存"
+
+msgid "Back"
+msgstr "返回"
+
+msgid "Quick Save"
+msgstr "快速保存"
+
+msgid "Quick Load"
+msgstr "快速读取"
+
+msgid "Spring"
+msgstr "春季"
+
+msgid "Summer"
+msgstr "夏季"
+
+msgid "Autumn"
+msgstr "秋季"
+
+msgid "Winter"
+msgstr "冬季"
+
+msgid "Achievement unlocked: %s"
+msgstr "成就解锁：%s"
+
+msgid "Could not save your achievements"
+msgstr "无法保存成就"
+
+msgid "Empty slot"
+msgstr "空存档位"
+
+msgid "Holds a save this version cannot open"
+msgstr "存有当前版本无法读取的存档"
+
+msgid "Continue"
+msgstr "继续游戏"
+
+msgid "New Game"
+msgstr "新游戏"
+
+msgid "Delete Save"
+msgstr "删除存档"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Quit"
+msgstr "退出"
+
+msgid "Start New Game"
+msgstr "开始新游戏"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Paused"
+msgstr "已暂停"
+
+msgid "Resume"
+msgstr "继续"
+
+msgid "Save Game"
+msgstr "保存游戏"
+
+msgid "Load Game"
+msgstr "读取游戏"
+
+msgid "Return to Title"
+msgstr "返回标题画面"
+
+msgid "Unsaved progress will be lost. Return to the title screen?"
+msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
+
+msgid "Quit to Desktop"
+msgstr "退出到桌面"
+
+msgid "Unsaved progress will be lost. Quit the game?"
+msgstr "未保存的进度将会丢失。确定退出游戏吗？"
+
+msgid "Unsaved progress will be lost. Load your last save?"
+msgstr "未保存的进度将会丢失。确定读取你上次的存档吗？"
+
+msgid "Unsaved progress will be lost. Load the autosave?"
+msgstr "未保存的进度将会丢失。确定读取自动存档吗？"
+
+msgid "Load"
+msgstr "读取"
+
+msgid "Cannot return to the title while the scene changes"
+msgstr "场景切换中，无法返回标题画面"
+
+msgid "Master"
+msgstr "主音量"
+
+msgid "Music"
+msgstr "音乐"
+
+msgid "Sounds"
+msgstr "音效"
+
+msgid "Fullscreen"
+msgstr "全屏"
+
+msgid "VSync"
+msgstr "垂直同步"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Text Speed"
+msgstr "文字速度"
+
+msgid "Slow"
+msgstr "慢"
+
+msgid "Normal"
+msgstr "中"
+
+msgid "Fast"
+msgstr "快"
+
+msgid "Instant"
+msgstr "立即"
+
+msgid "Controls..."
+msgstr "按键设置..."
+
+msgid "Controls"
+msgstr "按键设置"
+
+msgid "Action"
+msgstr "操作"
+
+msgid "Keyboard"
+msgstr "键盘"
+
+msgid "Gamepad"
+msgstr "手柄"
+
+msgid "Reset Controls"
+msgstr "恢复默认按键"
+
+msgid "Press a button..."
+msgstr "请按一个手柄按钮..."
+
+msgid "Esc cancels"
+msgstr "按 Esc 取消"
+
+msgid "%s is held by another control"
+msgstr "%s 已被其他操作占用"
+
+msgid "Button %d"
+msgstr "按钮 %d"
+
+msgid "Integer Scaling"
+msgstr "整数倍缩放"
+
+msgid "Pause When Unfocused"
+msgstr "失去焦点时暂停"
+
+msgid "Show Hints"
+msgstr "显示提示"
+
+msgid "Reset All Settings"
+msgstr "恢复全部默认设置"
+
+msgid "Restore every setting except the language to its default?"
+msgstr "将除语言外的所有设置恢复为默认值？"
+
+msgid "Reset"
+msgstr "恢复"
+
+msgid "Settings are saved automatically."
+msgstr "设置会自动保存。"
+
+msgid "Press a key..."
+msgstr "请按一个按键..."
+
+msgid "Autosave"
+msgstr "自动保存"
+
+msgid "Save Slot %d"
+msgstr "存档位 %d"
+
+msgid " · temporary save recovery"
+msgstr " · 可从临时存档恢复"
+
+msgid " · backup available"
+msgstr " · 有可用备份"
+
+msgid "Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?"
+msgstr "存档位 %d 已有游戏。开始新游戏会覆盖该存档，是否继续？"
+
+msgid "Save Slot %d holds a save this version cannot open. Starting a new game will replace it. Continue?"
+msgstr "存档位 %d 存有当前版本无法读取的存档。开始新游戏会覆盖它，是否继续？"
+
+msgid "Loading Slot %d..."
+msgstr "正在读取存档位 %d..."
+
+msgid "Delete Save Slot %d? This removes its save, its autosave and their backups."
+msgstr "删除存档位 %d？该存档位的存档、自动存档及其备份都会被删除。"
+
+msgid "Deleted Slot %d"
+msgstr "已删除存档位 %d"
+
+msgid "Could not delete Slot %d"
+msgstr "无法删除存档位 %d"
+
+msgid "No save available"
+msgstr "没有可用存档"
+
+msgid "Delete this save slot and its backup?"
+msgstr "删除这个存档位及其备份？"
+
+msgid "This save slot already contains a game. Starting a new game will replace it. Continue?"
+msgstr "这个存档位已经有游戏。开始新游戏会覆盖它，是否继续？"
+
+msgid "Accessibility..."
+msgstr "无障碍设置..."
+
+msgid "Accessibility"
+msgstr "无障碍设置"
+
+msgid "Weather Effects"
+msgstr "天气视觉效果"
+
+msgid "Reduce Motion"
+msgstr "减少动态效果"
+
+msgid "Reduce Motion turns off scene fades and animated effects such as rain; gameplay stays the same."
+msgstr "减少动态效果会关闭场景淡入淡出和下雨等动画效果，玩法不变。"
+
+msgid "Support"
+msgstr "支持"
+
+msgid "Support bundles contain technical logs and save summaries, never raw saves."
+msgstr "支持诊断包包含技术日志和存档摘要，不包含原始存档。"
+
+msgid "Export Support Bundle"
+msgstr "导出支持诊断包"
+
+msgid "Open Support Folder"
+msgstr "打开支持文件夹"
+
+msgid "Support bundle could not be created"
+msgstr "无法创建支持诊断包"
+
+msgid "Support bundle created: %s"
+msgstr "已创建支持诊断包：%s"
+
+msgid "Left Stick / D-Pad"
+msgstr "左摇杆 / 十字键"
+
+msgid "Move Up"
+msgstr "向上移动"
+
+msgid "Move Down"
+msgstr "向下移动"
+
+msgid "Move Left"
+msgstr "向左移动"
+
+msgid "Move Right"
+msgstr "向右移动"
+
+msgid "Game"
+msgstr "游戏"
+
+msgid "Slept until %s"
+msgstr "睡到了%s"
+
+msgid "Day %d"
+msgstr "第%d天"
+
+msgid "%s %d"
+msgstr "%s%d日"
+
+msgid "%s %d, Year %d"
+msgstr "%s%d日（第%d年）"
+
+msgid "%s · %02d:%02d%s"
+msgstr "%s · %02d:%02d%s"
+
+msgid "Played %d:%02d"
+msgstr "游玩 %d:%02d"
+
+msgid "Autosaved"
+msgstr "已自动保存"
+
+msgid "That way is closed for now"
+msgstr "这条路暂时走不通"
+
+msgid "Online Services"
+msgstr "联网服务"
+
+msgid "Play"
+msgstr "开始"
+
+msgid "Cancel again to give up."
+msgstr "再按一次取消即放弃。"
+
+msgid "Victory!"
+msgstr "胜利！"
+
+msgid "Defeat."
+msgstr "战败。"
+
+msgid "Mouse Left"
+msgstr "鼠标左键"
+
+msgid "Mouse Right"
+msgstr "鼠标右键"
+
+msgid "Mouse Middle"
+msgstr "鼠标中键"
+
+msgid "Wheel Up"
+msgstr "滚轮向上"
+
+msgid "Wheel Down"
+msgstr "滚轮向下"
+
+msgid "Wheel Left"
+msgstr "滚轮向左"
+
+msgid "Wheel Right"
+msgstr "滚轮向右"
+
+msgid "Mouse Back"
+msgstr "鼠标后退键"
+
+msgid "Mouse Forward"
+msgstr "鼠标前进键"
+
+msgid "Mouse %d"
+msgstr "鼠标键 %d"
+
+msgid "Press a key or mouse button. Esc or a left click cancels."
+msgstr "请按一个按键或鼠标键。按 Esc 或单击左键取消。"
+
+msgid "Pause"
+msgstr "暂停"
+
+msgid "move"
+msgstr "移动"
+
+msgid "use"
+msgstr "使用"
+
+msgid "save"
+msgstr "存档"
+
+msgid "load"
+msgstr "读档"

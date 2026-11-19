@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="RtsUnitData" format=3]
 
-[ext_resource type="Script" path="res://gamebase/modules/rts/data/rts_unit_data.gd" id="1_unit"]
+[ext_resource type="Script" path="res://tiamat/modules/rts/data/rts_unit_data.gd" id="1_unit"]
 
 [resource]
 script = ExtResource("1_unit")

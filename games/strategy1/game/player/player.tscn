@@ -1,9 +1,9 @@
 [gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" path="res://gamebase/core/player/top_down_player.gd" id="1_player"]
-[ext_resource type="Script" path="res://gamebase/core/interactions/interaction_controller.gd" id="2_interaction"]
+[ext_resource type="Script" path="res://tiamat/core/player/top_down_player.gd" id="1_player"]
+[ext_resource type="Script" path="res://tiamat/core/interactions/interaction_controller.gd" id="2_interaction"]
 [ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="3_hud"]
-[ext_resource type="Script" path="res://gamebase/core/camera/game_camera.gd" id="90_camera"]
+[ext_resource type="Script" path="res://tiamat/core/camera/game_camera.gd" id="90_camera"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 6.0

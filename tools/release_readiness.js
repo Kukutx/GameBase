@@ -16,7 +16,7 @@ const REQUIRED = [
   ".github/workflows/ci.yml",
   ".github/workflows/release.yml",
   ".github/workflows/engine-compat.yml",
-  "gamebase/gamebase.json",
+  "tiamat/tiamat.json",
   "tools/link.js",
   "tools/validate.js",
   "tools/validate_rules.js",
@@ -26,7 +26,7 @@ const REQUIRED = [
   "tools/generate_release_manifest.js",
   "tools/package_release.js",
   "THIRD_PARTY_NOTICES.md",
-  "licenses/GAMEBASE_LICENSE.txt",
+  "licenses/TIAMAT_LICENSE.txt",
   "licenses/GODOT_LICENSE.txt",
   "licenses/GODOT_COPYRIGHT.txt",
   "licenses/GODOT_VERSION.txt",
@@ -94,7 +94,7 @@ async function browserSmoke(game) {
   for (const [title, args] of steps) {
     console.log("");
     console.log(`==> ${title}`);
-    const result = await npmCommand(args, { env: { ...process.env, GAMEBASE_GAME: game.id } });
+    const result = await npmCommand(args, { env: { ...process.env, TIAMAT_GAME: game.id } });
     if (result.code !== 0) {
       fail(`${title} failed with exit code ${result.code}.`);
     }

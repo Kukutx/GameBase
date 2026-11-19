@@ -1,4 +1,4 @@
-extends "res://gamebase/core/test/runtime_smoke.gd"
+extends "res://tiamat/core/test/runtime_smoke.gd"
 
 ## Plays Iron Banners: starts a new game with its first hint, talks to the
 ## captain, opens the battle at the ford on the camp's war table and the

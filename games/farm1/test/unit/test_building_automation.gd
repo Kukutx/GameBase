@@ -1,8 +1,8 @@
 extends GutTest
 
 # Farm1's sprinkler. Placing, packing up and the daily effects of placeables
-# are tested on fixture content in gamebase/modules/items/test/ and
-# gamebase/modules/lifesim/test/ (test_building_automation.gd).
+# are tested on fixture content in tiamat/modules/items/test/ and
+# tiamat/modules/lifesim/test/ (test_building_automation.gd).
 
 var _world_snapshot: Dictionary
 var _inventory_snapshot: Dictionary

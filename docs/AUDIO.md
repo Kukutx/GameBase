@@ -1,10 +1,10 @@
 # Audio
 
-GameBase has a data-driven audio routing layer, but the repository intentionally does not ship placeholder music or sound effects as if they were production content.
+Tiamat has a data-driven audio routing layer, but the repository intentionally does not ship placeholder music or sound effects as if they were production content.
 
 ## Runtime architecture
 
-- `GameAudio` is the foundation's audio service (`gamebase/core/audio/game_audio_service.gd`), an autoload every game registers.
+- `GameAudio` is the foundation's audio service (`tiamat/core/audio/game_audio_service.gd`), an autoload every game registers.
 - `AudioCueData` resources are listed in each game's content pack (`games/<id>/game/data/content.tres`) and resolved with `AudioCueData.find()`. A game maps events to cues in `GameDefinition.event_cues`.
 - Music routes to the `Music` bus.
 - Sound effects route to the `Sounds` bus.
@@ -70,7 +70,7 @@ Do not put audio file paths in farming, fishing, combat, NPC, shop, quest, or UI
 
 ## Testing
 
-`gamebase/core/test/test_audio_service.gd` and `test_audio_music.gd`, which every game runs, verify on in-memory streams (`gamebase/core/test/audio_fixture.gd`):
+`tiamat/core/test/test_audio_service.gd` and `test_audio_music.gd`, which every game runs, verify on in-memory streams (`tiamat/core/test/audio_fixture.gd`):
 
 - a cue without a stream is a safe, silent request;
 - sounds and music play on the correct bus;

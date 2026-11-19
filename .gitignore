@@ -4,7 +4,7 @@
 *.translation
 
 # Links to the shared foundation and addons, created by tools/link.js
-/games/*/gamebase/
+/games/*/tiamat/
 /games/*/addons/
 
 # Build, release and QA outputs, one directory per game

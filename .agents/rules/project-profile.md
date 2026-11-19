@@ -1,15 +1,15 @@
-# GameBase project profile
+# Tiamat project profile
 
 This file describes only what is specific to this repository. The generic engineering boundaries are in `.agents/rules/project.md`.
 
 ## Repository identity
 
-- GameBase is an open-source monorepo: a reusable Godot 4.x foundation and every game built on it. Later generations, games of other genres and in-game minigames all live here; a new game is a new `games/<id>/`, never a new repository, and nothing here depends on another repository. A fix to the foundation is made once in `gamebase/` and reaches every game in the same change.
-- `gamebase/` holds the foundation: `gamebase/core/` genre-agnostic services, `gamebase/modules/<module>/` optional gameplay modules, `gamebase/templates/new_game/` the template a new game starts from, and `gamebase/gamebase.json` the modules, what each requires and the addons each uses. `addons/` holds the vendored third-party addons every game shares. `games/<id>/` is one Godot project per game: `game.json` (its modules, extra addons, own autoloads and licensed art), `project.godot`, `export_presets.cfg`, `game/` its own code and data and `test/` its GUT tests (`test/unit/`) and runtime scripts (`test/runtime/`). The core's and each module's own GUT tests live in their `test/` directory. `tools/` holds Node tooling and `docs/` the project documentation.
-- A game sees the foundation and the addons through links `node tools/link.js` creates inside it (`res://gamebase/core`, `res://gamebase/modules/<module>`, `res://addons/<addon>`); they are Git-ignored and never edited through the game. `tools/check_layers.js` keeps dependencies one-way: game → listed modules → the modules they require → core, and the modules' requires in `gamebase/gamebase.json` form no cycle.
+- Tiamat is an open-source monorepo: a reusable Godot 4.x foundation and every game built on it. Later generations, games of other genres and in-game minigames all live here; a new game is a new `games/<id>/`, never a new repository, and nothing here depends on another repository. A fix to the foundation is made once in `tiamat/` and reaches every game in the same change.
+- `tiamat/` holds the foundation: `tiamat/core/` genre-agnostic services, `tiamat/modules/<module>/` optional gameplay modules, `tiamat/templates/new_game/` the template a new game starts from, and `tiamat/tiamat.json` the modules, what each requires and the addons each uses. `addons/` holds the vendored third-party addons every game shares. `games/<id>/` is one Godot project per game: `game.json` (its modules, extra addons, own autoloads and licensed art), `project.godot`, `export_presets.cfg`, `game/` its own code and data and `test/` its GUT tests (`test/unit/`) and runtime scripts (`test/runtime/`). The core's and each module's own GUT tests live in their `test/` directory. `tools/` holds Node tooling and `docs/` the project documentation.
+- A game sees the foundation and the addons through links `node tools/link.js` creates inside it (`res://tiamat/core`, `res://tiamat/modules/<module>`, `res://addons/<addon>`); they are Git-ignored and never edited through the game. `tools/check_layers.js` keeps dependencies one-way: game → listed modules → the modules they require → core, and the modules' requires in `tiamat/tiamat.json` form no cycle.
 - The registered games: Farm1 (`games/farm1/`), the first-generation farming life-sim, on the life-sim and social modules; Ember Depths (`games/dungeon1/`), a dungeon delve on the core, items, skills, damage, dialogue, combat and roguelite, which keeps the foundation honest for a second genre; Iron Banners (`games/strategy1/`), strategy battles on a grid and in real time on the core, damage, dialogue, rts and tactics, for a third.
 - Prefer a small, clean game layer over carrying unused demo or editor systems from the template the project started from. The inherited `addons/top_down` and `addons/great_games_library` runtime stacks were removed and must not come back as hidden dependencies.
-- `Godot-GameTemplate` is the upstream foundation and the visual and reference baseline. Reference repositories live outside this repository under `../GodotReferences/GameBaseReferences/` and are not production dependencies.
+- `Godot-GameTemplate` is the upstream foundation and the visual and reference baseline. Reference repositories live outside this repository under `../GodotReferences/TiamatReferences/` and are not production dependencies.
 - The agent instruction tree is the root `AGENTS.md` plus the host-neutral `.agents/` directory. Skills live in `.agents/skills/`; a host that does not register that directory reaches the same `SKILL.md` files through the conditional-context table in `AGENTS.md`, so no second copy of a skill is kept for another host. Do not add `CLAUDE.md` or another duplicate instruction file; `tools/release_readiness.js` rejects one.
 
 ## Versions
@@ -30,7 +30,7 @@ This file describes only what is specific to this repository. The generic engine
 ## Default evolution strategy and language
 
 - `default_evolution`: `greenfield`. The project is experimental and has no published saves or builds to protect: every change uses the current best solution, with no compatibility code, migrations, shims or fallbacks for earlier formats, data or interfaces. Each game's version starts at 0.1.0, the save format's version only rises when the format changes (there is no migration), and dependencies track the newest stable releases. Stable ids still never change meaning, because a derived game's data refers to them.
-- The current fact roots are the code, `gamebase/gamebase.json`, each game's `game.json`, data resources under `game/data/`, `project.godot` and `export_presets.cfg`, and the pages under `docs/`.
+- The current fact roots are the code, `tiamat/tiamat.json`, each game's `game.json`, data resources under `game/data/`, `project.godot` and `export_presets.cfg`, and the pages under `docs/`.
 - Documentation, code comments and commit messages are in English. Commit subjects follow the Conventional Commits style of the existing history. A comment describes what the code does now and why, not what it used to do.
 - Stable gameplay ids, save keys, resource ids and enum values are never translated. Generated files and vendored addon sources are not rewritten for style.
 
@@ -51,7 +51,7 @@ This file describes only what is specific to this repository. The generic engine
 | Localization rules and the coverage gate | `docs/LOCALIZATION.md` |
 | Audio routing and cue ids | `docs/AUDIO.md` |
 | Licensed local art | `docs/LICENSED_ASSETS.md` |
-| The foundation's layers, modules and links, and adding a game | `gamebase/README.md` |
+| The foundation's layers, modules and links, and adding a game | `tiamat/README.md` |
 | Diagnostics and support bundles | `docs/SUPPORT.md` |
 | Automation levels, escalation to a person and the executable entry points of each area | `docs/AUTOMATION.md` |
 | Third-party syntax, APIs, versions, or agent host guidance | `docs/OFFICIAL_DOCS.md`, then the official page that matches |
@@ -59,6 +59,6 @@ This file describes only what is specific to this repository. The generic engine
 
 ## Tool discovery
 
-- Every tool is a script run as `node tools/<name>.js`; `node tools/validate.js` is the single local validation entry point. A tool that acts on one game takes `--game <id>`, else `GAMEBASE_GAME`, else the only registered game; repository-wide steps run once for all games. Flags and behaviour come from the script itself; read it rather than guessing from `--help` output.
+- Every tool is a script run as `node tools/<name>.js`; `node tools/validate.js` is the single local validation entry point. A tool that acts on one game takes `--game <id>`, else `TIAMAT_GAME`, else the only registered game; repository-wide steps run once for all games. Flags and behaviour come from the script itself; read it rather than guessing from `--help` output.
 - The engine used by a tool is `--godot-bin <path>`, else the `GODOT_BIN` environment variable, else `godot` on `PATH`. A result that depends on engine behaviour counts only when the engine matches `.godot-version`.
 - Write-type commands, side effects, dependencies, Git and third-party authorization are judged by the matching boundary in `.agents/rules/project.md`.

@@ -1,7 +1,7 @@
 extends GutTest
 
 # Farm1's shop stock and prices. How shops and crafting work is tested on
-# fixture content in gamebase/modules/items/test/test_economy_crafting.gd.
+# fixture content in tiamat/modules/items/test/test_economy_crafting.gd.
 
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary

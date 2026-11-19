@@ -1,4 +1,4 @@
-extends "res://gamebase/core/test/runtime_smoke.gd"
+extends "res://tiamat/core/test/runtime_smoke.gd"
 
 const SMOKE_SAVE_DIRECTORY := "user://world_services_smoke"
 
@@ -275,7 +275,7 @@ func _run() -> void:
 	player.global_position = Vector2.ZERO
 
 	# Exercise the real Continue path: leave gameplay, then load from title.
-	change_error = change_scene_to_file("res://gamebase/core/ui/title_screen.tscn")
+	change_error = change_scene_to_file("res://tiamat/core/ui/title_screen.tscn")
 	_check(change_error == OK, "Could not return to title before Continue test")
 	await scene_changed
 	await process_frame
@@ -917,7 +917,7 @@ func _clear_current_mine_floor(mine: Node) -> void:
 func _find_weather_day_after(weather_id: StringName, start_day: int, seasons := PackedStringArray()) -> int:
 	var weather := root.get_node("WeatherState")
 	# Loaded rather than named: this script compiles before the autoloads exist.
-	var calendar: Resource = load("res://gamebase/core/time/game_calendar.gd").call("current")
+	var calendar: Resource = load("res://tiamat/core/time/game_calendar.gd").call("current")
 	for day in range(maxi(start_day, 1), maxi(start_day, 1) + 730):
 		if not seasons.is_empty() and not seasons.has(calendar.call("get_season_name", day)):
 			continue

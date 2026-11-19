@@ -7,7 +7,7 @@ extends Node2D
 ## enemy is defeated the way on opens: the stairs down to the next depth, or
 ## the rope back up to camp with what the player found.
 
-const ENEMY_SCENE := preload("res://gamebase/modules/combat/combat/hostile_creature.tscn")
+const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
 # How far apart the enemies of a floor stand.
 const ENEMY_SPACING := 28.0
 

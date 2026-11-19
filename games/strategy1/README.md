@@ -1,6 +1,6 @@
 # Iron Banners
 
-The third game built on GameBase, of a third genre: strategy. From a camp the player plans a battle on a war table and fights it on a grid in active time, or leads the troops from the muster into a battle in real time on an open field, commanding their banner's units against raiders. It uses only the core and the `damage`, `rts` and `tactics` modules (no items), and keeps the foundation honest for a game whose fights are turns on a grid or orders to troops rather than swings in the world.
+The third game built on Tiamat, of a third genre: strategy. From a camp the player plans a battle on a war table and fights it on a grid in active time, or leads the troops from the muster into a battle in real time on an open field, commanding their banner's units against raiders. It uses only the core and the `damage`, `rts` and `tactics` modules (no items), and keeps the foundation honest for a game whose fights are turns on a grid or orders to troops rather than swings in the world.
 
 ## Run
 
@@ -10,7 +10,7 @@ From the repository root, link the foundation and the addons once, then open `ga
 node tools/link.js --game strategy1
 ```
 
-The main scene is the core title screen, `res://gamebase/core/ui/title_screen.tscn`. `node tools/validate.js --game strategy1` runs this game's checks; its runtime check opens the battles at the ford and in the pass and walks the camp, and ends with `Camp smoke passed.`. The version lives in `config/version` of `project.godot`; a release is the tag `game/strategy1/v<version>`.
+The main scene is the core title screen, `res://tiamat/core/ui/title_screen.tscn`. `node tools/validate.js --game strategy1` runs this game's checks; its runtime check opens the battles at the ford and in the pass and walks the camp, and ends with `Camp smoke passed.`. The version lives in `config/version` of `project.godot`; a release is the tag `game/strategy1/v<version>`.
 
 ## Layout
 

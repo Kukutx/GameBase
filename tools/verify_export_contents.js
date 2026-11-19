@@ -5,7 +5,7 @@ const { fail, main, removeRecursive, resolveGodotBin, run, tempFile } = require(
 const { projectSetting, resolveGame } = require("./lib/games");
 
 const PROBE_PROJECT = `[application]
-config/name="GameBase Export Pack Probe"
+config/name="Tiamat Export Pack Probe"
 
 [rendering]
 renderer/rendering_method="gl_compatibility"
@@ -55,18 +55,18 @@ function expectations(game) {
   const strings = (raw) => [...String(raw || "").matchAll(/"(res:\/\/[^"]+)"/g)].map((match) => match[1]);
   const required = new Set([
     ...strings(projectSetting(game, "application", "run/main_scene")),
-    ...strings(projectSetting(game, "gamebase", "game_definition")),
+    ...strings(projectSetting(game, "tiamat", "game_definition")),
     ...strings(projectSetting(game, "internationalization", "locale/translations")),
   ]);
   const project = fs.readFileSync(path.join(game.root, "project.godot"), "utf8");
   for (const match of project.matchAll(/^\w+="\*(res:\/\/[^"]+)"$/gm)) required.add(match[1]);
   // The font GameSettings loads by path as every game's fallback font.
-  required.add("res://gamebase/core/ui/fonts/noto_sans_sc.woff2");
+  required.add("res://tiamat/core/ui/fonts/noto_sans_sc.woff2");
   const files = ["res://.gutconfig.json", "res://game.json", "res://BUILD_INFO.json"];
   const dirs = [
     "res://test",
-    "res://gamebase/core/test",
-    ...game.modules.map((module) => `res://gamebase/modules/${module}/test`),
+    "res://tiamat/core/test",
+    ...game.modules.map((module) => `res://tiamat/modules/${module}/test`),
     "res://addons/gut",
     "res://game/art/licensed",
   ];
@@ -126,7 +126,7 @@ async function verifyExportContents({ game, pckPath, godotBin }) {
   if (!fs.existsSync(resolvedPck)) {
     fail(`Resource pack not found: ${pckPath}`);
   }
-  const probeRoot = tempFile("gamebase-export-pack-probe");
+  const probeRoot = tempFile("tiamat-export-pack-probe");
   fs.mkdirSync(probeRoot, { recursive: true });
   fs.writeFileSync(path.join(probeRoot, "project.godot"), PROBE_PROJECT, "utf8");
   const probeScript = path.join(probeRoot, "probe.gd");
