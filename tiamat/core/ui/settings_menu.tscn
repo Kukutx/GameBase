@@ -112,6 +112,10 @@ text = "VSync"
 layout_mode = 2
 text = "Integer Scaling"
 
+[node name="BatterySaver" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
+layout_mode = 2
+text = "Battery Saver"
+
 [node name="Autosave" type="CheckButton" parent="Dim/Panel/Layout/Pages/Page/Main"]
 layout_mode = 2
 text = "Autosave"
@@ -226,6 +230,24 @@ size_flags_horizontal = 3
 visible = false
 layout_mode = 2
 text = "Stick on the Right"
+
+[node name="TouchOpacity" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Controls"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Dim/Panel/Layout/Pages/Page/Controls/TouchOpacity"]
+custom_minimum_size = Vector2(92, 0)
+layout_mode = 2
+text = "Touch Opacity"
+
+[node name="Slider" type="HSlider" parent="Dim/Panel/Layout/Pages/Page/Controls/TouchOpacity"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 30.0
+max_value = 100.0
+step = 5.0
+value = 100.0
 
 [node name="Header" type="HBoxContainer" parent="Dim/Panel/Layout/Pages/Page/Controls"]
 layout_mode = 2

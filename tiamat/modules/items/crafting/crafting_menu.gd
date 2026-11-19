@@ -37,10 +37,7 @@ func _rebuild() -> void:
 		recipes_container.add_child(button)
 		if first_button == null and not button.disabled:
 			first_button = button
-	if first_button != null:
-		first_button.grab_focus()
-	else:
-		close_button.grab_focus()
+	MenuLayer.focus(first_button if first_button != null else close_button)
 
 func _recipe_text(recipe: RecipeData) -> String:
 	var parts: PackedStringArray = []

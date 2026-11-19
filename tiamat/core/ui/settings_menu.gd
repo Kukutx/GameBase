@@ -34,6 +34,7 @@ const BINDING_WIDTH := 76.0
 @onready var fullscreen_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/Fullscreen
 @onready var vsync_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/VSync
 @onready var integer_scaling_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/IntegerScaling
+@onready var battery_saver_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/BatterySaver
 @onready var autosave_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/Autosave
 @onready var pause_on_focus_loss_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/PauseOnFocusLoss
 @onready var hints_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Main/Hints
@@ -52,6 +53,8 @@ const BINDING_WIDTH := 76.0
 @onready var touch_size_row: HBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls/TouchSize
 @onready var touch_size_select: OptionButton = $Dim/Panel/Layout/Pages/Page/Controls/TouchSize/Select
 @onready var touch_stick_right_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Controls/TouchStickRight
+@onready var touch_opacity_row: HBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls/TouchOpacity
+@onready var touch_opacity_slider: HSlider = $Dim/Panel/Layout/Pages/Page/Controls/TouchOpacity/Slider
 @onready var controls_list: VBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls/List
 @onready var controls_reset: Button = $Dim/Panel/Layout/Pages/Page/Controls/Reset
 @onready var hint_label: Label = $Dim/Panel/Layout/Hint
@@ -75,6 +78,7 @@ func _ready() -> void:
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	vsync_check.toggled.connect(_on_vsync_toggled)
 	integer_scaling_check.toggled.connect(_on_integer_scaling_toggled)
+	battery_saver_check.toggled.connect(_on_battery_saver_toggled)
 	autosave_check.toggled.connect(_on_autosave_toggled)
 	pause_on_focus_loss_check.toggled.connect(_on_pause_on_focus_loss_toggled)
 	hints_check.toggled.connect(_on_hints_toggled)
@@ -101,6 +105,8 @@ func _ready() -> void:
 		touch_size_select.add_item(size_name)
 	touch_size_select.item_selected.connect(_on_touch_size_selected)
 	touch_stick_right_check.toggled.connect(_on_touch_stick_right_toggled)
+	touch_opacity_slider.min_value = GameSettingsService.TOUCH_OPACITY_MIN * 100.0
+	touch_opacity_slider.value_changed.connect(_on_touch_opacity_changed)
 	_build_language_selector()
 	language_select.item_selected.connect(_on_language_selected)
 	_build_controls()
@@ -148,12 +154,13 @@ func show_page(next: Page) -> void:
 	pages.scroll_vertical = 0
 	match next:
 		Page.MAIN:
-			master_slider.grab_focus()
+			MenuLayer.focus(master_slider)
 		Page.ACCESSIBILITY:
-			(weather_effects_check if weather_effects_check.visible else reduced_motion_check).grab_focus()
+			MenuLayer.focus(weather_effects_check if weather_effects_check.visible else reduced_motion_check)
 		Page.CONTROLS:
-			var first := _first_binding_button()
-			(first if first != null else controls_reset).grab_focus()
+			# The touch controls' rows head the page where they show.
+			var first: Control = touch_size_select if touch_size_row.visible else _first_binding_button()
+			MenuLayer.focus(first if first != null else controls_reset)
 
 # A rebind reads the next key, mouse button or gamepad button before the
 # focused button can take it as a press.
@@ -199,6 +206,7 @@ func _sync_from_settings() -> void:
 	fullscreen_check.button_pressed = GameSettings.fullscreen
 	vsync_check.button_pressed = GameSettings.vsync
 	integer_scaling_check.button_pressed = GameSettings.integer_scaling
+	battery_saver_check.button_pressed = GameSettings.battery_saver
 	autosave_check.button_pressed = GameSettings.autosave
 	pause_on_focus_loss_check.button_pressed = GameSettings.pause_on_focus_loss
 	hints_check.button_pressed = GameSettings.hints
@@ -211,8 +219,10 @@ func _sync_from_settings() -> void:
 	# Offered on a device that plays by touch.
 	touch_size_row.visible = TouchControlsService.is_offered()
 	touch_stick_right_check.visible = touch_size_row.visible
+	touch_opacity_row.visible = touch_size_row.visible
 	touch_size_select.select(GameSettings.touch_size)
 	touch_stick_right_check.button_pressed = GameSettings.touch_stick_right
+	touch_opacity_slider.value = GameSettings.touch_opacity * 100.0
 	_select_current_language()
 	_syncing = false
 	if _waiting_action == &"":
@@ -363,6 +373,10 @@ func _on_integer_scaling_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_integer_scaling(value)
 
+func _on_battery_saver_toggled(value: bool) -> void:
+	if not _syncing:
+		GameSettings.set_battery_saver(value)
+
 func _on_autosave_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_autosave(value)
@@ -386,6 +400,10 @@ func _on_touch_size_selected(index: int) -> void:
 func _on_touch_stick_right_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_touch_stick_right(value)
+
+func _on_touch_opacity_changed(value: float) -> void:
+	if not _syncing:
+		GameSettings.set_touch_opacity(value / 100.0)
 
 func _on_weather_effects_toggled(value: bool) -> void:
 	if not _syncing:

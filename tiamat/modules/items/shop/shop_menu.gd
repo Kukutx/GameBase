@@ -70,10 +70,7 @@ func _rebuild() -> void:
 	_refresh_sell_list()
 	if first_button == null and not _sell_buttons.is_empty():
 		first_button = sell_container.get_child(0) as Button
-	if first_button != null:
-		first_button.grab_focus()
-	else:
-		close_button.grab_focus()
+	MenuLayer.focus(first_button if first_button != null else close_button)
 
 func _buy(item_id: StringName) -> void:
 	ShopState.buy(_shop, item_id, 1)
@@ -123,7 +120,7 @@ func _refresh_sell_list() -> void:
 	if focus_index >= 0 and visible:
 		var count := sell_container.get_child_count()
 		var next := sell_container.get_child(mini(focus_index, count - 1)) as Button if count > 0 else close_button
-		next.grab_focus()
+		MenuLayer.focus(next)
 
 func _on_money_changed(_amount: int) -> void:
 	if visible:

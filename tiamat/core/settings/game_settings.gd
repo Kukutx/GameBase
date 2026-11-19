@@ -4,8 +4,8 @@ extends Node
 ## The player's settings: the volumes, the display, autosave, how fast text
 ## types out, hints, accessibility, the language, the size and sides of the
 ## touch controls and the bindings of the controls (`bindings`).
-## It applies them to the audio buses, the window, the translation server and
-## the input map, and writes them to `settings_path` (JSON) once the frame of a
+## It applies them to the audio buses, the window, the frame rate, the
+## translation server and the input map, and writes them to `settings_path` (JSON) once the frame of a
 ## change is done: a slider dragged across writes once a frame, not once a step.
 ## The file is replaced whole (`JsonFile`), so a crash never leaves half of it.
 ##
@@ -63,6 +63,16 @@ enum TouchSize { SMALL, NORMAL, LARGE }
 const TOUCH_SIZE_NAMES: Array[String] = ["Small", "Normal", "Large"]
 # How much larger than its normal size each touch size draws the controls.
 const _TOUCH_SCALES: Array[float] = [0.8, 1.0, 1.25]
+## The faintest the touch controls draw (`touch_opacity`), still there to be
+## found.
+const TOUCH_OPACITY_MIN := 0.3
+
+## The most frames a second a phone draws (`get_frame_rate_limit()`): its
+## screen may refresh twice as often, which a game drawn at this size does not
+## need and the battery pays for.
+const PHONE_FRAME_RATE := 60
+## The most frames a second the battery saver draws (`battery_saver`).
+const BATTERY_SAVER_FRAME_RATE := 30
 
 ## The buses `GameAudio` plays on, each sending to Master. A game's bus
 ## layout may add effects to them; the core adds the ones it lacks.
@@ -81,6 +91,9 @@ var fullscreen: bool
 var vsync: bool
 ## Whether the game scales only by whole multiples, for sharp pixels.
 var integer_scaling: bool
+## Whether the game draws at most `BATTERY_SAVER_FRAME_RATE` frames a second,
+## so a phone or laptop runs longer and cooler.
+var battery_saver: bool
 var autosave: bool
 ## Whether the pause menu opens when the game window loses focus.
 var pause_on_focus_loss: bool
@@ -98,6 +111,9 @@ var touch_size: TouchSize
 ## Whether the touch controls swap sides: the stick at the lower right, the
 ## buttons at the lower left.
 var touch_stick_right: bool
+## How opaque the touch controls draw, from `TOUCH_OPACITY_MIN` to 1 (as
+## drawn), so the player sees more of the game under them.
+var touch_opacity: float
 ## The controls of the running game and the player's bindings of them. Read
 ## them here; change them with `bind_control()`, `bind_gamepad_button()` and
 ## `reset_controls()`, which save and apply the change.
@@ -166,6 +182,26 @@ func set_integer_scaling(value: bool) -> void:
 	_apply_scaling()
 	_save_and_emit()
 
+func set_battery_saver(value: bool) -> void:
+	battery_saver = value
+	_apply_frame_rate()
+	_save_and_emit()
+
+## The most frames a second the game draws (`Engine.max_fps`; 0 for no
+## limit, where vsync holds it to the screen): the game's own limit
+## (`application/run/max_fps`), lowered to `BATTERY_SAVER_FRAME_RATE` with the
+## battery saver on and to `PHONE_FRAME_RATE` on a phone.
+func get_frame_rate_limit() -> int:
+	var limit := int(ProjectSettings.get_setting("application/run/max_fps", 0))
+	var cap := 0
+	if battery_saver:
+		cap = BATTERY_SAVER_FRAME_RATE
+	elif InputPromptService.starts_on_touch():
+		cap = PHONE_FRAME_RATE
+	if cap > 0 and (limit <= 0 or cap < limit):
+		limit = cap
+	return limit
+
 func set_autosave(value: bool) -> void:
 	autosave = value
 	_save_and_emit()
@@ -213,6 +249,10 @@ func get_touch_scale() -> float:
 
 func set_touch_stick_right(value: bool) -> void:
 	touch_stick_right = value
+	_save_and_emit()
+
+func set_touch_opacity(value: float) -> void:
+	touch_opacity = clampf(value, TOUCH_OPACITY_MIN, 1.0)
 	_save_and_emit()
 
 func set_weather_effects(value: bool) -> void:
@@ -287,6 +327,7 @@ func apply() -> void:
 	_apply_bus(&"Sounds", sounds_volume)
 	bindings.apply_to_input_map()
 	_apply_scaling()
+	_apply_frame_rate()
 	if DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
@@ -297,11 +338,11 @@ func to_data() -> Dictionary:
 	return {
 		"settings_version": SETTINGS_VERSION,
 		"audio": {"master": master_volume, "music": music_volume, "sounds": sounds_volume},
-		"display": {"fullscreen": fullscreen, "vsync": vsync, "integer_scaling": integer_scaling},
+		"display": {"fullscreen": fullscreen, "vsync": vsync, "integer_scaling": integer_scaling, "battery_saver": battery_saver},
 		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss, "text_speed": TEXT_SPEED_NAMES[text_speed].to_lower(), "hints": hints},
 		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
 		"privacy": {"online_services": online_services},
-		"touch": {"size": TOUCH_SIZE_NAMES[touch_size].to_lower(), "stick_right": touch_stick_right},
+		"touch": {"size": TOUCH_SIZE_NAMES[touch_size].to_lower(), "stick_right": touch_stick_right, "opacity": touch_opacity},
 		"localization": {"locale": locale},
 		"controls": controls["controls"],
 		"gamepad": controls["gamepad"],
@@ -330,6 +371,7 @@ func load_settings() -> void:
 	fullscreen = _read_bool(data, "display", "fullscreen", fullscreen)
 	vsync = _read_bool(data, "display", "vsync", vsync)
 	integer_scaling = _read_bool(data, "display", "integer_scaling", integer_scaling)
+	battery_saver = _read_bool(data, "display", "battery_saver", battery_saver)
 	autosave = _read_bool(data, "gameplay", "autosave", autosave)
 	pause_on_focus_loss = _read_bool(data, "gameplay", "pause_on_focus_loss", pause_on_focus_loss)
 	var speed: Variant = _read(data, "gameplay", "text_speed")
@@ -345,6 +387,7 @@ func load_settings() -> void:
 		if size is String and size == TOUCH_SIZE_NAMES[index].to_lower():
 			touch_size = index as TouchSize
 	touch_stick_right = _read_bool(data, "touch", "stick_right", touch_stick_right)
+	touch_opacity = clampf(_read_number(data, "touch", "opacity", touch_opacity), TOUCH_OPACITY_MIN, 1.0)
 	var loaded_locale: Variant = _read(data, "localization", "locale")
 	locale = loaded_locale if loaded_locale is String and get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
 	bindings.read_data(data.get("controls"), data.get("gamepad"))
@@ -372,6 +415,7 @@ func _reset_values() -> void:
 	fullscreen = false
 	vsync = true
 	integer_scaling = false
+	battery_saver = false
 	autosave = true
 	pause_on_focus_loss = true
 	text_speed = TextSpeed.NORMAL
@@ -381,6 +425,7 @@ func _reset_values() -> void:
 	online_services = false
 	touch_size = TouchSize.NORMAL
 	touch_stick_right = false
+	touch_opacity = 1.0
 
 # Set only on a change: each change lays out every embedded window again.
 func _apply_scaling() -> void:
@@ -389,6 +434,12 @@ func _apply_scaling() -> void:
 	var stretch := Window.CONTENT_SCALE_STRETCH_INTEGER if integer_scaling else Window.CONTENT_SCALE_STRETCH_FRACTIONAL
 	if get_tree().root.content_scale_stretch != stretch:
 		get_tree().root.content_scale_stretch = stretch
+
+# A headless run (the tests) keeps the engine's rate, so a test's frames do
+# not wait on a setting.
+func _apply_frame_rate() -> void:
+	if DisplayServer.get_name() != "headless":
+		Engine.max_fps = get_frame_rate_limit()
 
 func _apply_bus(bus_name: StringName, linear: float) -> void:
 	var index := AudioServer.get_bus_index(bus_name)

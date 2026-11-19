@@ -34,6 +34,36 @@ static func list_button(text := "") -> Button:
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return button
 
+## Gives `control` the focus. In a list that scrolls to the focus (a
+## `ScrollContainer` with `follow_focus`), the list then shows it once the
+## menu has its size: a menu that just showed, or just built its list, is not
+## laid out yet, and a list scrolled to the focus then sits off by a row, its
+## top row out of sight. A control the list shows from its top opens the list
+## at its top.
+static func focus(control: Control) -> void:
+	control.grab_focus()
+	var scroll := _scroll_of(control)
+	if scroll == null:
+		return
+	await control.get_tree().process_frame
+	if not is_instance_valid(control) or not is_instance_valid(scroll) or not control.has_focus():
+		return
+	var content := scroll.get_child(0) as Control
+	var top := control.get_global_rect().position.y - content.get_global_rect().position.y
+	if top + control.size.y <= scroll.size.y:
+		scroll.scroll_vertical = 0
+	else:
+		scroll.ensure_control_visible(control)
+
+# The nearest list around `control` that scrolls to the focus, or null.
+static func _scroll_of(control: Control) -> ScrollContainer:
+	var node := control.get_parent()
+	while node != null:
+		if node is ScrollContainer and (node as ScrollContainer).follow_focus:
+			return node as ScrollContainer
+		node = node.get_parent()
+	return null
+
 ## Whether the menu shows.
 func is_open() -> bool:
 	return visible

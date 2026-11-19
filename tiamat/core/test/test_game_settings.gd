@@ -31,6 +31,8 @@ func test_settings_round_trip() -> void:
 	source.text_speed = GameSettingsService.TextSpeed.FAST
 	source.touch_size = GameSettingsService.TouchSize.LARGE
 	source.touch_stick_right = true
+	source.touch_opacity = 0.45
+	source.battery_saver = true
 	source.locale = "zh_CN"
 	source.save_settings()
 
@@ -49,27 +51,55 @@ func test_settings_round_trip() -> void:
 	assert_eq(restored.text_speed, GameSettingsService.TextSpeed.FAST)
 	assert_eq(restored.touch_size, GameSettingsService.TouchSize.LARGE)
 	assert_true(restored.touch_stick_right)
+	assert_almost_eq(restored.touch_opacity, 0.45, 0.001)
+	assert_true(restored.battery_saver)
 	assert_eq(restored.locale, "zh_CN")
 
-func test_the_touch_size_scales_the_controls_and_an_unknown_one_keeps_the_current() -> void:
+func test_the_touch_size_and_opacity_and_an_unknown_value_keeps_the_current() -> void:
 	var settings := GameSettingsService.new()
 	settings.settings_path = TEST_PATH
 	add_child_autofree(settings)
 	assert_eq(settings.touch_size, GameSettingsService.TouchSize.NORMAL, "the default")
 	assert_false(settings.touch_stick_right, "the stick at the left by default")
+	assert_eq(settings.touch_opacity, 1.0, "drawn as they are by default")
 	assert_eq(settings.get_touch_scale(), 1.0)
 	settings.set_touch_size(GameSettingsService.TouchSize.SMALL)
 	assert_lt(settings.get_touch_scale(), 1.0)
 	settings.set_touch_size(GameSettingsService.TouchSize.LARGE)
 	assert_gt(settings.get_touch_scale(), 1.0)
+	settings.set_touch_opacity(0.0)
+	assert_eq(settings.touch_opacity, GameSettingsService.TOUCH_OPACITY_MIN, "never so faint they cannot be found")
 	var file := FileAccess.open(TEST_PATH, FileAccess.WRITE)
-	file.store_string(JSON.stringify({"settings_version": GameSettingsService.SETTINGS_VERSION, "touch": {"size": "huge", "stick_right": "yes"}}))
+	file.store_string(JSON.stringify({"settings_version": GameSettingsService.SETTINGS_VERSION, "touch": {"size": "huge", "stick_right": "yes", "opacity": 7}}))
 	file.close()
 	settings.load_settings()
 	assert_eq(settings.touch_size, GameSettingsService.TouchSize.LARGE, "an unknown size keeps the current one")
 	assert_false(settings.touch_stick_right, "a value of the wrong type keeps the current one")
+	assert_eq(settings.touch_opacity, 1.0, "an opacity out of range reads as the nearest")
 	settings.reset_all()
 	assert_eq(settings.touch_size, GameSettingsService.TouchSize.NORMAL)
+	assert_eq(settings.touch_opacity, 1.0)
+
+func test_the_battery_saver_and_a_phone_lower_the_frame_rate() -> void:
+	var settings := GameSettingsService.new()
+	settings.settings_path = TEST_PATH
+	add_child_autofree(settings)
+	var own: Variant = ProjectSettings.get_setting("application/run/max_fps", 0)
+	var engine_rate := Engine.max_fps
+	assert_false(settings.battery_saver, "off by default")
+	var expected := GameSettingsService.PHONE_FRAME_RATE if InputPromptService.starts_on_touch() else 0
+	ProjectSettings.set_setting("application/run/max_fps", 0)
+	assert_eq(settings.get_frame_rate_limit(), expected, "a phone draws at most 60 frames a second, a computer as its screen")
+	settings.set_battery_saver(true)
+	assert_eq(settings.get_frame_rate_limit(), GameSettingsService.BATTERY_SAVER_FRAME_RATE)
+	ProjectSettings.set_setting("application/run/max_fps", 20)
+	assert_eq(settings.get_frame_rate_limit(), 20, "a game's own lower limit stays")
+	ProjectSettings.set_setting("application/run/max_fps", 144)
+	assert_eq(settings.get_frame_rate_limit(), GameSettingsService.BATTERY_SAVER_FRAME_RATE)
+	settings.set_battery_saver(false)
+	assert_eq(settings.get_frame_rate_limit(), GameSettingsService.PHONE_FRAME_RATE if expected > 0 else 144)
+	ProjectSettings.set_setting("application/run/max_fps", own)
+	assert_eq(Engine.max_fps, engine_rate, "a headless run keeps the engine's rate")
 
 func test_text_speed_sets_how_long_each_character_shows() -> void:
 	var settings := GameSettingsService.new()

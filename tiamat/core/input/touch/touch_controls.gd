@@ -81,7 +81,7 @@ func _ready() -> void:
 	add_child(_corner)
 	get_viewport().size_changed.connect(_layout)
 	GameSettings.controls_changed.connect(func() -> void: _game_actions_known = false)
-	# The player's size and side of the controls.
+	# The player's size, side and opacity of the controls.
 	GameSettings.changed.connect(_layout)
 	_show({})
 
@@ -234,6 +234,7 @@ func _show(wanted: Dictionary) -> void:
 	_stick.visible = bool(wanted.get("stick", false))
 	if not _stick.visible:
 		_stick.release()
+		_drop_fingers(_stick)
 	var actions: Array[StringName] = []
 	actions.assign(wanted.get("actions", []))
 	if actions != _button_actions:
@@ -251,10 +252,11 @@ func _show(wanted: Dictionary) -> void:
 func _set_buttons(actions: Array[StringName]) -> void:
 	for button: TouchButton in _buttons:
 		button.release()
-		# Out of the tree at once, so the new button of the same action takes
-		# its name (`Button_<action>`).
+		_drop_fingers(button)
+		# Gone at once, so the new button of the same action takes its name
+		# (`Button_<action>`) and none is left waiting to be freed.
 		remove_child(button)
-		button.queue_free()
+		button.free()
 	_buttons.clear()
 	_button_actions = actions.duplicate()
 	for action: StringName in actions:
@@ -264,6 +266,13 @@ func _set_buttons(actions: Array[StringName]) -> void:
 		button.label = GameSettings.bindings.get_label(action)
 		add_child(button)
 		_buttons.append(button)
+
+# A finger still on `control`, which hides or goes, touches nothing more: its
+# moves and its lift reach what is under it.
+func _drop_fingers(control: Control) -> void:
+	for index: int in _fingers.keys():
+		if _fingers[index] == control:
+			_fingers.erase(index)
 
 func _release_all() -> void:
 	_fingers.clear()
@@ -311,6 +320,12 @@ func _layout() -> void:
 		if stick_right:
 			place.x = -place.x
 		_place(button, first + place * radius, button.radius)
+	# The player's opacity, over each control's own (a held control draws
+	# stronger).
+	var controls: Array[Control] = [_stick, _corner]
+	controls.append_array(_buttons)
+	for control: Control in controls:
+		control.modulate.a = GameSettings.touch_opacity
 	layout_changed.emit()
 
 ## The part of the view that the screen's notch, rounded corners and system

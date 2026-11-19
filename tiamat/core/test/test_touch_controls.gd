@@ -23,16 +23,19 @@ class PagedScene extends Node:
 var _menu: PauseMenu
 var _touch_size: GameSettingsService.TouchSize
 var _touch_stick_right := false
+var _touch_opacity := 1.0
 
 func before_each() -> void:
 	_touch_size = GameSettings.touch_size
 	_touch_stick_right = GameSettings.touch_stick_right
+	_touch_opacity = GameSettings.touch_opacity
 	InputPrompts.call("_set_using_touch", false)
 	TouchControls._process(0.0)
 
 func after_each() -> void:
 	GameSettings.touch_size = _touch_size
 	GameSettings.touch_stick_right = _touch_stick_right
+	GameSettings.touch_opacity = _touch_opacity
 	InputPrompts.call("_set_using_touch", false)
 	InputPrompts.call("_set_using_gamepad", false)
 	InputLock.clear()
@@ -117,6 +120,52 @@ func test_a_button_holds_its_action_while_the_finger_is_on_it() -> void:
 	TouchControls._input(_touch(2, button.get_center(), false))
 	Input.flush_buffered_events()
 	assert_false(Input.is_action_pressed(&"interact"))
+
+func test_a_finger_on_a_button_that_goes_lets_go_and_lifts_on_nothing() -> void:
+	_play()
+	_use_touch()
+	var button := TouchControls.get_node("Button_interact") as TouchButton
+	var at := button.get_center()
+	TouchControls._input(_touch(4, at, true))
+	Input.flush_buffered_events()
+	assert_true(Input.is_action_pressed(&"interact"))
+	TouchControls.go_back()
+	Input.flush_buffered_events()
+	TouchControls._process(0.0)
+	Input.flush_buffered_events()
+	assert_false(Input.is_action_pressed(&"interact"), "the button lets go as the menu takes it away")
+	assert_false(is_instance_valid(button), "and is gone at once")
+	await get_tree().process_frame
+	var drag := InputEventScreenDrag.new()
+	drag.index = 4
+	drag.position = at + Vector2(2, 0)
+	TouchControls._input(drag)
+	TouchControls._input(_touch(4, at, false))
+	Input.flush_buffered_events()
+	assert_false(Input.is_action_pressed(&"interact"), "the finger still down moves and lifts on nothing")
+	assert_true(_menu.visible, "and touches nothing")
+
+func test_a_finger_on_the_stick_as_it_hides_lets_go_and_moves_nothing() -> void:
+	_play()
+	_use_touch()
+	var stick := TouchControls.get_stick()
+	var center := stick.get_center()
+	TouchControls._input(_touch(0, center, true))
+	var drag := InputEventScreenDrag.new()
+	drag.index = 0
+	drag.position = center + Vector2(stick.radius, 0)
+	TouchControls._input(drag)
+	Input.flush_buffered_events()
+	assert_true(Input.is_action_pressed(&"move_right"))
+	TouchControls.go_back()
+	Input.flush_buffered_events()
+	TouchControls._process(0.0)
+	assert_false(stick.visible)
+	assert_false(Input.is_action_pressed(&"move_right"), "the stick lets go as the menu takes it away")
+	assert_false((TouchControls.get("_fingers") as Dictionary).has(0), "the finger is the menu's now")
+	TouchControls._input(drag)
+	Input.flush_buffered_events()
+	assert_false(Input.is_action_pressed(&"move_right"), "and moving it walks nothing")
 
 func test_going_back_pauses_play_and_closes_what_is_open() -> void:
 	_play()
@@ -204,6 +253,17 @@ func test_the_player_s_size_and_side_place_the_controls() -> void:
 	for control: Control in [stick, button, corner]:
 		assert_true(view.encloses(control.get_rect()), "%s lies in the view" % control.name)
 
+func test_the_player_s_opacity_draws_every_control_fainter() -> void:
+	_play()
+	_use_touch()
+	var controls: Array[Control] = [TouchControls.get_stick(), TouchControls.get_node("Button_interact"), TouchControls.get_node("Back")]
+	for control: Control in controls:
+		assert_eq(control.modulate.a, GameSettings.touch_opacity, "%s as the settings say" % control.name)
+	GameSettings.touch_opacity = 0.5
+	TouchControls._layout()
+	for control: Control in controls:
+		assert_almost_eq(control.modulate.a, 0.5, 0.001, "%s fainter" % control.name)
+
 func test_the_settings_offer_the_touch_controls_on_a_device_played_by_touch() -> void:
 	var menu := (load("res://tiamat/core/ui/settings_menu.tscn") as PackedScene).instantiate() as SettingsMenu
 	add_child_autofree(menu)
@@ -214,7 +274,15 @@ func test_the_settings_offer_the_touch_controls_on_a_device_played_by_touch() ->
 	menu.open()
 	assert_true(menu.touch_size_row.visible, "a finger on the screen offers them")
 	assert_true(menu.touch_stick_right_check.visible)
+	assert_true(menu.touch_opacity_row.visible)
+	menu.show_page(SettingsMenu.Page.CONTROLS)
+	assert_eq(get_viewport().gui_get_focus_owner(), menu.touch_size_select, "the page opens at its top, on the touch controls")
 	assert_eq(menu.touch_size_select.selected, GameSettingsService.TouchSize.SMALL)
+	GameSettings.touch_opacity = 0.6
+	menu.open()
+	assert_almost_eq(menu.touch_opacity_slider.value, 60.0, 0.001)
+	menu.touch_opacity_slider.value = 40.0
+	assert_almost_eq(GameSettings.touch_opacity, 0.4, 0.001, "the slider sets it")
 
 func test_a_minigame_is_tapped_unless_it_asks_for_buttons() -> void:
 	var minigame := MiniGame.new()
