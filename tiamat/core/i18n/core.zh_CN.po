@@ -220,6 +220,18 @@ msgstr "快"
 msgid "Instant"
 msgstr "立即"
 
+msgid "Touch Controls"
+msgstr "触屏按键"
+
+msgid "Small"
+msgstr "小"
+
+msgid "Large"
+msgstr "大"
+
+msgid "Stick on the Right"
+msgstr "摇杆放在右边"
+
 msgid "Controls..."
 msgstr "按键设置..."
 

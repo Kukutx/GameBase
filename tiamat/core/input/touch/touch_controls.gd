@@ -43,7 +43,8 @@ const CANCEL_ACTION := &"ui_cancel"
 const PAUSE_ACTION := &"pause"
 ## The most buttons a game's controls get.
 const MAX_BUTTONS := 5
-## Sizes against the height of the view.
+## Sizes against the height of the view, at the normal touch size
+## (`GameSettings.get_touch_scale()`).
 const STICK_RADIUS := 0.13
 const BUTTON_RADIUS := 0.085
 const CORNER_RADIUS := 0.06
@@ -51,7 +52,8 @@ const MARGIN := 0.05
 ## How far down the view the pause button sits, at its left edge.
 const PAUSE_HEIGHT := 0.4
 ## Where the buttons after the first sit around it, in its radii: left, up and
-## left, up, then further left and up.
+## left, up, then further left and up (mirrored while the player has the
+## stick at the right, `GameSettings.touch_stick_right`).
 const BUTTON_PLACES: Array[Vector2] = [Vector2(-2.3, 0.0), Vector2(-1.7, -1.7), Vector2(0.0, -2.3), Vector2(-4.4, 0.2), Vector2(-3.6, -2.4)]
 
 var _stick: TouchStick
@@ -79,6 +81,8 @@ func _ready() -> void:
 	add_child(_corner)
 	get_viewport().size_changed.connect(_layout)
 	GameSettings.controls_changed.connect(func() -> void: _game_actions_known = false)
+	# The player's size and side of the controls.
+	GameSettings.changed.connect(_layout)
 	_show({})
 
 func _notification(what: int) -> void:
@@ -121,6 +125,12 @@ func back_action() -> StringName:
 	if _in_play() and InputMap.has_action(PAUSE_ACTION):
 		return PAUSE_ACTION
 	return &""
+
+## Whether the device plays by touch, so the settings offer the size and the
+## side of the touch controls: it has a touchscreen, is a phone or a tablet,
+## or the player touched it.
+static func is_offered() -> bool:
+	return DisplayServer.is_touchscreen_available() or InputPromptService.starts_on_touch() or InputPrompts.using_touch
 
 ## Whether the touch controls show now.
 func is_showing() -> bool:
@@ -271,23 +281,33 @@ func _layout() -> void:
 	var right := clear.end.x - margin
 	var top := clear.position.y + margin
 	var bottom := clear.end.y - margin
-	_stick.radius = unit * STICK_RADIUS
-	_place(_stick, Vector2(left + _stick.radius * 1.15, bottom - _stick.radius * 1.15), _stick.radius)
-	_corner.radius = unit * CORNER_RADIUS
+	# The player's size, and the side the stick takes (the buttons the other).
+	var size_scale := GameSettings.get_touch_scale()
+	var stick_right := GameSettings.touch_stick_right
+	_stick.radius = unit * STICK_RADIUS * size_scale
+	var stick_x := right - _stick.radius * 1.15 if stick_right else left + _stick.radius * 1.15
+	_place(_stick, Vector2(stick_x, bottom - _stick.radius * 1.15), _stick.radius)
+	_corner.radius = unit * CORNER_RADIUS * size_scale
 	# In play the HUD fills the top corners, so the pause button sits at the
-	# left edge above the stick; over a menu the close button takes the top
-	# right corner, as a menu's close button does.
+	# edge above the stick; over a menu the close button takes the top right
+	# corner, as a menu's close button does.
 	if _corner.sign_shown == TouchButton.Sign.PAUSE:
-		_place(_corner, Vector2(left + _corner.radius, view.y * PAUSE_HEIGHT), _corner.radius)
+		var pause_x := right - _corner.radius if stick_right else left + _corner.radius
+		_place(_corner, Vector2(pause_x, view.y * PAUSE_HEIGHT), _corner.radius)
 	else:
 		_place(_corner, Vector2(right - _corner.radius, top + _corner.radius), _corner.radius)
-	var radius := unit * BUTTON_RADIUS
-	var first := Vector2(right - radius * 1.2, bottom - radius * 1.2)
+	var radius := unit * BUTTON_RADIUS * size_scale
+	var first_x := left + radius * 1.2 if stick_right else right - radius * 1.2
+	var first := Vector2(first_x, bottom - radius * 1.2)
 	for index: int in _buttons.size():
 		var button := _buttons[index]
 		button.radius = radius if index > 0 else radius * 1.2
-		var at := first if index == 0 else first + BUTTON_PLACES[index - 1] * radius
-		_place(button, at, button.radius)
+		var place := Vector2.ZERO if index == 0 else BUTTON_PLACES[index - 1]
+		# The places lie toward the middle, so they mirror when the buttons
+		# take the left.
+		if stick_right:
+			place.x = -place.x
+		_place(button, first + place * radius, button.radius)
 	layout_changed.emit()
 
 ## The part of the view that the screen's notch, rounded corners and system
