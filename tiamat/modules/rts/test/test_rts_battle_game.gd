@@ -5,7 +5,9 @@ extends GutTest
 ## foe with a right click, wins, and the battle's end is told; the keys give
 ## the commands, as the player rebinds them, and keep groups; the cursor
 ## selects and orders with accept and
-## interact, and a command key that also steers leaves it be; cancel drops an
+## interact, and a command key that also steers leaves it be; a finger
+## selects and orders with taps, and the command buttons name only their
+## command; cancel drops an
 ## armed attack-move, then the selection, and twice gives the battle up; an
 ## unknown map ends it at once, and a definition that names one is a content
 ## problem.
@@ -32,6 +34,7 @@ func before_each() -> void:
 	RtsEvents.foe_defeated.connect(_on_foe_defeated)
 
 func after_each() -> void:
+	InputPrompts.call("_set_using_touch", false)
 	GameSettings.reset_controls()
 	RtsEvents.battle_ended.disconnect(_on_battle_ended)
 	RtsEvents.foe_defeated.disconnect(_on_foe_defeated)
@@ -149,6 +152,28 @@ func test_the_cursor_selects_and_orders_with_accept_and_interact() -> void:
 	assert_true(armed)
 	assert_eq(field.cursor, held)
 	assert_false(field.show_cursor)
+
+func test_a_finger_selects_and_orders_with_taps() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	InputPrompts.call("_set_using_touch", true)
+	var first := game.battle.units[0]
+	var raider := game.battle.units[2]
+	var field := game.get_field()
+	field.clicked.emit(first.position, false, false)
+	assert_eq(game.get_selection(), [first] as Array[RtsUnit], "a tap on the player's unit selects it")
+	field.clicked.emit(Vector2(60.0, 85.0), false, false)
+	assert_eq(first.order, RtsUnit.Order.MOVE, "a tap on open ground sends the selection there")
+	assert_eq(game.get_selection(), [first] as Array[RtsUnit], "and keeps it")
+	field.clicked.emit(raider.position, false, false)
+	assert_eq(first.order, RtsUnit.Order.ATTACK, "a tap on a foe sends it after the foe")
+	field.clicked.emit(first.position, false, true)
+	assert_eq(game.get_selection().size(), 2, "a second tap on the unit selects every unit of its kind")
+	for button: Node in game.find_children("*", "Button", true, false):
+		assert_false((button as Button).text.contains("["), "the button names only its command: %s" % (button as Button).text)
+	InputPrompts.call("_set_using_touch", false)
+	field.clicked.emit(Vector2(60.0, 85.0), false, false)
+	assert_eq(game.get_selection(), [] as Array[RtsUnit], "a click on open ground still drops the selection")
 
 func test_cancel_drops_the_armed_move_then_the_selection_then_gives_up() -> void:
 	var outcome := {}
