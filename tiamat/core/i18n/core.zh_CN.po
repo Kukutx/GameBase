@@ -223,6 +223,9 @@ msgstr "立即"
 msgid "Touch Controls"
 msgstr "触屏按键"
 
+msgid "Touch Opacity"
+msgstr "按键不透明度"
+
 msgid "Small"
 msgstr "小"
 

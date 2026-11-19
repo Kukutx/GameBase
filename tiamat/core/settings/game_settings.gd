@@ -63,6 +63,9 @@ enum TouchSize { SMALL, NORMAL, LARGE }
 const TOUCH_SIZE_NAMES: Array[String] = ["Small", "Normal", "Large"]
 # How much larger than its normal size each touch size draws the controls.
 const _TOUCH_SCALES: Array[float] = [0.8, 1.0, 1.25]
+## The faintest the touch controls draw (`touch_opacity`), still there to be
+## found.
+const TOUCH_OPACITY_MIN := 0.3
 
 ## The buses `GameAudio` plays on, each sending to Master. A game's bus
 ## layout may add effects to them; the core adds the ones it lacks.
@@ -98,6 +101,9 @@ var touch_size: TouchSize
 ## Whether the touch controls swap sides: the stick at the lower right, the
 ## buttons at the lower left.
 var touch_stick_right: bool
+## How opaque the touch controls draw, from `TOUCH_OPACITY_MIN` to 1 (as
+## drawn), so the player sees more of the game under them.
+var touch_opacity: float
 ## The controls of the running game and the player's bindings of them. Read
 ## them here; change them with `bind_control()`, `bind_gamepad_button()` and
 ## `reset_controls()`, which save and apply the change.
@@ -215,6 +221,10 @@ func set_touch_stick_right(value: bool) -> void:
 	touch_stick_right = value
 	_save_and_emit()
 
+func set_touch_opacity(value: float) -> void:
+	touch_opacity = clampf(value, TOUCH_OPACITY_MIN, 1.0)
+	_save_and_emit()
+
 func set_weather_effects(value: bool) -> void:
 	weather_effects = value
 	_save_and_emit()
@@ -301,7 +311,7 @@ func to_data() -> Dictionary:
 		"gameplay": {"autosave": autosave, "pause_on_focus_loss": pause_on_focus_loss, "text_speed": TEXT_SPEED_NAMES[text_speed].to_lower(), "hints": hints},
 		"accessibility": {"weather_effects": weather_effects, "reduced_motion": reduced_motion},
 		"privacy": {"online_services": online_services},
-		"touch": {"size": TOUCH_SIZE_NAMES[touch_size].to_lower(), "stick_right": touch_stick_right},
+		"touch": {"size": TOUCH_SIZE_NAMES[touch_size].to_lower(), "stick_right": touch_stick_right, "opacity": touch_opacity},
 		"localization": {"locale": locale},
 		"controls": controls["controls"],
 		"gamepad": controls["gamepad"],
@@ -345,6 +355,7 @@ func load_settings() -> void:
 		if size is String and size == TOUCH_SIZE_NAMES[index].to_lower():
 			touch_size = index as TouchSize
 	touch_stick_right = _read_bool(data, "touch", "stick_right", touch_stick_right)
+	touch_opacity = clampf(_read_number(data, "touch", "opacity", touch_opacity), TOUCH_OPACITY_MIN, 1.0)
 	var loaded_locale: Variant = _read(data, "localization", "locale")
 	locale = loaded_locale if loaded_locale is String and get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
 	bindings.read_data(data.get("controls"), data.get("gamepad"))
@@ -381,6 +392,7 @@ func _reset_values() -> void:
 	online_services = false
 	touch_size = TouchSize.NORMAL
 	touch_stick_right = false
+	touch_opacity = 1.0
 
 # Set only on a change: each change lays out every embedded window again.
 func _apply_scaling() -> void:
