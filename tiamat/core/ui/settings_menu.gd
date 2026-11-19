@@ -80,6 +80,8 @@ func _ready() -> void:
 	online_services_check.toggled.connect(_on_online_services_toggled)
 	# A game without weather has no weather effects to turn off.
 	weather_effects_check.visible = GameWeatherSystem.has_weather()
+	# A phone's game always fills its screen.
+	fullscreen_check.visible = not OS.has_feature("mobile")
 	support_export.pressed.connect(_export_support_bundle)
 	support_open.pressed.connect(_open_support_folder)
 	var support_available := SupportBundle.is_supported()

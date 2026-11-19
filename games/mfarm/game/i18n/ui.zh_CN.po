@@ -250,9 +250,6 @@ msgstr "土豆种子"
 msgid "Press Space to continue"
 msgstr "按 空格 继续"
 
-msgid "Quit Game"
-msgstr "退出游戏"
-
 msgid "Rest"
 msgstr "休息"
 

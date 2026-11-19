@@ -9,8 +9,10 @@ extends Node
 
 signal toast_requested(message: String)
 ## A hint for the player, translated and its controls named
-## (`HintData.get_message()`); the rule action `SHOW_HINT` sends it.
-signal hint_requested(message: String)
+## (`HintData.get_message()`), and the hint's id, so a line that shows it can
+## name its controls anew when the player picks up another device; the rule
+## action `SHOW_HINT` sends it.
+signal hint_requested(message: String, hint_id: StringName)
 ## A menu over the world opened (`MenuLayer`, the settings); `menu_id` is its
 ## name (`MenuLayer.menu_id`).
 signal menu_opened(menu_id: StringName)

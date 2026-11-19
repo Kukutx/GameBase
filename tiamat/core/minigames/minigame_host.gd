@@ -40,6 +40,10 @@ func _ready() -> void:
 func is_running() -> bool:
 	return _active != null
 
+## The minigame that runs, or null.
+func get_active() -> MiniGame:
+	return _active
+
 func get_active_id() -> StringName:
 	return _active_id
 

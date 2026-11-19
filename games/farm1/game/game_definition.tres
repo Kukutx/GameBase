@@ -22,6 +22,7 @@ action = &"use_tool"
 display_name = "Use Tool / Item"
 key = 70
 gamepad_button = 2
+touch_button = true
 
 [sub_resource type="Resource" id="Control_give_gift"]
 script = ExtResource("4_control")
@@ -43,6 +44,7 @@ action = &"open_menu"
 display_name = "Open Menu"
 key = 73
 gamepad_button = 4
+touch_button = true
 
 [sub_resource type="Resource" id="Control_hotbar_prev"]
 script = ExtResource("4_control")
@@ -53,8 +55,10 @@ gamepad_axis = 4
 [sub_resource type="Resource" id="Control_hotbar_next"]
 script = ExtResource("4_control")
 action = &"hotbar_next"
+display_name = "Next Item"
 rebindable = false
 gamepad_axis = 5
+touch_button = true
 
 [sub_resource type="Resource" id="Weather_spring"]
 script = ExtResource("8_weather_odds")

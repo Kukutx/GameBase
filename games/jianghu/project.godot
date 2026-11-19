@@ -16,6 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Pocket Jianghu"
 config/description="A wuxia companion who trains on your desktop"
+config/quit_on_go_back=false
 config/version="0.1.0"
 run/main_scene="res://game/ui/boot.tscn"
 config/name_localized={
@@ -48,6 +49,7 @@ AutoSave="*res://tiamat/core/save/auto_save_service.gd"
 GameSession="*res://tiamat/core/session/game_session.gd"
 Playthrough="*res://tiamat/core/playthrough/playthrough_service.gd"
 MiniGameHost="*res://tiamat/core/minigames/minigame_host.gd"
+TouchControls="*res://tiamat/core/input/touch/touch_controls.gd"
 GameTriggers="*res://tiamat/core/rules/game_triggers.gd"
 GameDiagnostics="*res://tiamat/core/diagnostics/game_diagnostics.gd"
 SupportBundle="*res://tiamat/core/diagnostics/support_bundle_service.gd"

@@ -46,6 +46,11 @@ const ALL_DEVICES := -1
 ## project's own events of that action (the arrows, the D-pad, the stick)
 ## stay.
 @export var ui_action: StringName = &""
+## Whether a button presses the control on a touchscreen, in play
+## (`TouchControls`): the game's main actions, not every one, since a phone has
+## room for a few. The moves are the touch stick and the pause is its corner
+## button, so they need none.
+@export var touch_button := false
 
 ## The declared key or mouse button, as `ControlBindings` holds a binding:
 ## `{"key": key}`, `{"mouse": button}` or {} for neither.

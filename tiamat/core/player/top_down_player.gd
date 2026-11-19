@@ -8,7 +8,8 @@ extends CharacterBody2D
 ## still while anything holds the controls (`InputLock`) or its
 ## `actor_visual` plays an action (combat's `PlayerHurtbox` plays `hurt` and
 ## `death` on it). A game adds its own actions in
-## `_unhandled_input`, checking `is_input_locked()` first.
+## `_unhandled_input`, checking `is_input_locked()` first. On a touchscreen it
+## walks with the stick of `TouchControls`, as one of its `MOVER_GROUP`.
 
 ## Emitted when the player turns to face another way, not while it keeps
 ## walking the way it faces.
@@ -30,6 +31,11 @@ const MOVE_SPEED_STAT := &"move_speed"
 var facing := Vector2.DOWN
 
 var _stagger_left := 0.0
+
+func _notification(what: int) -> void:
+	# The touch stick shows while a player that walks is in the tree.
+	if what == NOTIFICATION_ENTER_TREE:
+		add_to_group(TouchControlsService.MOVER_GROUP)
 
 func _physics_process(delta: float) -> void:
 	if _stagger_left > 0.0:

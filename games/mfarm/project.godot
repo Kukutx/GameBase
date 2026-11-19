@@ -16,6 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="MFarm"
 config/description="A farm and a seaside town through the seasons, revived from the Unity MFarm demo"
+config/quit_on_go_back=false
 config/version="0.1.0"
 run/main_scene="res://game/ui/title.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
@@ -45,6 +46,7 @@ AutoSave="*res://tiamat/core/save/auto_save_service.gd"
 GameSession="*res://tiamat/core/session/game_session.gd"
 Playthrough="*res://tiamat/core/playthrough/playthrough_service.gd"
 MiniGameHost="*res://tiamat/core/minigames/minigame_host.gd"
+TouchControls="*res://tiamat/core/input/touch/touch_controls.gd"
 GameTriggers="*res://tiamat/core/rules/game_triggers.gd"
 GameDiagnostics="*res://tiamat/core/diagnostics/game_diagnostics.gd"
 SupportBundle="*res://tiamat/core/diagnostics/support_bundle_service.gd"

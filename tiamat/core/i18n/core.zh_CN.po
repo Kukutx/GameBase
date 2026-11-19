@@ -169,6 +169,9 @@ msgstr "未保存的进度将会丢失。确定返回标题画面吗？"
 msgid "Quit to Desktop"
 msgstr "退出到桌面"
 
+msgid "Quit Game"
+msgstr "退出游戏"
+
 msgid "Unsaved progress will be lost. Quit the game?"
 msgstr "未保存的进度将会丢失。确定退出游戏吗？"
 
@@ -345,6 +348,9 @@ msgstr "已创建支持诊断包：%s"
 
 msgid "Left Stick / D-Pad"
 msgstr "左摇杆 / 十字键"
+
+msgid "Stick"
+msgstr "摇杆"
 
 msgid "Move Up"
 msgstr "向上移动"

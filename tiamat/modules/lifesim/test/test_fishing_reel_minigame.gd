@@ -68,3 +68,9 @@ func test_marker_bounces_inside_the_bar() -> void:
 		reel.advance(0.037)
 		assert_between(reel.marker, 0.0, 1.0)
 	reel.free()
+
+func test_a_touchscreen_reels_with_an_interact_button() -> void:
+	var reel := FishingReelMiniGame.new()
+	assert_eq(reel.get_touch_actions(), [&"interact"] as Array[StringName], "the reel reads interact, which a phone has no key for")
+	assert_false(reel.uses_touch_stick())
+	reel.free()

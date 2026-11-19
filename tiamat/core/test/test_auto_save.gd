@@ -51,6 +51,16 @@ func test_window_close_request_asks_for_an_autosave() -> void:
 	assert_eq(String(skipped["block"]), SaveManager.get_save_block_reason())
 	assert_false(String(skipped["block"]).is_empty())
 
+func test_a_phone_sending_the_game_to_the_background_asks_for_an_autosave() -> void:
+	GameSettings.autosave = true
+	var service := AutoSaveService.new()
+	add_child_autofree(service)
+	await get_tree().process_frame
+	var reasons: Array[String] = []
+	service.autosave_skipped.connect(func(reason: String, _block_reason: String) -> void: reasons.append(reason))
+	service.notification(Node.NOTIFICATION_APPLICATION_PAUSED)
+	assert_eq(reasons, ["background"] as Array[String], "the system may end a game in the background without a close")
+
 func test_window_close_request_does_nothing_when_autosave_is_off() -> void:
 	GameSettings.autosave = false
 	var service := AutoSaveService.new()

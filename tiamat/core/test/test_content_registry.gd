@@ -186,8 +186,26 @@ func test_custom_fields_return_their_value_or_the_default() -> void:
 	assert_eq(location.get_custom_field(&"rarity"), "rare")
 	assert_eq(location.get_custom_field(&"missing", 3), 3)
 
-# A location whose scene holds one spawn point, `spawn_id`.
-func _location_with_spawn(id: StringName, spawn_id: StringName) -> WorldLocationData:
+func test_a_location_holds_one_player_or_none() -> void:
+	var registry := ContentFixture.use(self, [_location_with_spawn(&"fixture_still", &"fixture_spot")])
+	assert_eq(_player_problems(registry), PackedStringArray(), "a game nobody walks (a desk pet, cards) has no player")
+	registry = ContentFixture.use(self, [_location_with_spawn(&"fixture_walked", &"gate", 1)])
+	assert_eq(_player_problems(registry), PackedStringArray())
+	registry = ContentFixture.use(self, [_location_with_spawn(&"fixture_crowded", &"gate", 2)])
+	assert_eq(_player_problems(registry), PackedStringArray(["location 'fixture_crowded' scene must contain at most one player node, found 2"]))
+
+static func _player_problems(registry: ContentRegistry) -> PackedStringArray:
+	var problems := PackedStringArray()
+	registry.call("_check_locations", problems)
+	var found := PackedStringArray()
+	for problem: String in problems:
+		if problem.contains("player"):
+			found.append(problem)
+	return found
+
+# A location whose scene holds one spawn point, `spawn_id`, and `players`
+# nodes of the player group.
+func _location_with_spawn(id: StringName, spawn_id: StringName, players := 0) -> WorldLocationData:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIRECTORY))
 	var root := Node2D.new()
 	root.name = "Place"
@@ -196,6 +214,12 @@ func _location_with_spawn(id: StringName, spawn_id: StringName) -> WorldLocation
 	spawn.spawn_id = spawn_id
 	root.add_child(spawn)
 	spawn.owner = root
+	for index: int in players:
+		var player := Node2D.new()
+		player.name = "Player%d" % index
+		player.add_to_group(&"player", true)
+		root.add_child(player)
+		player.owner = root
 	var scene := PackedScene.new()
 	assert_eq(scene.pack(root), OK)
 	root.free()

@@ -62,5 +62,5 @@ static func _show_hint(args: PackedStringArray, _context: Dictionary) -> bool:
 	var shown := HintData.get_shown_flag(hint.id)
 	if GameSettings.hints and not GameProfile.get_bool(shown):
 		GameProfile.set_flag(shown, true)
-		GameEvents.hint_requested.emit(hint.get_message())
+		GameEvents.hint_requested.emit(hint.get_message(), hint.id)
 	return true
