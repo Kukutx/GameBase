@@ -43,6 +43,9 @@ func test_the_title_sheet_is_on_top_with_the_old_tabs_down_the_right_edge() -> v
 	assert_eq((tabs[1] as Button).position, Vector2(218, 14), "开始 stood 60 pixels above the middle")
 	assert_eq((tabs[0] as Button).position, Vector2(218, 74), "说明 at the middle")
 	assert_eq((tabs[2] as Button).position, Vector2(218, 134), "退出 60 below it")
+	for tab: Button in tabs.values():
+		assert_eq(tab.size, Vector2(38, 14), "the old tab's size")
+	assert_eq(((title.get("cards") as Array)[0] as Button).size, Vector2(148, 27), "the old card's size")
 	assert_eq((tabs[2] as Button).visible, GameTitleBase.can_quit(), "a web page has no 退出")
 	assert_eq(get_viewport().gui_get_focus_owner(), tabs[1], "the keys and a gamepad start on 开始")
 	assert_eq((title.get("title_label") as Label).text, "MFarm")

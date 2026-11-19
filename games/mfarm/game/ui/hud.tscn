@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://tiamat/core/events/status_line.gd" id="1_status_line"]
 [ext_resource type="Script" path="res://tiamat/core/ui/save_indicator.gd" id="2_save_indicator"]
-[ext_resource type="PackedScene" path="res://tiamat/core/ui/pause_menu.tscn" id="3_pause"]
+[ext_resource type="PackedScene" path="res://game/ui/pause.tscn" id="3_pause"]
 [ext_resource type="Script" path="res://game/ui/bag_menu.gd" id="4_bag_menu"]
 [ext_resource type="Script" path="res://game/ui/time_panel.gd" id="5_time_panel"]
 [ext_resource type="Script" path="res://game/ui/dialogue_box.gd" id="6_dialogue_box"]

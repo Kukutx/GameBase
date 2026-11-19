@@ -11,6 +11,15 @@ extends MenuLayer
 ## throws away the progress since the last save. A load here takes the
 ## player's own save, not a newer autosave, so going back to what they saved
 ## stays one step; with no save of their own, it takes the autosave.
+##
+## A game may lay the menu out its own way, as MFarm's old paper menu does.
+## Its scene names the controls `%Resume`, `%Save`, `%Load`, `%Settings`,
+## `%ReturnTitle`, `%Quit` (buttons) and `%Status` (a label) wherever it puts
+## them, or a script extending this one sets `resume_button` and the others
+## before it calls `super()` in `_ready()`, and overrides `_focus_on_open()`
+## and `_set_main_buttons_disabled()` for controls of its own. The settings
+## menu and the questions are the scene's own `SettingsMenu`, `ConfirmLoad`,
+## `ConfirmTitle` and `ConfirmQuit` when it has them, or are made here.
 
 ## The menu's id: its group and the reason of its lock, held while the game
 ## is paused for the player (`GameSession` counts no time played then).
@@ -18,17 +27,19 @@ const MENU_ID := &"pause_menu"
 ## The control that opens and closes the menu (`core/input/controls/pause.tres`).
 const PAUSE_ACTION := &"pause"
 
-@onready var resume_button: Button = $Dim/Panel/Layout/Resume
-@onready var save_button: Button = $Dim/Panel/Layout/Save
-@onready var load_button: Button = $Dim/Panel/Layout/Load
-@onready var settings_button: Button = $Dim/Panel/Layout/Settings
-@onready var title_button: Button = $Dim/Panel/Layout/ReturnTitle
-@onready var quit_button: Button = $Dim/Panel/Layout/Quit
-@onready var status_label: Label = $Dim/Panel/Layout/Status
-@onready var settings_menu: SettingsMenu = $SettingsMenu
-@onready var confirm_load: ConfirmationDialog = $ConfirmLoad
-@onready var confirm_title: ConfirmationDialog = $ConfirmTitle
-@onready var confirm_quit: ConfirmationDialog = $ConfirmQuit
+const SETTINGS_MENU := preload("res://tiamat/core/ui/settings_menu.tscn")
+
+var resume_button: Button
+var save_button: Button
+var load_button: Button
+var settings_button: Button
+var title_button: Button
+var quit_button: Button
+var status_label: Label
+var settings_menu: SettingsMenu
+var confirm_load: ConfirmationDialog
+var confirm_title: ConfirmationDialog
+var confirm_quit: ConfirmationDialog
 
 # Whether the load this menu started is under way.
 var _loading := false
@@ -37,6 +48,7 @@ func _init() -> void:
 	super(MENU_ID)
 
 func _ready() -> void:
+	_find_controls()
 	# A web page is left by closing its tab.
 	quit_button.visible = not OS.has_feature("web")
 	resume_button.pressed.connect(close)
@@ -54,6 +66,40 @@ func _ready() -> void:
 	SaveManager.save_completed.connect(_on_save_completed)
 	SaveManager.load_completed.connect(_on_load_completed)
 	InputPrompts.gamepad_disconnected.connect(_on_gamepad_disconnected)
+
+# The layout's controls, the settings menu and the questions.
+func _find_controls() -> void:
+	resume_button = resume_button if resume_button != null else get_node(^"%Resume") as Button
+	save_button = save_button if save_button != null else get_node(^"%Save") as Button
+	load_button = load_button if load_button != null else get_node(^"%Load") as Button
+	settings_button = settings_button if settings_button != null else get_node(^"%Settings") as Button
+	title_button = title_button if title_button != null else get_node(^"%ReturnTitle") as Button
+	quit_button = quit_button if quit_button != null else get_node(^"%Quit") as Button
+	status_label = status_label if status_label != null else get_node(^"%Status") as Label
+	settings_menu = get_node_or_null(^"SettingsMenu") as SettingsMenu
+	if settings_menu == null:
+		settings_menu = SETTINGS_MENU.instantiate() as SettingsMenu
+		settings_menu.name = "SettingsMenu"
+		add_child(settings_menu)
+	confirm_load = _question(&"ConfirmLoad", "Load Game", "Unsaved progress will be lost. Load your last save?", "Load")
+	confirm_title = _question(&"ConfirmTitle", "Return to Title", "Unsaved progress will be lost. Return to the title screen?", "Return to Title")
+	confirm_quit = _question(&"ConfirmQuit", "Quit to Desktop", "Unsaved progress will be lost. Quit the game?", "Quit")
+
+# The scene's own question, or a new one with the core's words.
+func _question(node_name: StringName, title_text: String, text: String, ok_text: String) -> ConfirmationDialog:
+	var dialog := get_node_or_null(NodePath(node_name)) as ConfirmationDialog
+	if dialog != null:
+		return dialog
+	dialog = ConfirmationDialog.new()
+	dialog.name = node_name
+	dialog.title = title_text
+	dialog.dialog_text = text
+	dialog.size = Vector2i(300, 100)
+	dialog.dialog_autowrap = true
+	dialog.ok_button_text = ok_text
+	dialog.cancel_button_text = "Cancel"
+	add_child(dialog)
+	return dialog
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and GameSettings.pause_on_focus_loss and _runs_unwatched():
@@ -98,6 +144,10 @@ func open() -> void:
 	show_menu()
 	status_label.text = ""
 	load_button.disabled = not SaveManager.has_save()
+	_focus_on_open()
+
+## Where the keys and a gamepad start when the menu opens.
+func _focus_on_open() -> void:
 	resume_button.grab_focus()
 
 func close() -> void:

@@ -26,9 +26,9 @@ A new game starts on the beach at 07:00 on the first day of spring with an empty
 | Talk, open a box | Space or E |
 | Open the box next to you | Right mouse button |
 | Run the clock fast, move on a day | Hold T, press G (the old game's time keys, which its menu told of) |
-| Pause, close a bag | Escape |
+| Pause, close a bag | Escape, or the gear by the clock |
 
-Dig with the hoe, water with the can (the soil stays dark for the day; as in the old game, crops grow by the days, watered or not), plant seeds in dug soil in their season, pick ripe crops with the basket, held up for a moment as they go into the bag, and sell them at Koyo's stall. Trees fall to the axe and leave stumps, rocks break to the pickaxe, weeds rustle and sway as the farmer walks through them and give hay to the sickle (four at a swing). Blueprints build a chair or a storage box on the cells that allow furniture. The clock runs as in the old game, one game minute every six seconds; thirty days make a month, three months a season. Night falls at 19:00, and the lamps light up. Each place plays its ambient sound and its music over and over: arriving, the music before fades out and the place is heard alone for five to fifteen seconds before its own music fades in over eight, as the old game's did. Every tool sounds as it is used (the hoe, the can, the axe, the pickaxe, the basket, the sickle), and a crop with a sound of its own sounds that instead, as the old project's notes asked. Going through a door or along a road fades to black and back over a second and a half each way, as in the old game (at once with reduced motion), and the time panel writes the date as the old one did (2023年02月01日 in Chinese).
+Dig with the hoe, water with the can (the soil stays dark for the day; as in the old game, crops grow by the days, watered or not), plant seeds in dug soil in their season, pick ripe crops with the basket, held up for a moment as they go into the bag, and sell them at Koyo's stall. Trees fall to the axe and leave stumps, rocks break to the pickaxe, weeds rustle and sway as the farmer walks through them and give hay to the sickle (four at a swing). Blueprints build a chair or a storage box on the cells that allow furniture. The clock runs as in the old game, one game minute every six seconds; thirty days make a month, three months a season. Night falls at 19:00, and the lamps light up. Each place plays its ambient sound and its music over and over: arriving, the music before fades out and the place is heard alone for five to fifteen seconds before its own music fades in over eight, while the place's sound goes 10 dB down under it, as the old game's mixer did; the tools and footsteps keep the old mixer's balance too, 12.5 dB under the music. The pause menu is the old one too: the title's paper over the dimmed world, its tabs leaning out of the right edge. 设置, on top as in the old menu, turns the music and the sounds and opens the rest of the settings; 休息 goes back to the game, to the title or quits; 存档, which the old menu had not, saves and loads. Every tool sounds as it is used (the hoe, the can, the axe, the pickaxe, the basket, the sickle), and a crop with a sound of its own sounds that instead, as the old project's notes asked. Going through a door or along a road fades to black and back over a second and a half each way, as in the old game (at once with reduced motion), and the time panel writes the date as the old one did (2023年02月01日 in Chinese).
 
 ## Layout
 
@@ -39,7 +39,7 @@ game/items/        Item, bag and blueprint data; the bags and money service (aut
 game/farm/         Crop and map data; the land service (autoload Farmland) and the grid that draws and works it
 game/player/       The farmer (four animated layers, tools, a held item) and the cursor
 game/npc/          Townsfolk: data, schedules, path finding, conversations
-game/ui/           Title, theme, opening comic, action bar, bag, box and shop, trade panel, tooltip, clock and conversation box, in the old art
+game/ui/           Title, pause menu, theme, opening comic, action bar, bag, box and shop, trade panel, tooltip, clock and conversation box, in the old art
 game/world/        The four locations, doorways, lights, fading scenery, boxes and items on the ground
 game/i18n/         The Simplified Chinese catalog (English is the source)
 test/unit/         GUT tests of the game's rules and of the feel the old game had (the opening, swaying weeds, harvests held up, boxes, time keys)
@@ -59,7 +59,8 @@ The old project's own bug list (`Bug录.md`) and what turned up while porting:
 - Crops read a stale season; they read the clock's season.
 - Koyo could only be talked to from 03:00 of the second day, and townsfolk only moved at the exact minute of a schedule entry; they now stand where their schedule has them whenever a location opens.
 - Townsfolk cut corners through obstacles, sped up on some cells, and kept walking after arriving; they walk at one speed around what blocks them.
-- Escape did not close a box or a shop, and the pause menu had no way back to the game; both work now.
+- Escape did not close a box or a shop, and the pause menu had no way back to the game; both work now (休息 → 返回游戏, as the old notes asked).
+- The pause menu's 背景音乐 slider turned every sound down, and its top fifth raised them above full (it set the mixer to -80 to +20 dB); it turns the music from silent to full, and the 音效 switch the old menu left unfinished is a slider for the sounds.
 - After the sickle, switching tools left the body in the reaping animation; tool, arm and hair animations clashed and the hair covered the tool. Every part now changes with the item in hand, drawn body, hair, arm, tool, held item.
 - The selection highlight stayed on a slot after dragging its item away.
 - The cursor flickered over the interface while holding furniture.

@@ -7,7 +7,7 @@
 script = ExtResource("1_audio_cue_data")
 id = &"sfx_footstep_soft"
 stream = ExtResource("2_footstep")
-volume_db = -1.9
+volume_db = -14.4
 pitch_min = 0.8
 pitch_max = 1.2
 max_voices = 4

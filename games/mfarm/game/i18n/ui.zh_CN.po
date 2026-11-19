@@ -76,6 +76,15 @@ msgstr "Andy"
 msgid "Axe"
 msgstr "斧头"
 
+msgid "Back to Game"
+msgstr "返回游戏"
+
+msgid "Back to Title"
+msgstr "返回标题"
+
+msgid "Background Music"
+msgstr "背景音乐"
+
 msgid "Bag"
 msgstr "背包"
 
@@ -193,6 +202,9 @@ msgstr "菜单"
 msgid "Mike"
 msgstr "Mike"
 
+msgid "More Settings"
+msgstr "更多设置"
+
 msgid "Open the box"
 msgstr "打开箱子"
 
@@ -238,11 +250,23 @@ msgstr "土豆种子"
 msgid "Press Space to continue"
 msgstr "按 空格 继续"
 
+msgid "Quit Game"
+msgstr "退出游戏"
+
+msgid "Rest"
+msgstr "休息"
+
+msgid "Saves"
+msgstr "存档"
+
 msgid "Scenery"
 msgstr "景物"
 
 msgid "Seed"
 msgstr "种子"
+
+msgid "Setup"
+msgstr "设置"
 
 msgid "Sickle"
 msgstr "镰刀"

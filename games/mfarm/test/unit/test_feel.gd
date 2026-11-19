@@ -1,7 +1,8 @@
 extends GutTest
 
 ## What the old game showed and played around the rules: the opening comic
-## and talk of a new game, a place heard alone before its music, weeds that
+## and talk of a new game, a place heard alone before its music and at the
+## old mixer's levels, weeds that
 ## sway, a harvest held up, boxes opened with the right mouse button and the
 ## time keys.
 
@@ -90,6 +91,25 @@ func test_a_place_is_heard_alone_for_5_to_15_seconds_before_its_music() -> void:
 	GameAudio.play_cue(&"music_calm_2")
 	GameAudio._play_location_music(&"music_calm_4")
 	assert_eq(GameAudio.get_current_music_cue_id(), &"", "the field's music waits while the home's fades out")
+
+func test_the_place_is_heard_at_the_old_mixer_s_levels() -> void:
+	var location := MFarmLocation.new()
+	location.ambient = load("res://game/unity/audio/AmbientSounds/countryside1.ogg") as AudioStream
+	add_child_autofree(location)
+	var ambient := location.get_node("Ambient") as AudioStreamPlayer
+	await wait_seconds(MFarmLocation.AMBIENT_FADE_SECONDS + 0.2)
+	assert_almost_eq(ambient.volume_db, MFarmLocation.AMBIENT_ALONE_DB, 0.05, "heard alone while the music waits")
+	GameAudio.play_cue(&"music_calm_4")
+	await wait_seconds(0.5)
+	assert_lt(ambient.volume_db, MFarmLocation.AMBIENT_ALONE_DB - 0.1, "it goes down as the music comes in")
+	assert_gt(ambient.volume_db, MFarmLocation.AMBIENT_UNDER_MUSIC_DB, "over the music's eight seconds")
+	assert_almost_eq(location.get_ambient_target_db(), -10.35, 0.001, "10 dB down under the music")
+	GameAudio.stop_music()
+	assert_almost_eq(location.get_ambient_target_db(), -0.17, 0.001)
+	# The old effects channel was 12.5 dB down, the music at full.
+	assert_almost_eq(AudioCueData.find(&"sfx_hoe").volume_db, -26.5, 0.001, "the old 0.2, 12.5 dB down")
+	assert_almost_eq(AudioCueData.find(&"sfx_footstep_soft").volume_db, -14.4, 0.001)
+	assert_almost_eq(AudioCueData.find(&"music_calm_4").volume_db, 0.0, 0.001, "the old 0.8 made 0 dB")
 
 func test_a_weed_sways_away_and_stands_up_again() -> void:
 	var weed := MFarmWorldItem.new()
