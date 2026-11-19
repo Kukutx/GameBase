@@ -1,9 +1,9 @@
 extends "res://tiamat/core/test/runtime_smoke.gd"
 
-## Plays MFarm: starts a new game on the beach, walks to the field, takes the
-## hoe out of the tool box, digs, waters and plants a cell, goes on to the
-## market, talks to Koyo and buys seeds at her stall, then saves, changes the
-## world and loads it back.
+## Plays MFarm: starts a new game on the beach, skips its intro, walks to the
+## field, takes the hoe out of the tool box, digs, waters and plants a cell,
+## goes on to the market, talks to Koyo and buys seeds at her stall, then
+## saves, changes the world and loads it back.
 
 const BEACH := "res://game/world/beach.tscn"
 const FIELD := "res://game/world/field.tscn"
@@ -27,6 +27,13 @@ func _run() -> void:
 	if not await _arrive(BEACH):
 		return
 	_check(get_first_node_in_group("player") != null, "The beach has no player")
+	var intro := get_first_node_in_group("mfarm_intro")
+	_check(intro != null and bool(intro.call("is_playing")), "The intro does not play as the new game starts")
+	_check(bool(root.get_node("InputLock").call("is_locked")), "The player can act during the intro")
+	await _wait_seconds(1.0)
+	intro.call("skip")
+	_check(not bool(root.get_node("InputLock").call("is_locked")), "The skipped intro left the controls locked")
+	_check(not bool(root.get_node("WorldClock").get("paused")), "The skipped intro left the clock stopped")
 	_check(int(bags.get("money")) == 100, "The player does not start with 100 coins")
 	_check(current_scene.get_node_or_null("Townsfolk/mike") != null, "Mike is not on the beach")
 

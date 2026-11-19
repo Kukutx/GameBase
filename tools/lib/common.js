@@ -9,6 +9,11 @@ const ENGINE_VERSION_RE = /^4\.\d+\.\d+$/;
 // Godot exits with code 0 after parse errors, missing autoloads and push_error(),
 // so every Godot step is also judged by these line prefixes.
 const ENGINE_ERROR_RE = /^(?:ERROR|SCRIPT ERROR):/i;
+// GUT's editor plugin asks api.github.com for its newest version whenever the
+// editor opens a project it has not checked in a day, and a shared CI address
+// is often over GitHub's rate limit. That line says nothing about the project,
+// so it is reported and does not fail the step.
+const UPDATE_CHECK_RE = /^ERROR: \[GUT\] (?:Could not get version info|An error occurred requesting version data)/;
 
 class ToolError extends Error {}
 
@@ -39,7 +44,11 @@ function resolveGodotBin(value) {
 }
 
 function engineErrorLines(output) {
-  return output.split(/\r?\n/).filter((line) => ENGINE_ERROR_RE.test(line));
+  return output.split(/\r?\n/).filter((line) => ENGINE_ERROR_RE.test(line) && !UPDATE_CHECK_RE.test(line));
+}
+
+function updateCheckLines(output) {
+  return output.split(/\r?\n/).filter((line) => UPDATE_CHECK_RE.test(line));
 }
 
 // Runs a command, mirrors its output live and returns the exit code with the
@@ -77,6 +86,9 @@ async function runGodotStep(godotBin, name, args, options = {}) {
   const result = await run(godotBin, args, options);
   if (result.code !== 0) {
     fail(`${name} failed with exit code ${result.code}`);
+  }
+  if (updateCheckLines(result.output).length > 0) {
+    console.log(`${name}: GUT's online version check failed; it does not affect the project.`);
   }
   const errors = engineErrorLines(result.output);
   if (errors.length > 0) {

@@ -96,6 +96,11 @@ func _next() -> void:
 	_typing.tween_property(_text, ^"visible_ratio", 1.0, TYPE_SECONDS)
 	_typing.finished.connect(func() -> void: _continue.visible = true)
 
+## Ends the conversation at once; `finished` follows.
+func stop() -> void:
+	if is_talking():
+		_end()
+
 func _end() -> void:
 	visible = false
 	_index = -1

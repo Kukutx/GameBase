@@ -103,3 +103,18 @@ func test_the_prompt_hides_when_the_focus_is_disabled_or_freed() -> void:
 	interactable.free()
 	assert_null(controller.get_focused())
 	assert_false(label.visible)
+
+func test_the_prompt_waits_while_the_controls_are_held() -> void:
+	var controller := InteractionController.new()
+	var label := Label.new()
+	controller.prompt_label = label
+	add_child_autofree(controller)
+	add_child_autofree(label)
+	var interactable := Interactable.new()
+	add_child_autofree(interactable)
+	controller.call("_on_area_entered", interactable)
+	assert_true(label.visible)
+	InputLock.lock(&"test_prompt")
+	assert_false(label.visible, "no press can act while a talk or a menu holds the controls")
+	InputLock.unlock(&"test_prompt")
+	assert_true(label.visible, "it shows again once they are given back")

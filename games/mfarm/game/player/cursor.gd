@@ -11,7 +11,9 @@ const NORMAL: Texture2D = preload("res://game/unity/art/cursors/cursor(11).tres"
 const TOOL: Texture2D = preload("res://game/unity/art/cursors/cursor(8).tres")
 const SEED: Texture2D = preload("res://game/unity/art/cursors/cursor(3).tres")
 const ITEM: Texture2D = preload("res://game/unity/art/cursors/cursor(5).tres")
-const INVALID := Color(1, 0, 0, 0.4)
+const INVALID := Color(1, 0, 0, 0.5)
+## A blueprint's furniture shows half seen where it can be built.
+const PREVIEW := Color(1, 1, 1, 0.5)
 
 @onready var _pointer: Sprite2D = $Screen/Pointer
 @onready var _preview: Sprite2D = $Preview
@@ -40,8 +42,8 @@ func _process(_delta: float) -> void:
 		_preview.visible = true
 		MFarmSpritePivot.apply(_preview, item.get_world_texture())
 		_preview.global_position = MFarmMapData.cell_center(MFarmMapData.cell_of(target))
-		_preview.modulate = Color.WHITE if valid else INVALID
-		_show(NORMAL, valid)
+		_preview.modulate = PREVIEW if valid else INVALID
+		_show(TOOL, valid)
 		return
 	_show(_pointer_for(item), valid)
 
@@ -55,6 +57,6 @@ static func _pointer_for(item: MFarmItemData) -> Texture2D:
 			return SEED
 		MFarmItemData.ItemType.COMMODITY:
 			return ITEM
-		MFarmItemData.ItemType.FURNITURE, MFarmItemData.ItemType.REAPABLE_SCENERY:
+		MFarmItemData.ItemType.REAPABLE_SCENERY:
 			return NORMAL
 	return TOOL

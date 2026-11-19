@@ -47,4 +47,4 @@ Do not upgrade a dependency only because a newer major version exists. Prefer th
 
 Run `node tools/check_addon_updates.js` to compare vendored versions against upstream stable tags. `.github/workflows/addon-freshness.yml` runs the same check weekly and maintains a single upgrade-reminder issue when an update is available; it intentionally never mutates addon source automatically.
 
-Dialogue Manager is on v4.1.0. The v3→v4 migration has been completed: Tiamat uses `DialogueResource.cues`/`first_cue`, authored line/response translations use `msgctxt "dialogue"`, and the release PCK verifier preserves the v4 runtime `nodes/` dependencies while excluding editor/debugger tooling. GUT is on the 9.7 line to match Godot 4.7.
+Dialogue Manager is on v4.2.0. The v3→v4 migration has been completed: Tiamat uses `DialogueResource.cues`/`first_cue`, authored line/response translations use `msgctxt "dialogue"`, and the release PCK verifier preserves the v4 runtime `nodes/` dependencies while excluding editor/debugger tooling. GUT is on the 9.7 line to match Godot 4.7.

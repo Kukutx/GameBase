@@ -10,6 +10,9 @@ msgstr ""
 msgid "A farm and a seaside town through the seasons, revived from the Unity MFarm demo"
 msgstr "四季流转的小农场和海边小镇，由 Unity 版 MFarm 演示重生而来"
 
+msgid "%d.%02d.%02d"
+msgstr "%d年%02d月%02d日"
+
 msgid "A bunch of sweet grapes."
 msgstr "一串甜甜的葡萄。"
 
@@ -106,6 +109,9 @@ msgstr "用镰刀割掉它们。"
 msgid "Cut weeds with it."
 msgstr "用来割杂草。"
 
+msgid "Esc to skip"
+msgstr "按 Esc 跳过"
+
 msgid "Farm"
 msgstr "农场"
 
@@ -160,6 +166,9 @@ msgstr "Koyo"
 msgid "Large Rock"
 msgstr "大石头"
 
+msgid "MFarm"
+msgstr "麦田物语"
+
 msgid "Make"
 msgstr "Make"
 
@@ -168,6 +177,9 @@ msgstr "集市"
 
 msgid "Mayor"
 msgstr "镇长"
+
+msgid "Me"
+msgstr "主角"
 
 msgid "Menu"
 msgstr "菜单"
@@ -265,6 +277,9 @@ msgstr "白萝卜种子"
 msgid "Use Item"
 msgstr "使用物品"
 
+msgid "WASD to move · T to speed up time · G to move on a day"
+msgstr "WSAD 控制人物移动 · T 时间加速 · G 天数更新"
+
 msgid "Walk Slowly"
 msgstr "慢走"
 
@@ -277,11 +292,17 @@ msgstr "水壶"
 msgid "Weeds"
 msgstr "杂草"
 
+msgid "What a beauty! I'm not dreaming, am I?"
+msgstr "大美女！我不是在做梦吧？"
+
 msgid "What is left of a broadleaf tree."
 msgstr "阔叶树砍倒后剩下的树根。"
 
 msgid "What is left of a pine tree."
 msgstr "针叶树砍倒后剩下的树根。"
+
+msgid "Where am I......."
+msgstr "我这是在哪儿......."
 
 msgid "Wood from a broadleaf tree."
 msgstr "阔叶树的木头。"
@@ -297,6 +318,12 @@ msgstr "你的钱不够"
 
 msgid "You do not have that many"
 msgstr "你没有那么多"
+
+msgid "You're awake? A storm came over the sea, and the wind seems to have blown your boat away..."
+msgstr "你醒啦？之前海上降临了风暴，你的船好像已经被大风吹跑了。。。"
+
+msgid "You're soaked through. Don't catch a cold. Go and run around the island first!"
+msgstr "你全身都湿了，小心感冒，先到处岛上跑一跑吧！"
 
 msgid "Your bag is full"
 msgstr "背包满了"

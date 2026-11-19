@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://tiamat/core/events/status_line.gd" id="1_status_line"]
 [ext_resource type="Script" path="res://tiamat/core/ui/save_indicator.gd" id="2_save_indicator"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://game/ui/time_panel.gd" id="5_time_panel"]
 [ext_resource type="Script" path="res://game/ui/dialogue_box.gd" id="6_dialogue_box"]
 [ext_resource type="FontFile" path="res://game/unity/fonts/unifont-14.0.01.ttf" id="7_font"]
+[ext_resource type="Script" path="res://game/ui/time_keys.gd" id="8_time_keys"]
+[ext_resource type="PackedScene" path="res://game/ui/intro.tscn" id="9_intro"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 20
@@ -53,7 +55,12 @@ script = ExtResource("5_time_panel")
 [node name="BagMenu" type="Control" parent="."]
 script = ExtResource("4_bag_menu")
 
+[node name="Intro" parent="." instance=ExtResource("9_intro")]
+
 [node name="DialogueBox" type="Control" parent="."]
 script = ExtResource("6_dialogue_box")
 
 [node name="PauseMenu" parent="." instance=ExtResource("3_pause")]
+
+[node name="TimeKeys" type="Node" parent="."]
+script = ExtResource("8_time_keys")

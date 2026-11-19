@@ -17,7 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="MFarm"
 config/description="A farm and a seaside town through the seasons, revived from the Unity MFarm demo"
 config/version="0.1.0"
-run/main_scene="res://tiamat/core/ui/title_screen.tscn"
+run/main_scene="res://game/ui/title.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [autoload]
@@ -75,7 +75,7 @@ game_definition="res://game/game_definition.tres"
 
 [gui]
 
-theme/custom="res://tiamat/core/ui/default_theme.tres"
+theme/custom="res://game/ui/mfarm_theme.tres"
 
 [input]
 

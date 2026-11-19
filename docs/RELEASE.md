@@ -7,7 +7,7 @@ Every game under `games/` has reproducible Windows, Linux and Web exports, stric
 - A valid SemVer in `config/version` of the game's `games/<id>/project.godot`.
 - A compatible stable Godot 4.x build. Normal release exports must match the shared `.godot-version` baseline; `licenses/GODOT_VERSION.txt` and the official Godot legal bundle must match that same baseline.
 - Matching Godot export templates.
-- Node.js 24+ for the repository tooling and the Playwright Web-export smoke test.
+- Node.js 26+ (the current LTS) for the repository tooling and the Playwright Web-export smoke test.
 
 Install the export templates for the current shared baseline with:
 
@@ -38,7 +38,7 @@ It performs:
 9. deterministic archive packaging through `tools/package_release.js`, with sorted paths, commit-derived timestamps and canonical permissions and ownership metadata;
 10. package identity verification and the release manifest through `tools/generate_release_manifest.js`.
 
-Use `--skip-browser-smoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/release_readiness.js` also requires a clean Git working tree so packaged `BUILD_INFO.json` can point to one exact commit with `dirty=false`. `tools/validate.js` runs steps 2 and 3 and is the single local validation entry point; `--skip-soak` exists only for fast local iteration, and CI and release candidates run the soak. A Godot step fails on a non-zero exit code or on any `ERROR:` or `SCRIPT ERROR:` output line.
+Use `--skip-browser-smoke` only when browser tooling is intentionally unavailable. A release candidate should pass without that switch. `tools/release_readiness.js` also requires a clean Git working tree so packaged `BUILD_INFO.json` can point to one exact commit with `dirty=false`. `tools/validate.js` runs steps 2 and 3 and is the single local validation entry point; `--skip-soak` exists only for fast local iteration, and CI and release candidates run the soak. A Godot step fails on a non-zero exit code or on any `ERROR:` or `SCRIPT ERROR:` output line, except the failure of GUT's online version check (a request to api.github.com that a shared CI address often finds over its rate limit), which is reported instead.
 
 Expected outputs, named after `config/name` in the game's `project.godot` with anything but letters, digits, `_` and `-` removed (`<Name>` below; `Farm1` for Farm1):
 

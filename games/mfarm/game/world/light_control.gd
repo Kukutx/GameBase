@@ -3,14 +3,18 @@ extends Node2D
 ## A light of the old project that follows the time of day: the location's
 ## sky (`Outside Global Light`, a `CanvasModulate`) or a lamp (`WallLight`,
 ## a `PointLight2D` lit at night). Day turns to night at `NIGHT_STARTS`, night
-## to day at `MORNING_STARTS`, over `CHANGE_SECONDS`; a location entered
-## shows the light of the hour at once.
+## to day at `MORNING_STARTS`, over `CHANGE_SECONDS`; a location entered, or
+## a clock run on many minutes at once (the G key), shows the light
+## of the hour at once.
 
 const MORNING_STARTS := 5 * 60
 const NIGHT_STARTS := 19 * 60
 const CHANGE_SECONDS := 25.0
 const SKY_DAY := Color.WHITE
-const SKY_NIGHT := Color(0.35, 0.4, 0.7)
+## The old project's night sky (`Outside Global Light`): colour
+## (0.216, 0.275, 0.647) at intensity 0.7. Every season shares it; the old
+## data had spring only, and lights stopped changing after spring.
+const SKY_NIGHT := Color(0.151, 0.192, 0.453)
 const LAMP_COLOR := Color(1.0, 0.843, 0.471)
 const LAMP_NIGHT_ENERGY := 1.5
 
@@ -20,6 +24,10 @@ var _sky: CanvasModulate
 var _lamp: PointLight2D
 var _night := false
 var _tween: Tween
+# How far the light is from day (0) to night (1), and the frame of the last
+# minute it followed.
+var _amount := 0.0
+var _minute_frame := -1
 
 func _ready() -> void:
 	if pattern_id == &"Outside Global Light":
@@ -40,16 +48,25 @@ static func is_night(minute_of_day: int) -> bool:
 
 func _on_minute_changed(_day: int, minute_of_day: int) -> void:
 	var night := is_night(minute_of_day)
+	# A second minute in one frame: the clock runs on faster than any light
+	# could change, so the light keeps up at once.
+	var skipping := Engine.get_process_frames() == _minute_frame
+	_minute_frame = Engine.get_process_frames()
 	if night == _night:
 		return
 	_night = night
 	if _tween != null:
 		_tween.kill()
+	var target := 1.0 if night else 0.0
+	if skipping:
+		_apply(target)
+		return
 	_tween = create_tween()
-	_tween.tween_method(_apply, 0.0 if night else 1.0, 1.0 if night else 0.0, CHANGE_SECONDS)
+	_tween.tween_method(_apply, _amount, target, CHANGE_SECONDS * absf(target - _amount))
 
 # `amount` 0 is day, 1 night.
 func _apply(amount: float) -> void:
+	_amount = amount
 	if _sky != null:
 		_sky.color = SKY_DAY.lerp(SKY_NIGHT, amount)
 	if _lamp != null:

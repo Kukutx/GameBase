@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
 
       # Without an override this resolves the newest stable release of
       # godotengine/godot; the shared baseline in .godot-version is not moved.

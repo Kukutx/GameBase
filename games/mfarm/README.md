@@ -10,11 +10,11 @@ From the repository root, link the foundation once, then open `games/mfarm/proje
 node tools/link.js --game mfarm
 ```
 
-The main scene is the core title screen. `node tools/validate.js --game mfarm` runs this game's checks; the runtime smoke ends with `MFarm smoke passed.`.
+The main scene is MFarm's title screen (`game/ui/title.tscn`): the core's menu on the old game's paper, under its title 麦田物语 in the old brush font, in wood menus of the old colours (`game/ui/mfarm_theme.tres`). `node tools/validate.js --game mfarm` runs this game's checks; the runtime smoke ends with `MFarm smoke passed.`.
 
 ## Play
 
-A new game starts on the beach at 07:00 on the first day of spring with an empty bag and 100 coins. The signposts lead to the field, where the tool box by the two signposts holds the tools and the house is home; the signposts in the field lead back to the beach and on to the market, where Koyo sells seeds.
+A new game starts on the beach at 07:00 on the first day of spring with an empty bag and 100 coins. It opens, as the old game did, with the comic of the storm that took the farmer's boat, over Calm 4 and timed as the old timeline was, then the farmer wakes, looks about and meets Mike (Escape skips it before the talk). The signposts lead to the field, where the tool box by the two signposts holds the tools and the house is home; the signposts in the field lead back to the beach and on to the market, where Koyo sells seeds.
 
 | Control | Default |
 | --- | --- |
@@ -24,9 +24,11 @@ A new game starts on the beach at 07:00 on the first day of spring with an empty
 | Pick an action bar slot | 1 to 0 |
 | Bag | B or I |
 | Talk, open a box | Space or E |
+| Open the box next to you | Right mouse button |
+| Run the clock fast, move on a day | Hold T, press G (the old game's time keys, which its menu told of) |
 | Pause, close a bag | Escape |
 
-Dig with the hoe, water with the can, plant seeds in dug soil in their season, pick ripe crops with the basket and sell them at Koyo's stall. Trees fall to the axe and leave stumps, rocks break to the pickaxe, weeds give hay to the sickle (four at a swing). Blueprints build a chair or a storage box on the cells that allow furniture. The clock runs as in the old game, one game minute every six seconds; thirty days make a month, three months a season. Night falls at 19:00, and the lamps light up.
+Dig with the hoe, water with the can (the soil stays dark for the day; as in the old game, crops grow by the days, watered or not), plant seeds in dug soil in their season, pick ripe crops with the basket, held up for a moment as they go into the bag, and sell them at Koyo's stall. Trees fall to the axe and leave stumps, rocks break to the pickaxe, weeds rustle and sway as the farmer walks through them and give hay to the sickle (four at a swing). Blueprints build a chair or a storage box on the cells that allow furniture. The clock runs as in the old game, one game minute every six seconds; thirty days make a month, three months a season. Night falls at 19:00, and the lamps light up. Each place plays its ambient sound and its music over and over, the music fading in over eight seconds as the old mixer's did. Going through a door or along a road fades to black and back over a second and a half each way, as in the old game (at once with reduced motion), and the time panel writes the date as the old one did (2023年02月01日 in Chinese).
 
 ## Layout
 
@@ -37,11 +39,11 @@ game/items/        Item, bag and blueprint data; the bags and money service (aut
 game/farm/         Crop and map data; the land service (autoload Farmland) and the grid that draws and works it
 game/player/       The farmer (four animated layers, tools, a held item) and the cursor
 game/npc/          Townsfolk: data, schedules, path finding, conversations
-game/ui/           Action bar, bag, box and shop, trade panel, tooltip, clock and conversation box, in the old art
+game/ui/           Title, theme, opening comic, action bar, bag, box and shop, trade panel, tooltip, clock and conversation box, in the old art
 game/world/        The four locations, doorways, lights, fading scenery, boxes and items on the ground
 game/i18n/         The Simplified Chinese catalog (English is the source)
-test/unit/         GUT tests of the game's rules
-test/runtime/      The end-to-end smoke: beach, field, digging and watering, the market, a purchase, save and load
+test/unit/         GUT tests of the game's rules and of the feel the old game had (the opening, swaying weeds, harvests held up, boxes, time keys)
+test/runtime/      The end-to-end smoke: the opening, beach, field, digging and watering, the market, a purchase, save and load
 ```
 
 The importer's settings for this game are `unity_import` in `game.json`; see [docs/UNITY_IMPORT.md](../../docs/UNITY_IMPORT.md).
@@ -66,6 +68,9 @@ The old project's own bug list (`Bug录.md`) and what turned up while porting:
 - One tree's trigger outline crossed itself; it is its convex hull now.
 - Harvested crops sold for nothing; they now sell for more than their seeds cost.
 - The field had no way to the market or the beach (the only doorway pointed at the interface scene); the signposts by the tool box lead there now.
+- Music and ambient sounds were imported to play once, so a place fell silent after its track; music and ambience now play over and over.
+- The old light settings covered spring alone, so from summer on night never fell; every season now turns to the old night sky, as dark as the old one.
+- The opening comic faded to three quarters and then vanished at once; it fades out fully as the farmer wakes.
 
 ## Credits
 

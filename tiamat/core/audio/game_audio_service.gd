@@ -3,8 +3,9 @@ extends Node
 
 ## Plays the game's music and sounds by cue (`AudioCueData`).
 ##
-## Music plays one track at a time on the Music bus: a new one fades in over
-## its cue's `fade_seconds` while the one before fades out. Each location
+## Music plays one track at a time on the Music bus, over again when it ends:
+## a new one fades in over its cue's `fade_seconds` while the one before
+## fades out. Each location
 ## plays its own music (`WorldLocationData.music_cue_id`) when the scene
 ## changes, and a music cue played directly (`play_cue()`) takes its place.
 ## Music pushed over it (`push_music()`: a fight's, a minigame's) plays instead
@@ -161,6 +162,7 @@ func _build_players() -> void:
 		music.name = "Music%d" % index
 		music.bus = &"Music"
 		add_child(music)
+		music.finished.connect(_on_music_finished.bind(music))
 		_music_players.append(music)
 	for index in range(SFX_CHANNEL_COUNT):
 		var player := AudioStreamPlayer.new()
@@ -285,6 +287,12 @@ func _start(player: Node, cue: AudioCueData) -> void:
 
 func _on_channel_finished(player: Node) -> void:
 	_voices.erase(player)
+
+# Music plays over again from the start when its track ends, as music does,
+# whether or not its stream was imported to loop.
+func _on_music_finished(player: AudioStreamPlayer) -> void:
+	if player == _music_players[_music_index] and _current_music_cue_id != &"" and player.stream != null:
+		player.play()
 
 func _silence(player: Node) -> void:
 	player.call(&"stop")

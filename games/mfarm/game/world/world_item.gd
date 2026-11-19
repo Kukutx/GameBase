@@ -4,10 +4,16 @@ extends Node2D
 ## An item lying in the world: one the scene placed (an item, a weed) or one
 ## dropped on the land (`Farmland.get_dropped()`, `dropped_id`). The player picks
 ## it up by walking over it, when it can be picked up and their bag has room.
-## Weeds (`REAPABLE_SCENERY`) stay until a sickle reaps them.
+## Weeds (`REAPABLE_SCENERY`) stay until a sickle reaps them; they rustle and
+## sway away from the player walking into or out of them.
 
 const BOUNCE_SECONDS := 0.45
 const BOUNCE_HEIGHT := 18.0
+## The old game's sway: the weed leans `SWAY_STEP_DEGREES` at a time, four
+## steps one way, five back and one home, a step every `SWAY_STEP_SECONDS`.
+const SWAY_STEP_DEGREES := 2.0
+const SWAY_STEP_SECONDS := 0.04
+const SWAY_STEPS: Array[int] = [1, 1, 1, 1, -1, -1, -1, -1, -1, 1]
 
 @export var item_id: StringName
 ## The id of the dropped item it shows, or -1 for an item the scene placed.
@@ -16,6 +22,7 @@ var dropped_id := -1
 var _location_id := &""
 var _sprite: Sprite2D
 var _taken := false
+var _swaying := false
 
 func _ready() -> void:
 	_location_id = MFarmLocation.id_of(self)
@@ -37,6 +44,7 @@ func _ready() -> void:
 			var area := child as Area2D
 			area.collision_mask = 2
 			area.body_entered.connect(_on_body_entered)
+			area.body_exited.connect(_on_body_exited)
 
 func get_item() -> MFarmItemData:
 	return MFarmItemData.find(item_id)
@@ -65,14 +73,44 @@ func remove() -> void:
 		Farmland.mark_taken(_location_id, MFarmLocation.key_of(self))
 	queue_free()
 
-func _on_body_entered(body: Node2D) -> void:
+## Whether the player can cut it with a sickle, and it sways when walked through.
+func is_reapable() -> bool:
 	var item := get_item()
-	if _taken or item == null or not item.can_pick_up or item.item_type == MFarmItemData.ItemType.REAPABLE_SCENERY:
-		return
+	return item != null and item.item_type == MFarmItemData.ItemType.REAPABLE_SCENERY
+
+## Sways away from `from_x`, unless it already sways; true when it started.
+func sway(from_x: float) -> bool:
+	if _swaying or _sprite == null:
+		return false
+	_swaying = true
+	# Leaning away from the player: clockwise when they come from the left.
+	var lean := SWAY_STEP_DEGREES if from_x < global_position.x else -SWAY_STEP_DEGREES
+	var tween := create_tween()
+	for step: int in SWAY_STEPS:
+		tween.tween_callback(func() -> void: _sprite.rotation_degrees += lean * step)
+		tween.tween_interval(SWAY_STEP_SECONDS)
+	tween.tween_callback(func() -> void:
+		_sprite.rotation_degrees = 0.0
+		_swaying = false)
+	return true
+
+func _on_body_entered(body: Node2D) -> void:
 	if not body.is_in_group(&"player"):
+		return
+	if is_reapable():
+		if sway(body.global_position.x):
+			GameAudio.play_cue(&"sfx_rustle")
+		return
+	var item := get_item()
+	if _taken or item == null or not item.can_pick_up:
 		return
 	if Bags.add_item(Bags.PLAYER, item_id, 1) == 0:
 		GameEvents.toast("Your bag is full")
 		return
 	GameAudio.play_cue(&"sfx_pickup")
 	remove()
+
+func _on_body_exited(body: Node2D) -> void:
+	# Walking out, the weed leans the way the player leaves.
+	if body.is_in_group(&"player") and is_reapable() and sway(2.0 * global_position.x - body.global_position.x):
+		GameAudio.play_cue(&"sfx_rustle")

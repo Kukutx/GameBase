@@ -22,7 +22,7 @@ the licensing information for third-party code distributed with the engine.
 
 ## Dialogue Manager
 
-Games that use the `npc_social` module include Dialogue Manager 4.1.0 by Nathan
+Games that use the `npc_social` module include Dialogue Manager 4.2.0 by Nathan
 Hoad and contributors, licensed under the MIT license. Its license is distributed as
 `licenses/DIALOGUE_MANAGER_LICENSE.txt`.
 

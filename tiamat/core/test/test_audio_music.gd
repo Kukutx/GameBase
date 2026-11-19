@@ -2,8 +2,8 @@ extends GutTest
 
 ## The music of `GameAudio` on cues the test builds: a track fades in while
 ## the one before fades out, music pushed over another plays until it is
-## popped and the music beneath then comes back where it stopped, and music
-## that plays already plays on.
+## popped and the music beneath then comes back where it stopped, music
+## that plays already plays on, and a track that ends plays over again.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const AudioFixture := preload("res://tiamat/core/test/audio_fixture.gd")
@@ -93,6 +93,22 @@ func test_a_place_without_music_fades_it_out_and_pushed_music_without_a_stream_i
 	await GameAudio._sync_location_music()
 	assert_eq(GameAudio.get_current_music_cue_id(), &"")
 	assert_null(_music_player(calm.stream))
+
+func test_a_track_that_ends_plays_over_again() -> void:
+	var short := AudioFixture.cue(&"fixture_short", MUSIC, AudioFixture.stream(0.05))
+	ContentFixture.use(self, [short])
+	GameAudio.play_cue(&"fixture_short")
+	var player := _music_player(short.stream)
+	assert_not_null(player)
+	var ended := [false]
+	var on_finished := func() -> void: ended[0] = true
+	player.finished.connect(on_finished)
+	assert_true(await _until(func() -> bool: return ended[0]), "the track ends")
+	player.finished.disconnect(on_finished)
+	assert_true(player.playing, "and starts again")
+	assert_eq(GameAudio.get_current_music_cue_id(), &"fixture_short")
+	GameAudio.stop_music()
+	assert_true(await _until(func() -> bool: return _music_player(short.stream) == null), "stopped music stays stopped")
 
 ## The music player of GameAudio that holds `stream`, or null.
 func _music_player(stream: AudioStream) -> AudioStreamPlayer:

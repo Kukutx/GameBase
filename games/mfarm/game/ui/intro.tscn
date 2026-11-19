@@ -1,0 +1,47 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://game/ui/intro.gd" id="1_intro"]
+[ext_resource type="Script" path="res://game/npc/dialogue_line.gd" id="2_line"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Faces/Boy01-3.tres" id="3_boy_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Faces/Girl01-5.tres" id="4_girl_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Faces/Boy01-2.tres" id="5_boy_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Faces/Girl01-4.tres" id="6_girl_4"]
+
+[sub_resource type="Resource" id="Line_0"]
+script = ExtResource("2_line")
+speaker = "Me"
+text = "Where am I......."
+portrait = ExtResource("3_boy_3")
+on_left = false
+
+[sub_resource type="Resource" id="Line_1"]
+script = ExtResource("2_line")
+speaker = "Mike"
+text = "You're awake? A storm came over the sea, and the wind seems to have blown your boat away..."
+portrait = ExtResource("4_girl_5")
+on_left = true
+
+[sub_resource type="Resource" id="Line_2"]
+script = ExtResource("2_line")
+speaker = "Me"
+text = "What a beauty! I'm not dreaming, am I?"
+portrait = ExtResource("5_boy_2")
+on_left = false
+
+[sub_resource type="Resource" id="Line_3"]
+script = ExtResource("2_line")
+speaker = "Mike"
+text = "You're soaked through. Don't catch a cold. Go and run around the island first!"
+portrait = ExtResource("6_girl_4")
+on_left = true
+
+[node name="Intro" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_intro")
+lines = Array[ExtResource("2_line")]([SubResource("Line_0"), SubResource("Line_1"), SubResource("Line_2"), SubResource("Line_3")])

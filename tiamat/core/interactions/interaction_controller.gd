@@ -18,6 +18,9 @@ func _ready() -> void:
 	InputPrompts.input_method_changed.connect(_on_prompt_context_changed)
 	GameSettings.controls_changed.connect(_on_prompt_context_changed)
 	GameSettings.locale_changed.connect(_on_locale_changed)
+	# Nothing can be pressed while the controls are held (a talk, a menu, a
+	# cutscene), so the prompt waits until they are given back.
+	InputLock.changed.connect(_update_prompt)
 	_refresh_focus()
 
 func _process(_delta: float) -> void:
@@ -77,7 +80,7 @@ func get_focused() -> Interactable:
 func _update_prompt() -> void:
 	if prompt_label == null:
 		return
-	prompt_label.visible = _focused != null
+	prompt_label.visible = _focused != null and not InputLock.is_locked()
 	prompt_label.text = "[%s] %s" % [InputPrompts.get_action_prompt(action), _focused.get_prompt_text()] if _focused != null else ""
 
 func _on_prompt_context_changed(_value: Variant = null) -> void:

@@ -43,6 +43,10 @@ func _ready() -> void:
 	_refresh_slots(Bags.PLAYER)
 	_on_money_changed(Bags.money)
 
+## The box or shop open beside the player's bag, or empty.
+func get_open_bag() -> StringName:
+	return _base_key if _base_bag.visible else &""
+
 func is_open() -> bool:
 	return _player_bag.visible or _base_bag.visible
 
