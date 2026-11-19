@@ -11,7 +11,9 @@ extends Node
 ## Music pushed over it (`push_music()`: a fight's, a minigame's) plays instead
 ## until it is popped (`pop_music()`), and the music beneath then comes back
 ## where it stopped. Asking for the music that plays leaves it playing; a
-## location without music fades it out.
+## location without music fades it out. A game can have a location's music
+## wait a while after the player arrives (`GameDefinition.location_music_delay`),
+## the music before fading out meanwhile.
 ##
 ## Sounds play on the Sounds bus, up to `SFX_CHANNEL_COUNT` heard everywhere
 ## alike and `POSITIONAL_CHANNEL_COUNT` heard from places at once, and each
@@ -38,6 +40,9 @@ signal music_changed(audio_cue_id: StringName)
 ## one frame, the last in this order plays.
 enum MenuSound { FOCUS, PRESS, CLOSE, OPEN }
 
+## How fast the music fades out when a location's music waits
+## (`GameDefinition.location_music_delay`): the old game's second.
+const WAIT_FADE_SECONDS := 1.0
 ## Sounds heard everywhere alike at once.
 const SFX_CHANNEL_COUNT := 8
 ## Sounds heard from a place in the world at once.
@@ -74,6 +79,9 @@ var _pending_menu_sound := -1
 var _navigated_frame := -1
 # Whether the scene changed and its location's music is not known yet.
 var _location_pending := false
+# Counts the waits for a location's music: music asked for later (another
+# scene, a cue, a stop) ends the wait before it.
+var _music_wait := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -90,6 +98,7 @@ func play_cue(cue_id: StringName) -> bool:
 	if cue == null:
 		return false
 	if cue.is_music():
+		_music_wait += 1
 		_set_base_music(cue.id)
 		return true
 	_start(_channel_for(cue, _sfx_players), cue)
@@ -102,6 +111,7 @@ func play_cue_at(cue_id: StringName, position: Vector2) -> bool:
 	if cue == null:
 		return false
 	if cue.is_music():
+		_music_wait += 1
 		_set_base_music(cue.id)
 		return true
 	var player := _channel_for(cue, _positional_players) as AudioStreamPlayer2D
@@ -131,6 +141,7 @@ func has_pushed_music(layer: StringName) -> bool:
 ## Stops the music at once, the pushed included, until a location or a cue
 ## plays music again.
 func stop_music() -> void:
+	_music_wait += 1
 	_pushed.clear()
 	_resume_at.clear()
 	_base_music_id = &""
@@ -298,14 +309,15 @@ func _silence(player: Node) -> void:
 	player.call(&"stop")
 	player.set(&"stream", null)
 
-func _set_base_music(cue_id: StringName) -> void:
+# `fade` (seconds) takes the place of the cue's own fade when not negative.
+func _set_base_music(cue_id: StringName, fade := -1.0) -> void:
 	if cue_id == _base_music_id:
-		_refresh_music(false)
+		_refresh_music(false, fade)
 		return
 	# Where the music beneath stopped is of no use once other music is beneath.
 	_resume_at.erase(_base_music_id)
 	_base_music_id = cue_id
-	_refresh_music(false)
+	_refresh_music(false, fade)
 
 func _remove_layer(layer: StringName) -> bool:
 	for index in range(_pushed.size() - 1, -1, -1):
@@ -322,7 +334,7 @@ func _remove_layer(layer: StringName) -> bool:
 # change for music pushed over (`covered`) keeps where the music it covers
 # stopped, for when it comes back. Until a new scene's location is known,
 # the music beneath stays as it is.
-func _refresh_music(covered: bool) -> void:
+func _refresh_music(covered: bool, fade_override := -1.0) -> void:
 	if _location_pending and _pushed.is_empty():
 		return
 	var cue_id := StringName(_pushed.back()["cue_id"]) if not _pushed.is_empty() else _base_music_id
@@ -334,6 +346,8 @@ func _refresh_music(covered: bool) -> void:
 		return
 	var current := _music_players[_music_index]
 	var fade := cue.fade_seconds if cue != null else _current_fade_seconds()
+	if fade_override >= 0.0:
+		fade = fade_override
 	if _current_music_cue_id != &"":
 		if covered:
 			_resume_at[_current_music_cue_id] = current.get_playback_position()
@@ -386,4 +400,22 @@ func _sync_location_music() -> void:
 	await get_tree().process_frame
 	_location_pending = false
 	var location := WorldLocationData.find_current(get_tree())
-	_set_base_music(location.music_cue_id if location != null else &"")
+	await _play_location_music(location.music_cue_id if location != null else &"")
+
+# Plays a location's music `cue_id`: after the game's wait when it is other
+# music than the music beneath (`GameDefinition.location_music_delay`).
+func _play_location_music(cue_id: StringName) -> void:
+	_music_wait += 1
+	var wait := _music_wait
+	var delay := GameDefinition.current().location_music_delay
+	if cue_id == &"" or cue_id == _base_music_id or delay.y <= 0.0:
+		_set_base_music(cue_id)
+		return
+	# The place is heard alone a while: the music before fades out at once,
+	# and the place's begins after the wait, unless other music is asked for
+	# first.
+	_set_base_music(&"", WAIT_FADE_SECONDS)
+	# A paused world (a menu) holds the wait, as it held the old game's.
+	await get_tree().create_timer(randf_range(maxf(delay.x, 0.0), delay.y), false).timeout
+	if wait == _music_wait:
+		_set_base_music(cue_id)

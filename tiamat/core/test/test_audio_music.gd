@@ -3,7 +3,8 @@ extends GutTest
 ## The music of `GameAudio` on cues the test builds: a track fades in while
 ## the one before fades out, music pushed over another plays until it is
 ## popped and the music beneath then comes back where it stopped, music
-## that plays already plays on, and a track that ends plays over again.
+## that plays already plays on, a location's music that waits as the game
+## sets, and a track that ends plays over again.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const AudioFixture := preload("res://tiamat/core/test/audio_fixture.gd")
@@ -93,6 +94,26 @@ func test_a_place_without_music_fades_it_out_and_pushed_music_without_a_stream_i
 	await GameAudio._sync_location_music()
 	assert_eq(GameAudio.get_current_music_cue_id(), &"")
 	assert_null(_music_player(calm.stream))
+
+func test_a_location_s_music_can_wait_while_the_place_is_heard_alone() -> void:
+	var before := AudioFixture.cue(&"fixture_before", MUSIC, AudioFixture.stream(4.0))
+	var place := AudioFixture.cue(&"fixture_place", MUSIC, AudioFixture.stream(4.0))
+	ContentFixture.use(self, [before, place])
+	ContentFixture.definition(self).location_music_delay = Vector2(0.1, 0.1)
+	GameAudio.play_cue(&"fixture_before")
+	GameAudio._play_location_music(&"fixture_place")
+	assert_eq(GameAudio.get_current_music_cue_id(), &"", "the music before fades out first")
+	assert_true(await _until(func() -> bool: return GameAudio.get_current_music_cue_id() == &"fixture_place"), "then the place's music begins")
+	GameAudio._play_location_music(&"fixture_place")
+	assert_eq(GameAudio.get_current_music_cue_id(), &"fixture_place", "the same music plays on without a wait")
+	GameAudio.play_cue(&"fixture_before")
+	GameAudio._play_location_music(&"fixture_place")
+	GameAudio.play_cue(&"fixture_before")
+	await wait_seconds(0.2)
+	assert_eq(GameAudio.get_current_music_cue_id(), &"fixture_before", "music asked for during the wait ends it")
+	ContentFixture.definition(self).location_music_delay = Vector2.ZERO
+	GameAudio._play_location_music(&"fixture_place")
+	assert_eq(GameAudio.get_current_music_cue_id(), &"fixture_place", "a game that does not wait changes the music at once")
 
 func test_a_track_that_ends_plays_over_again() -> void:
 	var short := AudioFixture.cue(&"fixture_short", MUSIC, AudioFixture.stream(0.05))

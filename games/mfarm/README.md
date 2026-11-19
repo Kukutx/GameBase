@@ -10,7 +10,7 @@ From the repository root, link the foundation once, then open `games/mfarm/proje
 node tools/link.js --game mfarm
 ```
 
-The main scene is MFarm's title screen (`game/ui/title.tscn`): the core's menu on the old game's paper, under its title 麦田物语 in the old brush font, in wood menus of the old colours (`game/ui/mfarm_theme.tres`). `node tools/validate.js --game mfarm` runs this game's checks; the runtime smoke ends with `MFarm smoke passed.`.
+The main scene is MFarm's title screen (`game/ui/title.tscn`), the old game's menu at its own size: a sheet of paper with three tabs down its right edge. The first sheet shows the title 麦田物语 in the old brush font and the version; 开始 brings the save slots, one card each, that continue the game saved there or start a new one (这个世界还没有开始, 梦还没开始; the little × deletes a slot after asking); 说明 the keys; 退出 quits. The gear in the corner opens the settings, and the questions show in wood menus of the old colours (`game/ui/mfarm_theme.tres`). It extends the core's `GameTitleBase`, which does what a title does with a slot. `node tools/validate.js --game mfarm` runs this game's checks; the runtime smoke ends with `MFarm smoke passed.`.
 
 ## Play
 
@@ -28,7 +28,7 @@ A new game starts on the beach at 07:00 on the first day of spring with an empty
 | Run the clock fast, move on a day | Hold T, press G (the old game's time keys, which its menu told of) |
 | Pause, close a bag | Escape |
 
-Dig with the hoe, water with the can (the soil stays dark for the day; as in the old game, crops grow by the days, watered or not), plant seeds in dug soil in their season, pick ripe crops with the basket, held up for a moment as they go into the bag, and sell them at Koyo's stall. Trees fall to the axe and leave stumps, rocks break to the pickaxe, weeds rustle and sway as the farmer walks through them and give hay to the sickle (four at a swing). Blueprints build a chair or a storage box on the cells that allow furniture. The clock runs as in the old game, one game minute every six seconds; thirty days make a month, three months a season. Night falls at 19:00, and the lamps light up. Each place plays its ambient sound and its music over and over, the music fading in over eight seconds as the old mixer's did. Going through a door or along a road fades to black and back over a second and a half each way, as in the old game (at once with reduced motion), and the time panel writes the date as the old one did (2023年02月01日 in Chinese).
+Dig with the hoe, water with the can (the soil stays dark for the day; as in the old game, crops grow by the days, watered or not), plant seeds in dug soil in their season, pick ripe crops with the basket, held up for a moment as they go into the bag, and sell them at Koyo's stall. Trees fall to the axe and leave stumps, rocks break to the pickaxe, weeds rustle and sway as the farmer walks through them and give hay to the sickle (four at a swing). Blueprints build a chair or a storage box on the cells that allow furniture. The clock runs as in the old game, one game minute every six seconds; thirty days make a month, three months a season. Night falls at 19:00, and the lamps light up. Each place plays its ambient sound and its music over and over: arriving, the music before fades out and the place is heard alone for five to fifteen seconds before its own music fades in over eight, as the old game's did. Every tool sounds as it is used (the hoe, the can, the axe, the pickaxe, the basket, the sickle), and a crop with a sound of its own sounds that instead, as the old project's notes asked. Going through a door or along a road fades to black and back over a second and a half each way, as in the old game (at once with reduced motion), and the time panel writes the date as the old one did (2023年02月01日 in Chinese).
 
 ## Layout
 
@@ -71,6 +71,8 @@ The old project's own bug list (`Bug录.md`) and what turned up while porting:
 - Music and ambient sounds were imported to play once, so a place fell silent after its track; music and ambience now play over and over.
 - The old light settings covered spring alone, so from summer on night never fell; every season now turns to the old night sky, as dark as the old one.
 - The opening comic faded to three quarters and then vanished at once; it fades out fully as the farmer wakes.
+- The menu's 退出 tab only showed the title sheet again (its ExitGame was never wired); it quits now, and the slot cards can delete a save, which the old menu could not.
+- The axe, pickaxe and basket had no sound of their own, only the crops' (the old notes asked for a tool's sound that a crop's overrides); every tool has one now.
 
 ## Credits
 

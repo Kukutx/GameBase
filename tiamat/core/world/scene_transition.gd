@@ -193,7 +193,11 @@ func _settle() -> void:
 
 # The scene the background load of `path` gave, once it is done; null when it
 # is no scene.
+# A frame passes even when the scene is loaded already (and there is no fade:
+# reduced motion), so a change returns still covering the screen and a second
+# one asked for in the same frame is refused.
 func _finish_loading(path: String) -> PackedScene:
+	await get_tree().process_frame
 	while ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		await get_tree().process_frame
 	return ResourceLoader.load_threaded_get(path) as PackedScene

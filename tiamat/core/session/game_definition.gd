@@ -64,6 +64,11 @@ static func current() -> GameDefinition:
 @export var menu_press_cue_id: StringName = &""
 @export var menu_open_cue_id: StringName = &""
 @export var menu_close_cue_id: StringName = &""
+## How long a location's music waits before it begins once the player
+## arrives: a random time between `x` and `y` seconds, while the music before
+## fades out and the place is heard alone (MFarm waits 5 to 15 seconds, as the
+## old game did). Zero: the music changes at once.
+@export var location_music_delay := Vector2.ZERO
 ## What a new playthrough or a sequel carries over from the game before it
 ## (`Playthrough`, `InheritanceRule`); empty carries nothing.
 @export var inheritance: Array[InheritanceRule] = []

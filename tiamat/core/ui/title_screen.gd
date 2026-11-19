@@ -1,11 +1,12 @@
 class_name GameTitleScreen
-extends ColorRect
+extends GameTitleBase
 
-## The title screen every game opens on (its main scene): the game's name,
-## description and version from the project settings, its save slots (as many
-## as the game sets, each continuing from the newer of its saves), a new
-## game, the settings and quitting. Like every menu it takes the project's
-## theme (`gui/theme/custom`).
+## The title screen every game opens on (its main scene) unless it brings its
+## own: the game's name, description and version from the project settings,
+## its save slots (as many as the game sets, each continuing from the newer of
+## its saves), a new game, the settings and quitting. Like every menu it takes
+## the project's theme (`gui/theme/custom`). What it does with a slot is
+## GameTitleBase's; this is how it looks.
 
 @onready var title_label: Label = $Center/Menu/Title
 @onready var subtitle_label: Label = $Center/Menu/Subtitle
@@ -18,11 +19,9 @@ extends ColorRect
 @onready var settings_button: Button = $Center/Menu/Actions/Settings
 @onready var quit_button: Button = $Center/Menu/Actions/Quit
 @onready var status_label: Label = $Center/Menu/Status
-@onready var settings_menu: SettingsMenu = $SettingsMenu
-@onready var confirm_new_game: ConfirmationDialog = $ConfirmNewGame
-@onready var confirm_delete: ConfirmationDialog = $ConfirmDelete
 
 func _ready() -> void:
+	super()
 	title_label.text = String(ProjectSettings.get_setting("application/config/name", ""))
 	subtitle_label.text = String(ProjectSettings.get_setting("application/config/description", ""))
 	subtitle_label.visible = not subtitle_label.text.is_empty()
@@ -34,13 +33,7 @@ func _ready() -> void:
 	delete_button.pressed.connect(_delete_save)
 	settings_button.pressed.connect(_open_settings)
 	quit_button.pressed.connect(_quit)
-	# A web page is left by closing its tab.
-	quit_button.visible = not OS.has_feature("web")
-	settings_menu.closed.connect(_on_settings_closed)
-	confirm_new_game.confirmed.connect(_start_new_game)
-	confirm_delete.confirmed.connect(_confirm_delete_save)
-	SaveManager.load_completed.connect(_on_load_completed)
-	GameSession.new_game_failed.connect(_on_new_game_failed)
+	quit_button.visible = can_quit()
 	_refresh_slot_ui()
 	(new_game_button if continue_button.disabled else continue_button).grab_focus()
 
@@ -54,7 +47,7 @@ func _build_slot_selector() -> void:
 
 func _on_slot_selected(index: int) -> void:
 	SaveManager.select_slot(index + 1)
-	status_label.text = ""
+	_show_status("")
 	_refresh_slot_ui()
 
 func _refresh_slot_ui() -> void:
@@ -68,94 +61,13 @@ func _refresh_slot_ui() -> void:
 	else:
 		slot_info.text = tr("Holds a save this version cannot open") if unreadable else tr("Empty slot")
 
-## A save's summary as the slot shows it: the date and time, marked when the
-## slot continues from its autosave; where the player stands and how long
-## they played; then what the game and its modules add (the money, the
-## deepest depth).
-func _format_slot_summary(summary: Dictionary) -> String:
-	var minute := int(summary["minute_of_day"])
-	var recovery := ""
-	if bool(summary["recoverable"]):
-		recovery = tr(" · temporary save recovery") if String(summary["recovery_source"]) == "temp" else tr(" · backup available")
-	var lines := PackedStringArray([tr("%s · %02d:%02d%s") % [
-		GameCalendar.current().get_date_text(int(summary["day"])),
-		minute / 60,
-		minute % 60,
-		recovery,
-	]])
-	if bool(summary.get("autosave", false)):
-		lines[0] = tr("Autosave · %s") % lines[0]
-	var played_minutes := int(summary.get("play_seconds", 0)) / 60
-	var played := tr("Played %d:%02d") % [played_minutes / 60, played_minutes % 60]
-	var place := String(summary.get("location_name", ""))
-	lines.append("%s · %s" % [tr(place), played] if not place.is_empty() else played)
-	var details: PackedStringArray = summary.get("details", PackedStringArray())
-	if not details.is_empty():
-		lines.append(" · ".join(details))
-	return "\n".join(lines)
-
-func _new_game() -> void:
-	if SaveManager.has_save():
-		confirm_new_game.dialog_text = tr("Save Slot %d already contains a game. Starting a new game will replace this slot. Continue?") % SaveManager.active_slot
-		confirm_new_game.popup_centered()
-		return
-	if SaveManager.has_files():
-		confirm_new_game.dialog_text = tr("Save Slot %d holds a save this version cannot open. Starting a new game will replace it. Continue?") % SaveManager.active_slot
-		confirm_new_game.popup_centered()
-		return
-	_start_new_game()
-
-func _start_new_game() -> void:
-	_set_buttons_disabled(true)
-	# GameSession owns replacement of the selected slot so it can preflight the
-	# starting Location before any destructive save operation occurs.
-	if not GameSession.start_new_game():
-		_on_new_game_failed()
-
-# The start location did not open, at once or once its scene failed to load.
-func _on_new_game_failed() -> void:
-	status_label.text = tr("Could not open the starting location")
-	_set_buttons_disabled(false)
-	_refresh_slot_ui()
-
-func _continue_game() -> void:
-	_set_buttons_disabled(true)
-	status_label.text = tr("Loading Slot %d...") % SaveManager.active_slot
-	# Not awaited: a load that succeeds frees the title screen.
-	GameSession.continue_game()
-
-# A load that succeeds frees the title screen with its scene.
-func _on_load_completed(success: bool, message: String) -> void:
-	if success:
-		return
-	status_label.text = message
-	_set_buttons_disabled(false)
-	_refresh_slot_ui()
-
-func _delete_save() -> void:
-	if not SaveManager.has_files():
-		return
-	confirm_delete.dialog_text = tr("Delete Save Slot %d? This removes its save, its autosave and their backups.") % SaveManager.active_slot
-	confirm_delete.popup_centered()
-
-func _confirm_delete_save() -> void:
-	var slot := SaveManager.active_slot
-	var success := SaveManager.delete_save()
-	status_label.text = tr("Deleted Slot %d") % slot if success else tr("Could not delete Slot %d") % slot
-	_refresh_slot_ui()
-
-func _open_settings() -> void:
-	_set_buttons_disabled(true)
-	settings_menu.open()
+func _show_status(text: String) -> void:
+	status_label.text = text
 
 func _on_settings_closed() -> void:
-	_set_buttons_disabled(false)
 	_build_slot_selector()
-	_refresh_slot_ui()
+	super()
 	settings_button.grab_focus()
-
-func _quit() -> void:
-	get_tree().quit()
 
 func _set_buttons_disabled(value: bool) -> void:
 	slot_select.disabled = value

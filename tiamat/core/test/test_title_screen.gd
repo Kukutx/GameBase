@@ -81,3 +81,37 @@ func test_the_title_offers_as_many_slots_as_the_game_sets() -> void:
 		return screen
 	)
 	assert_eq((title.get("slot_select") as OptionButton).item_count, 5)
+
+func test_a_title_of_its_own_gets_the_questions_and_settings_it_lacks() -> void:
+	var title := GameTitleBase.new()
+	add_child_autofree(title)
+	assert_not_null(title.settings_menu, "the core's settings menu")
+	assert_eq(title.settings_menu.get_parent(), title)
+	assert_eq(title.confirm_new_game.get_ok_button().text, "Start New Game")
+	assert_eq(title.confirm_delete.get_ok_button().text, "Delete")
+	assert_eq(title.confirm_delete.get_cancel_button().text, "Cancel")
+	assert_eq(GameTitleBase.can_quit(), not OS.has_feature("web"))
+
+func test_opening_a_slot_that_holds_an_unreadable_save_asks_and_deleting_one_asks() -> void:
+	var save_directory := SaveManager.save_directory
+	var active_slot := SaveManager.active_slot
+	SaveManager.save_directory = "user://test_title_base"
+	SaveManager.select_slot(2)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SaveManager.save_directory))
+	var unreadable := FileAccess.open(SaveManager.save_path, FileAccess.WRITE)
+	unreadable.store_string("a save of another version")
+	unreadable.close()
+	SaveManager.select_slot(1)
+	var title := GameTitleBase.new()
+	add_child_autofree(title)
+	title.open_slot(2)
+	assert_eq(SaveManager.active_slot, 2, "the slot is chosen")
+	assert_true(title.confirm_new_game.visible, "a new game asks before replacing what the slot holds")
+	assert_string_contains(title.confirm_new_game.dialog_text, "Save Slot 2")
+	title.confirm_new_game.hide()
+	title.delete_slot(2)
+	assert_true(title.confirm_delete.visible, "deleting asks")
+	title.confirm_delete.get_ok_button().pressed.emit()
+	assert_false(SaveManager.has_files(2), "and deletes once the player agrees")
+	SaveManager.save_directory = save_directory
+	SaveManager.select_slot(active_slot)

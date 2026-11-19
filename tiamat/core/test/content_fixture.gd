@@ -66,6 +66,12 @@ static func add_stat(test: GutTest, stat: StringName) -> void:
 static func use_calendar(test: GutTest, calendar: GameCalendar) -> void:
 	_stand_in(test).calendar = calendar
 
+## A copy of the game's definition that is the running one until the test
+## ends, for a test to change (`definition(self).location_music_delay = ...`);
+## the same copy again while it is.
+static func definition(test: GutTest) -> GameDefinition:
+	return _stand_in(test)
+
 # A copy of the game's definition that is the running one until the test ends;
 # the same copy again while it is.
 static func _stand_in(test: GutTest) -> GameDefinition:

@@ -39,6 +39,18 @@ func test_one_change_covers_the_screen_at_a_time() -> void:
 	assert_eq(get_tree().current_scene.scene_file_path, _scene_path)
 	await transition.wait_until_clear()
 
+func test_a_change_to_a_scene_loaded_already_covers_until_it_opens_without_a_fade() -> void:
+	GameSettings.reduced_motion = true
+	var loaded := load(_scene_path)
+	var transition := _transition()
+	assert_true(transition.change_scene(_scene_path))
+	assert_true(transition.is_covering(), "the change is under way, not done before it returns")
+	assert_false(transition.change_scene(_scene_path), "so a second one in the same frame is refused")
+	await _until_the_scene_opened(transition)
+	assert_eq(get_tree().current_scene.scene_file_path, _scene_path)
+	await transition.wait_until_clear()
+	loaded = null
+
 func test_a_change_while_the_screen_clears_starts_at_once() -> void:
 	var transition := _transition()
 	assert_true(transition.change_scene(_scene_path))

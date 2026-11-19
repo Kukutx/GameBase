@@ -13,8 +13,8 @@
   ],
   "licensed_art": {
     "sources": {
-      "gandalf": "A:\\Project\\Godot\\Asset\\GandalfHardcore",
-      "craftpix": "A:\\Project\\Godot\\Asset\\参考\\craftpix-net-436971-free-top-down-roguelike-game-kit-pixel-art.zip"
+      "gandalf": "A:\\Project\\Sample\\Game\\Asset\\GandalfHardcore",
+      "craftpix": "A:\\Project\\Sample\\Game\\Asset\\参考\\craftpix-net-436971-free-top-down-roguelike-game-kit-pixel-art.zip"
     },
     "packs": [
       {
