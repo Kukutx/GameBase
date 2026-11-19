@@ -2,9 +2,11 @@ class_name AutoSaveService
 extends Node
 
 ## Saves the game on its own: every `interval_seconds`, after each travel, when
-## the player passes out (`GameSession.pass_out()`), when the window closes and
+## the player passes out (`GameSession.pass_out()`), when the window closes,
 ## when a phone sends the game to the background (where the system may end it
-## without a close), while `GameSettings.autosave` is on and the game can be saved. It writes the
+## without a close) and when the window loses focus (a browser tells a game of
+## nothing else: a tab closed or left behind may never run again), while
+## `GameSettings.autosave` is on and the game can be saved. It writes the
 ## active slot's autosave, which leaves the player's own save as it was
 ## (`SaveManager.write_save(true)`). A save that works shows on
 ## the game's `SaveIndicator`; one that fails tells the player why with a
@@ -73,6 +75,10 @@ func _notification(what: int) -> void:
 	# and may end it there without a close request.
 	elif what == NOTIFICATION_APPLICATION_PAUSED:
 		request_autosave("background")
+	# The player turned to another window, app or browser tab. A browser sends
+	# no close request and no pause, so this is the last a web game may hear.
+	elif what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		request_autosave("focus_lost")
 
 func _on_timer_timeout() -> void:
 	request_autosave("interval")

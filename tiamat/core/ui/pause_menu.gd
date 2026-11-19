@@ -5,7 +5,9 @@ extends MenuLayer
 ## (Esc, Start) opens it over the paused world, to resume, save, load, change
 ## the settings, return to the title screen (the game's main scene) or quit;
 ## `pause` or `ui_cancel` closes it. It also opens when the window loses focus
-## (`GameSettings.pause_on_focus_loss`) or the gamepad in use disconnects
+## (`GameSettings.pause_on_focus_loss`): the player turns to another app, or
+## to another tab of the browser, which tells the game only that its page lost
+## the focus. And it opens when the gamepad in use disconnects
 ## (`InputPrompts.gamepad_disconnected`), over the world or over a minigame,
 ## which stands still under it, and `quick_load` asks here before a load
 ## throws away the progress since the last save. A load here takes the
@@ -108,7 +110,7 @@ func _question(node_name: StringName, title_text: String, text: String, ok_text:
 	return dialog
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and GameSettings.pause_on_focus_loss and _runs_unwatched():
+	if (what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT) and is_node_ready() and GameSettings.pause_on_focus_loss and _runs_unwatched():
 		open()
 
 func _on_gamepad_disconnected() -> void:

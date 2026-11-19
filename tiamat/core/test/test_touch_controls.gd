@@ -102,6 +102,25 @@ func test_in_play_the_stick_walks_and_the_game_s_buttons_show() -> void:
 	TouchControls._input(_touch(1, center, false))
 	assert_eq(Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down"), Vector2.ZERO, "lifting the finger stops the walk")
 
+func test_the_player_looking_away_lets_go_of_every_control() -> void:
+	_play()
+	_use_touch()
+	var stick := TouchControls.get_stick()
+	var button := TouchControls.get_node("Button_interact") as TouchButton
+	# What a phone says, what a desktop says, and all a browser says.
+	for away: int in [NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT, Node.NOTIFICATION_WM_WINDOW_FOCUS_OUT]:
+		TouchControls._input(_touch(1, stick.get_center(), true))
+		TouchControls._input(_drag(1, stick.get_center() + Vector2(stick.radius, 0)))
+		TouchControls._input(_touch(2, button.get_center(), true))
+		Input.flush_buffered_events()
+		assert_true(Input.is_action_pressed(&"interact"))
+		TouchControls.notification(away)
+		Input.flush_buffered_events()
+		assert_eq(Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down"), Vector2.ZERO, "the walk stops (%d)" % away)
+		assert_false(Input.is_action_pressed(&"interact"), "the button lets go (%d)" % away)
+		TouchControls._input(_touch(1, stick.get_center(), false))
+		TouchControls._input(_touch(2, button.get_center(), false))
+
 func test_the_stick_hides_where_nothing_walks() -> void:
 	_play(false)
 	_use_touch()
