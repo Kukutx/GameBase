@@ -39,6 +39,9 @@ extends CanvasLayer
 ## amount): the menu of the field typed in (its `CanvasLayer`) rises until the
 ## field shows above the keyboard, and goes back down when the keyboard goes
 ## or the field loses the focus (`lift_for_keyboard()`).
+##
+## On a device played by touch, a button smaller than a fingertip takes the
+## taps that land just beside it (`TouchTarget`).
 
 ## The controls that show, or where they sit, changed.
 signal layout_changed
@@ -116,6 +119,11 @@ func _ready() -> void:
 	# The player's size, side and opacity of the controls.
 	GameSettings.changed.connect(_layout)
 	_show({})
+	# A button smaller than a fingertip takes the taps beside it.
+	if DisplayServer.is_touchscreen_available() or InputPromptService.starts_on_touch():
+		TouchTarget.watch(get_tree())
+		TouchTarget.measure(get_viewport())
+		get_viewport().size_changed.connect(TouchTarget.measure.bind(get_viewport()))
 
 func _notification(what: int) -> void:
 	match what:
