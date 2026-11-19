@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/cursors/cursor(7).png" id="1_cursor_7_"]
+
+[resource]
+atlas = ExtResource("1_cursor_7_")
+region = Rect2(0, 0, 32, 32)
+filter_clip = true
+metadata/pivot = Vector2(16, 16)
+metadata/pixels_per_unit = 100

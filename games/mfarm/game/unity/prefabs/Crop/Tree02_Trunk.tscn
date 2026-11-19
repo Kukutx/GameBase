@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/farm/crop.gd" id="1_crop"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Tree02/Tree02_Trunk.tres" id="2_Tree02_Trunk"]
+
+[node name="Tree02_Trunk" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Tree02_Trunk" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("1_crop")
+
+[node name="Trigger" type="Area2D" parent="Tree02_Trunk"]
+
+[node name="Shape1" type="CollisionPolygon2D" parent="Tree02_Trunk/Trigger"]
+polygon = PackedVector2Array(12.146723, 6.058275, -13.570069, 6.486565, -6.998659, -25.974464, 6.514777, -25.633068)
+
+[node name="Sprite" type="Sprite2D" parent="Tree02_Trunk"]
+texture = ExtResource("2_Tree02_Trunk")
+centered = false
+offset = Vector2(-35, -26.4)
+z_index = 0
+z_as_relative = false

@@ -1,0 +1,44 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Environments/Box_covered.tres" id="1_Box_covered"]
+[ext_resource type="Script" path="res://game/world/storage_box.gd" id="2_storage_box"]
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_sign/ui_sign_14.tres" id="3_ui_sign_14"]
+
+[sub_resource type="RectangleShape2D" id="Rect_1"]
+size = Vector2(19.982526, 14.943194)
+
+[sub_resource type="CircleShape2D" id="Circle_2"]
+radius = 18
+
+[node name="Box" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Box" type="Sprite2D" parent="."]
+texture = ExtResource("1_Box_covered")
+centered = false
+offset = Vector2(-12, -28)
+z_index = 0
+z_as_relative = false
+script = ExtResource("2_storage_box")
+box_index = 0
+
+[node name="Body" type="StaticBody2D" parent="Box"]
+
+[node name="Shape1" type="CollisionShape2D" parent="Box/Body"]
+position = Vector2(-0.000001, -9.564034)
+shape = SubResource("Rect_1")
+
+[node name="Trigger" type="Area2D" parent="Box"]
+
+[node name="Shape1" type="CollisionShape2D" parent="Box/Trigger"]
+position = Vector2(0, -10)
+shape = SubResource("Circle_2")
+
+[node name="Sign" type="Sprite2D" parent="Box"]
+position = Vector2(0, -45)
+visible = false
+texture = ExtResource("3_ui_sign_14")
+centered = false
+offset = Vector2(-6.5, -11.5)
+z_index = 1
+z_as_relative = false

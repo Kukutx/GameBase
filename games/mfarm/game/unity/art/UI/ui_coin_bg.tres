@@ -1,0 +1,11 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_coin_bg.png" id="1_ui_coin_bg"]
+
+[resource]
+atlas = ExtResource("1_ui_coin_bg")
+region = Rect2(0, 0, 20, 12)
+filter_clip = true
+metadata/pivot = Vector2(10, 6)
+metadata/pixels_per_unit = 20
+metadata/border = Vector4i(2, 3, 2, 3)

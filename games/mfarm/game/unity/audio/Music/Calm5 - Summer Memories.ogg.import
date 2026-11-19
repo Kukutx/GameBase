@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bujks13p416vs"
+path="res://.godot/imported/Calm5 - Summer Memories.ogg-c3f2b4b4bc5c64c9fdbfd770c74ca88f.oggvorbisstr"
+
+[deps]
+
+source_file="res://game/unity/audio/Music/Calm5 - Summer Memories.ogg"
+dest_files=["res://.godot/imported/Calm5 - Summer Memories.ogg-c3f2b4b4bc5c64c9fdbfd770c74ca88f.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

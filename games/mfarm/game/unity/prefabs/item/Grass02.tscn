@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/world/world_item.gd" id="1_world_item"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Grass/Grass02.tres" id="2_Grass02"]
+
+[sub_resource type="RectangleShape2D" id="Rect_1"]
+size = Vector2(16.581194, 36.47249)
+
+[node name="Grass02" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Grass02" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("1_world_item")
+item_id = &"grass_2"
+
+[node name="Trigger" type="Area2D" parent="Grass02"]
+
+[node name="Shape1" type="CollisionShape2D" parent="Grass02/Trigger"]
+position = Vector2(-0.288677, -16.176609)
+shape = SubResource("Rect_1")
+
+[node name="Sprite" type="Sprite2D" parent="Grass02"]
+texture = ExtResource("2_Grass02")
+centered = false
+offset = Vector2(-10.900525, -38.409832)
+z_index = 0
+z_as_relative = false

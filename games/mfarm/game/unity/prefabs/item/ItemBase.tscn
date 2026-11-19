@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/world/world_item.gd" id="1_world_item"]
+
+[sub_resource type="RectangleShape2D" id="Rect_1"]
+size = Vector2(20, 20)
+
+[node name="ItemBase" type="Node2D"]
+y_sort_enabled = true
+
+[node name="ItemBase" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("1_world_item")
+
+[node name="Trigger" type="Area2D" parent="ItemBase"]
+
+[node name="Shape1" type="CollisionShape2D" parent="ItemBase/Trigger"]
+shape = SubResource("Rect_1")
+
+[node name="Sprite" type="Sprite2D" parent="ItemBase"]
+z_index = 0
+z_as_relative = false

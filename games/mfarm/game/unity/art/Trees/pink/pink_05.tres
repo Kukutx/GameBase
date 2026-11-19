@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Trees/pink/pink_05.png" id="1_pink_05"]
+
+[resource]
+atlas = ExtResource("1_pink_05")
+region = Rect2(0, 0, 193, 135)
+filter_clip = true
+metadata/pivot = Vector2(96.5, 135)
+metadata/pixels_per_unit = 20

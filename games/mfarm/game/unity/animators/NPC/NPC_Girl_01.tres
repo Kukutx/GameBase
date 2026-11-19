@@ -1,0 +1,277 @@
+[gd_resource type="AnimationLibrary" load_steps=26 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_0.tres" id="1_Girl_001_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_8.tres" id="2_Girl_001_8"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_4.tres" id="3_Girl_001_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_12.tres" id="4_Girl_001_12"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_1.tres" id="5_Girl_001_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_2.tres" id="6_Girl_001_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_3.tres" id="7_Girl_001_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_9.tres" id="8_Girl_001_9"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_10.tres" id="9_Girl_001_10"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_11.tres" id="10_Girl_001_11"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_5.tres" id="11_Girl_001_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_6.tres" id="12_Girl_001_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_7.tres" id="13_Girl_001_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_13.tres" id="14_Girl_001_13"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_14.tres" id="15_Girl_001_14"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Girl01/Girl_001/Girl_001_15.tres" id="16_Girl_001_15"]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "BlankAnimation"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_2"]
+resource_name = "Girl01_IdleDown"
+length = 0.2
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_Girl_001_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_3"]
+resource_name = "Girl01_IdleLeft"
+length = 0.2
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_Girl_001_8")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_4"]
+resource_name = "Girl01_IdleRight"
+length = 0.2
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("3_Girl_001_4")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_5"]
+resource_name = "Girl01_IdleUp"
+length = 0.2
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_Girl_001_12")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_6"]
+resource_name = "Girl01_WalkDown"
+length = 0.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_Girl_001_0"), ExtResource("5_Girl_001_1"), ExtResource("6_Girl_001_2"), ExtResource("7_Girl_001_3")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_7"]
+resource_name = "Girl01_WalkLeft"
+length = 0.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("2_Girl_001_8"), ExtResource("8_Girl_001_9"), ExtResource("9_Girl_001_10"), ExtResource("10_Girl_001_11")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_8"]
+resource_name = "Girl01_WalkRight"
+length = 0.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("3_Girl_001_4"), ExtResource("11_Girl_001_5"), ExtResource("12_Girl_001_6"), ExtResource("13_Girl_001_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_9"]
+resource_name = "Girl01_WalkUp"
+length = 0.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("4_Girl_001_12"), ExtResource("14_Girl_001_13"), ExtResource("15_Girl_001_14"), ExtResource("16_Girl_001_15")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[resource]
+_data = {
+&"BlankAnimation": SubResource("Animation_1"),
+&"Girl01_IdleDown": SubResource("Animation_2"),
+&"Girl01_IdleLeft": SubResource("Animation_3"),
+&"Girl01_IdleRight": SubResource("Animation_4"),
+&"Girl01_IdleUp": SubResource("Animation_5"),
+&"Girl01_WalkDown": SubResource("Animation_6"),
+&"Girl01_WalkLeft": SubResource("Animation_7"),
+&"Girl01_WalkRight": SubResource("Animation_8"),
+&"Girl01_WalkUp": SubResource("Animation_9")
+}

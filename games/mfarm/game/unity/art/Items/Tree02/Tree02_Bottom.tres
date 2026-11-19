@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Tree02/Tree02_Bottom.png" id="1_Tree02_Bottom"]
+
+[resource]
+atlas = ExtResource("1_Tree02_Bottom")
+region = Rect2(0, 0, 70, 48)
+filter_clip = true
+metadata/pivot = Vector2(35, 26.4)
+metadata/pixels_per_unit = 20

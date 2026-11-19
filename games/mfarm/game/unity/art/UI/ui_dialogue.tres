@@ -1,0 +1,11 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/UI/ui_dialogue.png" id="1_ui_dialogue"]
+
+[resource]
+atlas = ExtResource("1_ui_dialogue")
+region = Rect2(0, 0, 148, 26)
+filter_clip = true
+metadata/pivot = Vector2(74, 13)
+metadata/pixels_per_unit = 20
+metadata/border = Vector4i(3, 3, 3, 3)

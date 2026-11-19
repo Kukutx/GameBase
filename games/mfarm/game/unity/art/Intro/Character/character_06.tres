@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Intro/Character/character_06.png" id="1_character_06"]
+
+[resource]
+atlas = ExtResource("1_character_06")
+region = Rect2(0, 0, 23, 49)
+filter_clip = true
+metadata/pivot = Vector2(11.5, 24.5)
+metadata/pixels_per_unit = 20

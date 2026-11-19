@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Bushes/bushes_04.tres" id="1_bushes_04"]
+[ext_resource type="Script" path="res://game/world/item_fader.gd" id="2_item_fader"]
+
+[sub_resource type="RectangleShape2D" id="Rect_1"]
+size = Vector2(24.69036, 25.681324)
+
+[node name="Bushes04" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Bushes04" type="Node2D" parent="."]
+position = Vector2(-1.422977, -31.359958)
+y_sort_enabled = true
+
+[node name="Trigger" type="Area2D" parent="Bushes04"]
+
+[node name="Shape1" type="CollisionShape2D" parent="Bushes04/Trigger"]
+position = Vector2(-0.728722, -14.840665)
+shape = SubResource("Rect_1")
+
+[node name="Sprite" type="Sprite2D" parent="Bushes04"]
+texture = ExtResource("1_bushes_04")
+centered = false
+offset = Vector2(-17.5, -34)
+z_index = 0
+z_as_relative = false
+script = ExtResource("2_item_fader")

@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/farm/crop.gd" id="1_crop"]
+
+[node name="CropBase" type="Node2D"]
+y_sort_enabled = true
+
+[node name="CropBase" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("1_crop")
+
+[node name="Trigger" type="Area2D" parent="CropBase"]
+
+[node name="Shape1" type="CollisionPolygon2D" parent="CropBase/Trigger"]
+polygon = PackedVector2Array(0, -20, -19.021131, -6.180339, -11.755704, 16.180341, 11.755707, 16.180339, 19.02113, -6.180342)
+
+[node name="Sprite" type="Sprite2D" parent="CropBase"]
+z_index = 0
+z_as_relative = false

@@ -1,0 +1,666 @@
+[gd_resource type="AnimationLibrary" load_steps=113 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkDown/BodyWalkDown_0.tres" id="1_BodyWalkDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkLeft/BodyWalkLeft_0.tres" id="2_BodyWalkLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkRight/BodyArmWalkRight_0.tres" id="3_BodyArmWalkRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkUp/BodyWalkUp_0.tres" id="4_BodyWalkUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunDown/BodyRunDown_0.tres" id="5_BodyRunDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunDown/BodyRunDown_1.tres" id="6_BodyRunDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunDown/BodyRunDown_2.tres" id="7_BodyRunDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunDown/BodyRunDown_3.tres" id="8_BodyRunDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunDown/BodyRunDown_4.tres" id="9_BodyRunDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunDown/BodyRunDown_5.tres" id="10_BodyRunDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunDown/BodyRunDown_6.tres" id="11_BodyRunDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunDown/BodyRunDown_7.tres" id="12_BodyRunDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft/BodyRunLeft_0.tres" id="13_BodyRunLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft/BodyRunLeft_1.tres" id="14_BodyRunLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft/BodyRunLeft_2.tres" id="15_BodyRunLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft/BodyRunLeft_3.tres" id="16_BodyRunLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft/BodyRunLeft_4.tres" id="17_BodyRunLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft/BodyRunLeft_5.tres" id="18_BodyRunLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft/BodyRunLeft_6.tres" id="19_BodyRunLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunLeft/BodyRunLeft_7.tres" id="20_BodyRunLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunRight/BodyRunRight_0.tres" id="21_BodyRunRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunRight/BodyRunRight_1.tres" id="22_BodyRunRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunRight/BodyRunRight_2.tres" id="23_BodyRunRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunRight/BodyRunRight_3.tres" id="24_BodyRunRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunRight/BodyRunRight_4.tres" id="25_BodyRunRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunRight/BodyRunRight_5.tres" id="26_BodyRunRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunRight/BodyRunRight_6.tres" id="27_BodyRunRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunRight/BodyRunRight_7.tres" id="28_BodyRunRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunUp/BodyRunUp_0.tres" id="29_BodyRunUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunUp/BodyRunUp_1.tres" id="30_BodyRunUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunUp/BodyRunUp_2.tres" id="31_BodyRunUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunUp/BodyRunUp_3.tres" id="32_BodyRunUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunUp/BodyRunUp_4.tres" id="33_BodyRunUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunUp/BodyRunUp_5.tres" id="34_BodyRunUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunUp/BodyRunUp_6.tres" id="35_BodyRunUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyRunUp/BodyRunUp_7.tres" id="36_BodyRunUp_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapDown/BodyReapDown_0.tres" id="37_BodyReapDown_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapDown/BodyReapDown_1.tres" id="38_BodyReapDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapDown/BodyReapDown_2.tres" id="39_BodyReapDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapDown/BodyReapDown_3.tres" id="40_BodyReapDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapDown/BodyReapDown_4.tres" id="41_BodyReapDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapDown/BodyReapDown_5.tres" id="42_BodyReapDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapDown/BodyReapDown_6.tres" id="43_BodyReapDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapDown/BodyReapDown_7.tres" id="44_BodyReapDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapLeft/BodyReapLeft_0.tres" id="45_BodyReapLeft_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapLeft/BodyReapLeft_1.tres" id="46_BodyReapLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapLeft/BodyReapLeft_2.tres" id="47_BodyReapLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapLeft/BodyReapLeft_3.tres" id="48_BodyReapLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapLeft/BodyReapLeft_4.tres" id="49_BodyReapLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapLeft/BodyReapLeft_5.tres" id="50_BodyReapLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapLeft/BodyReapLeft_6.tres" id="51_BodyReapLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapLeft/BodyReapLeft_7.tres" id="52_BodyReapLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapRight/BodyReapRight_0.tres" id="53_BodyReapRight_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapRight/BodyReapRight_1.tres" id="54_BodyReapRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapRight/BodyReapRight_2.tres" id="55_BodyReapRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapRight/BodyReapRight_3.tres" id="56_BodyReapRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapRight/BodyReapRight_4.tres" id="57_BodyReapRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapRight/BodyReapRight_5.tres" id="58_BodyReapRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapRight/BodyReapRight_6.tres" id="59_BodyReapRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapRight/BodyReapRight_7.tres" id="60_BodyReapRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapUp/BodyReapUp_0.tres" id="61_BodyReapUp_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapUp/BodyReapUp_1.tres" id="62_BodyReapUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapUp/BodyReapUp_2.tres" id="63_BodyReapUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapUp/BodyReapUp_3.tres" id="64_BodyReapUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapUp/BodyReapUp_4.tres" id="65_BodyReapUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapUp/BodyReapUp_5.tres" id="66_BodyReapUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapUp/BodyReapUp_6.tres" id="67_BodyReapUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyReapUp/BodyReapUp_7.tres" id="68_BodyReapUp_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkDown/BodyWalkDown_1.tres" id="69_BodyWalkDown_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkDown/BodyWalkDown_2.tres" id="70_BodyWalkDown_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkDown/BodyWalkDown_3.tres" id="71_BodyWalkDown_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkDown/BodyWalkDown_4.tres" id="72_BodyWalkDown_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkDown/BodyWalkDown_5.tres" id="73_BodyWalkDown_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkDown/BodyWalkDown_6.tres" id="74_BodyWalkDown_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkDown/BodyWalkDown_7.tres" id="75_BodyWalkDown_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkLeft/BodyWalkLeft_1.tres" id="76_BodyWalkLeft_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkLeft/BodyWalkLeft_2.tres" id="77_BodyWalkLeft_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkLeft/BodyWalkLeft_3.tres" id="78_BodyWalkLeft_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkLeft/BodyWalkLeft_4.tres" id="79_BodyWalkLeft_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkLeft/BodyWalkLeft_5.tres" id="80_BodyWalkLeft_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkLeft/BodyWalkLeft_6.tres" id="81_BodyWalkLeft_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkLeft/BodyWalkLeft_7.tres" id="82_BodyWalkLeft_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkRight/BodyArmWalkRight_1.tres" id="83_BodyArmWalkRight_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkRight/BodyArmWalkRight_2.tres" id="84_BodyArmWalkRight_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkRight/BodyArmWalkRight_3.tres" id="85_BodyArmWalkRight_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkRight/BodyArmWalkRight_4.tres" id="86_BodyArmWalkRight_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkRight/BodyArmWalkRight_5.tres" id="87_BodyArmWalkRight_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkRight/BodyArmWalkRight_6.tres" id="88_BodyArmWalkRight_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkRight/BodyArmWalkRight_7.tres" id="89_BodyArmWalkRight_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkUp/BodyWalkUp_1.tres" id="90_BodyWalkUp_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkUp/BodyWalkUp_2.tres" id="91_BodyWalkUp_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkUp/BodyWalkUp_3.tres" id="92_BodyWalkUp_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkUp/BodyWalkUp_4.tres" id="93_BodyWalkUp_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkUp/BodyWalkUp_5.tres" id="94_BodyWalkUp_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkUp/BodyWalkUp_6.tres" id="95_BodyWalkUp_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Player/Body/BodyWalkUp/BodyWalkUp_7.tres" id="96_BodyWalkUp_7"]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "IdleDown"
+length = 0.1
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_BodyWalkDown_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_2"]
+resource_name = "IdleLeft"
+length = 0.1
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_BodyWalkLeft_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_3"]
+resource_name = "IdleRight"
+length = 0.1
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("3_BodyArmWalkRight_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_4"]
+resource_name = "IdleUp"
+length = 0.1
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_BodyWalkUp_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_5"]
+resource_name = "RunDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("5_BodyRunDown_0"), ExtResource("6_BodyRunDown_1"), ExtResource("7_BodyRunDown_2"), ExtResource("8_BodyRunDown_3"), ExtResource("9_BodyRunDown_4"), ExtResource("10_BodyRunDown_5"), ExtResource("11_BodyRunDown_6"), ExtResource("12_BodyRunDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.2, 0.6),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"FootstepSound"
+}, {
+"args": [],
+"method": &"FootstepSound"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_6"]
+resource_name = "RunLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("13_BodyRunLeft_0"), ExtResource("14_BodyRunLeft_1"), ExtResource("15_BodyRunLeft_2"), ExtResource("16_BodyRunLeft_3"), ExtResource("17_BodyRunLeft_4"), ExtResource("18_BodyRunLeft_5"), ExtResource("19_BodyRunLeft_6"), ExtResource("20_BodyRunLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.2, 0.6),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"FootstepSound"
+}, {
+"args": [],
+"method": &"FootstepSound"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_7"]
+resource_name = "RunRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("21_BodyRunRight_0"), ExtResource("22_BodyRunRight_1"), ExtResource("23_BodyRunRight_2"), ExtResource("24_BodyRunRight_3"), ExtResource("25_BodyRunRight_4"), ExtResource("26_BodyRunRight_5"), ExtResource("27_BodyRunRight_6"), ExtResource("28_BodyRunRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.2, 0.6),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"FootstepSound"
+}, {
+"args": [],
+"method": &"FootstepSound"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_8"]
+resource_name = "RunUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("29_BodyRunUp_0"), ExtResource("30_BodyRunUp_1"), ExtResource("31_BodyRunUp_2"), ExtResource("32_BodyRunUp_3"), ExtResource("33_BodyRunUp_4"), ExtResource("34_BodyRunUp_5"), ExtResource("35_BodyRunUp_6"), ExtResource("36_BodyRunUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.2, 0.6),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"FootstepSound"
+}, {
+"args": [],
+"method": &"FootstepSound"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_9"]
+resource_name = "ToolDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("37_BodyReapDown_0"), ExtResource("38_BodyReapDown_1"), ExtResource("39_BodyReapDown_2"), ExtResource("40_BodyReapDown_3"), ExtResource("41_BodyReapDown_4"), ExtResource("42_BodyReapDown_5"), ExtResource("43_BodyReapDown_6"), ExtResource("44_BodyReapDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_10"]
+resource_name = "ToolLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("45_BodyReapLeft_0"), ExtResource("46_BodyReapLeft_1"), ExtResource("47_BodyReapLeft_2"), ExtResource("48_BodyReapLeft_3"), ExtResource("49_BodyReapLeft_4"), ExtResource("50_BodyReapLeft_5"), ExtResource("51_BodyReapLeft_6"), ExtResource("52_BodyReapLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_11"]
+resource_name = "ToolRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("53_BodyReapRight_0"), ExtResource("54_BodyReapRight_1"), ExtResource("55_BodyReapRight_2"), ExtResource("56_BodyReapRight_3"), ExtResource("57_BodyReapRight_4"), ExtResource("58_BodyReapRight_5"), ExtResource("59_BodyReapRight_6"), ExtResource("60_BodyReapRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_12"]
+resource_name = "ToolUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("61_BodyReapUp_0"), ExtResource("62_BodyReapUp_1"), ExtResource("63_BodyReapUp_2"), ExtResource("64_BodyReapUp_3"), ExtResource("65_BodyReapUp_4"), ExtResource("66_BodyReapUp_5"), ExtResource("67_BodyReapUp_6"), ExtResource("68_BodyReapUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_13"]
+resource_name = "WalkDown"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_BodyWalkDown_0"), ExtResource("69_BodyWalkDown_1"), ExtResource("70_BodyWalkDown_2"), ExtResource("71_BodyWalkDown_3"), ExtResource("72_BodyWalkDown_4"), ExtResource("73_BodyWalkDown_5"), ExtResource("74_BodyWalkDown_6"), ExtResource("75_BodyWalkDown_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_14"]
+resource_name = "WalkLeft"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("2_BodyWalkLeft_0"), ExtResource("76_BodyWalkLeft_1"), ExtResource("77_BodyWalkLeft_2"), ExtResource("78_BodyWalkLeft_3"), ExtResource("79_BodyWalkLeft_4"), ExtResource("80_BodyWalkLeft_5"), ExtResource("81_BodyWalkLeft_6"), ExtResource("82_BodyWalkLeft_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_15"]
+resource_name = "WalkRight"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("3_BodyArmWalkRight_0"), ExtResource("83_BodyArmWalkRight_1"), ExtResource("84_BodyArmWalkRight_2"), ExtResource("85_BodyArmWalkRight_3"), ExtResource("86_BodyArmWalkRight_4"), ExtResource("87_BodyArmWalkRight_5"), ExtResource("88_BodyArmWalkRight_6"), ExtResource("89_BodyArmWalkRight_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_16"]
+resource_name = "WalkUp"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("4_BodyWalkUp_0"), ExtResource("90_BodyWalkUp_1"), ExtResource("91_BodyWalkUp_2"), ExtResource("92_BodyWalkUp_3"), ExtResource("93_BodyWalkUp_4"), ExtResource("94_BodyWalkUp_5"), ExtResource("95_BodyWalkUp_6"), ExtResource("96_BodyWalkUp_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[resource]
+_data = {
+&"IdleDown": SubResource("Animation_1"),
+&"IdleLeft": SubResource("Animation_2"),
+&"IdleRight": SubResource("Animation_3"),
+&"IdleUp": SubResource("Animation_4"),
+&"RunDown": SubResource("Animation_5"),
+&"RunLeft": SubResource("Animation_6"),
+&"RunRight": SubResource("Animation_7"),
+&"RunUp": SubResource("Animation_8"),
+&"ToolDown": SubResource("Animation_9"),
+&"ToolLeft": SubResource("Animation_10"),
+&"ToolRight": SubResource("Animation_11"),
+&"ToolUp": SubResource("Animation_12"),
+&"WalkDown": SubResource("Animation_13"),
+&"WalkLeft": SubResource("Animation_14"),
+&"WalkRight": SubResource("Animation_15"),
+&"WalkUp": SubResource("Animation_16")
+}

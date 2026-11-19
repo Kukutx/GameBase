@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Furniture02/Tableware.png" id="1_Tableware"]
+
+[resource]
+atlas = ExtResource("1_Tableware")
+region = Rect2(28, 6, 5, 9)
+filter_clip = true
+metadata/pivot = Vector2(2.5, 4.5)
+metadata/pixels_per_unit = 20

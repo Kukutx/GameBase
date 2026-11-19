@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Buildings/Stall/Stall_shadow.png" id="1_Stall_shadow"]
+
+[resource]
+atlas = ExtResource("1_Stall_shadow")
+region = Rect2(0, 0, 97, 102)
+filter_clip = true
+metadata/pivot = Vector2(48.5, 102)
+metadata/pixels_per_unit = 20

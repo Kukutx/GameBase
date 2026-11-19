@@ -1,0 +1,277 @@
+[gd_resource type="AnimationLibrary" load_steps=26 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_0.tres" id="1_Old_Man_0"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_8.tres" id="2_Old_Man_8"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_4.tres" id="3_Old_Man_4"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_12.tres" id="4_Old_Man_12"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_1.tres" id="5_Old_Man_1"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_2.tres" id="6_Old_Man_2"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_3.tres" id="7_Old_Man_3"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_9.tres" id="8_Old_Man_9"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_10.tres" id="9_Old_Man_10"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_11.tres" id="10_Old_Man_11"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_5.tres" id="11_Old_Man_5"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_6.tres" id="12_Old_Man_6"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_7.tres" id="13_Old_Man_7"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_13.tres" id="14_Old_Man_13"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_14.tres" id="15_Old_Man_14"]
+[ext_resource type="Texture2D" path="res://game/unity/art/Characters/Old Man/Old Man/Old Man_15.tres" id="16_Old_Man_15"]
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "BlankAnimation"
+length = 1
+loop_mode = 0
+step = 0.016667
+
+[sub_resource type="Animation" id="Animation_2"]
+resource_name = "OldMan_IdleDown"
+length = 0.2
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_Old_Man_0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_3"]
+resource_name = "OldMan_IdleLeft"
+length = 0.2
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_Old_Man_8")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_4"]
+resource_name = "OldMan_IdleRight"
+length = 0.2
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("3_Old_Man_4")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_5"]
+resource_name = "OldMan_IdleUp"
+length = 0.2
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_Old_Man_12")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_6"]
+resource_name = "OldMan_WalkDown"
+length = 0.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_Old_Man_0"), ExtResource("5_Old_Man_1"), ExtResource("6_Old_Man_2"), ExtResource("7_Old_Man_3")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_7"]
+resource_name = "OldMan_WalkLeft"
+length = 0.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("2_Old_Man_8"), ExtResource("8_Old_Man_9"), ExtResource("9_Old_Man_10"), ExtResource("10_Old_Man_11")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_8"]
+resource_name = "OldMan_WalkRIght"
+length = 0.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("3_Old_Man_4"), ExtResource("11_Old_Man_5"), ExtResource("12_Old_Man_6"), ExtResource("13_Old_Man_7")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[sub_resource type="Animation" id="Animation_9"]
+resource_name = "OldMan_WalkUp"
+length = 0.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("4_Old_Man_12"), ExtResource("14_Old_Man_13"), ExtResource("15_Old_Man_14"), ExtResource("16_Old_Man_15")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:offset")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60), Vector2(-20, -60)]
+}
+
+[resource]
+_data = {
+&"BlankAnimation": SubResource("Animation_1"),
+&"OldMan_IdleDown": SubResource("Animation_2"),
+&"OldMan_IdleLeft": SubResource("Animation_3"),
+&"OldMan_IdleRight": SubResource("Animation_4"),
+&"OldMan_IdleUp": SubResource("Animation_5"),
+&"OldMan_WalkDown": SubResource("Animation_6"),
+&"OldMan_WalkLeft": SubResource("Animation_7"),
+&"OldMan_WalkRIght": SubResource("Animation_8"),
+&"OldMan_WalkUp": SubResource("Animation_9")
+}

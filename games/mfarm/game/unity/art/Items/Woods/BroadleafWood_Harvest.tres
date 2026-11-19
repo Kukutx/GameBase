@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Woods/BroadleafWood_Harvest.png" id="1_BroadleafWood_Harvest"]
+
+[resource]
+atlas = ExtResource("1_BroadleafWood_Harvest")
+region = Rect2(0, 0, 18, 18)
+filter_clip = true
+metadata/pivot = Vector2(9, 18)
+metadata/pixels_per_unit = 20

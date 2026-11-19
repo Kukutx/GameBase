@@ -1,0 +1,178 @@
+{
+  "id": "mfarm",
+  "modules": [],
+  "unity_import": {
+    "source": "../MFarmDemo",
+    "destination": "game/unity",
+    "pixels_per_unit": 20,
+    "y_sort_layer": "Instance",
+    "compress_audio_over_bytes": 4000000,
+    "copy": [
+      "Material Resources/Art",
+      "Material Resources/Sound",
+      "Material Resources/Fonts",
+      "Fantasy Cursor Pack"
+    ],
+    "sprites": [
+      "Material Resources/Art/UI",
+      "Material Resources/Art/Items",
+      "Material Resources/Art/Faces",
+      "Material Resources/Art/Intro",
+      "Material Resources/Art/Lights",
+      "Material Resources/Art/Trees",
+      "Material Resources/Art/Characters/Shadow",
+      "Material Resources/Art/Characters/UI Animation",
+      "Fantasy Cursor Pack"
+    ],
+    "animations": [
+      "Material Resources/Animators",
+      "Material Resources/Animations/Item"
+    ],
+    "prefabs": [
+      "Prefabs/Crop",
+      "Prefabs/Tree",
+      "Prefabs/Furniture Item",
+      "Prefabs/Scenery Bushes",
+      "Prefabs/Scenery Trees",
+      "Prefabs/item"
+    ],
+    "scenes": {
+      "00.Start": "beach",
+      "01.Field": "field",
+      "02.Home": "home",
+      "03.SmellTown": "market"
+    },
+    "data": [
+      "GameData"
+    ],
+    "skip_objects": [
+      "Grid Properties",
+      "Bounds",
+      "Teleport To Stall"
+    ],
+    "scripts": {
+      "CropGenerator": {
+        "attach": "res://game/farm/crop_generator.gd",
+        "properties": {
+          "seedItemID": [
+            "seed_id",
+            "map:items"
+          ],
+          "growthDays": [
+            "growth_days",
+            "int"
+          ]
+        },
+        "prefab": {
+          "attach": "res://game/farm/crop.gd"
+        }
+      },
+      "Crop": {
+        "attach": "res://game/farm/crop_generator.gd",
+        "by_name": {
+          "Rock01": {
+            "seed_id": "&\"rock_large\""
+          },
+          "Rock02": {
+            "seed_id": "&\"rock_small\""
+          }
+        },
+        "prefab": {
+          "attach": "res://game/farm/crop.gd"
+        }
+      },
+      "Item": {
+        "attach": "res://game/world/world_item.gd",
+        "properties": {
+          "itemID": [
+            "item_id",
+            "map:items"
+          ]
+        }
+      },
+      "Box": {
+        "attach": "res://game/world/storage_box.gd",
+        "properties": {
+          "boxBagData": [
+            "bag_id",
+            "asset"
+          ],
+          "index": [
+            "box_index",
+            "int"
+          ]
+        }
+      },
+      "Teleport": {
+        "attach": "res://game/world/teleport.gd",
+        "properties": {
+          "sceneToGo": [
+            "target_location_id",
+            "location"
+          ],
+          "positionToGo": [
+            "target_position",
+            "position"
+          ]
+        },
+        "prefab": false
+      },
+      "LightControl": {
+        "attach": "res://game/world/light_control.gd",
+        "properties": {
+          "lightData": [
+            "pattern_id",
+            "asset"
+          ]
+        },
+        "prefab": false
+      },
+      "ItemFader": {
+        "attach": "res://game/world/item_fader.gd"
+      }
+    },
+    "paths": {
+      "Material Resources/Art": "art",
+      "Material Resources/Sound/Sound": "audio",
+      "Material Resources/Sound": "audio",
+      "Material Resources/Fonts": "fonts",
+      "Fantasy Cursor Pack": "art/cursors",
+      "Material Resources/Animators": "animators",
+      "Material Resources/Animations": "animations",
+      "Prefabs": "prefabs"
+    },
+    "id_maps": {
+      "items": {
+        "1001": "axe",
+        "1002": "potato_seed",
+        "1003": "turnip_seed",
+        "1004": "pink_radish_seed",
+        "1005": "grape_seed",
+        "1006": "potato",
+        "1007": "needle_wood",
+        "1008": "hoe",
+        "1009": "watering_can",
+        "1010": "basket",
+        "1011": "turnip",
+        "1012": "pink_radish",
+        "1013": "grape",
+        "1014": "pine_nut",
+        "1015": "pine_stump",
+        "1016": "broadleaf_seed",
+        "1017": "broadleaf_wood",
+        "1018": "broadleaf_stump",
+        "1019": "rock_large",
+        "1020": "rock_small",
+        "1021": "stone",
+        "1022": "pickaxe",
+        "1023": "sickle",
+        "1024": "grass_1",
+        "1025": "grass_2",
+        "1026": "grass_3",
+        "1027": "hay",
+        "1028": "chair_blueprint",
+        "1029": "box_blueprint"
+      }
+    }
+  }
+}

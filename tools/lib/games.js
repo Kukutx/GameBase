@@ -10,7 +10,7 @@ const { GAME_VERSION_RE, fail, rootPath } = require("./common");
 const GAMES_ROOT = rootPath("games");
 const FOUNDATION_MANIFEST = rootPath("tiamat", "tiamat.json");
 const GAME_ID_RE = /^[a-z][a-z0-9-]*$/;
-const GAME_KEYS = new Set(["id", "modules", "addons", "autoloads", "licensed_art"]);
+const GAME_KEYS = new Set(["id", "modules", "addons", "autoloads", "licensed_art", "unity_import"]);
 
 function readJson(file, label) {
   try {

@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://game/unity/art/Items/Grass/Grass03.png" id="1_Grass03"]
+
+[resource]
+atlas = ExtResource("1_Grass03")
+region = Rect2(0, 0, 40, 46)
+filter_clip = true
+metadata/pivot = Vector2(21.980221, 39.430483)
+metadata/pixels_per_unit = 20
