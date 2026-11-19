@@ -16,6 +16,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Iron Banners"
 config/description="Lead your banners in grid tactics and field battles."
+config/name_localized={
+"zh_CN": "铁旗战记"
+}
 config/quit_on_go_back=false
 config/version="0.1.0"
 run/main_scene="res://tiamat/core/ui/title_screen.tscn"

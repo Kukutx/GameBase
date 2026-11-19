@@ -7,6 +7,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgid "Iron Banners"
+msgstr "铁旗战记"
+
 msgid "Lead your banners in grid tactics and field battles."
 msgstr "率领你的旗帜，进行格子战术与野战。"
 

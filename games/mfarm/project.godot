@@ -16,6 +16,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="MFarm"
 config/description="A farm and a seaside town through the seasons, revived from the Unity MFarm demo"
+config/name_localized={
+"zh_CN": "麦田物语"
+}
 config/quit_on_go_back=false
 config/version="0.1.0"
 run/main_scene="res://game/ui/title.tscn"

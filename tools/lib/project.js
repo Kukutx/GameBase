@@ -17,7 +17,13 @@
 //                          which the Android and macOS exports need;
 //   quit_on_go_back        Android's back button does not quit
 //                          ([application] config/quit_on_go_back): the
-//                          core's TouchControls go back with it.
+//                          core's TouchControls go back with it;
+//   name_localized         the game's name in each language its catalogs
+//                          translate config/name to ([application]
+//                          config/name_localized) in its own catalogs
+//                          (game/i18n/), which names the window and a
+//                          phone's app; a language the game names by hand
+//                          and no catalog translates stays.
 // Everything else in project.godot belongs to the game. In the game's
 // .gutconfig.json it writes "dirs": the tests of the core, of each listed
 // module (a module after the modules it requires) and the game's own
@@ -126,13 +132,30 @@ function sectionOf(sections, name) {
   return section;
 }
 
+// The lines `key` spans in the section from `index`: one, or a value the
+// editor wrote over several lines (a dictionary, "{" to "}").
+function valueLength(lines, index) {
+  if (!lines[index].endsWith("{")) return 1;
+  const end = lines.indexOf("}", index + 1);
+  return end < 0 ? 1 : end - index + 1;
+}
+
+// The value of `key` in the section, as written (every line of it), or null.
+function getValue(sections, name, key) {
+  const section = sections.find((candidate) => candidate.name === name);
+  if (!section) return null;
+  const index = section.lines.findIndex((line) => line.startsWith(`${key}=`));
+  if (index < 0) return null;
+  return section.lines.slice(index, index + valueLength(section.lines, index)).join("\n").slice(key.length + 1);
+}
+
 // Sets `key` in the section; a new key goes where the editor would write it,
 // among the section's keys in alphabetical order.
 function setValue(sections, name, key, value) {
   const section = sectionOf(sections, name);
   const index = section.lines.findIndex((line) => line.startsWith(`${key}=`));
   if (index >= 0) {
-    section.lines[index] = `${key}=${value}`;
+    section.lines.splice(index, valueLength(section.lines, index), `${key}=${value}`);
     return;
   }
   let at = section.lines.findIndex((line) => /^[^=\s]+=/.test(line) && line.split("=")[0] > key);
@@ -141,6 +164,60 @@ function setValue(sections, name, key, value) {
     while (at > 0 && section.lines[at - 1] === "") at -= 1;
   }
   section.lines.splice(at, 0, `${key}=${value}`);
+}
+
+// The translation of `msgid` in the gettext catalog `text`, or "" (a catalog
+// leaves an entry it does not translate empty).
+function poTranslation(text, msgid) {
+  const entries = text.replace(/\r\n/g, "\n").split(/\n\n+/);
+  for (const entry of entries) {
+    const id = /^msgid ("(?:[^"\\]|\\.)*")$/m.exec(entry);
+    const str = /^msgstr ("(?:[^"\\]|\\.)*")$/m.exec(entry);
+    if (!id || !str) continue;
+    try {
+      if (JSON.parse(id[1]) === msgid) return JSON.parse(str[1]);
+    } catch {
+      // An entry JSON cannot read is no name.
+    }
+  }
+  return "";
+}
+
+// The game's name `name` in each language the game's own catalogs translate
+// it to (game/i18n/, by each catalog's Language header); the foundation's
+// catalogs translate menu words, not a game's name.
+function localizedNames(game, name) {
+  const names = {};
+  for (const catalog of catalogsIn(gamePath(game, "game", "i18n"), "res://game/i18n")) {
+    const file = gamePath(game, ...catalog.slice("res://".length).split("/"));
+    const text = fs.readFileSync(file, "utf8");
+    const locale = /^"Language: ([^"\\]+)\\n"$/m.exec(text);
+    const translated = poTranslation(text, name);
+    if (locale && translated && translated !== name) names[locale[1]] = translated;
+  }
+  return names;
+}
+
+// config/name_localized as the editor writes it, from { locale: name }.
+function localizedNamesValue(names) {
+  const entries = Object.keys(names)
+    .sort()
+    .map((locale) => `${JSON.stringify(locale)}: ${JSON.stringify(names[locale])}`);
+  return `{\n${entries.join(",\n")}\n}`;
+}
+
+// The { locale: name } a config/name_localized value holds.
+function parseLocalizedNames(value) {
+  const names = {};
+  if (!value) return names;
+  for (const match of value.matchAll(/("(?:[^"\\]|\\.)*")\s*:\s*("(?:[^"\\]|\\.)*")/g)) {
+    try {
+      names[JSON.parse(match[1])] = JSON.parse(match[2]);
+    } catch {
+      // Left out.
+    }
+  }
+  return names;
 }
 
 // The project.godot text with the managed parts as the manifests say.
@@ -152,6 +229,17 @@ function syncedProject(text, game, foundation = readFoundation()) {
   setValue(sections, "debug", "gdscript/warnings/untyped_declaration", "2");
   setValue(sections, "rendering", "textures/vram_compression/import_etc2_astc", "true");
   setValue(sections, "application", "config/quit_on_go_back", "false");
+  const name = getValue(sections, "application", "config/name");
+  if (name) {
+    let gameName = "";
+    try {
+      gameName = JSON.parse(name);
+    } catch {
+      // A name JSON cannot read is translated by hand.
+    }
+    const names = { ...parseLocalizedNames(getValue(sections, "application", "config/name_localized")), ...(gameName ? localizedNames(game, gameName) : {}) };
+    if (Object.keys(names).length > 0) setValue(sections, "application", "config/name_localized", localizedNamesValue(names));
+  }
   return formatSections(sections);
 }
 
@@ -317,4 +405,4 @@ function projectInSync(game, foundation = readFoundation()) {
   });
 }
 
-module.exports = { formatSections, parseSections, desiredAddonExcludes, desiredAutoloads, desiredCatalogs, desiredPlugins, desiredTestDirs, moduleOrder, projectInSync, syncProject, syncedExportPresets, syncedGutConfig, syncedProject };
+module.exports = { formatSections, parseSections, poTranslation, desiredAddonExcludes, desiredAutoloads, desiredCatalogs, desiredPlugins, desiredTestDirs, moduleOrder, projectInSync, syncProject, syncedExportPresets, syncedGutConfig, syncedProject };
