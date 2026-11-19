@@ -355,8 +355,17 @@ msgstr "减少动态效果会关闭场景淡入淡出和下雨等动画效果，
 msgid "Support"
 msgstr "支持"
 
-msgid "Support bundles contain technical logs and save summaries, never raw saves."
-msgstr "支持诊断包包含技术日志和存档摘要，不包含原始存档。"
+msgid "Support reports contain technical logs and save summaries, never your saves."
+msgstr "诊断报告包含技术日志和存档摘要，不包含你的存档。"
+
+msgid "Copy Support Report"
+msgstr "复制诊断报告"
+
+msgid "Support report copied: paste it into your message"
+msgstr "诊断报告已复制，可粘贴到消息里发送"
+
+msgid "Support report could not be copied"
+msgstr "无法复制诊断报告"
 
 msgid "Export Support Bundle"
 msgstr "导出支持诊断包"

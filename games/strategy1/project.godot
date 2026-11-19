@@ -60,6 +60,7 @@ SupportBundle="*res://tiamat/core/diagnostics/support_bundle_service.gd"
 
 [debug]
 
+file_logging/enable_file_logging.mobile=true
 file_logging/log_path="user://logs/strategy1.log"
 settings/gdscript/always_track_call_stacks=true
 gdscript/warnings/untyped_declaration=2

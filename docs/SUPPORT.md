@@ -36,7 +36,9 @@ It intentionally does not record user account data, personal files, precise devi
 
 ## Player-created support bundle
 
-Desktop builds expose **Settings → Accessibility → Export Support Bundle**. The game writes a ZIP under `user://support/` and the adjacent **Open Support Folder** button opens that directory.
+Desktop builds expose **Settings → Accessibility → Export Support Bundle**. The game writes a ZIP under `user://support/` and the adjacent **Open Support Folder** button opens that directory. A phone or a browser keeps no file the player can reach, so it shows no bundle buttons.
+
+Wherever there is a clipboard (a computer, a phone, a browser), **Copy Support Report** puts a report on the clipboard instead, for the player to paste into a message: the same summary as the bundle's, as one line of JSON, then the end of the newest log (its last 16 KiB, from a full line on), its paths replaced like a bundle's. A phone writes its log like a computer (`debug/file_logging/enable_file_logging.mobile`, which `node tools/link.js` sets) so that its report holds it; a browser writes none, so its report holds only the summary.
 
 The bundle is opt-in and contains:
 
@@ -45,13 +47,13 @@ The bundle is opt-in and contains:
 - up to five recent game logs, capped at 2 MiB each;
 - a README describing the bundle contents.
 
-Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw slot files (`user://saves/slot_<n>.json/.tmp/.bak` and the autosave's `slot_<n>_auto.json/.tmp/.bak`), `settings.json`, local purchased source art, account credentials, or device identifiers. Web builds use browser-console diagnostics instead and do not expose filesystem support bundles.
+Before logs are packaged, known user-data, project, executable and home-directory absolute paths are replaced with placeholders. The bundle never includes raw slot files (`user://saves/slot_<n>.json/.tmp/.bak` and the autosave's `slot_<n>_auto.json/.tmp/.bak`), `settings.json`, local purchased source art, account credentials, or device identifiers; nor does a copied report. Web builds use browser-console diagnostics besides the report and do not expose filesystem support bundles.
 
 ## When investigating a report
 
 Ask for:
 
-1. the player-created support bundle when available, or the newest `<id>.log` otherwise;
+1. the player-created support bundle when available, a copied support report from a phone or a browser, or the newest `<id>.log` otherwise;
 2. the adjacent release `BUILD_INFO.json` when available;
 3. the affected raw save slot files only when the problem is specifically save-related and the player chooses to share them;
 4. the exact action that triggered the issue.

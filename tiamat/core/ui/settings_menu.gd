@@ -47,6 +47,7 @@ const BINDING_WIDTH := 76.0
 @onready var accessibility_page: VBoxContainer = $Dim/Panel/Layout/Pages/Page/Accessibility
 @onready var weather_effects_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Accessibility/WeatherEffects
 @onready var reduced_motion_check: CheckButton = $Dim/Panel/Layout/Pages/Page/Accessibility/ReducedMotion
+@onready var support_copy: Button = $Dim/Panel/Layout/Pages/Page/Accessibility/CopySupportReport
 @onready var support_export: Button = $Dim/Panel/Layout/Pages/Page/Accessibility/ExportSupportBundle
 @onready var support_open: Button = $Dim/Panel/Layout/Pages/Page/Accessibility/OpenSupportFolder
 @onready var controls_page: VBoxContainer = $Dim/Panel/Layout/Pages/Page/Controls
@@ -90,11 +91,13 @@ func _ready() -> void:
 	weather_effects_check.visible = GameWeatherSystem.has_weather()
 	# A phone's game always fills its screen.
 	fullscreen_check.visible = not OS.has_feature("mobile")
+	support_copy.pressed.connect(_copy_support_report)
 	support_export.pressed.connect(_export_support_bundle)
 	support_open.pressed.connect(_open_support_folder)
-	var support_available := SupportBundle.is_supported()
-	support_export.disabled = not support_available
-	support_open.visible = support_available
+	# A phone or a browser keeps no file the player reaches: they copy a report.
+	support_copy.visible = SupportBundle.can_copy_report()
+	support_export.visible = SupportBundle.is_supported()
+	support_open.visible = support_export.visible
 	accessibility_button.pressed.connect(show_page.bind(Page.ACCESSIBILITY))
 	controls_button.pressed.connect(show_page.bind(Page.CONTROLS))
 	reset_all_button.pressed.connect(confirm_reset.popup_centered)
@@ -432,6 +435,13 @@ func _on_reduced_motion_toggled(value: bool) -> void:
 func _on_online_services_toggled(value: bool) -> void:
 	if not _syncing:
 		GameSettings.set_online_services(value)
+
+func _copy_support_report() -> void:
+	if SupportBundle.copy_report():
+		GameEvents.toast("Support report copied: paste it into your message")
+	else:
+		GameEvents.toast("Support report could not be copied")
+	support_copy.grab_focus()
 
 func _export_support_bundle() -> void:
 	var path := SupportBundle.create_bundle()
