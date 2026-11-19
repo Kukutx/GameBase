@@ -14,7 +14,10 @@
 //                          and the foundation's alike;
 //   import_etc2_astc       textures also import for phones and Apple
 //                          silicon ([rendering] textures/vram_compression),
-//                          which the Android and macOS exports need.
+//                          which the Android and macOS exports need;
+//   quit_on_go_back        Android's back button does not quit
+//                          ([application] config/quit_on_go_back): the
+//                          core's TouchControls go back with it.
 // Everything else in project.godot belongs to the game. In the game's
 // .gutconfig.json it writes "dirs": the tests of the core, of each listed
 // module (a module after the modules it requires) and the game's own
@@ -148,6 +151,7 @@ function syncedProject(text, game, foundation = readFoundation()) {
   setValue(sections, "editor_plugins", "enabled", packedStrings(desiredPlugins(game)));
   setValue(sections, "debug", "gdscript/warnings/untyped_declaration", "2");
   setValue(sections, "rendering", "textures/vram_compression/import_etc2_astc", "true");
+  setValue(sections, "application", "config/quit_on_go_back", "false");
   return formatSections(sections);
 }
 

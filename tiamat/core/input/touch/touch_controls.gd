@@ -1,0 +1,265 @@
+class_name TouchControlsService
+extends CanvasLayer
+
+## The controls of a touchscreen, drawn over the game while the player plays
+## by touch (`InputPrompts.using_touch`): a stick at the lower left that walks
+## (`TouchStick`), a button at the lower right for each control the game marks
+## `ControlAction.touch_button` (`TouchButton`), and a button that goes back as
+## Android's back button does (`go_back()`): a pause button at the left edge
+## in play, a close button at the top right over a menu.
+##
+## What shows follows who holds the controls (`InputLock`):
+## - in play, with nothing open (the scene has a `PauseMenu`): the stick while
+##   something walks with the move controls (a node in `MOVER_GROUP`, as every
+##   `TopDownPlayer` is), the game's buttons, and the corner button, which
+##   pauses;
+## - in a minigame: what it asks for (`MiniGame.get_touch_actions()`,
+##   `uses_touch_stick()`), and the corner button, which cancels;
+## - under a menu, a dialogue or a dialog window: only the corner button, which
+##   cancels (closes the menu), since the menu is tapped itself.
+## Elsewhere (the title) nothing shows. A finger on a control is the
+## control's alone: neither its touch nor the mouse click the engine makes of
+## it reaches the game.
+##
+## Android's back button is `go_back()` too, the game told not to quit on it
+## (`application/config/quit_on_go_back`, which `tools/link.js` turns off);
+## with nothing to close or pause, as on the title, it quits.
+
+## Above the minigames (`MiniGameHostService.LAYER`) and the menus.
+const LAYER := 110
+## The group of the nodes that walk with the move controls; the stick shows
+## while one is in the tree.
+const MOVER_GROUP := &"touch_mover"
+## The action that closes what is open, and the one that pauses.
+const CANCEL_ACTION := &"ui_cancel"
+const PAUSE_ACTION := &"pause"
+## The most buttons a game's controls get.
+const MAX_BUTTONS := 5
+## Sizes against the height of the view.
+const STICK_RADIUS := 0.13
+const BUTTON_RADIUS := 0.085
+const CORNER_RADIUS := 0.06
+const MARGIN := 0.05
+## How far down the view the pause button sits, at its left edge.
+const PAUSE_HEIGHT := 0.4
+## Where the buttons after the first sit around it, in its radii: left, up and
+## left, up, then further left and up.
+const BUTTON_PLACES: Array[Vector2] = [Vector2(-2.3, 0.0), Vector2(-1.7, -1.7), Vector2(0.0, -2.3), Vector2(-4.4, 0.2), Vector2(-3.6, -2.4)]
+
+var _stick: TouchStick
+var _corner: TouchButton
+var _buttons: Array[TouchButton] = []
+# The actions of `_buttons`, in order.
+var _button_actions: Array[StringName] = []
+# Touch index -> the control (a TouchStick or TouchButton) it pressed.
+var _fingers: Dictionary[int, Control] = {}
+# What shows: {"stick": bool, "actions": Array[StringName], "back": StringName}.
+var _shown: Dictionary = {}
+var _applied := false
+# The game's touch actions (`game_touch_actions()`), until the controls change.
+var _game_actions: Array[StringName] = []
+var _game_actions_known := false
+
+func _ready() -> void:
+	layer = LAYER
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	_stick = TouchStick.new()
+	_stick.name = "Stick"
+	add_child(_stick)
+	_corner = TouchButton.new()
+	_corner.name = "Back"
+	add_child(_corner)
+	get_viewport().size_changed.connect(_layout)
+	GameSettings.controls_changed.connect(func() -> void: _game_actions_known = false)
+	_show({})
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_WM_GO_BACK_REQUEST:
+			go_back()
+		NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED:
+			_release_all()
+
+func _process(_delta: float) -> void:
+	_show(_wanted())
+
+## Goes back, as Android's back button does: closes what is open (a menu, a
+## dialogue, a minigame, a dialog window) with the cancel action, pauses play,
+## or, with neither, quits.
+func go_back() -> void:
+	var action := back_action()
+	if action.is_empty():
+		get_tree().quit()
+		return
+	for pressed: bool in [true, false]:
+		var event := InputEventAction.new()
+		event.action = action
+		event.pressed = pressed
+		Input.parse_input_event(event)
+
+## What going back presses now: `CANCEL_ACTION` while something is open,
+## `PAUSE_ACTION` in play, else nothing.
+func back_action() -> StringName:
+	if InputLock.is_locked() or _has_open_window():
+		return CANCEL_ACTION
+	if _in_play() and InputMap.has_action(PAUSE_ACTION):
+		return PAUSE_ACTION
+	return &""
+
+## Whether the touch controls show now.
+func is_showing() -> bool:
+	return not _shown.is_empty()
+
+## The actions of the buttons that show, in order.
+func get_shown_actions() -> Array[StringName]:
+	return _button_actions.duplicate() if is_showing() else []
+
+## The stick, for tests that drag it.
+func get_stick() -> TouchStick:
+	return _stick
+
+## The controls of the running game that have a button on a touchscreen.
+static func game_touch_actions() -> Array[StringName]:
+	var result: Array[StringName] = []
+	for control: ControlAction in GameSettings.bindings.get_controls():
+		if control.touch_button and not TouchStick.MOVE_ACTIONS.has(control.action) and control.action != PAUSE_ACTION:
+			result.append(control.action)
+	return result.slice(0, MAX_BUTTONS)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		_on_touch(event as InputEventScreenTouch)
+	elif event is InputEventScreenDrag:
+		var drag := event as InputEventScreenDrag
+		if _fingers.has(drag.index):
+			_fingers[drag.index].call(&"drag", drag.index, drag.position)
+			get_viewport().set_input_as_handled()
+	elif event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION:
+		# The click the engine makes of the first finger: the control's too.
+		if _fingers.has(0) or _control_at((event as InputEventMouse).position) != null:
+			get_viewport().set_input_as_handled()
+
+func _on_touch(touch: InputEventScreenTouch) -> void:
+	if touch.pressed:
+		var control := _control_at(touch.position)
+		if control == null:
+			return
+		_fingers[touch.index] = control
+		control.call(&"press", touch.index, touch.position)
+		get_viewport().set_input_as_handled()
+	elif _fingers.has(touch.index):
+		var control: Control = _fingers[touch.index]
+		_fingers.erase(touch.index)
+		control.call(&"lift", touch.index)
+		get_viewport().set_input_as_handled()
+
+# The control that shows under `point`, or null.
+func _control_at(point: Vector2) -> Control:
+	if not is_showing():
+		return null
+	if _corner.visible and _corner.reaches(point):
+		return _corner
+	for button: TouchButton in _buttons:
+		if button.visible and button.reaches(point):
+			return button
+	if _stick.visible and _stick.reaches(point):
+		return _stick
+	return null
+
+# What should show now, as `_shown` holds it; {} for nothing.
+func _wanted() -> Dictionary:
+	if not InputPrompts.using_touch:
+		return {}
+	var back := back_action()
+	if InputLock.get_top_reason() == MiniGameHostService.LOCK_REASON:
+		var minigame := MiniGameHost.get_active()
+		if minigame != null:
+			return {"stick": minigame.uses_touch_stick(), "actions": minigame.get_touch_actions(), "back": back}
+	if back == CANCEL_ACTION:
+		var none: Array[StringName] = []
+		return {"stick": false, "actions": none, "back": back}
+	if back == PAUSE_ACTION:
+		if not _game_actions_known:
+			_game_actions = game_touch_actions()
+			_game_actions_known = true
+		var walks := get_tree().get_first_node_in_group(MOVER_GROUP) != null
+		return {"stick": walks, "actions": _game_actions, "back": back}
+	return {}
+
+func _show(wanted: Dictionary) -> void:
+	if _applied and wanted == _shown:
+		return
+	_applied = true
+	_shown = wanted
+	visible = not wanted.is_empty()
+	_stick.visible = bool(wanted.get("stick", false))
+	if not _stick.visible:
+		_stick.release()
+	var actions: Array[StringName] = []
+	actions.assign(wanted.get("actions", []))
+	if actions != _button_actions:
+		_set_buttons(actions)
+	var back := StringName(wanted.get("back", &""))
+	_corner.visible = not back.is_empty()
+	if _corner.action != back:
+		_corner.release()
+		_corner.action = back
+		_corner.sign_shown = TouchButton.Sign.PAUSE if back == PAUSE_ACTION else TouchButton.Sign.BACK
+	if not visible:
+		_release_all()
+	_layout()
+
+func _set_buttons(actions: Array[StringName]) -> void:
+	for button: TouchButton in _buttons:
+		button.release()
+		button.queue_free()
+	_buttons.clear()
+	_button_actions = actions.duplicate()
+	for action: StringName in actions:
+		var button := TouchButton.new()
+		button.name = "Button_%s" % action
+		button.action = action
+		button.label = GameSettings.bindings.get_label(action)
+		add_child(button)
+		_buttons.append(button)
+
+func _release_all() -> void:
+	_fingers.clear()
+	if _stick != null:
+		_stick.release()
+	if _corner != null:
+		_corner.release()
+	for button: TouchButton in _buttons:
+		button.release()
+
+func _layout() -> void:
+	var view := get_viewport().get_visible_rect().size
+	var unit := view.y
+	var margin := unit * MARGIN
+	_stick.radius = unit * STICK_RADIUS
+	_place(_stick, Vector2(margin + _stick.radius * 1.15, view.y - margin - _stick.radius * 1.15), _stick.radius)
+	_corner.radius = unit * CORNER_RADIUS
+	# In play the HUD fills the top corners, so the pause button sits at the
+	# left edge above the stick; over a menu the close button takes the top
+	# right corner, as a menu's close button does.
+	if _corner.sign_shown == TouchButton.Sign.PAUSE:
+		_place(_corner, Vector2(margin + _corner.radius, view.y * PAUSE_HEIGHT), _corner.radius)
+	else:
+		_place(_corner, Vector2(view.x - margin - _corner.radius, margin + _corner.radius), _corner.radius)
+	var radius := unit * BUTTON_RADIUS
+	var first := Vector2(view.x - margin - radius * 1.2, view.y - margin - radius * 1.2)
+	for index: int in _buttons.size():
+		var button := _buttons[index]
+		button.radius = radius if index > 0 else radius * 1.2
+		var at := first if index == 0 else first + BUTTON_PLACES[index - 1] * radius
+		_place(button, at, button.radius)
+
+func _place(control: Control, center: Vector2, radius: float) -> void:
+	control.size = Vector2.ONE * radius * 2.0
+	control.position = center - control.size * 0.5
+
+func _in_play() -> bool:
+	return get_tree().get_first_node_in_group(PauseMenu.MENU_ID) != null and not WorldTravel.is_traveling()
+
+func _has_open_window() -> bool:
+	return not get_tree().root.get_embedded_subwindows().is_empty()

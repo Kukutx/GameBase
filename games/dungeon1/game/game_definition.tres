@@ -19,6 +19,7 @@ display_name = "Attack"
 key = 74
 secondary_key = 32
 gamepad_button = 2
+touch_button = true
 
 [sub_resource type="Resource" id="Control_drink"]
 script = ExtResource("3_control")
@@ -26,6 +27,7 @@ action = &"drink_potion"
 display_name = "Drink Potion"
 key = 81
 gamepad_button = 3
+touch_button = true
 
 [sub_resource type="Resource" id="Control_next_item"]
 script = ExtResource("3_control")
@@ -33,6 +35,7 @@ action = &"next_item"
 display_name = "Next Item"
 key = 4194306
 gamepad_button = 10
+touch_button = true
 
 [sub_resource type="Resource" id="Calendar"]
 script = ExtResource("5_calendar")

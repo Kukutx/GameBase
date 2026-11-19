@@ -26,6 +26,7 @@
       "GameSession": "res://tiamat/core/session/game_session.gd",
       "Playthrough": "res://tiamat/core/playthrough/playthrough_service.gd",
       "MiniGameHost": "res://tiamat/core/minigames/minigame_host.gd",
+      "TouchControls": "res://tiamat/core/input/touch/touch_controls.gd",
       "GameTriggers": "res://tiamat/core/rules/game_triggers.gd",
       "GameDiagnostics": "res://tiamat/core/diagnostics/game_diagnostics.gd",
       "SupportBundle": "res://tiamat/core/diagnostics/support_bundle_service.gd"

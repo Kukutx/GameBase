@@ -5,7 +5,8 @@ extends HudLine
 ## in use, each with what it does: "WASD move · E use". A control is an action
 ## (`interact`), `move`, actions pressed as one (`quick_save/quick_load`) or a
 ## prompt a module names (`InputPrompts.get_prompt()`); one the player cannot
-## press right now is left out.
+## press right now is left out. On a touchscreen the line has nothing to tell,
+## as the `TouchControls` show the controls.
 
 ## Control -> what it does, in the order shown.
 @export var hints: Dictionary[StringName, String] = {
@@ -22,6 +23,9 @@ func _watch() -> void:
 
 func _get_parts() -> PackedStringArray:
 	var parts := PackedStringArray()
+	# On touch the buttons on the screen name themselves.
+	if InputPrompts.using_touch:
+		return parts
 	for control: StringName in hints:
 		var prompt := InputPrompts.get_prompt(control)
 		if not prompt.is_empty():

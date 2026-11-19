@@ -63,6 +63,9 @@ func press() -> bool:
 		finish(MiniGameResult.lost())
 	return false
 
+func get_touch_actions() -> Array[StringName]:
+	return [&"interact"]
+
 func _unhandled_input(event: InputEvent) -> void:
 	if has_input() and event.is_action_pressed("interact"):
 		press()

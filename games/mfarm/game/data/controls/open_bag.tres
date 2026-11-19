@@ -9,3 +9,4 @@ display_name = "Bag"
 group = "Farm"
 key = 66
 secondary_key = 73
+touch_button = true

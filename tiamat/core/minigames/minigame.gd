@@ -56,6 +56,17 @@ func confirm_give_up() -> bool:
 func get_give_up_prompt() -> String:
 	return tr("Cancel again to give up.")
 
+## The actions the minigame reads that a touchscreen gives buttons for while
+## it runs (`TouchControls`); none by default, for a minigame played by
+## tapping and dragging, which reach it as the mouse.
+func get_touch_actions() -> Array[StringName]:
+	return []
+
+## Whether the touch stick shows while the minigame runs, for one that reads
+## the move controls.
+func uses_touch_stick() -> bool:
+	return false
+
 ## The words of the minigame's outcome, won or lost.
 func get_outcome_text(won: bool) -> String:
 	return tr("Victory!") if won else tr("Defeat.")

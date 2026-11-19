@@ -346,6 +346,9 @@ msgstr "已创建支持诊断包：%s"
 msgid "Left Stick / D-Pad"
 msgstr "左摇杆 / 十字键"
 
+msgid "Stick"
+msgstr "摇杆"
+
 msgid "Move Up"
 msgstr "向上移动"
 

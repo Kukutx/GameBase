@@ -10,3 +10,4 @@ group = "Farm"
 key = 32
 secondary_key = 69
 gamepad_button = 0
+touch_button = true

@@ -2168,3 +2168,6 @@ msgstr "热栏"
 
 msgid "save/load"
 msgstr "存档/读档"
+
+msgid "Next Item"
+msgstr "下一个物品"

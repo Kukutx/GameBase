@@ -16,6 +16,12 @@ extends Node
 ## can show the other names. When the gamepad in use disconnects, the prompts
 ## go back to the keyboard and `gamepad_disconnected` fires (the pause menu
 ## opens on it).
+##
+## A finger on a touchscreen picks touch (`using_touch`), until a key, a mouse
+## button or a gamepad is used again; the mouse clicks the engine makes of a
+## finger keep touch. On touch a control is named as its button on the screen
+## names it (its name in the settings) and moving as the stick, since the
+## `TouchControls` show; `input_method_changed` fires on that switch too.
 
 signal input_method_changed(using_gamepad: bool)
 signal gamepad_disconnected
@@ -91,6 +97,8 @@ const STYLE_AXIS_LABELS := {
 const MOVE_ACTIONS: Array[StringName] = [&"move_up", &"move_left", &"move_down", &"move_right"]
 
 var using_gamepad := false
+## Whether the player plays by touch, which `TouchControls` show for.
+var using_touch := false
 ## How the gamepad last used names its buttons.
 var gamepad_style := GamepadStyle.XBOX
 
@@ -134,6 +142,12 @@ func get_button_name(button: JoyButton) -> String:
 	return gamepad_button_name(button, gamepad_style)
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_set_using_touch(true)
+		return
+	if event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION:
+		return
 	if event is InputEventJoypadButton:
 		if event.pressed:
 			_use_gamepad(event.device)
@@ -145,15 +159,19 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed and not event.echo:
 			_set_using_gamepad(false)
+			_set_using_touch(false)
 		return
 	if event is InputEventMouseButton and event.pressed:
 		_set_using_gamepad(false)
+		_set_using_touch(false)
 
 ## The key, mouse button, gamepad button or axis that performs `action` on
 ## the device in use.
 func get_action_prompt(action: StringName) -> String:
 	var bindings := GameSettings.bindings
 	var control := bindings.get_control(action)
+	if using_touch and control != null:
+		return bindings.get_label(action)
 	if using_gamepad and control != null:
 		if control.gamepad_button != JOY_BUTTON_INVALID:
 			return get_button_name(bindings.get_gamepad_button(action))
@@ -204,6 +222,8 @@ func get_actions_prompt(actions: Array[StringName]) -> String:
 func get_move_prompt(actions: Array[StringName] = MOVE_ACTIONS, bindings: ControlBindings = null) -> String:
 	if using_gamepad:
 		return tr("Left Stick / D-Pad")
+	if using_touch:
+		return tr("Stick")
 	if bindings == null:
 		bindings = GameSettings.bindings
 	var bound := PackedStringArray()
@@ -231,9 +251,19 @@ func _set_gamepad_style(style: GamepadStyle) -> void:
 		input_method_changed.emit(using_gamepad)
 
 func _set_using_gamepad(value: bool) -> void:
+	if value:
+		_set_using_touch(false)
 	if using_gamepad == value:
 		return
 	using_gamepad = value
+	input_method_changed.emit(using_gamepad)
+
+func _set_using_touch(value: bool) -> void:
+	if using_touch == value:
+		return
+	using_touch = value
+	if value and using_gamepad:
+		using_gamepad = false
 	input_method_changed.emit(using_gamepad)
 
 # The gamepad in use leaving takes the prompts back to the keyboard and has
