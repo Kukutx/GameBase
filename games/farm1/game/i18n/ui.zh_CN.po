@@ -1338,15 +1338,6 @@ msgstr "用新鲜松露压榨出的浓郁油品，是高价值的加工产品。
 msgid "Slow-growing Autumn seeds with a valuable harvest."
 msgstr "生长较慢的秋季种子，但收获价值很高。"
 
-msgid "Smelt Gold Bar"
-msgstr "冶炼金锭"
-
-msgid "Smelt Iridium Bar"
-msgstr "冶炼铱锭"
-
-msgid "Smelt Iron Bar"
-msgstr "冶炼铁锭"
-
 msgid "Steadies your hands and makes bites easier to react to."
 msgstr "让双手更加稳定，更容易及时应对鱼咬钩。"
 

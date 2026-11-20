@@ -39,6 +39,25 @@ func can_start(inventory: InventoryStore = InventoryState) -> bool:
 	# coercing them into a free processing job.
 	return inventory.can_apply_transaction(inputs, {})
 
+## Whether it takes `item_id` among its inputs.
+func takes(item_id: StringName) -> bool:
+	if item_id == &"":
+		return false
+	for raw_id: Variant in inputs:
+		if StringName(String(raw_id)) == item_id:
+			return true
+	return false
+
+## What starting it takes, in words the player reads: while its condition does
+## not hold, what that asks ("Mining Lv7", `GameRules.describe()`), else its
+## inputs ("Iron Ore x3 and Wood").
+func describe_needs() -> String:
+	if not condition.is_empty() and not GameRules.check(condition):
+		var words := GameRules.describe(condition)
+		if not words.is_empty():
+			return GameText.list(words)
+	return ItemSources.describe_amounts(ContentRegistry.active, inputs)
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if inputs.is_empty():

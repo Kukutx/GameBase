@@ -39,6 +39,9 @@ func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	WorldClock.minute_changed.connect(_on_time_changed)
 	GameSettings.locale_changed.connect(_on_locale_changed)
+	# An idle station's prompt names what the item in hand would make.
+	Hotbar.selected_slot_changed.connect(_on_hand_changed)
+	InventoryState.changed.connect(_refresh)
 	_load_state()
 	_update_job()
 	_refresh()
@@ -147,11 +150,52 @@ func _on_interacted(_actor: Node) -> void:
 	if active_recipe_id != &"":
 		GameEvents.toastf("%s · %d min remaining", [display_name, get_minutes_remaining()])
 		return
+	var held := Hotbar.get_selected_item_id()
+	var recipe := pick_recipe(held)
+	if recipe != null and start_recipe(recipe.id):
+		return
+	var wanted := _wanted_recipe(held)
+	if wanted != null:
+		GameEvents.toastf("%s — needs %s", [wanted.display_name, wanted.describe_needs()])
+		return
+	GameEvents.toast("No processable materials")
+
+## The recipe a press starts now for a player with `held_item_id` in hand: the
+## first of `recipe_ids` that takes that item and can start, or, when the
+## item is nothing the station takes, the first that can start; null for
+## none. A furnace that smelts copper and iron smelts iron for the player
+## holding iron ore, though they carry copper ore too.
+func pick_recipe(held_item_id: StringName = &"") -> ProcessingRecipeData:
+	var takes_held := false
+	var first: ProcessingRecipeData = null
+	for recipe: ProcessingRecipeData in _recipes():
+		if recipe.takes(held_item_id):
+			if not takes_held:
+				takes_held = true
+				first = null
+			if recipe.can_start():
+				return recipe
+		elif not takes_held and first == null and recipe.can_start():
+			first = recipe
+	return first
+
+# The recipe the player is after when none can start: the first that takes the
+# item in hand, or the station's only one.
+func _wanted_recipe(held_item_id: StringName) -> ProcessingRecipeData:
+	var recipes := _recipes()
+	for recipe: ProcessingRecipeData in recipes:
+		if recipe.takes(held_item_id):
+			return recipe
+	return recipes[0] if recipes.size() == 1 else null
+
+# The station's recipes that exist, in `recipe_ids`' order.
+func _recipes() -> Array[ProcessingRecipeData]:
+	var result: Array[ProcessingRecipeData] = []
 	for recipe_id: StringName in recipe_ids:
 		var recipe := _get_recipe(recipe_id)
-		if recipe != null and recipe.can_start() and start_recipe(recipe.id):
-			return
-	GameEvents.toast("No processable materials")
+		if recipe != null:
+			result.append(recipe)
+	return result
 
 func _on_time_changed(_day: int, _minute_of_day: int) -> void:
 	# An idle or finished station shows nothing that changes with time.
@@ -201,12 +245,19 @@ func _refresh() -> void:
 		if body_visual != null:
 			body_visual.modulate = Color(1.0, 0.58, 0.32, 1.0)
 	else:
-		interactable.set_prompt("Use %s", [display_name])
+		var next := pick_recipe(Hotbar.get_selected_item_id())
+		if next != null:
+			interactable.set_prompt("Make %s", [next.display_name])
+		else:
+			interactable.set_prompt("Use %s", [display_name])
 		state_label.text = tr(display_name)
 		if body_visual != null:
 			body_visual.modulate = Color.WHITE
 
 func _on_locale_changed(_locale: String) -> void:
+	_refresh()
+
+func _on_hand_changed(_index: int, _item_id: StringName) -> void:
 	_refresh()
 
 func _persist() -> void:
