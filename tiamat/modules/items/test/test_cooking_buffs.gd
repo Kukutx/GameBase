@@ -12,6 +12,7 @@ func before_each() -> void:
 	ContentFixture.use(self, [
 		_buff(&"fixture_focus", 180, {&"fixture_wait": 0.7, &"fixture_window": 1.35}),
 		_buff(&"fixture_vigor", 240, {&"fixture_speed": 1.1}),
+		_buff(&"fixture_brisk", 60, {TopDownPlayer.MOVE_SPEED_STAT: 1.2, &"fixture_speed": 1.5}),
 	])
 	BuffState.clear()
 
@@ -51,6 +52,14 @@ func test_buffs_expire_by_game_time() -> void:
 	assert_eq(BuffState.get_minutes_remaining(&"fixture_vigor"), 1)
 	WorldClock.set_time(1, 12 * 60)
 	assert_false(BuffState.has_buff(&"fixture_vigor"))
+
+func test_an_active_buff_tells_what_it_changes() -> void:
+	assert_true(BuffState.apply_buff(&"fixture_brisk"))
+	assert_true(BuffState.apply_buff(&"fixture_vigor"))
+	assert_eq(BuffState.get_active_entries(), [
+		{"id": "fixture_brisk", "display_name": "Fixture Brisk", "minutes_remaining": 60, "changes": "Move speed +20%"},
+		{"id": "fixture_vigor", "display_name": "Fixture Vigor", "minutes_remaining": 240, "changes": ""},
+	] as Array[Dictionary], "by name; a stat without a name tells nothing")
 
 func _buff(id: StringName, duration_minutes: int, multipliers: Dictionary) -> FoodBuffData:
 	var buff := FoodBuffData.new()

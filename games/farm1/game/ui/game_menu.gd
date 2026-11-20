@@ -166,6 +166,13 @@ func _skills_text() -> String:
 	else:
 		for entry: Dictionary in buffs:
 			lines.append(tr("• %s — %d min") % [tr(String(entry["display_name"])), entry["minutes_remaining"]])
+			if not String(entry["changes"]).is_empty():
+				lines.append("  %s" % entry["changes"])
+	var bonuses := GameStats.describe_current()
+	if not bonuses.is_empty():
+		lines.append("")
+		lines.append("[b]%s[/b]" % tr("All Bonuses"))
+		lines.append(", ".join(bonuses))
 	return "\n".join(lines)
 
 func _calendar_text() -> String:

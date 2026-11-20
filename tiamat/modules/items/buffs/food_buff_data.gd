@@ -16,6 +16,11 @@ const KIND := &"food_buff"
 static func find(entry_id: StringName) -> FoodBuffData:
 	return ContentRegistry.active.get_entry(KIND, entry_id) as FoodBuffData
 
+## What the buff changes as the player reads it (`GameStats.describe_changes()`:
+## "Move speed +10%, Max energy +20"); "" when it changes no named stat.
+func describe_changes() -> String:
+	return ", ".join(GameStats.describe_changes(multipliers, bonuses))
+
 ## The running game's food buffs, sorted by id.
 static func find_all() -> Array[FoodBuffData]:
 	var result: Array[FoodBuffData] = []

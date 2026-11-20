@@ -99,6 +99,7 @@ func test_angler_focus_changes_fishing_timing_for_three_hours() -> void:
 func test_hearty_worker_lasts_four_hours() -> void:
 	assert_true(BuffState.apply_buff(&"hearty_worker"))
 	assert_eq(BuffState.get_minutes_remaining(&"hearty_worker"), 240)
+	assert_eq(FoodBuffData.find(&"hearty_worker").describe_changes(), "Move speed +10%, Tool energy cost -20%, Max energy +20")
 
 func test_hearty_worker_holds_more_energy_until_it_ends() -> void:
 	Vitals.set_value(&"energy", 90)
