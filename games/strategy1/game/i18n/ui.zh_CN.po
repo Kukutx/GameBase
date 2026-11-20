@@ -52,6 +52,15 @@ msgstr "重砸"
 msgid "Firepot"
 msgstr "火罐"
 
+msgid "Volley"
+msgstr "齐射"
+
+msgid "Quake"
+msgstr "震地"
+
+msgid "Prayer"
+msgstr "祈祷"
+
 msgid "Swordsman"
 msgstr "剑士"
 

@@ -2,8 +2,8 @@ class_name GridBattleAi
 extends RefCounted
 
 ## How a unit the player does not command takes its turn in a grid battle
-## (`AtbBattle`): the move and action that do the most good now, a defeat
-## above all (damage to its foes, health given back to its hurt side), moving
+## (`AtbBattle`): the move and the action, of those ready
+## (`GridUnit.is_ready()`), that do the most good now, a defeat above all (damage to its foes, health given back to its hurt side), moving
 ## first only when that brings a better target in reach or, for the same good,
 ## a cell fewer of its foes could strike next (`AtbBattle.get_threats()`: an
 ## archer shoots from where the swordsman cannot reach it), and of those one

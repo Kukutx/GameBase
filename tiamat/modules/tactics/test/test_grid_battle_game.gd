@@ -3,7 +3,8 @@ extends GutTest
 ## The tactics module's minigame (`GridBattleGame`) run by `MiniGameHost`: the
 ## player commands their unit with the command buttons and the board, wins,
 ## and the battle's end is told; once the unit moved, Move takes the move
-## back; the commands follow what the foes do meanwhile; a finger's tap on a cell shows it and a second tap picks it;
+## back; the commands follow what the foes do meanwhile, and an action that
+## recharges tells when it is ready; a finger's tap on a cell shows it and a second tap picks it;
 ## cancel twice gives the battle up; an unknown map ends it at once,
 ## and a definition that names one is a content problem; the player's choice
 ## of speed speeds the game's.
@@ -170,6 +171,21 @@ func test_a_unit_with_many_commands_leaves_the_line_under_the_board_in_view() ->
 	_commands(game)[-1].grab_focus()
 	await get_tree().process_frame
 	assert_true(_commands(game)[-1].get_global_rect().end.y <= view.end.y + 0.5, "the side scrolls to the focused command")
+
+func test_an_action_that_recharges_tells_when_it_is_ready() -> void:
+	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_strike", &"fixture_volley"])
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	var knight := game.battle.get_turn_unit()
+	var volley := BattleActionData.find(&"fixture_volley")
+	assert_eq(_commands(game)[2].text, tr("Fixture Volley"))
+	# As if it loosed the volley on its last turn.
+	knight.use(volley)
+	knight.start_turn()
+	game.battle.unit_moved.emit(knight, [] as Array[Vector2i])
+	assert_eq(_commands(game)[2].text, tr("%s (ready in %d)") % [tr("Fixture Volley"), 2], "it tells in how many of the knight's turns")
+	assert_true(_commands(game)[2].disabled)
 
 func test_a_definition_names_a_known_map() -> void:
 	var definition := MiniGameDefinition.find(MINIGAME)

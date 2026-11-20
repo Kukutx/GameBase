@@ -1,7 +1,8 @@
 extends GutTest
 
-## The battle at the ford, the war table's: its map and units hold, and the
-## battle comes to an end when both sides fight it on their own.
+## The battle at the ford, the war table's: its map and units hold, the
+## battle comes to an end when both sides fight it on their own, and the
+## stronger actions recharge.
 
 func test_the_ford_map_sets_up_both_sides_across_the_river() -> void:
 	var map := BattleMapData.find(&"border_ford")
@@ -25,3 +26,21 @@ func test_the_battle_ends_when_both_sides_fight_on_their_own() -> void:
 		if battle.is_over():
 			break
 	assert_true(battle.is_over(), "one side holds the field within three minutes")
+
+func test_a_volley_a_quake_and_a_prayer_recharge() -> void:
+	for pair: Array in [[&"archer", &"volley"], [&"brute", &"quake"], [&"cleric", &"prayer"]]:
+		var unit := BattleUnitData.find(pair[0])
+		var action := BattleActionData.find(pair[1])
+		assert_true(unit.action_ids.has(action.id), "the %s has it" % unit.id)
+		assert_gt(action.recharge_turns, 0, "the %s recharges" % action.id)
+		assert_ne(unit.action_ids[0], action.id, "and is not the %s's plain action" % unit.id)
+	var used: Array[StringName] = []
+	var battle := AtbBattle.from_map(BattleMapData.find(&"border_ford"))
+	for unit: GridUnit in battle.units:
+		unit.player_controlled = false
+	battle.unit_acted.connect(func(_unit: GridUnit, action: BattleActionData, _cell: Vector2i, _hits: Array[Dictionary]) -> void: used.append(action.id))
+	for _frame in 20 * 180:
+		battle.advance(1.0 / 20.0)
+		if battle.is_over():
+			break
+	assert_true(used.has(&"volley"), "the archer looses its volley in a battle: %s" % [used])

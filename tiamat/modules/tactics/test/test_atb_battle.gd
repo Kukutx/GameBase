@@ -230,6 +230,37 @@ func test_a_unit_in_cover_takes_less_damage_as_told() -> void:
 	assert_true(battle.act(knight, strike, Vector2i(3, 2)))
 	assert_eq(covered.health.current, 9, "as told")
 
+func test_an_action_that_recharges_waits_its_user_s_turns() -> void:
+	var battle := _battle()
+	var captain := _add(battle, &"fixture_captain", FactionData.PLAYER, Vector2i(0, 2))
+	_add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(3, 2))
+	var volley := BattleActionData.find(&"fixture_volley")
+	TacticsFixture.give_turn(battle, captain)
+	assert_true(captain.is_ready(volley))
+	assert_true(battle.act(captain, volley, Vector2i(3, 2)))
+	battle.end_turn(captain)
+	var waits: Array[int] = []
+	for turn in 3:
+		TacticsFixture.give_turn(battle, captain)
+		waits.append(captain.turns_to_ready(volley))
+		assert_eq(battle.get_targets(captain, volley).is_empty(), turn < 2, "no aim while it recharges")
+		battle.end_turn(captain)
+	assert_eq(waits, [2, 1, 0], "two of its turns go by, then it looses it again")
+	assert_true(captain.is_ready(BattleActionData.find(&"fixture_strike")), "an action that never recharges is always ready")
+
+func test_a_foe_s_action_that_recharges_past_its_next_turn_is_no_danger() -> void:
+	var battle := _battle(Vector2i(8, 1))
+	_add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	var captain := _add(battle, &"fixture_captain", FactionData.MONSTERS, Vector2i(7, 0))
+	assert_eq(_columns(battle.get_danger()), [1, 2, 3, 4, 5, 6, 7], "it walks two and its volley reaches three and one more")
+	captain.start_turn()
+	captain.use(BattleActionData.find(&"fixture_volley"))
+	assert_eq(_columns(battle.get_danger()), [4, 5, 6, 7], "only its strike while the volley recharges")
+	captain.start_turn()
+	assert_eq(_columns(battle.get_danger()), [4, 5, 6, 7])
+	captain.start_turn()
+	assert_eq(_columns(battle.get_danger()), [1, 2, 3, 4, 5, 6, 7], "ready on its next turn")
+
 func test_the_battle_ends_won_when_the_last_foe_falls_and_lost_when_the_player_s_side_does() -> void:
 	var battle := _battle()
 	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
