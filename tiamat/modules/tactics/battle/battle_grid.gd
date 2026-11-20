@@ -2,22 +2,30 @@ class_name BattleGrid
 extends RefCounted
 
 ## The cells of a grid battle (`AtbBattle`): a rectangle of `size` cells, some
-## of them blocked (water, walls). A unit walks a cell at a time up, down, left
-## or right, so the distance between two cells is the number of such steps,
-## and an action's range counts the same way, over blocked cells too. Every
-## search tries the directions in one order, so the same grid always gives the
-## same walks and paths.
+## of them blocked (water, walls) and some open ones giving cover (woods,
+## ruins), where a unit takes `cover_reduction` less damage. A unit walks a
+## cell at a time up, down, left or right, so the distance between two cells
+## is the number of such steps, and an action's range counts the same way, over
+## blocked cells too. Every search tries the directions in one order, so the
+## same grid always gives the same walks and paths.
 
 const DIRECTIONS: Array[Vector2i] = [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]
 
 var size: Vector2i
+## The share of damage a unit in cover does not take.
+var cover_reduction := 0.0
 var _blocked: Dictionary[Vector2i, bool] = {}
+var _cover: Dictionary[Vector2i, bool] = {}
 
-func _init(grid_size := Vector2i(1, 1), blocked_cells: Array[Vector2i] = []) -> void:
+func _init(grid_size := Vector2i(1, 1), blocked_cells: Array[Vector2i] = [], cover_cells: Array[Vector2i] = [], reduction := 0.0) -> void:
 	size = Vector2i(maxi(grid_size.x, 1), maxi(grid_size.y, 1))
 	for cell: Vector2i in blocked_cells:
 		if has_cell(cell):
 			_blocked[cell] = true
+	for cell: Vector2i in cover_cells:
+		if is_open(cell):
+			_cover[cell] = true
+	cover_reduction = clampf(reduction, 0.0, 1.0)
 
 ## The steps between `from` and `to`.
 static func distance(from: Vector2i, to: Vector2i) -> int:
@@ -32,6 +40,17 @@ func is_blocked(cell: Vector2i) -> bool:
 ## Whether a unit may stand on or walk through `cell`.
 func is_open(cell: Vector2i) -> bool:
 	return has_cell(cell) and not _blocked.has(cell)
+
+## Whether `cell` gives cover to who stands there.
+func is_cover(cell: Vector2i) -> bool:
+	return _cover.has(cell)
+
+## `amount` of damage as a unit standing on `cell` takes it: `cover_reduction`
+## less in cover, rounded, and never below 1.
+func damage_on(cell: Vector2i, amount: int) -> int:
+	if amount <= 0 or cover_reduction <= 0.0 or not _cover.has(cell):
+		return amount
+	return maxi(roundi(amount * (1.0 - cover_reduction)), 1)
 
 ## The cells of the grid from `min_range` to `max_range` steps from `center`,
 ## row by row.

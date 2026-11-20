@@ -87,5 +87,6 @@ id = &"old_mill"
 display_name = "Old Mill"
 size = Vector2i(11, 8)
 blocked_cells = Array[Vector2i]([Vector2i(6, 0), Vector2i(6, 2), Vector2i(6, 3), Vector2i(6, 4), Vector2i(6, 5), Vector2i(6, 7), Vector2i(8, 3), Vector2i(8, 4), Vector2i(3, 0), Vector2i(2, 7), Vector2i(4, 4)])
+cover_cells = Array[Vector2i]([Vector2i(8, 2), Vector2i(8, 5), Vector2i(2, 2), Vector2i(4, 6)])
 player_faction_id = &"banners"
 placements = Array[ExtResource("2_placement")]([SubResource("Placement_1"), SubResource("Placement_2"), SubResource("Placement_3"), SubResource("Placement_4"), SubResource("Placement_5"), SubResource("Placement_6"), SubResource("Placement_7"), SubResource("Placement_8"), SubResource("Placement_9"), SubResource("Placement_10"), SubResource("Placement_11"), SubResource("Placement_12"), SubResource("Placement_13")])

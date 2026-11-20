@@ -78,3 +78,6 @@ msgstr "%s 将受到 %d 点伤害并倒下"
 
 msgid "%s regains %d"
 msgstr "%s 将恢复 %d 点生命"
+
+msgid "Cover: %d%% less damage"
+msgstr "掩护：受到的伤害少 %d%%"

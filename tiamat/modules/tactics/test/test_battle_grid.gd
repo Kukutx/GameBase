@@ -13,6 +13,17 @@ func test_ranges_count_steps_over_any_cell_within_the_grid() -> void:
 	assert_false(grid.is_open(Vector2i(4, 0)), "outside the grid")
 	assert_true(grid.is_open(Vector2i(3, 2)))
 
+func test_a_cell_in_cover_takes_less_damage_never_below_one() -> void:
+	var grid := BattleGrid.new(Vector2i(4, 3), [Vector2i(1, 0)] as Array[Vector2i], [Vector2i(2, 1), Vector2i(1, 0), Vector2i(9, 9)] as Array[Vector2i], 0.3)
+	assert_true(grid.is_cover(Vector2i(2, 1)))
+	assert_true(grid.is_open(Vector2i(2, 1)), "a unit walks into cover")
+	assert_false(grid.is_cover(Vector2i(1, 0)), "a blocked cell gives none")
+	assert_false(grid.is_cover(Vector2i(9, 9)), "nor one outside the grid")
+	assert_eq(grid.damage_on(Vector2i(2, 1), 10), 7, "less in cover")
+	assert_eq(grid.damage_on(Vector2i(2, 1), 1), 1, "never below 1")
+	assert_eq(grid.damage_on(Vector2i(0, 0), 10), 10, "all of it in the open")
+	assert_eq(BattleGrid.new(Vector2i(4, 3), [] as Array[Vector2i], [Vector2i(2, 1)] as Array[Vector2i]).damage_on(Vector2i(2, 1), 10), 10, "cover that takes nothing off")
+
 func test_a_walk_goes_around_blocked_cells_and_foes_within_its_steps() -> void:
 	# . # . .
 	# . # . .

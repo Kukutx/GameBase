@@ -13,7 +13,8 @@ extends RefCounted
 ## (`SKIP_BONUS`). Until one of the player's units acts, the player may take
 ## its move back (`undo_move()`), unless a foe took a turn since or someone
 ## stands where it came from. The cells the foes could strike on their next
-## turns (`get_danger()`) tell the player where a unit stands safe. The battle
+## turns (`get_danger()`) tell the player where a unit stands safe, and a unit
+## in cover (`BattleGrid.is_cover()`) takes less damage (`amount_of()`). The battle
 ## ends when no two living units are hostile (`FactionData.are_hostile()`), won
 ## when the player's side is left.
 ##
@@ -70,7 +71,7 @@ func _init(battle_grid: BattleGrid, side: StringName = FactionData.PLAYER) -> vo
 ## player's foes starting with `foe_health` of their kinds' health: each unit
 ## whose placement's condition holds (`BattlePlacement.joins()`).
 static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_health := 1.0) -> AtbBattle:
-	var battle := AtbBattle.new(BattleGrid.new(map.size, map.blocked_cells), map.player_faction_id)
+	var battle := AtbBattle.new(BattleGrid.new(map.size, map.blocked_cells, map.cover_cells, map.cover_reduction), map.player_faction_id)
 	battle.time_flows_while_choosing = settings != null and settings.time_flows_while_choosing
 	battle.foe_health_scale = foe_health
 	for placement: BattlePlacement in map.placements:
@@ -249,6 +250,12 @@ func get_threats(faction: StringName, moving: GridUnit = null) -> Dictionary[Vec
 			threats[cell] = threats.get(cell, 0) + 1
 	return threats
 
+## What `action` of `unit` takes from or gives to `target` where it stands:
+## damage less in cover (`BattleGrid.damage_on()`).
+func amount_of(unit: GridUnit, action: BattleActionData, target: GridUnit) -> int:
+	var amount := action.amount_for(unit, target)
+	return grid.damage_on(target.cell, amount) if action.effect == BattleActionData.Effect.DAMAGE else amount
+
 ## What `unit` taking `action` at `cell` from where it stands would do, told
 ## before it does: a {"unit": GridUnit, "amount": int, "defeats": bool} for
 ## each unit it reaches, the health it would take (no more than the unit has)
@@ -256,7 +263,7 @@ func get_threats(faction: StringName, moving: GridUnit = null) -> Dictionary[Vec
 func forecast(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> Array[Dictionary]:
 	var hits: Array[Dictionary] = []
 	for target: GridUnit in affected_at(unit, action, cell, unit.cell):
-		var amount := action.amount_for(unit, target)
+		var amount := amount_of(unit, action, target)
 		if action.effect == BattleActionData.Effect.HEAL:
 			hits.append({"unit": target, "amount": mini(amount, target.health.maximum - target.health.current), "defeats": false})
 		else:
@@ -315,7 +322,7 @@ func act(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> bool:
 	_undo_unit = null
 	var hits: Array[Dictionary] = []
 	for target: GridUnit in affected_at(unit, action, cell, unit.cell):
-		var amount := action.amount_for(unit, target)
+		var amount := amount_of(unit, action, target)
 		hits.append({"unit": target, "amount": target.health.heal(amount) if action.effect == BattleActionData.Effect.HEAL else target.health.take(amount)})
 	unit_acted.emit(unit, action, cell, hits)
 	for hit: Dictionary in hits:
