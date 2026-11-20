@@ -5,6 +5,7 @@ extends GutTest
 ## and the battle's end is told; once the unit moved, Move takes the move
 ## back; the commands follow what the foes do meanwhile, and an action that
 ## recharges tells when it is ready; a goal is told and taking it wins; a
+## unit that arrives is told; a
 ## finger's tap on a cell shows it and a second tap picks it;
 ## cancel twice gives the battle up; an unknown map ends it at once,
 ## and a definition that names one is a content problem; the player's choice
@@ -208,6 +209,16 @@ func test_a_goal_is_told_and_taking_it_wins() -> void:
 	assert_true(await _until(func() -> bool: return outcome.has("result")))
 	assert_true((outcome["result"] as MiniGameResult).success, "won with the dummy standing")
 	assert_eq(_ended, [[&"fixture_field", true]])
+
+func test_a_unit_that_arrives_is_told() -> void:
+	var late := TacticsFixture.placement(&"fixture_dummy", FactionData.MONSTERS, Vector2i(3, 0))
+	late.arrive_seconds = 1.0
+	BattleMapData.find(&"fixture_field").placements.append(late)
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_eq(game.battle.arrivals.size(), 1, "on its way")
+	assert_true(await _until(func() -> bool: return _shows(game, tr("%s joins the foes!") % tr("Fixture Dummy"))))
+	assert_eq(game.battle.get_unit_at(Vector2i(3, 0)).data.id, &"fixture_dummy")
 
 func test_aiming_a_delay_tells_it_sets_the_turn_back() -> void:
 	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_bash"])

@@ -20,11 +20,13 @@ extends RefCounted
 ## (`BattleActionData.delay`) sets back the gauges of the foes it leaves
 ## standing (`delay_of()`), a player's unit that waited for its turn too. A
 ## side with a leader (`GridUnit.leader`) flees the battle once the leader
-## falls (`unit_fled`). The battle
-## ends when no two living units are hostile (`FactionData.are_hostile()`), won
-## when the player's side is left, or once a unit of the side that takes the
-## goal cells (`goal_cells`, `takes_goals()`) ends its turn on one, won when
-## that side is the player's (`goal_taken`).
+## falls (`unit_fled`), and turns back its units still on their way. Units may
+## arrive while the battle runs (`add_arrival()`, `unit_arrived`), in battle
+## time (`time`), which stands still with the gauges. The battle ends when no
+## two units, living or on their way, are hostile (`FactionData.are_hostile()`),
+## won when the player's side is left, or once a unit of the side that takes
+## the goal cells (`goal_cells`, `takes_goals()`) ends its turn on one, won
+## when that side is the player's (`goal_taken`).
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`GridBattleGame`) lets time pass with `advance()`, gives the player's
@@ -46,6 +48,8 @@ signal unit_fled(unit: GridUnit)
 signal turn_ended(unit: GridUnit)
 ## `unit` ended its turn on a goal cell, winning the battle for its side.
 signal goal_taken(unit: GridUnit)
+## `unit` arrived on the grid (`add_arrival()`).
+signal unit_arrived(unit: GridUnit)
 signal ended(won: bool)
 
 ## Where a gauge is full.
@@ -69,6 +73,10 @@ var foe_health_scale := 1.0
 ## and the faction of that side (at first the player's).
 var goal_cells: Dictionary[Vector2i, bool] = {}
 var goal_faction: StringName
+## The units on their way (`add_arrival()`).
+var arrivals := GridArrivals.new()
+## The seconds of battle time that have passed: the time the gauges fill in.
+var time := 0.0
 # The player's unit taking its turn, the units of theirs whose gauges filled
 # while it does, and the unit the AI moves now.
 var _turn: GridUnit
@@ -87,7 +95,8 @@ func _init(battle_grid: BattleGrid, side: StringName = FactionData.PLAYER) -> vo
 
 ## The battle `map` sets up, with time flowing as `settings` say and the
 ## player's foes starting with `foe_health` of their kinds' health: each unit
-## whose placement's condition holds (`BattlePlacement.joins()`).
+## whose placement's condition holds (`BattlePlacement.joins()`), there at the
+## start or on its way (`BattlePlacement.arrive_seconds`).
 static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_health := 1.0) -> AtbBattle:
 	var grid := BattleGrid.new(map.size, map.blocked_cells, map.cover_cells, map.cover_reduction)
 	grid.set_rough(map.rough_cells, map.rough_cost)
@@ -100,7 +109,7 @@ static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_h
 	for placement: BattlePlacement in map.placements:
 		var data := BattleUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
-			battle.add_unit(data, placement.faction_id, placement.cell).leader = placement.leader
+			battle.add_arrival(data, placement.faction_id, placement.cell, placement.arrive_seconds, placement.leader)
 	return battle
 
 ## Places a unit of `data` on `faction`'s side in `cell`; the player commands
@@ -112,6 +121,16 @@ func add_unit(data: BattleUnitData, faction: StringName, cell: Vector2i) -> Grid
 		unit.health.reset(roundi(data.max_health * foe_health_scale))
 	units.append(unit)
 	return unit
+
+## Has a unit of `data` on `faction`'s side, leading it with `leader`, arrive
+## in `cell`, or the open cell nearest it that no unit stands in, once
+## `seconds` of battle time have passed, its gauge empty; one due now or
+## before is placed at once.
+func add_arrival(data: BattleUnitData, faction: StringName, cell: Vector2i, seconds: float, leader := false) -> void:
+	if seconds <= time + _EPSILON:
+		add_unit(data, faction, cell).leader = leader
+	else:
+		arrivals.add(data, faction, cell, seconds, leader)
 
 func is_over() -> bool:
 	return _over
@@ -173,9 +192,9 @@ func advance(seconds: float) -> void:
 	var left := seconds
 	while left > 0.0 and not _over and (_turn == null or time_flows_while_choosing):
 		var filling := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive() and unit.data.speed > 0.0 and unit != _turn and not _waiting.has(unit))
-		if filling.is_empty():
+		if filling.is_empty() and arrivals.size() == 0:
 			return
-		var step := left
+		var step := clampf(arrivals.get_next() - time, 0.0, left)
 		for unit: GridUnit in filling:
 			step = minf(step, (GAUGE_FULL - unit.gauge) / unit.data.speed)
 		var full: Array[GridUnit] = []
@@ -187,6 +206,9 @@ func advance(seconds: float) -> void:
 			else:
 				unit.gauge += unit.data.speed * step
 		left -= step
+		time += step
+		for arrival: GridArrivals.Arrival in arrivals.take_due(time + _EPSILON):
+			_arrive(arrival)
 		for unit: GridUnit in full:
 			# Once one of the player's units waits, the others that filled
 			# with it wait their turn, full, until time flows again.
@@ -248,39 +270,10 @@ func get_danger(moving: GridUnit = null) -> Dictionary[Vector2i, bool]:
 	return danger
 
 ## How many living units hostile to `faction` could strike each open cell on
-## their next turns, as everyone stands now: the cells a damaging action of
-## theirs ready by then reaches, area and all, from a cell they could walk to
-## (`BattleUnitData.move`) without passing the units hostile to them; a cell
-## none reaches is left out. `moving` counts as gone from its cell, so they
-## may walk through it.
+## their next turns, as everyone stands now (`GridThreats.count()`); `moving`
+## counts as gone from its cell, so they may walk through it.
 func get_threats(faction: StringName, moving: GridUnit = null) -> Dictionary[Vector2i, int]:
-	var threats: Dictionary[Vector2i, int] = {}
-	for foe: GridUnit in units:
-		if not foe.is_alive() or not FactionData.are_hostile(foe.faction, faction):
-			continue
-		var walls := foe_cells(foe)
-		if moving != null:
-			walls.erase(moving.cell)
-		var froms: Array[Vector2i] = []
-		for from: Vector2i in grid.walk(foe.cell, foe.data.move, walls):
-			var there := get_unit_at(from)
-			if there == null or there == foe or there == moving:
-				froms.append(from)
-		var struck: Dictionary[Vector2i, bool] = {}
-		for action: BattleActionData in foe.data.get_actions():
-			if action.effect != BattleActionData.Effect.DAMAGE or foe.turns_to_ready(action) > 1:
-				continue
-			var aims: Dictionary[Vector2i, bool] = {}
-			for from: Vector2i in froms:
-				for aim: Vector2i in grid.cells_in_range(from, action.min_range, action.max_range):
-					aims[aim] = true
-			for aim: Vector2i in aims:
-				for cell: Vector2i in grid.cells_in_range(aim, 0, action.area):
-					if grid.is_open(cell):
-						struck[cell] = true
-		for cell: Vector2i in struck:
-			threats[cell] = threats.get(cell, 0) + 1
-	return threats
+	return GridThreats.count(self, faction, moving)
 
 ## What `action` of `unit` takes from or gives to `target` where it stands:
 ## damage less in cover (`BattleGrid.damage_on()`).
@@ -455,8 +448,10 @@ func _defeat(unit: GridUnit) -> void:
 		_turn = null
 	unit_defeated.emit(unit)
 
-# The rest of `leader`'s faction flees the battle.
+# The rest of `leader`'s faction flees the battle, and its units on their way
+# turn back.
 func _rout(leader: GridUnit) -> void:
+	arrivals.remove_faction(leader.faction)
 	for unit: GridUnit in units:
 		if unit != leader and unit.faction == leader.faction and unit.is_alive():
 			unit.fled = true
@@ -467,12 +462,26 @@ func _rout(leader: GridUnit) -> void:
 			unit_fled.emit(unit)
 
 func _check_over() -> void:
-	var alive := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive())
-	for unit: GridUnit in alive:
-		for other: GridUnit in alive:
-			if FactionData.are_hostile(unit.faction, other.faction):
+	var factions := arrivals.get_factions()
+	for unit: GridUnit in units:
+		if unit.is_alive() and not factions.has(unit.faction):
+			factions.append(unit.faction)
+	for faction: StringName in factions:
+		for other: StringName in factions:
+			if FactionData.are_hostile(faction, other):
 				return
-	_end(alive.any(func(unit: GridUnit) -> bool: return is_on_player_side(unit)))
+	_end(factions.any(func(faction: StringName) -> bool: return not FactionData.are_hostile(faction, player_faction)))
+
+# Places the unit of `arrival` in its cell, or the open cell nearest it that
+# no unit stands in; none is placed while every cell is taken.
+func _arrive(arrival: GridArrivals.Arrival) -> void:
+	for reach: int in maxi(grid.size.x, grid.size.y) * 2:
+		for cell: Vector2i in grid.cells_in_range(arrival.cell, reach, reach):
+			if grid.is_open(cell) and get_unit_at(cell) == null:
+				var unit := add_unit(arrival.data, arrival.faction, cell)
+				unit.leader = arrival.leader
+				unit_arrived.emit(unit)
+				return
 
 func _end(won: bool) -> void:
 	_over = true

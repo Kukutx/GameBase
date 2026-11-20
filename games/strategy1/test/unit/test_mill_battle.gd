@@ -2,8 +2,9 @@ extends GutTest
 
 ## The battle at the old mill, the war table's second: it opens once the ford
 ## is won, its map and units hold, the stream is crossed only by the bridge
-## and the ford, a win in the pass sends a swordsman, the Warlord's fall
-## sends the raiders fleeing, and the battle comes to an end when both sides
+## and the ford, two more raiders ride in 12 seconds in, a win in the pass
+## sends a swordsman, the Warlord's fall sends the raiders fleeing and turns
+## back those on their way, and the battle comes to an end when both sides
 ## fight it on their own.
 
 func after_each() -> void:
@@ -25,6 +26,8 @@ func test_the_mill_map_sets_up_both_sides_across_the_stream() -> void:
 	var battle := AtbBattle.from_map(map)
 	assert_eq(battle.units.filter(func(unit: GridUnit) -> bool: return unit.player_controlled).size(), 5)
 	assert_eq(battle.units.filter(func(unit: GridUnit) -> bool: return not battle.is_on_player_side(unit)).size(), 7)
+	assert_eq(battle.arrivals.get_all().map(func(arrival: GridArrivals.Arrival) -> Array: return [arrival.data.id, arrival.cell, arrival.seconds]),
+		[[&"raider", Vector2i(10, 1), 12.0], [&"raider", Vector2i(10, 6), 12.0]], "two more ride in from the east")
 	var upper := battle.grid.path(Vector2i(1, 2), Vector2i(9, 1))
 	assert_true(upper.has(Vector2i(6, 1)), "the near way over is the bridge")
 	var lower := battle.grid.path(Vector2i(1, 5), Vector2i(9, 6))
@@ -48,6 +51,7 @@ func test_the_warlord_s_fall_sends_the_raiders_fleeing() -> void:
 	assert_eq(battle.get_turn_unit(), swordsman)
 	assert_true(battle.act(swordsman, BattleActionData.find(&"strike"), warlord.cell))
 	assert_true(battle.is_over() and battle.is_won(), "the band flees and the mill is taken")
+	assert_eq(battle.arrivals.size(), 0, "and the two on their way turn back")
 
 func test_a_win_in_the_pass_sends_a_swordsman_to_the_mill() -> void:
 	WorldState.add_int(MiniGameDefinition.wins_key(&"pass_battle"), 1)

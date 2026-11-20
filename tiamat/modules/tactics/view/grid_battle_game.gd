@@ -24,7 +24,8 @@ extends MiniGame
 ## "Brute takes 2, turn delayed"), and of a leader that its side flees
 ## once it falls (`GridUnit.leader`). The
 ## board numbers the units whose turns come next
-## (`GridBattleBoard.turns_shown`). Cancel
+## (`GridBattleBoard.turns_shown`), and the line tells of each unit that
+## arrives while the battle runs (`AtbBattle.unit_arrived`). Cancel
 ## (the touch controls' corner button on a touchscreen) goes back to the
 ## commands. Cancel at the
 ## commands, pressed twice, gives the battle up. It ends won or lost a moment
@@ -101,6 +102,7 @@ func setup(settings: Dictionary) -> void:
 	battle.unit_fled.connect(_on_unit_fled)
 	battle.turn_ended.connect(_on_turn_ended)
 	battle.goal_taken.connect(_on_goal_taken)
+	battle.unit_arrived.connect(_on_unit_arrived)
 	battle.ended.connect(_on_ended)
 	_board.show_battle(battle)
 	_title.text = tr(map.display_name)
@@ -365,6 +367,10 @@ func _on_unit_defeated(unit: GridUnit) -> void:
 		_set_mode(Mode.WATCH)
 	else:
 		_refresh()
+
+func _on_unit_arrived(unit: GridUnit) -> void:
+	_message.text = (tr("%s joins the battle.") if battle.is_on_player_side(unit) else tr("%s joins the foes!")) % tr(unit.data.display_name)
+	_refresh()
 
 func _on_unit_fled(unit: GridUnit) -> void:
 	if _board.turn_unit == unit:

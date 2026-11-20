@@ -102,8 +102,9 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 			if led.has(placement.faction_id):
 				problems.append("gives side '%s' two leaders" % placement.faction_id)
 			led[placement.faction_id] = true
-		# A battle starts with a unit on each side whatever the conditions.
-		if not placement.condition.is_empty():
+		# A battle starts with a unit on each side whatever the conditions, before
+		# any arrives.
+		if not placement.condition.is_empty() or placement.arrive_seconds > 0.0:
 			continue
 		if FactionData.are_hostile(placement.faction_id, player_faction_id):
 			others += 1
