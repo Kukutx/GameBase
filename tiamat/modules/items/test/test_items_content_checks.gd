@@ -62,6 +62,23 @@ func test_shops_and_recipes_report_malformed_numbers_without_crashing() -> void:
 	assert_string_contains(joined, "recipe 'fixture_bad_recipe' has invalid ingredient quantity for 'fixture_berry'")
 	assert_string_contains(joined, "recipe 'fixture_bad_recipe' has invalid output quantity 0")
 
+func test_a_shop_may_leave_an_items_price_to_the_item() -> void:
+	ContentFixture.use_calendar(self, GameCalendar.new())
+	var berry := _item(&"fixture_berry")
+	berry.buy_price = 12
+	var stone := _item(&"fixture_stone")
+	var shop := ShopData.new()
+	shop.id = &"fixture_shop"
+	shop.stock = {"fixture_berry": 0, "fixture_stone": 0}
+	var entries: Array = [berry, stone, shop]
+	var joined := _problems_of(ContentFixture.use(self, entries), entries)
+	assert_eq(shop.get_buy_price(berry), 12, "a price of 0 asks the item's own")
+	assert_eq(ShopData.new().get_buy_price(berry), 12, "as does an item the shop does not list")
+	shop.stock["fixture_berry"] = 15
+	assert_eq(shop.get_buy_price(berry), 15, "a price of its own takes the item's place")
+	assert_string_contains(joined, "shop 'fixture_shop' leaves the price of 'fixture_stone' to the item, which has no buy_price")
+	assert_false(joined.contains("'fixture_berry'"), "the berry has a price of its own")
+
 func test_a_shop_stand_reports_a_shop_the_content_does_not_hold() -> void:
 	var shop := ShopData.new()
 	shop.id = &"fixture_shop"

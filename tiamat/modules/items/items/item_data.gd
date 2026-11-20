@@ -36,6 +36,8 @@ const KIND := &"item"
 @export_range(1, 999, 1) var max_stack := 99
 @export var icon: Texture2D
 @export var kind: Kind = Kind.MATERIAL
+## What a shop asks for it where the shop's stock leaves the price to the item
+## (a price of 0, `ShopData.stock`).
 @export_range(0, 999999, 1) var buy_price := 0
 ## What a shop pays for it; 0, it cannot be sold.
 @export_range(0, 999999, 1) var sell_price := 0
