@@ -338,6 +338,16 @@ func test_housings_name_themselves_and_report_what_their_animals_eat() -> void:
 	assert_eq(AnimalState.get_feed_needs(&"fixture_coop"), {&"fixture_hay": 1} as Dictionary[StringName, int])
 	assert_eq(AnimalState.feed_housing(&"fixture_coop"), 0, "No feed in the inventory")
 
+func test_a_trough_without_feed_tells_where_to_get_it() -> void:
+	var needs: Dictionary[StringName, int] = {&"fixture_hay": 1}
+	assert_eq(AnimalFeedTrough.describe_missing_feed(needs), "No Fixture Hay available", "no way to get it")
+	var shop := ShopData.new()
+	shop.id = &"fixture_feed_shop"
+	shop.display_name = "Feed Store"
+	shop.stock = {"fixture_hay": 10}
+	ContentFixture.use(self, _content() + [shop])
+	assert_eq(AnimalFeedTrough.describe_missing_feed(needs), "No Fixture Hay available · Sold at Feed Store")
+
 func test_feed_housing_blocks_item_removed_reentrancy() -> void:
 	WorldState.set_value(&"animal:fixture_hen_01", {
 		"happiness": 50,

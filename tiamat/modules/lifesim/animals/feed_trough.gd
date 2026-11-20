@@ -27,7 +27,7 @@ func _on_interacted(_actor: Node) -> void:
 	if fed > 0:
 		GameEvents.toastf("Fed %d %s animals", [fed, display_name])
 	else:
-		GameEvents.toastf("No %s available", [_feed_names(needs)])
+		GameEvents.toast(describe_missing_feed(needs))
 	_refresh()
 
 func _on_day_changed(_day: int) -> void:
@@ -56,6 +56,22 @@ func _refresh() -> void:
 		unfed += count
 	label.text = tr_n("%s\n%d needs %s", "%s\n%d need %s", unfed) % [tr(display_name), unfed, _feed_names(needs)]
 	interactable.set_prompt("Feed %s x%d", [display_name, unfed])
+
+## What the trough tells a player who carries none of the feed `needs` asks:
+## that there is none, and where to get each kind ("No Hay available · Sold
+## at Ranch", `ItemSources`).
+static func describe_missing_feed(needs: Dictionary[StringName, int]) -> String:
+	var names := PackedStringArray()
+	var ways := PackedStringArray()
+	var sources := ItemSources.gather()
+	for item_id: StringName in needs:
+		var item := ItemData.find(item_id)
+		names.append(String(TranslationServer.translate(item.display_name)) if item != null else String(item_id))
+		var item_ways := sources.get_ways(item_id)
+		if not item_ways.is_empty():
+			ways.append(item_ways[0])
+	var text := String(TranslationServer.translate("No %s available")) % GameText.list(names)
+	return text if ways.is_empty() else "%s · %s" % [text, "; ".join(ways)]
 
 ## The translated names of the needed feed items.
 func _feed_names(needs: Dictionary[StringName, int]) -> String:
