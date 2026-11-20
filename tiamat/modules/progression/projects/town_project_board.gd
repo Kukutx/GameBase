@@ -13,6 +13,7 @@ func _ready() -> void:
 			location_id = location.id
 	interactable.interacted.connect(_on_interacted)
 	TownProjects.project_changed.connect(_on_project_changed)
+	GameSettings.locale_changed.connect(_refresh.unbind(1))
 	_refresh()
 
 func _on_interacted(_actor: Node) -> void:

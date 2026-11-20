@@ -8,6 +8,7 @@ func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	MailState.mail_received.connect(_on_mail_changed)
 	MailState.mail_read.connect(_on_mail_changed)
+	GameSettings.locale_changed.connect(_refresh.unbind(1))
 	_refresh()
 
 func _on_interacted(_actor: Node) -> void:

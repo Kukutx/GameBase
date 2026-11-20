@@ -12,6 +12,7 @@ func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	ShippingState.shipment_changed.connect(_refresh)
 	ShippingState.payout_completed.connect(_on_payout)
+	GameSettings.locale_changed.connect(_refresh.unbind(1))
 	_refresh()
 
 func _on_interacted(_actor: Node) -> void:

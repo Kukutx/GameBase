@@ -26,6 +26,7 @@ func _ready() -> void:
 		durability_left = data.durability
 	WorldClock.day_changed.connect(_on_day_changed)
 	drop.changed.connect(_persist)
+	GameSettings.locale_changed.connect(_refresh_visual.unbind(1))
 	_refresh_visual()
 	_show_drop.call_deferred()
 
