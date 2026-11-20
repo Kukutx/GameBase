@@ -150,7 +150,7 @@ func describe_progress() -> PackedStringArray:
 		var needs := get_requirements()
 		if needs.is_empty():
 			return PackedStringArray([TranslationServer.translate("%s — locked") % title])
-		return PackedStringArray([TranslationServer.translate("%s — needs %s") % [title, ", ".join(needs)]])
+		return PackedStringArray([TranslationServer.translate("%s — needs %s") % [title, GameText.list(needs)]])
 	var wins := get_wins()
 	var lines := PackedStringArray([TranslationServer.translate("%s — won %d") % [title, wins] if wins > 0 else TranslationServer.translate("%s — not won yet") % title])
 	for line: String in describe_score():

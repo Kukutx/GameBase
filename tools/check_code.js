@@ -15,7 +15,10 @@
 //     reason, so one menu that closes never unpauses what another holds;
 //   - every script has its .uid file beside it, and no .uid file outlives its
 //     script: scenes and resources find a script by its uid, and the editor
-//     writes a new one, which nobody commits, when it is missing.
+//     writes a new one, which nobody commits, when it is missing;
+//   - a list the player reads is joined with GameText.list(), whose separator
+//     each language translates (Chinese reads "、"), not with ", " itself; a
+//     prompt only a language model reads (MODEL_TEXT) stays English.
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -25,6 +28,9 @@ const ROOT = path.resolve(__dirname, "..");
 const MAX_LINES = 500;
 const MAX_TEST_LINES = 1000;
 const PAUSE_OWNER = "tiamat/core/input/input_lock.gd";
+// Scripts whose text only a language model reads, never the player.
+const MODEL_TEXT = ["tiamat/modules/npc_ai/ai/npc_ai_prompt.gd"];
+const LIST_JOIN = /(["']),\s?\1\.join\s*\(/;
 
 // A call that loads a resource from the path it is given.
 const RESOURCE_LOAD = /(?:(?<![\w.])(?:preload|load)|\bResourceLoader\.(?:load|load_threaded_request|load_threaded_get))\s*\(/g;
@@ -99,6 +105,7 @@ function checkScript(file, source) {
     if (!isTest && RESOURCE_SAVE.test(line)) problems.push(`${at} saves a resource at runtime; write player data as JSON`);
     if (!isTest && OBJECT_PARSER.test(line)) problems.push(`${at} parses text that can name resources and objects; read player data as JSON`);
     if (pauseWrites.some((pattern) => pattern.test(line)) && file !== PAUSE_OWNER) problems.push(`${at} sets SceneTree.paused; take a lock with InputLock.lock(reason, true) instead`);
+    if (!isTest && !MODEL_TEXT.includes(file) && LIST_JOIN.test(line)) problems.push(`${at} joins a list with ", "; join what the player reads with GameText.list(parts), whose separator each language translates`);
   });
   return problems;
 }

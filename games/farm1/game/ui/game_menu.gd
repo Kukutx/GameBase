@@ -178,7 +178,7 @@ func _skills_text() -> String:
 	if not bonuses.is_empty():
 		lines.append("")
 		lines.append("[b]%s[/b]" % tr("All Bonuses"))
-		lines.append(", ".join(bonuses))
+		lines.append(GameText.list(bonuses))
 	return "\n".join(lines)
 
 func _calendar_text() -> String:

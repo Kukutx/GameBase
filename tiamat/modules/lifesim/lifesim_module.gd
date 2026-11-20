@@ -82,7 +82,7 @@ static func _found_at(registry: ContentRegistry, location_ids: Array[StringName]
 	for location_id: StringName in location_ids:
 		var location := registry.get_entry(WorldLocationData.KIND, location_id) as WorldLocationData
 		names.append(String(TranslationServer.translate(location.display_name)) if location != null else String(location_id))
-	return anywhere if names.is_empty() else at % ", ".join(names)
+	return anywhere if names.is_empty() else at % GameText.list(names)
 
 ## The content the game puts in the module's slots must exist.
 func _find_slot_problems(registry: ContentRegistry) -> PackedStringArray:

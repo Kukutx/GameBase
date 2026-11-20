@@ -47,11 +47,11 @@ func _recipe_text(recipe: RecipeData, sources: ItemSources) -> String:
 		var item := ItemData.find(StringName(String(raw_id)))
 		var label := tr(item.display_name) if item != null else String(raw_id)
 		parts.append("%s x%d" % [label, int(recipe.ingredients[raw_id])])
-	var lines := PackedStringArray(["%s  (%s)" % [tr(recipe.display_name), ", ".join(parts)]])
+	var lines := PackedStringArray(["%s  (%s)" % [tr(recipe.display_name), GameText.list(parts)]])
 	# A recipe the player cannot craft yet says what it still needs.
 	var needs := GameRules.describe(recipe.condition) if not GameRules.check(recipe.condition) else PackedStringArray()
 	if not needs.is_empty():
-		lines.append(tr("Needs: %s") % ", ".join(needs))
+		lines.append(tr("Needs: %s") % GameText.list(needs))
 	# And where to get each ingredient the player lacks.
 	for raw_id: Variant in recipe.ingredients.keys():
 		var item_id := StringName(String(raw_id))

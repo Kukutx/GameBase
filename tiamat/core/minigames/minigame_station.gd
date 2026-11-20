@@ -60,7 +60,7 @@ static func choice_of(definition: MiniGameDefinition) -> ChoiceMenu.Choice:
 	var text: String = TranslationServer.translate("%s (Won)") % name if definition.get_wins() > 0 else name
 	if not definition.is_open():
 		var needs := definition.get_requirements()
-		var locked: String = TranslationServer.translate("Locked: %s") % ", ".join(needs) if not needs.is_empty() else TranslationServer.translate("Locked")
+		var locked: String = TranslationServer.translate("Locked: %s") % GameText.list(needs) if not needs.is_empty() else TranslationServer.translate("Locked")
 		return ChoiceMenu.Choice.new(definition.id, text, locked, false)
 	var lines := PackedStringArray()
 	if not definition.description.is_empty():

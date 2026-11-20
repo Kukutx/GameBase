@@ -373,7 +373,7 @@ func _read_entry(report: Report, entry: Dictionary) -> void:
 				report.boons[StringName(key)] = stacks
 	var names := _describe_boons(report.boons)
 	if not names.is_empty():
-		report.lines.append(tr("Boons: %s") % ", ".join(names))
+		report.lines.append(tr("Boons: %s") % GameText.list(names))
 
 # `boons` (boon id -> times taken) as the player reads them, in the order of
 # their ids: each by its name, with how many times when more than once

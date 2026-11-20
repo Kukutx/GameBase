@@ -57,7 +57,7 @@ func _on_interacted(_actor: Node) -> void:
 	var choices: Array[ChoiceMenu.Choice] = []
 	for floor: int in stops:
 		var guardians := MineState.get_standing_guardian_names(floor)
-		var note := tr("Guarded by %s") % ", ".join(guardians) if not guardians.is_empty() else ""
+		var note := tr("Guarded by %s") % GameText.list(guardians) if not guardians.is_empty() else ""
 		choices.append(ChoiceMenu.Choice.new(StringName(str(floor)), tr("Floor %d") % floor, note))
 	var focus := 1 if MineState.get_current_floor() > 1 else stops[stops.size() - 1]
 	var picked: StringName = await ChoiceMenu.ask(self, choices, "Mine Elevator", StringName(str(focus)))

@@ -62,6 +62,7 @@ The gate proves that an entry exists, not that the text is shown translated. `ga
 - A service that produces text for the UI translates its own template (`tr("Game saved · Slot %d") % slot`), or hands over the template and its arguments, instead of returning a finished English sentence. `GameEvents.toastf(template, args)` and `Interactable.set_prompt(template, args)` translate the template and every `String` argument, then format. The summaries, save and load results and status lines that services return are already in the current language; a caller shows them as they are.
 - Text typed by the player is data and is not passed to `tr()`; that includes handing it to `toastf` as an argument.
 - Build a sentence from one template with placeholders rather than joining translated fragments, so the word order can differ between languages.
+- Join a list the player reads (names, changes, what something needs) with `GameText.list(parts)`, not `", ".join(parts)`: the core's catalog translates its separator, so Chinese reads `凝胶、矿石`.
 
 ## Counts
 

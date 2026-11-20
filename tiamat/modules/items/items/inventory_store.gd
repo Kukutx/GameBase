@@ -173,7 +173,7 @@ func get_summary(max_entries: int = 4) -> String:
 		parts.append("%s x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
 	if entries.size() > max_entries:
 		parts.append(tr("+%d more") % (entries.size() - max_entries))
-	return tr("Inventory %d/%d: %s") % [get_used_slots(), max_slots, ", ".join(parts)]
+	return tr("Inventory %d/%d: %s") % [get_used_slots(), max_slots, GameText.list(parts)]
 
 func clear() -> void:
 	if _items.is_empty():
@@ -219,7 +219,7 @@ func _consume(item: ItemData) -> bool:
 			effects.append("+%d %s" % [restored, tr(vital.display_name)])
 	if item.food_buff_id != &"":
 		BuffState.apply_buff(item.food_buff_id)
-	var gave := " (%s)" % ", ".join(effects) if not effects.is_empty() else ""
+	var gave := " (%s)" % GameText.list(effects) if not effects.is_empty() else ""
 	if item.kind == ItemData.Kind.POTION:
 		GameEvents.toastf("Drank %s%s", [item.display_name, gave])
 	else:

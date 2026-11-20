@@ -70,7 +70,7 @@ static func choice_of(upgrade: StatUpgradeData) -> ChoiceMenu.Choice:
 	var lines := PackedStringArray()
 	if not upgrade.description.is_empty():
 		lines.append(TranslationServer.translate(upgrade.description))
-	var changes := ", ".join(GameStats.describe_changes(upgrade.multipliers, upgrade.bonuses))
+	var changes := GameText.list(GameStats.describe_changes(upgrade.multipliers, upgrade.bonuses))
 	if not changes.is_empty():
 		lines.append(TranslationServer.translate("Each level: %s") % changes if upgrade.max_level > 1 else changes)
 	var problem := upgrade.get_buy_problem()

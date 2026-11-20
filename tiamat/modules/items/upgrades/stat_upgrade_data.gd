@@ -68,7 +68,7 @@ func describe_cost() -> String:
 		parts.append(TranslationServer.translate("%dg") % money)
 	for item_id: StringName in _sorted_materials():
 		parts.append("%s x%d" % [GameRulesService.entry_name(ItemData.KIND, item_id), materials[item_id]])
-	return ", ".join(parts)
+	return GameText.list(parts)
 
 ## Why the player cannot buy its next level now, as they read it, or "" when
 ## they can: it is maxed, its condition does not hold (what it needs), or the
@@ -77,7 +77,7 @@ func get_buy_problem() -> String:
 	if is_maxed():
 		return TranslationServer.translate("Fully upgraded")
 	if not GameRules.check(condition):
-		return TranslationServer.translate("Locked: %s") % ", ".join(GameRules.describe(condition))
+		return TranslationServer.translate("Locked: %s") % GameText.list(GameRules.describe(condition))
 	if not Wallet.can_afford(get_next_cost()):
 		return TranslationServer.translate("Needs: %s") % (TranslationServer.translate("%dg") % get_next_cost())
 	for item_id: StringName in _sorted_materials():
