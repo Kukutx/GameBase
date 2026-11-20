@@ -9,7 +9,9 @@ extends MiniGame
 ## (`RtsBattle.goal`), the battle's first line says which side wins by holding
 ## it and how long that takes, and the line tells whenever the side that
 ## holds it changes. It also tells when units arrive while the battle runs
-## (`RtsBattle.unit_arrived`), the player's or their foes'.
+## (`RtsBattle.unit_arrived`), the player's or their foes'. With a time limit
+## (`RtsBattle.time_limit`), the first line says so, unless it tells of ground
+## to hold, and the bar counts down the seconds of battle time left.
 ##
 ## With the mouse, a click selects one of the player's units and a dragged box
 ## selects those in it (Shift adds to the selection, or drops a unit from it);
@@ -83,6 +85,7 @@ var _speed := 1.0
 var _cursor_speed := 160.0
 var _end_left := 0.0
 var _field: RtsBattleField
+var _clock: Label
 var _info: Label
 var _message: Label
 var _buttons: Array[Button] = []
@@ -108,6 +111,10 @@ func setup(settings: Dictionary) -> void:
 	if not players.is_empty():
 		_field.cursor = players[0].position
 	_message.text = tr(map.display_name)
+	if battle.time_limit != null:
+		var limit_line := tr("%s: hold out for %d seconds of battle.") if battle.time_limit.wins(battle.player_faction) else tr("%s: win within %d seconds of battle.")
+		_message.text = limit_line % [tr(map.display_name), roundi(battle.time_limit.seconds)]
+	_show_clock()
 	if battle.goal != null:
 		var line := tr("%s: the foes win if they hold the marked ground for %d seconds.") if FactionData.are_hostile(battle.goal.taker, battle.player_faction) else tr("%s: hold the marked ground for %d seconds, or defeat every foe.")
 		_message.text = line % [tr(map.display_name), roundi(battle.goal.seconds)]
@@ -235,6 +242,7 @@ func _process(delta: float) -> void:
 			_field.show_cursor = true
 			_field.cursor = (_field.cursor + direction * _cursor_speed * delta).clamp(Vector2.ZERO, battle.size)
 	battle.advance(delta * get_speed())
+	_show_clock()
 
 # A command comes before the field takes a click, so one the player bound to
 # a mouse button works over the field too.
@@ -373,10 +381,19 @@ func _on_goal_changed(holder: RtsUnit) -> void:
 func _on_unit_arrived(unit: RtsUnit) -> void:
 	_message.text = tr("Reinforcements arrive.") if battle.is_on_player_side(unit) else tr("Foe reinforcements arrive!")
 
+# Counts down the battle time left, with a time limit.
+func _show_clock() -> void:
+	var limit := battle.time_limit
+	_clock.visible = limit != null
+	if limit != null:
+		_clock.text = (tr("Hold out: %d s") if limit.wins(battle.player_faction) else tr("Time left: %d s")) % ceili(limit.get_left(battle.time))
+
 func _on_ended(won: bool) -> void:
 	_end_left = END_SECONDS
 	_armed = false
 	_message.text = get_outcome_text(won)
+	if battle.time_limit != null and battle.time_limit.is_up(battle.time):
+		_message.text = "%s %s" % [tr("Time is up!"), _message.text]
 	_show_selection()
 	RtsEvents.battle_ended.emit(map.id, won)
 
@@ -404,6 +421,8 @@ func _build() -> void:
 	rows.add_child(_field)
 	var bar := HBoxContainer.new()
 	rows.add_child(bar)
+	_clock = Label.new()
+	bar.add_child(_clock)
 	_info = Label.new()
 	_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_info.clip_text = true

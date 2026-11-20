@@ -3,8 +3,9 @@ extends GutTest
 ## The battle at the raider camp, the muster's second: it opens once the pass
 ## is won, its map and units hold, the raiders wait behind their palisade, a
 ## win at the ford sends two spearmen, the fire at the camp's heart held for
-## 20 seconds wins it, and the battle comes to an end when the player's troops
-## storm it.
+## 20 seconds wins it, the raiders' main band coming home two minutes in wins
+## it for them, and the battle comes to an end when the player's troops storm
+## it.
 
 const GATE := Vector2(324.0, 100.0)
 
@@ -65,6 +66,14 @@ func test_the_fire_at_the_camp_s_heart_held_wins_it() -> void:
 	assert_false(battle.is_over())
 	battle.advance(1.1)
 	assert_true(battle.is_over() and battle.is_won(), "held for 20 seconds")
+
+func test_the_raiders_main_band_comes_home_two_minutes_in() -> void:
+	var battle := RtsBattle.from_map(RtsMapData.find(&"raider_camp"))
+	assert_eq([battle.time_limit.seconds, battle.time_limit.wins(battle.player_faction)], [120.0, false], "a raid to win in time")
+	# As if the troops had stood at the gate two minutes less a second.
+	battle.time = 119.0
+	battle.advance(1.1)
+	assert_true(battle.is_over() and not battle.is_won(), "the band is home")
 
 func test_the_battle_ends_when_the_troops_storm_the_camp() -> void:
 	var battle := RtsBattle.from_map(RtsMapData.find(&"raider_camp"))

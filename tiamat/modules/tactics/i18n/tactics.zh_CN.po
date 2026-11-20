@@ -126,3 +126,18 @@ msgstr "攻击 %s"
 
 msgid "Defense %s"
 msgstr "防御 %s"
+
+msgid "Hold out: %d s"
+msgstr "坚守：%d 秒"
+
+msgid "Time left: %d s"
+msgstr "剩余：%d 秒"
+
+msgid "Time is up!"
+msgstr "时间到！"
+
+msgid "Hold out for %d seconds of battle."
+msgstr "坚守 %d 秒战斗时间。"
+
+msgid "Win within %d seconds of battle."
+msgstr "须在 %d 秒战斗时间内取胜。"

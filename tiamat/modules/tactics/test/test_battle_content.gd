@@ -159,6 +159,18 @@ func test_a_unit_placed_to_arrive_later_is_on_its_way_as_the_battle_starts() -> 
 	assert_eq([arrival.cell, arrival.seconds, arrival.leader], [Vector2i(0, 1), 12.0, true])
 	assert_eq(map.count_player_side(), 2, "it counts toward the units its side can field")
 
+func test_a_map_s_time_limit_ends_its_battle_for_the_side_it_names() -> void:
+	var map := _map()
+	assert_null(AtbBattle.from_map(map).time_limit, "none unless the map sets one")
+	map.time_limit = 90.0
+	var limit := AtbBattle.from_map(map).time_limit
+	assert_eq([limit.seconds, limit.faction], [90.0, FactionData.PLAYER], "the player's side holds out, unless the map names another")
+	map.time_faction_id = FactionData.MONSTERS
+	assert_eq(AtbBattle.from_map(map).time_limit.faction, FactionData.MONSTERS)
+	assert_eq(map.find_problems(_registry), PackedStringArray())
+	map.time_limit = 0.0
+	assert_eq(map.find_problems(_registry), PackedStringArray(["names side 'monsters' that wins once time runs out, but sets no time limit"]))
+
 func _map() -> BattleMapData:
 	var map := BattleMapData.new()
 	map.id = &"fixture_field"

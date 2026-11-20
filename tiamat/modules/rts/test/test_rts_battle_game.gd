@@ -98,6 +98,22 @@ func test_the_foes_ground_is_told() -> void:
 	var game := _game()
 	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == tr("%s: the foes win if they hold the marked ground for %d seconds.") % [tr("Fixture Meadow"), 30]))
 
+func test_a_time_limit_is_told_counted_down_and_lost_once_it_runs_out() -> void:
+	var map := RtsMapData.find(&"fixture_meadow")
+	map.time_limit = 3.0
+	map.time_faction_id = FactionData.MONSTERS
+	var outcome := {}
+	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	var tells := func(text: String) -> bool: return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == text)
+	assert_true(tells.call(tr("%s: win within %d seconds of battle.") % [tr("Fixture Meadow"), 3]), "the first line tells how long")
+	assert_true(tells.call(tr("Time left: %d s") % 3), "the bar counts down")
+	assert_true(await _until(func() -> bool: return tells.call(tr("Time left: %d s") % 2), 5.0))
+	assert_true(await _until(func() -> bool: return outcome.has("result"), 10.0))
+	var result: MiniGameResult = outcome["result"]
+	assert_false(result.success, "the raider stood when time ran out")
+	assert_eq(_ended, [[&"fixture_meadow", false]])
+
 func test_units_that_arrive_are_told() -> void:
 	var map := RtsMapData.find(&"fixture_meadow")
 	var foes := RtsFixture.placement(&"fixture_raider", FactionData.MONSTERS, Vector2(180.0, 90.0))

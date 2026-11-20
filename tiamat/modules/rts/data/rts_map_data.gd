@@ -3,10 +3,10 @@ extends ContentEntry
 
 ## A command battle a game sets up: the size of its field in pixels, the
 ## rectangles no unit walks through (rocks, walls, water), the ground a side
-## wins by holding (`goal_area`), the side the player commands, the units each
-## side starts with, and whether the units the player does not command march
-## on their foes or wait for them. The rts module's minigame plays it
-## (`RtsBattleGame`, setting `map`).
+## wins by holding (`goal_area`), how long it lasts at most (`time_limit`), the
+## side the player commands, the units each side starts with, and whether the
+## units the player does not command march on their foes or wait for them. The
+## rts module's minigame plays it (`RtsBattleGame`, setting `map`).
 
 const KIND := &"rts_map"
 ## The smallest and largest field, in pixels.
@@ -35,6 +35,13 @@ const MAX_SIZE := Vector2(2048.0, 2048.0)
 ## The side that wins by holding the ground (`FactionData`); empty, the
 ## player's.
 @export var goal_faction_id: StringName
+## The most seconds of battle time the battle lasts: once they pass, the side
+## of `time_faction_id` wins (`BattleTimeLimit`), the player's when it is
+## theirs (a stand to hold out) and the foes' when it is not (a raid to win in
+## time); 0, no limit.
+@export_range(0.0, 900.0, 1.0, "suffix:s") var time_limit := 0.0
+## The side that wins once time runs out (`FactionData`); empty, the player's.
+@export var time_faction_id: StringName
 
 ## The map with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> RtsMapData:
@@ -56,8 +63,16 @@ func count_player_side() -> int:
 func get_goal_faction() -> StringName:
 	return goal_faction_id if goal_faction_id != &"" else player_faction_id
 
+## The battle's time limit (`time_limit`), or null when it has none.
+func get_time_limit() -> BattleTimeLimit:
+	if time_limit <= 0.0:
+		return null
+	return BattleTimeLimit.new(time_limit, time_faction_id if time_faction_id != &"" else player_faction_id)
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
+	if time_limit <= 0.0 and time_faction_id != &"":
+		problems.append("names side '%s' that wins once time runs out, but sets no time limit" % time_faction_id)
 	if display_name.is_empty():
 		problems.append("has no display name")
 	if size.x < MIN_SIZE.x or size.y < MIN_SIZE.y or size.x > MAX_SIZE.x or size.y > MAX_SIZE.y:

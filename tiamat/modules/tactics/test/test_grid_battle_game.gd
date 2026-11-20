@@ -220,6 +220,19 @@ func test_a_unit_that_arrives_is_told() -> void:
 	assert_true(await _until(func() -> bool: return _shows(game, tr("%s joins the foes!") % tr("Fixture Dummy"))))
 	assert_eq(game.battle.get_unit_at(Vector2i(3, 0)).data.id, &"fixture_dummy")
 
+func test_a_time_limit_is_told_counted_down_and_won_by_holding_out() -> void:
+	BattleMapData.find(&"fixture_field").time_limit = 1.0
+	var outcome := {}
+	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(_tells(game, tr("Hold out for %d seconds of battle.") % 1), "the line tells how long")
+	assert_true(_tells(game, tr("Hold out: %d s") % 1), "the side counts it down")
+	assert_true(await _until(func() -> bool: return _tells(game, "%s %s" % [tr("Time is up!"), game.get_outcome_text(true)])), "time runs out before the knight's turn")
+	assert_true(await _until(func() -> bool: return outcome.has("result")))
+	var result: MiniGameResult = outcome["result"]
+	assert_true(result.success, "won with the dummy standing")
+	assert_eq(_ended, [[&"fixture_field", true]])
+
 func test_aiming_a_delay_tells_it_sets_the_turn_back() -> void:
 	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_bash"])
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
