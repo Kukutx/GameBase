@@ -55,12 +55,12 @@ func test_loaded_mining_state_clamps_future_respawn_markers() -> void:
 	assert_eq(node.durability_left, 0)
 	# Pending ground loot may legitimately aggregate multiple uncollected drops.
 	# Preserve any non-negative saved quantity instead of truncating it to one node's base drop.
-	assert_eq(node.pending_drop_quantity, 999999)
+	assert_eq(node.drop.quantity, 999999)
 	node.load_state_data({"durability_left": 0, "depleted": false, "depleted_day": 999999, "pending_drop_quantity": -10}, false)
 	assert_false(node.is_depleted)
 	assert_eq(node.depleted_day, 0)
 	assert_eq(node.durability_left, node.data.durability)
-	assert_eq(node.pending_drop_quantity, 0)
+	assert_eq(node.drop.quantity, 0)
 
 func test_pick_breaks_rock_and_reports_the_mined_resource() -> void:
 	var node := _add_rock(&"")
@@ -112,7 +112,7 @@ func test_mining_ground_drops_do_not_count_as_forage() -> void:
 	InventoryState.clear()
 	var node := _add_rock(&"")
 	var pebble := ItemData.find(&"fixture_pebble")
-	var mining_drop := node.call("_make_drop_pickup", pebble, 2) as WorldItemPickup
+	var mining_drop := OverflowDrop.make_pickup(pebble, 2)
 	assert_not_null(mining_drop)
 	if mining_drop == null:
 		return
@@ -138,24 +138,31 @@ func test_pending_ground_loot_survives_partial_collection_and_source_reload() ->
 		"depleted_day": WorldClock.day,
 		"pending_drop_quantity": 2,
 	})
-	var pickup := node.call("_make_drop_pickup", pebble, 2) as WorldItemPickup
+	# The pile lies in the place the player is in.
+	var place := Node2D.new()
+	get_tree().root.add_child(place)
+	autofree(place)
+	var scene_before := get_tree().current_scene
+	get_tree().current_scene = place
+	node.drop.show(node, pebble)
+	var pickup := place.get_child(0) as WorldItemPickup if place.get_child_count() > 0 else null
 	assert_not_null(pickup)
 	if pickup == null:
+		get_tree().current_scene = scene_before
 		return
-	pickup.items_collected.connect(Callable(node, "_on_pending_drop_collected"))
-	add_child_autofree(pickup)
 	await get_tree().process_frame
 	pickup.get_node("Interactable").interact(null)
 	await get_tree().process_frame
 	assert_eq(InventoryState.get_quantity(&"fixture_pebble"), pebble.max_stack)
 	assert_eq(pickup.quantity, 1)
-	assert_eq(node.pending_drop_quantity, 1)
+	assert_eq(node.drop.quantity, 1)
 	var saved_state := WorldState.get_value(&"mining:fixture_pending_rock", {}) as Dictionary
 	assert_eq(int(saved_state.get("pending_drop_quantity", 0)), 1)
 
 	var restored := _add_rock(&"fixture_pending_rock")
 	await get_tree().process_frame
-	assert_eq(restored.pending_drop_quantity, 1)
+	assert_eq(restored.drop.quantity, 1)
+	get_tree().current_scene = scene_before
 
 func _add_rock(persistent_id: StringName) -> MiningNode:
 	var node := MINING_NODE_SCENE.instantiate() as MiningNode

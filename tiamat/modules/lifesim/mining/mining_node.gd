@@ -7,8 +7,6 @@ signal respawned(node_id: StringName)
 ## The action of the tools that break a node.
 const TOOL_ACTION := &"mine"
 
-const PICKUP_SCENE := preload("res://tiamat/modules/items/items/item_pickup.tscn")
-
 @export var data: MiningNodeData
 @export var persistent_id: StringName
 
@@ -18,8 +16,8 @@ const PICKUP_SCENE := preload("res://tiamat/modules/items/items/item_pickup.tscn
 var durability_left := 1
 var is_depleted := false
 var depleted_day := 0
-var pending_drop_quantity := 0
-var _drop_pickup: WorldItemPickup
+## What it gave that the player's bag could not hold, waiting beside it.
+var drop := OverflowDrop.new(Vector2(10, 0))
 var _action_busy := false
 
 func _ready() -> void:
@@ -27,8 +25,9 @@ func _ready() -> void:
 	if data != null and durability_left <= 0 and not is_depleted:
 		durability_left = data.durability
 	WorldClock.day_changed.connect(_on_day_changed)
+	drop.changed.connect(_persist)
 	_refresh_visual()
-	_restore_pending_drop.call_deferred()
+	_show_drop.call_deferred()
 
 func use_item(item_id: StringName) -> bool:
 	if _action_busy:
@@ -70,7 +69,7 @@ func get_state_data() -> Dictionary:
 		"durability_left": durability_left,
 		"depleted": is_depleted,
 		"depleted_day": depleted_day,
-		"pending_drop_quantity": pending_drop_quantity,
+		"pending_drop_quantity": drop.quantity,
 	}
 
 func load_state_data(state: Dictionary, persist := true) -> void:
@@ -86,7 +85,7 @@ func load_state_data(state: Dictionary, persist := true) -> void:
 		depleted_day = 0
 		if durability_left <= 0:
 			durability_left = default_durability
-	pending_drop_quantity = SaveValues.count(state.get("pending_drop_quantity", 0))
+	drop.load_count(state.get("pending_drop_quantity", 0))
 	if persist:
 		_persist()
 	_refresh_visual()
@@ -95,57 +94,20 @@ func _break_node() -> void:
 	var item := ItemData.find(data.drop_item_id)
 	if item == null:
 		return
-	var remaining := InventoryState.add_item(item, data.drop_quantity)
-	if remaining > 0:
-		pending_drop_quantity += remaining
+	drop.give(item, data.drop_quantity)
 	is_depleted = true
 	depleted_day = WorldClock.day
 	durability_left = 0
 	_persist()
-	if pending_drop_quantity > 0:
-		_spawn_drop(item, pending_drop_quantity)
+	drop.show(self, item)
 	_refresh_visual()
 	depleted.emit(data.id)
 	LifesimEvents.resource_mined.emit(data.id, item.id, data.drop_quantity, global_position)
 	GameEvents.toastf("Mined %s x%d", [item.display_name, data.drop_quantity])
 
-func _spawn_drop(item: ItemData, quantity: int) -> void:
-	if quantity <= 0 or get_tree().current_scene == null:
-		return
-	if is_instance_valid(_drop_pickup):
-		_drop_pickup.set_quantity(quantity)
-		return
-	var pickup := _make_drop_pickup(item, quantity)
-	if pickup == null:
-		return
-	_drop_pickup = pickup
-	pickup.items_collected.connect(_on_pending_drop_collected)
-	get_tree().current_scene.add_child(pickup)
-	pickup.global_position = global_position + Vector2(10, 0)
-
-func _make_drop_pickup(item: ItemData, quantity: int) -> WorldItemPickup:
-	if item == null or quantity <= 0:
-		return null
-	var pickup := PICKUP_SCENE.instantiate() as WorldItemPickup
-	if pickup == null:
-		return null
-	pickup.item = item
-	pickup.quantity = quantity
-	pickup.counts_as_forage = false
-	return pickup
-
-func _on_pending_drop_collected(_item_id: StringName, _collected: int, remaining: int) -> void:
-	pending_drop_quantity = maxi(remaining, 0)
-	_persist()
-	if pending_drop_quantity <= 0:
-		_drop_pickup = null
-
-func _restore_pending_drop() -> void:
-	if pending_drop_quantity <= 0 or data == null:
-		return
-	var item := ItemData.find(data.drop_item_id)
-	if item != null:
-		_spawn_drop(item, pending_drop_quantity)
+func _show_drop() -> void:
+	if data != null and drop.quantity > 0:
+		drop.show(self, ItemData.find(data.drop_item_id))
 
 func _on_day_changed(day: int) -> void:
 	if not is_depleted or data == null:
