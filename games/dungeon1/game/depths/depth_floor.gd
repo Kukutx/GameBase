@@ -15,12 +15,11 @@ extends Node2D
 ## spread by `vents`) flare on the floor in turn, burning the player and the
 ## creatures alike, more of them the deeper, from a stream of their own and
 ## clear of the ways in and on and the altar. Now and then a floor holds a
-## chest (`LootChest`, `chest_loot`), sealed until the floor is cleared, and a
-## depth a guardian guards always holds its hoard (`hoard_loot`), both the
+## chest (`LootChest`, spread by `chests`), sealed until the floor is cleared,
+## and a depth a guardian guards always holds the Warden's Hoard, both the
 ## richer the deeper.
 
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
-const CHEST_SCENE := preload("res://tiamat/modules/items/loot/loot_chest.tscn")
 # How far apart the enemies of a floor stand.
 const ENEMY_SPACING := 28.0
 # How far a floor's vents and chest stand from the ways in and on and the
@@ -39,12 +38,8 @@ const VENT_CLEARANCE := 48.0
 @export var arrival_clearance := 90.0
 ## The ember vents of its floors, the deeper the more; none without.
 @export var vents: HazardSpread
-## What a floor's chest holds, at the floor's depth; no chests without.
-@export var chest_loot: LootTable
-## How often a floor holds a chest.
-@export_range(0.0, 1.0, 0.01) var chest_chance := 0.3
-## What a guarded depth's chest holds; there always.
-@export var hoard_loot: LootTable
+## Which floors hold a chest and what it holds; no chests without.
+@export var chests: ChestSpread
 ## Where the rope leads.
 @export var camp_location_id: StringName
 @export var camp_spawn_id: StringName
@@ -157,14 +152,10 @@ func _spawn_vents() -> void:
 func _spawn_chest() -> void:
 	var depth := DepthRun.get_depth()
 	var rolls := DepthRun.floor_stream("chest")
-	var hoard := hoard_loot != null and not EnemyTier.guardians(enemy_tiers, depth).is_empty()
-	if not hoard and (chest_loot == null or rolls.randf() >= chest_chance):
+	var guarded := not EnemyTier.guardians(enemy_tiers, depth).is_empty()
+	if chests == null or not chests.holds_chest(rolls, depth, guarded):
 		return
-	_chest = CHEST_SCENE.instantiate() as LootChest
-	_chest.name = "Hoard" if hoard else "Chest"
-	_chest.display_name = "Warden's Hoard" if hoard else "Chest"
-	_chest.loot = hoard_loot if hoard else chest_loot
-	_chest.level = depth
+	_chest = chests.make(depth, guarded)
 	_chest.locked = true
 	_chest.position = rolls.scatter(arena.grow(-24.0), 1, VENT_CLEARANCE, _taken_places(), Vector2.ZERO, _is_clear_of_ways)[0]
 	_chest.fill(rolls)
@@ -234,10 +225,9 @@ func find_scene_problems(registry: ContentRegistry, location: WorldLocationData)
 		problems.append("depth floor has no enemy tier from depth 1")
 	if location != null and not registry.has_location_spawn(location.id, arrival_spawn_id):
 		problems.append("depth floor arrives at spawn '%s', which its scene does not have" % arrival_spawn_id)
-	for loot: LootTable in [chest_loot, hoard_loot]:
-		if loot != null:
-			for problem: String in loot.find_problems(registry):
-				problems.append("depth floor %s" % problem)
+	if chests != null:
+		for problem: String in chests.find_problems(registry):
+			problems.append("depth floor %s" % problem)
 	if not registry.has_location_spawn(camp_location_id, camp_spawn_id):
 		problems.append("depth floor's rope leads to spawn '%s' of '%s', which does not exist" % [camp_spawn_id, camp_location_id])
 	return problems

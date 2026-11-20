@@ -2249,3 +2249,6 @@ msgstr "巨大%s"
 
 msgid "Frenzied %s"
 msgstr "狂暴%s"
+
+msgid "Royal Hoard"
+msgstr "王者宝藏"

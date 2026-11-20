@@ -210,6 +210,38 @@ func test_hazards_lie_clear_of_the_rocks_enemies_and_ways_and_leave_them_as_they
 	stranger.free()
 	assert_eq(table.find_problems(_registry).size(), 1, "a hazard scene that is no hazard is a problem")
 
+func test_a_chest_stands_clear_of_what_stands_on_the_floor_and_a_guarded_floor_holds_the_hoard() -> void:
+	var king := _enemy_tier(&"fixture_king", 10)
+	king.guardian_every = 10
+	var table := _table(&"fixture_stone", [], [_enemy_tier(&"fixture_slime", 1), king])
+	MineState.floor_table = table
+	var plain := MineState.generate_floor_layout(12)
+	assert_eq(plain["chests"], [], "no spread, no chests")
+	table.chests = ChestSpread.new()
+	table.chests.loot = LootTable.new()
+	table.chests.chance = 1.0
+	table.chests.from_level = 5
+	assert_eq(MineState.generate_floor_layout(4)["chests"], [], "none above its first floor")
+	var layout := MineState.generate_floor_layout(12)
+	assert_eq(layout["rocks"], plain["rocks"], "the rocks stand where they stood")
+	assert_eq(layout["enemies"], plain["enemies"], "and the enemies")
+	var chests: Array = layout["chests"]
+	assert_eq(chests.size(), 1)
+	var place: Vector2 = chests[0]["position"]
+	assert_true(MineRunState.FLOOR_AREA.has_point(place))
+	assert_gte(place.distance_to(MineRunState.ENTRANCE), MineRunState.ENTRANCE_CLEARANCE, "clear of the way in")
+	assert_gte(place.distance_to(MineRunState.EXIT), MineRunState.EXIT_CLEARANCE, "and the way down")
+	for entry: Dictionary in layout["rocks"] + layout["enemies"]:
+		assert_gte(place.distance_to(entry["position"]), MineRunState.SPACING, "and what stands on the floor")
+	assert_eq(String(chests[0]["persistent_id"]), "mine_f012_chest", "found once in a world")
+	assert_false(chests[0]["hoard"])
+	assert_eq(MineState.generate_floor_layout(12)["chests"], chests, "the same floor of the same world, the same chest")
+	assert_false(MineState.generate_floor_layout(10)["chests"][0]["hoard"], "without a hoard, a guarded floor holds an ordinary chest")
+	table.chests.hoard = LootTable.new()
+	table.chests.chance = 0.0
+	assert_eq(MineState.generate_floor_layout(12)["chests"], [], "a floor holds one as often as its chance")
+	assert_true(MineState.generate_floor_layout(10)["chests"][0]["hoard"], "a guarded floor always holds the hoard")
+
 func test_the_guardians_standing_on_a_floor_are_named_until_they_fall() -> void:
 	var king := _enemy_tier(&"fixture_king", 10)
 	king.guardian_every = 10

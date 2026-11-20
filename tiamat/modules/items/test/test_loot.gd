@@ -141,6 +141,37 @@ func test_a_chest_is_filled_once_by_its_place() -> void:
 	assert_eq(_add_chest(null).find_scene_problems(ContentRegistry.active, null).size(), 1, "a chest needs something to hold")
 	assert_eq(chest.find_scene_problems(ContentRegistry.active, null), PackedStringArray())
 
+func test_a_chest_spread_says_which_floors_hold_one() -> void:
+	var spread := ChestSpread.new()
+	assert_false(spread.holds_chest(_rolls("none"), 5), "none without a table")
+	spread.loot = _table(3)
+	spread.from_level = 4
+	spread.chance = 1.0
+	assert_false(spread.holds_chest(_rolls("above"), 3), "none above its first level")
+	assert_true(spread.holds_chest(_rolls("at"), 4))
+	spread.chance = 0.25
+	var held := 0
+	for index: int in 400:
+		if spread.holds_chest(_rolls("often%d" % index), 10):
+			held += 1
+	assert_between(held, 70, 130, "as often as its chance")
+	spread.chance = 0.0
+	assert_false(spread.holds_chest(_rolls("guarded"), 10, true), "a guarded floor holds none without a hoard")
+	spread.hoard = _table(9, 50)
+	spread.hoard_name = "Fixture Hoard"
+	assert_true(spread.holds_chest(_rolls("guarded"), 1, true), "and always its hoard")
+	var chest := spread.make(6)
+	assert_eq([chest.name, chest.display_name, chest.loot, chest.level], [&"Chest", "Chest", spread.loot, 6])
+	chest.free()
+	var hoard := spread.make(6, true)
+	assert_eq([hoard.name, hoard.display_name, hoard.loot, hoard.level], [&"Hoard", "Fixture Hoard", spread.hoard, 6], "the hoard on a guarded floor")
+	hoard.free()
+	var sources := ItemSources.new()
+	spread.add_ways(sources, "In fixture chests")
+	assert_eq(sources.get_ways(&"fixture_stone"), PackedStringArray(["In fixture chests"]), "a way to get what its chests hold")
+	assert_eq(spread.find_problems(ContentRegistry.active), PackedStringArray())
+	assert_eq(ChestSpread.new().find_problems(ContentRegistry.active).size(), 1, "a spread holds something")
+
 func _table(stones: int, money := 0) -> LootTable:
 	var table := LootTable.new()
 	table.entries = [LootEntry.of(&"fixture_stone", stones)] as Array[LootEntry]

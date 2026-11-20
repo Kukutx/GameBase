@@ -225,3 +225,6 @@ msgstr "找到了%s"
 
 msgid "The %s is empty"
 msgstr "%s是空的"
+
+msgid "Hoard"
+msgstr "宝藏"

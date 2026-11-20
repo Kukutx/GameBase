@@ -6,9 +6,10 @@ extends Node2D
 ## them with rocks and enemies generated from `MineState.floor_table`. Every
 ## floor is the same location; its ladder and elevator reload it. A floor's
 ## guardians (`EnemyTier.guardian_every`) are named on arrival and bar the
-## ladder like its other enemies; its hazards (`MineFloorTable.hazards`) lie
-## under the player and the creatures. The HUD's place line tells the floor
-## (`get_place_detail()`).
+## ladder like its other enemies; its hazards (`MineFloorTable.hazards`) and
+## its chest (`MineFloorTable.chests`, a guarded floor's sealed until its
+## guardians fall) lie under the player and the creatures. The HUD's place
+## line tells the floor (`get_place_detail()`).
 
 const MINING_SCENE := preload("res://tiamat/modules/lifesim/mining/mining_node.tscn")
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
@@ -29,6 +30,7 @@ var _generated_rocks: Array[MiningNode] = []
 var _generated_enemies: Array[HostileCreature] = []
 var _generated_guardians: Array[HostileCreature] = []
 var _generated_hazards: Array[Hazard] = []
+var _generated_chests: Array[LootChest] = []
 
 func _enter_tree() -> void:
 	# Ladder and elevator reloads arrive at floor_spawn_id and keep the floor.
@@ -87,6 +89,10 @@ func get_generated_enemies() -> Array[HostileCreature]:
 func get_generated_hazards() -> Array[Hazard]:
 	return _generated_hazards.duplicate()
 
+## The floor's chests: one at most.
+func get_generated_chests() -> Array[LootChest]:
+	return _generated_chests.duplicate()
+
 ## The floor's guardians, also among `get_generated_enemies()`.
 func get_generated_guardians() -> Array[HostileCreature]:
 	return _generated_guardians.duplicate()
@@ -116,6 +122,7 @@ func _spawn_dynamic_floor(floor: int) -> void:
 	_generated_enemies.clear()
 	_generated_guardians.clear()
 	_generated_hazards.clear()
+	_generated_chests.clear()
 	var layout := MineState.generate_floor_layout(floor)
 	_spawn_hazards(floor, layout.get("hazards", []))
 	var rock_index := 0
@@ -159,6 +166,7 @@ func _spawn_dynamic_floor(floor: int) -> void:
 		_generated_enemies.append(enemy)
 		if guardian:
 			_generated_guardians.append(enemy)
+	_spawn_chests(floor, layout.get("chests", []))
 	var standing := get_standing_guardian()
 	if standing != null:
 		GameEvents.toastf("%s guards this floor", [standing.data.display_name])
@@ -180,6 +188,20 @@ func _spawn_hazards(floor: int, entries: Array) -> void:
 		Hazard.add_under_actors(self, hazard)
 		_generated_hazards.append(hazard)
 
+func _spawn_chests(floor: int, entries: Array) -> void:
+	var spread := MineState.floor_table.chests if MineState.floor_table != null else null
+	if spread == null:
+		return
+	for raw: Variant in entries:
+		if not raw is Dictionary:
+			continue
+		var entry: Dictionary = raw
+		var chest := spread.make(floor, bool(entry.get("hoard", false)))
+		chest.persistent_id = StringName(String(entry.get("persistent_id", "")))
+		chest.position = entry.get("position", Vector2.ZERO)
+		Hazard.add_under_actors(self, chest)
+		_generated_chests.append(chest)
+
 func _get_floor_rocks() -> Array[MiningNode]:
 	return _generated_rocks if current_floor > 1 else _placed_rocks
 
@@ -200,6 +222,10 @@ func _refresh_ladder() -> void:
 		ladder.set_unlocked(is_floor_cleared() and current_floor < MineRunState.MAX_FLOOR)
 	if elevator != null:
 		elevator.refresh()
+	var guarded := get_standing_guardian() != null
+	for chest: LootChest in _generated_chests:
+		if is_instance_valid(chest):
+			chest.locked = guarded
 
 func _on_locale_changed(_locale: String) -> void:
 	_refresh_ladder()
