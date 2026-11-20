@@ -84,6 +84,26 @@ func test_fishing_state_machine_waits_bites_and_reels() -> void:
 	assert_eq(service.cast_state, FishingService.CastState.IDLE)
 	assert_eq(InventoryState.get_quantity(&"fixture_trout") + InventoryState.get_quantity(&"fixture_carp"), 1)
 
+func test_a_bag_with_room_for_no_fish_casts_no_line_and_keeps_its_energy() -> void:
+	WorldClock.set_time(1, 13 * 60)
+	InventoryState.clear()
+	Vitals.refill(ENERGY)
+	var slots := InventoryState.max_slots
+	InventoryState.max_slots = 1
+	var filler := ItemData.find(&"fixture_sardine")
+	InventoryState.add_item(filler, filler.max_stack - 1)
+	var service := FishingService.new()
+	add_child_autofree(service)
+	var energy := Vitals.get_value(ENERGY)
+	assert_false(service.can_hold_a_catch(&"fixture_river"), "the one slot holds sardines, which the river does not give")
+	assert_false(service.start_cast(&"fixture_river", 4))
+	assert_false(service.is_active())
+	assert_false(service.try_fish(&"fixture_river", 4))
+	assert_eq(Vitals.get_value(ENERGY), energy, "no energy goes on a catch the bag cannot hold")
+	assert_eq(service.cast_count, 0, "nor a roll")
+	assert_true(service.can_hold_a_catch(&"fixture_harbor"), "the harbour's sardines stack onto them")
+	InventoryState.max_slots = slots
+
 func test_a_cast_ends_with_the_player_s_activities() -> void:
 	WorldClock.set_time(1, 13 * 60)
 	Vitals.refill(ENERGY)

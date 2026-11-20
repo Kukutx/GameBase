@@ -648,8 +648,26 @@ msgstr "在%s采集"
 msgid "Foraged"
 msgstr "采集获得"
 
+msgid "Grown from %s (%s)"
+msgstr "种植%s收获（%s）"
+
+msgid "Caught at %s (%s)"
+msgstr "在%s钓到（%s）"
+
+msgid "Caught while fishing (%s)"
+msgstr "钓鱼获得（%s）"
+
+msgid "Foraged at %s (%s)"
+msgstr "在%s采集（%s）"
+
+msgid "Foraged (%s)"
+msgstr "采集获得（%s）"
+
 msgid "Mined from %s"
 msgstr "开采%s获得"
+
+msgid "Mined from %s (from floor %d)"
+msgstr "开采%s获得（第 %d 层起）"
 
 msgid "Produced by %s"
 msgstr "%s产出"

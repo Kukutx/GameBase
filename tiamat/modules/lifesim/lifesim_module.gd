@@ -49,7 +49,12 @@ func get_facts() -> Dictionary:
 
 ## The ways to get items the module gives (`ItemSources`): a crop's harvest,
 ## a fish, what is foraged and mined, an animal's products, a machine's
-## output, and the rewards of a festival and of a collection's milestone.
+## output, and the rewards of a festival and of a collection's milestone. A
+## harvest and a forage name their seasons, a fish its seasons, hours and
+## weather ("Caught at River (Spring · 06:00–20:00 · Rain)",
+## `FishData.describe_when()`), and a rock of the mine the floor it is first
+## found on ("Mined from Gold Vein (from floor 20)"), so the player knows when
+## and where to look.
 static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -> void:
 	var seeds := {}
 	for item: ItemData in registry.get_entries(ItemData.KIND):
@@ -57,13 +62,30 @@ static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -
 			seeds[item.crop_id] = String(TranslationServer.translate(item.display_name))
 	for crop: CropData in registry.get_entries(CropData.KIND):
 		var planted: String = seeds.get(crop.id, String(TranslationServer.translate(crop.display_name)))
-		sources.add(crop.harvest_item_id, TranslationServer.translate("Grown from %s") % planted)
+		var grown_in := describe_seasons(crop.allowed_seasons)
+		if grown_in.is_empty():
+			sources.add(crop.harvest_item_id, TranslationServer.translate("Grown from %s") % planted)
+		else:
+			sources.add(crop.harvest_item_id, TranslationServer.translate("Grown from %s (%s)") % [planted, grown_in])
 	for fish: FishData in registry.get_entries(FishData.KIND):
-		sources.add(fish.item_id, _found_at(registry, fish.locations, TranslationServer.translate("Caught at %s"), TranslationServer.translate("Caught while fishing")))
+		var bites := fish.describe_when(registry)
+		if bites.is_empty():
+			sources.add(fish.item_id, _found_at(registry, fish.locations, TranslationServer.translate("Caught at %s"), TranslationServer.translate("Caught while fishing")))
+		else:
+			sources.add(fish.item_id, _found_at(registry, fish.locations, TranslationServer.translate("Caught at %s (%s)"), TranslationServer.translate("Caught while fishing (%s)"), bites))
 	for forage: ForageEntryData in registry.get_entries(ForageEntryData.KIND):
-		sources.add(forage.item_id, _found_at(registry, forage.locations, TranslationServer.translate("Foraged at %s"), TranslationServer.translate("Foraged")))
+		var found_in := describe_seasons(forage.seasons)
+		if found_in.is_empty():
+			sources.add(forage.item_id, _found_at(registry, forage.locations, TranslationServer.translate("Foraged at %s"), TranslationServer.translate("Foraged")))
+		else:
+			sources.add(forage.item_id, _found_at(registry, forage.locations, TranslationServer.translate("Foraged at %s (%s)"), TranslationServer.translate("Foraged (%s)"), found_in))
+	var mine_rocks := _mine_rock_ids()
 	for node: MiningNodeData in registry.get_entries(MiningNodeData.KIND):
-		sources.add(node.drop_item_id, TranslationServer.translate("Mined from %s") % TranslationServer.translate(node.display_name))
+		var rock_name := String(TranslationServer.translate(node.display_name))
+		if mine_rocks.has(node.id) and node.minimum_mine_floor > 1:
+			sources.add(node.drop_item_id, TranslationServer.translate("Mined from %s (from floor %d)") % [rock_name, node.minimum_mine_floor])
+		else:
+			sources.add(node.drop_item_id, TranslationServer.translate("Mined from %s") % rock_name)
 	for animal: FarmAnimalData in registry.get_entries(FarmAnimalData.KIND):
 		var produced: String = TranslationServer.translate("Produced by %s") % TranslationServer.translate(animal.display_name)
 		sources.add(animal.product_item_id, produced)
@@ -77,14 +99,38 @@ static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -
 	if MineState.floor_table != null and MineState.floor_table.chests != null:
 		MineState.floor_table.chests.add_ways(sources, TranslationServer.translate("Found in chests in the mine"))
 
+# The rocks the game's mine lays out on its floors (`MineFloorTable`), each
+# from its `minimum_mine_floor` down.
+static func _mine_rock_ids() -> Dictionary[StringName, bool]:
+	var ids: Dictionary[StringName, bool] = {}
+	var table := MineState.floor_table
+	if table == null:
+		return ids
+	if table.default_rock_id != &"":
+		ids[table.default_rock_id] = true
+	for tier: MineRockTier in table.rock_tiers:
+		if tier != null and tier.rock_id != &"":
+			ids[tier.rock_id] = true
+	return ids
+
+## The translated names of `seasons` as a list ("Spring, Autumn"); "" for none,
+## which is every season.
+static func describe_seasons(seasons: PackedStringArray) -> String:
+	var names := PackedStringArray()
+	for season: String in seasons:
+		names.append(String(TranslationServer.translate(season)))
+	return GameText.list(names)
+
 # `at` (translated already) naming the locations of `location_ids`, or
-# `anywhere` without any.
-static func _found_at(registry: ContentRegistry, location_ids: Array[StringName], at: String, anywhere: String) -> String:
+# `anywhere` without any; `when`, unless empty, fills either's second place.
+static func _found_at(registry: ContentRegistry, location_ids: Array[StringName], at: String, anywhere: String, when := "") -> String:
 	var names := PackedStringArray()
 	for location_id: StringName in location_ids:
 		var location := registry.get_entry(WorldLocationData.KIND, location_id) as WorldLocationData
 		names.append(String(TranslationServer.translate(location.display_name)) if location != null else String(location_id))
-	return anywhere if names.is_empty() else at % GameText.list(names)
+	if when.is_empty():
+		return anywhere if names.is_empty() else at % GameText.list(names)
+	return anywhere % when if names.is_empty() else at % [GameText.list(names), when]
 
 ## The content the game puts in the module's slots must exist.
 func _find_slot_problems(registry: ContentRegistry) -> PackedStringArray:

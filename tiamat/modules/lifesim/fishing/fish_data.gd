@@ -47,6 +47,30 @@ func is_available(location_id: StringName, day: int, minute_of_day: int, weather
 		return minute_of_day >= start_minute and minute_of_day < end_minute
 	return minute_of_day >= start_minute or minute_of_day < end_minute
 
+## When it bites, in words the player reads ("Spring, Autumn · 06:00–20:00 ·
+## Rain"): its seasons, its hours unless it bites all day, and its weather, of
+## `registry`'s content; "" when it bites at any time.
+func describe_when(registry: ContentRegistry = ContentRegistry.active) -> String:
+	var parts := PackedStringArray()
+	var season_names := PackedStringArray()
+	for season: String in seasons:
+		season_names.append(String(TranslationServer.translate(season)))
+	if not season_names.is_empty():
+		parts.append(GameText.list(season_names))
+	if start_minute != 0 or end_minute != 24 * 60:
+		parts.append("%s–%s" % [_clock(start_minute), _clock(end_minute)])
+	var weather_names := PackedStringArray()
+	for weather_id: StringName in allowed_weather:
+		var weather := registry.get_entry(WeatherData.KIND, weather_id) as WeatherData if registry != null else null
+		weather_names.append(String(TranslationServer.translate(weather.display_name)) if weather != null else String(weather_id))
+	if not weather_names.is_empty():
+		parts.append(GameText.list(weather_names))
+	return " · ".join(parts)
+
+# "06:00" for `minute` after midnight; midnight at the end of the day too.
+static func _clock(minute: int) -> String:
+	return "%02d:%02d" % [int(minute / 60.0) % 24, minute % 60]
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if not ItemData.has_tagged(registry, item_id, "fish"):

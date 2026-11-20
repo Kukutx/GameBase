@@ -7,8 +7,9 @@ extends Node
 ## from the fish (`FishData`) available at that location, day, time and weather.
 ##
 ## Casting costs energy (`LifesimSettings.energy_vital_id`) and holds the player's controls
-## (`InputLock`) until the cast ends; a bite that is not reeled in, or a fish
-## that does not fit in the inventory, gets away. The wait and the window follow
+## (`InputLock`) until the cast ends; a bite that is not reeled in gets away. A
+## bag with room for none of the fish there casts no line, so no energy goes on
+## a catch it cannot hold (`can_hold_a_catch()`). The wait and the window follow
 ## the `fishing_wait` and `fishing_window` stats (`GameStats`). Rolls come from
 ## the world's seed (`GameRandom`) and the count of casts, which is all that is
 ## saved: loading a save ends a cast, and the game cannot be saved while one
@@ -119,6 +120,9 @@ func _start_cast_internal(location_id: StringName, energy_cost: int) -> bool:
 	if get_available_fish(location_id).is_empty():
 		GameEvents.toast("Nothing is biting right now")
 		return false
+	if not can_hold_a_catch(location_id):
+		GameEvents.toast("Inventory is full")
+		return false
 	if not LifesimSettings.spend_energy(energy_cost):
 		return false
 	var fish := roll_catch(location_id)
@@ -174,6 +178,9 @@ func _try_fish_internal(location_id: StringName, energy_cost: int) -> bool:
 	if get_available_fish(location_id).is_empty():
 		GameEvents.toast("Nothing is biting right now")
 		return false
+	if not can_hold_a_catch(location_id):
+		GameEvents.toast("Inventory is full")
+		return false
 	if not LifesimSettings.spend_energy(energy_cost):
 		return false
 	var fish := roll_catch(location_id)
@@ -184,6 +191,14 @@ func _try_fish_internal(location_id: StringName, energy_cost: int) -> bool:
 	if not caught:
 		LifesimSettings.refund_energy(energy_cost)
 	return caught
+
+## Whether the bag has room for one of a fish that bites at `location_id` now.
+func can_hold_a_catch(location_id: StringName) -> bool:
+	for fish: FishData in get_available_fish(location_id):
+		var item := ItemData.find(fish.item_id)
+		if item != null and InventoryState.get_add_capacity(item) > 0:
+			return true
+	return false
 
 func is_active() -> bool:
 	return cast_state != CastState.IDLE
