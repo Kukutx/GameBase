@@ -175,6 +175,7 @@ text = ""
 [node name="GameMenu" parent="." instance=ExtResource("2_menu")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("3_pause")]
+hidden_pages = Array[StringName]([&"items", &"skills"])
 
 [node name="StorageMenu" parent="." instance=ExtResource("5_storage_menu")]
 

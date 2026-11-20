@@ -4,7 +4,10 @@ const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 ## A stat registered for the test, so a perk may change it.
 const STAT := &"fixture_stamina"
 
+var _skills_snapshot: Dictionary
+
 func before_each() -> void:
+	_skills_snapshot = Skills.to_save_data()
 	ContentFixture.use(self, [
 		_skill(&"fixture_tilling", "Tilling", [100, 250, 450]),
 		_skill(&"fixture_gathering", "Gathering", [100, 250, 450]),
@@ -13,6 +16,16 @@ func before_each() -> void:
 func after_each() -> void:
 	# GUT frees the fixture content only after this hook.
 	ContentRegistry.active = ContentDB
+	Skills.load_save_data(_skills_snapshot)
+
+func test_the_pause_menu_s_skills_tell_how_far_each_skill_is() -> void:
+	Skills.load_save_data({})
+	Skills.add_xp(&"fixture_tilling", 120)
+	Skills.add_xp(&"fixture_gathering", 999)
+	var lines := SkillsModule.describe_skills()
+	assert_true(lines.has("Gathering Lv 4 (max)"), str(lines))
+	assert_true(lines.has("Tilling Lv 2 · 120/250 XP"), str(lines))
+	assert_true(PauseMenu.get_page_ids().has(&"skills"))
 
 func test_skill_levels_follow_thresholds() -> void:
 	var skills := SkillManager.new()

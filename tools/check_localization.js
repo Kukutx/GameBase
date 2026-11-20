@@ -87,6 +87,10 @@ const CALL_RE = /(?:\btr|\bTranslationServer\.translate|GameEvents\.toastf?|\bse
 // "Attack")`), which the player reads in what content changes.
 const STAT_NAME_RE = /\bregister_stat\(\s*[^,()"]+,\s*"((?:[^"\\]|\\.)*)"/g;
 
+// The title of a page a module adds to the pause menu (`PauseMenu.add_page(&"items",
+// "Items", ...)`), which its button shows.
+const PAGE_TITLE_RE = /\badd_page\(\s*[^,()"]+,\s*"((?:[^"\\]|\\.)*)"/g;
+
 // A count's text, its singular and plural (`tr_n("%d heart", "%d hearts", n)`),
 // which a catalog translates as one entry with every plural form its language
 // has.
@@ -295,6 +299,9 @@ function collectNonDialogueKeys(layer) {
       add(match[1]);
     }
     for (const match of text.matchAll(STAT_NAME_RE)) {
+      add(match[1]);
+    }
+    for (const match of text.matchAll(PAGE_TITLE_RE)) {
       add(match[1]);
     }
     for (const match of text.matchAll(EXPORT_LIST_DEFAULT_RE)) {

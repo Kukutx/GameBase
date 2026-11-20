@@ -15,8 +15,9 @@ extends MenuLayer
 ## to it the first time (`of()` finds it again) and gives the id of the choice
 ## picked, or &"" when the player closed the list. Whatever only tells the
 ## player something (a run's report) shows it with `ChoiceMenu.tell(self,
-## title, lines)`, a body and one choice, OK. A menu of a layer (the pause
-## menu) shows over it.
+## title, lines)`, a body and one choice, OK: a long body reads from its top,
+## and `ui_up` and `ui_down` scroll it while the focus stays on OK. A menu of a
+## layer (the pause menu) shows over it.
 
 ## The list closed; `choice_id` is the choice the player picked, or &"".
 signal picked(choice_id: StringName)
@@ -30,6 +31,8 @@ const NOTE_COLOR := Color(0.78, 0.78, 0.84)
 const SCENE_PATH := "res://tiamat/core/ui/choice_menu.tscn"
 ## The id of the one choice `tell()` lists, OK.
 const OK_ID := &"ok"
+## How far `ui_up` and `ui_down` scroll what the menu tells, in pixels.
+const SCROLL_STEP := 40
 
 ## One choice of the list: its id, its text and the lines under it as the
 ## player reads them (translated already), and whether the player can pick it.
@@ -54,6 +57,8 @@ class Choice:
 @onready var _back: Button = %Back
 
 var _picked := &""
+# Whether the menu tells the player something (`tell()`) rather than asks.
+var _telling := false
 var _buttons: Dictionary[StringName, Button] = {}
 var _notes: Dictionary[StringName, Label] = {}
 
@@ -88,6 +93,8 @@ static func tell(host: Node, title: String, lines: PackedStringArray) -> ChoiceM
 	var choices: Array[Choice] = [Choice.new(OK_ID, TranslationServer.translate("OK"))]
 	menu.open(choices, title, OK_ID, "\n".join(lines))
 	menu._back.hide()
+	menu._telling = true
+	menu._read_from_top()
 	return menu
 
 ## The menu `ask()` added to `host`, or null before it first asked.
@@ -98,6 +105,7 @@ static func of(host: Node) -> ChoiceMenu:
 ## `focus_id` when the player can pick it, else on the first choice they can.
 func open(choices: Array[Choice], title := "", focus_id := &"", body := "") -> void:
 	_picked = &""
+	_telling = false
 	_title.text = title if not title.is_empty() else tr("Choose")
 	_body.text = body
 	_body.visible = not body.is_empty()
@@ -141,6 +149,28 @@ func choose(choice_id: StringName) -> bool:
 		return false
 	button.pressed.emit()
 	return true
+
+func _input(event: InputEvent) -> void:
+	# What the menu tells scrolls under the keys and a gamepad; the focus stays
+	# on OK, the one thing to pick.
+	if not visible or not _telling or not InputLock.is_top(self):
+		return
+	var step := 0
+	if event.is_action_pressed("ui_up", true):
+		step = -SCROLL_STEP
+	elif event.is_action_pressed("ui_down", true):
+		step = SCROLL_STEP
+	if step != 0:
+		_choices.scroll_vertical += step
+		get_viewport().set_input_as_handled()
+
+# Once the focus has scrolled OK into sight, what the menu tells shows from its
+# top.
+func _read_from_top() -> void:
+	for _frame: int in 2:
+		await get_tree().process_frame
+	if visible and _telling:
+		_choices.scroll_vertical = 0
 
 static func _of_or_new(host: Node) -> ChoiceMenu:
 	var menu := of(host)

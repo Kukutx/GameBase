@@ -94,3 +94,26 @@ func test_telling_the_player_something_waits_for_ok() -> void:
 	(func() -> void: await ChoiceMenu.ask(_host, _choices())).call()
 	assert_true((menu.get_node("%Back") as Button).visible, "a list the player may leave has Back again")
 	menu.close()
+
+func test_a_long_story_reads_from_its_top_and_scrolls_under_the_keys() -> void:
+	var lines := PackedStringArray()
+	for index: int in 60:
+		lines.append("Line %d" % index)
+	var menu := ChoiceMenu.tell(_host, "Report", lines)
+	var scroll := menu.get_node("%Choices") as ScrollContainer
+	for _frame: int in 4:
+		await get_tree().process_frame
+	assert_eq(scroll.scroll_vertical, 0, "from its top")
+	assert_true(menu.get_button(ChoiceMenu.OK_ID).has_focus())
+	menu._input(_action(&"ui_down"))
+	assert_eq(scroll.scroll_vertical, ChoiceMenu.SCROLL_STEP)
+	menu._input(_action(&"ui_up"))
+	assert_eq(scroll.scroll_vertical, 0)
+	assert_true(menu.get_button(ChoiceMenu.OK_ID).has_focus(), "the focus stays on OK")
+	menu.close()
+
+static func _action(action: StringName) -> InputEventAction:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = true
+	return event

@@ -12,3 +12,12 @@ msgstr "%s 提升到 %d 级"
 
 msgid "Next passive at Lv%d"
 msgstr "Lv%d 解锁下一个被动效果"
+
+msgid "Skills"
+msgstr "技能"
+
+msgid "%s Lv %d (max)"
+msgstr "%s 等级 %d（满级）"
+
+msgid "%s Lv %d · %d/%d XP"
+msgstr "%s 等级 %d · %d/%d 经验"

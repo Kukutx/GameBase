@@ -86,6 +86,19 @@ func test_the_crafting_menu_says_where_to_get_what_a_recipe_lacks() -> void:
 	assert_true(button.disabled)
 	menu.close()
 
+func test_the_pause_menu_s_items_tell_what_the_player_carries_and_where_to_get_more() -> void:
+	var ore := _item(&"fixture_ore", "Ore")
+	ore.description = "Raw ore."
+	var shop := ShopData.new()
+	shop.id = &"fixture_shop"
+	shop.display_name = "Smithy"
+	shop.stock = {"fixture_ore": 10}
+	ContentFixture.use(self, [ore, shop])
+	assert_eq(ItemsModule.describe_carried(), PackedStringArray(), "nothing while the player carries nothing")
+	InventoryState.add_item(ore, 2)
+	assert_eq(ItemsModule.describe_carried(), PackedStringArray(["Money: %s" % Wallet.describe(), "Ore x2", "  Raw ore.", "  Where to get: Sold at Smithy"]))
+	assert_true(PauseMenu.get_page_ids().has(&"items"))
+
 func test_every_item_of_the_game_can_be_got() -> void:
 	assert_eq(ItemSources.gather().find_unobtainable(ContentDB), PackedStringArray(),
 		"an item the player has no way to get: sell it, craft it, drop it, reward it, or register the game's own way (ItemSources.register())")

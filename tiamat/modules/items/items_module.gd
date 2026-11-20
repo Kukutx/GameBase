@@ -9,6 +9,7 @@ func install() -> void:
 	ContentDB.register_settings(ItemsSettings)
 	ItemsRules.register(GameRules)
 	ItemSources.register(&"items", find_item_sources)
+	PauseMenu.add_page(&"items", "Items", 10, describe_carried)
 	GameStats.register_source(BuffState)
 	BuffState.buffs_changed.connect(GameStats.notify_changed)
 	GameStats.register_source(StatUpgrades.instance())
@@ -35,6 +36,28 @@ func get_facts() -> Dictionary:
 		"selected_item_id": String(Hotbar.get_selected_item_id()),
 		"items": InventoryState.get_entries(),
 	}}
+
+## What the player carries, for the pause menu's Items: their money, then a
+## line per stack ("Wild Berry x3") with what it is and where to get more
+## under it; nothing while they carry nothing.
+static func describe_carried() -> PackedStringArray:
+	var lines := PackedStringArray()
+	var entries := InventoryState.get_entries()
+	if entries.is_empty():
+		return lines
+	lines.append(TranslationServer.translate("Money: %s") % Wallet.describe())
+	var sources := ItemSources.gather()
+	for entry: Dictionary in entries:
+		var item := ItemData.find(StringName(String(entry["id"])))
+		if item == null:
+			continue
+		lines.append("%s x%d" % [TranslationServer.translate(item.display_name), int(entry["quantity"])])
+		if not item.description.is_empty():
+			lines.append("  " + TranslationServer.translate(item.description))
+		var ways := sources.get_ways(item.id)
+		if not ways.is_empty():
+			lines.append("  " + TranslationServer.translate("Where to get: %s") % "; ".join(ways))
+	return lines
 
 ## The ways to get items the module gives (`ItemSources`): a shop's stock, a
 ## recipe's dish or craft, the items the player starts with and those the

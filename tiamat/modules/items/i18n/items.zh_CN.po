@@ -207,3 +207,12 @@ msgstr "开局自带"
 
 msgid "Given as a reward"
 msgstr "作为奖励获得"
+
+msgid "Items"
+msgstr "物品"
+
+msgid "Where to get: %s"
+msgstr "获取途径：%s"
+
+msgid "Money: %s"
+msgstr "金钱：%s"
