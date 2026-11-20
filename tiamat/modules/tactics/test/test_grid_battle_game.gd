@@ -88,6 +88,25 @@ func test_once_moved_the_move_command_takes_the_move_back() -> void:
 	game.choose_command(0)
 	assert_eq(game.get_mode(), GridBattleGame.Mode.PICK_MOVE)
 
+func test_picking_a_move_marks_where_the_foes_could_strike() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	var board := game.get_board()
+	assert_true(board.danger.is_empty(), "nothing marked while the player picks a command")
+	game.choose_command(0)
+	var danger := board.danger.duplicate()
+	danger.sort()
+	assert_eq(danger, [Vector2i(1, 1), Vector2i(2, 0), Vector2i(2, 2), Vector2i(3, 1)] as Array[Vector2i], "the dummy stands still and strikes one away")
+	var warns := func() -> bool: return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text.contains(tr("Foes can strike here.")))
+	board.cell_hovered.emit(Vector2i(1, 1))
+	assert_true(warns.call(), "the side says so of the cell picked")
+	board.cell_hovered.emit(Vector2i(0, 0))
+	assert_false(warns.call())
+	_press(game, &"ui_cancel")
+	assert_eq(game.get_mode(), GridBattleGame.Mode.COMMAND)
+	assert_true(board.danger.is_empty(), "gone once the player goes back to the commands")
+
 func test_the_commands_follow_what_the_foes_do_meanwhile() -> void:
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
 	var game := _game()

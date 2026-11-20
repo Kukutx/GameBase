@@ -3,6 +3,7 @@ extends Control
 
 ## The grid of a grid battle as the player sees it (`GridBattleGame`): the
 ## cells, scaled to fit the board's size, the cells a command may pick, the
+## cells the foes could strike next (`danger`), the
 ## cursor, the units with their health and gauges, the numbers of what an
 ## action took or gave back, the unit whose turn it is, and the units whose
 ## turns come next, numbered in their order (`turns_shown`). Units walk the
@@ -16,12 +17,21 @@ signal cell_clicked(cell: Vector2i)
 const FLOAT_SECONDS := 0.9
 ## How many cells a second a unit walks on the board.
 const WALK_CELLS_PER_SECOND := 8.0
+# The corners (top left 0, top right 1, bottom right 2, bottom left 3) that
+# end a cell's side toward each neighbour.
+const _EDGE_CORNERS: Dictionary[Vector2i, Vector2i] = {
+	Vector2i.UP: Vector2i(0, 1), Vector2i.RIGHT: Vector2i(1, 2), Vector2i.DOWN: Vector2i(2, 3), Vector2i.LEFT: Vector2i(3, 0),
+}
 
 @export var ground_color := Color(0.33, 0.43, 0.29)
 @export var ground_alt_color := Color(0.3, 0.4, 0.27)
 @export var blocked_color := Color(0.17, 0.23, 0.31)
 @export var choice_color := Color(0.45, 0.7, 1.0, 0.45)
 @export var reach_color := Color(1.0, 0.45, 0.35, 0.22)
+## The cells the foes could strike on their next turns: filled lightly, and
+## the edge of the whole zone drawn in it at full strength, so it shows under
+## the cells to pick too.
+@export var danger_color := Color(0.9, 0.12, 0.1, 0.2)
 @export var area_color := Color(1.0, 0.65, 0.25, 0.5)
 @export var cursor_color := Color(1.0, 1.0, 1.0, 0.95)
 @export var turn_color := Color(1.0, 0.86, 0.35)
@@ -44,6 +54,9 @@ var show_cursor := false
 var choices: Array[Vector2i] = []
 ## The cells an action reaches from its user, in `reach_color`.
 var reach: Array[Vector2i] = []
+## The cells the foes could strike next (`AtbBattle.get_danger()`), in
+## `danger_color`.
+var danger: Array[Vector2i] = []
 ## The cells the action aimed at the cursor would reach, in `area_color`.
 var area: Array[Vector2i] = []
 ## The unit whose turn it is, outlined.
@@ -151,8 +164,11 @@ func _draw() -> void:
 			draw_rect(_cell_rect(cell, origin, side), color)
 	for cell: Vector2i in reach:
 		draw_rect(_cell_rect(cell, origin, side), reach_color)
+	for cell: Vector2i in danger:
+		draw_rect(_cell_rect(cell, origin, side), danger_color)
 	for cell: Vector2i in choices:
 		draw_rect(_cell_rect(cell, origin, side), choice_color)
+	_draw_danger_edge(origin, side)
 	for cell: Vector2i in area:
 		draw_rect(_cell_rect(cell, origin, side), area_color)
 	for unit: GridUnit in battle.units:
@@ -195,6 +211,22 @@ func _draw_unit(unit: GridUnit, origin: Vector2, side: float) -> void:
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar * 2.0 - 1.0, width, bar * 2.0 + 1.0), Color(0.0, 0.0, 0.0, 0.6))
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar * 2.0 - 1.0, width * unit.health.get_fraction(), bar), health_color if battle.is_on_player_side(unit) else damage_color)
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar, width * unit.get_gauge_fraction(), bar), gauge_color)
+
+# The edge of the danger zone: each side of a cell in it whose neighbour is
+# not, a hair inside the cell.
+func _draw_danger_edge(origin: Vector2, side: float) -> void:
+	var inside: Dictionary[Vector2i, bool] = {}
+	for cell: Vector2i in danger:
+		inside[cell] = true
+	var color := Color(danger_color, 1.0)
+	var width := maxf(side * 0.06, 1.0)
+	for cell: Vector2i in danger:
+		var rect := _cell_rect(cell, origin, side).grow(-width * 0.5)
+		var corners: Array[Vector2] = [rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)]
+		for direction: Vector2i in BattleGrid.DIRECTIONS:
+			if not inside.has(cell + direction):
+				var ends := _EDGE_CORNERS[direction]
+				draw_line(corners[ends.x], corners[ends.y], color, width)
 
 # Its place among the turns to come, on its top left corner.
 func _draw_turn_mark(unit: GridUnit, place: int, origin: Vector2, side: float) -> void:
