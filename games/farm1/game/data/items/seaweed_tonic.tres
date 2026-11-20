@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"seaweed_tonic"
+display_name = "Seaweed Tonic"
+description = "A briny broth that draws the poison out of a slime bite."
+max_stack = 12
+kind = 1
+sell_price = 85
+restores = Dictionary[StringName, int]({&"energy": 10, &"hp": 15})
+tags = PackedStringArray("food", "cooked", "antidote")

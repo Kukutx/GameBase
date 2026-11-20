@@ -2280,6 +2280,12 @@ msgstr "火辣肚肠"
 msgid "Spice in your blood: one blow or shot in five sets foes Burning."
 msgstr "辛辣涌上血脉：每五次挥砍或射击就有一次让敌人灼烧。"
 
+msgid "Seaweed Tonic"
+msgstr "海草汤剂"
+
+msgid "A briny broth that draws the poison out of a slime bite."
+msgstr "一碗咸鲜的汤剂，能把史莱姆咬伤里的毒逼出来。"
+
 msgid "Slimed"
 msgstr "黏滞"
 
