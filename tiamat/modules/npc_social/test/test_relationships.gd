@@ -105,7 +105,7 @@ func test_the_hearts_are_counted_in_the_players_language() -> void:
 	assert_eq(tr_n("%d heart", "%d hearts", 3) % 3, "3 hearts")
 	TranslationServer.set_locale("zh_CN")
 	var chinese := tr_n("%d heart", "%d hearts", 3) % 3
-	TranslationServer.set_locale(GameSettingsService.SOURCE_LOCALE)
+	TranslationServer.set_locale(GameLocales.SOURCE)
 	assert_eq(chinese, "3 颗心", "Chinese has one form for every count")
 
 ## A giftable item (a gift is no tool or seed).

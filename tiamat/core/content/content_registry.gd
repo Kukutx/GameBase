@@ -16,8 +16,8 @@ extends Node
 ##   `get_persistent_keys() -> PackedStringArray` method names the world state
 ##   it saves; no two nodes of any locations may share a key;
 ## - the registered checks, and of the game's `GameDefinition` the start and
-##   home locations and the home spawn, the controls, weather, module settings
-##   and the events and cues of its sounds.
+##   home locations and the home spawn, the controls, the options, weather,
+##   module settings and the events and cues of its sounds.
 ##
 ## A scene node takes part in the checks by having a
 ## `find_scene_problems(registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray`
@@ -158,6 +158,7 @@ func index() -> PackedStringArray:
 ## problems and reports nothing itself.
 func find_problems() -> PackedStringArray:
 	var problems := GameControls.find_problems(GameControls.of_game(), GameControls.of_modules())
+	problems.append_array(GameOptions.find_problems(GameOptions.of_game(), GameOptions.of_modules()))
 	problems.append_array(GameWeatherSystem.find_problems(GameDefinition.current(), self))
 	problems.append_array(GameDefinition.current().find_place_problems(self))
 	problems.append_array(GameDefinition.current().find_settings_problems(self, _settings_kinds))

@@ -2,8 +2,9 @@ extends GutTest
 
 ## The box a conversation shows in (`DialogueBalloon`): it types a line out at
 ## the player's text speed, shows the rest of it and then the next line at a
-## press or a click, offers the responses and takes one pick of them, fits the
-## game's view and frees itself at the end.
+## press or a click, offers the responses and takes one pick of them, moves on
+## by itself when the player turns on auto-advance, fits the game's view and
+## frees itself at the end.
 
 const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
 const DIALOGUE_TEXT := """~ start
@@ -29,6 +30,9 @@ Fixture: Pick one.
 => END
 """
 
+# A menu that opens over the conversation.
+const MENU_LOCK := &"test_menu_over_dialogue"
+
 var _text_speed: GameSettingsService.TextSpeed
 
 func before_each() -> void:
@@ -36,6 +40,8 @@ func before_each() -> void:
 
 func after_each() -> void:
 	GameSettings.text_speed = _text_speed
+	GameSettings.set_option(DialogueBalloon.AUTO_ADVANCE_OPTION, false)
+	InputLock.unlock(MENU_LOCK)
 	InputLock.unlock(DialogueService.LOCK)
 
 func test_a_line_types_out_at_the_text_speed_and_a_press_shows_the_rest_then_the_next() -> void:
@@ -141,6 +147,47 @@ func test_interact_picks_the_response_in_focus() -> void:
 	balloon._unhandled_input(press)
 	await wait_until(func() -> bool: return balloon.get_line() != line, 1.0)
 	assert_eq(balloon.get_line().text, "Maybe tomorrow.")
+
+func test_auto_advance_is_the_player_s_choice_and_off_at_first() -> void:
+	var ids := GameSettings.options.get_declared().map(func(option: GameOption) -> StringName: return option.id)
+	assert_has(ids, DialogueBalloon.AUTO_ADVANCE_OPTION, "the dialogue module declares it, so the settings offer it")
+	assert_false(GameSettings.get_option(DialogueBalloon.AUTO_ADVANCE_OPTION), "a conversation waits for the player until they choose")
+	GameSettings.text_speed = GameSettingsService.TextSpeed.INSTANT
+	var balloon := await _start("start")
+	await wait_until(func() -> bool: return balloon.get_node("%More").visible, 1.0)
+	assert_true((balloon.get("_line_timer") as Timer).is_stopped(), "no line moves on by itself")
+
+func test_auto_advance_moves_a_read_line_on_but_waits_for_a_pick_and_under_a_menu() -> void:
+	GameSettings.text_speed = GameSettingsService.TextSpeed.INSTANT
+	GameSettings.set_option(DialogueBalloon.AUTO_ADVANCE_OPTION, true)
+	var balloon := await _start("start")
+	InputLock.lock(DialogueService.LOCK, false, balloon)
+	await wait_until(func() -> bool: return balloon.get_node("%More").visible, 1.0)
+	var first := balloon.get_line()
+	var timer := balloon.get("_line_timer") as Timer
+	assert_false(timer.is_stopped(), "the line's reading time runs")
+	assert_almost_eq(timer.wait_time, DialogueBalloon.auto_advance_seconds(first.text), 0.01, "longer for a longer line")
+	assert_gt(DialogueBalloon.auto_advance_seconds(first.text), 3.0, "time to read its 56 characters")
+	InputLock.lock(MENU_LOCK, false, self)
+	timer.timeout.emit()
+	await wait_process_frames(2)
+	assert_same(balloon.get_line(), first, "a menu over the conversation holds it")
+	assert_false(timer.is_stopped(), "and it tries again later")
+	InputLock.unlock(MENU_LOCK)
+	timer.timeout.emit()
+	await wait_until(func() -> bool: return balloon.get_line() != first, 1.0)
+	assert_eq(balloon.get_line().text, "Will you help me?")
+	await wait_until(func() -> bool: return balloon.get_node("%Responses").visible, 1.0)
+	assert_true(timer.is_stopped(), "a line with responses waits for the player's pick")
+
+func test_a_press_before_auto_advance_moves_on_once() -> void:
+	GameSettings.text_speed = GameSettingsService.TextSpeed.INSTANT
+	GameSettings.set_option(DialogueBalloon.AUTO_ADVANCE_OPTION, true)
+	var balloon := await _start("start")
+	await wait_until(func() -> bool: return balloon.get_node("%More").visible, 1.0)
+	var timer := balloon.get("_line_timer") as Timer
+	balloon.advance()
+	assert_true(timer.is_stopped(), "the press ends the line's reading time, so it does not move on twice")
 
 func test_the_balloon_fits_the_view_and_grows_upwards_for_a_long_line() -> void:
 	GameSettings.text_speed = GameSettingsService.TextSpeed.INSTANT

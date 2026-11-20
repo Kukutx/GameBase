@@ -13,6 +13,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 
 - `GameSettings.changed()`
 - `GameSettings.controls_changed()`
+- `GameSettings.option_changed(id: StringName, value: Variant)`
 - `GameSettings.locale_changed(locale: String)`
 
 ## InputPrompts (core)

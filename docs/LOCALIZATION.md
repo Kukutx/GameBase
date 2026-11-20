@@ -4,12 +4,12 @@ Tiamat separates interface localization from authored dialogue localization.
 
 ## Supported UI locales
 
-Source text is English (`en`). A game supports English and every locale it registers a translation catalog for in `locale/translations`; `GameSettings.get_supported_locales()` reads them from `TranslationServer`, and the language picker names each one in its own language. Farm1 and a new game support:
+Source text is English (`en`). A game supports English and every locale it registers a translation catalog for in `locale/translations`; `GameLocales.supported()` reads them from `TranslationServer`, and the language picker names each one in its own language. Farm1 and a new game support:
 
 - `en` — English
 - `zh_CN` — Simplified Chinese
 
-The selected locale is stored in `user://settings.json` by `GameSettings` and applied through Godot's `TranslationServer`. The first launch, before there is a settings file, speaks the supported locale nearest the system's language (`GameSettingsService.nearest_locale()`: the same locale, else one of the same language, so a Traditional Chinese system reads Simplified Chinese, else English); a test run sets `GameSettingsService.system_locale` to English. Runtime-created HUD/menu/interact text must pass through `tr(...)`; input prompts also update when the active input device changes, and name a key as the player's keyboard layout prints it (`ControlBindings.key_text()`: on AZERTY the key where QWERTY has A is named Q), where the display server can read the layout (Windows, macOS, X11, Wayland).
+The selected locale is stored in `user://settings.json` by `GameSettings` and applied through Godot's `TranslationServer`. The first launch, before there is a settings file, speaks the supported locale nearest the system's language (`GameLocales.nearest()`: the same locale, else one of the same language, so a Traditional Chinese system reads Simplified Chinese, else English); a test run sets `GameLocales.system` to English. Runtime-created HUD/menu/interact text must pass through `tr(...)`; input prompts also update when the active input device changes, and name a key as the player's keyboard layout prints it (`ControlBindings.key_text()`: on AZERTY the key where QWERTY has A is named Q), where the display server can read the layout (Windows, macOS, X11, Wayland).
 
 The settings menu exposes the locale selector and persists changes automatically.
 
@@ -90,7 +90,7 @@ Keep dialogue translation data separate from gameplay state. Translation changes
 ## Adding a locale
 
 1. Add a `<name>.<locale>.po` catalog to the core, to every module the game uses and to the game.
-2. Run `node tools/link.js`, which registers them in the game's `locale/translations`; the locale then appears in the language picker. If `GameSettingsService.LOCALE_NAMES` lacks the language's own name, add it there.
+2. Run `node tools/link.js`, which registers them in the game's `locale/translations`; the locale then appears in the language picker. If `GameLocales.NAMES` lacks the language's own name, add it there.
 3. Add/extend automated translation tests.
 4. Verify the locale through the settings menu and a real exported build.
 5. Run the game's GUT tests: `test_theme_font` names every character of the new catalogs that the game's font lacks (its theme's, else the core's). The core's font (`tiamat/core/ui/fonts/noto_sans_sc.woff2`) holds Simplified Chinese; for characters it lacks, run `node tools/subset_font.js --source <the full Noto Sans SC>` after adding the text, or give the game's theme a font of the locale's script.

@@ -13,7 +13,8 @@ extends RefCounted
 ## and new-game steps (`GameSession`). Orders interleave with the core's own
 ## (`GameSaveManager.SECTION_ORDER_*`, `GameSessionService.NEW_GAME_ORDER_*`).
 ## `get_controls()` names the controls the module's systems read, which the
-## settings let the player rebind, and `get_facts()` tells the state of the
+## settings let the player rebind, `get_options()` the choices its systems
+## leave to the player, and `get_facts()` tells the state of the
 ## module's systems to whatever describes the game (`GameModules.get_facts()`).
 ##
 ## Modules install before any module service's `_ready()` and before content
@@ -28,6 +29,13 @@ func install() -> void:
 ## `GameSettings` reads them as it starts, before any module installs, so
 ## this only builds them.
 func get_controls() -> Array[ControlAction]:
+	return []
+
+## The options (`GameOption`) the module's systems leave to the player, in
+## settings order: they follow the game's own (`GameOptions`), and a game that
+## lists one of their ids replaces it. Like `get_controls()`, read before any
+## module installs, so this only builds them.
+func get_options() -> Array[GameOption]:
 	return []
 
 ## What the module's systems can tell about the game now, as plain data by

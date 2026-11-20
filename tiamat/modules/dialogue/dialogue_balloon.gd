@@ -8,9 +8,11 @@ extends CanvasLayer
 ## name, the line typing out at the player's text speed
 ## (`GameSettings.get_seconds_per_character()`) and the responses to choose
 ## from. Interact, accept or a click shows the rest of a line that is still
-## typing, then moves on; a line with a `time` moves on by itself. Interact
-## picks the response in focus as accept does, and a response is picked once:
-## the responses hide until the next line shows. A long line makes the panel
+## typing, then moves on; a line with a `time` moves on by itself, and so does
+## every line without responses once the player has had time to read it, when
+## they turn on auto-advance (`AUTO_ADVANCE_OPTION`). Interact picks the
+## response in focus as accept does, and a response is picked once: the
+## responses hide until the next line shows. A long line makes the panel
 ## grow upwards. While a line takes a moment to come (a chat's, from a
 ## language model) the panel shows an ellipsis.
 ##
@@ -27,6 +29,13 @@ const MUTATION_HIDE_SECONDS := 0.1
 ## line that comes at once does not flicker it.
 const PENDING_SECONDS := 0.25
 const PENDING_TEXT := "…"
+## The player's option (`GameOption`, the dialogue module's) that moves a line
+## on by itself once they have had time to read it.
+const AUTO_ADVANCE_OPTION := &"auto_advance_dialogue"
+## How long auto-advance leaves a line that has typed out: a pause, then a
+## while for each character, about the pace of an unhurried reader.
+const AUTO_ADVANCE_PAUSE := 1.0
+const AUTO_ADVANCE_PER_CHARACTER := 0.05
 
 @onready var _panel: Control = %Panel
 @onready var _name_label: Label = %NameLabel
@@ -60,7 +69,7 @@ func _ready() -> void:
 	for timer: Timer in [_line_timer, _mutation_timer, _pending_timer]:
 		timer.one_shot = true
 		add_child(timer)
-	_line_timer.timeout.connect(func() -> void: _go_to(_line.next_id))
+	_line_timer.timeout.connect(_on_line_timer)
 	_mutation_timer.timeout.connect(_panel.hide)
 	_pending_timer.timeout.connect(_show_pending)
 
@@ -151,9 +160,24 @@ func _show_line(line: DialogueLine) -> void:
 	else:
 		_waiting = true
 		_more.show()
+		if bool(GameSettings.get_option(AUTO_ADVANCE_OPTION)):
+			_line_timer.start(auto_advance_seconds(line.text))
+
+## How long auto-advance leaves a line of `text` once it has typed out.
+static func auto_advance_seconds(text: String) -> float:
+	return AUTO_ADVANCE_PAUSE + text.length() * AUTO_ADVANCE_PER_CHARACTER
+
+# A line moves on when its time is up; one the player waits on (auto-advance)
+# waits while a menu over the conversation takes the input.
+func _on_line_timer() -> void:
+	if _waiting and not InputLock.is_top(self):
+		_line_timer.start(AUTO_ADVANCE_PAUSE)
+		return
+	_go_to(_line.next_id)
 
 func _go_to(next_id: String) -> void:
 	_waiting = false
+	_line_timer.stop()
 	_responses.hide()
 	_more.hide()
 	_asked += 1

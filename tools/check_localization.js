@@ -91,8 +91,9 @@ const PLURAL_CALL_RE = /\btr_n\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"
 const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|text|role|activity|group) = "((?:[^"\\]|\\.)*)"$/gm;
 
 // Player-facing lists of text in data resources, such as a calendar's seasons
-// or what an NPC answers a chat topic, and the exported defaults of those lists.
-const TEXT_LISTS = ["season_names", "rule_replies"];
+// or what an NPC answers a chat topic or the choices of a player option
+// (`GameOption.choices`), and the exported defaults of those lists.
+const TEXT_LISTS = ["season_names", "rule_replies", "choices"];
 const DATA_LIST_RE = new RegExp(`^(?:${TEXT_LISTS.join("|")}) = PackedStringArray\\((.*)\\)$`, "gm");
 const EXPORT_LIST_DEFAULT_RE = new RegExp(`^@export var (?:${TEXT_LISTS.join("|")})\\b[^=\\n]*=\\s*PackedStringArray\\(\\[(.*)\\]\\)`, "gm");
 const STRING_RE = /"((?:[^"\\]|\\.)*)"/g;
