@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EliteData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/elite_data.gd" id="1_elite"]
+
+[resource]
+script = ExtResource("1_elite")
+id = &"swift"
+display_name = "Swift %s"
+health_scale = 1.2
+speed_scale = 1.6
+tint = Color(0.72, 0.88, 1, 1)
+xp_scale = 1.5
+extra_drops = 1

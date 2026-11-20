@@ -78,9 +78,10 @@ func get_save_block_reason() -> String:
 	return tr("Return to camp to save") if get_tree().current_scene is DepthFloor else ""
 
 ## A random stream of the current run and depth (`DepthTrack.stream()`): the
-## same world, run and depth always lay out the same floor.
-func floor_stream() -> GameRandomStream:
-	return track.stream(get_depth(), "run%d" % get_run())
+## same world, run and depth always lay out the same floor. Each `name` is a
+## stream of its own (the floor's elites).
+func floor_stream(name := "") -> GameRandomStream:
+	return track.stream(get_depth(), "run%d" % get_run() if name.is_empty() else "run%d:%s" % [get_run(), name])
 
 func _reach(depth: int) -> void:
 	track.set_depth(depth)

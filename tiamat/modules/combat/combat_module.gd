@@ -13,6 +13,7 @@ const OPTIONS: Array[String] = [
 
 func install() -> void:
 	ContentDB.register_kind(EnemyData.KIND, EnemyData)
+	ContentDB.register_kind(EliteData.KIND, EliteData)
 	ContentDB.register_settings(CombatSettings)
 	ItemData.register_tool_action(MeleeAttack.TOOL_ACTION)
 	GameStats.register_stat(&"attack_damage", "Attack")

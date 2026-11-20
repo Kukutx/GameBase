@@ -11,6 +11,7 @@ extends CharacterBody2D
 ## with the world. Chasing the player or stunned by their hit, it hunts them,
 ## which makes a fight (`FightState`). It has the health of its kind times the
 ## player's foe strength (`STRENGTH_OPTION`, which `CombatModule` declares).
+## An `elite` form makes it stronger, larger and tinted, and worth more.
 
 const PICKUP_SCENE := preload("res://tiamat/modules/items/items/item_pickup.tscn")
 ## How long a hit stops it.
@@ -34,6 +35,9 @@ enum AnimationState {
 
 @export var data: EnemyData
 @export var persistent_id: StringName
+## The stronger form it takes (`EliteData`), set before it enters the tree;
+## null: its kind as it is.
+@export var elite: EliteData
 
 @onready var visual: Sprite2D = $Visual
 @onready var fallback: Polygon2D = $Fallback
@@ -115,7 +119,7 @@ func _chase(_delta: float) -> void:
 	var offset := player.global_position - global_position
 	var distance := offset.length()
 	if distance > data.attack_range * 0.65:
-		velocity = offset.normalized() * data.move_speed
+		velocity = offset.normalized() * data.move_speed * _elite_scale(&"speed_scale")
 		move_and_slide()
 		_set_animation(AnimationState.MOVE)
 		if absf(velocity.x) > 0.1 and _has_art:
@@ -148,7 +152,8 @@ func _strike(player: Node2D, offset: Vector2) -> void:
 		return
 	var target := Hurtbox.of(player)
 	var push := offset.normalized() * data.knockback
-	if target != null and target.receive(Damage.new(data.contact_damage, data.faction_id, self, push)):
+	var amount := roundi(data.contact_damage * _elite_scale(&"damage_scale"))
+	if target != null and target.receive(Damage.new(amount, data.faction_id, self, push)):
 		_attack_time_left = data.attack_cooldown
 
 # The location's player, looked up again only when it left the tree.
@@ -169,9 +174,22 @@ func take_damage(amount: int) -> bool:
 		_die()
 	return true
 
-## Its full health: its kind's at the player's foe strength.
+## Its full health: its kind's at the player's foe strength, and its elite
+## form's share of that.
 func get_max_health() -> int:
-	return max_health_of(data) if data != null else 1
+	return maxi(1, roundi(max_health_of(data) * _elite_scale(&"health_scale"))) if data != null else 1
+
+## Its name as the player reads it: its kind's, in its elite form ("Hulking
+## Slime").
+func get_display_name() -> String:
+	if data == null:
+		return ""
+	return elite.name_of(data) if elite != null else tr(data.display_name)
+
+# How much of its kind's speed, hit or health (`field`, a scale of
+# `EliteData`) it has: all of it without an elite form.
+func _elite_scale(field: StringName) -> float:
+	return float(elite.get(field)) if elite != null else 1.0
 
 ## The full health of kind `enemy` at the player's foe strength.
 static func max_health_of(enemy: EnemyData) -> int:
@@ -218,22 +236,24 @@ func _apply_data() -> void:
 		return
 	if health.is_depleted() and not is_defeated:
 		health.reset(get_max_health())
+	var size := _elite_scale(&"size_scale")
+	var tint := elite.tint if elite != null else Color.WHITE
 	var shape := RectangleShape2D.new()
-	shape.size = data.collision_size
+	shape.size = data.collision_size * size
 	body_shape.shape = shape
 	# It is hit where it stands.
 	(hurtbox.get_node("CollisionShape2D") as CollisionShape2D).shape = shape
 	hurtbox.faction = data.faction_id
 	hurtbox.knockback_scale = data.knockback_scale
-	visual.position = data.visual_offset
-	visual.scale = Vector2.ONE * data.visual_scale
+	visual.position = data.visual_offset * size
+	visual.scale = Vector2.ONE * data.visual_scale * size
 	_has_art = false
 	if not data.sprite_path.is_empty() and ResourceLoader.exists(data.sprite_path):
 		var texture := load(data.sprite_path) as Texture2D
 		if texture != null:
 			visual.texture = texture
 			# Its own colours, so the hit flash (`Hurtbox`) still tints it all.
-			visual.self_modulate = data.sprite_tint
+			visual.self_modulate = data.sprite_tint * tint
 			visual.region_enabled = true
 			visual.region_filter_clip_enabled = true
 			visual.visible = true
@@ -242,7 +262,7 @@ func _apply_data() -> void:
 	if not _has_art:
 		visual.visible = false
 		fallback.visible = true
-		fallback.color = data.fallback_color
+		fallback.color = data.fallback_color * tint
 
 func _on_hurt(damage: Damage) -> void:
 	if is_defeated or data == null:
@@ -262,17 +282,20 @@ func _die() -> void:
 	hurtbox.enabled = false
 	_persist()
 	_drop_loot()
-	CombatEvents.enemy_defeated.emit(data.id, data.combat_xp, global_position)
+	CombatEvents.enemy_defeated.emit(data.id, roundi(data.combat_xp * _elite_scale(&"xp_scale")), global_position)
+	if elite != null:
+		CombatEvents.elite_defeated.emit(elite.id, data.id, global_position)
 	_set_animation(AnimationState.DEATH)
 	_death_time_left = float(data.death_to - data.death_from + 1) / float(maxi(data.animation_fps, 1))
 	_machine.change(STATE_DEFEATED)
 	_refresh_health_label()
 
-## How many of its drop it leaves now: `EnemyData.drop_quantity` changed by
-## the loot stat (`PlayerHurtbox.LOOT_STAT`), its fraction rounded by chance
-## (a stream of the creature and the minute it fell).
+## How many of its drop it leaves now: `EnemyData.drop_quantity` (and an
+## elite form's `extra_drops`) changed by the loot stat
+## (`PlayerHurtbox.LOOT_STAT`), its fraction rounded by chance (a stream of the
+## creature and the minute it fell).
 func get_drop_quantity() -> int:
-	var quantity := GameStats.apply(PlayerHurtbox.LOOT_STAT, data.drop_quantity)
+	var quantity := GameStats.apply(PlayerHurtbox.LOOT_STAT, data.drop_quantity + (elite.extra_drops if elite != null else 0))
 	var rolls := GameRandom.stream("loot:%s:%d" % [get_path(), WorldClock.get_absolute_minute()])
 	return rolls.round_by_chance(quantity)
 
@@ -407,7 +430,7 @@ func _refresh_health_label() -> void:
 		return
 	health_label.visible = not is_defeated and data != null
 	if data != null:
-		health_label.text = "%s %d/%d" % [tr(data.display_name), health.current, health.maximum]
+		health_label.text = "%s %d/%d" % [get_display_name(), health.current, health.maximum]
 
 func _persist() -> void:
 	if persistent_id == &"":

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EliteData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/elite_data.gd" id="1_elite"]
+
+[resource]
+script = ExtResource("1_elite")
+id = &"searing"
+display_name = "Searing %s"
+health_scale = 1.4
+damage_scale = 1.6
+size_scale = 1.1
+tint = Color(1, 0.55, 0.35, 1)
+xp_scale = 2.0
+extra_drops = 1

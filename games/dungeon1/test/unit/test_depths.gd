@@ -360,3 +360,25 @@ func _layout(depth_floor: DepthFloor) -> Array:
 	for enemy: HostileCreature in depth_floor.get_enemies():
 		layout.append([enemy.data.id, enemy.position])
 	return layout
+
+func test_deeper_floors_hold_more_elites_that_count_toward_elite_hunter() -> void:
+	var depth_floor := _enter_floor()
+	assert_eq(depth_floor.get_elite_chance(2), 0.0, "none above the third depth")
+	assert_almost_eq(depth_floor.get_elite_chance(3), 0.05, 0.001)
+	assert_almost_eq(depth_floor.get_elite_chance(8), 0.2, 0.001)
+	assert_almost_eq(depth_floor.get_elite_chance(40), 0.35, 0.001, "at most about one in three")
+	DepthRun.start_run()
+	var elites := 0
+	for depth: int in range(10, 21):
+		DepthRun.track.set_depth(depth)
+		var deep_floor := _enter_floor()
+		for enemy: HostileCreature in deep_floor.get_enemies():
+			if enemy.elite != null:
+				elites += 1
+				assert_false(deep_floor.get_guardians().has(enemy), "a guardian is no elite")
+				assert_eq(enemy.get_display_name(), enemy.elite.name_of(enemy.data))
+	assert_gt(elites, 5, "about a third of the creatures from the twelfth depth")
+	GameProfile.set_flag(&"elites_defeated", 9)
+	CombatEvents.elite_defeated.emit(&"hulking", &"cave_slime", Vector2.ZERO)
+	assert_eq(GameProfile.get_int(&"elites_defeated"), 10)
+	assert_true(GameProfile.is_unlocked(&"elite_hunter"))
