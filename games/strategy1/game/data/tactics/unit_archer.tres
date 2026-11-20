@@ -12,4 +12,4 @@ attack = 4
 defense = 1
 speed = 28.0
 move = 3
-action_ids = Array[StringName]([&"shoot"])
+action_ids = Array[StringName]([&"shoot", &"volley"])

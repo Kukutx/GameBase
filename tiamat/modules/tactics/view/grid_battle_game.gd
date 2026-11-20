@@ -11,7 +11,9 @@ extends MiniGame
 ## what picking it does (where the unit goes, what an action's area covers)
 ## and a second tap on it picks it, so a finger's slip picks nothing. Once the
 ## unit has moved, Move becomes Undo Move while the battle lets the player take
-## the move back (`AtbBattle.can_undo_move()`). While the player picks where
+## the move back (`AtbBattle.can_undo_move()`), and an action that recharges
+## tells in how many turns it is ready (`GridUnit.turns_to_ready()`: "Volley
+## (ready in 2)"). While the player picks where
 ## a unit moves, the board marks the cells the foes could strike next
 ## (`AtbBattle.get_danger()`), and the side says so of the cell picked, and
 ## of a cell that gives cover how much less damage a unit there takes, and of
@@ -239,7 +241,11 @@ func _update_commands(unit: GridUnit) -> void:
 	move.text = tr("Undo Move") if undo else tr("Move")
 	move.disabled = not undo and (unit.has_moved or battle.get_moves(unit).is_empty())
 	for index in actions.size():
-		(buttons[index + 1] as Button).disabled = unit.has_acted or battle.get_targets(unit, actions[index]).is_empty()
+		var button := buttons[index + 1] as Button
+		var action := actions[index]
+		var wait := unit.turns_to_ready(action)
+		button.text = tr(action.display_name) if wait == 0 else tr("%s (ready in %d)") % [tr(action.display_name), wait]
+		button.disabled = unit.has_acted or battle.get_targets(unit, action).is_empty()
 	var focused := get_viewport().gui_get_focus_owner() if is_inside_tree() else null
 	if focused != null and buttons.has(focused) and not (focused as Button).disabled and not (undo and focused == move):
 		return

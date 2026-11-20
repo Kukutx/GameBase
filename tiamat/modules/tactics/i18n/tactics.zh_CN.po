@@ -84,3 +84,6 @@ msgstr "掩护：受到的伤害少 %d%%"
 
 msgid "Rough ground: %d steps to enter"
 msgstr "崎岖地形：进入需 %d 步"
+
+msgid "%s (ready in %d)"
+msgstr "%s（%d 回合后就绪）"

@@ -6,7 +6,9 @@ extends ContentEntry
 ## `min_range` to `max_range` steps from the unit (`BattleGrid.distance()`) and
 ## reaches the units within `area` steps of that cell that it affects: those
 ## hostile to the user's side when it does damage, those of the user's side,
-## the user too, when it heals. It never hurts its own side.
+## the user too, when it heals. It never hurts its own side. A strong one may
+## need to recharge (`recharge_turns`): its user then waits turns before it
+## takes it again.
 
 const KIND := &"battle_action"
 
@@ -27,6 +29,9 @@ enum Effect {
 @export_range(0, 12) var max_range := 1
 ## How many steps from the aimed cell it reaches too; 0: that cell alone.
 @export_range(0, 4) var area := 0
+## How many of its user's turns go by after it takes it before it may take it
+## again; 0: on every turn.
+@export_range(0, 9) var recharge_turns := 0
 
 ## The action with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> BattleActionData:

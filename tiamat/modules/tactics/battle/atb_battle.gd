@@ -14,7 +14,9 @@ extends RefCounted
 ## its move back (`undo_move()`), unless a foe took a turn since or someone
 ## stands where it came from. The cells the foes could strike on their next
 ## turns (`get_danger()`) tell the player where a unit stands safe, and a unit
-## in cover (`BattleGrid.is_cover()`) takes less damage (`amount_of()`). The battle
+## in cover (`BattleGrid.is_cover()`) takes less damage (`amount_of()`). An
+## action that recharges (`BattleActionData.recharge_turns`) waits that many of
+## its user's turns before the user may take it again. The battle
 ## ends when no two living units are hostile (`FactionData.are_hostile()`), won
 ## when the player's side is left.
 ##
@@ -189,9 +191,12 @@ func get_targets(unit: GridUnit, action: BattleActionData) -> Array[Vector2i]:
 	return targets_from(unit, action, unit.cell)
 
 ## The cells `unit` could aim `action` at if it stood in `from`: those in range
-## whose area reaches a unit the action affects.
+## whose area reaches a unit the action affects; none while the action
+## recharges (`GridUnit.is_ready()`).
 func targets_from(unit: GridUnit, action: BattleActionData, from: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
+	if not unit.is_ready(action):
+		return cells
 	for cell: Vector2i in grid.cells_in_range(from, action.min_range, action.max_range):
 		if not affected_at(unit, action, cell, from).is_empty():
 			cells.append(cell)
@@ -219,7 +224,7 @@ func get_danger(moving: GridUnit = null) -> Dictionary[Vector2i, bool]:
 
 ## How many living units hostile to `faction` could strike each open cell on
 ## their next turns, as everyone stands now: the cells a damaging action of
-## theirs reaches, area and all, from a cell they could walk to
+## theirs ready by then reaches, area and all, from a cell they could walk to
 ## (`BattleUnitData.move`) without passing the units hostile to them; a cell
 ## none reaches is left out. `moving` counts as gone from its cell, so they
 ## may walk through it.
@@ -238,7 +243,7 @@ func get_threats(faction: StringName, moving: GridUnit = null) -> Dictionary[Vec
 				froms.append(from)
 		var struck: Dictionary[Vector2i, bool] = {}
 		for action: BattleActionData in foe.data.get_actions():
-			if action.effect != BattleActionData.Effect.DAMAGE:
+			if action.effect != BattleActionData.Effect.DAMAGE or foe.turns_to_ready(action) > 1:
 				continue
 			var aims: Dictionary[Vector2i, bool] = {}
 			for from: Vector2i in froms:
@@ -321,6 +326,7 @@ func act(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> bool:
 	if _over or not _is_turn(unit) or not unit.data.action_ids.has(action.id) or not get_targets(unit, action).has(cell):
 		return false
 	unit.has_acted = true
+	unit.use(action)
 	_undo_unit = null
 	var hits: Array[Dictionary] = []
 	for target: GridUnit in affected_at(unit, action, cell, unit.cell):
@@ -361,8 +367,7 @@ func _on_gauge_full(unit: GridUnit) -> void:
 		return
 	_ai_turn = unit
 	_undo_unit = null
-	unit.has_moved = false
-	unit.has_acted = false
+	unit.start_turn()
 	turn_started.emit(unit)
 	ai.take_turn(self, unit)
 	_ai_turn = null
@@ -374,8 +379,7 @@ func _start_player_turn() -> void:
 		return
 	_turn = _waiting.pop_front()
 	_undo_unit = null
-	_turn.has_moved = false
-	_turn.has_acted = false
+	_turn.start_turn()
 	turn_started.emit(_turn)
 
 # A player's turn ends by itself once the unit has moved and acted.

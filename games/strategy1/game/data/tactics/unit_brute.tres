@@ -12,4 +12,4 @@ attack = 6
 defense = 3
 speed = 18.0
 move = 2
-action_ids = Array[StringName]([&"smash"])
+action_ids = Array[StringName]([&"smash", &"quake"])

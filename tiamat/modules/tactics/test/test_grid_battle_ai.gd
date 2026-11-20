@@ -2,8 +2,9 @@ extends GutTest
 
 ## How a unit the player does not command takes its turn (`GridBattleAi`): a
 ## defeat before more damage, a move only to bring a target in reach or to
-## strike as hard from where fewer foes reach it, a heal for its hurt side,
-## and a walk toward the nearest foe when nothing is in reach.
+## strike as hard from where fewer foes reach it, an action that recharges
+## only when ready, a heal for its hurt side, and a walk toward the nearest
+## foe when nothing is in reach.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -53,6 +54,17 @@ func test_for_the_same_good_and_the_same_foes_it_strikes_from_cover() -> void:
 		TacticsFixture.give_turn(battle, archer)
 		results.append([archer.cell, knight.health.current])
 	assert_eq(results, [[Vector2i(2, 0), 17], [Vector2i(3, 0), 17]], "in the open the first such cell, else the one in cover")
+
+func test_it_looses_an_action_that_recharges_when_ready_and_strikes_meanwhile() -> void:
+	var battle := TacticsFixture.battle()
+	var captain := _add(battle, &"fixture_captain", FactionData.MONSTERS, Vector2i(1, 2))
+	_add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(3, 2))
+	_add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(3, 3))
+	var used: Array[StringName] = []
+	battle.unit_acted.connect(func(_unit: GridUnit, action: BattleActionData, _cell: Vector2i, _hits: Array[Dictionary]) -> void: used.append(action.id))
+	for _turn in 4:
+		TacticsFixture.give_turn(battle, captain)
+	assert_eq(used, [&"fixture_volley", &"fixture_strike", &"fixture_strike", &"fixture_volley"], "the volley over both knights, then strikes for two turns while it recharges")
 
 func test_a_healer_mends_its_hurt_side() -> void:
 	var battle := TacticsFixture.battle()
