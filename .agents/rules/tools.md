@@ -46,6 +46,7 @@ path: tools/**
 ```
 node tools/link.js [--game <id>]...
 node tools/new_game.js --id <id> --name "<Game Name>" [--description "<One line>"]
+node tools/new_module.js --id <id> [--requires <module>[,<module>...]]
 node tools/validate.js [--game <id>]... [--no-repository] [--no-games] [--skip-soak] [--skip-import] [--clean-import] [--godot-bin <path>]
 node tools/validate_rules.js --strict [--report]
 node --test "tools/*.test.js"
