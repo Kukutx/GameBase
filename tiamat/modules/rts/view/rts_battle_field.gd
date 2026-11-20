@@ -3,7 +3,8 @@ extends Control
 
 ## The field of a command battle as the player sees it (`RtsBattleGame`): the
 ## ground and its obstacles, scaled to fit the field's size, the units with
-## their health, the units the player selected, the blows and shots between
+## their health, the units the player selected, with how far each that strikes
+## from afar reaches (`get_range_rings()`), the blows and shots between
 ## units, where the player's last orders went, the box the player drags and
 ## the cursor of the keys and the gamepad. It reports where on the field, in
 ## its pixels, the player clicks (Shift adds, a double click takes the kind),
@@ -37,6 +38,8 @@ const TOUCH_DRAG_SHARE := 0.35
 @export var attack_mark_color := Color(1.0, 0.45, 0.4)
 @export var box_color := Color(0.5, 1.0, 0.55, 0.9)
 @export var cursor_color := Color(1.0, 1.0, 1.0, 0.95)
+## The ring of how far a selected unit that strikes from afar reaches.
+@export var range_color := Color(0.5, 1.0, 0.55, 0.35)
 
 var battle: RtsBattle
 ## The units the player selected, ringed.
@@ -53,6 +56,18 @@ var _dragging := false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+
+## The selected units that strike from afar (an archer: `RtsUnitData.attack_range`
+## more than twice its radius), each with how far from its middle it reaches,
+## in pixels of the field: the ring the field draws around it, so the player
+## places it within reach of its foes and out of their blows. A unit that
+## strikes at its edge shows none, which its selection ring would hide.
+func get_range_rings() -> Dictionary[RtsUnit, float]:
+	var rings: Dictionary[RtsUnit, float] = {}
+	for unit: RtsUnit in selection:
+		if unit.is_alive() and unit.data.attack_range > unit.data.radius * 2.0:
+			rings[unit] = unit.data.radius + unit.data.attack_range
+	return rings
 
 ## Shows `battle_to_show` and follows what happens in it.
 func show_battle(battle_to_show: RtsBattle) -> void:
@@ -159,6 +174,9 @@ func _draw() -> void:
 		var color: Color = attack_mark_color if bool(entry["attack"]) else move_mark_color
 		color.a = 1.0 - age / MARK_SECONDS
 		draw_arc(to_screen(entry["point"] as Vector2), (4.0 - age / MARK_SECONDS * 2.0) * zoom, 0.0, TAU, 16, color, 1.0)
+	var rings := get_range_rings()
+	for unit: RtsUnit in rings:
+		draw_arc(to_screen(unit.position), rings[unit] * zoom, 0.0, TAU, 48, range_color, 1.0)
 	for unit: RtsUnit in battle.units:
 		if unit.is_alive():
 			_draw_unit(unit, zoom)

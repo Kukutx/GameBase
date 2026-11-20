@@ -217,6 +217,18 @@ func test_a_finger_that_wanders_a_little_taps_rather_than_drags_a_box() -> void:
 	TouchTarget.reach = reach
 	InputPrompts.call("_set_using_touch", false)
 
+func test_a_selected_unit_that_strikes_from_afar_shows_how_far() -> void:
+	var field: RtsBattleField = autofree(RtsBattleField.new())
+	var battle := RtsFixture.battle()
+	var footman := RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(20.0, 20.0))
+	var bowman := RtsFixture.add(battle, &"fixture_bowman", FactionData.PLAYER, Vector2(40.0, 20.0))
+	field.show_battle(battle)
+	assert_true(field.get_range_rings().is_empty(), "nothing selected")
+	field.selection.assign([footman, bowman])
+	var rings := field.get_range_rings()
+	assert_eq(rings.keys(), [bowman], "a footman strikes at its edge")
+	assert_eq(rings.get(bowman), 54.0, "the bowman reaches 50 past its edge, 4 from its middle")
+
 func test_cancel_drops_the_armed_move_then_the_selection_then_gives_up() -> void:
 	var outcome := {}
 	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()
