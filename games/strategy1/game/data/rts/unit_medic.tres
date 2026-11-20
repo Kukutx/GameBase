@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RtsUnitData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/rts/data/rts_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"medic"
+display_name = "Field Medic"
+color = Color(0.86, 0.88, 0.82, 1)
+max_health = 18
+damage = 1
+armor = 0
+heal = 4
+attack_range = 14.0
+attack_cooldown = 1.2
+move_speed = 26.0
+sight_range = 80.0
+radius = 4.0

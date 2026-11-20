@@ -34,6 +34,8 @@ const TOUCH_DRAG_SHARE := 0.35
 @export var health_color := Color(0.4, 0.85, 0.45)
 @export var foe_health_color := Color(1.0, 0.45, 0.4)
 @export var flash_color := Color(1.0, 0.95, 0.7)
+## The line from a healer to the friend it mends.
+@export var heal_color := Color(0.55, 1.0, 0.6)
 @export var move_mark_color := Color(0.5, 1.0, 0.55)
 @export var attack_mark_color := Color(1.0, 0.45, 0.4)
 @export var box_color := Color(0.5, 1.0, 0.55, 0.9)
@@ -75,6 +77,7 @@ func show_battle(battle_to_show: RtsBattle) -> void:
 	_flashes.clear()
 	_marks.clear()
 	battle.unit_attacked.connect(_on_unit_attacked)
+	battle.unit_healed.connect(_on_unit_healed)
 	queue_redraw()
 
 ## How many pixels on the screen a pixel of the field takes: whole when the
@@ -181,7 +184,7 @@ func _draw() -> void:
 		if unit.is_alive():
 			_draw_unit(unit, zoom)
 	for entry: Dictionary in _flashes:
-		var color := flash_color
+		var color: Color = entry["color"]
 		color.a = 1.0 - float(entry["age"]) / FLASH_SECONDS
 		draw_line(to_screen(entry["from"] as Vector2), to_screen(entry["to"] as Vector2), color, maxf(zoom * 0.5, 1.0))
 	if _dragging:
@@ -224,4 +227,8 @@ func _age(list: Array[Dictionary], lasts: float, delta: float) -> void:
 			list.remove_at(index)
 
 func _on_unit_attacked(attacker: RtsUnit, target: RtsUnit, _amount: int) -> void:
-	_flashes.append({"from": attacker.position, "to": target.position, "age": 0.0})
+	_flashes.append({"from": attacker.position, "to": target.position, "age": 0.0, "color": flash_color})
+
+func _on_unit_healed(healer: RtsUnit, target: RtsUnit, amount: int) -> void:
+	if amount > 0:
+		_flashes.append({"from": healer.position, "to": target.position, "age": 0.0, "color": heal_color})

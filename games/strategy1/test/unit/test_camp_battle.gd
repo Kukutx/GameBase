@@ -25,7 +25,8 @@ func test_the_camp_map_sets_up_both_sides_and_the_way_in_is_the_gate() -> void:
 	assert_eq(map.find_problems(ContentDB), PackedStringArray())
 	assert_false(map.computer_advances, "the raiders wait for the attack")
 	var battle := RtsBattle.from_map(map)
-	assert_eq(battle.get_player_units().size(), 9)
+	assert_eq(battle.get_player_units().size(), 10)
+	assert_eq(battle.get_player_units().filter(func(unit: RtsUnit) -> bool: return unit.data.heals()).size(), 1, "a field medic among them")
 	assert_eq(battle.units.filter(func(unit: RtsUnit) -> bool: return not battle.is_on_player_side(unit)).size(), 12)
 	var at := Vector2(60.0, 20.0)
 	var way := battle.navigation.find_path(at, Vector2(370.0, 100.0))
@@ -44,7 +45,7 @@ func test_the_camp_map_sets_up_both_sides_and_the_way_in_is_the_gate() -> void:
 func test_a_win_at_the_ford_sends_two_spearmen_to_the_camp() -> void:
 	var map := RtsMapData.find(&"raider_camp")
 	WorldState.add_int(MiniGameDefinition.wins_key(&"ford_battle"), 1)
-	assert_eq(RtsBattle.from_map(map).get_player_units().size(), 11)
+	assert_eq(RtsBattle.from_map(map).get_player_units().size(), 12)
 
 func test_the_battle_ends_when_the_troops_storm_the_camp() -> void:
 	var battle := RtsBattle.from_map(RtsMapData.find(&"raider_camp"))

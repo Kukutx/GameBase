@@ -56,6 +56,13 @@ func is_alive() -> bool:
 func get_gap_to(other: RtsUnit) -> float:
 	return position.distance_to(other.position) - data.radius - other.data.radius
 
-## Whether `other` is in reach of its attacks.
+## Drops the way it walks, so that it finds one again when it next moves:
+## after a foe, or back towards its goal once the fight is over.
+func clear_path() -> void:
+	path.clear()
+	path_end = Vector2.INF
+	repath_left = 0.0
+
+## Whether `other` is in reach of its attacks (or its mending).
 func reaches(other: RtsUnit) -> bool:
 	return get_gap_to(other) <= data.attack_range
