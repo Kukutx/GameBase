@@ -21,7 +21,8 @@ extends RefCounted
 ## standing (`delay_of()`), a player's unit that waited for its turn too. One
 ## that lays an affliction (`BattleActionData.affliction_id`) leaves it on the
 ## foes it hits and leaves standing (`GridUnit.afflict()`), and it takes their
-## health on its ticks in battle time (`unit_ailed`), which may defeat them. A
+## health on its ticks in battle time (`unit_ailed`), which may defeat them;
+## one that cures (`BattleActionData.cures`) lifts them from those it heals. A
 ## side with a leader (`GridUnit.leader`) flees the battle once the leader
 ## falls (`unit_fled`), and turns back its units still on their way. Units may
 ## arrive while the battle runs (`add_arrival()`, `unit_arrived`), in battle
@@ -44,8 +45,10 @@ signal unit_moved(unit: GridUnit, path: Array[Vector2i])
 signal move_undone(unit: GridUnit)
 ## `hits` holds a {"unit": GridUnit, "amount": int} for each unit it reached:
 ## the health it took or gave back, and with an action that delays, "delay":
-## how far it set back the unit's gauge, and with one that boosts, "boosts":
-## those it put on the unit (`BattleActionData.boosts`).
+## how far it set back the unit's gauge, with one that boosts, "boosts":
+## those it put on the unit (`BattleActionData.boosts`), with one that lays an
+## affliction, "affliction": the one it laid, and with one that cures,
+## "cured": the afflictions it lifted, when there were any.
 signal unit_acted(unit: GridUnit, action: BattleActionData, cell: Vector2i, hits: Array[Dictionary])
 signal unit_defeated(unit: GridUnit)
 ## An affliction on `unit` took `amount` of its health on its tick.
@@ -353,6 +356,9 @@ func act(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> bool:
 			hit["boosts"] = action.boosts
 		if action.effect == BattleActionData.Effect.DAMAGE and target.afflict(AfflictionData.find(action.affliction_id), unit.faction):
 			hit["affliction"] = AfflictionData.find(action.affliction_id)
+		elif action.effect == BattleActionData.Effect.HEAL and action.cures and not target.afflictions.is_empty():
+			hit["cured"] = target.afflictions.get_all()
+			target.afflictions.clear()
 		hits.append(hit)
 	unit_acted.emit(unit, action, cell, hits)
 	for hit: Dictionary in hits:

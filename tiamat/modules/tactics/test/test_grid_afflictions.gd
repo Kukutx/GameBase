@@ -5,7 +5,8 @@ extends GutTest
 ## which the forecast tells; it ticks in battle time, which stands still while
 ## the player chooses; its last tick of a unit's health defeats it and can end
 ## the battle; a kind immune to it never takes it; the foes' plans count it;
-## and what is wrong with the content that names one.
+## a heal that cures lifts it, which the forecast, the hit and the plans tell;
+## and what is wrong with the content that names one or cures.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -73,6 +74,32 @@ func test_a_kind_immune_to_it_never_takes_it_and_the_foes_plans_count_it() -> vo
 	assert_eq(ai.score(battle, adder, venom, raider.cell, adder.cell), 2, "nor on one immune to it")
 	assert_false(raider.afflict(null, FactionData.MONSTERS))
 
+func test_a_heal_that_cures_lifts_the_afflictions_of_those_it_heals() -> void:
+	var battle := TacticsFixture.battle()
+	var healer := _add(battle, &"fixture_healer", FactionData.PLAYER, Vector2i(0, 0))
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(1, 0))
+	_add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(7, 5))
+	var poison := AfflictionData.find(POISON)
+	var mend := BattleActionData.find(&"fixture_mend")
+	var ai := GridBattleAi.new()
+	knight.health.take(3)
+	assert_true(knight.afflict(poison, FactionData.MONSTERS))
+	assert_eq(ai.score(battle, healer, mend, knight.cell, healer.cell), 3, "a mend gives back what the knight lost")
+	assert_false(battle.forecast(healer, mend, knight.cell)[0].has("cures"), "and lifts nothing")
+	mend.cures = true
+	assert_eq(ai.score(battle, healer, mend, knight.cell, healer.cell), 3 + 4, "one that cures spares the poison's four ticks too")
+	assert_eq(battle.forecast(healer, mend, knight.cell)[0].get("cures"), [poison] as Array[AfflictionData], "the forecast tells it")
+	watch_signals(battle)
+	TacticsFixture.give_turn(battle, healer)
+	assert_true(battle.act(healer, mend, knight.cell))
+	assert_true(knight.afflictions.is_empty(), "the poison is lifted")
+	assert_eq(knight.health.current, 20)
+	var hits: Array = get_signal_parameters(battle, "unit_acted")[3]
+	assert_eq(hits[0].get("cured"), [poison] as Array[AfflictionData], "the hit tells it")
+	battle.time_flows_while_choosing = true
+	battle.advance(5.0)
+	assert_signal_not_emitted(battle, "unit_ailed", "no tick after the cure")
+
 func test_what_is_wrong_with_an_action_or_a_unit_that_names_an_affliction() -> void:
 	var registry := ContentRegistry.active
 	var venom := BattleActionData.find(&"fixture_venom")
@@ -82,6 +109,9 @@ func test_what_is_wrong_with_an_action_or_a_unit_that_names_an_affliction() -> v
 	var mend := BattleActionData.find(&"fixture_mend")
 	mend.affliction_id = POISON
 	assert_eq(mend.find_problems(registry), PackedStringArray(["lays an affliction on the units it heals"]))
+	var strike := BattleActionData.find(&"fixture_strike")
+	strike.cures = true
+	assert_eq(strike.find_problems(registry), PackedStringArray(["cures the foes it hits"]))
 	var raider := BattleUnitData.find(&"fixture_raider")
 	raider.immune_to.assign([&"fixture_missing"])
 	assert_eq(raider.find_problems(registry), PackedStringArray(["is immune to unknown affliction 'fixture_missing'"]))

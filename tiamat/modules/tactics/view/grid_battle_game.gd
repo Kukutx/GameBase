@@ -363,6 +363,9 @@ func _show_info() -> void:
 				told = tr("%s gains %s") % [target_name, boosted] if _action.effect == BattleActionData.Effect.HEAL and int(hit["amount"]) == 0 else GameText.list(PackedStringArray([told, boosted]))
 			if hit.has("affliction"):
 				told = GameText.list(PackedStringArray([told, tr((hit["affliction"] as AfflictionData).display_name)]))
+			if hit.has("cures"):
+				var cured := PackedStringArray((hit["cures"] as Array).map(func(affliction: AfflictionData) -> String: return tr(affliction.display_name)))
+				told = GameText.list(PackedStringArray([told, tr("cures %s") % GameText.list(cured)]))
 			_info.text += "\n" + told
 
 # The boosts in `boosts` (stat -> amount) that change anything, as the player

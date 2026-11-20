@@ -95,6 +95,7 @@ func test_afflictions_tick_last_anew_when_laid_again_and_stop_once_lifted() -> v
 	assert_almost_eq(on.get_next_tick(), 0.5, 0.0001, "its next tick still due when it was")
 	on.advance(1.0, record)
 	assert_eq(ticks, [[&"fixture_poison", 2, FactionData.MONSTERS, Vector2.ZERO]], "its damage, from the side that laid it, with no push")
+	assert_eq(on.get_damage_left(), 4, "two ticks of 2 still to come")
 	on.advance(5.0, record)
 	assert_eq(ticks.size(), 3, "three ticks from the second laying, a long step taking each due in it")
 	assert_true(on.is_empty(), "then it wears off")

@@ -12,10 +12,10 @@ extends RefCounted
 ## one go once it gets well out of sight (`LEASH`); a holding unit fights only
 ## what it reaches.
 ## A healer (`RtsUnitData.heal`) mends the most hurt friend it sees instead
-## of fighting. An attack also lays its kind's affliction
-## (`RtsUnitData.affliction_id`) on the foe it leaves standing, unless that
-## foe is immune: it takes health in battle time (`unit_ailed`), and a unit it
-## brings down falls as to a blow.
+## of fighting, and may lift the afflictions on it (`RtsUnitData.cures`). An
+## attack also lays its kind's affliction (`RtsUnitData.affliction_id`) on the
+## foe it leaves standing, unless that foe is immune: it takes health in
+## battle time (`unit_ailed`), and a unit it brings down falls as to a blow.
 ## Units may also arrive while it runs (`add_arrival()`, `unit_arrived`); one
 ## the player does not command marches at once (`RtsBattleAi.arrive()`).
 ## The battle ends when no two units that fight, living or still on their way,
@@ -392,6 +392,8 @@ func _update(unit: RtsUnit) -> void:
 func _attack(unit: RtsUnit, target: RtsUnit) -> void:
 	unit.cooldown = unit.data.attack_cooldown
 	if unit.data.heals():
+		if unit.data.cures:
+			target.afflictions.clear()
 		unit_healed.emit(unit, target, target.health.heal(unit.data.heal))
 		return
 	var amount := target.health.take(unit.data.damage_to(target.data))

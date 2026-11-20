@@ -11,6 +11,7 @@ max_health = 18
 damage = 1
 armor = 0
 heal = 4
+cures = true
 attack_range = 14.0
 attack_cooldown = 1.2
 move_speed = 26.0
