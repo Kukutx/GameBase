@@ -82,6 +82,9 @@ msgstr "[b]%s[/b]  Lv.%d   %d XP"
 msgid "Active Buffs"
 msgstr "当前增益"
 
+msgid "All Bonuses"
+msgstr "全部加成"
+
 msgid "• %s — %d min"
 msgstr "• %s — %d 分钟"
 

@@ -58,6 +58,9 @@ func get_stat_bonus(stat: StringName) -> float:
 			result += data.bonuses.get(stat, 0.0)
 	return result
 
+## The active buffs, by name: each one's "id", "display_name",
+## "minutes_remaining" and "changes" (what it changes as the player reads it,
+## `FoodBuffData.describe_changes()`).
 func get_active_entries() -> Array[Dictionary]:
 	_prune_expired()
 	var result: Array[Dictionary] = []
@@ -70,6 +73,7 @@ func get_active_entries() -> Array[Dictionary]:
 			"id": String(buff_id),
 			"display_name": data.display_name,
 			"minutes_remaining": get_minutes_remaining(buff_id),
+			"changes": data.describe_changes(),
 		})
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return String(a["display_name"]) < String(b["display_name"]))
 	return result
