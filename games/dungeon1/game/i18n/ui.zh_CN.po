@@ -483,3 +483,9 @@ msgstr "灼烧"
 
 msgid "Slimed"
 msgstr "黏滞"
+
+msgid "Poisoned"
+msgstr "中毒"
+
+msgid "Venom Slime"
+msgstr "毒液史莱姆"

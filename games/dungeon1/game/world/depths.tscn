@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="2_tier"]
@@ -33,6 +33,11 @@ script = ExtResource("2_tier")
 enemy_id = &"ember_wisp"
 minimum_depth = 6
 
+[sub_resource type="Resource" id="Tier_venom"]
+script = ExtResource("2_tier")
+enemy_id = &"venom_slime"
+minimum_depth = 8
+
 [sub_resource type="Resource" id="Tier_warden"]
 script = ExtResource("2_tier")
 enemy_id = &"ember_warden"
@@ -66,7 +71,7 @@ size = Vector2(36, 30)
 
 [node name="Depths" type="Node2D"]
 script = ExtResource("1_floor")
-enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_archer"), SubResource("Tier_wisp"), SubResource("Tier_warden")])
+enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_archer"), SubResource("Tier_wisp"), SubResource("Tier_venom"), SubResource("Tier_warden")])
 elite_odds = SubResource("EliteOdds_depths")
 vents = SubResource("HazardSpread_vents")
 chests = ExtResource("9_chests")

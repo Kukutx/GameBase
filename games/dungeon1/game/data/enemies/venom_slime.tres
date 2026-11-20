@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"venom_slime"
+display_name = "Venom Slime"
+affliction_id = &"poisoned"
+fallback_color = Color(0.6, 0.36, 0.86, 1)
+max_health = 34
+move_speed = 40.0
+chase_radius = 130.0
+attack_range = 14.0
+contact_damage = 6
+attack_cooldown = 1.1
+drop_item_id = &"slime_gel"
+drop_quantity = 2
+combat_xp = 18

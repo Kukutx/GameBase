@@ -9,4 +9,4 @@ order = 45
 display_name = "Know Thy Foe"
 description = "Defeat every kind of creature of the depths, counting every run."
 progress_flag = &"kinds_defeated"
-goal = 5
+goal = 6
