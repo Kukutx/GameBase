@@ -43,8 +43,6 @@ msgstr "爬回营地"
 msgid "Camp Merchant"
 msgstr "营地商人"
 
-msgid "Attack"
-msgstr "攻击"
 
 msgid "Drink Potion"
 msgstr "喝药水"
@@ -124,11 +122,11 @@ msgstr "余烬幽火"
 msgid "Combat"
 msgstr "战斗"
 
-msgid "Veteran · attack +10%"
-msgstr "老兵 · 攻击 +10%"
+msgid "Veteran"
+msgstr "老兵"
 
-msgid "Champion · attack +25%"
-msgstr "勇者 · 攻击 +25%"
+msgid "Champion"
+msgstr "勇者"
 
 msgid "First Blood"
 msgstr "初次见血"

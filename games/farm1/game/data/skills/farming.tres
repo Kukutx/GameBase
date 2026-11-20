@@ -6,14 +6,14 @@
 [sub_resource type="Resource" id="Resource_level5"]
 script = ExtResource("2_perk")
 level = 5
-description = "Field Efficiency I · tool energy -10% · max energy +15"
+description = "Field Efficiency I"
 multipliers = Dictionary[StringName, float]({&"farming_energy": 0.9})
 bonuses = Dictionary[StringName, float]({&"max_energy": 15.0})
 
 [sub_resource type="Resource" id="Resource_level10"]
 script = ExtResource("2_perk")
 level = 10
-description = "Field Efficiency II · tool energy -20% · max energy +40"
+description = "Field Efficiency II"
 multipliers = Dictionary[StringName, float]({&"farming_energy": 0.8})
 bonuses = Dictionary[StringName, float]({&"max_energy": 40.0})
 

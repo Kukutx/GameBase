@@ -15,9 +15,13 @@ func install() -> void:
 	LifesimRules.register(GameRules)
 	for action: StringName in [FarmPlot.TILL_ACTION, FarmPlot.WATER_ACTION, MiningNode.TOOL_ACTION, FishingSpot.TOOL_ACTION]:
 		ItemData.register_tool_action(action)
-	for stat: StringName in [&"tool_energy", &"farming_energy", &"mining_energy", &"fishing_wait", &"fishing_window",
-			&"forage_quantity", LifesimSettings.MAX_ENERGY_STAT]:
-		GameStats.register_stat(stat)
+	GameStats.register_stat(&"tool_energy", "Tool energy cost")
+	GameStats.register_stat(&"farming_energy", "Farming energy cost")
+	GameStats.register_stat(&"mining_energy", "Mining energy cost")
+	GameStats.register_stat(&"fishing_wait", "Bite wait")
+	GameStats.register_stat(&"fishing_window", "Reel window")
+	GameStats.register_stat(&"forage_quantity", "Forage found")
+	GameStats.register_stat(LifesimSettings.MAX_ENERGY_STAT, "Max energy")
 	# Shipping restores its saved day marker before the clock (order 300) emits
 	# day_changed, so loading never pays a day twice.
 	SaveManager.register_section(SaveSection.new(&"shipping", 200,

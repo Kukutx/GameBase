@@ -83,6 +83,10 @@ function registeredCatalogs(game, layers) {
 // and text a static function translates (`TranslationServer.translate()`).
 const CALL_RE = /(?:\btr|\bTranslationServer\.translate|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\s*/g;
 
+// The name a stat is registered with (`GameStats.register_stat(&"attack_damage",
+// "Attack")`), which the player reads in what content changes.
+const STAT_NAME_RE = /\bregister_stat\(\s*[^,()"]+,\s*"((?:[^"\\]|\\.)*)"/g;
+
 // A count's text, its singular and plural (`tr_n("%d heart", "%d hearts", n)`),
 // which a catalog translates as one entry with every plural form its language
 // has.
@@ -288,6 +292,9 @@ function collectNonDialogueKeys(layer) {
       firstArgumentLiterals(text, match.index + match[0].length).forEach(add);
     }
     for (const match of text.matchAll(EXPORT_DEFAULT_RE)) {
+      add(match[1]);
+    }
+    for (const match of text.matchAll(STAT_NAME_RE)) {
       add(match[1]);
     }
     for (const match of text.matchAll(EXPORT_LIST_DEFAULT_RE)) {

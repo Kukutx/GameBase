@@ -137,9 +137,10 @@ func test_a_boon_on_offer_says_how_often_the_run_took_it() -> void:
 	RunState.start_run()
 	var swift := BoonData.find(&"fixture_swift")
 	assert_eq(BoonAltar.choice_of(swift).text, "Swift")
-	assert_eq(BoonAltar.choice_of(swift).note, "Swift boon", "not before the run took it")
+	assert_eq(BoonAltar.choice_of(swift).note, "Swift boon\nMove speed +50%", "not before the run took it")
 	RunState.take_boon(&"fixture_swift")
-	assert_eq(BoonAltar.choice_of(swift).note, "Swift boon\nTaken 1 of 2")
+	assert_eq(BoonAltar.choice_of(swift).note, "Swift boon\nMove speed +50%\nTaken 1 of 2")
+	assert_eq(BoonAltar.choice_of(BoonData.find(&"fixture_sturdy")).note, "Sturdy boon\nMove speed +10")
 	RunState.take_boon(&"fixture_lucky")
 	assert_eq(BoonAltar.choice_of(BoonData.find(&"fixture_lucky")).note, "Lucky boon\nTaken 1", "one it may take as often as offered")
 

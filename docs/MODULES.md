@@ -58,7 +58,7 @@ What a module can register:
 | --- | --- | --- |
 | `ContentDB` | `register_kind(KIND, script)`, `register_check(callable)` | its kinds of content, and checks of the whole content (a graph without cycles) |
 | `GameRules` | `register_condition()`, `register_action()`, `register_arg_kind()` | the keys content can name in conditions and actions |
-| `GameStats` | `register_stat()`, `register_source()` | the numbers it reads and what changes them |
+| `GameStats` | `register_stat()`, `register_source()` | the numbers it reads, each with the name the player knows it by, and what changes them |
 | `SaveManager` | `register_section()`, `register_load_step()`, `register_save_blocker()`, `register_slot_detail()` | what it saves, what runs after a load, when it cannot save, and a line on the title screen's slot |
 | `GameSession` | `register_new_game_step()`, `register_activity_end()` | how a new game resets it, and how passing out, a load, a new game or the title ends what it holds the player in |
 

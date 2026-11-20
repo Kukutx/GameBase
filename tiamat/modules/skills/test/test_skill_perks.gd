@@ -51,6 +51,12 @@ func test_skill_perks_unlock_at_their_levels_and_change_stats() -> void:
 	assert_null(Skills.get_active_perk(SKILL))
 	assert_eq(GameStats.get_multiplier(STAMINA), 1.0)
 
+func test_a_perk_reads_out_what_its_named_stats_change() -> void:
+	var perk := SkillPerk.new()
+	perk.description = "Swift I"
+	perk.multipliers = {TopDownPlayer.MOVE_SPEED_STAT: 1.2, STAMINA: 0.9}
+	assert_eq(perk.describe(), "Swift I · Move speed +20%", "a stat without a name is left out")
+
 static func _perk(level: int, description: String, multiplier: float, bonus: float) -> SkillPerk:
 	var perk := SkillPerk.new()
 	perk.level = level

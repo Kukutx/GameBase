@@ -40,6 +40,7 @@ func test_skill_perks_unlock_at_levels_five_and_ten() -> void:
 	Skills.add_xp(&"farming", 700)
 	assert_eq(Skills.get_level(&"farming"), 5)
 	assert_eq(Skills.get_active_perk(&"farming"), farming.perks[0])
+	assert_eq(Skills.get_perk_summary(&"farming"), "Field Efficiency I · Farming energy cost -10% · Max energy +15")
 	assert_almost_eq(GameStats.get_multiplier(&"farming_energy"), 0.9, 0.001)
 	Skills.add_xp(&"farming", 2500)
 	assert_eq(Skills.get_level(&"farming"), 10)

@@ -37,3 +37,6 @@ msgstr " · 生日！"
 
 msgid "%s: %d hearts"
 msgstr "%s：%d 心好感"
+
+msgid "Gift friendship"
+msgstr "送礼好感"
