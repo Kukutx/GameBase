@@ -79,12 +79,14 @@ static func ask(host: Node, choices: Array[Choice], title := "", focus_id := &""
 	return choice_id
 
 ## Tells the player `lines` (translated already) under `title` (translated as
-## a key) in a menu of `host`'s, with one choice, OK, and gives the menu:
-## `await menu.picked` waits until the player read on.
+## a key) in a menu of `host`'s, with one choice, OK, and no Back beside it,
+## and gives the menu: `await menu.picked` waits until the player read on
+## (`ui_cancel` reads on too, picking none).
 static func tell(host: Node, title: String, lines: PackedStringArray) -> ChoiceMenu:
 	var menu := _of_or_new(host)
 	var choices: Array[Choice] = [Choice.new(OK_ID, TranslationServer.translate("OK"))]
 	menu.open(choices, title, OK_ID, "\n".join(lines))
+	menu._back.hide()
 	return menu
 
 ## The menu `ask()` added to `host`, or null before it first asked.
@@ -98,6 +100,7 @@ func open(choices: Array[Choice], title := "", focus_id := &"", body := "") -> v
 	_title.text = title if not title.is_empty() else tr("Choose")
 	_body.text = body
 	_body.visible = not body.is_empty()
+	_back.show()
 	_fill(choices)
 	show_menu()
 	_choices.scroll_vertical = 0

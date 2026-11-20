@@ -6,6 +6,7 @@
 script = ExtResource("1_buff")
 id = &"hearty_worker"
 display_name = "Hearty Worker"
-description = "Warm food makes chores easier for a while."
+description = "Warm food makes chores easier for a while: tools cost less energy and you have 20 more of it."
 duration_minutes = 240
 multipliers = Dictionary[StringName, float]({&"move_speed": 1.1, &"tool_energy": 0.8})
+bonuses = Dictionary[StringName, float]({&"max_energy": 20.0})

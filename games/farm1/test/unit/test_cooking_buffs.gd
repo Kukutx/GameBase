@@ -62,7 +62,8 @@ func test_vegetable_stew_crafts_restores_stats_and_applies_work_buff() -> void:
 	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Ate Vegetable Stew (+45 Energy, +20 Health)"])
 
 	assert_eq(InventoryState.get_quantity(&"vegetable_stew"), 0)
-	assert_eq(Vitals.get_value(&"energy"), 85)
+	assert_eq(Vitals.get_value(&"energy"), 105, "40, the stew's 45 and the 20 more Hearty Worker holds")
+	assert_eq(Vitals.get_maximum(&"energy"), 120)
 	assert_eq(Vitals.get_value(&"hp"), 70)
 	assert_true(BuffState.has_buff(&"hearty_worker"))
 	assert_almost_eq(BuffState.get_stat_multiplier(&"move_speed"), 1.1, 0.001)
@@ -85,7 +86,7 @@ func test_food_use_blocks_item_removed_reentrancy() -> void:
 	assert_true(bool(observed["entered"]))
 	assert_false(bool(observed["inner_result"]))
 	assert_eq(InventoryState.get_quantity(&"vegetable_stew"), 1)
-	assert_eq(Vitals.get_value(&"energy"), 85)
+	assert_eq(Vitals.get_value(&"energy"), 105)
 	assert_eq(Vitals.get_value(&"hp"), 70)
 	assert_true(BuffState.has_buff(&"hearty_worker"))
 
@@ -98,3 +99,15 @@ func test_angler_focus_changes_fishing_timing_for_three_hours() -> void:
 func test_hearty_worker_lasts_four_hours() -> void:
 	assert_true(BuffState.apply_buff(&"hearty_worker"))
 	assert_eq(BuffState.get_minutes_remaining(&"hearty_worker"), 240)
+
+func test_hearty_worker_holds_more_energy_until_it_ends() -> void:
+	Vitals.set_value(&"energy", 90)
+	assert_true(BuffState.apply_buff(&"hearty_worker"))
+	assert_eq(Vitals.get_maximum(&"energy"), 120)
+	assert_eq(Vitals.get_value(&"energy"), 110, "the 20 more come filled")
+	assert_true(BuffState.apply_buff(&"hearty_worker"))
+	assert_eq(Vitals.get_value(&"energy"), 110, "eating again only starts the four hours again")
+	WorldClock.set_time(1, 8 * 60 + 240)
+	assert_false(BuffState.has_buff(&"hearty_worker"))
+	assert_eq(Vitals.get_maximum(&"energy"), 100)
+	assert_eq(Vitals.get_value(&"energy"), 100, "what is past the maximum goes with the buff")
