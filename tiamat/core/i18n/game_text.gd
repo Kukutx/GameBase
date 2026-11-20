@@ -4,7 +4,9 @@ extends RefCounted
 ## Text the player reads, put together the way their language does: a list
 ## of names or changes (`list()`), which every layer joins through here rather
 ## than with a separator of its own, and a line of parts split by dots
-## (`parts()`), which wraps after a dot, never before one.
+## (`parts()`), which wraps after a dot, never before one; a menu that shows
+## lines put together elsewhere, in a translated text too ("%s · %d/%d
+## donated"), keeps their dots the same way (`keep_dots()`).
 
 ## The separator of a list, a translation key of the core's catalog.
 const LIST_SEPARATOR := ", "
@@ -29,3 +31,8 @@ static func parts(parts: PackedStringArray, whole := false) -> String:
 	for part: String in parts:
 		shown.append(part.replace(" ", NO_BREAK_SPACE) if whole else part)
 	return PART_SEPARATOR.join(shown)
+
+## `text` with each dot that splits its parts (" · ") made `PART_SEPARATOR`,
+## so a label that wraps it never starts a line with the dot.
+static func keep_dots(text: String) -> String:
+	return text.replace(" · ", PART_SEPARATOR)

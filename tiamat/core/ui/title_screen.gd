@@ -64,7 +64,7 @@ func _refresh_slot_ui() -> void:
 	continue_button.disabled = not exists
 	delete_button.disabled = not exists and not unreadable
 	if exists:
-		slot_info.text = _format_slot_summary(summary)
+		slot_info.text = GameText.keep_dots(_format_slot_summary(summary))
 	else:
 		slot_info.text = tr("Holds a save this version cannot open") if unreadable else tr("Empty slot")
 

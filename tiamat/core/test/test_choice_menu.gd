@@ -113,6 +113,16 @@ func test_a_line_set_in_keeps_its_wrapped_lines_in_with_it() -> void:
 	assert_eq(name.get_theme_stylebox(&"normal").get_margin(SIDE_LEFT), 0.0, "the name stays at the edge")
 	menu.close()
 
+func test_its_lines_never_wrap_before_a_dot() -> void:
+	var line := "  Hp 30 · Hits for 8 · Inflicts Burning · Drops Gel"
+	var choices: Array[ChoiceMenu.Choice] = [ChoiceMenu.Choice.new(&"first", "Slime", "Best 3 · Next star 5")]
+	(func() -> void: await ChoiceMenu.ask(_host, choices, "Creatures", &"", "Slime\n" + line)).call()
+	var menu := ChoiceMenu.of(_host)
+	assert_eq(menu.get_body(), "Slime\n" + line, "the body reads as told")
+	assert_eq((menu.get_node("%Body").get_child(1) as Label).text, GameText.keep_dots(line.strip_edges(true, false)))
+	assert_eq(menu.get_note(&"first"), "Best 3\u00a0· Next star 5")
+	menu.close()
+
 func test_a_long_story_reads_from_its_top_and_scrolls_under_the_keys() -> void:
 	var lines := PackedStringArray()
 	for index: int in 60:
