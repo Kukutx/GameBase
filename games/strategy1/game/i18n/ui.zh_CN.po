@@ -236,3 +236,6 @@ msgstr "烽火未燃"
 
 msgid "Win the battle at the Watchtower."
 msgstr "赢下瞭望塔之战。"
+
+msgid "Burning"
+msgstr "灼烧"

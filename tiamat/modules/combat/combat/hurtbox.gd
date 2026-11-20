@@ -50,9 +50,7 @@ var _knockback := Vector2.ZERO
 var _knockback_left := 0.0
 var _flash: Tween
 var _rest_modulate := Color.WHITE
-# The afflictions on it, by id: {"data": AfflictionData, "faction":
-# StringName, "ticks": the ticks left, "next": seconds to the next}.
-var _afflictions: Dictionary[StringName, Dictionary] = {}
+var _afflictions := Afflictions.new()
 
 func _ready() -> void:
 	# It runs only while a hit plays out.
@@ -90,29 +88,22 @@ func can_be_hurt_by(damage: Damage) -> bool:
 func is_invincible() -> bool:
 	return _invincible_left > 0.0
 
-## Lays `affliction` on it, from a hit of `from_faction`: it takes
-## `AfflictionData.tick_damage` every `AfflictionData.tick_seconds`,
-## `AfflictionData.get_ticks()` times (`ailed`). Laid again, it lasts as long
-## again from now, its next tick still due when it was, so hits faster than
-## its ticks keep it burning. False when nothing is laid: on a hurtbox that is
-## off, cannot ail (`can_ail()`) or is immune to it (`immune_to`).
+## Lays `affliction` on it, from a hit of `from_faction`, in real time
+## (`Afflictions.lay()`): it takes health on its ticks (`ailed`), and laid
+## again lasts as long again from now, so hits faster than its ticks keep it
+## burning. False when nothing is laid: on a hurtbox that is off, cannot ail
+## (`can_ail()`) or is immune to it (`immune_to`).
 func afflict(affliction: AfflictionData, from_faction: StringName = &"") -> bool:
 	if affliction == null or not enabled or not can_ail() or immune_to.has(affliction.id):
 		return false
-	var laid: Dictionary = _afflictions.get(affliction.id, {})
-	var fresh := laid.is_empty()
-	_afflictions[affliction.id] = {"data": affliction, "faction": from_faction, "ticks": affliction.get_ticks(), "next": affliction.tick_seconds if fresh else laid["next"]}
 	set_physics_process(true)
-	if fresh:
+	if _afflictions.lay(affliction, from_faction):
 		afflicted.emit(affliction)
 	return true
 
 ## The afflictions on it now, in the order laid.
 func get_afflictions() -> Array[AfflictionData]:
-	var laid: Array[AfflictionData] = []
-	for entry: Dictionary in _afflictions.values():
-		laid.append(entry["data"])
-	return laid
+	return _afflictions.get_all()
 
 ## Whether the affliction `affliction_id` is on it now.
 func is_afflicted(affliction_id: StringName) -> bool:
@@ -144,29 +135,16 @@ func _physics_process(delta: float) -> void:
 		var body := get_parent() as CharacterBody2D
 		if body != null:
 			body.move_and_collide(push * delta)
-	_tick_afflictions(delta)
+	_afflictions.advance(delta, _on_tick)
 	if _invincible_left <= 0.0 and _knockback_left <= 0.0 and _afflictions.is_empty():
 		set_physics_process(false)
 
-# Has each affliction take health on its ticks, flashing the actor in its
-# colour, and lifts it after its last.
-func _tick_afflictions(delta: float) -> void:
-	for id: StringName in _afflictions.keys():
-		# A tick may have defeated the actor and cured it of the rest.
-		if not _afflictions.has(id):
-			continue
-		var entry: Dictionary = _afflictions[id]
-		var affliction: AfflictionData = entry["data"]
-		entry["next"] = float(entry["next"]) - delta
-		if float(entry["next"]) > 0.000001:
-			continue
-		entry["next"] = float(entry["next"]) + affliction.tick_seconds
-		entry["ticks"] = int(entry["ticks"]) - 1
-		if int(entry["ticks"]) <= 0:
-			_afflictions.erase(id)
-		if can_ail():
-			_flash_actor(affliction.color)
-			ailed.emit(Damage.new(affliction.tick_damage, entry["faction"]))
+# An affliction's tick takes health, flashing the actor in its colour, while
+# it may (a tick may have defeated the actor and cured it of the rest).
+func _on_tick(affliction: AfflictionData, tick: Damage) -> void:
+	if can_ail():
+		_flash_actor(affliction.color)
+		ailed.emit(tick)
 
 func _flash_actor(color := FLASH_COLOR) -> void:
 	var actor := get_parent() as CanvasItem

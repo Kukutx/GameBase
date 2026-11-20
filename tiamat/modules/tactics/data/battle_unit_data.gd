@@ -23,6 +23,9 @@ const KIND := &"battle_unit"
 @export_range(0, 12) var move := 3
 ## What it can do on its turn (`BattleActionData`), its plain attack first.
 @export var action_ids: Array[StringName] = []
+## The afflictions that never take hold of it (`AfflictionData`): a warlord
+## who shrugs off poison.
+@export var immune_to: Array[StringName] = []
 
 ## The unit with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> BattleUnitData:
@@ -54,4 +57,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	for action_id: StringName in action_ids:
 		if not registry.has_entry(BattleActionData.KIND, action_id):
 			problems.append("references unknown action '%s'" % action_id)
+	for immune: StringName in immune_to:
+		if not registry.has_entry(AfflictionData.KIND, immune):
+			problems.append("is immune to unknown affliction '%s'" % immune)
 	return problems

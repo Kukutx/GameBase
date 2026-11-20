@@ -11,3 +11,4 @@ power = 2
 min_range = 2
 max_range = 3
 area = 1
+affliction_id = &"burning"

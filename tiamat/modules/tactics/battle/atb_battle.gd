@@ -18,7 +18,10 @@ extends RefCounted
 ## action that recharges (`BattleActionData.recharge_turns`) waits that many of
 ## its user's turns before the user may take it again, and one that delays
 ## (`BattleActionData.delay`) sets back the gauges of the foes it leaves
-## standing (`delay_of()`), a player's unit that waited for its turn too. A
+## standing (`delay_of()`), a player's unit that waited for its turn too. One
+## that lays an affliction (`BattleActionData.affliction_id`) leaves it on the
+## foes it hits and leaves standing (`GridUnit.afflict()`), and it takes their
+## health on its ticks in battle time (`unit_ailed`), which may defeat them. A
 ## side with a leader (`GridUnit.leader`) flees the battle once the leader
 ## falls (`unit_fled`), and turns back its units still on their way. Units may
 ## arrive while the battle runs (`add_arrival()`, `unit_arrived`), in battle
@@ -45,6 +48,8 @@ signal move_undone(unit: GridUnit)
 ## those it put on the unit (`BattleActionData.boosts`).
 signal unit_acted(unit: GridUnit, action: BattleActionData, cell: Vector2i, hits: Array[Dictionary])
 signal unit_defeated(unit: GridUnit)
+## An affliction on `unit` took `amount` of its health on its tick.
+signal unit_ailed(unit: GridUnit, affliction: AfflictionData, amount: int)
 ## `unit` left the battle when the leader of its side fell.
 signal unit_fled(unit: GridUnit)
 signal turn_ended(unit: GridUnit)
@@ -148,32 +153,9 @@ func get_turn_unit() -> GridUnit:
 	return _turn
 
 ## The units whose turns come after the one now, soonest first, `count` of
-## them, as the gauges will fill: the player's units that wait, full, first,
-## then each unit's turns in turn, every one of them as though the unit moved
-## and acted (the unit whose turn it is now from an empty gauge); units that
-## fill at the same moment in the order they were placed.
+## them, as the gauges will fill (`GridTurnOrder.of()`).
 func get_turn_order(count: int) -> Array[GridUnit]:
-	var order: Array[GridUnit] = []
-	# When each unit fills next, in battle time from now.
-	var next: Dictionary[GridUnit, float] = {}
-	for unit: GridUnit in units:
-		if not unit.is_alive() or unit.data.speed <= 0.0:
-			continue
-		if _waiting.has(unit):
-			next[unit] = GAUGE_FULL / unit.data.speed
-		else:
-			next[unit] = (GAUGE_FULL - (0.0 if unit == _turn else unit.gauge)) / unit.data.speed
-	for unit: GridUnit in _waiting:
-		if order.size() < count:
-			order.append(unit)
-	while order.size() < count and not next.is_empty():
-		var soonest: GridUnit = null
-		for unit: GridUnit in next:
-			if soonest == null or next[unit] < next[soonest] - _EPSILON or (next[unit] <= next[soonest] + _EPSILON and unit.index < soonest.index):
-				soonest = unit
-		order.append(soonest)
-		next[soonest] += GAUGE_FULL / soonest.data.speed
-	return order
+	return GridTurnOrder.of(units, _waiting, _turn, count)
 
 ## Whether `unit` fights on the player's side.
 func is_on_player_side(unit: GridUnit) -> bool:
@@ -191,17 +173,20 @@ func get_unit_at(cell: Vector2i) -> GridUnit:
 			return unit
 	return null
 
-## Lets `seconds` of battle time pass: the gauges fill, and each unit whose
-## gauge fills takes its turn then.
+## Lets `seconds` of battle time pass: the gauges fill, each unit whose gauge
+## fills takes its turn then, and the afflictions tick.
 func advance(seconds: float) -> void:
 	var left := seconds
 	while left > 0.0 and not _over and (_turn == null or time_flows_while_choosing):
 		var filling := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive() and unit.data.speed > 0.0 and unit != _turn and not _waiting.has(unit))
-		if filling.is_empty() and arrivals.size() == 0 and time_limit == null:
+		var ailing := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive() and not unit.afflictions.is_empty())
+		if filling.is_empty() and ailing.is_empty() and arrivals.size() == 0 and time_limit == null:
 			return
 		var step := clampf(arrivals.get_next() - time, 0.0, left)
 		if time_limit != null:
 			step = minf(step, time_limit.get_left(time))
+		for unit: GridUnit in ailing:
+			step = minf(step, unit.afflictions.get_next_tick())
 		for unit: GridUnit in filling:
 			step = minf(step, (GAUGE_FULL - unit.gauge) / unit.data.speed)
 		var full: Array[GridUnit] = []
@@ -215,8 +200,12 @@ func advance(seconds: float) -> void:
 		left -= step
 		time += step
 		for arrival: GridArrivals.Arrival in arrivals.take_due(time + _EPSILON):
-			_arrive(arrival)
-		if time_limit != null and time_limit.is_up(time):
+			var arrived := GridArrivals.place(self, arrival)
+			if arrived != null:
+				unit_arrived.emit(arrived)
+		for unit: GridUnit in ailing:
+			unit.afflictions.advance(step, func(affliction: AfflictionData, tick: Damage) -> void: _ail(unit, affliction, tick))
+		if not _over and time_limit != null and time_limit.is_up(time):
 			_end(time_limit.wins(player_faction))
 		for unit: GridUnit in full:
 			# Once one of the player's units waits, the others that filled
@@ -298,12 +287,7 @@ func delay_of(action: BattleActionData, target: GridUnit) -> float:
 	return minf(action.delay, target.gauge)
 
 ## What `unit` taking `action` at `cell` from where it stands would do, told
-## before it does: a {"unit": GridUnit, "amount": int, "defeats": bool} for
-## each unit it reaches, the health it would take (no more than the unit has)
-## or give back (no more than it lacks), and with an action that delays,
-## "delay": how far it would set back the gauge of a unit it leaves standing,
-## and with one that boosts, "boosts": those it would put on such a unit,
-## just as `act()` then does (`GridForecast.of()`).
+## before it does, just as `act()` then does (`GridForecast.of()`).
 func forecast(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> Array[Dictionary]:
 	return GridForecast.of(self, unit, action, cell)
 
@@ -367,6 +351,8 @@ func act(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> bool:
 		if not action.boosts.is_empty() and target.is_alive():
 			target.boost(action)
 			hit["boosts"] = action.boosts
+		if action.effect == BattleActionData.Effect.DAMAGE and target.afflict(AfflictionData.find(action.affliction_id), unit.faction):
+			hit["affliction"] = AfflictionData.find(action.affliction_id)
 		hits.append(hit)
 	unit_acted.emit(unit, action, cell, hits)
 	for hit: Dictionary in hits:
@@ -445,6 +431,7 @@ func _finish_turn(unit: GridUnit) -> void:
 
 func _defeat(unit: GridUnit) -> void:
 	unit.gauge = 0.0
+	unit.afflictions.clear()
 	_waiting.erase(unit)
 	if unit == _turn:
 		_turn = null
@@ -463,6 +450,18 @@ func _rout(leader: GridUnit) -> void:
 				_turn = null
 			unit_fled.emit(unit)
 
+# An affliction's tick takes `unit`'s health; the tick that takes the last of
+# it defeats it.
+func _ail(unit: GridUnit, affliction: AfflictionData, tick: Damage) -> void:
+	if _over or not unit.is_alive():
+		return
+	unit_ailed.emit(unit, affliction, unit.health.take(tick.amount))
+	if unit.health.is_depleted():
+		_defeat(unit)
+		if unit.leader:
+			_rout(unit)
+		_check_over()
+
 func _check_over() -> void:
 	var factions := arrivals.get_factions()
 	for unit: GridUnit in units:
@@ -473,17 +472,6 @@ func _check_over() -> void:
 			if FactionData.are_hostile(faction, other):
 				return
 	_end(factions.any(func(faction: StringName) -> bool: return not FactionData.are_hostile(faction, player_faction)))
-
-# Places the unit of `arrival` in its cell, or the open cell nearest it that
-# no unit stands in; none is placed while every cell is taken.
-func _arrive(arrival: GridArrivals.Arrival) -> void:
-	for reach: int in maxi(grid.size.x, grid.size.y) * 2:
-		for cell: Vector2i in grid.cells_in_range(arrival.cell, reach, reach):
-			if grid.is_open(cell) and get_unit_at(cell) == null:
-				var unit := add_unit(arrival.data, arrival.faction, cell)
-				unit.leader = arrival.leader
-				unit_arrived.emit(unit)
-				return
 
 func _end(won: bool) -> void:
 	_over = true

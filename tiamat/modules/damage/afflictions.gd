@@ -1,0 +1,69 @@
+class_name Afflictions
+extends RefCounted
+
+## The afflictions on one thing in a fight (`AfflictionData`), counted in the
+## seconds of that fight: real time for a hurtbox, battle time for a unit of a
+## grid or command battle. Each takes its `AfflictionData.tick_damage` every
+## `AfflictionData.tick_seconds`, `AfflictionData.get_ticks()` times
+## (`advance()`). Laid again, one lasts as long again from then, its next tick
+## still due when it was, so it never stacks and quick hits never put a tick
+## off. Whether a thing may take one at all (immunity, standing) is for the
+## fight to say before it lays it.
+
+const _EPSILON := 0.000001
+
+# affliction id -> {"data": AfflictionData, "faction": StringName, "ticks":
+# the ticks left, "next": seconds to the next}.
+var _laid: Dictionary[StringName, Dictionary] = {}
+
+## Lays `affliction`, from a hit of `from_faction`: true when it takes hold
+## now, false when it was on already (it lasts anew) or is null.
+func lay(affliction: AfflictionData, from_faction: StringName = &"") -> bool:
+	if affliction == null:
+		return false
+	var laid: Dictionary = _laid.get(affliction.id, {})
+	_laid[affliction.id] = {"data": affliction, "faction": from_faction, "ticks": affliction.get_ticks(), "next": affliction.tick_seconds if laid.is_empty() else laid["next"]}
+	return laid.is_empty()
+
+## Whether the affliction `affliction_id` is on it.
+func has(affliction_id: StringName) -> bool:
+	return _laid.has(affliction_id)
+
+## The afflictions on it, in the order laid.
+func get_all() -> Array[AfflictionData]:
+	var laid: Array[AfflictionData] = []
+	for entry: Dictionary in _laid.values():
+		laid.append(entry["data"])
+	return laid
+
+func is_empty() -> bool:
+	return _laid.is_empty()
+
+## Lifts every affliction.
+func clear() -> void:
+	_laid.clear()
+
+## The seconds to the next tick of any of them; INF with none.
+func get_next_tick() -> float:
+	var soonest := INF
+	for entry: Dictionary in _laid.values():
+		soonest = minf(soonest, float(entry["next"]))
+	return soonest
+
+## Lets `seconds` pass: calls `on_tick` with each affliction whose tick is
+## due by then and the `Damage` it does (its `tick_damage`, from the faction
+## that laid it, with no push), and lifts each after its last. A tick that
+## lifts the rest (`clear()`, a defeat) ends it.
+func advance(seconds: float, on_tick: Callable) -> void:
+	for id: StringName in _laid.keys():
+		var entry: Dictionary = _laid.get(id, {})
+		if entry.is_empty():
+			continue
+		var affliction: AfflictionData = entry["data"]
+		entry["next"] = float(entry["next"]) - seconds
+		while is_same(_laid.get(id), entry) and float(entry["next"]) <= _EPSILON:
+			entry["next"] = float(entry["next"]) + affliction.tick_seconds
+			entry["ticks"] = int(entry["ticks"]) - 1
+			if int(entry["ticks"]) <= 0:
+				_laid.erase(id)
+			on_tick.call(affliction, Damage.new(affliction.tick_damage, entry["faction"]))

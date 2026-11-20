@@ -2,8 +2,8 @@ extends RefCounted
 
 ## Fixture content for the tactics module's tests: a strike, a shot, a blast
 ## that reaches an area, a mend, a volley that recharges, a bash that
-## delays, a rally that boosts and a hex that curses, and units that take
-## them.
+## delays, a rally that boosts, a hex that curses and a venom that poisons,
+## the poison, and units that take them.
 ##
 ##     const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
 
@@ -41,6 +41,23 @@ static func hex() -> BattleActionData:
 	entry.boost_turns = 3
 	return entry
 
+## A poison: 1 health a second of battle time for four seconds.
+static func poison() -> AfflictionData:
+	var entry := AfflictionData.new()
+	entry.id = &"fixture_poison"
+	entry.display_name = "Fixture Poison"
+	entry.seconds = 4.0
+	entry.tick_seconds = 1.0
+	entry.tick_damage = 1
+	return entry
+
+## A venom: a bite of no power but its user's attack that poisons the foe it
+## leaves standing.
+static func venom() -> BattleActionData:
+	var entry := action(&"fixture_venom", 0)
+	entry.affliction_id = &"fixture_poison"
+	return entry
+
 static func unit(id: StringName, health: int, attack: int, defense: int, speed: float, move: int, action_ids: Array[StringName]) -> BattleUnitData:
 	var entry := BattleUnitData.new()
 	entry.id = id
@@ -58,8 +75,9 @@ static func unit(id: StringName, health: int, attack: int, defense: int, speed: 
 ## a mage (blasts an area), a captain (strikes, or looses a volley over an
 ## area that then recharges for two of its turns) and a shield (strikes, or
 ## bashes for less and sets the foe's gauge back by half a turn) and a herald
-## (strikes, rallies its side or hexes a foe), whose actions do the power plus
-## the attack less the defense.
+## (strikes, rallies its side or hexes a foe) and an adder (strikes or
+## poisons a foe), whose actions do the power plus the attack less the
+## defense.
 static func entries() -> Array:
 	return [
 		action(&"fixture_strike", 3),
@@ -70,6 +88,8 @@ static func entries() -> Array:
 		bash(),
 		rally(),
 		hex(),
+		venom(),
+		poison(),
 		unit(&"fixture_knight", 20, 4, 2, 50.0, 3, [&"fixture_strike"]),
 		unit(&"fixture_archer", 12, 3, 0, 25.0, 3, [&"fixture_shot"]),
 		unit(&"fixture_healer", 10, 0, 0, 25.0, 3, [&"fixture_mend", &"fixture_strike"]),
@@ -78,6 +98,7 @@ static func entries() -> Array:
 		unit(&"fixture_captain", 18, 3, 1, 25.0, 2, [&"fixture_strike", &"fixture_volley"]),
 		unit(&"fixture_shield", 16, 2, 2, 25.0, 2, [&"fixture_strike", &"fixture_bash"]),
 		unit(&"fixture_herald", 14, 2, 1, 25.0, 3, [&"fixture_strike", &"fixture_rally", &"fixture_hex"]),
+		unit(&"fixture_adder", 12, 3, 1, 25.0, 3, [&"fixture_strike", &"fixture_venom"]),
 	]
 
 static func placement(unit_id: StringName, faction_id: StringName, cell: Vector2i) -> BattlePlacement:

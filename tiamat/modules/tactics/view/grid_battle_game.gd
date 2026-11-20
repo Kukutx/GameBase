@@ -21,12 +21,14 @@ extends MiniGame
 ## side wins by ending a turn there (`AtbBattle.goal_cells`); while
 ## it picks what an action aims at, the side tells what it would do to each
 ## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls",
-## "Brute takes 2, turn delayed", "Swordsman gains Defense +2"), and of a
-## unit the boosts on it and how many turns they hold
-## (`GridUnit.get_boost()`) and of a leader that its side flees once it falls
-## (`GridUnit.leader`). The board numbers the units whose turns come next
+## "Brute takes 2, turn delayed", "Swordsman gains Defense +2", "Knight takes
+## 3, Poisoned"), and of a unit the boosts on it and how many turns they hold
+## (`GridUnit.get_boost()`), the afflictions on it (`GridUnit.afflictions`)
+## and of a leader that its side flees once it falls (`GridUnit.leader`). The
+## board numbers the units whose turns come next
 ## (`GridBattleBoard.turns_shown`), and the line tells of each unit that
-## arrives while the battle runs (`AtbBattle.unit_arrived`). With a time limit
+## arrives while the battle runs (`AtbBattle.unit_arrived`) and of each tick
+## of an affliction (`AtbBattle.unit_ailed`). With a time limit
 ## (`AtbBattle.time_limit`), the line says so as the battle starts and the side
 ## counts down the seconds of battle time left. Cancel (the touch
 ## controls' corner button on a touchscreen) goes back to the commands.
@@ -102,6 +104,7 @@ func setup(settings: Dictionary) -> void:
 	battle.move_undone.connect(_on_move_undone)
 	battle.unit_acted.connect(_on_unit_acted)
 	battle.unit_defeated.connect(_on_unit_defeated)
+	battle.unit_ailed.connect(_on_unit_ailed)
 	battle.unit_fled.connect(_on_unit_fled)
 	battle.turn_ended.connect(_on_turn_ended)
 	battle.goal_taken.connect(_on_goal_taken)
@@ -329,6 +332,9 @@ func _show_info() -> void:
 	var boosts := {GridUnit.ATTACK: unit.get_boost(GridUnit.ATTACK), GridUnit.DEFENSE: unit.get_boost(GridUnit.DEFENSE)}
 	if boosts.values().any(func(amount: int) -> bool: return amount != 0):
 		_info.text += "\n" + tr("Boosts: %s (turns left: %d)") % [_boost_text(boosts), unit.get_boost_turns()]
+	var afflictions := PackedStringArray(unit.afflictions.get_all().map(func(affliction: AfflictionData) -> String: return tr(affliction.display_name)))
+	if not afflictions.is_empty():
+		_info.text += "\n" + tr("Afflicted: %s") % GameText.list(afflictions)
 	if unit.leader:
 		_info.text += "\n" + tr("Leader: their side flees when they fall")
 	if _board.show_cursor and battle.grid.is_cover(_board.cursor):
@@ -355,6 +361,8 @@ func _show_info() -> void:
 			if hit.has("boosts"):
 				var boosted := _boost_text(hit["boosts"])
 				told = tr("%s gains %s") % [target_name, boosted] if _action.effect == BattleActionData.Effect.HEAL and int(hit["amount"]) == 0 else GameText.list(PackedStringArray([told, boosted]))
+			if hit.has("affliction"):
+				told = GameText.list(PackedStringArray([told, tr((hit["affliction"] as AfflictionData).display_name)]))
 			_info.text += "\n" + told
 
 # The boosts in `boosts` (stat -> amount) that change anything, as the player
@@ -400,6 +408,10 @@ func _on_unit_defeated(unit: GridUnit) -> void:
 		_set_mode(Mode.WATCH)
 	else:
 		_refresh()
+
+func _on_unit_ailed(unit: GridUnit, affliction: AfflictionData, amount: int) -> void:
+	_message.text = tr("%s takes %d from %s.") % [tr(unit.data.display_name), amount, tr(affliction.display_name)]
+	_refresh()
 
 func _on_unit_arrived(unit: GridUnit) -> void:
 	_message.text = (tr("%s joins the battle.") if battle.is_on_player_side(unit) else tr("%s joins the foes!")) % tr(unit.data.display_name)

@@ -72,8 +72,10 @@ func best_plan(battle: AtbBattle, unit: GridUnit, stays := false) -> Dictionary:
 ## it takes from foes, with `DEFEAT_SCORE` for each it defeats (and for each
 ## unit of its side that flees with a leader it defeats) and
 ## `DELAY_SCORE` for each point of gauge it sets back of those it leaves
-## standing, or the health it gives back to its side, and `BOOST_SCORE` for
-## its boosts on each unit it reaches that they are not on already.
+## standing and the health its affliction would take on its ticks from those
+## it is not on already, or the health it gives back to its side, and
+## `BOOST_SCORE` for its boosts on each unit it reaches that they are not on
+## already.
 func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: Vector2i, from: Vector2i) -> int:
 	var value := 0
 	for other: GridUnit in battle.affected_at(unit, action, target, from):
@@ -86,6 +88,9 @@ func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: 
 				value += DEFEAT_SCORE * (_side_of(battle, other) if other.leader else 1)
 				continue
 			value += roundi(battle.delay_of(action, other) * DELAY_SCORE)
+			var affliction := AfflictionData.find(action.affliction_id)
+			if other.can_be_afflicted(affliction) and not other.afflictions.has(affliction.id):
+				value += mini(affliction.get_ticks() * affliction.tick_damage, other.health.current - amount)
 		if not other.has_boost(action):
 			for stat: StringName in action.boosts:
 				value += absi(action.boosts[stat]) * action.boost_turns * BOOST_SCORE
