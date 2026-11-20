@@ -179,6 +179,37 @@ func test_elite_odds_make_ordinary_enemies_elites_and_leave_the_layout_as_it_was
 		assert_eq(entry["position"], plain["enemies"][index]["position"])
 		assert_eq(entry["kind"], plain["enemies"][index]["kind"])
 
+func test_hazards_lie_clear_of_the_rocks_enemies_and_ways_and_leave_them_as_they_were() -> void:
+	var table := _table(&"fixture_stone", [], [_enemy_tier(&"fixture_slime", 1)])
+	MineState.floor_table = table
+	var plain := MineState.generate_floor_layout(30)
+	assert_eq(plain["hazards"], [], "no spread, no hazards")
+	table.hazards = HazardSpread.new()
+	table.hazards.from_depth = 20
+	table.hazards.every = 10
+	table.hazards.most = 3
+	table.hazards.spacing = 40.0
+	assert_eq(MineState.generate_floor_layout(19)["hazards"], [], "none above the spread's first floor")
+	var layout := MineState.generate_floor_layout(30)
+	assert_eq(layout["rocks"], plain["rocks"], "the rocks stand where they stood")
+	assert_eq(layout["enemies"], plain["enemies"], "and the enemies")
+	var hazards: Array = layout["hazards"]
+	assert_eq(hazards.size(), 2, "two on the floor ten below the first")
+	for hazard: Dictionary in hazards:
+		var place: Vector2 = hazard["position"]
+		assert_between(float(hazard["phase"]), 0.0, 1.0)
+		assert_true(MineRunState.FLOOR_AREA.has_point(place))
+		assert_gte(place.distance_to(MineRunState.ENTRANCE), MineRunState.ENTRANCE_CLEARANCE, "clear of the way in")
+		assert_gte(place.distance_to(MineRunState.EXIT), MineRunState.EXIT_CLEARANCE, "and the way down")
+		for entry: Dictionary in layout["rocks"] + layout["enemies"]:
+			assert_gte(place.distance_to(entry["position"]), 40.0, "and what stands on the floor")
+	assert_eq(MineState.generate_floor_layout(30)["hazards"], hazards, "the same floor of the same world, the same hazards")
+	table.hazards.scene = PackedScene.new()
+	var stranger := Node2D.new()
+	table.hazards.scene.pack(stranger)
+	stranger.free()
+	assert_eq(table.find_problems(_registry).size(), 1, "a hazard scene that is no hazard is a problem")
+
 func test_the_guardians_standing_on_a_floor_are_named_until_they_fall() -> void:
 	var king := _enemy_tier(&"fixture_king", 10)
 	king.guardian_every = 10

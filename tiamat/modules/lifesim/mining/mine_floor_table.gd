@@ -13,6 +13,9 @@ extends Resource
 ## How often the ordinary enemies of a floor come in an elite form
 ## (`EliteData`); none without.
 @export var elite_odds: EliteOdds
+## The hazards of the ground (`Hazard`) spread over the floors, the deeper the
+## more; none without.
+@export var hazards: HazardSpread
 
 ## The enemy id for `floor`: the tier with the deepest minimum floor reached.
 func get_enemy_id(floor: int) -> StringName:
@@ -33,4 +36,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 			problems.append("mine floor table rock tier '%s' is not a mining node" % (tier.rock_id if tier != null else &""))
 	for problem: String in EnemyTier.find_problems(enemy_tiers, registry):
 		problems.append("mine floor table %s" % problem)
+	if hazards != null:
+		for problem: String in hazards.find_problems():
+			problems.append("mine floor table %s" % problem)
 	return problems

@@ -2193,6 +2193,9 @@ msgstr "还不错，谢谢关心。"
 msgid "Press {use_tool} to use the tool in hand."
 msgstr "按 {use_tool} 使用手中的工具。"
 
+msgid "Magma vents glow before they flare and burn whatever stands on them, slimes too."
+msgstr "熔岩喷口喷发前会发光，会烧伤站在上面的一切，史莱姆也不例外。"
+
 msgid "Hold an item and press {give_gift} to give it."
 msgstr "拿着物品时按 {give_gift} 把它送出去。"
 

@@ -208,6 +208,27 @@ func test_floor_forty_scene_uses_red_slime_tier() -> void:
 	for enemy: HostileCreature in mine.get_generated_enemies():
 		assert_eq(enemy.data.id, &"red_slime")
 
+func test_magma_vents_flare_from_floor_forty_under_the_player_more_of_them_deeper() -> void:
+	var spread := MineState.floor_table.hazards
+	assert_eq(spread.count_at(39), 0, "none above floor forty")
+	assert_eq(spread.count_at(40), 1)
+	assert_eq(spread.count_at(60), 2)
+	assert_eq(spread.count_at(120), 3, "three at most")
+	assert_eq(MineState.generate_floor_layout(39)["hazards"], [])
+	MineState.set_floor(80)
+	var mine := (load("res://game/world/old_mine.tscn") as PackedScene).instantiate() as MineFloorController
+	add_child_autofree(mine)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var vents := mine.get_generated_hazards()
+	assert_eq(vents.size(), 3)
+	var player := mine.get_node("Player")
+	for vent: Hazard in vents:
+		assert_eq(vent.damage, 20, "burning harder the deeper")
+		assert_lt(vent.get_index(), player.get_index(), "under the player")
+		for rock: MiningNode in mine.get_generated_rocks():
+			assert_gte(vent.position.distance_to(rock.position), spread.spacing, "clear of the rocks")
+
 func test_iridium_and_endgame_enemy_tiers_unlock_at_floors_sixty_ninety_and_one_twenty() -> void:
 	var floor59 := MineState.generate_floor_layout(59)
 	var floor60 := MineState.generate_floor_layout(60)

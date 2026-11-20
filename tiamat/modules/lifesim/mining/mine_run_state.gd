@@ -17,7 +17,10 @@ extends Node
 ## ordinary enemy is of the floor's leading kind (`MineFloorTable.get_enemy_id()`)
 ## or of a mixed tier that spans the floor (`EnemyTier.share`), and may come in
 ## an elite form (`MineFloorTable.elite_odds`), its id under `"elite"` (empty:
-## none), each rolled from a stream of its own.
+## none), each rolled from a stream of its own. Its `"hazards"` are where the
+## table's hazards stand (`MineFloorTable.hazards`), clear of the rocks, the
+## enemies and the ways in and down, each with its `"phase"`, the share of
+## its cycle it starts at, from a stream of their own too.
 ## `deepest_floor_changed` fires when the player goes deeper than ever before,
 ## their first entry to floor 1 included, which quests follow.
 
@@ -171,7 +174,12 @@ func generate_floor_layout(floor: int) -> Dictionary:
 			"persistent_id": "mine_f%03d_enemy_%02d" % [resolved, index + 1],
 			"elite": String(elite.id) if elite != null else "",
 		})
-	return {"floor": resolved, "rocks": rocks, "enemies": enemies}
+	var hazards: Array[Dictionary] = []
+	if floor_table != null and floor_table.hazards != null:
+		var hazard_rolls := track.stream(resolved, "hazards")
+		for place: Vector2 in floor_table.hazards.spread(hazard_rolls, resolved, FLOOR_AREA, scattered, _is_clear_of_doorways):
+			hazards.append({"position": place, "phase": hazard_rolls.randf()})
+	return {"floor": resolved, "rocks": rocks, "enemies": enemies, "hazards": hazards}
 
 # Whether `point` keeps clear of the floor's way in and its way down.
 static func _is_clear_of_doorways(point: Vector2) -> bool:
