@@ -80,6 +80,8 @@ func test_a_locked_one_shows_how_far_the_player_is_and_each_its_icon() -> void:
 	pause.achievements_button.pressed.emit()
 	var menu := pause.achievements_menu
 	assert_eq(menu.get_entries()[0], PackedStringArray(["Runner", "Run ten times.", "4 / 10"]))
+	assert_almost_eq(menu.get_entry_progress(0), 0.4, 0.001, "and a bar filled as far")
+	assert_eq(menu.get_entry_progress(1), -1.0, "a hidden one shows no bar")
 	assert_eq(menu.get_entry_icon(0), counting.icon)
 	assert_eq(menu.get_entry_icon(1), null, "a hidden one keeps its icon to itself")
 	menu.close()
@@ -87,6 +89,7 @@ func test_a_locked_one_shows_how_far_the_player_is_and_each_its_icon() -> void:
 	pause.achievements_button.pressed.emit()
 	assert_eq(menu.get_summary(), "1 of 2 unlocked")
 	assert_eq(menu.get_entries()[0], PackedStringArray(["Runner", "Run ten times."]), "unlocked, it shows no count")
+	assert_eq(menu.get_entry_progress(0), -1.0, "nor a bar")
 	pause.close()
 
 func test_records_show_under_the_achievements_with_what_the_profile_counts() -> void:
