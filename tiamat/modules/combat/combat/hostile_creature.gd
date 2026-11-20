@@ -54,10 +54,8 @@ var _drop_pickup: WorldItemPickup
 var _attack_time_left := 0.0
 var _hurt_left := 0.0
 var _death_time_left := 0.0
-var _animation_state := AnimationState.IDLE
-var _animation_initialized := false
-var _frame_accumulator := 0.0
-var _frame_index := 0
+# Plays its sheet's frames while it has art.
+var _animator: SheetAnimator
 var _has_art := false
 var _player: Node2D
 var _machine := StateMachine.new()
@@ -259,6 +257,7 @@ func _apply_data() -> void:
 			visual.visible = true
 			fallback.visible = false
 			_has_art = true
+	_animator = SheetAnimator.new(visual, data.frame_size, data.animation_fps) if _has_art else null
 	if not _has_art:
 		visual.visible = false
 		fallback.visible = true
@@ -384,16 +383,8 @@ func _set_alive_visual() -> void:
 	_set_animation(AnimationState.IDLE)
 
 func _set_animation(next: AnimationState) -> void:
-	if data == null:
-		return
-	var target_range := _get_frame_range_for(next)
-	if _animation_initialized and _animation_state == next and _frame_index >= target_range.x and _frame_index <= target_range.y:
-		return
-	_animation_state = next
-	_animation_initialized = true
-	_frame_accumulator = 0.0
-	_frame_index = target_range.x
-	_update_region()
+	if _animator != null:
+		_animator.play(_get_frame_range_for(next), next != AnimationState.DEATH)
 
 func _get_frame_range_for(state: AnimationState) -> Vector2i:
 	if data == null:
@@ -407,23 +398,9 @@ func _get_frame_range_for(state: AnimationState) -> Vector2i:
 			return Vector2i(data.idle_from, data.idle_to)
 
 func _advance_animation(delta: float) -> void:
-	if not _has_art or data == null or (is_defeated and _death_time_left <= 0.0):
-		return
-	_frame_accumulator += delta * float(data.animation_fps)
-	var frame_range := _get_frame_range_for(_animation_state)
-	while _frame_accumulator >= 1.0:
-		_frame_accumulator -= 1.0
-		_frame_index += 1
-		if _frame_index > frame_range.y:
-			_frame_index = frame_range.y if _animation_state == AnimationState.DEATH else frame_range.x
-		_update_region()
-
-func _update_region() -> void:
-	if not _has_art or visual.texture == null or data == null:
-		return
-	var columns := maxi(visual.texture.get_width() / maxi(data.frame_size.x, 1), 1)
-	var cell := Vector2i(_frame_index % columns, _frame_index / columns)
-	visual.region_rect = Rect2(Vector2(cell * data.frame_size), Vector2(data.frame_size))
+	# A fallen creature's last frame stays until it is hidden.
+	if _animator != null and not (is_defeated and _death_time_left <= 0.0):
+		_animator.advance(delta)
 
 func _refresh_health_label() -> void:
 	if health_label == null:
