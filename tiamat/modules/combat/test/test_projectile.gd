@@ -1,6 +1,6 @@
 extends GutTest
 
-## A creature's shot (`CreatureShot`) and the creatures that shoot
+## A creature's shot (`Projectile`) and the creatures that shoot
 ## (`EnemyData.shot_speed`).
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
@@ -30,7 +30,7 @@ func after_each() -> void:
 
 func test_a_shot_flies_to_the_player_hurts_them_and_is_gone() -> void:
 	var player := _add_player(Vector2(6060, 6000))
-	var shot := CreatureShot.fire(_add_spot(Vector2(6000, 6000)), player.global_position, 300.0, 200.0, Damage.new(7, FactionData.MONSTERS), Color.ORANGE)
+	var shot := Projectile.fire(_add_spot(Vector2(6000, 6000)), player.global_position, 300.0, 200.0, Damage.new(7, FactionData.MONSTERS), Color.ORANGE)
 	assert_eq(shot.global_position, Vector2(6000, 6000), "from where it was thrown")
 	assert_true(await wait_until(func() -> bool: return not Vitals.is_full(&"fixture_hp"), 1.0), "it reaches the player")
 	assert_eq(Vitals.get_value(&"fixture_hp"), 93)
@@ -41,7 +41,7 @@ func test_a_shot_spares_its_own_side_and_fades_past_its_reach() -> void:
 	var ally := _add_actor(Vector2(6030, 6000), FactionData.MONSTERS)
 	watch_signals(Hurtbox.of(ally))
 	_add_player(Vector2(6160, 6000))
-	var shot := CreatureShot.fire(_add_spot(Vector2(6000, 6000)), Vector2(6160, 6000), 400.0, 100.0, Damage.new(7, FactionData.MONSTERS), Color.ORANGE)
+	var shot := Projectile.fire(_add_spot(Vector2(6000, 6000)), Vector2(6160, 6000), 400.0, 100.0, Damage.new(7, FactionData.MONSTERS), Color.ORANGE)
 	assert_true(await wait_until(_gone(shot), 1.0), "it fades once it flew its reach")
 	assert_signal_not_emitted(Hurtbox.of(ally), "hurt", "its own side's are not hurt")
 	assert_true(Vitals.is_full(&"fixture_hp"), "and the player beyond its reach is spared")
@@ -53,7 +53,7 @@ func test_a_wall_stops_a_shot() -> void:
 	add_child_autofree(wall)
 	_add_player(Vector2(6080, 6000))
 	await get_tree().physics_frame
-	var shot := CreatureShot.fire(_add_spot(Vector2(6000, 6000)), Vector2(6080, 6000), 300.0, 200.0, Damage.new(7, FactionData.MONSTERS), Color.ORANGE)
+	var shot := Projectile.fire(_add_spot(Vector2(6000, 6000)), Vector2(6080, 6000), 300.0, 200.0, Damage.new(7, FactionData.MONSTERS), Color.ORANGE)
 	assert_true(await wait_until(_gone(shot), 1.0))
 	await wait_physics_frames(10)
 	assert_true(Vitals.is_full(&"fixture_hp"), "the player behind the wall is spared")
@@ -113,15 +113,15 @@ func _add_wisp(at: Vector2) -> HostileCreature:
 	add_child_autofree(wisp)
 	return wisp
 
-func _shots() -> Array[CreatureShot]:
-	var shots: Array[CreatureShot] = []
+func _shots() -> Array[Projectile]:
+	var shots: Array[Projectile] = []
 	for child in get_children():
-		if child is CreatureShot and not (child as CreatureShot).is_spent():
+		if child is Projectile and not (child as Projectile).is_spent():
 			shots.append(child)
 	return shots
 
 # Whether `shot` is gone, without holding on to it.
-func _gone(shot: CreatureShot) -> Callable:
+func _gone(shot: Projectile) -> Callable:
 	var held: WeakRef = weakref(shot)
 	return func() -> bool: return held.get_ref() == null
 
