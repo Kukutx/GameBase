@@ -2154,6 +2154,15 @@ msgstr "怪物学者"
 msgid "Defeat every kind of creature of the mine, counting every save."
 msgstr "击败矿洞里的每一种生物（所有存档合计）。"
 
+msgid "Treasure Seeker"
+msgstr "寻宝人"
+
+msgid "Open 10 chests in the mine, counting every save."
+msgstr "在矿洞中开启 10 个宝箱（所有存档合计）。"
+
+msgid "Chests Opened"
+msgstr "开启的宝箱"
+
 msgid "Clear"
 msgstr "晴朗"
 

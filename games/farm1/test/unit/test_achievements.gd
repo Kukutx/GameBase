@@ -78,6 +78,13 @@ func test_a_mine_guardian_unlocks_its_achievement_and_counts_toward_a_record() -
 	assert_true(GameProfile.is_unlocked(&"into_the_void"))
 	assert_eq(RecordData.find(&"guardians_felled").get_value(), 2)
 
+func test_chests_opened_in_every_save_make_a_treasure_seeker() -> void:
+	GameProfile.set_flag(&"chests_opened", 9)
+	assert_false(GameProfile.is_unlocked(&"treasure_seeker"))
+	GameTriggers.fire(&"ItemsEvents.chest_opened", {"position": Vector2.ZERO})
+	assert_true(GameProfile.is_unlocked(&"treasure_seeker"))
+	assert_eq(RecordData.find(&"chests_opened").get_value(), 10)
+
 func test_every_kind_of_the_mine_defeated_makes_a_monster_scholar() -> void:
 	var kinds := EnemyData.find_all()
 	assert_eq(AchievementData.find(&"monster_scholar").goal, kinds.size(), "every kind the game has")

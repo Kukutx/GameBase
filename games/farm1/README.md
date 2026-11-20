@@ -41,7 +41,7 @@ New content goes into the content pack `game/data/content.tres` and is read thro
 - NPC schedules across towns, gifts, 0→10-heart relationship dialogue and five heart-event tiers per core NPC
 - A long mining quest chain, progression mail, daily contracts, seasonal festivals and chained town restoration projects
 - Six skills with Lv5/Lv10 perks (Combat's raise max health, Farming's max energy, as Vegetable Stew's Hearty Worker does for four hours), collections and archive milestones
-- Ten achievements kept across every save, five of them counted over every save (crops, fish, gifts, mining, and Monster Scholar's kinds of creature the bestiary has met) with their progress shown in the game menu and the achievements menu, two for the mine's guardians, and one hidden; the achievements menu's Records shows the counts with the deepest floor and the guardians felled
+- Eleven achievements kept across every save, six of them counted over every save (crops, fish, gifts, mining, the mine's chests, and Monster Scholar's kinds of creature the bestiary has met) with their progress shown in the game menu and the achievements menu, two for the mine's guardians, and one hidden; the achievements menu's Records shows the counts with the deepest floor, the guardians felled and the chests opened
 - The pause menu's Bestiary lists every kind of creature the farmer has defeated in the mines, across every save, with its health, its hits and its drop
 - Three save slots with primary/backup/temp crash recovery, periodic and travel autosave
 - Rebindable keyboard and gamepad controls, device-aware prompts, English and Simplified Chinese UI
