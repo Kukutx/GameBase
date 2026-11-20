@@ -97,6 +97,9 @@ const STYLE_AXIS_LABELS := {
 ## The actions of the movement controls the core ships for games to list
 ## (`controls/move_*.tres`): up, left, down, right.
 const MOVE_ACTIONS: Array[StringName] = [&"move_up", &"move_left", &"move_down", &"move_right"]
+## The arrow keys in the order of `MOVE_ACTIONS`, which a move prompt names
+## as one ("Arrows").
+const ARROW_KEYS: Array[Key] = [KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT]
 
 var using_gamepad := false
 ## Whether the player plays by touch, which `TouchControls` show for.
@@ -259,8 +262,9 @@ func get_actions_prompt(actions: Array[StringName]) -> String:
 
 ## How the player moves on the device in use: the stick on a gamepad, else the
 ## key or mouse button bound to each of `actions`, then each one's fixed second
-## key (the arrows) where it differs. The bindings are `bindings`
-## (`GameSettings.bindings` when null).
+## key (the arrows) where it differs: "WASD / Arrows", a run of letters written
+## as one word and the four arrows, in their order, as one name. The bindings
+## are `bindings` (`GameSettings.bindings` when null).
 func get_move_prompt(actions: Array[StringName] = MOVE_ACTIONS, bindings: ControlBindings = null) -> String:
 	if using_gamepad:
 		return tr("Left Stick / D-Pad")
@@ -269,15 +273,30 @@ func get_move_prompt(actions: Array[StringName] = MOVE_ACTIONS, bindings: Contro
 	if bindings == null:
 		bindings = GameSettings.bindings
 	var bound := PackedStringArray()
-	var second_keys := PackedStringArray()
+	var second_keys: Array[Key] = []
 	for action: StringName in actions:
 		var binding := bindings.get_binding(action)
 		bound.append(ControlBindings.binding_text(binding))
 		var control := bindings.get_control(action)
 		if control != null and control.secondary_key != KEY_NONE and int(control.secondary_key) != int(binding.get("key", KEY_NONE)):
-			second_keys.append(ControlBindings.key_text(control.secondary_key))
-	var prompt := "/".join(bound)
-	return prompt if second_keys.is_empty() else "%s / %s" % [prompt, "/".join(second_keys)]
+			second_keys.append(control.secondary_key)
+	var prompt := _join_keys(bound)
+	if second_keys.is_empty():
+		return prompt
+	if second_keys == ARROW_KEYS:
+		return "%s / %s" % [prompt, tr("Arrows")]
+	var seconds := PackedStringArray()
+	for key: Key in second_keys:
+		seconds.append(ControlBindings.key_text(key))
+	return "%s / %s" % [prompt, _join_keys(seconds)]
+
+# Key names joined for a prompt: single letters as one word ("WASD"), any
+# longer name between slashes ("Up/A/S/D").
+static func _join_keys(names: PackedStringArray) -> String:
+	for key_name: String in names:
+		if key_name.length() != 1:
+			return "/".join(names)
+	return "".join(names)
 
 func _use_gamepad(device: int) -> void:
 	if device != _gamepad_device:

@@ -332,7 +332,7 @@ func test_the_prompts_follow_the_device_while_the_world_is_paused() -> void:
 	InputPrompts.using_gamepad = previous_gamepad
 	assert_true(switched, "a menu over the paused world names the gamepad's buttons")
 
-func test_the_move_prompt_names_each_move_key_then_the_arrows() -> void:
+func test_the_move_prompt_names_the_move_keys_then_the_arrows() -> void:
 	var moves: Array[ControlAction] = []
 	for direction: String in ["up", "left", "down", "right"]:
 		moves.append(load("res://tiamat/core/input/controls/move_%s.tres" % direction) as ControlAction)
@@ -340,7 +340,7 @@ func test_the_move_prompt_names_each_move_key_then_the_arrows() -> void:
 	var previous_gamepad := InputPrompts.using_gamepad
 	InputPrompts.using_gamepad = false
 	# The core's move controls keep the arrows as their fixed second keys.
-	assert_eq(InputPrompts.get_move_prompt(InputPromptService.MOVE_ACTIONS, settings.bindings), "W/A/S/D / Up/Left/Down/Right")
+	assert_eq(InputPrompts.get_move_prompt(InputPromptService.MOVE_ACTIONS, settings.bindings), "WASD / Arrows", "letters as one word, the four arrows as one name")
 	assert_true(settings.bind_control(&"move_up", {"key": int(KEY_UP)}))
 	assert_eq(InputPrompts.get_move_prompt(InputPromptService.MOVE_ACTIONS, settings.bindings), "Up/A/S/D / Left/Down/Right", "an arrow bound as the key is named once")
 	assert_true(settings.bind_control(&"move_down", {"mouse": int(MOUSE_BUTTON_WHEEL_DOWN)}))

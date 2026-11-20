@@ -385,6 +385,9 @@ msgstr "左摇杆 / 十字键"
 msgid "Stick"
 msgstr "摇杆"
 
+msgid "Arrows"
+msgstr "方向键"
+
 msgid "Move Up"
 msgstr "向上移动"
 

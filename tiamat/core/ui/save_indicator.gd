@@ -3,8 +3,9 @@ extends Label
 
 ## A word on the game's HUD that the game saved itself (`AutoSave`): it shows
 ## for `seconds_shown`, then fades out, or goes at once with reduced motion.
-## The game places it where its HUD has room, as it places a `StatusLine`. An
-## autosave that fails is a toast instead, with the reason.
+## The game places it where its HUD has room, as it places a `StatusLine`, and
+## it reads over any ground (`ReadableText.outline()`). An autosave that fails
+## is a toast instead, with the reason.
 
 ## How long it stays before it fades.
 @export_range(0.1, 10.0, 0.1) var seconds_shown := 1.5
@@ -15,6 +16,7 @@ var _fade: Tween
 
 func _ready() -> void:
 	visible = false
+	ReadableText.outline(self)
 	# It goes away while the world is paused as well.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	AutoSave.autosave_completed.connect(_on_autosave_completed)
