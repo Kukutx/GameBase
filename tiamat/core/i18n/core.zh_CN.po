@@ -486,3 +486,6 @@ msgstr "存档"
 
 msgid "load"
 msgstr "读档"
+
+msgid "Tips"
+msgstr "提示"

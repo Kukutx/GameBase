@@ -3,7 +3,9 @@ extends MenuLayer
 
 ## The pause menu every game's locations share: the core's `pause` control
 ## (Esc, Start) opens it over the paused world, to resume, save, load, change
-## the settings, return to the title screen (the game's main scene) or quit;
+## the settings, read again the tips the player has seen (`TipsMenu`, offered
+## once one has shown), return to the title screen (the game's main scene) or
+## quit;
 ## `pause` or `ui_cancel` closes it. It also opens when the window loses focus
 ## (`GameSettings.pause_on_focus_loss`): the player turns to another app, or
 ## to another tab of the browser, which tells the game only that its page lost
@@ -17,7 +19,8 @@ extends MenuLayer
 ## A game may lay the menu out its own way, as MFarm's old paper menu does.
 ## Its scene names the controls `%Resume`, `%Save`, `%Load`, `%Settings`,
 ## `%ReturnTitle`, `%Quit` (buttons) and `%Status` (a label) wherever it puts
-## them, or a script extending this one sets `resume_button` and the others
+## them, and `%Tips` where it offers the tips, or a script extending this one
+## sets `resume_button` and the others
 ## before it calls `super()` in `_ready()`, and overrides `_focus_on_open()`
 ## and `_set_main_buttons_disabled()` for controls of its own. The settings
 ## menu and the questions are the scene's own `SettingsMenu`, `ConfirmLoad`,
@@ -30,6 +33,7 @@ const MENU_ID := &"pause_menu"
 const PAUSE_ACTION := &"pause"
 
 const SETTINGS_MENU := preload("res://tiamat/core/ui/settings_menu.tscn")
+const TIPS_MENU := preload("res://tiamat/core/ui/tips_menu.tscn")
 
 var resume_button: Button
 var save_button: Button
@@ -37,8 +41,11 @@ var load_button: Button
 var settings_button: Button
 var title_button: Button
 var quit_button: Button
+## The button that opens the tips, or null for a layout that offers none.
+var tips_button: Button
 var status_label: Label
 var settings_menu: SettingsMenu
+var tips_menu: TipsMenu
 var confirm_load: ConfirmationDialog
 var confirm_title: ConfirmationDialog
 var confirm_quit: ConfirmationDialog
@@ -66,6 +73,9 @@ func _ready() -> void:
 	title_button.pressed.connect(confirm_title.popup_centered)
 	quit_button.pressed.connect(confirm_quit.popup_centered)
 	settings_menu.closed.connect(_on_settings_closed)
+	if tips_button != null:
+		tips_button.pressed.connect(_open_tips)
+		tips_menu.closed.connect(_on_tips_closed)
 	confirm_load.confirmed.connect(_load_game)
 	confirm_title.confirmed.connect(_return_to_title)
 	confirm_quit.confirmed.connect(_quit)
@@ -86,6 +96,13 @@ func _find_controls() -> void:
 	title_button = title_button if title_button != null else get_node(^"%ReturnTitle") as Button
 	quit_button = quit_button if quit_button != null else get_node(^"%Quit") as Button
 	status_label = status_label if status_label != null else get_node(^"%Status") as Label
+	tips_button = tips_button if tips_button != null else get_node_or_null(^"%Tips") as Button
+	if tips_button != null:
+		tips_menu = get_node_or_null(^"TipsMenu") as TipsMenu
+		if tips_menu == null:
+			tips_menu = TIPS_MENU.instantiate() as TipsMenu
+			tips_menu.name = "TipsMenu"
+			add_child(tips_menu)
 	settings_menu = get_node_or_null(^"SettingsMenu") as SettingsMenu
 	if settings_menu == null:
 		settings_menu = SETTINGS_MENU.instantiate() as SettingsMenu
@@ -130,7 +147,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var quick_load := event.is_action_pressed("quick_load")
 	if not pause and not cancel and not quick_load:
 		return
-	if settings_menu.visible or _is_dialog_open():
+	if settings_menu.visible or _is_tips_open() or _is_dialog_open():
 		return
 	if not visible:
 		# Cancel only leaves the menu; something else may hold the input (a
@@ -154,6 +171,8 @@ func open() -> void:
 	show_menu()
 	status_label.text = ""
 	load_button.disabled = not SaveManager.has_save()
+	if tips_button != null:
+		tips_button.visible = not TipsMenu.seen_hints().is_empty()
 	_focus_on_open()
 
 ## Where the keys and a gamepad start when the menu opens.
@@ -164,6 +183,8 @@ func close() -> void:
 	if not visible:
 		return
 	settings_menu.close()
+	if tips_menu != null:
+		tips_menu.close()
 	for dialog: ConfirmationDialog in [confirm_load, confirm_title, confirm_quit]:
 		dialog.hide()
 	super()
@@ -206,6 +227,19 @@ func _on_settings_closed() -> void:
 	if visible:
 		settings_button.grab_focus()
 
+func _is_tips_open() -> bool:
+	return tips_menu != null and tips_menu.visible
+
+func _open_tips() -> void:
+	_set_main_buttons_disabled(true)
+	tips_menu.open()
+
+func _on_tips_closed() -> void:
+	_set_main_buttons_disabled(false)
+	load_button.disabled = not SaveManager.has_save()
+	if visible:
+		tips_button.grab_focus()
+
 func _on_dialog_canceled(dialog: ConfirmationDialog) -> void:
 	if not visible:
 		return
@@ -242,3 +276,5 @@ func _set_main_buttons_disabled(value: bool) -> void:
 	settings_button.disabled = value
 	title_button.disabled = value
 	quit_button.disabled = value
+	if tips_button != null:
+		tips_button.disabled = value
