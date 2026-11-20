@@ -280,6 +280,12 @@ msgstr "余烬之肤"
 msgid "Hits take a fifth less of your health."
 msgstr "受到的伤害减少五分之一。"
 
+msgid "Ember Ward"
+msgstr "余烬护符"
+
+msgid "Burns and other afflictions last half as long on you."
+msgstr "灼烧等异常状态在你身上只持续一半时间。"
+
 msgid "Second Wind"
 msgstr "重振"
 

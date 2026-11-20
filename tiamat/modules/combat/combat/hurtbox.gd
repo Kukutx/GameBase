@@ -96,16 +96,25 @@ func is_invincible() -> bool:
 ## Lays `affliction` on it, from a hit of `from_faction`, in real time
 ## (`Afflictions.lay()`): it takes health on its ticks (`ailed`), and laid
 ## again lasts as long again from now, so hits faster than its ticks keep it
-## burning. False when nothing is laid: on a hurtbox that is off, cannot ail
-## (`can_ail()`) or is immune to it (`immune_to`).
+## burning, for `get_affliction_scale()` of its `seconds`. False when nothing
+## is laid: on a hurtbox that is off, cannot ail (`can_ail()`), is immune to
+## it (`immune_to`) or resists it so well it would not last a tick.
 func afflict(affliction: AfflictionData, from_faction: StringName = &"") -> bool:
 	if affliction == null or not enabled or not can_ail() or immune_to.has(affliction.id):
 		return false
-	set_physics_process(true)
-	if _afflictions.lay(affliction, from_faction):
+	if _afflictions.lay(affliction, from_faction, get_affliction_scale(affliction)):
 		afflicted.emit(affliction)
 		_check_speed()
+	elif not _afflictions.has(affliction.id):
+		return false
+	set_physics_process(true)
 	return true
+
+## How long `affliction` lasts on it, as a share of its
+## `AfflictionData.seconds`: whole on a hurtbox, less on a player who resists
+## it (`PlayerHurtbox.AFFLICTION_SECONDS_STAT`).
+func get_affliction_scale(_affliction: AfflictionData) -> float:
+	return 1.0
 
 ## The afflictions on it now, in the order laid.
 func get_afflictions() -> Array[AfflictionData]:

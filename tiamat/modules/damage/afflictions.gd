@@ -16,13 +16,15 @@ const _EPSILON := 0.000001
 # the ticks left, "next": seconds to the next}.
 var _laid: Dictionary[StringName, Dictionary] = {}
 
-## Lays `affliction`, from a hit of `from_faction`: true when it takes hold
-## now, false when it was on already (it lasts anew) or is null.
-func lay(affliction: AfflictionData, from_faction: StringName = &"") -> bool:
-	if affliction == null:
+## Lays `affliction`, from a hit of `from_faction`, to last `seconds_scale`
+## times its `AfflictionData.seconds` (less on what resists it): true when it
+## takes hold now, false when it was on already (it lasts anew), is null or
+## would not last a tick (nothing is laid).
+func lay(affliction: AfflictionData, from_faction: StringName = &"", seconds_scale := 1.0) -> bool:
+	if affliction == null or affliction.get_ticks(seconds_scale) <= 0:
 		return false
 	var laid: Dictionary = _laid.get(affliction.id, {})
-	_laid[affliction.id] = {"data": affliction, "faction": from_faction, "ticks": affliction.get_ticks(), "next": affliction.tick_seconds if laid.is_empty() else laid["next"]}
+	_laid[affliction.id] = {"data": affliction, "faction": from_faction, "ticks": affliction.get_ticks(seconds_scale), "next": affliction.tick_seconds if laid.is_empty() else laid["next"]}
 	return laid.is_empty()
 
 ## Whether the affliction `affliction_id` is on it.

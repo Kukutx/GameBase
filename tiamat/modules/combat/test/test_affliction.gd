@@ -2,7 +2,7 @@ extends GutTest
 
 ## Afflictions in real time (`AfflictionData`, `Hurtbox.afflict()`): their
 ## ticks, one laid again, immunity, the player's and a creature's, one that
-## slows them, what lays them (a creature's strike or its elite form's, a
+## slows them, the player's resistance, what lays them (a creature's strike or its elite form's, a
 ## hazard, a weapon's tag) and what is wrong with them.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
@@ -131,6 +131,23 @@ func test_one_that_slows_slows_the_player_and_a_creature_while_it_lasts() -> voi
 	assert_true(slime.hurtbox.afflict(slow, FactionData.PLAYER))
 	slime.call("_walk", Vector2.RIGHT, Vector2.RIGHT)
 	assert_almost_eq(slime.velocity.x, slime.data.move_speed * 0.5, 0.001, "a creature walks at half speed too")
+
+func test_the_player_resists_by_a_stat_lasting_shorter_or_not_at_all() -> void:
+	var hurtbox := _player(Vector2(5200, 5000))
+	var ward := _Ward.new()
+	GameStats.register_source(ward)
+	watch_signals(CombatEvents)
+	assert_eq(hurtbox.get_affliction_scale(AfflictionData.find(BURN)), 0.5)
+	assert_true(hurtbox.afflict(AfflictionData.find(BURN), FactionData.MONSTERS))
+	assert_true(await wait_until(func() -> bool: return not hurtbox.is_afflicted(BURN), 1.0))
+	assert_signal_emit_count(CombatEvents, "player_hurt", 1, "half its three tenths: a single tick")
+	ward.scale = 0.0
+	assert_false(hurtbox.afflict(AfflictionData.find(BURN), FactionData.MONSTERS), "at 0 it never takes hold")
+	assert_false(hurtbox.is_afflicted(BURN))
+	assert_false(hurtbox.is_physics_processing())
+	GameStats.unregister_source(ward)
+	assert_eq(hurtbox.get_affliction_scale(AfflictionData.find(BURN)), 1.0)
+	assert_eq((autofree(Hurtbox.new()) as Hurtbox).get_affliction_scale(null), 1.0, "a creature's lasts whole")
 
 func test_a_creature_s_strike_lays_its_kind_s_or_its_elite_form_s() -> void:
 	var target := _player(Vector2(5600, 5000))
@@ -284,6 +301,17 @@ func _fixture_content() -> Array:
 	wisp.display_name = "Wisp"
 	wisp.immune_to.assign([BURN])
 	return [burn, poison, slow, gel, brand, slime, wisp, ContentFixture.vital(HP)]
+
+# A stat source that has afflictions last `scale` times as long on the
+# player.
+class _Ward extends RefCounted:
+	var scale := 0.5
+
+	func get_stat_multiplier(stat: StringName) -> float:
+		return scale if stat == PlayerHurtbox.AFFLICTION_SECONDS_STAT else 1.0
+
+	func get_stat_bonus(_stat: StringName) -> float:
+		return 0.0
 
 static func _affliction(id: StringName, display_name: String, seconds: float, tick_seconds: float, tick_damage: int) -> AfflictionData:
 	var affliction := AfflictionData.new()
