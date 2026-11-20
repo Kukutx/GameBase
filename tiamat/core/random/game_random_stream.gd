@@ -52,6 +52,15 @@ func randi_range(from: int, to: int) -> int:
 		value = _next()
 	return low + value % span
 
+## `value` rounded to a whole number by chance: down, or up as often as its
+## fraction says (2.25 is 3 one time in four), so many rolls add up to the
+## value on average. A negative value rounds to 0.
+func round_by_chance(value: float) -> int:
+	if value <= 0.0:
+		return 0
+	var whole := floori(value)
+	return whole + (1 if randf() < value - whole else 0)
+
 ## One of `values`, each equally likely; null when there are none.
 func pick(values: Array) -> Variant:
 	return null if values.is_empty() else values[self.randi_range(0, values.size() - 1)]

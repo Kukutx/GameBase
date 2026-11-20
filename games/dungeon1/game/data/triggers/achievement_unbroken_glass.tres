@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"achievement_unbroken_glass"
+event = &"DepthRun.depth_reached"
+condition = "BOON_TAKEN pact_of_glass, EVENT_ARG_AT_LEAST depth 10"
+actions = PackedStringArray("UNLOCK_ACHIEVEMENT unbroken_glass")

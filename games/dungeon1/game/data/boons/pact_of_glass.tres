@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BoonData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/boon_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"pact_of_glass"
+display_name = "Pact of Glass"
+description = "Your blade hits half again as hard, with 40 less health for the run."
+pool = &"pact"
+condition = "RUNS_AT_LEAST 1"
+multipliers = Dictionary[StringName, float]({&"attack_damage": 1.5})
+bonuses = Dictionary[StringName, float]({&"max_health": -40.0})

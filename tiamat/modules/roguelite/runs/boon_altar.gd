@@ -20,6 +20,8 @@ signal boon_taken(boon_id: StringName)
 ## Names the altar in the run: its offer, and whether it is spent. Empty: the
 ## altar's node name.
 @export var key := ""
+## The pool of boons it offers (`BoonData.pool`); empty, the common one.
+@export var pool: StringName
 
 @onready var interactable: Interactable = $Interactable
 
@@ -39,7 +41,7 @@ func is_spent() -> bool:
 func get_offer() -> Array[BoonData]:
 	if is_spent():
 		return [] as Array[BoonData]
-	return RunState.offer_boons(count, get_key())
+	return RunState.offer_boons(count, get_key(), pool)
 
 ## Lists the boons offered and gives the one the player took, or &"" when
 ## they closed the list or the altar offers none.

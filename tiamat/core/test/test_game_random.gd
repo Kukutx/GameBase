@@ -38,6 +38,18 @@ func test_the_generator_is_xoshiro128_starstar() -> void:
 	var stream := GameRandomStream.new(PackedByteArray([1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0]))
 	assert_eq(_rolls(stream, 6), [11520, 0, 5927040, 70819200, 2031721883, 1637235492])
 
+func test_a_fraction_rounds_up_as_often_as_it_says() -> void:
+	GameRandom.set_seed(11)
+	var stream := GameRandom.stream("fixture:round")
+	var total := 0
+	for roll: int in range(400):
+		var value := stream.round_by_chance(2.25)
+		assert_between(value, 2, 3)
+		total += value
+	assert_between(total, 860, 940, "2.25 on average (900 in 400 rolls)")
+	assert_eq(stream.round_by_chance(4.0), 4, "a whole number stays")
+	assert_eq(stream.round_by_chance(-1.5), 0)
+
 func test_ranges_stay_inside_their_bounds() -> void:
 	GameRandom.set_seed(7)
 	var stream := GameRandom.stream("fixture:ranges")

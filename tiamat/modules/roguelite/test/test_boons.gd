@@ -81,6 +81,19 @@ func test_a_boon_changes_stats_once_more_each_time_taken_until_the_run_ends() ->
 	assert_almost_eq(GameStats.get_bonus(SPEED), bonus, 0.001)
 	assert_eq(RunState.get_boons(), [] as Array[StringName])
 
+func test_an_altar_offers_the_boons_of_its_pool() -> void:
+	var pact := _boon(&"fixture_pact", "Pact", {SPEED: 0.5}, {})
+	pact.pool = &"fixture_pacts"
+	ContentFixture.use(self, [_boon(&"fixture_swift", "Swift", {SPEED: 1.5}, {}), pact])
+	RunState.start_run()
+	assert_eq(RunState.offer_boons(3, "common").map(func(boon: BoonData) -> StringName: return boon.id), [&"fixture_swift"])
+	assert_eq(RunState.offer_boons(3, "pacts", &"fixture_pacts").map(func(boon: BoonData) -> StringName: return boon.id), [&"fixture_pact"])
+	assert_eq(BoonData.find_pool(&"fixture_pacts"), [pact] as Array[BoonData])
+	var altar := ALTAR_SCENE.instantiate() as BoonAltar
+	altar.pool = &"fixture_pacts"
+	add_child_autofree(altar)
+	assert_eq(altar.get_offer(), [pact] as Array[BoonData])
+
 func test_a_boon_acts_each_time_it_is_taken() -> void:
 	RunState.start_run()
 	assert_true(RunState.take_boon(&"fixture_lucky"))

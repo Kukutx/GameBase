@@ -155,6 +155,33 @@ func test_the_way_down_asks_where_to_start_once_the_world_has_a_shortcut() -> vo
 	assert_eq(outcome.get("depth"), 0, "closing the list starts no run")
 	InputLock.clear()
 
+func test_after_the_first_run_the_way_down_offers_pacts() -> void:
+	var entrance := DepthEntrance.new()
+	var interactable := Interactable.new()
+	interactable.name = "Interactable"
+	entrance.add_child(interactable)
+	add_child_autofree(entrance)
+	assert_eq(await entrance.choose_pact(), DepthEntrance.NO_PACT, "the first run starts under none")
+	assert_null(ChoiceMenu.of(entrance))
+	DepthRun.start_run()
+	DepthRun.return_to_camp()
+	var outcome := {}
+	(func() -> void: outcome["pact"] = await entrance.choose_pact()).call()
+	var menu := ChoiceMenu.of(entrance)
+	assert_eq(menu.get_choice_ids(), [DepthEntrance.NO_PACT, &"pact_of_ash", &"pact_of_glass"] as Array[StringName], "Greed waits for the Delver")
+	assert_true(menu.get_button(DepthEntrance.NO_PACT).has_focus())
+	menu.choose(&"pact_of_glass")
+	assert_eq(outcome.get("pact"), &"pact_of_glass")
+	entrance.begin_run(1, outcome.get("pact"))
+	assert_eq(RunState.get_boon_stacks(&"pact_of_glass"), 1, "the run starts under it")
+	assert_almost_eq(GameStats.get_multiplier(&"attack_damage"), 1.5, 0.001)
+	assert_eq(Vitals.get_maximum(&"hp"), 60)
+	assert_false(RunState.offer_boons(10, "altar").any(func(boon: BoonData) -> bool: return boon.pool == DepthEntrance.PACT_POOL), "an altar offers no pact")
+	for _depth: int in 9:
+		DepthRun.descend()
+	assert_true(GameProfile.is_unlocked(&"unbroken_glass"))
+	InputLock.clear()
+
 func test_a_deeper_floor_spawns_more_enemies() -> void:
 	assert_eq(DepthFloor.get_enemy_count(1), 2)
 	assert_eq(DepthFloor.get_enemy_count(2), 3)

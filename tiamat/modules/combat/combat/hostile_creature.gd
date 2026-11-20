@@ -264,13 +264,24 @@ func _die() -> void:
 	_machine.change(STATE_DEFEATED)
 	_refresh_health_label()
 
+## How many of its drop it leaves now: `EnemyData.drop_quantity` changed by
+## the loot stat (`PlayerHurtbox.LOOT_STAT`), its fraction rounded by chance
+## (a stream of the creature and the minute it fell).
+func get_drop_quantity() -> int:
+	var quantity := GameStats.apply(PlayerHurtbox.LOOT_STAT, data.drop_quantity)
+	var rolls := GameRandom.stream("loot:%s:%d" % [get_path(), WorldClock.get_absolute_minute()])
+	return rolls.round_by_chance(quantity)
+
 func _drop_loot() -> void:
 	if data.drop_item_id == &"" or data.drop_quantity <= 0:
 		return
 	var item := ItemData.find(data.drop_item_id)
 	if item == null:
 		return
-	var remaining := InventoryState.add_item(item, data.drop_quantity)
+	var quantity := get_drop_quantity()
+	if quantity <= 0:
+		return
+	var remaining := InventoryState.add_item(item, quantity)
 	if remaining > 0:
 		pending_drop_quantity += remaining
 		_persist()

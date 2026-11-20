@@ -214,16 +214,17 @@ func get_outcome_name(outcome: StringName) -> String:
 func get_last_report() -> Report:
 	return _last_report
 
-## Up to `count` boons the run may take now (`BoonData.can_take()`), none
-## twice, each as likely as its weight, rolled from the run's stream named
-## `offer:<name>`: the same run and name offer the same boons as long as the
-## run may take them, so leaving and coming back offers no others.
-func offer_boons(count: int, name: String) -> Array[BoonData]:
+## Up to `count` boons of `pool` (`BoonData.pool`; empty, the common one)
+## the run may take now (`BoonData.can_take()`), none twice, each as likely as
+## its weight, rolled from the run's stream named `offer:<name>`: the same run
+## and name offer the same boons as long as the run may take them, so leaving
+## and coming back offers no others.
+func offer_boons(count: int, name: String, pool := &"") -> Array[BoonData]:
 	var offered: Array[BoonData] = []
 	if not is_active():
 		return offered
 	var candidates: Array[BoonData] = []
-	candidates.assign(BoonData.find_all().filter(func(boon: BoonData) -> bool: return boon.can_take()))
+	candidates.assign(BoonData.find_pool(pool).filter(func(boon: BoonData) -> bool: return boon.can_take()))
 	var rng := stream("offer:%s" % name)
 	while offered.size() < count and not candidates.is_empty():
 		var weights := PackedFloat64Array()
