@@ -5,10 +5,11 @@ extends MenuLayer
 ## (Esc, Start) opens it over the paused world, to resume, save, load, change
 ## the settings, read again the tips the player has seen (`TipsMenu`, offered
 ## once one has shown), see the achievements (`AchievementsMenu`, offered in a
-## game that has any), read what changes the player's stats now
-## (`GameStats.describe_current()`: a boon's, a perk's, a buff's bonuses
-## added up, offered while there are any), return to the title screen (the
-## game's main scene) or quit;
+## game that has any), read the pages the modules add (`add_page()`: what the
+## player carries, how far their skills are) and the bonuses that change their
+## stats now (`GameStats.describe_current()`: a boon's, a perk's, a buff's
+## added up), each offered while it has anything to say, return to the title
+## screen (the game's main scene) or quit;
 ## `pause` or `ui_cancel` closes it. It also opens when the window loses focus
 ## (`GameSettings.pause_on_focus_loss`): the player turns to another app, or
 ## to another tab of the browser, which tells the game only that its page lost
@@ -23,8 +24,8 @@ extends MenuLayer
 ## Its scene names the controls `%Resume`, `%Save`, `%Load`, `%Settings`,
 ## `%ReturnTitle`, `%Quit` (buttons) and `%Status` (a label) wherever it puts
 ## them, `%Tips` where it offers the tips, `%Achievements` where it offers
-## the achievements and `%Bonuses` where it offers the bonuses, or a script
-## extending this one
+## the achievements and `%Pages` (a container) where it offers the pages, or a
+## script extending this one
 ## sets `resume_button` and the others
 ## before it calls `super()` in `_ready()`, and overrides `_focus_on_open()`
 ## and `_set_main_buttons_disabled()` for controls of its own. The settings
@@ -40,6 +41,16 @@ const PAUSE_ACTION := &"pause"
 const SETTINGS_MENU := preload("res://tiamat/core/ui/settings_menu.tscn")
 const TIPS_MENU := preload("res://tiamat/core/ui/tips_menu.tscn")
 const ACHIEVEMENTS_MENU := preload("res://tiamat/core/ui/achievements_menu.tscn")
+## The page of the bonuses, which the core adds.
+const BONUSES_PAGE := &"bonuses"
+
+## The pages the menu offers, by id: each its button's text (a translation
+## key), its place among them and the function that gives its lines.
+static var _pages: Dictionary[StringName, Array] = {}
+
+## The pages of `add_page()` this menu leaves out: a game whose own menu shows
+## what they would.
+@export var hidden_pages: Array[StringName] = []
 
 var resume_button: Button
 var save_button: Button
@@ -52,8 +63,8 @@ var tips_button: Button
 ## The button that opens the achievements, or null for a layout that offers
 ## none.
 var achievements_button: Button
-## The button that shows the bonuses, or null for a layout that offers none.
-var bonuses_button: Button
+## Where the buttons of the pages go, or null for a layout that offers none.
+var pages_row: Container
 var status_label: Label
 var settings_menu: SettingsMenu
 var tips_menu: TipsMenu
@@ -64,9 +75,39 @@ var confirm_quit: ConfirmationDialog
 
 # Whether the load this menu started is under way.
 var _loading := false
+# The buttons of the pages offered now, by page id.
+var _page_buttons: Dictionary[StringName, Button] = {}
+
+## Adds a page the menu offers while `lines`, a `func() -> PackedStringArray`
+## of lines translated already, gives any: a button `title` (a translation
+## key) among the menu's pages, lower `order` first, that shows the lines over
+## the menu. A module adds its pages when it installs (the items module what
+## the player carries); adding an id again replaces its page.
+static func add_page(id: StringName, title: String, order: int, lines: Callable) -> void:
+	_pages[id] = [title, order, lines]
+
+## The ids of the pages added, in their order.
+static func get_page_ids() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	ids.assign(_pages.keys())
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool:
+		var a_order := int(_pages[a][1])
+		var b_order := int(_pages[b][1])
+		return a_order < b_order or (a_order == b_order and String(a) < String(b)))
+	return ids
+
+## The lines page `id` shows now, or none for no such page.
+static func get_page_lines(id: StringName) -> PackedStringArray:
+	var page: Array = _pages.get(id, [])
+	return PackedStringArray((page[2] as Callable).call()) if not page.is_empty() else PackedStringArray()
+
+static func _bonus_lines() -> PackedStringArray:
+	return GameStats.describe_current()
 
 func _init() -> void:
 	super(MENU_ID)
+	if not _pages.has(BONUSES_PAGE):
+		add_page(BONUSES_PAGE, "Bonuses", 100, _bonus_lines)
 
 func _ready() -> void:
 	_find_controls()
@@ -91,8 +132,6 @@ func _ready() -> void:
 	if achievements_button != null:
 		achievements_button.pressed.connect(_open_side_menu.bind(achievements_menu))
 		achievements_menu.closed.connect(_on_side_menu_closed.bind(achievements_button))
-	if bonuses_button != null:
-		bonuses_button.pressed.connect(show_bonuses)
 	confirm_load.confirmed.connect(_load_game)
 	confirm_title.confirmed.connect(_return_to_title)
 	confirm_quit.confirmed.connect(_quit)
@@ -119,7 +158,7 @@ func _find_controls() -> void:
 	achievements_button = achievements_button if achievements_button != null else get_node_or_null(^"%Achievements") as Button
 	if achievements_button != null:
 		achievements_menu = _side_menu(^"AchievementsMenu", ACHIEVEMENTS_MENU) as AchievementsMenu
-	bonuses_button = bonuses_button if bonuses_button != null else get_node_or_null(^"%Bonuses") as Button
+	pages_row = pages_row if pages_row != null else get_node_or_null(^"%Pages") as Container
 	settings_menu = get_node_or_null(^"SettingsMenu") as SettingsMenu
 	if settings_menu == null:
 		settings_menu = SETTINGS_MENU.instantiate() as SettingsMenu
@@ -202,8 +241,7 @@ func open() -> void:
 		tips_button.visible = not TipsMenu.seen_hints().is_empty()
 	if achievements_button != null:
 		achievements_button.visible = AchievementsMenu.has_any()
-	if bonuses_button != null:
-		bonuses_button.visible = not GameStats.describe_current().is_empty()
+	_offer_pages()
 	_focus_on_open()
 
 ## Where the keys and a gamepad start when the menu opens.
@@ -259,13 +297,40 @@ func _on_settings_closed() -> void:
 	if visible:
 		settings_button.grab_focus()
 
-## Shows over the menu what changes the player's stats now, each stat's
-## bonuses added up, and gives the list shown.
-func show_bonuses() -> ChoiceMenu:
+## The button of page `id` while the menu offers it, or null.
+func get_page_button(id: StringName) -> Button:
+	return _page_buttons.get(id)
+
+## Shows page `id` over the menu and gives the list shown, or null when the
+## menu does not offer it.
+func show_page(id: StringName) -> ChoiceMenu:
+	var button: Button = _page_buttons.get(id)
+	if button == null:
+		return null
 	_set_main_buttons_disabled(true)
-	var menu := ChoiceMenu.tell(self, "Bonuses", GameStats.describe_current())
-	menu.picked.connect(func(_id: StringName) -> void: _on_side_menu_closed(bonuses_button), CONNECT_ONE_SHOT)
+	var menu := ChoiceMenu.tell(self, String(_pages[id][0]), get_page_lines(id))
+	menu.picked.connect(func(_choice: StringName) -> void: _on_side_menu_closed(button), CONNECT_ONE_SHOT)
 	return menu
+
+# A button for each page with anything to say, in their order.
+func _offer_pages() -> void:
+	_page_buttons.clear()
+	if pages_row == null:
+		return
+	for child: Node in pages_row.get_children():
+		pages_row.remove_child(child)
+		child.queue_free()
+	for id: StringName in get_page_ids():
+		if hidden_pages.has(id) or get_page_lines(id).is_empty():
+			continue
+		var button := Button.new()
+		button.text = String(_pages[id][0])
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(show_page.bind(id))
+		pages_row.add_child(button)
+		_page_buttons[id] = button
+	pages_row.visible = not _page_buttons.is_empty()
+	ReadableText.raise(pages_row)
 
 # Whether the tips, the achievements or the bonuses show over the menu.
 func _is_side_menu_open() -> bool:
@@ -318,6 +383,8 @@ func _set_main_buttons_disabled(value: bool) -> void:
 	settings_button.disabled = value
 	title_button.disabled = value
 	quit_button.disabled = value
-	for button: Button in [tips_button, achievements_button, bonuses_button]:
+	for button: Button in [tips_button, achievements_button]:
 		if button != null:
 			button.disabled = value
+	for button: Button in _page_buttons.values():
+		button.disabled = value

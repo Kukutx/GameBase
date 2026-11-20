@@ -10,14 +10,8 @@ msgstr ""
 msgid "A farming life-sim on Tiamat"
 msgstr "基于 Tiamat 的农场生活模拟"
 
-msgid "Items"
-msgstr "物品"
-
 msgid "Quests"
 msgstr "任务"
-
-msgid "Skills"
-msgstr "技能"
 
 msgid "Calendar"
 msgstr "日历"
@@ -2232,5 +2226,3 @@ msgstr "送出的礼物"
 msgid "Stones and Ores Mined"
 msgstr "开采的石头与矿石"
 
-msgid "Where to get: %s"
-msgstr "获取途径：%s"

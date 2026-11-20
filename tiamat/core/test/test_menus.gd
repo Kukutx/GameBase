@@ -10,6 +10,8 @@ const TEST_DIRECTORY := "user://test_menus"
 var _save_directory := ""
 # A source of bonuses a test registers, which the next test does without.
 var _source: _BonusSource
+# The lines of the fixture page.
+var _page_lines := PackedStringArray()
 # The game's own aspect, which a test that sets another gives back.
 var _aspect := Window.CONTENT_SCALE_ASPECT_IGNORE
 
@@ -30,6 +32,10 @@ func after_each() -> void:
 	if _source != null:
 		GameStats.unregister_source(_source)
 		_source = null
+	PauseMenu._pages.erase(&"fixture_page")
+	PauseMenu._pages.erase(&"fixture_items")
+	PauseMenu._pages.erase(&"fixture_skills")
+	_page_lines = PackedStringArray()
 	InputLock.clear()
 	var focus := get_viewport().gui_get_focus_owner()
 	if focus != null:
@@ -312,31 +318,41 @@ func test_a_game_lays_out_its_own_pause_menu_and_the_core_adds_the_rest() -> voi
 	menu.resume_button.pressed.emit()
 	assert_false(menu.visible)
 
-func test_the_pause_menu_shows_what_changes_the_stats_while_anything_does() -> void:
+func test_the_pause_menu_offers_each_page_with_anything_to_say() -> void:
+	PauseMenu.add_page(&"fixture_page", "Fixture Page", 50, func() -> PackedStringArray: return _page_lines)
 	var menu := _pause()
+	menu.hidden_pages.assign(PauseMenu.get_page_ids().filter(func(id: StringName) -> bool: return id != &"fixture_page" and id != PauseMenu.BONUSES_PAGE))
 	menu.open()
-	assert_eq(menu.bonuses_button.visible, not GameStats.describe_current().is_empty())
+	assert_null(menu.get_page_button(&"fixture_page"), "a page with nothing to say")
+	assert_eq(menu.get_page_button(PauseMenu.BONUSES_PAGE) != null, not GameStats.describe_current().is_empty())
 	menu.close()
+	_page_lines = PackedStringArray(["One", "Two"])
 	_source = _BonusSource.new()
 	GameStats.register_source(_source)
 	menu.open()
-	assert_true(menu.bonuses_button.visible, "a boon, a perk or a buff changes them")
-	menu.bonuses_button.pressed.emit()
-	var bonuses := ChoiceMenu.of(menu)
-	assert_true(bonuses.visible)
-	assert_gt(bonuses.layer, menu.layer, "over the pause menu")
-	assert_eq(bonuses.get_body(), "\n".join(GameStats.describe_current()), "each stat's bonuses added up")
-	assert_string_contains(bonuses.get_body(), "+50%")
+	var page := menu.get_page_button(&"fixture_page")
+	var bonuses := menu.get_page_button(PauseMenu.BONUSES_PAGE)
+	assert_not_null(bonuses, "a boon, a perk or a buff changes the stats")
+	assert_lt(page.get_index(), bonuses.get_index(), "in the pages' order")
+	page.pressed.emit()
+	var list := ChoiceMenu.of(menu)
+	assert_true(list.visible)
+	assert_gt(list.layer, menu.layer, "over the pause menu")
+	assert_eq(list.get_body(), "One\nTwo")
 	assert_true(menu.resume_button.disabled)
 	menu._unhandled_input(_action(&"pause"))
-	assert_true(menu.visible, "the pause control waits for the list to close")
-	assert_true(bonuses.choose(ChoiceMenu.OK_ID))
-	assert_false(bonuses.visible)
+	assert_true(menu.visible, "the pause control waits for the page to close")
+	assert_true(list.choose(ChoiceMenu.OK_ID))
 	assert_false(menu.resume_button.disabled)
-	assert_eq(_focus(), menu.bonuses_button, "back where the player was")
-	menu.show_bonuses()
+	assert_eq(_focus(), page, "back where the player was")
+	menu.show_page(PauseMenu.BONUSES_PAGE)
+	assert_eq(list.get_body(), "\n".join(GameStats.describe_current()), "each stat's bonuses added up")
+	assert_string_contains(list.get_body(), "+50%")
 	menu.close()
-	assert_false(bonuses.visible, "the pause menu closes them with it")
+	assert_false(list.visible, "the pause menu closes a page with it")
+	menu.hidden_pages.append(&"fixture_page")
+	menu.open()
+	assert_null(menu.get_page_button(&"fixture_page"), "a game leaves out a page its own menu shows")
 
 func test_quitting_from_the_pause_menu_asks_first() -> void:
 	var menu := _pause()
@@ -369,13 +385,20 @@ func _assert_core_menus_fit(view: Rect2) -> void:
 		await _assert_window_fits(dialog, view)
 	title.queue_free()
 
+	# Every button the menu may show: the tips and the achievements beside the
+	# settings, and three pages (as the items, the skills and the bonuses).
+	_page_lines = PackedStringArray(["One"])
+	PauseMenu.add_page(&"fixture_items", "Pack", 10, func() -> PackedStringArray: return _page_lines)
+	PauseMenu.add_page(&"fixture_skills", "Feats", 20, func() -> PackedStringArray: return _page_lines)
+	if _source == null:
+		_source = _BonusSource.new()
+		GameStats.register_source(_source)
 	var pause := _pause()
+	pause.hidden_pages.assign(PauseMenu.get_page_ids().filter(func(id: StringName) -> bool: return not [&"fixture_items", &"fixture_skills", PauseMenu.BONUSES_PAGE].has(id)))
 	pause.open()
-	# Every button the menu may show, the tips and the achievements beside
-	# the settings and the bonuses among them.
+	assert_eq(pause.pages_row.get_child_count(), 3)
 	pause.tips_button.visible = true
 	pause.achievements_button.visible = true
-	pause.bonuses_button.visible = true
 	await _layout()
 	assert_eq(MenuFit.find_overflow(pause, view), PackedStringArray(), "the pause menu in %s" % view.size)
 	for dialog: Window in [pause.confirm_load, pause.confirm_title, pause.confirm_quit]:
