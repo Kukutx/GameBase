@@ -35,6 +35,8 @@ func _ready() -> void:
 	quit_button.pressed.connect(_quit)
 	quit_button.visible = can_quit()
 	_refresh_slot_ui()
+	# Its small print reads on a phone, in a narrow view as in a wide one.
+	ReadableText.raise(self)
 	(new_game_button if continue_button.disabled else continue_button).grab_focus()
 
 func _build_slot_selector() -> void:

@@ -53,6 +53,30 @@ static func view_sizes() -> Array[Vector2]:
 				sizes.append(size)
 	return sizes
 
+## The size of the view the game shows a phone: the one it names for phones
+## (`window/size/viewport_width.mobile` and `viewport_height.mobile`), else
+## its own.
+static func phone_size() -> Vector2:
+	var base := base_size()
+	return Vector2(_side(base, "width", "mobile"), _side(base, "height", "mobile"))
+
+## The texts of the screen `scene`, shown in a view of `size`, that a phone
+## shows too small to read (`ReadableText.min_font_size()`), each named by
+## its path from the screen with its size and the least it needs. What is
+## hidden counts: a closed menu opens.
+static func find_small_text(test: Node, scene: PackedScene, size: Vector2) -> PackedStringArray:
+	var view := await _host(test, scene, size)
+	var screen := view.get_child(0)
+	var least := ReadableText.min_font_size(size)
+	var problems := PackedStringArray()
+	for node: Node in screen.find_children("*", "Control", true, false):
+		var control := node as Control
+		var drawn := ReadableText.font_size_of(control)
+		if _has_text(control) and drawn < least:
+			problems.append("%s: %d px, %d at least" % [screen.get_path_to(control), drawn, least])
+	view.free()
+	return problems
+
 ## The scenes under `folders` that are screens: a `CanvasLayer`, or a control
 ## stretched over the whole view, at their root. A `test` folder is passed by.
 static func find_screens(folders: PackedStringArray) -> PackedStringArray:
@@ -132,15 +156,8 @@ static func _places(before: Rect2, width: float, base: float, wide: float) -> Ar
 # Part name -> the box of what each part of the screen draws, the screen
 # shown in a view of `size`; the parts that show are added to `shown`.
 static func _boxes(test: Node, scene: PackedScene, size: Vector2, shown: Dictionary) -> Dictionary:
-	var view := SubViewport.new()
-	view.size = Vector2i(size)
-	view.disable_3d = true
-	view.render_target_update_mode = SubViewport.UPDATE_DISABLED
-	test.add_child(view)
-	var screen := scene.instantiate()
-	view.add_child(screen)
-	await test.get_tree().process_frame
-	await test.get_tree().process_frame
+	var view := await _host(test, scene, size)
+	var screen := view.get_child(0)
 	var boxes := {}
 	_add_parts(screen, "", Rect2(Vector2.ZERO, size), boxes)
 	for part: String in boxes:
@@ -149,6 +166,29 @@ static func _boxes(test: Node, scene: PackedScene, size: Vector2, shown: Diction
 	# Gone at once: the test that measured it may end on this frame.
 	view.free()
 	return boxes
+
+# A view of `size` under `test` that shows the screen `scene`, laid out.
+static func _host(test: Node, scene: PackedScene, size: Vector2) -> SubViewport:
+	var view := SubViewport.new()
+	view.size = Vector2i(size)
+	view.disable_3d = true
+	view.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	test.add_child(view)
+	view.add_child(scene.instantiate())
+	await test.get_tree().process_frame
+	await test.get_tree().process_frame
+	return view
+
+# Whether `control` shows text: a label's or a button's, or a field's, which
+# the player types into.
+static func _has_text(control: Control) -> bool:
+	if control is Label:
+		return not (control as Label).text.is_empty()
+	if control is Button:
+		return not (control as Button).text.is_empty()
+	if control is RichTextLabel:
+		return not (control as RichTextLabel).text.is_empty()
+	return ReadableText.font_size_of(control) > 0
 
 # Adds to `boxes` the parts among the children of `holder`, named from `path`.
 static func _add_parts(holder: Node, path: String, whole: Rect2, boxes: Dictionary) -> void:
