@@ -11,8 +11,11 @@ extends MiniGame
 ## what picking it does (where the unit goes, what an action's area covers)
 ## and a second tap on it picks it, so a finger's slip picks nothing. Once the
 ## unit has moved, Move becomes Undo Move while the battle lets the player take
-## the move back (`AtbBattle.can_undo_move()`). The board numbers the units
-## whose turns come next (`GridBattleBoard.turns_shown`). Cancel
+## the move back (`AtbBattle.can_undo_move()`). While the player picks where
+## a unit moves, the board marks the cells the foes could strike next
+## (`AtbBattle.get_danger()`), and the side says so of the cell picked. The
+## board numbers the units whose turns come next
+## (`GridBattleBoard.turns_shown`). Cancel
 ## (the touch controls' corner button on a touchscreen) goes back to the
 ## commands. Cancel at the
 ## commands, pressed twice, gives the battle up. It ends won or lost a moment
@@ -182,10 +185,12 @@ func _set_mode(mode: Mode) -> void:
 	_board.choices.clear()
 	_board.reach.clear()
 	_board.area.clear()
+	_board.danger.clear()
 	_board.show_cursor = _mode == Mode.PICK_MOVE or _mode == Mode.PICK_TARGET
 	match _mode:
 		Mode.PICK_MOVE:
 			_board.choices = battle.get_moves(unit)
+			_board.danger.assign(battle.get_danger(unit).keys())
 		Mode.PICK_TARGET:
 			_board.reach = battle.grid.cells_in_range(unit.cell, _action.min_range, _action.max_range)
 			_board.choices = battle.get_targets(unit, _action)
@@ -253,6 +258,7 @@ func _refresh() -> void:
 			_update_commands(unit)
 		Mode.PICK_MOVE:
 			_board.choices = battle.get_moves(unit)
+			_board.danger.assign(battle.get_danger(unit).keys())
 		Mode.PICK_TARGET:
 			_board.reach = battle.grid.cells_in_range(unit.cell, _action.min_range, _action.max_range)
 			_board.choices = battle.get_targets(unit, _action)
@@ -293,6 +299,8 @@ func _show_info() -> void:
 		tr("HP %d/%d") % [unit.health.current, unit.health.maximum],
 		tr("Attack %d · Defense %d · Move %d") % [unit.data.attack, unit.data.defense, unit.data.move],
 	]
+	if _mode == Mode.PICK_MOVE and _board.danger.has(_board.cursor):
+		_info.text += "\n" + tr("Foes can strike here.")
 
 func _on_turn_started(unit: GridUnit) -> void:
 	if unit.player_controlled:

@@ -66,3 +66,6 @@ msgstr "弱"
 
 msgid "Strong"
 msgstr "强"
+
+msgid "Foes can strike here."
+msgstr "敌人下回合能打到这里。"

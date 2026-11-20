@@ -12,8 +12,10 @@ extends RefCounted
 ## on acting. A unit that skips its move or its action comes back sooner
 ## (`SKIP_BONUS`). Until one of the player's units acts, the player may take
 ## its move back (`undo_move()`), unless a foe took a turn since or someone
-## stands where it came from. The battle ends when no two living units are hostile
-## (`FactionData.are_hostile()`), won when the player's side is left.
+## stands where it came from. The cells the foes could strike on their next
+## turns (`get_danger()`) tell the player where a unit stands safe. The battle
+## ends when no two living units are hostile (`FactionData.are_hostile()`), won
+## when the player's side is left.
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`GridBattleGame`) lets time pass with `advance()`, gives the player's
@@ -201,6 +203,38 @@ func affected_at(unit: GridUnit, action: BattleActionData, cell: Vector2i, from:
 		if other.is_alive() and BattleGrid.distance(other_cell, cell) <= action.area and action.affects(unit.faction, other.faction):
 			reached.append(other)
 	return reached
+
+## The open cells where a foe of the player's side could strike on its next
+## turn, as everyone stands now: each cell a damaging action of a living foe
+## reaches, area and all, from a cell the foe could walk to
+## (`BattleUnitData.move`) without passing the units hostile to it. `moving`,
+## the player's unit choosing where to go, counts as gone from its cell, so a
+## foe may walk through it.
+func get_danger(moving: GridUnit = null) -> Dictionary[Vector2i, bool]:
+	var danger: Dictionary[Vector2i, bool] = {}
+	for foe: GridUnit in units:
+		if not foe.is_alive() or is_on_player_side(foe):
+			continue
+		var walls := foe_cells(foe)
+		if moving != null:
+			walls.erase(moving.cell)
+		var froms: Array[Vector2i] = []
+		for from: Vector2i in grid.walk(foe.cell, foe.data.move, walls):
+			var there := get_unit_at(from)
+			if there == null or there == foe or there == moving:
+				froms.append(from)
+		for action: BattleActionData in foe.data.get_actions():
+			if action.effect != BattleActionData.Effect.DAMAGE:
+				continue
+			var aims: Dictionary[Vector2i, bool] = {}
+			for from: Vector2i in froms:
+				for aim: Vector2i in grid.cells_in_range(from, action.min_range, action.max_range):
+					aims[aim] = true
+			for aim: Vector2i in aims:
+				for cell: Vector2i in grid.cells_in_range(aim, 0, action.area):
+					if grid.is_open(cell):
+						danger[cell] = true
+	return danger
 
 ## The cells of the living units hostile to `unit`.
 func foe_cells(unit: GridUnit) -> Dictionary[Vector2i, bool]:

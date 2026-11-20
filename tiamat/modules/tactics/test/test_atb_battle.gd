@@ -161,6 +161,22 @@ func test_a_unit_walks_past_its_own_side_but_never_stops_on_it() -> void:
 	assert_true(battle.end_turn(knight))
 	assert_eq(knight.gauge, AtbBattle.SKIP_BONUS, "it moved but did not act")
 
+func test_the_danger_is_where_the_foes_could_strike_next() -> void:
+	var battle := _battle(Vector2i(8, 1))
+	_add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	_add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(7, 0))
+	_add(battle, &"fixture_archer", &"fixture_guard", Vector2i(1, 0))
+	assert_eq(_columns(battle.get_danger()), [3, 4, 5, 6, 7], "the raider walks three and strikes one away; the guard is no foe")
+	var healer := _add(battle, &"fixture_healer", FactionData.PLAYER, Vector2i(5, 0))
+	assert_eq(_columns(battle.get_danger()), [5, 6, 7], "no foe walks past the player's side")
+	assert_eq(_columns(battle.get_danger(healer)), [3, 4, 5, 6, 7], "the unit choosing where to go leaves its cell")
+	var open := TacticsFixture.battle(Vector2i(11, 11), [Vector2i(5, 9)] as Array[Vector2i])
+	_add(open, &"fixture_mage", FactionData.MONSTERS, Vector2i(5, 5))
+	var danger := open.get_danger()
+	assert_true(danger.has(Vector2i(0, 4)), "the mage walks two, blasts three away and the blast reaches one more")
+	assert_false(danger.has(Vector2i(0, 3)), "seven away is out of its reach")
+	assert_false(danger.has(Vector2i(5, 9)), "a blocked cell holds no one to strike")
+
 func test_an_area_reaches_every_foe_in_it_and_a_heal_gives_back_what_was_lost() -> void:
 	var battle := _battle()
 	var mage := _add(battle, &"fixture_mage", FactionData.PLAYER, Vector2i(0, 2))
@@ -250,3 +266,9 @@ func _battle(size := Vector2i(8, 6)) -> AtbBattle:
 
 func _add(battle: AtbBattle, unit_id: StringName, faction: StringName, cell: Vector2i) -> GridUnit:
 	return battle.add_unit(BattleUnitData.find(unit_id), faction, cell)
+
+# The columns of `cells` on a grid one row high, left to right.
+func _columns(cells: Dictionary[Vector2i, bool]) -> Array:
+	var columns := cells.keys().map(func(cell: Vector2i) -> int: return cell.x)
+	columns.sort()
+	return columns
