@@ -47,6 +47,32 @@ test("a list the player reads is joined in their language", () => {
   assert.deepEqual(checkScript("tiamat/core/test/test_a.gd", 'assert_eq(", ".join(parts), "a, b")\n'), [], "a test may join as it likes");
 });
 
+test("a text written out is filled with as many values as its placeholders take", () => {
+  const source = [
+    'var a := tr("Bought %s x%d for %dg") % [name, count]',
+    'var b := String(TranslationServer.translate("Attack %d (%+d vs. your %s)")) % [',
+    "\tdamage,",
+    "\tgap,",
+    "]",
+    'GameEvents.toastf("Sold %s for %dg", [name])',
+    'var c := "Day" % day # "Day %d" % [day, 2] in a comment is no call',
+    'var d := "%.*f %d%%" % [2, value, count]',
+    'var e := tr("%s, %s") % [first, second,]',
+    'var f := tr("Restores %s") % parts',
+    'var g := tr("%s of %s") % pair',
+    'var h := &"%s" % [1, 2]',
+    'var i := """Line %d',
+    'and %s""" % [1]',
+    "count %= 3",
+    'interactable.set_prompt("Talk to %s", [])',
+  ].join("\n");
+  const problems = checkScript("tiamat/core/a.gd", source);
+  assert.deepEqual(problems.map((problem) => problem.match(/a\.gd:(\d+)/)[1]), ["1", "2", "6", "7", "13", "16"]);
+  assert.match(problems[0], /a\.gd:1 fills "Bought %s x%d for %dg", whose placeholders take 3 value\(s\), with 2; Godot's % fails on another count/);
+  assert.match(problems[2], /fills "Sold %s for %dg", whose placeholders take 2 value\(s\), with 1/);
+  assert.match(problems[3], /fills "Day", whose placeholders take 0 value\(s\), with 1/);
+});
+
 test("a user:// path held in a name is still a user:// path", () => {
   const source = [
     'const MODS_DIR := "user://mods"',

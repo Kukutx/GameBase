@@ -19,10 +19,16 @@
 //   - a list the player reads is joined with GameText.list(), whose separator
 //     each language translates (Chinese reads "、"), not with ", " itself; a
 //     prompt only a language model reads (MODEL_TEXT) stays English.
+//   - a text written out in a script is filled with as many values as its
+//     placeholders take (`"%s x%d" % [name, count]`, `tr("Day %d") % day`,
+//     `GameEvents.toastf("Sold %s", [name])`, `set_prompt()` alike;
+//     lib/format_text.js): Godot's % fails on another count, and only at
+//     runtime, on the path that fills it.
 
 const fs = require("node:fs");
 const path = require("node:path");
 const { stripComments } = require("./check_layers");
+const { formatProblems } = require("./lib/format_text");
 
 const ROOT = path.resolve(__dirname, "..");
 const MAX_LINES = 500;
@@ -93,6 +99,9 @@ function checkScript(file, source) {
   const limit = isTest ? MAX_TEST_LINES : MAX_LINES;
   if (lines > limit) {
     problems.push(`${file} has ${lines} lines, more than ${limit}; split it by responsibility`);
+  }
+  for (const problem of formatProblems(source)) {
+    problems.push(`${file}:${problem.line} fills "${problem.text}", whose placeholders take ${problem.takes} value(s), with ${problem.given}; Godot's % fails on another count`);
   }
   const code = stripComments(source);
   const treeNames = [...code.matchAll(TREE_NAME)].map((match) => match[1]);
