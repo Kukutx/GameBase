@@ -433,6 +433,36 @@ func _settings() -> SettingsMenu:
 	add_child_autofree(menu)
 	return menu
 
+func test_a_list_rebuilt_gives_the_focus_back_to_the_entry_pressed() -> void:
+	var box := VBoxContainer.new()
+	add_child_autofree(box)
+	var buttons: Array[Button] = []
+	for key: StringName in [&"a", &"b", &"c", &"d"]:
+		var button := Button.new()
+		button.set_meta(MenuLayer.FOCUS_KEY, key)
+		box.add_child(button)
+		buttons.append(button)
+	var fallback := Button.new()
+	box.add_child(fallback)
+	MenuLayer.focus_kept(buttons, &"c", fallback)
+	assert_eq(_focus(), buttons[2])
+	assert_eq(MenuLayer.focused_key(box), &"c", "what a menu reads before it rebuilds")
+	buttons[2].disabled = true
+	MenuLayer.focus_kept(buttons, &"c", fallback)
+	assert_eq(_focus(), buttons[3], "the next open one, when it is disabled")
+	buttons[3].disabled = true
+	MenuLayer.focus_kept(buttons, &"c", fallback)
+	assert_eq(_focus(), buttons[1], "else the nearest before it")
+	MenuLayer.focus_kept(buttons, null, fallback)
+	assert_eq(_focus(), buttons[0], "with no key, the first open one")
+	MenuLayer.focus_kept(buttons, &"gone", fallback)
+	assert_eq(_focus(), buttons[0], "and with a key no button has")
+	for button: Button in buttons:
+		button.disabled = true
+	MenuLayer.focus_kept(buttons, &"b", fallback)
+	assert_eq(_focus(), fallback, "with none open, the fallback")
+	assert_null(MenuLayer.focused_key(box), "which names no entry")
+
 func _pause() -> PauseMenu:
 	var menu := (load("res://tiamat/core/ui/pause_menu.tscn") as PackedScene).instantiate() as PauseMenu
 	add_child_autofree(menu)

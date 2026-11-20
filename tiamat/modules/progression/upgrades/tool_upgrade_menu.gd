@@ -18,24 +18,27 @@ func _ready() -> void:
 
 func open() -> void:
 	show_menu()
-	_rebuild()
+	_rebuild(false)
 
-func _rebuild() -> void:
+## Builds the upgrades' buttons; `keep_focus`, on the upgrade whose button had
+## it (`MenuLayer.focus_kept()`).
+func _rebuild(keep_focus := true) -> void:
+	var kept: Variant = MenuLayer.focused_key(self) if keep_focus else null
 	for child: Node in items_container.get_children():
 		child.queue_free()
 	money_label.text = tr("Money: %dg") % Wallet.money
-	var first_button: Button
+	var buttons: Array[Button] = []
 	for upgrade: ToolUpgradeData in UpgradeState.get_all_upgrades():
 		if upgrade == null:
 			continue
 		var button := MenuLayer.list_button()
 		button.text = "%s — %s" % [tr(upgrade.display_name), UpgradeState.get_requirement_text(upgrade)]
 		button.disabled = not UpgradeState.can_upgrade(upgrade)
+		button.set_meta(MenuLayer.FOCUS_KEY, upgrade.id)
 		button.pressed.connect(_upgrade.bind(upgrade.id))
 		items_container.add_child(button)
-		if first_button == null and not button.disabled:
-			first_button = button
-	MenuLayer.focus(first_button if first_button != null else close_button)
+		buttons.append(button)
+	MenuLayer.focus_kept(buttons, kept, close_button)
 
 func _upgrade(upgrade_id: StringName) -> void:
 	UpgradeState.upgrade(upgrade_id)

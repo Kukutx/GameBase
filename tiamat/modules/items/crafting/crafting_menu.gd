@@ -20,13 +20,16 @@ func open(category: RecipeData.Category = RecipeData.Category.CRAFTING, station_
 	current_category = category
 	current_station_name = station_name
 	show_menu()
-	_rebuild()
+	_rebuild(false)
 
-func _rebuild() -> void:
+## Builds the recipes' buttons; `keep_focus`, on the recipe whose button had it
+## (`MenuLayer.focus_kept()`), so crafting one leaves the player on it.
+func _rebuild(keep_focus := true) -> void:
+	var kept: Variant = MenuLayer.focused_key(self) if keep_focus else null
 	title_label.text = tr(current_station_name)
 	for child: Node in recipes_container.get_children():
 		child.queue_free()
-	var first_button: Button
+	var buttons: Array[Button] = []
 	# Where to get what a recipe lacks, found once for every recipe.
 	var sources := ItemSources.gather()
 	for recipe: RecipeData in CraftingState.get_all_recipes():
@@ -35,11 +38,11 @@ func _rebuild() -> void:
 		var button := MenuLayer.list_button()
 		button.text = _recipe_text(recipe, sources)
 		button.disabled = not CraftingState.can_craft(recipe)
+		button.set_meta(MenuLayer.FOCUS_KEY, recipe.id)
 		button.pressed.connect(_craft.bind(recipe.id))
 		recipes_container.add_child(button)
-		if first_button == null and not button.disabled:
-			first_button = button
-	MenuLayer.focus(first_button if first_button != null else close_button)
+		buttons.append(button)
+	MenuLayer.focus_kept(buttons, kept, close_button)
 
 func _recipe_text(recipe: RecipeData, sources: ItemSources) -> String:
 	var parts: PackedStringArray = []

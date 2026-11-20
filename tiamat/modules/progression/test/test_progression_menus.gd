@@ -3,7 +3,8 @@ extends GutTest
 ## The progression module's menus, the town's projects, the tool upgrades and
 ## the mailbox, each opened on content of the test's own, full and empty: the
 ## focus starts in the menu on a control that works, and every control fits
-## the view, a long list scrolling within it.
+## the view, a long list scrolling within it; and the mailbox stays on the
+## letter claimed from and the button pressed.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
@@ -57,6 +58,31 @@ func test_each_menu_holds_the_focus_and_fits_the_view_with_nothing_to_show() -> 
 	ContentFixture.use(self, [])
 	await _check(PROJECT_MENU, func(menu: Node) -> void: menu.call("open", TOWN))
 	await _check(UPGRADE_MENU, func(menu: Node) -> void: menu.call("open"))
+
+func test_the_mailbox_stays_on_the_letter_claimed_from_and_the_button_pressed() -> void:
+	var letters: Array[MailData] = [_mail(0), _mail(1), _mail(2)]
+	letters[1].reward_money = 0
+	ContentFixture.use(self, letters)
+	MailState.refresh_deliveries()
+	var menu := MAILBOX_MENU.instantiate() as MailboxMenu
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	menu.open()
+	assert_eq(menu.title_label.text, letters[0].subject, "the first unread letter")
+	assert_true(menu.claim_button.has_focus(), "a letter with attachments opens on claiming them")
+	# The two letters still unread would come first in the service's order.
+	menu.claim_button.pressed.emit()
+	assert_true(MailState.is_claimed(letters[0].id))
+	assert_eq(menu.title_label.text, letters[0].subject, "a claim leaves the player on the letter")
+	assert_true(menu.next_button.has_focus(), "a claim done hands the focus on to the next letter")
+	menu.next_button.pressed.emit()
+	assert_eq(menu.title_label.text, letters[1].subject)
+	assert_true(menu.next_button.has_focus(), "Next pages on")
+	menu.next_button.pressed.emit()
+	assert_eq(menu.title_label.text, letters[2].subject)
+	assert_true(menu.claim_button.has_focus(), "the last letter hands the focus from Next to its claim")
+	menu.close()
+	await get_tree().process_frame
 
 # Opens a menu of `scene` with `open`, and checks its focus and its fit.
 func _check(scene: PackedScene, open: Callable) -> void:
