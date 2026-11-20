@@ -6,6 +6,8 @@ extends GameModule
 func install() -> void:
 	ContentDB.register_kind(SkillData.KIND, SkillData)
 	GameStats.register_source(Skills)
+	# A level reached may bring a perk's changes.
+	Skills.skill_xp_changed.connect(GameStats.notify_changed.unbind(3))
 	SkillsRules.register(GameRules)
 	SaveManager.register_section(SaveSection.new(&"skills", 1100,
 		Skills.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: Skills.load_save_data(section)))

@@ -25,6 +25,9 @@ const DAMAGE_TAKEN_SCALES: Dictionary[String, float] = {"Light": 0.5, "Standard"
 ## The stat a hit on the player is changed by (`GameStats`): 0.8 takes a fifth
 ## less.
 const INCOMING_DAMAGE_STAT := &"incoming_damage"
+## The stat a game's health vital may follow (`VitalData.maximum_stat`): a
+## bonus of 20 is 20 more health at most.
+const MAX_HEALTH_STAT := &"max_health"
 
 func _init() -> void:
 	faction = FactionData.PLAYER

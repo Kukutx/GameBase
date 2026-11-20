@@ -1,8 +1,8 @@
 extends GutTest
 
 ## The player's vitals (`Vitals`, `VitalData`): spending, restoring and
-## draining them within their maximum, what a vital the game lacks does, and
-## what a save keeps.
+## draining them within their maximum, what a vital the game lacks does, a
+## maximum that follows a stat, and what a save keeps.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 
@@ -85,6 +85,44 @@ func test_a_save_keeps_each_value_and_maximum() -> void:
 	assert_true(restored.is_full(&"fixture_focus"), "a vital the save lacks starts full")
 	assert_false(restored.to_save_data().has("fixture_gone"), "only the game's vitals are kept")
 
+func test_a_maximum_that_follows_a_stat_rises_filled_and_falls_with_it() -> void:
+	ContentFixture.add_stat(self, &"fixture_vigor")
+	var hardy := _vital(&"fixture_hardy", 100, true)
+	hardy.maximum_stat = &"fixture_vigor"
+	ContentFixture.use(self, [hardy])
+	var vitals := PlayerVitals.new()
+	add_child_autofree(vitals)
+	vitals.drain(&"fixture_hardy", 30)
+	watch_signals(vitals)
+	var source := _Vigor.new()
+	GameStats.register_source(source)
+	source.bonus = 20.0
+	GameStats.notify_changed()
+	assert_eq(vitals.get_maximum(&"fixture_hardy"), 120)
+	assert_eq(vitals.get_value(&"fixture_hardy"), 90, "the 20 more come filled")
+	assert_signal_emitted_with_parameters(vitals, "changed", [&"fixture_hardy", 90, 120])
+	source.multiplier = 1.5
+	GameStats.notify_changed()
+	assert_eq(vitals.get_maximum(&"fixture_hardy"), 180, "the bonus, then the multiplier")
+	assert_eq(vitals.restore(&"fixture_hardy", 500), 30)
+	var saved := vitals.to_save_data()
+	GameStats.unregister_source(source)
+	assert_eq(vitals.get_maximum(&"fixture_hardy"), 100)
+	assert_eq(vitals.get_value(&"fixture_hardy"), 100, "the value falls to the maximum")
+	assert_eq(saved, {"fixture_hardy": {"value": 180, "bonus": 0}}, "a save keeps the vital's own maximum")
+	# A save loads before what the stats follow (the world's upgrades) does.
+	vitals.load_save_data(saved)
+	GameStats.register_source(source)
+	await wait_process_frames(1)
+	assert_eq(vitals.get_value(&"fixture_hardy"), 180, "kept once the stats are read again")
+	GameStats.unregister_source(source)
+	vitals.load_save_data(saved)
+	await wait_process_frames(1)
+	assert_eq(vitals.get_value(&"fixture_hardy"), 100, "and within the maximum they make")
+	var lost := _vital(&"fixture_lost", 10, true)
+	lost.maximum_stat = &"fixture_nothing"
+	assert_eq(lost.find_problems(ContentDB), PackedStringArray(["follows stat 'fixture_nothing', which no installed module or the game reads"]))
+
 func test_a_vital_needs_a_name() -> void:
 	var nameless := _vital(&"fixture_nameless", 10, true)
 	nameless.display_name = " "
@@ -102,3 +140,14 @@ static func _vital(id: StringName, maximum: int, refill_on_sleep: bool) -> Vital
 	vital.maximum = maximum
 	vital.refill_on_sleep = refill_on_sleep
 	return vital
+
+class _Vigor:
+	extends RefCounted
+	var multiplier := 1.0
+	var bonus := 0.0
+
+	func get_stat_multiplier(stat: StringName) -> float:
+		return multiplier if stat == &"fixture_vigor" else 1.0
+
+	func get_stat_bonus(stat: StringName) -> float:
+		return bonus if stat == &"fixture_vigor" else 0.0

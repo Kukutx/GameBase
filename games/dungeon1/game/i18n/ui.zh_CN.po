@@ -332,3 +332,15 @@ msgstr "百炼成钢"
 
 msgid "Raise every upgrade of the Ember Forge to its last level."
 msgstr "把余烬熔炉的所有强化升到满级。"
+
+msgid "Hearthblood"
+msgstr "炉心之血"
+
+msgid "The forge's warmth in your veins: 20 more health per level."
+msgstr "熔炉的热流涌入血脉：每级生命上限 +20。"
+
+msgid "Ember Vigor"
+msgstr "余烬活力"
+
+msgid "25 more health for the run, and it comes filled."
+msgstr "本次冒险生命上限 +25，并立即补满这部分。"

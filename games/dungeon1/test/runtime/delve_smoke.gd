@@ -31,6 +31,11 @@ func _run() -> void:
 	var status := current_scene.get_node("Player/HUD/Status") as Label
 	_check(status.text.begins_with("Move with "), "The HUD did not show the first hint: '%s'" % status.text)
 	await _talk(current_scene.get_node("OldDelver/Interactable"), "Old Delver")
+	_use(current_scene.get_node("EmberForge/Interactable"))
+	var forge: Node = current_scene.get_node("EmberForge").get_node_or_null("ChoiceMenu")
+	_check(forge != null and bool(forge.call("is_open")) and (forge.call("get_buttons") as Array).size() == 5, "The Ember Forge did not list its five upgrades")
+	if forge != null:
+		forge.call("close")
 
 	_use(current_scene.get_node("DepthEntrance/Interactable"))
 	await _arrive(DEPTHS_SCENE)

@@ -341,3 +341,4 @@ func _on_world_changed(key: StringName, _value: Variant) -> void:
 		_last_report = null
 	if key == &"" or String(key).begins_with(VALUE_PREFIX + BOON_PREFIX):
 		_boons_read = false
+		GameStats.notify_changed()

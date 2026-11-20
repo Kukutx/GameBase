@@ -82,7 +82,7 @@ shop = ExtResource("5_merchant")
 
 [node name="EmberForge" parent="." instance=ExtResource("93_forge")]
 position = Vector2(-110, 50)
-upgrade_ids = Array[StringName]([&"tempered_blade", &"hardened_hide", &"fleet_boots", &"ember_brand"])
+upgrade_ids = Array[StringName]([&"tempered_blade", &"hardened_hide", &"hearthblood", &"fleet_boots", &"ember_brand"])
 title = "Ember Forge"
 
 [node name="Visual" type="Polygon2D" parent="EmberForge"]
