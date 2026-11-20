@@ -128,3 +128,27 @@ msgstr "那就开工吧。"
 msgctxt "dialogue"
 msgid "Good luck out there."
 msgstr "祝你好运。"
+
+msgid "Ford Held"
+msgstr "守住渡口"
+
+msgid "Win the battle at the Border Ford."
+msgstr "赢下边境渡口之战。"
+
+msgid "Pass Held"
+msgstr "守住山口"
+
+msgid "Win the battle in the Hill Pass."
+msgstr "赢下山口之战。"
+
+msgid "Veteran"
+msgstr "老兵"
+
+msgid "Defeat 50 raiders, counting every battle."
+msgstr "击败 50 名敌人，所有战斗累计。"
+
+msgid "Banner Bearer"
+msgstr "执旗者"
+
+msgid "Win at the ford and in the pass."
+msgstr "在渡口与山口都取得胜利。"

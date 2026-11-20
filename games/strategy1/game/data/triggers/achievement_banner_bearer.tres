@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_trigger"]
+
+[resource]
+script = ExtResource("1_trigger")
+id = &"achievement_banner_bearer"
+event = &"GameProfile.achievement_unlocked"
+condition = "ACHIEVEMENT_UNLOCKED ford_held, ACHIEVEMENT_UNLOCKED pass_held"
+actions = PackedStringArray("UNLOCK_ACHIEVEMENT banner_bearer")

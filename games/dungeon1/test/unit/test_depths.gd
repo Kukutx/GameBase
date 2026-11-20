@@ -155,6 +155,14 @@ func test_the_way_on_opens_once_every_enemy_is_defeated() -> void:
 	assert_eq(InventoryState.get_quantity(&"slime_gel"), 2, "each slime dropped its gel")
 	assert_true(GameProfile.is_unlocked(&"first_blood"))
 	assert_eq(Skills.get_xp(&"combat"), 2 * EnemyData.find(&"cave_slime").combat_xp)
+	assert_eq(GameProfile.get_progress(&"slayer"), 2, "every creature counts toward Slayer")
+
+func test_creatures_defeated_in_every_run_count_toward_slayer() -> void:
+	# As if earlier runs had defeated 99.
+	GameProfile.set_flag(&"creatures_defeated", 99)
+	assert_false(GameProfile.is_unlocked(&"slayer"))
+	GameTriggers.fire(&"CombatEvents.enemy_defeated", {"enemy_id": &"cave_slime", "combat_xp": 1, "position": Vector2.ZERO})
+	assert_true(GameProfile.is_unlocked(&"slayer"))
 
 func test_what_the_player_gets_goes_to_the_hotbar() -> void:
 	InventoryState.clear()

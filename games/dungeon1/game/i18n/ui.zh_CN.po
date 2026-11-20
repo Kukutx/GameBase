@@ -154,6 +154,12 @@ msgstr "烈火淬炼"
 msgid "Reach depth 10 with Damage Taken on Heavy."
 msgstr "在承受伤害为「较重」时抵达第 10 层。"
 
+msgid "Slayer"
+msgstr "猎魔人"
+
+msgid "Defeat 100 creatures of the depths, counting every run."
+msgstr "击败 100 只深渊生物，所有冒险累计。"
+
 msgid "Day"
 msgstr "白昼"
 
