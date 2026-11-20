@@ -280,7 +280,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
 | `display_name` | `String` |  | The name the player reads. |
-| `description` | `String`, several lines |  | What the player reads of it in the inventory and the shops. |
+| `description` | `String`, several lines |  | What the player reads of it in the inventory and the shops, above what it does (`describe_effects()`): what it is, not what it does again. |
 | `max_stack` | `int`, 1 to 999 | `99` | How many one inventory slot holds; a tool's is 1. |
 | `icon` | `Texture2D` |  | The picture of it a game's own menus show (MFarm's bag and trade panel). |
 | `kind` | `Kind` | `Kind.MATERIAL` | What it is, which decides what the player can do with it. Values: MATERIAL = 0, FOOD = 1, SEED = 2 (Sown to grow its `crop_id`), TOOL = 3 (Used for its `tool_action`; a tool never stacks and cannot be shipped), CROP = 4, GIFT = 5, QUEST = 6 (Kept for a quest; it cannot be shipped), PLACEABLE = 7 (Built as its `placeable_id`), POTION = 8 (Drunk rather than eaten: a potion restores and buffs as food does). |

@@ -6,7 +6,7 @@
 script = ExtResource("1_item")
 id = &"health_potion"
 display_name = "Health Potion"
-description = "Restores 35 health."
+description = "A red draught that knits wounds shut."
 max_stack = 20
 kind = 8
 buy_price = 20

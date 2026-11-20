@@ -116,6 +116,21 @@ static func refill_list(list: ItemList, rows: Array[Dictionary]) -> void:
 		list.select(mini(kept_index, list.item_count - 1))
 		list.ensure_current_is_visible()
 
+## Sets the name at the start of each row under `root` (a row: a box whose
+## first part is a `Label`, as "Music" before its slider) in by as much as
+## `switch`, a button of the same menu, sets in its words, so the names of
+## the rows and the words of the switches between them start in one line in
+## whatever theme the game draws with.
+static func line_up_names(root: Node, switch: Button) -> void:
+	var inset := switch.get_theme_stylebox(&"normal").get_margin(SIDE_LEFT)
+	for row: Node in root.find_children("*", "BoxContainer", true, false):
+		var label: Label = row.get_child(0) as Label if row.get_child_count() > 0 else null
+		if label == null or (row as BoxContainer).vertical:
+			continue
+		var room := StyleBoxEmpty.new()
+		room.content_margin_left = inset
+		label.add_theme_stylebox_override(&"normal", room)
+
 # The nearest list around `control` that scrolls to the focus, or null.
 static func _scroll_of(control: Control) -> ScrollContainer:
 	var node := control.get_parent()

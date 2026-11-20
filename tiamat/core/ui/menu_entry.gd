@@ -7,7 +7,8 @@ extends PanelContainer
 ## The keys and a gamepad move the focus through the entries as through
 ## buttons, so a list longer than its menu scrolls to the one in focus
 ## (`ScrollContainer.follow_focus`), which shows the focus as a button does;
-## a drag on it still scrolls the list.
+## a drag on it still scrolls the list. Its words keep as far from its edge
+## as a button's focus ring keeps a button's, so the ring never touches them.
 
 ## The side of an entry's icon.
 const ICON_SIZE := 24.0
@@ -16,9 +17,13 @@ const BAR_HEIGHT := 4.0
 const BAR_BACK := Color(1.0, 1.0, 1.0, 0.14)
 const BAR_FILL := Color(0.55, 0.8, 0.64)
 
+## The least room an entry keeps around its words.
+const ROOM := 2.0
+
 var _row: HBoxContainer
 var _icon: TextureRect
 var _lines: VBoxContainer
+var _room := StyleBoxEmpty.new()
 
 func _init() -> void:
 	focus_mode = Control.FOCUS_ALL
@@ -33,9 +38,8 @@ func _init() -> void:
 	_lines.add_theme_constant_override(&"separation", 1)
 	_lines.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_row.add_child(_lines)
-	var room := StyleBoxEmpty.new()
-	room.set_content_margin_all(2.0)
-	add_theme_stylebox_override(&"panel", room)
+	_room.set_content_margin_all(ROOM)
+	add_theme_stylebox_override(&"panel", _room)
 	focus_entered.connect(queue_redraw)
 	focus_exited.connect(queue_redraw)
 
@@ -101,6 +105,16 @@ func get_lines() -> PackedStringArray:
 		if line is Label:
 			lines.append((line as Label).text)
 	return lines
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_THEME_CHANGED:
+		# The theme's ring, drawn inside the entry, sets how far in its words
+		# sit. A change to the room is a change of theme too: set what differs.
+		var ring := get_theme_stylebox(&"focus", &"Button")
+		for side: Side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+			var room := maxf(ROOM, ring.get_margin(side))
+			if _room.get_content_margin(side) != room:
+				_room.set_content_margin(side, room)
 
 func _bar_style(colour: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()

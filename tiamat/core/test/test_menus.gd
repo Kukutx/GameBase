@@ -84,11 +84,39 @@ func test_a_list_s_focus_ring_shows_whole_inside_its_scroll() -> void:
 		for side: Side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
 			assert_eq(flat.get_expand_margin(side), 0.0, "the focus ring stays inside its button on side %d" % side)
 
+func test_an_entry_s_words_keep_clear_of_its_focus_ring() -> void:
+	# A tip's words touched the ring around it once the ring drew inside.
+	var entry := MenuEntry.new()
+	add_child_autofree(entry)
+	entry.size = Vector2(200, 0)
+	var label := entry.add_line("Move with the keys.")
+	await wait_physics_frames(2)
+	var ring := entry.get_theme_stylebox(&"focus", &"Button")
+	var words := Rect2(label.global_position - entry.global_position, label.size)
+	assert_gte(words.position.x, ring.get_margin(SIDE_LEFT), "clear on the left")
+	assert_gte(words.position.y, ring.get_margin(SIDE_TOP), "clear above")
+	var flat := ring as StyleBoxFlat
+	if flat != null:
+		assert_gt(words.position.x, float(flat.border_width_left), "inside the ring's line")
+
 func test_the_music_and_sounds_buses_send_to_master() -> void:
 	for bus: StringName in GameSettingsService.AUDIO_BUSES:
 		var index := AudioServer.get_bus_index(bus)
 		assert_gt(index, 0, "%s exists beside Master" % bus)
 		assert_eq(AudioServer.get_bus_send(index), &"Master")
+
+func test_the_settings_rows_names_start_in_line_with_the_switches_words() -> void:
+	# "Music" stood at the panel's edge, the switches' words a button's margin
+	# in from it, in every theme with a margin of its own.
+	var menu := _settings()
+	menu.open()
+	await wait_physics_frames(2)
+	var switch := menu.vsync_check
+	var words_at := switch.global_position.x + switch.get_theme_stylebox(&"normal").get_margin(SIDE_LEFT)
+	for row: Node in [menu.master_slider.get_parent(), menu.text_speed_select.get_parent()]:
+		var label := row.get_child(0) as Label
+		var name_at := label.global_position.x + label.get_theme_stylebox(&"normal").get_margin(SIDE_LEFT)
+		assert_almost_eq(name_at, words_at, 0.5, "%s starts where the switches' words do" % label.text)
 
 func test_the_settings_pages_open_from_the_main_page_and_lead_back() -> void:
 	var menu := _settings()

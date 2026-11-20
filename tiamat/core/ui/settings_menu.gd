@@ -128,6 +128,7 @@ func _ready() -> void:
 	InputPrompts.input_method_changed.connect(_on_settings_changed.unbind(1))
 	# Its small print reads on a phone, in a narrow view as in a wide one.
 	ReadableText.raise(self)
+	MenuLayer.line_up_names(main_page.get_parent(), fullscreen_check)
 
 func open() -> void:
 	_sync_from_settings()
