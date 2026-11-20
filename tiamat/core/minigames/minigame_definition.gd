@@ -16,6 +16,12 @@ const KIND := &"minigame"
 ## always): `MINIGAME_WON ford_battle` opens a battle once the one before it
 ## is won. A locked one says what it needs (`GameRules.describe()`).
 @export var condition := ""
+## What its score counts, in words the player reads ("Units Left"): the list
+## of a station shows the player's best score under it once they have one.
+## Empty: the score shows nowhere. The best score stays in the player's
+## profile, across saves (`get_best_score()`), so a record can show it
+## (`RecordData.flag`, `best_score_key()`).
+@export var score_name := ""
 
 ## Scene whose root extends `MiniGame`.
 @export var scene: PackedScene
@@ -49,6 +55,15 @@ static func wins_key(minigame_id: StringName) -> StringName:
 ## How many times the player won it in this save.
 func get_wins() -> int:
 	return WorldState.get_int(wins_key(id))
+
+## The key of the profile's best score of minigame `minigame_id`, in any
+## save, which `MiniGameHost` keeps.
+static func best_score_key(minigame_id: StringName) -> StringName:
+	return StringName("minigame:%s:best" % minigame_id)
+
+## The player's best score of it in any save; 0 before they have one.
+func get_best_score() -> int:
+	return GameProfile.get_int(best_score_key(id))
 
 ## Whether the player can pick it at a station: its condition holds.
 func is_open() -> bool:

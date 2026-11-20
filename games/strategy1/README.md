@@ -29,7 +29,7 @@ test/runtime/      The camp smoke: the war table, the muster, the lookout, sleep
 
 ## Gameplay
 
-- The war table in the camp (a core `MiniGameStation`) lists its battles, the tactics module's `GridBattleGame`: the Border Ford, and the Old Mill once the ford is won (`MINIGAME_WON ford_battle`); a battle won is marked in the list
+- The war table in the camp (a core `MiniGameStation`) lists its battles, the tactics module's `GridBattleGame`: the Border Ford, and the Old Mill once the ford is won (`MINIGAME_WON ford_battle`); a battle won is marked in the list, with the most units the player had left at its end
 - A river that only the ford crosses, rocks, and four of the player's units (two swordsmen, an archer, a cleric who mends) against four raiders (two raiders, a brute, a slinger whose firepots burn an area)
 - Every unit's gauge fills at its speed; on its turn a unit moves and acts once each, and one that skips either comes back sooner
 - Time stands still while the player picks a command; cancel twice gives the battle up

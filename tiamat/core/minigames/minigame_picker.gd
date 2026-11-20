@@ -4,10 +4,11 @@ extends MenuLayer
 ## The list a station that offers several minigames opens
 ## (`MiniGameStation.choices`): a campaign's battles, an arcade's cabinets.
 ## Each is a button with its name (`MiniGameDefinition.display_name`), marked
-## once the player won it in this save, and a line under it: its description,
-## or, while its condition does not hold, what it needs, the button then
-## locked. The keys, a gamepad and a tap pick one; `ui_cancel` or Back closes
-## the list, and `picked` tells which the player picked, or none.
+## once the player won it in this save, and lines under it: its description
+## and the player's best score (`score_name`), or, while its condition does
+## not hold, what it needs, the button then locked. The keys, a gamepad and
+## a tap pick one; `ui_cancel` or Back closes the list, and `picked` tells
+## which the player picked, or none.
 
 ## The list closed; `minigame_id` is the minigame the player picked, or &"".
 signal picked(minigame_id: StringName)
@@ -63,12 +64,18 @@ static func button_text(definition: MiniGameDefinition) -> String:
 	var name: String = TranslationServer.translate(definition.display_name) if not definition.display_name.is_empty() else String(definition.id)
 	return TranslationServer.translate("%s (Won)") % name if definition.get_wins() > 0 else name
 
-## The line under it: its description, or what it needs while it is locked.
+## The line under it: its description and the player's best score, or what it
+## needs while it is locked.
 static func note_text(definition: MiniGameDefinition) -> String:
-	if definition.is_open():
-		return TranslationServer.translate(definition.description) if not definition.description.is_empty() else ""
-	var needs := definition.get_requirements()
-	return TranslationServer.translate("Locked: %s") % ", ".join(needs) if not needs.is_empty() else TranslationServer.translate("Locked")
+	if not definition.is_open():
+		var needs := definition.get_requirements()
+		return TranslationServer.translate("Locked: %s") % ", ".join(needs) if not needs.is_empty() else TranslationServer.translate("Locked")
+	var lines := PackedStringArray()
+	if not definition.description.is_empty():
+		lines.append(TranslationServer.translate(definition.description))
+	if not definition.score_name.is_empty() and definition.get_best_score() > 0:
+		lines.append(TranslationServer.translate("Best %s: %d") % [TranslationServer.translate(definition.score_name), definition.get_best_score()])
+	return "\n".join(lines)
 
 func _fill(choices: Array[StringName]) -> void:
 	for child: Node in _list.get_children():
