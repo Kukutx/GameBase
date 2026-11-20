@@ -19,6 +19,10 @@ const FLASH_SECONDS := 0.18
 const MARK_SECONDS := 0.5
 ## How far, in pixels on the screen, a press moves before it drags a box.
 const DRAG_PIXELS := 4.0
+## How much of a fingertip (`TouchTarget.reach`) a finger's press moves
+## before it drags a box: a tap wanders further than a click, and one taken
+## for a box would select nothing and drop the selection.
+const TOUCH_DRAG_SHARE := 0.35
 
 @export var ground_color := Color(0.33, 0.43, 0.29)
 @export var obstacle_color := Color(0.27, 0.27, 0.3)
@@ -66,6 +70,14 @@ func get_zoom() -> float:
 	var fit := minf(size.x / battle.size.x, size.y / battle.size.y)
 	return maxf(floorf(fit) if fit >= 1.0 else fit, 0.01)
 
+## How far, in pixels on the screen, a press moves before it drags a box:
+## `DRAG_PIXELS` with the mouse, and on a touchscreen `TOUCH_DRAG_SHARE` of a
+## fingertip, when that is further.
+func get_drag_pixels() -> float:
+	if InputPrompts.using_touch:
+		return maxf(DRAG_PIXELS, TouchTarget.reach * TOUCH_DRAG_SHARE)
+	return DRAG_PIXELS
+
 ## Where the field's top left corner is on the screen.
 func get_origin() -> Vector2:
 	return ((size - battle.size * get_zoom()) * 0.5).floor()
@@ -106,7 +118,7 @@ func _gui_input(event: InputEvent) -> void:
 		show_cursor = false
 	if motion != null and _press_at != Vector2.INF and (motion.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
 		_drag_to = motion.position
-		_dragging = _dragging or _drag_to.distance_to(_press_at) > DRAG_PIXELS
+		_dragging = _dragging or _drag_to.distance_to(_press_at) > get_drag_pixels()
 		accept_event()
 
 func _on_mouse_button(button: InputEventMouseButton) -> void:

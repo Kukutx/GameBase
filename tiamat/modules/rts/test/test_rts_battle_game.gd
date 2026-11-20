@@ -196,6 +196,27 @@ func test_a_finger_s_tap_takes_the_nearest_unit_within_half_a_fingertip() -> voi
 	TouchTarget.reach = reach
 	InputPrompts.call("_set_using_touch", false)
 
+func test_a_finger_that_wanders_a_little_taps_rather_than_drags_a_box() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var field := _game().get_field()
+	var reach := TouchTarget.reach
+	TouchTarget.reach = 40.0
+	var taps: Array[Vector2] = []
+	var boxes: Array[Rect2] = []
+	field.clicked.connect(func(point: Vector2, _additive: bool, _double: bool) -> void: taps.append(point))
+	field.box_dragged.connect(func(rect: Rect2, _additive: bool) -> void: boxes.append(rect))
+	var start := field.to_screen(Vector2(40.0, 40.0))
+	_press_and_move(field, start, start + Vector2(8.0, 0.0))
+	assert_eq([taps.size(), boxes.size()], [0, 1], "with the mouse, eight pixels drag a box")
+	InputPrompts.call("_set_using_touch", true)
+	assert_eq(field.get_drag_pixels(), 14.0)
+	_press_and_move(field, start, start + Vector2(8.0, 0.0))
+	assert_eq([taps.size(), boxes.size()], [1, 1], "a finger wandering as far taps")
+	_press_and_move(field, start, start + Vector2(30.0, 20.0))
+	assert_eq([taps.size(), boxes.size()], [1, 2], "and further drags a box")
+	TouchTarget.reach = reach
+	InputPrompts.call("_set_using_touch", false)
+
 func test_cancel_drops_the_armed_move_then_the_selection_then_gives_up() -> void:
 	var outcome := {}
 	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()
@@ -265,6 +286,23 @@ func test_the_player_chooses_how_strong_the_foes_are() -> void:
 
 # The minigame the host runs now; the one the last test cancelled may still
 # wait to be freed.
+# A left press at `from`, a move to `to` and the release there, as the field
+# takes them.
+func _press_and_move(field: RtsBattleField, from: Vector2, to: Vector2) -> void:
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = from
+	field._gui_input(press)
+	var motion := InputEventMouseMotion.new()
+	motion.button_mask = MOUSE_BUTTON_MASK_LEFT
+	motion.position = to
+	field._gui_input(motion)
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.position = to
+	field._gui_input(release)
+
 func _game() -> RtsBattleGame:
 	for node: Node in get_tree().root.find_children("*", "RtsBattleGame", true, false):
 		if not node.is_queued_for_deletion():
