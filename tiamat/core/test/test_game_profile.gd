@@ -135,6 +135,15 @@ func test_an_achievement_that_counts_toward_a_goal_unlocks_as_the_counter_reache
 	assert_true(GameProfile.is_unlocked(&"fixture_runner"), "unlocked, it stays unlocked")
 	assert_eq(GameProfile.get_progress(&"fixture_runner"), 3)
 
+func test_a_best_only_ever_rises() -> void:
+	assert_true(GameRules.run_actions(PackedStringArray(["RAISE_PROFILE_FLAG fixture_deepest 12"])))
+	assert_eq(GameProfile.get_int(&"fixture_deepest"), 12)
+	assert_true(GameRules.run_actions(PackedStringArray(["RAISE_PROFILE_FLAG fixture_deepest 7"])))
+	assert_eq(GameProfile.get_int(&"fixture_deepest"), 12, "a lower value beats nothing")
+	assert_eq(GameProfile.raise_int(&"fixture_deepest", 30), 30)
+	var problems := "\n".join(GameRules.validate_actions(PackedStringArray(["RAISE_PROFILE_FLAG fixture_deepest"])))
+	assert_false(problems.is_empty(), "a best needs its value")
+
 func test_an_achievement_names_itself() -> void:
 	var nameless := AchievementData.new()
 	nameless.id = &"fixture_nameless"

@@ -61,6 +61,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `ADD_RUN_TALLY` | roguelite | 1 to 2 | `ADD_RUN_TALLY <tally> [amount]` | adds the amount, 1 when none, to the tally of the run going on; fails while no run goes on. |
 | `ADD_SKILL_XP` | skills | 2 | `ADD_SKILL_XP <skill> <amount>` | gives the skill that much experience, which can raise its level; an amount of 0 or less gives none, and the action still succeeds. |
 | `CLEAR_FLAG` | core | 1 | `CLEAR_FLAG <key>` | removes the value stored under the key, so a flag reads as false and a counter as 0; never fails. |
+| `RAISE_PROFILE_FLAG` | core | 2 | `RAISE_PROFILE_FLAG <key> <n>` | raises the profile's counter to n when n beats it, for a best such as the deepest floor reached. |
 | `RAISE_STAT_UPGRADE` | items | 1 | `RAISE_STAT_UPGRADE <upgrade>` | raises the upgrade one level without a cost (a reward); fails once it is at its last level. |
 | `REMOVE_ITEM` | items | 1 to 2 | `REMOVE_ITEM <item> [count]` | fails, removing nothing, when there are not enough. |
 | `RESTORE_VITAL` | core | 2 | `RESTORE_VITAL <vital> <n>` | restores n of the vital, up to its maximum; an n of 0 or less restores nothing, and the action still succeeds. |

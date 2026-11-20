@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_trigger"]
+
+[resource]
+script = ExtResource("1_trigger")
+id = &"profile_deepest_mine_floor"
+event = &"MineState.deepest_floor_changed"
+actions = PackedStringArray("RAISE_PROFILE_FLAG deepest_mine_floor $floor")

@@ -59,6 +59,7 @@ func test_the_game_menu_counts_a_locked_one_toward_its_goal() -> void:
 	var lines := "\n".join(menu.call(&"_achievement_lines") as PackedStringArray)
 	assert_string_contains(lines, "Seasoned Farmer — Harvest 100 crops, counting every save. (95 / 100)")
 	assert_string_contains(lines, "○ ???", "a hidden one shows nothing of itself")
+	assert_string_contains(lines, "[b]Records[/b]\n  Crops Harvested: 95", "the records follow")
 
 func test_an_iridium_tool_unlocks_the_hidden_iridium_touch() -> void:
 	GameTriggers.fire(&"ProgressionEvents.tool_upgraded", {"tool_upgrade_id": &"gold_hoe_upgrade", "result_item_id": &"gold_hoe"})
@@ -66,6 +67,21 @@ func test_an_iridium_tool_unlocks_the_hidden_iridium_touch() -> void:
 	GameTriggers.fire(&"ProgressionEvents.tool_upgraded", {"tool_upgrade_id": &"iridium_sword_upgrade", "result_item_id": &"iridium_sword"})
 	assert_true(GameProfile.is_unlocked(&"iridium_touch"))
 	assert_true(AchievementData.find(&"iridium_touch").hidden)
+
+func test_a_mine_guardian_unlocks_its_achievement_and_counts_toward_a_record() -> void:
+	GameTriggers.fire(&"CombatEvents.enemy_defeated", {"enemy_id": &"red_slime", "combat_xp": 60, "position": Vector2.ZERO})
+	assert_eq(GameProfile.get_int(&"guardians_felled"), 0, "an ordinary slime is no guardian")
+	GameTriggers.fire(&"CombatEvents.enemy_defeated", {"enemy_id": &"slime_king", "combat_xp": 260, "position": Vector2.ZERO})
+	assert_true(GameProfile.is_unlocked(&"crown_of_gel"))
+	assert_false(GameProfile.is_unlocked(&"into_the_void"))
+	GameTriggers.fire(&"CombatEvents.enemy_defeated", {"enemy_id": &"void_monarch", "combat_xp": 650, "position": Vector2.ZERO})
+	assert_true(GameProfile.is_unlocked(&"into_the_void"))
+	assert_eq(RecordData.find(&"guardians_felled").get_value(), 2)
+
+func test_the_deepest_mine_floor_record_keeps_the_best_of_every_save() -> void:
+	GameTriggers.fire(&"MineState.deepest_floor_changed", {"floor": 30})
+	GameTriggers.fire(&"MineState.deepest_floor_changed", {"floor": 12})
+	assert_eq(RecordData.find(&"deepest_mine_floor").get_value(), 30, "a new save's shallower floors beat nothing")
 
 func _harvest(quantity: int) -> void:
 	GameTriggers.fire(&"LifesimEvents.crop_harvested", {"crop_id": &"turnip", "item_id": &"turnip", "quantity": quantity})

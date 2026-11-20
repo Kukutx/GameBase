@@ -323,7 +323,7 @@ func _raise_best(tally_id: StringName, value: int) -> void:
 		return
 	if get_value(_beat_key(tally_id)) == null:
 		set_value(_beat_key(tally_id), best)
-	GameProfile.set_flag(tally.best_flag, value)
+	GameProfile.raise_int(tally.best_flag, value)
 
 func _read_boons() -> Dictionary[StringName, int]:
 	if _boons_read:
