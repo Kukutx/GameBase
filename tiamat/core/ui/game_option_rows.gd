@@ -9,6 +9,8 @@ extends VBoxContainer
 
 ## How wide a row's name is, as wide as the names of the menu's own rows.
 const NAME_WIDTH := 92.0
+## The room after a slider, as the settings menu's own sliders leave.
+const SLIDER_END_ROOM := 6.0
 
 # The option each row sets, by id: its switch, list or slider.
 var _inputs: Dictionary[StringName, Control] = {}
@@ -58,6 +60,11 @@ func _row(option: GameOption) -> Control:
 		input = slider
 	input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(input)
+	if input is HSlider:
+		# Room for the grabber at the slider's end, clear of the scroll bar.
+		var end := Control.new()
+		end.custom_minimum_size = Vector2(SLIDER_END_ROOM, 0)
+		row.add_child(end)
 	_inputs[option.id] = input
 	return row
 

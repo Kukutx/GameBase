@@ -36,3 +36,12 @@ msgstr "标准"
 
 msgid "Heavy"
 msgstr "较重"
+
+msgid "Foe Strength"
+msgstr "敌人强度"
+
+msgid "Weak"
+msgstr "弱"
+
+msgid "Strong"
+msgstr "强"
