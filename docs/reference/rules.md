@@ -69,6 +69,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `SET_FLAG` | core | 1 to 2 | `SET_FLAG <key> [value]` | value is true, false or an integer (default true). |
 | `SET_PROFILE_FLAG` | core | 1 to 2 | `SET_PROFILE_FLAG <key> [value]` | value is true, false or an integer (default true). |
 | `SHOW_HINT` | core | 1 | `SHOW_HINT <hint>` | shows the hint (`GameEvents.hint_requested`) unless it showed before, in any save, or the player turned hints off; a hint passed over while they were off shows the next time, once they are back on. Fails only when the id is not a hint. |
+| `SPEND_MONEY` | items | 1 | `SPEND_MONEY <n>` | takes n money, a price paid (an altar's reroll); fails, taking nothing, when the player has less. |
 | `START_QUEST` | progression | 1 | `START_QUEST <quest>` | fails when the quest already started. |
 | `TAKE_BOON` | roguelite | 1 | `TAKE_BOON <boon>` | the run going on takes the boon, as if the player picked it; fails when it may not (`BoonData.can_take()`). |
 | `UNLOCK_ACHIEVEMENT` | core | 1 | `UNLOCK_ACHIEVEMENT <achievement>` | unlocks the achievement in the player's profile, for every save; one already unlocked stays so and the action still succeeds. Fails only when the id is not an achievement. |

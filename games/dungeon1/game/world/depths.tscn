@@ -172,6 +172,9 @@ shape = SubResource("Rect_way")
 [node name="EmberAltar" parent="." instance=ExtResource("6_altar")]
 position = Vector2(0, -100)
 title = "Ember Altar"
+rerolls = 1
+reroll_condition = "MONEY_AT_LEAST 30"
+reroll_actions = PackedStringArray("SPEND_MONEY 30")
 
 [node name="Visual" type="Polygon2D" parent="EmberAltar"]
 polygon = PackedVector2Array(-12, 12, -9, -4, -4, -4, -6, -12, 0, -8, 6, -12, 4, -4, 9, -4, 12, 12)

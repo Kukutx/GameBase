@@ -7,6 +7,7 @@ extends GutTest
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const ALTAR_SCENE := preload("res://tiamat/modules/roguelite/runs/boon_altar.tscn")
 const COUNTER := &"test:boon_counter"
+const COINS := &"test:boon_coins"
 const SPEED := TopDownPlayer.MOVE_SPEED_STAT
 
 var _world: Dictionary
@@ -132,6 +133,42 @@ func test_an_altar_gives_one_boon_a_run_from_its_own_offer() -> void:
 	assert_eq(altar.get_offer(), [] as Array[BoonData])
 	RunState.start_run()
 	assert_false(altar.is_spent(), "a new run lights it again")
+
+func test_an_altar_may_reroll_its_offer_at_a_price_as_often_as_it_allows() -> void:
+	RunState.start_run()
+	WorldState.set_value(COINS, 7)
+	var altar := ALTAR_SCENE.instantiate() as BoonAltar
+	altar.key = "depth3"
+	altar.count = 2
+	altar.rerolls = 1
+	altar.reroll_condition = "FLAG_AT_LEAST %s 5" % COINS
+	altar.reroll_actions = PackedStringArray(["ADD_FLAG %s -5" % COINS])
+	add_child_autofree(altar)
+	assert_true(altar.can_reroll())
+	var outcome := {}
+	(func() -> void: outcome["boon"] = await altar.choose()).call()
+	var menu := ChoiceMenu.of(altar)
+	assert_eq(menu.get_choice_ids(), _ids(RunState.offer_boons(2, "depth3")) + [BoonAltar.REROLL], "the offer, then the reroll")
+	assert_eq(menu.get_note(BoonAltar.REROLL), "1 left")
+	assert_true(menu.choose(BoonAltar.REROLL))
+	await get_tree().process_frame
+	assert_eq(WorldState.get_int(COINS), 2, "the price paid")
+	assert_eq(altar.get_rerolls_left(), 0)
+	var offer := _ids(altar.get_offer())
+	assert_eq(offer, _ids(RunState.offer_boons(2, "depth3#1")), "each reroll offers from a stream of its own")
+	assert_true(menu.is_open(), "the new offer listed")
+	assert_eq(menu.get_choice_ids(), offer + [BoonAltar.REROLL])
+	assert_true(menu.get_button(BoonAltar.REROLL).disabled, "no reroll left")
+	assert_false(altar.reroll(), "none left")
+	assert_eq(WorldState.get_int(COINS), 2, "nothing more paid")
+	assert_true(menu.choose(offer[0]))
+	assert_eq(outcome.get("boon"), offer[0])
+	assert_true(altar.is_spent())
+	RunState.start_run()
+	assert_eq(altar.get_rerolls_left(), 1, "a new run may reroll again")
+	WorldState.set_value(COINS, 4)
+	assert_false(altar.can_reroll(), "short of the price")
+	assert_false(altar.reroll())
 
 func test_a_boon_on_offer_says_how_often_the_run_took_it() -> void:
 	RunState.start_run()

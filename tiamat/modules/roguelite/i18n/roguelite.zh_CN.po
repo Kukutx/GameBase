@@ -63,3 +63,9 @@ msgstr "一次出发中%s：%d"
 
 msgid "Runs"
 msgstr "出发记录"
+
+msgid "Reroll"
+msgstr "重掷"
+
+msgid "%d left"
+msgstr "剩 %d 次"

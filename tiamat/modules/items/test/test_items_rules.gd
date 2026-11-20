@@ -6,10 +6,12 @@ const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 
 var _inventory: Dictionary
 var _max_slots: int
+var _wallet: Dictionary
 
 func before_each() -> void:
 	_inventory = InventoryState.to_save_data()
 	_max_slots = InventoryState.max_slots
+	_wallet = Wallet.to_save_data()
 	var item := ItemData.new()
 	item.id = &"fixture_berry"
 	item.display_name = "Fixture Berry"
@@ -24,6 +26,7 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	InventoryState.max_slots = _max_slots
 	InventoryState.load_save_data(_inventory)
+	Wallet.load_save_data(_wallet)
 
 func test_item_keys_are_registered_and_checked_against_content() -> void:
 	for key: String in ["HAS_ITEM", "ITEM_TAG"]:
@@ -59,3 +62,11 @@ func test_an_item_tag_asks_whether_the_item_has_the_tag() -> void:
 
 func test_items_and_money_needed_are_named_as_the_player_reads_them() -> void:
 	assert_eq(GameRules.describe("HAS_ITEM fixture_berry 3, HAS_ITEM fixture_stone, MONEY_AT_LEAST 250"), PackedStringArray(["Fixture Berry x3", "Fixture Stone x1", "250g"]))
+
+func test_spending_money_takes_the_price_or_nothing_when_short() -> void:
+	Wallet.set_money(40)
+	assert_true(GameRules.run_actions(PackedStringArray(["SPEND_MONEY 30"])))
+	assert_eq(Wallet.money, 10)
+	assert_false(GameRules.run_actions(PackedStringArray(["SPEND_MONEY 30"])), "10 is short of 30")
+	assert_eq(Wallet.money, 10, "nothing taken")
+	assert_eq(GameRules.validate_actions(PackedStringArray(["SPEND_MONEY 0"])).size(), 1, "a price is 1 or more")
