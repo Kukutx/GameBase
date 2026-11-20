@@ -2,7 +2,8 @@ extends "res://tiamat/core/test/runtime_smoke.gd"
 
 ## Plays a game created by tools/new_game.js, which has the Tiamat core and
 ## no module: starts a new game, walks to the lookout and back through the
-## portals, sleeps in the bed, saves, changes state and loads it back.
+## portals (which unlocks its achievement), sleeps in the bed, saves, changes
+## state and loads it back.
 ## tools/validate.js runs every script under test/runtime/, so a new game keeps
 ## this check until it replaces it with its own.
 
@@ -37,6 +38,7 @@ func _run() -> void:
 	if not await _arrive(START_SCENE):
 		return
 	_check(_player_at(current_scene.get_node("FromLookoutSpawn")), "The player did not come back by the path from the lookout")
+	_check(bool(root.get_node("GameProfile").call("is_unlocked", &"the_whole_valley")), "Reaching the lookout did not unlock its achievement")
 
 	_use(current_scene.get_node("Bed/Interactable"))
 	_check(int(clock.day) == 2, "Sleeping did not lead to the next day (day %d)" % clock.day)

@@ -8,7 +8,8 @@
 // the core autoloads and the core and game translation catalogs, an export
 // preset for every target (tools/lib/targets.js), a game definition, the
 // game's own empty GameSetup module (game/game_setup.gd), a player and HUD,
-// two locations joined by portals, a unit test and a new-game smoke script.
+// two locations joined by portals, a first hint and achievement with the
+// triggers that show and unlock them, a unit test and a new-game smoke script.
 // It names the project, its log, its catalog and its description (the title
 // screen's line under the name, with its catalog entry, which keeps the
 // English text until it is translated), writes games/<id>/game.json with the

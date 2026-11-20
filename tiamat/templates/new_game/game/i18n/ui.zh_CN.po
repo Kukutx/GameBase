@@ -30,3 +30,9 @@ msgstr "返回起点"
 
 msgid "Move with {move}. Press {interact} to use what is near."
 msgstr "用 {move} 移动，按 {interact} 使用身旁的东西。"
+
+msgid "The Whole Valley"
+msgstr "尽收眼底"
+
+msgid "Reach the lookout."
+msgstr "抵达瞭望台。"
