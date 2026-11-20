@@ -82,3 +82,6 @@ func test_rule_keys_ask_about_runs() -> void:
 	RunState.start_run()
 	assert_true(GameRules.check("RUN_ACTIVE, RUNS_AT_LEAST 1"))
 	assert_false(GameRules.check("RUNS_AT_LEAST 2"))
+
+func test_runs_needed_are_counted_for_the_player() -> void:
+	assert_eq(GameRules.describe("RUN_ACTIVE, RUNS_AT_LEAST 3"), PackedStringArray(["Runs: 3"]))

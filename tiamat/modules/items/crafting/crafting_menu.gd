@@ -45,7 +45,10 @@ func _recipe_text(recipe: RecipeData) -> String:
 		var item := ItemData.find(StringName(String(raw_id)))
 		var label := tr(item.display_name) if item != null else String(raw_id)
 		parts.append("%s x%d" % [label, int(recipe.ingredients[raw_id])])
-	return "%s  (%s)" % [tr(recipe.display_name), ", ".join(parts)]
+	var text := "%s  (%s)" % [tr(recipe.display_name), ", ".join(parts)]
+	# A recipe the player cannot craft yet says what it still needs.
+	var needs := GameRules.describe(recipe.condition) if not GameRules.check(recipe.condition) else PackedStringArray()
+	return text if needs.is_empty() else "%s\n%s" % [text, tr("Needs: %s") % ", ".join(needs)]
 
 func _craft(recipe_id: StringName) -> void:
 	CraftingState.craft(recipe_id)

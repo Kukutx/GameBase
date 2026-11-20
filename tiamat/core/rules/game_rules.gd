@@ -459,6 +459,15 @@ func _resolve_clause_args(entry: Dictionary, clause: Dictionary, context: Dictio
 	push_warning("GameRules: %s %s: %s" % [clause["key"], " ".join(args), problem])
 	return null
 
+## The name a player reads of content entry `entry_id` of `kind`: its
+## `field` (`display_name`, a quest's `title`), translated, or the id itself
+## when the content lacks the entry or the entry the name. For a condition's
+## describer (`register_condition()`): `Win %s`.
+static func entry_name(kind: StringName, entry_id: String, field := &"display_name") -> String:
+	var entry := ContentRegistry.active.get_entry(kind, StringName(entry_id))
+	var name: Variant = entry.get(field) if entry != null else null
+	return TranslationServer.translate(String(name)) if name is String and not String(name).is_empty() else entry_id
+
 ## The day a condition is asked about: the context's "day", or today.
 static func context_day(context: Dictionary) -> int:
 	return int(context.get("day", WorldClock.day))

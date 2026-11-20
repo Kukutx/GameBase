@@ -202,6 +202,8 @@ func _refresh_expansion_button(button: Button, housing_id: StringName) -> void:
 		var item_id := StringName(String(raw_id))
 		var item := ItemData.find(item_id)
 		requirements.append("%s x%d" % [tr(item.display_name) if item != null else tr(String(item_id).capitalize()), int(expansion.materials[raw_id])])
+	if not GameRules.check(expansion.condition):
+		requirements.append_array(GameRules.describe(expansion.condition))
 	button.tooltip_text = "%s\n%s" % [tr(expansion.description), " · ".join(requirements)]
 	button.disabled = not FarmExpansionState.can_purchase(expansion.id)
 

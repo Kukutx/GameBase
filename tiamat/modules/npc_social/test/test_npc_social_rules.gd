@@ -20,3 +20,6 @@ func test_npc_keys_are_registered_and_checked_against_content() -> void:
 	assert_string_contains(problems, "'lots' is not an integer")
 	assert_string_contains(problems, "unknown npc 'no_such_npc'")
 	assert_string_contains(problems, "11 is not a number of hearts (0-%d)" % RelationshipManager.MAX_HEARTS)
+
+func test_hearts_needed_are_named_with_the_npc() -> void:
+	assert_eq(GameRules.describe("HEARTS fixture_npc 4"), PackedStringArray(["Fixture: 4 hearts"]))

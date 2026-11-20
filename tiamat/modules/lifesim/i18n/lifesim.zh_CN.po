@@ -593,3 +593,9 @@ msgstr "领取奖励"
 
 msgid "Claimed"
 msgstr "已领取"
+
+msgid "Claim %s"
+msgstr "领取%s"
+
+msgid "During %s"
+msgstr "%s期间"

@@ -34,3 +34,6 @@ msgstr "村民"
 
 msgid " · Birthday!"
 msgstr " · 生日！"
+
+msgid "%s: %d hearts"
+msgstr "%s：%d 心好感"

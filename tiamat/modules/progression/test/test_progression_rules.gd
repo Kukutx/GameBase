@@ -39,3 +39,13 @@ func test_content_validation_finds_conditions_in_nested_resources() -> void:
 	var problems := GameRules.validate_content(registry)
 	assert_eq(problems.size(), 1)
 	assert_string_contains("\n".join(problems), "npc 'rules_test_npc' schedule_entries condition: unknown condition 'TYPO_KEY'")
+
+func test_a_quest_or_a_project_needed_is_named_as_the_player_reads_it() -> void:
+	var quest := QuestData.new()
+	quest.id = &"fixture_first_quest"
+	quest.title = "First Steps"
+	var project := TownProjectData.new()
+	project.id = &"fixture_garden"
+	project.display_name = "Garden"
+	ContentFixture.use(self, [quest, project])
+	assert_eq(GameRules.describe("QUEST_COMPLETED fixture_first_quest, PROJECT_COMPLETED fixture_garden"), PackedStringArray(["Complete First Steps", "Complete Garden"]))

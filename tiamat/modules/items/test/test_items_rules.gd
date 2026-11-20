@@ -56,3 +56,6 @@ func test_an_item_tag_asks_whether_the_item_has_the_tag() -> void:
 	var problems := "\n".join(GameRules.validate_query("ITEM_TAG fixture_berry frut, ITEM_TAG no_such_item fruit"))
 	assert_string_contains(problems, "no item has tag 'frut'")
 	assert_string_contains(problems, "unknown item 'no_such_item'")
+
+func test_items_and_money_needed_are_named_as_the_player_reads_them() -> void:
+	assert_eq(GameRules.describe("HAS_ITEM fixture_berry 3, HAS_ITEM fixture_stone, MONEY_AT_LEAST 250"), PackedStringArray(["Fixture Berry x3", "Fixture Stone x1", "250g"]))

@@ -118,9 +118,27 @@ func test_a_condition_can_check_its_arguments_together() -> void:
 		"the arguments are checked together only once each passed")
 
 func test_describe_leaves_out_conditions_without_a_description() -> void:
-	assert_eq(GameRules.describe("WORLD_FLAG %s, DAY_AT_LEAST 2" % FLAG), PackedStringArray())
+	assert_eq(GameRules.describe("WORLD_FLAG %s, FLAG_AT_LEAST %s 2" % [FLAG, COUNTER]), PackedStringArray())
 	assert_eq(GameRules.describe(""), PackedStringArray())
 	assert_eq(GameRules.describe("NO_SUCH_KEY"), PackedStringArray())
+
+func test_the_core_s_conditions_say_what_they_need_by_the_names_the_player_reads() -> void:
+	var location := WorldLocationData.new()
+	location.id = &"fixture_meadow"
+	location.display_name = "Meadow"
+	var cave := WorldLocationData.new()
+	cave.id = &"fixture_cave"
+	var achievement := AchievementData.new()
+	achievement.id = &"fixture_explorer"
+	achievement.display_name = "Explorer"
+	var stamina := ContentFixture.vital(&"fixture_stamina")
+	stamina.display_name = "Stamina"
+	ContentFixture.use(self, [location, cave, achievement, stamina])
+	assert_eq(GameRules.describe("DAY_AT_LEAST 3, PLAYTHROUGH_AT_LEAST 2"), PackedStringArray(["From day 3", "Playthrough 2"]))
+	assert_eq(GameRules.describe("LOCATION fixture_meadow fixture_cave"), PackedStringArray(["At Meadow / fixture_cave"]), "an entry without a name goes by its id")
+	assert_eq(GameRules.describe("ACHIEVEMENT_UNLOCKED fixture_explorer, VITAL_AT_LEAST fixture_stamina 40"), PackedStringArray(["Unlock Explorer", "Stamina 40"]))
+	assert_eq(GameRules.describe("SEASON Spring Summer"), PackedStringArray(["In Spring / Summer"]))
+	assert_eq(GameRulesService.entry_name(WorldLocationData.KIND, "no_such_place"), "no_such_place")
 
 func test_content_reads_the_player_s_options() -> void:
 	GameSettings.options = GameOptions.new([

@@ -171,6 +171,21 @@ func test_crafting_reuses_consumed_ingredient_slot_when_inventory_is_full() -> v
 	assert_eq(InventoryState.get_quantity(&"fixture_crate"), 1)
 	assert_eq(InventoryState.get_used_slots(), 1)
 
+func test_the_crafting_menu_says_what_a_locked_recipe_still_needs() -> void:
+	var recipe := RecipeData.find(&"fixture_crate")
+	recipe.condition = "MONEY_AT_LEAST %d" % (Wallet.money + 500)
+	var menu := (load("res://tiamat/modules/items/crafting/crafting_menu.tscn") as PackedScene).instantiate() as CraftingMenu
+	add_child_autofree(menu)
+	menu.open()
+	var texts := menu.recipes_container.get_children().map(func(button: Button) -> String: return button.text)
+	assert_has(texts, "Fixture Crate  (Fixture Plank x10)\nNeeds: %dg" % (Wallet.money + 500))
+	assert_has(texts, "Fixture Snack  (Fixture Berry x2)", "an open recipe names its ingredients alone")
+	Wallet.add(500)
+	menu.open()
+	texts = menu.recipes_container.get_children().filter(func(child: Node) -> bool: return not child.is_queued_for_deletion()).map(func(button: Button) -> String: return button.text)
+	assert_has(texts, "Fixture Crate  (Fixture Plank x10)", "once it holds, the recipe needs nothing more")
+	menu.close()
+
 func test_seasonal_stock_changes_with_calendar() -> void:
 	ContentFixture.use_calendar(self, GameCalendar.new())
 	var spring := _shop.get_stock("Spring")

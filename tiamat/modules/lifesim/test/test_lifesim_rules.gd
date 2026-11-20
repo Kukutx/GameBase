@@ -35,3 +35,10 @@ func test_milestone_claimed_names_a_collection_milestone() -> void:
 	ContentFixture.use(self, [milestone])
 	assert_eq(GameRules.validate_query("!MILESTONE_CLAIMED fixture_archive"), PackedStringArray())
 	assert_string_contains("\n".join(GameRules.validate_query("MILESTONE_CLAIMED fixture_garden")), "unknown collection_milestone 'fixture_garden'")
+
+func test_an_event_or_a_milestone_needed_is_named_as_the_player_reads_it() -> void:
+	var milestone := CollectionMilestoneData.new()
+	milestone.id = &"fixture_archive"
+	milestone.display_name = "Archive"
+	ContentFixture.use(self, [CalendarEventData.find(&"fixture_fair"), milestone])
+	assert_eq(GameRules.describe("EVENT_ACTIVE fixture_fair, MILESTONE_CLAIMED fixture_archive"), PackedStringArray(["During Fair", "Claim Archive"]))
