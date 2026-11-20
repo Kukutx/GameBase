@@ -41,4 +41,4 @@ test/runtime/      The delve smoke: camp, two depths, save and load, a defeat, a
 - The pause menu shows what the delver carries (with where to get more), their combat skill, the bestiary of every kind of creature they have defeated across every save, the reports of their last ten runs and the bonuses of the run
 - A clock that stands still: a day passes when the player rests or is defeated
 
-Everything except the floors is the foundation's: the title, pause and settings menus, the hotbar, the melee attack, the enemies, the shop, the runs and the depth track, saving, the profile and the triggers.
+Everything except the floors is the foundation's: the title, pause and settings menus, the hotbar, the melee attack, the dodge roll, the enemies, the shop, the runs and the depth track, saving, the profile and the triggers.

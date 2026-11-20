@@ -47,6 +47,9 @@ msgstr "营地商人"
 msgid "Drink Potion"
 msgstr "喝药水"
 
+msgid "Dodge"
+msgstr "闪避"
+
 msgid "Next Item"
 msgstr "下一个物品"
 
@@ -172,6 +175,9 @@ msgstr "按 {attack} 挥动武器，按 {next_item} 换下一件物品。"
 
 msgid "Hurt? Press {drink_potion} to drink a health potion."
 msgstr "受伤了？按 {drink_potion} 喝下生命药水。"
+
+msgid "Foes glow before they strike. Press {dodge} to roll out of the way."
+msgstr "敌人出手前会发光。按 {dodge} 翻滚闪开。"
 
 msgid "Old Delver"
 msgstr "老探窟人"
