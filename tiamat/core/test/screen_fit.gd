@@ -34,6 +34,25 @@ static func base_size() -> Vector2:
 	return Vector2(ProjectSettings.get_setting("display/window/size/viewport_width", 1152),
 		ProjectSettings.get_setting("display/window/size/viewport_height", 648))
 
+## Every size the game's screens are laid out in: its own (`base_size()`),
+## then each it names for a kind of device, as a phone's
+## (`window/size/viewport_width.mobile` and `viewport_height.mobile`; a side
+## it leaves out keeps the game's own).
+static func view_sizes() -> Array[Vector2]:
+	var base := base_size()
+	var sizes: Array[Vector2] = [base]
+	for property: Dictionary in ProjectSettings.get_property_list():
+		var name := String(property.name)
+		for side: String in ["width", "height"]:
+			var prefix := "display/window/size/viewport_%s." % side
+			if not name.begins_with(prefix):
+				continue
+			var feature := name.trim_prefix(prefix)
+			var size := Vector2(_side(base, "width", feature), _side(base, "height", feature))
+			if not sizes.has(size):
+				sizes.append(size)
+	return sizes
+
 ## The scenes under `folders` that are screens: a `CanvasLayer`, or a control
 ## stretched over the whole view, at their root. A `test` folder is passed by.
 static func find_screens(folders: PackedStringArray) -> PackedStringArray:
@@ -127,7 +146,8 @@ static func _boxes(test: Node, scene: PackedScene, size: Vector2, shown: Diction
 	for part: String in boxes:
 		if _shows(screen.get_node(part)):
 			shown[part] = true
-	view.queue_free()
+	# Gone at once: the test that measured it may end on this frame.
+	view.free()
 	return boxes
 
 # Adds to `boxes` the parts among the children of `holder`, named from `path`.
@@ -165,6 +185,11 @@ static func _box(control: Control) -> Rect2:
 				box = inner if not found else box.merge(inner)
 				found = true
 	return box if found else Rect2()
+
+# The `side` of the view the game names for `feature`, or the game's own.
+static func _side(base: Vector2, side: String, feature: String) -> float:
+	var own := base.x if side == "width" else base.y
+	return float(ProjectSettings.get_setting("display/window/size/viewport_%s.%s" % [side, feature], own))
 
 static func _find_scenes(folder: String, found: PackedStringArray) -> void:
 	for sub: String in DirAccess.get_directories_at(folder):

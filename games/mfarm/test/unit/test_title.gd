@@ -120,14 +120,16 @@ func test_a_card_of_a_save_this_version_cannot_open_asks_before_a_new_game_and_c
 	assert_false(delete.visible)
 	assert_eq((title.get("status_label") as Label).text, "Deleted Slot 3")
 
-func test_the_menu_holds_while_a_game_opens_and_fits_the_view() -> void:
+func test_the_menu_holds_while_a_game_opens_and_fits_each_view() -> void:
 	var title := _title()
 	title.call("_set_buttons_disabled", true)
 	for button: Button in (title.get("cards") as Array) + (title.get("tabs") as Dictionary).values() + [title.get("settings_button")]:
 		assert_true(button.disabled, button.name)
 	title.call("_set_buttons_disabled", false)
-	await get_tree().process_frame
-	assert_eq(MenuFit.find_overflow(title, get_viewport().get_visible_rect()), PackedStringArray())
+	for sheet: int in (title.get("tabs") as Dictionary).keys():
+		title.call("show_sheet", sheet)
+		await get_tree().process_frame
+		assert_eq(await MenuFit.find_overflow_in_views(title), PackedStringArray(), "sheet %d" % sheet)
 
 func test_a_browser_that_keeps_no_saves_is_named_on_the_paper() -> void:
 	var persist := GameSaveManager.saves_persist

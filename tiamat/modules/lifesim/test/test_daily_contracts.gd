@@ -284,7 +284,7 @@ func test_the_notice_board_menu_holds_the_focus_and_fits_the_view() -> void:
 	assert_true(menu.action_button.has_focus())
 	assert_eq(MenuFit.find_focus_problem(menu), "")
 	await get_tree().process_frame
-	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
+	assert_eq(await MenuFit.find_overflow_in_views(menu), PackedStringArray())
 	menu.action_button.pressed.emit()
 	await get_tree().process_frame
 	assert_true(menu.action_button.disabled, "a contract under way")

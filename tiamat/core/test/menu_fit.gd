@@ -3,6 +3,15 @@ extends RefCounted
 ## Whether a menu fits the game's view and holds the focus, for the tests of
 ## every layer's menus.
 
+const ScreenFit := preload("res://tiamat/core/test/screen_fit.gd")
+
+## Has `tree` show the game in a view of `size`, one of the views it is laid
+## out in (`ScreenFit.view_sizes()`), as a phone shows its own: the menus a
+## test opens next lay out in it. A test that calls it gives the game's own
+## back (`size` zero) once it is done.
+static func show_view(tree: SceneTree, size := Vector2.ZERO) -> void:
+	tree.root.content_scale_size = Vector2i(ScreenFit.base_size() if size == Vector2.ZERO else size)
+
 ## The visible controls under `root` that reach outside `view`, each with its
 ## rect; only the outermost one of a branch is named. What a ScrollContainer
 ## holds may scroll; the container itself must fit. A dialog is a window of
@@ -10,6 +19,29 @@ extends RefCounted
 static func find_overflow(root: Node, view: Rect2) -> PackedStringArray:
 	var problems := PackedStringArray()
 	_check(root, view.grow(0.5), problems)
+	return problems
+
+## The visible controls under `menu` that reach outside the view
+## (`find_overflow()`), in each view the game is laid out in
+## (`ScreenFit.view_sizes()`): the view it shows, then each other, a phone's
+## smaller one among them, the menu laid out in it a frame later, named with
+## the view. The view the game showed is back once it returns.
+static func find_overflow_in_views(menu: Node) -> PackedStringArray:
+	var tree := menu.get_tree()
+	var problems := find_overflow(menu, menu.get_viewport().get_visible_rect())
+	var shown := tree.root.content_scale_size
+	var sizes := ScreenFit.view_sizes()
+	for size: Vector2 in sizes.slice(1):
+		show_view(tree, size)
+		# Containers sort their children on the frame after a change.
+		await tree.process_frame
+		await tree.process_frame
+		for line: String in find_overflow(menu, menu.get_viewport().get_visible_rect()):
+			problems.append("%s in the view %s" % [line, size])
+	if sizes.size() > 1:
+		tree.root.content_scale_size = shown
+		await tree.process_frame
+		await tree.process_frame
 	return problems
 
 ## The dialog's rect when it reaches outside `view`, else "".

@@ -484,13 +484,13 @@ func test_the_animal_ledger_holds_the_focus_and_fits_the_view() -> void:
 	await get_tree().process_frame
 	assert_eq(MenuFit.find_focus_problem(menu), "", "with animals")
 	await get_tree().process_frame
-	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
+	assert_eq(await MenuFit.find_overflow_in_views(menu), PackedStringArray())
 	menu.close()
 	menu.open(&"fixture_empty_field")
 	await get_tree().process_frame
 	assert_eq(MenuFit.find_focus_problem(menu), "", "with no animal and no housing")
 	await get_tree().process_frame
-	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
+	assert_eq(await MenuFit.find_overflow_in_views(menu), PackedStringArray())
 	menu.close()
 
 func _content() -> Array:

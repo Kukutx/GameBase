@@ -68,7 +68,7 @@ func _check(scene: PackedScene, open: Callable) -> void:
 	assert_eq(MenuFit.find_focus_problem(menu), "", scene.resource_path)
 	# Containers sort their children on the frame after a change.
 	await get_tree().process_frame
-	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray(), scene.resource_path)
+	assert_eq(await MenuFit.find_overflow_in_views(menu), PackedStringArray(), scene.resource_path)
 	menu.call("close")
 	await get_tree().process_frame
 

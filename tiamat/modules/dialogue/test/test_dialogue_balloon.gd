@@ -149,7 +149,7 @@ func test_the_balloon_fits_the_view_and_grows_upwards_for_a_long_line() -> void:
 	await wait_process_frames(2)
 	var panel := balloon.get_node("%Panel") as Control
 	var short_height := panel.size.y
-	assert_eq(MenuFit.find_overflow(balloon, view), PackedStringArray())
+	assert_eq(await MenuFit.find_overflow_in_views(balloon), PackedStringArray())
 	assert_almost_eq(panel.get_global_rect().end.y, view.end.y - 6.0, 0.5, "along the bottom")
 	balloon.queue_free()
 
@@ -157,7 +157,7 @@ func test_the_balloon_fits_the_view_and_grows_upwards_for_a_long_line() -> void:
 	await wait_process_frames(2)
 	var long_panel := long.get_node("%Panel") as Control
 	assert_gt(long_panel.size.y, short_height, "a long line makes the panel taller")
-	assert_eq(MenuFit.find_overflow(long, view), PackedStringArray())
+	assert_eq(await MenuFit.find_overflow_in_views(long), PackedStringArray())
 
 func test_a_dialogue_that_ran_is_freed_once_nothing_holds_it() -> void:
 	var resource := DialogueManager.create_resource_from_text(DIALOGUE_TEXT % "") as DialogueResource
