@@ -87,8 +87,8 @@ text = "To the lookout"
 position = Vector2(0, 40)
 
 [node name="CameraBounds" type="ReferenceRect" parent="."]
-offset_left = -400.0
-offset_top = -260.0
-offset_right = 400.0
-offset_bottom = 260.0
+offset_left = -180.0
+offset_top = -110.0
+offset_right = 180.0
+offset_bottom = 110.0
 script = ExtResource("91_bounds")

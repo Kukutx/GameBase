@@ -41,5 +41,7 @@ shape = SubResource("Circle_interaction")
 
 [node name="Camera" type="Camera2D" parent="."]
 script = ExtResource("90_camera")
+hud_room_top = 40.0
+hud_room_bottom = 40.0
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]

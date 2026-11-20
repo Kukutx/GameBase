@@ -2,10 +2,12 @@ class_name CameraBounds
 extends ReferenceRect
 
 ## The part of a location the view keeps inside: the game cameras
-## (`GameCamera`) in the location show nothing beyond its edges. A location
-## puts one in its scene, beside the player, and sizes it over its map; like
-## any `ReferenceRect` it draws in the editor only, and it takes no mouse
-## input.
+## (`GameCamera`) in the location show nothing beyond its edges, but for the
+## room a camera keeps for its HUD. A location puts one in its scene, beside
+## the player, and sizes it over the ground the player walks, not the backdrop
+## around it: a room smaller than the view then shows whole in its middle,
+## rather than cut at one side with the backdrop at the other. Like any
+## `ReferenceRect` it draws in the editor only, and it takes no mouse input.
 
 ## A limit far enough that the view never reaches it, for a view without bounds.
 const UNBOUNDED := 10000000
