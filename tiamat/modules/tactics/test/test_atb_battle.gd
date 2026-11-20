@@ -89,6 +89,25 @@ func test_a_turn_is_one_move_and_one_action_and_ends_once_both_are_taken() -> vo
 	assert_eq(knight.gauge, 0.0)
 	assert_false(battle.act(knight, strike, Vector2i(4, 2)))
 
+func test_the_turns_to_come_follow_the_gauges() -> void:
+	var battle := _battle()
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(7, 5))
+	assert_eq(battle.get_turn_order(4), [knight, knight, raider, knight] as Array[GridUnit],
+		"speed 50 fills twice while speed 25 fills once, and the first placed goes first on a tie")
+	battle.advance(2.0)
+	assert_eq(battle.get_turn_unit(), knight)
+	assert_eq(battle.get_turn_order(3), [knight, raider, knight] as Array[GridUnit], "after the knight's turn now, as though it moved and acted")
+	for _turn in 2:
+		# As though it moved and acted.
+		knight.has_moved = true
+		knight.has_acted = true
+		assert_true(battle.end_turn(knight))
+		battle.advance(2.0)
+	assert_eq(_started, [knight, knight, raider, knight] as Array[GridUnit], "the turns came as told")
+	raider.health.take(raider.health.maximum)
+	assert_eq(battle.get_turn_order(2), [knight, knight] as Array[GridUnit], "a fallen unit takes no more turns")
+
 func test_the_player_takes_a_move_back_until_the_unit_acts() -> void:
 	var battle := _battle()
 	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(2, 2))

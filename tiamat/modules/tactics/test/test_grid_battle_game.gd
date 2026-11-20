@@ -43,6 +43,14 @@ func test_the_player_moves_strikes_and_wins() -> void:
 	var game := _game()
 	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
 	assert_true(get_tree().paused, "the world waits for the battle")
+	var board := game.get_board()
+	var order := game.battle.get_turn_order(board.turns_shown)
+	var firsts: Dictionary[GridUnit, int] = {}
+	for index in order.size():
+		if not firsts.has(order[index]):
+			firsts[order[index]] = index + 1
+	assert_eq(order.size(), board.turns_shown)
+	assert_eq(board.get_turn_marks(), firsts, "the board numbers the units whose turns come next, each by its first")
 	game.choose_command(0)
 	assert_eq(game.get_mode(), GridBattleGame.Mode.PICK_MOVE)
 	assert_true(game.get_board().choices.has(Vector2i(1, 1)))
