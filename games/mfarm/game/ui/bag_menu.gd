@@ -5,8 +5,10 @@ extends Control
 ## (the bag button or the bag control), and a box's or a shop's stock beside
 ## it. Stacks are dragged between slots; dragged to or from a shop they are
 ## sold or bought through the trade panel, dragged out onto the land they
-## are dropped there. Escape closes what is open. While a box or a shop is
-## open the player stands still.
+## are dropped there. Escape closes what is open, as does the close tag of a
+## box's or a shop's bag, which names the device's own way to close (ESC,
+## the pad's back button, × on touch). While a box or a shop is open the
+## player stands still.
 
 const LOCK := &"mfarm_bag"
 const BAG_COLUMNS := 4
@@ -23,6 +25,7 @@ var _base_key := &""
 var _slots: Array[MFarmSlot] = []
 var _tooltip: MFarmItemTooltip
 var _trade: MFarmTradePanel
+var _escape_label: Label
 
 func _ready() -> void:
 	add_to_group(&"mfarm_bag_menu")
@@ -41,6 +44,7 @@ func _ready() -> void:
 	Bags.bag_changed.connect(_on_bag_changed)
 	Bags.selected_changed.connect(func(_index: int) -> void: _refresh_slots(Bags.PLAYER))
 	Bags.money_changed.connect(_on_money_changed)
+	InputPrompts.input_method_changed.connect(_name_escape.unbind(1))
 	_refresh_slots(Bags.PLAYER)
 	_on_money_changed(Bags.money)
 
@@ -110,6 +114,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		toggle_bag()
 		get_viewport().set_input_as_handled()
 
+## Names the close tag of a box's or a shop's bag as the device in use closes
+## it: the old game's ESC on a keyboard, the pad's back button, × on touch.
+func _name_escape() -> void:
+	if not is_instance_valid(_escape_label):
+		return
+	var keys := not (InputPrompts.using_touch or InputPrompts.using_gamepad)
+	_escape_label.text = "ESC" if keys else InputPrompts.get_action_prompt(&"ui_cancel")
+
 func _open_base(bag_key: StringName) -> void:
 	_base_key = bag_key
 	for child: Node in _base_bag.get_children():
@@ -129,11 +141,12 @@ func _open_base(bag_key: StringName) -> void:
 	escape.size = Vector2(22, 14)
 	escape.pressed.connect(close)
 	MFarmUiArt.place(frame, escape, Vector2(-3, -9))
-	var escape_label := MFarmUiArt.label("ESC", 8, MFarmUiArt.LIGHT_TEXT_COLOR)
-	escape_label.size = escape.size
-	escape_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	escape_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	escape.add_child(escape_label)
+	_escape_label = MFarmUiArt.label("", 8, MFarmUiArt.LIGHT_TEXT_COLOR)
+	_escape_label.size = escape.size
+	_escape_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_escape_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	escape.add_child(_escape_label)
+	_name_escape()
 	for index: int in count:
 		var slot := _make_slot(bag_key, index)
 		MFarmUiArt.place(holder, slot, Vector2(7 + (index % BASE_COLUMNS) * 20, 4 + (index / BASE_COLUMNS) * 20))
