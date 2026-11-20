@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/profile/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"warden_felled"
+display_name = "Warden Felled"
+description = "Defeat an Ember Warden, the guardian of every fifth depth."
