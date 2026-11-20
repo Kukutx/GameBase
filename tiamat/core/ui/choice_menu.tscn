@@ -54,7 +54,18 @@ theme_override_constants/margin_right = 8
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_bottom = 3
 
-[node name="List" type="VBoxContainer" parent="Dim/Panel/Layout/Choices/Margin"]
+[node name="Content" type="VBoxContainer" parent="Dim/Panel/Layout/Choices/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Body" type="Label" parent="Dim/Panel/Layout/Choices/Margin/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="List" type="VBoxContainer" parent="Dim/Panel/Layout/Choices/Margin/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RunTallyData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/run_tally_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"creatures_defeated"
+display_name = "Creatures Defeated"
+order = 20
+best_flag = &"most_creatures_in_a_run"

@@ -39,3 +39,24 @@ msgstr "已获得 %d 次"
 
 msgid "%s ×%d"
 msgstr "%s ×%d"
+
+msgid "Run %d · %s"
+msgstr "第 %d 次出发 · %s"
+
+msgid "Returned"
+msgstr "平安归来"
+
+msgid "Defeated"
+msgstr "战败"
+
+msgid "Abandoned"
+msgstr "中途放弃"
+
+msgid "%s: %d · New best"
+msgstr "%s：%d · 新纪录"
+
+msgid "Boons: %s"
+msgstr "祝福：%s"
+
+msgid "%s in one run: %d"
+msgstr "一次出发中%s：%d"

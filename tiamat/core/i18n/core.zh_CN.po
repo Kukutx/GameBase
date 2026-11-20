@@ -511,6 +511,9 @@ msgstr "解锁后才会显示。"
 msgid "Choose"
 msgstr "选择"
 
+msgid "OK"
+msgstr "确定"
+
 msgid "%s (Won)"
 msgstr "%s（已获胜）"
 

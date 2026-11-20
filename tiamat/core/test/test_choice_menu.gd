@@ -67,3 +67,26 @@ func test_a_choice_listed_twice_shows_once() -> void:
 	assert_eq(menu.get_buttons().size(), 3)
 	assert_eq(menu.get_button(&"first").text, "Floor 1")
 	menu.close()
+
+func test_lines_above_the_choices_say_what_they_are_about() -> void:
+	(func() -> void: await ChoiceMenu.ask(_host, _choices(), "Mine Elevator", &"", "Where to?")).call()
+	var menu := ChoiceMenu.of(_host)
+	assert_eq(menu.get_body(), "Where to?")
+	assert_true((menu.get_node("%Body") as Label).visible)
+	menu.close()
+	(func() -> void: await ChoiceMenu.ask(_host, _choices())).call()
+	assert_eq(menu.get_body(), "")
+	assert_false((menu.get_node("%Body") as Label).visible, "a list without lines shows none")
+	menu.close()
+
+func test_telling_the_player_something_waits_for_ok() -> void:
+	var menu := ChoiceMenu.tell(_host, "Run 3", PackedStringArray(["Depth: 7", "Foes: 12"]))
+	assert_same(menu, ChoiceMenu.of(_host))
+	assert_true(menu.is_open())
+	assert_eq(menu.get_body(), "Depth: 7\nFoes: 12")
+	assert_eq(menu.get_buttons().map(func(button: Button) -> String: return button.text), ["OK"])
+	assert_true(menu.get_button(ChoiceMenu.OK_ID).has_focus())
+	watch_signals(menu)
+	assert_true(menu.choose(ChoiceMenu.OK_ID))
+	assert_signal_emitted_with_parameters(menu, "picked", [ChoiceMenu.OK_ID])
+	assert_false(InputLock.is_locked())

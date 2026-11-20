@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://tiamat/core/world/world_spawn_point.gd" id="2_spawn"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://tiamat/modules/dialogue/dialogue_spot.tscn" id="8_spot"]
 [ext_resource type="Resource" path="res://game/dialogue/camp.dialogue" id="9_camp_dialogue"]
 [ext_resource type="Script" path="res://tiamat/core/camera/camera_bounds.gd" id="91_bounds"]
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/run_summary.gd" id="92_summary"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(480, 20)
@@ -134,3 +135,6 @@ offset_top = -260.0
 offset_right = 400.0
 offset_bottom = 260.0
 script = ExtResource("91_bounds")
+
+[node name="RunSummary" type="Node" parent="."]
+script = ExtResource("92_summary")

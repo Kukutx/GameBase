@@ -2,8 +2,9 @@ extends GutTest
 
 ## Ember Depths' runs: the depth a run reaches and what it raises in the
 ## profile (depth 10 on Heavy damage taken, one more), the shortcuts a run
-## may start at, how long a run lasts, how a floor lays out its enemies from
-## the run's random stream, and when the way on opens.
+## may start at, how long a run lasts, what its report tells, how a floor
+## lays out its enemies from the run's random stream, and when the way on
+## opens.
 
 const DEPTHS_SCENE := preload("res://game/world/depths.tscn")
 const TEST_PROFILE := "user://test_dungeon1_depths/profile.json"
@@ -121,6 +122,7 @@ func test_every_fifth_depth_reached_is_a_shortcut_a_run_may_start_at() -> void:
 	DepthRun.start_run(10)
 	assert_eq(DepthRun.get_depth(), 10)
 	assert_eq(DepthRun.get_run(), 2)
+	assert_eq(RunState.get_tally(DepthRunService.DEPTH_TALLY), 10, "the run's report tells the depth it started at")
 	assert_signal_not_emitted(DepthRun, "depth_reached", "a run that starts at a shortcut does not reach it again")
 	DepthRun.descend()
 	assert_signal_emitted_with_parameters(DepthRun, "depth_reached", [11])
@@ -206,6 +208,24 @@ func test_creatures_defeated_in_every_run_count_toward_slayer() -> void:
 	assert_false(GameProfile.is_unlocked(&"slayer"))
 	GameTriggers.fire(&"CombatEvents.enemy_defeated", {"enemy_id": &"cave_slime", "combat_xp": 1, "position": Vector2.ZERO})
 	assert_true(GameProfile.is_unlocked(&"slayer"))
+
+func test_a_run_tells_the_depth_it_reached_and_the_creatures_it_defeated() -> void:
+	assert_eq(RunTallyData.find(DepthRunService.DEPTH_TALLY).best_flag, DepthRunService.PROFILE_DEEPEST, "the depth tally keeps the profile's deepest depth")
+	DepthRun.start_run()
+	DepthRun.descend()
+	for _enemy: int in 3:
+		GameTriggers.fire(&"CombatEvents.enemy_defeated", {"enemy_id": &"cave_slime", "combat_xp": 1, "position": Vector2.ZERO})
+	DepthRun.return_to_camp()
+	assert_eq(RunState.get_last_report().lines, PackedStringArray(["Depth Reached: 2", "Creatures Defeated: 3"]))
+	assert_eq(GameProfile.get_int(&"most_creatures_in_a_run"), 3)
+	DepthRun.start_run()
+	for _enemy: int in 4:
+		GameTriggers.fire(&"CombatEvents.enemy_defeated", {"enemy_id": &"cave_slime", "combat_xp": 1, "position": Vector2.ZERO})
+	DepthRun.return_to_camp()
+	assert_eq(RunState.get_last_report().lines, PackedStringArray(["Depth Reached: 1", "Creatures Defeated: 4 · New best"]))
+	assert_eq(GameProfile.get_progress(&"ember_rampage"), 4, "the best run counts toward Ember Rampage")
+	GameProfile.set_flag(&"most_creatures_in_a_run", 15)
+	assert_true(GameProfile.is_unlocked(&"ember_rampage"))
 
 func test_what_the_player_gets_goes_to_the_hotbar() -> void:
 	InventoryState.clear()
