@@ -453,7 +453,8 @@ func _assert_core_menus_fit(view: Rect2) -> void:
 	var pause := _pause()
 	pause.hidden_pages.assign(PauseMenu.get_page_ids().filter(func(id: StringName) -> bool: return not [&"fixture_items", &"fixture_skills", &"fixture_creatures", PauseMenu.BONUSES_PAGE].has(id)))
 	pause.open()
-	assert_eq(pause.pages_row.get_child_count(), 4)
+	assert_eq(pause.pages_row.get_children().filter(func(child: Node) -> bool: return child is Button).size(), 4)
+	assert_eq((pause.pages_row as GridContainer).columns, 2, "four pages in two rows of two")
 	pause.tips_button.visible = true
 	pause.achievements_button.visible = true
 	await _layout()

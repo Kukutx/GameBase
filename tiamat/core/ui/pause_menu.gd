@@ -317,9 +317,11 @@ func _offer_pages() -> void:
 	_page_buttons.clear()
 	if pages_row == null:
 		return
+	# The buttons go; what lays them out (`EvenRows`) stays.
 	for child: Node in pages_row.get_children():
-		pages_row.remove_child(child)
-		child.queue_free()
+		if child is Button:
+			pages_row.remove_child(child)
+			child.queue_free()
 	for id: StringName in get_page_ids():
 		if hidden_pages.has(id) or get_page_lines(id).is_empty():
 			continue
