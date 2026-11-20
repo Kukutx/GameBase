@@ -210,38 +210,13 @@ func has_files(slot: int = -1) -> bool:
 ## save of another version, or damaged). A save's summary names its location
 ## (`location_name`, to translate when shown), the seconds played
 ## (`play_seconds`) and what the game adds (`details`, see
-## `register_slot_detail()`).
+## `register_slot_detail()`), as `SaveSlotSummary` tells it.
 func get_slot_summary(slot: int) -> Dictionary:
 	var resolved := clampi(slot, 1, get_slot_count())
 	var candidate := _read_slot(resolved)
 	if candidate.is_empty():
-		return {"slot": resolved, "exists": false, "recoverable": false, "unreadable": has_files(resolved)}
-	var data: Dictionary = candidate["data"]
-	var clock: Dictionary = data["clock"]
-	var day := maxi(SaveValues.whole_number_or(clock.get("day", 1), 1), 1)
-	var source := String(candidate["source"])
-	# A save this build loads names a location of its content.
-	var location := SavePlace.find_location(data)
-	return {
-		"slot": resolved,
-		"exists": true,
-		"unreadable": false,
-		"autosave": bool(candidate["autosave"]),
-		"recoverable": source != "primary",
-		"recovery_source": source,
-		"version": SAVE_VERSION,
-		"game_version": String(data.get("game_version", "")),
-		"engine_version": String(data.get("engine_version", "")),
-		"saved_at_unix": _snapshot_timestamp(data) / 1000,
-		"location_id": String(location.id),
-		"location_name": location.display_name,
-		"play_seconds": GameSessionService.read_play_seconds(data),
-		"day": day,
-		"season": GameCalendar.current().get_season_name(day),
-		"day_of_season": GameCalendar.current().get_day_of_season(day),
-		"minute_of_day": clampi(SaveValues.whole_number_or(clock.get("minute_of_day", 0), 0), 0, GameClock.MINUTES_PER_DAY - 1),
-		"details": _describe_slot(data),
-	}
+		return SaveSlotSummary.without_save(resolved, has_files(resolved))
+	return SaveSlotSummary.of(resolved, candidate, _describe_slot(candidate["data"]))
 
 func _describe_slot(data: Dictionary) -> PackedStringArray:
 	var details := PackedStringArray()

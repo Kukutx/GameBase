@@ -3,7 +3,8 @@ extends GutTest
 ## Where units walk on the field of a command battle (`RtsNavigation`): the
 ## cells an obstacle or the edge closes, the straight line when it is clear,
 ## the way around an obstacle through open cells only, as near as it gets when
-## nothing gets there, and the open point nearest a closed one.
+## nothing gets there, the open point nearest a closed one, and the places of
+## a group sent somewhere together.
 
 func test_an_obstacle_and_the_edge_close_cells() -> void:
 	var navigation := _navigation()
@@ -43,6 +44,22 @@ func test_the_nearest_open_point_of_a_closed_one() -> void:
 	assert_true(navigation.is_open(near))
 	assert_lt(near.distance_to(Vector2(44.0, 10.0)), 20.0)
 	assert_true(navigation.is_open(navigation.get_nearest_open(Vector2(500.0, -30.0))), "off the field too")
+
+func test_a_group_s_places_stand_in_rows_around_the_point_the_nearest_first() -> void:
+	var navigation := RtsNavigation.new(Vector2(200.0, 200.0))
+	assert_eq(navigation.get_formation(0, Vector2(100.0, 100.0), 10.0), [] as Array[Vector2])
+	assert_eq(navigation.get_formation(1, Vector2(100.0, 100.0), 10.0), [Vector2(100.0, 100.0)] as Array[Vector2], "one stands on the point")
+	var places := navigation.get_formation(4, Vector2(100.0, 100.0), 10.0)
+	assert_eq(places.size(), 4)
+	for place: Vector2 in places:
+		assert_almost_eq(place.distance_to(Vector2(100.0, 100.0)), sqrt(50.0), 0.001, "four in a square around it")
+	var nine := navigation.get_formation(9, Vector2(100.0, 100.0), 10.0)
+	assert_eq(nine[0], Vector2(100.0, 100.0), "the nearest place first")
+	for index: int in range(1, nine.size()):
+		assert_gte(nine[index].distance_to(Vector2(100.0, 100.0)), nine[index - 1].distance_to(Vector2(100.0, 100.0)) - 0.001)
+	var walled := _navigation()
+	for place: Vector2 in walled.get_formation(9, Vector2(44.0, 10.0), 10.0):
+		assert_true(walled.is_open(place), "a place in a wall moves to an open point")
 
 # A field 100 by 60 with a wall from the top, 8 wide, 40 down.
 func _navigation() -> RtsNavigation:
