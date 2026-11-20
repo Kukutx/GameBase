@@ -9,9 +9,12 @@ extends Node
 ## A purchase buys as many as the player can afford and carry, up to the number
 ## asked, and takes no money when nothing fits. An item sells at its
 ## `sell_price`, and one without a price cannot be sold. A shop's other offers
-## (`ShopOffer`, such as an animal) buy themselves through `buy_offer()`. The
-## service keeps no state and saves nothing; `purchase_completed`,
-## `offer_purchased` and `sale_completed` announce each trade.
+## (`ShopOffer`, such as an animal) buy themselves through `buy_offer()`. An
+## item a shop sells so many of a day (`ShopData.daily_limits`) sells no more
+## that day: what the player bought of it is kept in `WorldState`
+## (`shop:<shop id>:<item id>`, the day and the count), so it saves with the
+## world. `purchase_completed`, `offer_purchased` and `sale_completed` announce
+## each trade.
 
 signal purchase_completed(shop_id: StringName, item_id: StringName, quantity: int, total: int)
 signal offer_purchased(shop_id: StringName, offer: ShopOffer)
@@ -37,7 +40,11 @@ func _buy_internal(shop: ShopData, item_id: StringName, quantity: int = 1) -> in
 	var unit_price := shop.get_buy_price(item)
 	if unit_price <= 0:
 		return 0
-	var affordable := mini(quantity, Wallet.money / unit_price)
+	var left := get_left_today(shop, item_id)
+	if left == 0:
+		GameEvents.toast("Sold out for today")
+		return 0
+	var affordable := mini(quantity if left < 0 else mini(quantity, left), Wallet.money / unit_price)
 	if affordable <= 0:
 		GameEvents.toast("Not enough money")
 		return 0
@@ -52,9 +59,31 @@ func _buy_internal(shop: ShopData, item_id: StringName, quantity: int = 1) -> in
 		Wallet.add(total)
 		GameEvents.toast("Inventory changed before the purchase completed")
 		return 0
+	if left > 0:
+		WorldState.set_value(_sold_key(shop, item_id), {"day": WorldClock.day, "sold": _sold_today(shop, item_id) + bought})
 	purchase_completed.emit(shop.id, item_id, bought, total)
 	GameEvents.toastf("Bought %s x%d for %dg", [item.display_name, bought, total])
 	return bought
+
+## How many more of `item_id` `shop` sells today: -1 for an item without a
+## daily limit (`ShopData.daily_limits`), else its limit less what the player
+## bought there today, at least 0.
+func get_left_today(shop: ShopData, item_id: StringName) -> int:
+	var limit := shop.get_daily_limit(item_id)
+	if limit <= 0:
+		return -1
+	return maxi(limit - _sold_today(shop, item_id), 0)
+
+func _sold_key(shop: ShopData, item_id: StringName) -> StringName:
+	return StringName("shop:%s:%s" % [shop.id, item_id])
+
+# What the player bought of `item_id` at `shop` today; a record of another day
+# counts none.
+func _sold_today(shop: ShopData, item_id: StringName) -> int:
+	var record: Variant = WorldState.get_value(_sold_key(shop, item_id), {})
+	if not record is Dictionary or int((record as Dictionary).get("day", 0)) != WorldClock.day:
+		return 0
+	return maxi(int((record as Dictionary).get("sold", 0)), 0)
 
 ## Buys one of the shop's `offers`; `context` as `ShopOffer` describes.
 func buy_offer(shop: ShopData, offer: ShopOffer, context: Dictionary) -> bool:

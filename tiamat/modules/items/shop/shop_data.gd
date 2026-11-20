@@ -21,6 +21,11 @@ const KIND := &"shop"
 ## What it sells besides while a condition holds, each a `ShopListing` kept
 ## in the shop's file; an open listing's price takes the place of the stock's.
 @export var listings: Array[ShopListing] = []
+## How many of an item it sells a day, as item id -> count: what the player
+## bought of it there that day counts (`ShopService.get_left_today()`), and a
+## new day brings the full count back. An item it does not name sells without
+## limit.
+@export var daily_limits: Dictionary = {}
 ## What the shop sells besides items, after them (see `ShopOffer`).
 @export var offers: Array[ShopOffer] = []
 
@@ -60,6 +65,22 @@ func get_buy_price(item: ItemData) -> int:
 func has_item(item_id: StringName) -> bool:
 	return get_stock().has(String(item_id))
 
+## How many of `item_id` the shop sells a day (`daily_limits`), or 0 for no
+## limit.
+func get_daily_limit(item_id: StringName) -> int:
+	var limit: Variant = daily_limits.get(String(item_id), daily_limits.get(item_id, 0))
+	return maxi(int(limit), 0) if typeof(limit) == TYPE_INT or typeof(limit) == TYPE_FLOAT else 0
+
+## Whether the shop sells `item_id` in any season or while any of its
+## listings is open.
+func sells_ever(item_id: StringName) -> bool:
+	if stock.has(String(item_id)) or stock.has(item_id):
+		return true
+	for seasonal: Variant in seasonal_stock.values():
+		if seasonal is Dictionary and ((seasonal as Dictionary).has(String(item_id)) or (seasonal as Dictionary).has(item_id)):
+			return true
+	return listings.any(func(listing: ShopListing) -> bool: return listing != null and listing.item_id == item_id)
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if display_name.is_empty():
@@ -83,6 +104,15 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		else:
 			listed[listing.item_id] = listing.price
 	problems.append_array(_find_price_problems(listed, registry, "lists", "listing price"))
+	for raw_id: Variant in daily_limits:
+		var item_id := StringName(String(raw_id))
+		var limit: Variant = daily_limits[raw_id]
+		if registry.get_entry(ItemData.KIND, item_id) == null:
+			problems.append("limits unknown item '%s'" % raw_id)
+		elif typeof(limit) != TYPE_INT or int(limit) <= 0:
+			problems.append("has an invalid daily limit for '%s'" % raw_id)
+		elif not sells_ever(item_id):
+			problems.append("limits '%s', which it never sells" % raw_id)
 	var offer_keys: Dictionary = {}
 	for offer: ShopOffer in offers:
 		if offer == null:
