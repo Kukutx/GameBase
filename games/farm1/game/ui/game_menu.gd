@@ -244,8 +244,9 @@ func _collections_text() -> String:
 		lines.append("")
 	return "\n".join(lines)
 
-# The profile's achievements, which every save shares; a hidden one shows
-# nothing of itself until it is unlocked.
+# The profile's achievements, which every save shares, a locked one that
+# counts toward a goal with how far the player is; a hidden one shows nothing
+# of itself until it is unlocked.
 func _achievement_lines() -> PackedStringArray:
 	var achievements := AchievementData.find_all()
 	var lines := PackedStringArray([""])
@@ -256,7 +257,10 @@ func _achievement_lines() -> PackedStringArray:
 		if achievement.hidden and not unlocked:
 			lines.append("  ○ ???")
 		else:
-			lines.append("  %s %s — %s" % ["✓" if unlocked else "○", tr(achievement.display_name), tr(achievement.description)])
+			var line := "  %s %s — %s" % ["✓" if unlocked else "○", tr(achievement.display_name), tr(achievement.description)]
+			if not unlocked and achievement.counts_progress():
+				line += " (%s)" % AchievementsMenu.progress_text(achievement)
+			lines.append(line)
 	lines[0] = "[b]%s — %d/%d[/b]" % [tr("Achievements"), unlocked_count, achievements.size()]
 	return lines
 

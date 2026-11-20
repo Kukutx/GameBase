@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/profile/achievement_data.gd" id="1_achievement"]
+
+[resource]
+script = ExtResource("1_achievement")
+id = &"generous"
+display_name = "Generous"
+description = "Give 30 gifts, counting every save."
+progress_flag = &"gifts_given"
+goal = 30

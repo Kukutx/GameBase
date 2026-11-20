@@ -2094,6 +2094,30 @@ msgstr "老练农夫"
 msgid "Harvest 100 crops, counting every save."
 msgstr "累计收获 100 份作物（所有存档合计）。"
 
+msgid "Master Angler"
+msgstr "垂钓大师"
+
+msgid "Catch 50 fish, counting every save."
+msgstr "累计钓到 50 条鱼（所有存档合计）。"
+
+msgid "Generous"
+msgstr "慷慨之人"
+
+msgid "Give 30 gifts, counting every save."
+msgstr "累计送出 30 份礼物（所有存档合计）。"
+
+msgid "Prospector"
+msgstr "勘矿人"
+
+msgid "Mine 200 stones and ores, counting every save."
+msgstr "累计开采 200 块石头与矿石（所有存档合计）。"
+
+msgid "Iridium Touch"
+msgstr "铱金之触"
+
+msgid "Upgrade a tool to iridium."
+msgstr "将一件工具升级为铱制。"
+
 msgid "Clear"
 msgstr "晴朗"
 

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_trigger"]
+
+[resource]
+script = ExtResource("1_trigger")
+id = &"achievement_iridium_touch"
+event = &"ProgressionEvents.tool_upgraded"
+condition = "EVENT_ARG tool_upgrade_id iridium_hoe_upgrade iridium_pickaxe_upgrade iridium_sword_upgrade iridium_watering_can_upgrade"
+actions = PackedStringArray("UNLOCK_ACHIEVEMENT iridium_touch")
