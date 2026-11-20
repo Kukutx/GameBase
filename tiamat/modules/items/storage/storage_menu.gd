@@ -5,7 +5,9 @@ extends MenuLayer
 ## item moved across with a press, as many at a time as the amount the player
 ## picks (`amounts`: one, ten, the whole stack). Each list keeps its entry
 ## selected as it changes, so storing or taking again needs no new pick;
-## an item gone from a list leaves the one now in its place selected.
+## an item gone from a list leaves the one now in its place selected. Store
+## matching puts every item the chest already holds, all the player carries
+## of it, onto its stacks (`store_matching()`), tools aside.
 
 ## The amounts one press stores or takes, in the order the amount button steps
 ## through them, the first as the chest opens; 0 is all of the item there is
@@ -20,6 +22,7 @@ extends MenuLayer
 @onready var store_button: Button = $Panel/VBox/Actions/StoreOne
 @onready var take_button: Button = $Panel/VBox/Actions/TakeOne
 @onready var close_button: Button = $Panel/VBox/Actions/Close
+@onready var matching_button: Button = $Panel/VBox/Columns/InventoryColumn/StoreMatching
 
 var _container_id: StringName
 var _display_name := "Storage"
@@ -34,6 +37,7 @@ func _ready() -> void:
 	take_button.pressed.connect(_take_selected)
 	close_button.pressed.connect(close)
 	amount_button.pressed.connect(_next_amount)
+	matching_button.pressed.connect(store_matching)
 	inventory_list.item_selected.connect(_on_inventory_selected)
 	storage_list.item_selected.connect(_on_storage_selected)
 	inventory_list.item_activated.connect(_on_inventory_activated)
@@ -118,6 +122,33 @@ func _take_selected() -> void:
 		GameEvents.toast("Inventory is full")
 	_rebuild()
 
+## Stores all the player carries of every item the chest already holds, but
+## a tool, as far as the chest has room; how many moved.
+func store_matching() -> int:
+	var moved := 0
+	var full := false
+	for item_id: StringName in _matching_items():
+		var held := InventoryState.get_quantity(item_id)
+		var accepted := StorageState.store_item(_container_id, item_id, held, _max_slots)
+		moved += accepted
+		full = full or accepted < held
+	if full:
+		GameEvents.toast("Storage is full")
+	_rebuild()
+	return moved
+
+# The items the player carries that the chest holds too, tools aside.
+func _matching_items() -> Array[StringName]:
+	var items: Array[StringName] = []
+	if _container_id == &"":
+		return items
+	for entry: Dictionary in StorageState.get_entries(_container_id):
+		var item_id := StringName(String(entry["id"]))
+		var item := ItemData.find(item_id)
+		if item != null and not item.is_tool() and InventoryState.get_quantity(item_id) > 0:
+			items.append(item_id)
+	return items
+
 # Steps to the next amount, keeping the lists and the focus where they are.
 func _next_amount() -> void:
 	if amounts.size() < 2:
@@ -147,6 +178,9 @@ func _refresh_buttons() -> void:
 	take_button.text = tr("← Take %d") % amount if amount > 0 else tr("← Take all")
 	store_button.disabled = _selected_item_id(inventory_list) == &""
 	take_button.disabled = _selected_item_id(storage_list) == &""
+	matching_button.disabled = _matching_items().is_empty()
+	if matching_button.disabled and matching_button.has_focus():
+		MenuLayer.focus(inventory_list if inventory_list.item_count > 0 else close_button)
 	for button: Button in [store_button, take_button]:
 		if button.disabled and button.has_focus():
 			var other := storage_list if button == store_button else inventory_list
