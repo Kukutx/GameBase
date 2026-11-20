@@ -250,6 +250,8 @@ func _collections_text() -> String:
 	lines.append("")
 	lines.append_array(_achievement_lines())
 	lines.append("")
+	# An item not yet collected stays a mystery but for where to find it.
+	var hints := CollectionService.gather_hints()
 	for category: StringName in CollectionService.CATEGORIES:
 		var entries := CollectionState.get_category_entries(category)
 		lines.append("[b]%s — %d/%d[/b]" % [CollectionState.get_category_name(category), CollectionState.get_discovered_count(category), entries.size()])
@@ -257,7 +259,8 @@ func _collections_text() -> String:
 			if bool(entry["discovered"]):
 				lines.append("  • %s  x%d" % [tr(String(entry["display_name"])), entry["count"]])
 			else:
-				lines.append("  • ???")
+				var hint := CollectionService.get_hint(StringName(String(entry["id"])), hints)
+				lines.append("  • ???" if hint.is_empty() else "  • ??? — %s" % hint)
 		lines.append("")
 	return "\n".join(lines)
 

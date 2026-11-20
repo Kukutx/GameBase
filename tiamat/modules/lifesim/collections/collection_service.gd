@@ -147,6 +147,21 @@ func get_category_entries(category: StringName) -> Array[Dictionary]:
 		})
 	return result
 
+## The ways the life-sim gives each item (`LifesimModule.find_item_sources()`),
+## gathered once for a whole log's hints (`get_hint()`).
+static func gather_hints() -> ItemSources:
+	var hints := ItemSources.new()
+	if ContentRegistry.active != null:
+		LifesimModule.find_item_sources(ContentRegistry.active, hints)
+	return hints
+
+## A hint at where to find `item_id`, for a log that keeps an item not yet
+## collected a mystery: the first way the life-sim gives it ("Caught at River
+## (Spring · 06:00–20:00)"), of `hints` (`gather_hints()`); "" for none.
+static func get_hint(item_id: StringName, hints: ItemSources = null) -> String:
+	var ways := (hints if hints != null else gather_hints()).get_ways(item_id)
+	return ways[0] if not ways.is_empty() else ""
+
 func get_summary() -> String:
 	var parts := PackedStringArray()
 	for category: StringName in CATEGORIES:

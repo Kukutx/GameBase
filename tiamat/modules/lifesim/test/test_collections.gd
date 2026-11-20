@@ -90,6 +90,12 @@ func test_collection_catalog_lists_what_each_kind_of_content_yields() -> void:
 	assert_eq(CollectionState.get_total_ids(CollectionService.FORAGE), [&"fixture_berry"])
 	assert_eq(CollectionState.get_total_ids(CollectionService.SHIPPED), [&"fixture_berry", &"fixture_radish"], "tools, quest items and items without a price are not shipped")
 
+func test_an_item_not_yet_collected_hints_where_to_find_it() -> void:
+	var hints := CollectionService.gather_hints()
+	assert_eq(CollectionService.get_hint(&"fixture_trout", hints), "Caught while fishing (06:00–22:00)")
+	assert_eq(CollectionService.get_hint(&"fixture_pebble", hints), "Mined from Rock")
+	assert_eq(CollectionService.get_hint(&"fixture_rod", hints), "", "nothing the life-sim gives")
+
 func test_collection_sanitizes_malformed_nested_counts_and_repairs_on_record() -> void:
 	WorldState.set_value(CollectionService.STATE_KEY, {
 		"crops": {"fixture_radish": {"bad": true}, "fixture_gourd": -5},
