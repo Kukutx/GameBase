@@ -52,6 +52,19 @@ func get_factions() -> Array[StringName]:
 func remove_faction(faction: StringName) -> void:
 	_queue = _queue.filter(func(arrival: Arrival) -> bool: return arrival.faction != faction)
 
+## Places the unit of `arrival` in `battle`, leading its side as it does, in
+## its cell or the open cell nearest it that no unit stands in; null while
+## every cell is taken.
+static func place(battle: AtbBattle, arrival: Arrival) -> GridUnit:
+	var grid := battle.grid
+	for reach: int in maxi(grid.size.x, grid.size.y) * 2:
+		for cell: Vector2i in grid.cells_in_range(arrival.cell, reach, reach):
+			if grid.is_open(cell) and battle.get_unit_at(cell) == null:
+				var unit := battle.add_unit(arrival.data, arrival.faction, cell)
+				unit.leader = arrival.leader
+				return unit
+	return null
+
 ## Takes the units due by `time` off the way, the soonest first.
 func take_due(time: float) -> Array[Arrival]:
 	var due: Array[Arrival] = []

@@ -4,8 +4,9 @@ extends RefCounted
 ## A unit in a grid battle (`AtbBattle`): what kind it is, its side, its cell,
 ## its health and its time gauge, what it has done on its turn, which of its
 ## actions still recharge (`BattleActionData.recharge_turns`), the boosts on
-## its attack and defense (`BattleActionData.boosts`), and whether it leads
-## its side or fled the battle.
+## its attack and defense (`BattleActionData.boosts`), the afflictions on it
+## (`afflictions`, ticking in battle time), and whether it leads its side or
+## fled the battle.
 
 ## The stats a boost changes (`BattleActionData.boosts`).
 const ATTACK := &"attack"
@@ -30,6 +31,8 @@ var has_moved := false
 var has_acted := false
 ## How many turns it has started.
 var turns_taken := 0
+## The afflictions on it, which `AtbBattle` has tick in battle time.
+var afflictions := Afflictions.new()
 # action id -> the turn it may take that action again on.
 var _ready_on: Dictionary[StringName, int] = {}
 # action id -> the boosts of that action on it, and the last of its turns
@@ -102,6 +105,20 @@ func get_boost_turns() -> int:
 func boost(action: BattleActionData) -> void:
 	if not action.boosts.is_empty():
 		_boosts[action.id] = {"boosts": action.boosts, "until": turns_taken + action.boost_turns}
+
+## Lays `affliction` on it from a hit of `from_faction` (`Afflictions.lay()`):
+## false when it is not in the battle, the affliction is null or its kind is
+## immune to it (`BattleUnitData.immune_to`).
+func afflict(affliction: AfflictionData, from_faction: StringName) -> bool:
+	if affliction == null or not can_be_afflicted(affliction):
+		return false
+	afflictions.lay(affliction, from_faction)
+	return true
+
+## Whether `affliction` would take hold of it: it is in the battle and its
+## kind is not immune to it.
+func can_be_afflicted(affliction: AfflictionData) -> bool:
+	return affliction != null and is_alive() and not data.immune_to.has(affliction.id)
 
 ## The share of its gauge filled, from 0 to 1.
 func get_gauge_fraction() -> float:

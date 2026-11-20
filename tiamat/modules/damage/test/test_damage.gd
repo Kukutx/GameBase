@@ -1,8 +1,8 @@
 extends GutTest
 
 ## The shared pieces of every fight: health (`Health`), a hit (`Damage`), the
-## sides that hurt each other (`FactionData`) and a time limit
-## (`BattleTimeLimit`).
+## afflictions on a thing (`Afflictions`), the sides that hurt each other
+## (`FactionData`) and a time limit (`BattleTimeLimit`).
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 
@@ -73,3 +73,34 @@ func test_a_time_limit_runs_out_for_the_side_that_holds_out() -> void:
 	assert_true(limit.wins(FactionData.PLAYER) and limit.wins(&"fixture_guard"), "the player's side, allies and all")
 	assert_false(limit.wins(FactionData.MONSTERS))
 	assert_eq(BattleTimeLimit.new(-5.0, FactionData.MONSTERS).seconds, 0.0)
+
+func test_afflictions_tick_last_anew_when_laid_again_and_stop_once_lifted() -> void:
+	var poison := AfflictionData.new()
+	poison.id = &"fixture_poison"
+	poison.display_name = "Poison"
+	poison.seconds = 3.0
+	poison.tick_seconds = 1.0
+	poison.tick_damage = 2
+	var on := Afflictions.new()
+	var ticks: Array = []
+	var record := func(affliction: AfflictionData, tick: Damage) -> void: ticks.append([affliction.id, tick.amount, tick.faction, tick.knockback])
+	assert_eq(on.get_next_tick(), INF, "none on it")
+	assert_false(on.lay(null))
+	assert_true(on.lay(poison, FactionData.MONSTERS), "it takes hold")
+	assert_eq(on.get_all(), [poison] as Array[AfflictionData])
+	assert_eq(on.get_next_tick(), 1.0)
+	on.advance(0.5, record)
+	assert_eq(ticks.size(), 0)
+	assert_false(on.lay(poison, FactionData.MONSTERS), "laid again, it was on already")
+	assert_almost_eq(on.get_next_tick(), 0.5, 0.0001, "its next tick still due when it was")
+	on.advance(1.0, record)
+	assert_eq(ticks, [[&"fixture_poison", 2, FactionData.MONSTERS, Vector2.ZERO]], "its damage, from the side that laid it, with no push")
+	on.advance(5.0, record)
+	assert_eq(ticks.size(), 3, "three ticks from the second laying, a long step taking each due in it")
+	assert_true(on.is_empty(), "then it wears off")
+	assert_false(on.has(&"fixture_poison"))
+	on.lay(poison)
+	on.advance(5.0, func(_affliction: AfflictionData, _tick: Damage) -> void:
+		ticks.append(null)
+		on.clear())
+	assert_eq(ticks.size(), 4, "a tick that lifts the rest, a defeat, ends it")

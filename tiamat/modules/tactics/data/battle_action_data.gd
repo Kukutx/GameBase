@@ -12,7 +12,9 @@ extends ContentEntry
 ## the foes it leaves standing (`delay`), so their turns come later. Any may
 ## boost the attack or defense of the units it reaches and leaves standing
 ## (`boosts`) for some of their turns: a blessing on its own side, a curse on
-## its foes.
+## its foes. One that does damage may lay an affliction on the foes it leaves
+## standing (`affliction_id`), a poison that takes their health on its ticks in
+## battle time.
 
 const KIND := &"battle_action"
 
@@ -47,6 +49,10 @@ enum Effect {
 ## when it does damage; empty, none.
 @export var boosts: Dictionary[StringName, int] = {}
 @export_range(1, 9) var boost_turns := 2
+## What it lays on each foe it hits and leaves standing (`AfflictionData`,
+## `GridUnit.afflict()`): a poisoned dart; empty, nothing. Only an action that
+## does damage lays one.
+@export var affliction_id: StringName
 
 ## The action with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> BattleActionData:
@@ -70,8 +76,12 @@ func amount_for(user: GridUnit, target: GridUnit) -> int:
 		return power
 	return maxi(power + user.get_attack() - target.get_defense(), 1)
 
-func find_problems(_registry: ContentRegistry) -> PackedStringArray:
+func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
+	if affliction_id != &"" and not registry.has_entry(AfflictionData.KIND, affliction_id):
+		problems.append("lays unknown affliction '%s'" % affliction_id)
+	elif affliction_id != &"" and effect == Effect.HEAL:
+		problems.append("lays an affliction on the units it heals")
 	if display_name.is_empty():
 		problems.append("has no display name")
 	if min_range > max_range:

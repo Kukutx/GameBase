@@ -141,3 +141,9 @@ msgstr "坚守 %d 秒战斗时间。"
 
 msgid "Win within %d seconds of battle."
 msgstr "须在 %d 秒战斗时间内取胜。"
+
+msgid "Afflicted: %s"
+msgstr "异常状态：%s"
+
+msgid "%s takes %d from %s."
+msgstr "%s 受到 %d 点伤害（%s）。"

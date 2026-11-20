@@ -2,8 +2,8 @@ extends GutTest
 
 ## The battle at the ford, the war table's: its map and units hold, the
 ## battle comes to an end when both sides fight it on their own, the
-## stronger actions recharge, and the cleric's prayer hardens those it
-## reaches.
+## stronger actions recharge, the cleric's prayer hardens those it reaches,
+## and the slinger's firepots leave who they hit burning.
 
 func test_the_ford_map_sets_up_both_sides_across_the_river() -> void:
 	var map := BattleMapData.find(&"border_ford")
@@ -59,3 +59,22 @@ func test_a_prayer_gives_those_it_reaches_1_more_defense_through_two_turns() -> 
 	assert_eq([cleric.get_defense(), swordsman.get_defense(), archer.get_defense()], [2, 4, 2], "each 1 more")
 	assert_eq(swordsman.get_boost_turns(), 2)
 	assert_eq(battle.get_unit_at(Vector2i(1, 2)).get_defense(), 3, "the swordsman out of its reach is as it was")
+
+func test_a_firepot_leaves_who_it_hits_and_leaves_standing_burning() -> void:
+	var battle := AtbBattle.from_map(BattleMapData.find(&"border_ford"))
+	var slinger: GridUnit = battle.units.filter(func(unit: GridUnit) -> bool: return unit.data.id == &"slinger")[0]
+	var swordsman: GridUnit = battle.units.filter(func(unit: GridUnit) -> bool: return unit.data.id == &"swordsman")[0]
+	var firepot := BattleActionData.find(&"firepot")
+	var burning := AfflictionData.find(&"burning")
+	assert_eq(burning.find_problems(ContentDB), PackedStringArray())
+	assert_eq([burning.get_ticks(), burning.tick_damage, burning.tick_seconds], [2, 1, 2.0], "1 health every two seconds of battle time, twice")
+	swordsman.cell = slinger.cell + Vector2i(-2, 0)
+	# The slinger's turn, as the player's, so it waits for this command.
+	slinger.player_controlled = true
+	slinger.gauge = AtbBattle.GAUGE_FULL
+	battle.call("_on_gauge_full", slinger)
+	assert_eq(battle.get_turn_unit(), slinger)
+	var told := battle.forecast(slinger, firepot, swordsman.cell).filter(func(hit: Dictionary) -> bool: return hit["unit"] == swordsman)
+	assert_eq(told[0].get("affliction"), burning, "the forecast tells it")
+	assert_true(battle.act(slinger, firepot, swordsman.cell))
+	assert_true(swordsman.afflictions.has(&"burning"))
