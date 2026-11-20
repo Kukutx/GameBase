@@ -14,7 +14,8 @@ extends GutTest
 ## problem; the player's choice of speed speeds the game's; a selection of
 ## one kind tells what it is strong against, what it inflicts and whether it
 ## cures, and an
-## affliction rings its unit as it takes health.
+## affliction rings its unit as it takes health; what to do shows whole
+## beside the clock and the commands.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
@@ -116,6 +117,23 @@ func test_a_time_limit_is_told_counted_down_and_lost_once_it_runs_out() -> void:
 	var result: MiniGameResult = outcome["result"]
 	assert_false(result.success, "the raider stood when time ran out")
 	assert_eq(_ended, [[&"fixture_meadow", false]])
+
+func test_what_to_do_shows_whole_beside_the_clock_and_the_commands() -> void:
+	# The line sat between the clock and the command buttons, which cut it to
+	# "Click or dra" in a time-limited battle.
+	var map := RtsMapData.find(&"fixture_meadow")
+	map.time_limit = 30.0
+	map.time_faction_id = FactionData.MONSTERS
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	await get_tree().process_frame
+	var info: Label = game.get("_info")
+	assert_eq(info.text, tr("Click or drag a box to select your units."))
+	var font := info.get_theme_font(&"font")
+	var width := font.get_string_size(info.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, info.get_theme_font_size(&"font_size")).x
+	assert_gte(info.size.x, width, "the line has room for all it says")
+	for button: Button in game.get("_buttons"):
+		assert_true(button.is_visible_in_tree(), "%s stays in view" % button.text)
 
 func test_units_that_arrive_are_told() -> void:
 	var map := RtsMapData.find(&"fixture_meadow")
