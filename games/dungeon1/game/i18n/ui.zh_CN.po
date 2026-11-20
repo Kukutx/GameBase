@@ -438,3 +438,18 @@ msgstr "精英猎手"
 
 msgid "Defeat 10 elite creatures, counting every run."
 msgstr "击败 10 只精英怪物，所有冒险累计。"
+
+msgid "Warden's Hoard"
+msgstr "守卫宝藏"
+
+msgid "Found in chests in the depths"
+msgstr "深处的宝箱中找到"
+
+msgid "Chests Opened"
+msgstr "开启的宝箱"
+
+msgid "Treasure Hunter"
+msgstr "寻宝者"
+
+msgid "Open 15 chests in the depths, counting every run."
+msgstr "在深处开启 15 个宝箱，所有冒险累计。"

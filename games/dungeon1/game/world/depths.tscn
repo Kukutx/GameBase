@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="2_tier"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" path="res://tiamat/modules/roguelite/runs/boon_altar.tscn" id="6_altar"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/elite_odds.gd" id="7_elite_odds"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/hazard_spread.gd" id="8_vents"]
+[ext_resource type="Resource" path="res://game/depths/chest_loot.tres" id="9_chest_loot"]
+[ext_resource type="Resource" path="res://game/depths/hoard_loot.tres" id="10_hoard_loot"]
 
 [sub_resource type="Resource" id="Tier_slime"]
 script = ExtResource("2_tier")
@@ -65,6 +67,8 @@ script = ExtResource("1_floor")
 enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_archer"), SubResource("Tier_wisp"), SubResource("Tier_warden")])
 elite_odds = SubResource("EliteOdds_depths")
 vents = SubResource("HazardSpread_vents")
+chest_loot = ExtResource("9_chest_loot")
+hoard_loot = ExtResource("10_hoard_loot")
 camp_location_id = &"camp"
 camp_spawn_id = &"from_depths"
 

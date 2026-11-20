@@ -73,9 +73,10 @@ func _physics_process(delta: float) -> void:
 		_hurt_what_stands_here()
 	queue_redraw()
 
-## Adds `hazard` to `parent` under its actors: before its first child that is
-## a `CharacterBody2D` (the player, a creature), else last.
-static func add_under_actors(parent: Node, hazard: Hazard) -> void:
+## Adds `hazard`, or anything else that lies on the ground (a chest), to
+## `parent` under its actors: before its first child that is a
+## `CharacterBody2D` (the player, a creature), else last.
+static func add_under_actors(parent: Node, hazard: Node2D) -> void:
 	parent.add_child(hazard)
 	for child: Node in parent.get_children():
 		if child is CharacterBody2D:

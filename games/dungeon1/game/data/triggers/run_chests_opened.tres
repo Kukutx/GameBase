@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"run_chests_opened"
+event = &"ItemsEvents.chest_opened"
+condition = "RUN_ACTIVE"
+actions = PackedStringArray("ADD_RUN_TALLY chests_opened")

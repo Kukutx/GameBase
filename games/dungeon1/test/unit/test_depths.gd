@@ -262,6 +262,59 @@ func test_from_the_third_depth_ember_vents_flare_clear_of_the_ways_in_and_on() -
 		again.append(vent.position)
 	assert_eq(again, spots, "the same run lays out the same vents")
 
+func test_now_and_then_a_floor_holds_a_chest_sealed_until_it_is_cleared() -> void:
+	InventoryState.clear()
+	DepthRun.start_run()
+	var depth_floor: DepthFloor = null
+	# A floor of this run that holds one, not a guarded depth's.
+	for depth: int in [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14]:
+		DepthRun.track.set_depth(depth)
+		depth_floor = _enter_floor()
+		if depth_floor.get_chest() != null:
+			break
+	var chest := depth_floor.get_chest()
+	assert_not_null(chest, "some floors hold a chest")
+	assert_eq(chest.display_name, "Chest")
+	assert_eq(chest.loot, depth_floor.chest_loot)
+	assert_eq(chest.level, DepthRun.get_depth(), "what it holds is of its depth")
+	assert_true(chest.locked, "sealed while creatures stand")
+	assert_false(chest.interactable.enabled)
+	assert_lt(chest.get_index(), depth_floor.get_node("Player").get_index(), "under the player")
+	for way: String in ["ArrivalSpawn", "Stairs", "Rope", "EmberAltar"]:
+		assert_gte(chest.position.distance_to((depth_floor.get_node(way) as Node2D).position), DepthFloor.VENT_CLEARANCE, "clear of the ways in and on and the altar")
+	for vent: Hazard in depth_floor.get_vents():
+		assert_gte(chest.position.distance_to(vent.position), DepthFloor.VENT_CLEARANCE, "and of the vents")
+	var contents := chest.get_contents()
+	assert_eq(contents.items.size(), 2, "two finds")
+	assert_gt(contents.money, 0, "and money")
+	var again := _enter_floor().get_chest()
+	assert_eq([again.position, again.get_contents().items, again.get_contents().money], [chest.position, contents.items, contents.money], "the same run lays out the same chest")
+	for enemy: HostileCreature in depth_floor.get_enemies():
+		enemy.take_damage(enemy.get_max_health())
+	await get_tree().process_frame
+	assert_false(chest.locked, "a cleared floor unseals it")
+	var money := Wallet.money
+	var taken := chest.open()
+	assert_eq(Wallet.money, money + taken.money)
+	assert_true(chest.is_emptied())
+	assert_eq(RunState.get_tally(&"chests_opened"), 1, "the run counts it")
+	assert_eq(GameProfile.get_progress(&"treasure_hunter"), 1, "toward Treasure Hunter, counting every run")
+	assert_true(ItemSources.describe(&"health_potion").has(tr("Found in chests in the depths")), "a way to get what it holds")
+
+func test_a_guarded_depth_always_holds_the_wardens_hoard() -> void:
+	DepthRun.start_run()
+	DepthRun.track.set_depth(5)
+	var depth_floor := _enter_floor()
+	var hoard := depth_floor.get_chest()
+	assert_not_null(hoard)
+	assert_eq(hoard.display_name, "Warden's Hoard")
+	assert_eq(hoard.loot, depth_floor.hoard_loot)
+	assert_true(hoard.locked, "sealed while the warden stands")
+	assert_gte(hoard.get_contents().money, 56, "richer than a chest, and the richer the deeper")
+	DepthRun.track.set_depth(10)
+	assert_eq(_enter_floor().get_chest().display_name, "Warden's Hoard", "at every guarded depth")
+	assert_eq(depth_floor.find_scene_problems(ContentDB, null), PackedStringArray(), "what the chests hold exists")
+
 func test_a_floor_spawns_only_the_tiers_its_depth_reaches() -> void:
 	DepthRun.start_run()
 	for enemy: HostileCreature in _enter_floor().get_enemies():
