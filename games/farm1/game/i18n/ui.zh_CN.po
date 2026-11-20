@@ -399,6 +399,12 @@ msgstr "虚空史莱姆"
 msgid "Ancient Slime"
 msgstr "远古史莱姆"
 
+msgid "Slime King"
+msgstr "史莱姆之王"
+
+msgid "Void Monarch"
+msgstr "虚空君主"
+
 msgid "Stone Rock"
 msgstr "岩石"
 
@@ -2120,6 +2126,18 @@ msgstr "铱金之触"
 
 msgid "Upgrade a tool to iridium."
 msgstr "将一件工具升级为铱制。"
+
+msgid "Crown of Gel"
+msgstr "凝胶王冠"
+
+msgid "Defeat the Slime King, the guardian of the mine's 25th and 50th floors."
+msgstr "击败史莱姆之王——矿洞第 25 层与第 50 层的守卫。"
+
+msgid "Into the Void"
+msgstr "深入虚空"
+
+msgid "Defeat the Void Monarch, who guards every 25th floor of the mine from the 75th down."
+msgstr "击败虚空君主——自第 75 层起每隔 25 层镇守矿洞的守卫。"
 
 msgid "Clear"
 msgstr "晴朗"

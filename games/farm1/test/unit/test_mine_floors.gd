@@ -248,3 +248,48 @@ func test_floor_one_twenty_uses_ancient_slimes_and_never_unlocks_deeper_ladder()
 	mine.call("_refresh_ladder")
 	assert_true(mine.is_floor_cleared())
 	assert_false((mine.get_node("DeepLadder") as MineLadder).unlocked)
+
+func test_a_slime_king_and_then_a_void_monarch_guard_every_twenty_fifth_floor() -> void:
+	var table := MineState.floor_table
+	for floor: int in [25, 50]:
+		assert_eq(table.get_guardian_ids(floor), [&"slime_king"] as Array[StringName], "floor %d" % floor)
+	for floor: int in [75, 100]:
+		assert_eq(table.get_guardian_ids(floor), [&"void_monarch"] as Array[StringName], "floor %d" % floor)
+	for floor: int in [2, 20, 24, 26, 40, 60, 90, 120]:
+		assert_eq(table.get_guardian_ids(floor), [] as Array[StringName], "floor %d" % floor)
+	assert_gt(EnemyData.find(&"slime_king").max_health, EnemyData.find(&"red_slime").max_health, "stronger than the floors it guards")
+	assert_gt(EnemyData.find(&"void_monarch").max_health, EnemyData.find(&"void_slime").max_health)
+
+func test_a_guardian_bars_the_ladder_until_it_falls() -> void:
+	MineState.set_floor(25)
+	var mine := (load("res://game/world/old_mine.tscn") as PackedScene).instantiate() as MineFloorController
+	add_child_autofree(mine)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var guardians := mine.get_generated_guardians()
+	assert_eq(guardians.size(), 1)
+	assert_eq(guardians[0].data.id, &"slime_king")
+	assert_eq(String(guardians[0].name), "GeneratedGuardian01")
+	assert_true(mine.get_generated_enemies().has(guardians[0]))
+	assert_eq(mine.get_place_detail(), "Floor 25", "the HUD tells the floor")
+	for rock: MiningNode in mine.get_generated_rocks():
+		rock.load_state_data({"durability_left": 0, "depleted": true, "depleted_day": WorldClock.day})
+	for enemy: HostileCreature in mine.get_generated_enemies():
+		if enemy != guardians[0]:
+			enemy.load_state_data({"health": 0, "defeated": true, "defeated_day": WorldClock.day})
+	mine.call("_refresh_ladder")
+	assert_false((mine.get_node("DeepLadder") as MineLadder).unlocked, "the guardian still stands")
+	guardians[0].load_state_data({"health": 0, "defeated": true, "defeated_day": WorldClock.day})
+	mine.call("_refresh_ladder")
+	assert_true((mine.get_node("DeepLadder") as MineLadder).unlocked)
+	assert_null(mine.get_standing_guardian())
+
+func test_every_mine_enemy_looks_like_no_other() -> void:
+	var looks: Dictionary[String, StringName] = {}
+	var fallbacks: Dictionary[Color, StringName] = {}
+	for enemy: EnemyData in EnemyData.find_all():
+		var look := "%s %s" % [enemy.sprite_path, enemy.sprite_tint]
+		assert_false(looks.has(look), "%s shares its look with %s" % [enemy.id, looks.get(look, &"")])
+		assert_false(fallbacks.has(enemy.fallback_color), "%s shares its fallback colour with %s" % [enemy.id, fallbacks.get(enemy.fallback_color, &"")])
+		looks[look] = enemy.id
+		fallbacks[enemy.fallback_color] = enemy.id

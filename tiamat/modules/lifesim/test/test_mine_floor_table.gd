@@ -22,6 +22,7 @@ func before_each() -> void:
 		_rock(&"fixture_gold", 20),
 		_enemy(&"fixture_slime"),
 		_enemy(&"fixture_deep_slime"),
+		_enemy(&"fixture_king"),
 	])
 	MineState.floor_table = null
 	WorldState.clear()
@@ -102,6 +103,29 @@ func test_each_floor_spawns_the_enemy_of_the_deepest_tier_it_reached() -> void:
 	assert_gt(floor20.size(), 0)
 	for entry: Dictionary in floor20:
 		assert_eq(String(entry["kind"]), "fixture_deep_slime")
+
+func test_a_guarded_floor_holds_its_guardian_furthest_from_the_way_in() -> void:
+	var king := _enemy_tier(&"fixture_king", 10)
+	king.guardian_every = 10
+	var table := _table(&"fixture_stone", [], [_enemy_tier(&"fixture_slime", 1), king])
+	MineState.floor_table = table
+	assert_eq(table.get_guardian_ids(20), [&"fixture_king"] as Array[StringName])
+	assert_eq(table.get_guardian_ids(21), [] as Array[StringName])
+	assert_eq(table.get_enemy_id(20), &"fixture_slime", "a guardian is no ordinary enemy")
+	var plain: Array = MineState.generate_floor_layout(19)["enemies"]
+	var guarded: Array = MineState.generate_floor_layout(20)["enemies"]
+	for entry: Dictionary in plain:
+		assert_false(entry.has("guardian"))
+	assert_eq(guarded.size(), 1 + plain.size() / 2, "the guardian and half the ordinary enemies")
+	var guardian: Dictionary = guarded[0]
+	assert_eq(String(guardian["kind"]), "fixture_king")
+	assert_true(bool(guardian["guardian"]))
+	assert_eq(String(guardian["persistent_id"]), "mine_f020_guardian_01")
+	var layout := MineState.generate_floor_layout(20)
+	var distance := (guardian["position"] as Vector2).distance_to(MineRunState.ENTRANCE)
+	for entry: Dictionary in layout["rocks"] + guarded.slice(1):
+		assert_lte((entry["position"] as Vector2).distance_to(MineRunState.ENTRANCE), distance, "it stands furthest in")
+	assert_eq(MineState.generate_floor_layout(20), layout, "the same on every visit")
 
 func test_a_floor_table_reports_ids_that_are_not_content() -> void:
 	var table := _table(&"fixture_stone", [_rock_tier(&"fixture_gold", 0.1, 0.2)], [_enemy_tier(&"fixture_slime", 1)])

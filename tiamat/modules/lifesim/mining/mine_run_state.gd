@@ -10,7 +10,10 @@ extends Node
 ## `CHECKPOINT_STEP`th floor down to the deepest.
 ##
 ## A floor's layout comes from the world's seed (`DepthTrack.stream()`), so the
-## same floor of the same world always has the same rocks and enemies.
+## same floor of the same world always has the same rocks and enemies. A floor
+## that a guardian tier guards (`MineFloorTable.get_guardian_ids()`) holds its
+## guardians, furthest from the way in, and half the ordinary enemies; the
+## layout lists them first among its enemies, marked `"guardian": true`.
 ## `deepest_floor_changed` fires when the player goes deeper than ever before,
 ## their first entry to floor 1 included, which quests follow.
 
@@ -90,7 +93,25 @@ func generate_floor_layout(floor: int) -> Dictionary:
 	var enemy_kind := floor_table.get_enemy_id(resolved) if floor_table != null else StringName()
 	if enemy_kind.is_empty():
 		enemy_count = 0
-	var positions := rng.scatter(FLOOR_AREA, rock_count + enemy_count, SPACING, PackedVector2Array(), Vector2(8, 8), _is_clear_of_doorways, 64)
+	var guardian_kinds: Array[StringName] = []
+	if floor_table != null:
+		guardian_kinds = floor_table.get_guardian_ids(resolved)
+	if not guardian_kinds.is_empty():
+		enemy_count = int(enemy_count / 2)
+	var scattered := rng.scatter(FLOOR_AREA, rock_count + enemy_count + guardian_kinds.size(), SPACING, PackedVector2Array(), Vector2(8, 8), _is_clear_of_doorways, 64)
+	var positions: Array[Vector2] = []
+	positions.assign(Array(scattered))
+	if not guardian_kinds.is_empty():
+		# Guardians wait deepest in the floor, the furthest points from the way in.
+		positions.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_squared_to(ENTRANCE) > b.distance_squared_to(ENTRANCE))
+	for index in range(guardian_kinds.size()):
+		enemies.append({
+			"kind": String(guardian_kinds[index]),
+			"position": positions[index],
+			"persistent_id": "mine_f%03d_guardian_%02d" % [resolved, index + 1],
+			"guardian": true,
+		})
+	var first := guardian_kinds.size()
 	for index in range(rock_count):
 		var roll := rng.randf()
 		var kind := default_rock
@@ -110,13 +131,13 @@ func generate_floor_layout(floor: int) -> Dictionary:
 					break
 		rocks.append({
 			"kind": String(kind),
-			"position": positions[index],
+			"position": positions[first + index],
 			"persistent_id": "mine_f%03d_rock_%02d" % [resolved, index + 1],
 		})
 	for index in range(enemy_count):
 		enemies.append({
 			"kind": String(enemy_kind),
-			"position": positions[rock_count + index],
+			"position": positions[first + rock_count + index],
 			"persistent_id": "mine_f%03d_enemy_%02d" % [resolved, index + 1],
 		})
 	return {"floor": resolved, "rocks": rocks, "enemies": enemies}

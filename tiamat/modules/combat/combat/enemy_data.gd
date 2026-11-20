@@ -5,6 +5,9 @@ const KIND := &"enemy"
 
 @export var display_name: String = "Enemy"
 @export var sprite_path: String
+## Multiplies the colours of the `sprite_path` art: one sheet in another
+## palette serves another enemy (a cave slime from a green slime's sheet).
+@export var sprite_tint := Color.WHITE
 ## The colour of the shape an enemy is drawn as while it has no `sprite_path` art.
 @export var fallback_color := Color(0.35, 0.75, 0.38)
 @export var frame_size := Vector2i(32, 32)

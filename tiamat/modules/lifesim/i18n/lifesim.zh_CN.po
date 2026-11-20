@@ -43,6 +43,9 @@ msgstr "参加并领取节日奖励"
 msgid "%s · Floor %d · Deepest %d"
 msgstr "%s · 第 %d 层 · 最深 %d 层"
 
+msgid "%s guards this floor"
+msgstr "%s 镇守着这一层"
+
 msgid "Elevator to Floor 1"
 msgstr "前往矿井第 1 层"
 
