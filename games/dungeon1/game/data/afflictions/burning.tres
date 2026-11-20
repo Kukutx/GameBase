@@ -11,3 +11,4 @@ seconds = 2.0
 tick_seconds = 1.0
 tick_damage = 2
 weapon_tag = "burns"
+chance_stat = &"burn_chance"

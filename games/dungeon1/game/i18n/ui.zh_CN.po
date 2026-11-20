@@ -286,6 +286,15 @@ msgstr "余烬护符"
 msgid "Burns and other afflictions last half as long on you."
 msgstr "灼烧等异常状态在你身上只持续一半时间。"
 
+msgid "Kindling"
+msgstr "引火"
+
+msgid "A quarter of your blows and shots set foes Burning."
+msgstr "四分之一的挥砍与射击会让敌人灼烧。"
+
+msgid "Burn chance"
+msgstr "灼烧几率"
+
 msgid "Second Wind"
 msgstr "重振"
 

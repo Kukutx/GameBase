@@ -497,6 +497,17 @@ func test_five_boons_in_one_run_bless_the_delver() -> void:
 	assert_almost_eq(RunState.get_stat_multiplier(&"attack_damage"), 1.5625, 0.001, "two Ember Edges")
 	assert_almost_eq(RunState.get_stat_multiplier(PlayerHurtbox.INCOMING_DAMAGE_STAT), 0.8, 0.001)
 
+func test_kindling_has_the_delver_s_blows_set_foes_burning() -> void:
+	DepthRun.start_run()
+	var sword := ItemData.find(&"rusty_sword")
+	assert_null(WeaponUse.affliction_of(sword), "a plain blade burns nothing")
+	assert_eq(AfflictionData.find(&"burning").chance_stat, GameSetup.BURN_CHANCE_STAT)
+	assert_true(RunState.take_boon(&"kindling"))
+	assert_true(RunState.take_boon(&"kindling"))
+	assert_false(RunState.take_boon(&"kindling"), "twice at most")
+	assert_eq(GameStats.get_bonus(GameSetup.BURN_CHANCE_STAT), 50.0, "a quarter of the blows each time taken")
+	assert_true(GameStats.describe_current().has("Burn chance +50"))
+
 func test_the_embers_remember_what_the_delver_achieved() -> void:
 	DepthRun.start_run()
 	var heart := BoonData.find(&"heart_of_embers")

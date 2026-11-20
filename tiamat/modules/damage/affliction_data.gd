@@ -8,7 +8,8 @@ extends ContentEntry
 ## hit that lays it again has it last as long again rather than adding
 ## another. Any kind of fight may lay it: what lays it and what keeps
 ## it is the fight's own, in real time the hits of creatures, hazards and the
-## player's weapons that carry its `weapon_tag`.
+## player's weapons that carry its `weapon_tag`, or any of the player's hits
+## by the chance its `chance_stat` gives.
 
 const KIND := &"affliction"
 
@@ -27,6 +28,10 @@ const KIND := &"affliction"
 ## The tag of the player's weapons whose hits lay it (an ember blade's burn);
 ## empty, none.
 @export var weapon_tag := ""
+## The stat (`GameStats`, which the game registers) that is the chance, in
+## percent, that a hit of the player's lays it whatever their weapon (Ember
+## Depths' Kindling boon, a blow in four burning); empty, none.
+@export var chance_stat: StringName
 
 ## The affliction with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> AfflictionData:
@@ -47,6 +52,14 @@ func slows() -> bool:
 func get_ticks(seconds_scale := 1.0) -> int:
 	return floori(seconds * seconds_scale / tick_seconds + 0.000001)
 
+## Whether a hit of the player's lays it by chance now: a roll under its
+## `chance_stat`, every hit from 100 on and none at 0.
+func rolls_chance() -> bool:
+	if chance_stat == &"":
+		return false
+	var chance := GameStats.apply(chance_stat, 0.0)
+	return chance >= 100.0 or (chance > 0.0 and randf() * 100.0 < chance)
+
 func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if display_name.is_empty():
@@ -55,4 +68,6 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 		problems.append("takes health every %.1fs but lasts only %.1fs" % [tick_seconds, seconds])
 	if tick_damage <= 0 and not slows():
 		problems.append("takes no health and slows nothing")
+	if chance_stat != &"" and not GameStats.has_stat(chance_stat):
+		problems.append("is laid by the chance of stat '%s', which no installed module or the game reads" % chance_stat)
 	return problems

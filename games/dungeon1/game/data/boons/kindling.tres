@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BoonData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/boon_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"kindling"
+display_name = "Kindling"
+description = "A quarter of your blows and shots set foes Burning."
+max_stacks = 2
+weight = 6
+bonuses = Dictionary[StringName, float]({&"burn_chance": 25.0})

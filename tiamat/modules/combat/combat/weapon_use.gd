@@ -25,13 +25,18 @@ static func damage_of(weapon: ItemData) -> int:
 		return 0
 	return maxi(roundi(GameStats.apply(DAMAGE_STAT, weapon.tool_power)), 1)
 
-## The affliction the hits of `weapon` lay (`AfflictionData`): the first by
-## id whose `AfflictionData.weapon_tag` it carries, or null.
+## The affliction a hit of `weapon` lays now (`AfflictionData`): the first by
+## id whose `AfflictionData.weapon_tag` it carries, else the first by id that
+## a roll of its `AfflictionData.chance_stat` lays (`rolls_chance()`), or null.
 static func affliction_of(weapon: ItemData) -> AfflictionData:
 	if weapon == null:
 		return null
-	for affliction: AfflictionData in AfflictionData.find_all():
+	var afflictions := AfflictionData.find_all()
+	for affliction: AfflictionData in afflictions:
 		if not affliction.weapon_tag.is_empty() and weapon.has_tag(affliction.weapon_tag):
+			return affliction
+	for affliction: AfflictionData in afflictions:
+		if affliction.rolls_chance():
 			return affliction
 	return null
 
