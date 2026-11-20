@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/boon_altar.gd" id="1_altar"]
+[ext_resource type="Script" path="res://tiamat/core/interactions/interactable.gd" id="2_interactable"]
+
+[sub_resource type="RectangleShape2D" id="Rect_altar"]
+size = Vector2(36, 30)
+
+[node name="BoonAltar" type="Node2D"]
+script = ExtResource("1_altar")
+
+[node name="Interactable" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("2_interactable")
+prompt_text = "Choose a boon"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("Rect_altar")

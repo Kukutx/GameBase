@@ -30,6 +30,7 @@ func test_a_node_asks_and_gets_the_choice_the_player_picks() -> void:
 	assert_eq((menu.get_node("%Title") as Label).text, "Mine Elevator")
 	assert_eq(menu.get_buttons().map(func(button: Button) -> String: return button.text), ["Floor 1", "Floor 5", "Floor 10"])
 	assert_eq(menu.get_buttons().map(func(button: Button) -> bool: return button.disabled), [false, false, true])
+	assert_eq(menu.get_choice_ids(), [&"first", &"second", &"third"] as Array[StringName])
 	assert_eq(menu.get_note(&"first"), "", "a choice without a note has no line")
 	assert_eq(menu.get_note(&"second"), "Iron from here on")
 	assert_true(menu.choose(&"second"))

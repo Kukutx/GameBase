@@ -14,7 +14,9 @@
 // it extends exports; a value is written as Godot writes it (`42`, `true`,
 // `&"fish_caught"`, `PackedStringArray("a", "b")`), and plain text is quoted
 // as the field's type asks (a StringName as &"...", a String as "..."), so
-// `--set display_name=Master Angler --set progress_flag=fish_caught` works.
+// `--set display_name=Master Angler --set progress_flag=fish_caught` works;
+// a typed array or dictionary takes its plain literal
+// (`--set 'multipliers={&"attack_damage": 1.25}'`).
 // --kinds lists the kinds the game can write, with their scripts.
 const fs = require("node:fs");
 const path = require("node:path");
@@ -29,7 +31,9 @@ const EXTENDS_RE = /^extends\s+(\w+)/m;
 const EXPORT_RE = /^@export(?:_\w+)?(?:\([^)\n]*\))?(?:\s+@\w+(?:\([^)\n]*\))?)*\s+var\s+(\w+)\s*(?::\s*([^=\n]+?))?\s*(?::?=\s*(.+))?$/gm;
 // A value written as Godot writes one: a number, a boolean or null, quoted
 // text, a StringName or NodePath, an array or a dictionary, or a constructor.
-const LITERAL_RE = /^(?:-?\d+(?:\.\d+)?(?:e-?\d+)?|true|false|null|&?"[\s\S]*"|\^"[\s\S]*"|\[[\s\S]*\]|\{[\s\S]*\}|[A-Z]\w*\([\s\S]*\))$/;
+const LITERAL_RE = /^(?:-?\d+(?:\.\d+)?(?:e-?\d+)?|true|false|null|&?"[\s\S]*"|\^"[\s\S]*"|\[[\s\S]*\]|\{[\s\S]*\}|[A-Z]\w*(?:\[[^\]]*\])?\([\s\S]*\))$/;
+// A typed array or dictionary field, such as `Dictionary[StringName, float]`.
+const TYPED_COLLECTION_RE = /^(?:Array|Dictionary)\[[^\]]+\]$/;
 
 function filesUnder(directory, extension) {
   if (!fs.existsSync(directory)) return [];
@@ -118,6 +122,8 @@ function typeOfDefault(initial) {
 function formatValue(raw, type, field) {
   if (type === "StringName") return raw.startsWith('&"') ? raw : `&${JSON.stringify(raw)}`;
   if (type === "String") return raw.startsWith('"') ? raw : JSON.stringify(raw);
+  // A typed collection's plain literal is written as Godot writes it, typed.
+  if (TYPED_COLLECTION_RE.test(type) && /^[[{][\s\S]*[\]}]$/.test(raw)) return `${type}(${raw})`;
   if (LITERAL_RE.test(raw)) return raw;
   if (type === "") return JSON.stringify(raw);
   return fail(`Give ${field} (${type}) as Godot writes it, such as 42, true or PackedStringArray("a").`);

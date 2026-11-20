@@ -12,3 +12,27 @@ msgstr "结束这一轮后才能存档"
 
 msgid "Runs: %d"
 msgstr "出发次数：%d"
+
+msgid "Choose a Boon"
+msgstr "选择一项祝福"
+
+msgid "Choose a boon"
+msgstr "选择祝福"
+
+msgid "The altar is cold"
+msgstr "祭坛已经冷了"
+
+msgid "%s taken"
+msgstr "获得「%s」"
+
+msgid "Taken %d of %d"
+msgstr "已获得 %d/%d"
+
+msgid "With %s"
+msgstr "拥有「%s」时"
+
+msgid "Boons in a run: %d"
+msgstr "一轮中的祝福：%d"
+
+msgid "Taken %d"
+msgstr "已获得 %d 次"

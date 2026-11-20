@@ -107,6 +107,27 @@ func test_the_player_chooses_how_hard_hits_land_on_them() -> void:
 	GameSettings.options = GameOptions.new()
 	assert_eq(PlayerHurtbox.damage_taken(10), 10, "and so does a game without the option")
 
+## Changes how hard hits land on the player, as armour or a boon would.
+class _Armour:
+	extends RefCounted
+
+	func get_stat_multiplier(stat: StringName) -> float:
+		return 0.5 if stat == PlayerHurtbox.INCOMING_DAMAGE_STAT else 1.0
+
+	func get_stat_bonus(stat: StringName) -> float:
+		return 1.0 if stat == PlayerHurtbox.INCOMING_DAMAGE_STAT else 0.0
+
+func test_armour_or_a_boon_changes_how_hard_hits_land() -> void:
+	var armour := _Armour.new()
+	GameStats.register_source(armour)
+	var halved := PlayerHurtbox.damage_taken(9)
+	GameSettings.options.set_value(PlayerHurtbox.DAMAGE_TAKEN_OPTION, "Heavy")
+	var heavy := PlayerHurtbox.damage_taken(10)
+	GameStats.unregister_source(armour)
+	assert_eq(halved, 5, "(9 + 1) x 0.5")
+	assert_eq(heavy, 8, "after the player's choice: (15 + 1) x 0.5")
+	assert_eq(PlayerHurtbox.damage_taken(10), 15, "without the armour")
+
 func test_a_hit_staggers_the_player_while_it_pushes_them() -> void:
 	GameSettings.reduced_motion = true
 	var player := TopDownPlayer.new()

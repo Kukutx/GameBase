@@ -94,6 +94,12 @@ func get_buttons() -> Array[Button]:
 	buttons.assign(_buttons.values())
 	return buttons
 
+## The ids of the choices listed, in order.
+func get_choice_ids() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	ids.assign(_buttons.keys())
+	return ids
+
 ## The button of choice `choice_id`, or null when the list holds none.
 func get_button(choice_id: StringName) -> Button:
 	return _buttons.get(choice_id)

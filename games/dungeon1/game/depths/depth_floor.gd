@@ -5,7 +5,9 @@ extends Node2D
 ## of the run's depth (`DepthRun`) from `enemy_tiers` with the run's random
 ## stream, so a floor comes back the same only within the same run. Once every
 ## enemy is defeated the way on opens: the stairs down to the next depth, or
-## the rope back up to camp with what the player found.
+## the rope back up to camp with what the player found; and the ember altar
+## lights, where the player takes one of three boons for the run (`BoonAltar`,
+## one for each depth of a run).
 
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
 # How far apart the enemies of a floor stand.
@@ -26,12 +28,15 @@ const ENEMY_SPACING := 28.0
 @onready var depth_label: Label = $DepthLabel
 @onready var stairs: Node2D = $Stairs
 @onready var rope: Node2D = $Rope
+@onready var altar: BoonAltar = $EmberAltar
 
 var _enemies: Array[HostileCreature] = []
 
 func _ready() -> void:
 	(stairs.get_node("Interactable") as Interactable).interacted.connect(_descend)
 	(rope.get_node("Interactable") as Interactable).interacted.connect(_climb)
+	altar.key = "depth%d" % DepthRun.get_depth()
+	altar.boon_taken.connect(func(_boon_id: StringName) -> void: _refresh())
 	CombatEvents.enemy_defeated.connect(_on_enemy_defeated)
 	GameSettings.locale_changed.connect(_on_locale_changed)
 	_spawn_enemies()
@@ -98,6 +103,9 @@ func _refresh() -> void:
 	for way: Node2D in [stairs, rope]:
 		way.visible = cleared
 		(way.get_node("Interactable") as Interactable).enabled = cleared
+	altar.visible = cleared and not altar.is_spent() and RunState.is_active()
+	altar.refresh()
+	altar.interactable.enabled = altar.interactable.enabled and cleared
 	depth_label.text = tr("Depth %d · Deepest %d") % [DepthRun.get_depth(), DepthRun.get_deepest()]
 	if cleared and not _enemies.is_empty():
 		depth_label.text += "\n" + tr("The way on is open")
