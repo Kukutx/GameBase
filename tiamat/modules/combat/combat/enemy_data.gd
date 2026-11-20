@@ -30,7 +30,7 @@ const KIND := &"enemy"
 ## a step out of reach or a hit that stuns it before it lands spares them.
 ## 0 strikes at once (a slime that hurts at a touch).
 @export_range(0.0, 2.0, 0.05) var windup_seconds := 0.0
-## With a speed, it strikes from afar: it throws a shot (`CreatureShot`) that
+## With a speed, it strikes from afar: it throws a shot (`Projectile`) that
 ## flies this fast, in pixels a second, at where the player stands, for its
 ## `contact_damage`, and fades past half again its `attack_range`; a wall
 ## stops it and a step aside dodges it. It backs away from a player who comes

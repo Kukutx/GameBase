@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"bone_bow"
+display_name = "Bone Bow"
+description = "Strung with sinew, it looses bone darts at foes beyond a blade's reach."
+max_stack = 1
+kind = 3
+buy_price = 180
+tool_action = &"ranged_attack"
+tool_power = 8

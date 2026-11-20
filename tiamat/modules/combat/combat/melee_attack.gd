@@ -4,7 +4,8 @@ extends Area2D
 ## The player's melee attack: on `action`, swings the weapon selected in the
 ## hotbar (a tool whose action is `TOOL_ACTION`) at every hurtbox in this area
 ## (`Hurtbox`) of a faction hostile to `faction`. It hits for the weapon's
-## `tool_power` changed by the `attack_damage` stat, pushes what it hits away
+## `tool_power` changed by the `attack_damage` stat (`WeaponUse`, which a bow's
+## `RangedAttack` beside it shares), pushes what it hits away
 ## by `knockback`, costs `cost` of the game's attack vital (`CombatSettings.attack_vital_id`)
 ## changed by the `attack_cost` stat and
 ## swings again only after `cooldown_seconds`. A swing draws its arc
@@ -54,8 +55,8 @@ func _physics_process(delta: float) -> void:
 func attack_selected_weapon() -> bool:
 	if _attack_busy or is_cooling_down():
 		return false
-	var weapon := Hotbar.get_selected_item()
-	if weapon == null or not weapon.is_tool() or weapon.tool_action != TOOL_ACTION:
+	var weapon := WeaponUse.selected(TOOL_ACTION)
+	if weapon == null:
 		return false
 	_attack_busy = true
 	var result := _attack(weapon)
@@ -66,26 +67,20 @@ func attack_selected_weapon() -> bool:
 func is_cooling_down() -> bool:
 	return _cooldown_left > 0.0
 
+## How hard `weapon` hits now (`WeaponUse.damage_of()`).
 func get_attack_damage(weapon: ItemData) -> int:
-	if weapon == null:
-		return 0
-	return maxi(roundi(GameStats.apply(&"attack_damage", weapon.tool_power)), 1)
+	return WeaponUse.damage_of(weapon)
 
 ## What a swing costs now, of the attack vital.
 func get_cost() -> int:
-	if cost <= 0:
-		return 0
-	return maxi(int(floor(float(cost) * GameStats.get_multiplier(&"attack_cost"))), 1)
+	return WeaponUse.cost_of(cost)
 
 func _attack(weapon: ItemData) -> bool:
-	if not InventoryState.has_item(weapon.id, 1):
-		GameEvents.toastf("You do not have %s", [weapon.display_name])
-		return false
-	if not Vitals.try_spend(CombatSettings.current().attack_vital_id, get_cost()):
+	if not WeaponUse.pay(weapon, cost):
 		return false
 	_cooldown_left = cooldown_seconds
 	set_physics_process(_cooldown_left > 0.0)
-	_play_attack_animation()
+	WeaponUse.play_attack(get_parent())
 	_show_swing()
 	CombatEvents.attack_swung.emit(weapon.id)
 	var hits := 0
@@ -113,9 +108,3 @@ func _show_swing() -> void:
 	swing.rotation = _swing_direction().angle()
 	if not swing.finished.is_connected(_swings.give_back):
 		swing.finished.connect(_swings.give_back)
-
-func _play_attack_animation() -> void:
-	var actor := get_parent()
-	var visual := actor.get_node_or_null("ActorVisual") as DirectionalActorVisual if actor != null else null
-	if visual != null:
-		visual.play_action(&"attack")

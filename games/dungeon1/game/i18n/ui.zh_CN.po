@@ -83,6 +83,12 @@ msgstr "铁剑"
 msgid "A sound blade from the camp's forge."
 msgstr "营地铁匠铺打造的结实长剑。"
 
+msgid "Bone Bow"
+msgstr "骨弓"
+
+msgid "Strung with sinew, it looses bone darts at foes beyond a blade's reach."
+msgstr "以筋为弦，向刀剑够不着的敌人射出骨箭。"
+
 msgid "Ember Blade"
 msgstr "余烬之刃"
 

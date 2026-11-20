@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://tiamat/core/interactions/interaction_controller.gd" id="2_interaction"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/player_hurtbox.gd" id="6_hurtbox"]
 [ext_resource type="Script" path="res://tiamat/core/camera/game_camera.gd" id="90_camera"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/dodge_roll.gd" id="7_dodge"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/ranged_attack.gd" id="8_ranged"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 6.0
@@ -61,6 +62,9 @@ script = ExtResource("3_melee")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack"]
 shape = SubResource("Circle_attack")
+
+[node name="RangedAttack" type="Node" parent="."]
+script = ExtResource("8_ranged")
 
 [node name="DodgeRoll" type="Node" parent="."]
 script = ExtResource("7_dodge")

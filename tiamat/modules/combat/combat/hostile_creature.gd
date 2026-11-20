@@ -5,7 +5,7 @@ extends CharacterBody2D
 ## player within its `chase_radius` and strikes their hurtbox (`Hurtbox`)
 ## within its `attack_range` every `attack_cooldown`, for its
 ## `contact_damage`, pushing them back, or with a `shot_speed` shoots at them
-## from there (`CreatureShot`) and backs away from them nearer than
+## from there (`Projectile`) and backs away from them nearer than
 ## `SHOT_KEEP_AWAY`. One with a `windup_seconds` first stands and glows that
 ## long, and strikes only if the player is still in reach. Its own hurtbox
 ## takes the player's hits: each flashes it, pushes it back and stuns it for
@@ -200,7 +200,7 @@ func _strike(player: Node2D, offset: Vector2) -> void:
 	var push := offset.normalized() * data.knockback
 	var hit := Damage.new(roundi(data.contact_damage * _elite_scale(&"damage_scale")), data.faction_id, self, push)
 	if data.shot_speed > 0.0:
-		CreatureShot.fire(self, player.global_position, data.shot_speed, data.attack_range * SHOT_REACH, hit, data.shot_color)
+		Projectile.fire(self, player.global_position, data.shot_speed, data.attack_range * SHOT_REACH, hit, data.shot_color)
 		_attack_time_left = data.attack_cooldown
 		return
 	var target := Hurtbox.of(player)

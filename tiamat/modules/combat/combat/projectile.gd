@@ -1,13 +1,15 @@
-class_name CreatureShot
+class_name Projectile
 extends Area2D
 
-## A shot a creature throws from afar (`EnemyData.shot_speed`): it flies
-## straight at its speed and is gone on the first hurtbox of a side hostile to
-## its own it touches (`Hurtbox`), which it hurts unless that is still
-## invincible, on a wall (`wall_mask`) or once it has flown its `reach`. Aimed
-## where the player stood, it is dodged by moving aside. It draws itself as a
-## small glowing ball in its `color`. Its collision mask names the hurtboxes it
-## touches: the games' layers 2 and 3 (the player's and the creatures').
+## A shot thrown in the world: a creature's from afar (`EnemyData.shot_speed`)
+## or the player's from a bow (`RangedAttack`). It flies straight at its speed
+## and is gone on the first hurtbox of a side hostile to its own it touches
+## (`Hurtbox`), which it hurts unless that is still invincible, on a wall
+## (`wall_mask`) or once it has flown its `reach`; it passes the hurtboxes of
+## its own side. Aimed where its target stood, it is dodged by moving aside.
+## It draws itself as a small glowing ball in its `color`. Its collision mask
+## names the hurtboxes it touches: the games' layers 2 and 3 (the player's and
+## the creatures').
 
 ## Its radius, drawn and touching.
 const RADIUS := 3.5
@@ -36,11 +38,11 @@ func _init() -> void:
 	add_child(shape)
 	area_entered.connect(_on_area_entered)
 
-## Throws a shot of `hit` from where `from` (a creature) stands toward
-## `toward`, flying `speed` pixels a second for `distance` pixels, in `tint`,
-## beside `from` in the world.
-static func fire(from: Node2D, toward: Vector2, speed: float, distance: float, hit: Damage, tint: Color) -> CreatureShot:
-	var shot := CreatureShot.new()
+## Throws a shot of `hit` from where `from` (the actor that throws it) stands
+## toward `toward`, flying `speed` pixels a second for `distance` pixels, in
+## `tint`, beside `from` in the world.
+static func fire(from: Node2D, toward: Vector2, speed: float, distance: float, hit: Damage, tint: Color) -> Projectile:
+	var shot := Projectile.new()
 	shot.damage = hit
 	shot.velocity = (toward - from.global_position).normalized() * speed
 	shot.reach = distance
@@ -53,7 +55,7 @@ func _physics_process(delta: float) -> void:
 	if _spent:
 		return
 	var step := velocity * delta
-	if _meets_wall(global_position, global_position + step):
+	if wall_between(get_world_2d().direct_space_state, global_position, global_position + step, wall_mask):
 		_end()
 		return
 	position += step
@@ -61,14 +63,15 @@ func _physics_process(delta: float) -> void:
 	if _flown >= reach or velocity.is_zero_approx():
 		_end()
 
-# Whether a wall lies on the way from `from` to `to`: a body on the walls'
-# layers that is not an actor, whose hurtbox is what a shot hits. A ray, so a
-# fast shot never passes through a thin wall.
-func _meets_wall(from: Vector2, to: Vector2) -> bool:
-	var query := PhysicsRayQueryParameters2D.create(from, to, wall_mask)
+## Whether a wall lies on the way from `from` to `to` in `space`: a body on
+## the layers `mask` names that is not an actor (a `CharacterBody2D`), whose
+## hurtbox is what a shot hits. A ray, so a fast shot never passes through a
+## thin wall.
+static func wall_between(space: PhysicsDirectSpaceState2D, from: Vector2, to: Vector2, mask: int) -> bool:
+	var query := PhysicsRayQueryParameters2D.create(from, to, mask)
 	var passed: Array[RID] = []
 	for attempt in 4:
-		var hit := get_world_2d().direct_space_state.intersect_ray(query)
+		var hit := space.intersect_ray(query)
 		if hit.is_empty():
 			return false
 		if not hit["collider"] is CharacterBody2D:
