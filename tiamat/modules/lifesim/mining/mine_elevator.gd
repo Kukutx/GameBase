@@ -6,7 +6,8 @@ extends Node2D
 ## player reached (`MineState.get_elevator_floors()`). With one stop besides
 ## the floor the player is on, using it goes there; with more, it lists them
 ## (`ChoiceMenu`) for the player to pick, the focus on floor 1 below it and on
-## the deepest stop at the top.
+## the deepest stop at the top; a stop a guardian holds names it
+## (`MineRunState.get_standing_guardian_names()`).
 
 @onready var interactable: Interactable = $Interactable
 @onready var label: Label = $Label
@@ -55,7 +56,9 @@ func _on_interacted(_actor: Node) -> void:
 		return
 	var choices: Array[ChoiceMenu.Choice] = []
 	for floor: int in stops:
-		choices.append(ChoiceMenu.Choice.new(StringName(str(floor)), tr("Floor %d") % floor))
+		var guardians := MineState.get_standing_guardian_names(floor)
+		var note := tr("Guarded by %s") % ", ".join(guardians) if not guardians.is_empty() else ""
+		choices.append(ChoiceMenu.Choice.new(StringName(str(floor)), tr("Floor %d") % floor, note))
 	var focus := 1 if MineState.get_current_floor() > 1 else stops[stops.size() - 1]
 	var picked: StringName = await ChoiceMenu.ask(self, choices, "Mine Elevator", StringName(str(focus)))
 	if picked != &"":

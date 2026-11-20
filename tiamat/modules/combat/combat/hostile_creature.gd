@@ -428,7 +428,23 @@ func _load_state() -> void:
 		_persist()
 
 func _state_key() -> StringName:
-	return StringName("enemy:%s" % String(persistent_id))
+	return state_key_of(persistent_id)
+
+## The `WorldState` key a creature saved under `id` keeps its state at.
+static func state_key_of(id: StringName) -> StringName:
+	return StringName("enemy:%s" % String(id))
+
+## Whether the creature of `data` saved under `id` lies defeated, not back yet
+## (`EnemyData.respawn_days`): a place tells it before its scene loads, as the
+## mine's elevator names the guardians still standing on its stops.
+static func is_down(id: StringName, data: EnemyData) -> bool:
+	if id == &"" or data == null:
+		return false
+	var raw: Variant = WorldState.get_value(state_key_of(id), {})
+	if not raw is Dictionary or not bool((raw as Dictionary).get("defeated", false)):
+		return false
+	var defeated_day := SaveValues.whole_number_or((raw as Dictionary).get("defeated_day", WorldClock.day), WorldClock.day)
+	return WorldClock.day - defeated_day < data.respawn_days
 
 ## The world state the node saves, for `ContentRegistry`'s check that no two
 ## nodes share it.
