@@ -205,15 +205,25 @@ func affected_at(unit: GridUnit, action: BattleActionData, cell: Vector2i, from:
 	return reached
 
 ## The open cells where a foe of the player's side could strike on its next
-## turn, as everyone stands now: each cell a damaging action of a living foe
-## reaches, area and all, from a cell the foe could walk to
-## (`BattleUnitData.move`) without passing the units hostile to it. `moving`,
-## the player's unit choosing where to go, counts as gone from its cell, so a
-## foe may walk through it.
+## turn, as everyone stands now (`get_threats()` of the player's faction).
+## `moving`, the player's unit choosing where to go, counts as gone from its
+## cell, so a foe may walk through it.
 func get_danger(moving: GridUnit = null) -> Dictionary[Vector2i, bool]:
 	var danger: Dictionary[Vector2i, bool] = {}
+	for cell: Vector2i in get_threats(player_faction, moving):
+		danger[cell] = true
+	return danger
+
+## How many living units hostile to `faction` could strike each open cell on
+## their next turns, as everyone stands now: the cells a damaging action of
+## theirs reaches, area and all, from a cell they could walk to
+## (`BattleUnitData.move`) without passing the units hostile to them; a cell
+## none reaches is left out. `moving` counts as gone from its cell, so they
+## may walk through it.
+func get_threats(faction: StringName, moving: GridUnit = null) -> Dictionary[Vector2i, int]:
+	var threats: Dictionary[Vector2i, int] = {}
 	for foe: GridUnit in units:
-		if not foe.is_alive() or is_on_player_side(foe):
+		if not foe.is_alive() or not FactionData.are_hostile(foe.faction, faction):
 			continue
 		var walls := foe_cells(foe)
 		if moving != null:
@@ -223,6 +233,7 @@ func get_danger(moving: GridUnit = null) -> Dictionary[Vector2i, bool]:
 			var there := get_unit_at(from)
 			if there == null or there == foe or there == moving:
 				froms.append(from)
+		var struck: Dictionary[Vector2i, bool] = {}
 		for action: BattleActionData in foe.data.get_actions():
 			if action.effect != BattleActionData.Effect.DAMAGE:
 				continue
@@ -233,8 +244,10 @@ func get_danger(moving: GridUnit = null) -> Dictionary[Vector2i, bool]:
 			for aim: Vector2i in aims:
 				for cell: Vector2i in grid.cells_in_range(aim, 0, action.area):
 					if grid.is_open(cell):
-						danger[cell] = true
-	return danger
+						struck[cell] = true
+		for cell: Vector2i in struck:
+			threats[cell] = threats.get(cell, 0) + 1
+	return threats
 
 ## The cells of the living units hostile to `unit`.
 func foe_cells(unit: GridUnit) -> Dictionary[Vector2i, bool]:
