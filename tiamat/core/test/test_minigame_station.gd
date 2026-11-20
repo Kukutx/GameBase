@@ -140,6 +140,22 @@ func test_a_choice_the_content_lacks_or_that_has_no_name_is_a_problem() -> void:
 		"station '%s' offers unknown minigame 'fixture_no_such_battle'" % station.name,
 	]))
 
+func test_the_pause_menu_s_challenges_tell_how_far_the_player_is() -> void:
+	assert_eq(MiniGameDefinition.describe_challenges(), PackedStringArray([
+		"Won 0 of 2",
+		"First Battle — not won yet",
+		"Second Battle — needs Win First Battle",
+	]))
+	WorldState.add_int(MiniGameDefinition.wins_key(FIRST), 2)
+	GameProfile.set_flag(MiniGameDefinition.best_score_key(FIRST), 4)
+	assert_eq(MiniGameDefinition.describe_challenges(), PackedStringArray([
+		"Won 1 of 2",
+		"First Battle — won 2",
+		"  Best Units Left: 4",
+		"Second Battle — not won yet",
+	]), "the open ones first")
+	assert_true(PauseMenu.get_page_ids().has(&"challenges"))
+
 func test_the_best_score_stays_in_the_profile_and_shows_under_its_name() -> void:
 	var first := MiniGameDefinition.find(FIRST)
 	(func() -> void: await MiniGameHost.run(FIRST)).call()
