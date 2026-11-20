@@ -9,4 +9,4 @@ order = 85
 display_name = "Monster Scholar"
 description = "Defeat every kind of creature of the mine, counting every save."
 progress_flag = &"kinds_defeated"
-goal = 9
+goal = 10

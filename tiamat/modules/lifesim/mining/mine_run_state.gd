@@ -14,8 +14,10 @@ extends Node
 ## that a guardian tier guards (`MineFloorTable.get_guardian_ids()`) holds its
 ## guardians, furthest from the way in, and half the ordinary enemies; the
 ## layout lists them first among its enemies, marked `"guardian": true`. Each
-## ordinary enemy may come in an elite form (`MineFloorTable.elite_odds`),
-## its id under `"elite"` (empty: none), rolled from a stream of its own.
+## ordinary enemy is of the floor's leading kind (`MineFloorTable.get_enemy_id()`)
+## or of a mixed tier that spans the floor (`EnemyTier.share`), and may come in
+## an elite form (`MineFloorTable.elite_odds`), its id under `"elite"` (empty:
+## none), each rolled from a stream of its own.
 ## `deepest_floor_changed` fires when the player goes deeper than ever before,
 ## their first entry to floor 1 included, which quests follow.
 
@@ -156,12 +158,15 @@ func generate_floor_layout(floor: int) -> Dictionary:
 			"position": positions[first + index],
 			"persistent_id": "mine_f%03d_rock_%02d" % [resolved, index + 1],
 		})
-	# A stream of their own, so the elites leave the floor's layout as it was.
+	# Streams of their own, so the mixed kinds and the elites leave the
+	# floor's layout as it was.
+	var mixed_rolls := track.stream(resolved, "mixed")
 	var elite_rolls := track.stream(resolved, "elites")
 	for index in range(enemy_count):
+		var mixed := EnemyTier.pick_mixed(floor_table.enemy_tiers, resolved, mixed_rolls)
 		var elite: EliteData = floor_table.elite_odds.roll(elite_rolls, resolved) if floor_table.elite_odds != null else null
 		enemies.append({
-			"kind": String(enemy_kind),
+			"kind": String(mixed if not mixed.is_empty() else enemy_kind),
 			"position": positions[first + rock_count + index],
 			"persistent_id": "mine_f%03d_enemy_%02d" % [resolved, index + 1],
 			"elite": String(elite.id) if elite != null else "",

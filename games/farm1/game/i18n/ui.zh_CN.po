@@ -381,6 +381,9 @@ msgstr "洞穴史莱姆"
 msgid "Blue Slime"
 msgstr "蓝色史莱姆"
 
+msgid "Spitting Slime"
+msgstr "喷吐史莱姆"
+
 msgid "Red Slime"
 msgstr "红色史莱姆"
 

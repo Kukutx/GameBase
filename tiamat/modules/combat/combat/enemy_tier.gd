@@ -5,7 +5,10 @@ extends Resource
 ## a dungeon's depths) spawns from `minimum_depth` on, and up to
 ## `maximum_depth` when it has one. A guardian tier (`guardian_every`) spawns
 ## its enemy only at the depths it guards, apart from the ordinary ones: a
-## stronger foe every fifth depth.
+## stronger foe every fifth depth. A mixed tier (`share`) never leads a depth
+## of a place that spawns one kind a depth (a mine's floor, `deepest()`), but
+## comes among the kind that does (`pick_mixed()`): an archer among the
+## swordsmen.
 
 @export var enemy_id: StringName
 @export_range(1, 9999, 1) var minimum_depth := 1
@@ -16,6 +19,11 @@ extends Resource
 ## 15...) the enemy guards the depth (`guardians()`), and spawns nowhere
 ## else; 0: an ordinary tier (`reached()`, `deepest()`).
 @export_range(0, 999, 1) var guardian_every := 0
+## The share of a depth's ordinary enemies that come as this tier's enemy
+## where it spans the depth, among the kind that leads it (`pick_mixed()`);
+## 0: the tier leads the depths it reaches deepest (`deepest()`). Only an
+## ordinary tier mixes.
+@export_range(0.0, 1.0, 0.01) var share := 0.0
 
 ## Whether `depth` lies between the tier's first and last depths.
 func spans(depth: int) -> bool:
@@ -25,19 +33,24 @@ func spans(depth: int) -> bool:
 func guards(depth: int) -> bool:
 	return guardian_every > 0 and spans(depth) and (depth - minimum_depth) % guardian_every == 0
 
+## Whether the tier mixes among the kind that leads a depth (`share`).
+func is_mixed() -> bool:
+	return guardian_every == 0 and share > 0.0
+
 ## The enemy of the deepest of the ordinary `tiers` that span `depth` (the
-## first such tier when several start there), or "" when none does.
+## first such tier when several start there), or "" when none does; a mixed
+## tier never leads.
 static func deepest(tiers: Array[EnemyTier], depth: int) -> StringName:
 	var result := StringName()
 	var best := 0
 	for tier: EnemyTier in tiers:
-		if tier != null and tier.guardian_every == 0 and tier.spans(depth) and tier.minimum_depth > best:
+		if tier != null and tier.guardian_every == 0 and not tier.is_mixed() and tier.spans(depth) and tier.minimum_depth > best:
 			best = tier.minimum_depth
 			result = tier.enemy_id
 	return result
 
-## The enemies of every ordinary one of `tiers` that spans `depth`, in their
-## order.
+## The enemies of every ordinary one of `tiers` that spans `depth`, mixed
+## ones among them, in their order: for a place that spawns them all alike.
 static func reached(tiers: Array[EnemyTier], depth: int) -> Array[StringName]:
 	var result: Array[StringName] = []
 	for tier: EnemyTier in tiers:
@@ -54,8 +67,28 @@ static func guardians(tiers: Array[EnemyTier], depth: int) -> Array[StringName]:
 			result.append(tier.enemy_id)
 	return result
 
+## Which enemy one of a depth's ordinary enemies comes as among `tiers`' mixed
+## ones that span `depth` (`share`), or "" for the kind that leads it, rolled
+## from `rolls`: one number for each enemy at a depth some mixed tier spans,
+## none elsewhere, so a stream of the depth's own keeps the rest of it as it
+## was. Shares that add up past 1 leave the later tiers less.
+static func pick_mixed(tiers: Array[EnemyTier], depth: int, rolls: GameRandomStream) -> StringName:
+	var mixed: Array[EnemyTier] = []
+	for tier: EnemyTier in tiers:
+		if tier != null and tier.is_mixed() and tier.spans(depth):
+			mixed.append(tier)
+	if mixed.is_empty():
+		return StringName()
+	var roll := rolls.randf()
+	var reached := 0.0
+	for tier: EnemyTier in mixed:
+		reached += tier.share
+		if roll < reached:
+			return tier.enemy_id
+	return StringName()
+
 ## For a `find_problems()`: each of `tiers` that names no enemy of `registry`,
-## or whose last depth comes before its first.
+## whose last depth comes before its first, or that guards and mixes too.
 static func find_problems(tiers: Array[EnemyTier], registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	for tier: EnemyTier in tiers:
@@ -63,4 +96,6 @@ static func find_problems(tiers: Array[EnemyTier], registry: ContentRegistry) ->
 			problems.append("enemy tier '%s' is not an enemy" % (tier.enemy_id if tier != null else &""))
 		elif tier.maximum_depth > 0 and tier.maximum_depth < tier.minimum_depth:
 			problems.append("enemy tier '%s' ends at depth %d, before it starts at %d" % [tier.enemy_id, tier.maximum_depth, tier.minimum_depth])
+		elif tier.guardian_every > 0 and tier.share > 0.0:
+			problems.append("enemy tier '%s' guards depths and mixes among their enemies (share): a guardian only guards" % tier.enemy_id)
 	return problems
