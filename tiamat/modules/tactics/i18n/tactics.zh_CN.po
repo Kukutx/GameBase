@@ -19,9 +19,6 @@ msgstr "%s 使用了%s。"
 msgid "%s's turn."
 msgstr "轮到 %s 行动。"
 
-msgid "Attack %d · Defense %d · Move %d"
-msgstr "攻击 %d · 防御 %d · 移动 %d"
-
 msgid "End Turn"
 msgstr "结束回合"
 
@@ -126,6 +123,9 @@ msgstr "攻击 %s"
 
 msgid "Defense %s"
 msgstr "防御 %s"
+
+msgid "Move %s"
+msgstr "移动 %s"
 
 msgid "Hold out: %d s"
 msgstr "坚守：%d 秒"

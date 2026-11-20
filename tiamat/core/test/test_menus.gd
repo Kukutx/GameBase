@@ -58,6 +58,32 @@ func test_a_menu_s_panel_hides_the_screen_behind_it() -> void:
 		if style != null:
 			assert_eq(style.bg_color.a, 1.0, "%s is opaque" % type)
 
+func test_a_menu_s_panel_keeps_its_words_off_its_edge() -> void:
+	# A panel without room inside put a menu's buttons and lists flush with its
+	# edge (Ember Depths' pause menu and shop): the project theme pads it.
+	var theme := ThemeDB.get_project_theme()
+	assert_not_null(theme)
+	if theme == null:
+		return
+	for type: StringName in [&"PanelContainer", &"Panel"]:
+		var style := theme.get_stylebox(&"panel", type)
+		for side: Side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+			assert_gte(style.get_margin(side), 4.0, "%s keeps room inside on side %d" % [type, side])
+
+func test_a_list_s_focus_ring_shows_whole_inside_its_scroll() -> void:
+	# A ring drawn past its button's edge was cut by the scroll a list sits in:
+	# the entry at the top of a shop's list showed only a line under it.
+	var theme := ThemeDB.get_project_theme()
+	var style: StyleBox = null
+	if theme != null and theme.has_stylebox(&"focus", &"Button"):
+		style = theme.get_stylebox(&"focus", &"Button")
+	else:
+		style = ThemeDB.get_default_theme().get_stylebox(&"focus", &"Button")
+	var flat := style as StyleBoxFlat
+	if flat != null:
+		for side: Side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+			assert_eq(flat.get_expand_margin(side), 0.0, "the focus ring stays inside its button on side %d" % side)
+
 func test_the_music_and_sounds_buses_send_to_master() -> void:
 	for bus: StringName in GameSettingsService.AUDIO_BUSES:
 		var index := AudioServer.get_bus_index(bus)

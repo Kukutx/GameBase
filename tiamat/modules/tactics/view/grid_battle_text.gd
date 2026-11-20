@@ -11,12 +11,13 @@ extends RefCounted
 ## view of a grid battle can tell the same.
 
 ## The lines of `unit`: "Knight", "HP 12/20", "Attack 6 · Defense 2 · Move
-## 3", then its boosts, afflictions and leadership when it has any.
+## 3" (a narrow side wraps it between stats: `GameText.parts()`), then its
+## boosts, afflictions and leadership when it has any.
 func describe_unit(unit: GridUnit) -> PackedStringArray:
 	var lines := PackedStringArray([
 		tr(unit.data.display_name),
 		tr("HP %d/%d") % [unit.health.current, unit.health.maximum],
-		tr("Attack %d · Defense %d · Move %d") % [unit.get_attack(), unit.get_defense(), unit.data.move],
+		GameText.parts(PackedStringArray([tr("Attack %s") % unit.get_attack(), tr("Defense %s") % unit.get_defense(), tr("Move %s") % unit.data.move]), true),
 	])
 	var boosts := {GridUnit.ATTACK: unit.get_boost(GridUnit.ATTACK), GridUnit.DEFENSE: unit.get_boost(GridUnit.DEFENSE)}
 	if boosts.values().any(func(amount: int) -> bool: return amount != 0):

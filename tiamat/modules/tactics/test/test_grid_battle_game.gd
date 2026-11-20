@@ -265,7 +265,7 @@ func test_aiming_a_boost_tells_what_it_gives_and_the_unit_then_shows_it() -> voi
 	assert_true(_tells(game, tr("%s gains %s") % [tr("Fixture Knight"), tr("Attack %s") % "+2"]), "a rally that heals nothing tells only its boost")
 	game.pick(knight.cell)
 	assert_true(await _until(func() -> bool: return knight.turns_taken == 2 and game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's next turn comes")
-	assert_true(_tells(game, tr("Attack %d · Defense %d · Move %d") % [6, 2, 3]), "the knight's attack with the boost")
+	assert_true(_tells(game, GameText.parts(PackedStringArray([tr("Attack %s") % 6, tr("Defense %s") % 2, tr("Move %s") % 3]), true)), "the knight's attack with the boost")
 	assert_true(_tells(game, tr("Boosts: %s (turns left: %d)") % [tr("Attack %s") % "+2", 1]), "through this turn and one more")
 
 func test_aiming_an_affliction_tells_it_and_each_tick_is_told() -> void:

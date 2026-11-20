@@ -389,8 +389,9 @@ func _on_unit_arrived(unit: RtsUnit) -> void:
 # Counts down the battle time left, with a time limit.
 func _show_clock() -> void:
 	var limit := battle.time_limit
-	_clock.visible = limit != null
-	if limit != null:
+	if limit == null:
+		_clock.text = ""
+	else:
 		_clock.text = (tr("Hold out: %d s") if limit.wins(battle.player_faction) else tr("Time left: %d s")) % ceili(limit.get_left(battle.time))
 
 func _on_ended(won: bool) -> void:
@@ -424,14 +425,13 @@ func _build() -> void:
 		if has_input():
 			order(point))
 	rows.add_child(_field)
+	# The clock and the commands share a row; what is selected, or what to do,
+	# takes the whole of the next, so the buttons never cut it short.
 	var bar := HBoxContainer.new()
 	rows.add_child(bar)
 	_clock = Label.new()
+	_clock.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar.add_child(_clock)
-	_info = Label.new()
-	_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_info.clip_text = true
-	bar.add_child(_info)
 	for which in COMMAND_ACTIONS.size():
 		var button := Button.new()
 		# The arrows move the cursor, never the focus.
@@ -445,6 +445,9 @@ func _build() -> void:
 	InputPrompts.input_method_changed.connect(_show_command_names.unbind(1))
 	GameSettings.controls_changed.connect(_show_command_names)
 	GameSettings.locale_changed.connect(_show_command_names.unbind(1))
+	_info = Label.new()
+	_info.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	rows.add_child(_info)
 	_message = Label.new()
 	_message.clip_text = true
 	rows.add_child(_message)
