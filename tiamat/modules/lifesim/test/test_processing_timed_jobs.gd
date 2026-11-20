@@ -2,7 +2,8 @@ extends GutTest
 
 ## A processing station's job on a recipe the test builds: it takes the
 ## inputs when it starts, finishes by game time, whether or not its scene is
-## loaded, and hands over the output when collected.
+## loaded, and hands over the output when collected. A press starts the
+## recipe for the item in hand, or tells what that recipe needs.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const STATION_SCENE := preload("res://tiamat/modules/lifesim/processing/processing_station.tscn")
@@ -11,12 +12,17 @@ var _clock_day: int
 var _clock_minute: int
 var _inventory_snapshot: Dictionary
 var _world_snapshot: Dictionary
+var _hotbar_snapshot: Dictionary
+var _toasts: PackedStringArray = []
 
 func before_each() -> void:
 	_clock_day = WorldClock.day
 	_clock_minute = WorldClock.minute_of_day
 	_inventory_snapshot = InventoryState.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
+	_hotbar_snapshot = Hotbar.to_save_data()
+	_toasts.clear()
+	GameEvents.toast_requested.connect(_on_toast)
 	var recipe := ProcessingRecipeData.new()
 	recipe.id = &"fixture_smelt_bar"
 	recipe.display_name = "Fixture Bar"
@@ -24,12 +30,20 @@ func before_each() -> void:
 	recipe.output_item_id = &"fixture_bar"
 	recipe.output_quantity = 1
 	recipe.process_minutes = 60
-	ContentFixture.use(self, [_item(&"fixture_ore"), _item(&"fixture_fuel"), _item(&"fixture_bar"), recipe])
+	var gold := ProcessingRecipeData.new()
+	gold.id = &"fixture_smelt_gold"
+	gold.display_name = "Fixture Gold"
+	gold.inputs = {"fixture_gold_ore": 3}
+	gold.output_item_id = &"fixture_bar"
+	gold.process_minutes = 90
+	ContentFixture.use(self, [_item(&"fixture_ore"), _item(&"fixture_fuel"), _item(&"fixture_gold_ore"), _item(&"fixture_bar"), recipe, gold])
 	InventoryState.clear()
 	WorldState.clear()
 	WorldClock.set_time(1, 8 * 60)
 
 func after_each() -> void:
+	GameEvents.toast_requested.disconnect(_on_toast)
+	Hotbar.load_save_data(_hotbar_snapshot)
 	# GUT frees the fixture after this; restore against the game's content.
 	ContentRegistry.active = ContentDB
 	InventoryState.load_save_data(_inventory_snapshot)
@@ -76,6 +90,46 @@ func test_processing_finishes_while_station_scene_is_unloaded() -> void:
 	assert_eq(restored.get_minutes_remaining(), 0)
 	assert_true(restored.collect_output())
 	assert_eq(InventoryState.get_quantity(&"fixture_bar"), 1)
+
+func test_a_press_starts_the_recipe_for_the_item_in_hand_or_tells_what_it_needs() -> void:
+	InventoryState.add_item_by_id(&"fixture_ore", 2)
+	InventoryState.add_item_by_id(&"fixture_fuel", 1)
+	InventoryState.add_item_by_id(&"fixture_gold_ore", 3)
+	_hold(&"")
+	var furnace := _station(&"fixture_hand_furnace")
+	furnace.recipe_ids = [&"fixture_smelt_bar", &"fixture_smelt_gold"]
+	add_child_autofree(furnace)
+	await get_tree().process_frame
+	# Nothing the furnace takes in hand: the first recipe that can start.
+	assert_eq(furnace.pick_recipe(&"").id, &"fixture_smelt_bar")
+	assert_eq(furnace.interactable.get_prompt_text(), "Make Fixture Bar")
+
+	_hold(&"fixture_gold_ore")
+	assert_eq(furnace.interactable.get_prompt_text(), "Make Fixture Gold", "the prompt follows the item in hand")
+	furnace.interact()
+	assert_eq(furnace.active_recipe_id, &"fixture_smelt_gold", "gold ore in hand smelts gold, though the ore for the first recipe is carried")
+	assert_eq(InventoryState.get_quantity(&"fixture_gold_ore"), 0)
+	assert_eq(InventoryState.get_quantity(&"fixture_ore"), 2)
+
+	# Too little of the ore in hand: no other recipe starts in its place, and
+	# the press tells what the one for it needs.
+	InventoryState.add_item_by_id(&"fixture_gold_ore", 1)
+	var second := _station(&"fixture_hand_furnace_two")
+	second.recipe_ids = [&"fixture_smelt_bar", &"fixture_smelt_gold"]
+	add_child_autofree(second)
+	await get_tree().process_frame
+	assert_null(second.pick_recipe(&"fixture_gold_ore"))
+	assert_eq(second.interactable.get_prompt_text(), "Use Fixture Furnace")
+	second.interact()
+	assert_eq(second.active_recipe_id, &"")
+	assert_eq(InventoryState.get_quantity(&"fixture_ore"), 2)
+	assert_has(_toasts, "Fixture Gold — needs fixture_gold_ore x3")
+
+func _hold(item_id: StringName) -> void:
+	Hotbar.set_slot_item(Hotbar.selected_slot, item_id)
+
+func _on_toast(message: String) -> void:
+	_toasts.append(message)
 
 func _station(station_id: StringName) -> ProcessingStation:
 	var station := STATION_SCENE.instantiate() as ProcessingStation

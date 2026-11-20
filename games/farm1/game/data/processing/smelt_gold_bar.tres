@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_recipe")
 id = &"smelt_gold_bar"
-display_name = "Smelt Gold Bar"
+display_name = "Gold Bar"
 inputs = {"gold_ore": 3, "wood": 1}
 output_item_id = &"gold_bar"
 output_quantity = 1

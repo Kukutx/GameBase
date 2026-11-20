@@ -30,6 +30,7 @@ func _rebuild(keep_focus := true) -> void:
 	var location := WorldLocationData.find(_location_id)
 	title_label.text = tr("%s Projects") % (tr(location.display_name) if location != null else tr("Town"))
 	var projects := TownProjects.get_projects_for_location(_location_id)
+	var sources := ItemSources.gather()
 	var buttons: Array[Button] = []
 	if projects.is_empty():
 		var empty := Label.new()
@@ -45,7 +46,7 @@ func _rebuild(keep_focus := true) -> void:
 		body.fit_content = true
 		body.custom_minimum_size = Vector2(0, 72)
 		body.bbcode_enabled = true
-		body.text = _project_text(project)
+		body.text = project_text(project, sources)
 		block.add_child(body)
 		var action := MenuLayer.list_button()
 		_configure_action(action, project)
@@ -55,7 +56,10 @@ func _rebuild(keep_focus := true) -> void:
 		buttons.append(action)
 	MenuLayer.focus_kept(buttons, kept, close_button)
 
-func _project_text(project: TownProjectData) -> String:
+## What the block of `project` tells: its description, each material with how
+## much is given and carried, and where to get one still needed while the
+## player carries too little of it (`ItemSources`, `sources`), then its reward.
+func project_text(project: TownProjectData, sources: ItemSources) -> String:
 	var lines := PackedStringArray([tr(project.description), "", "[b]%s[/b]" % tr("Materials")])
 	for raw_id: Variant in project.requirements.keys():
 		var item_id := StringName(String(raw_id))
@@ -64,6 +68,9 @@ func _project_text(project: TownProjectData) -> String:
 		var progress := TownProjects.get_progress(project.id, item_id)
 		var carried := InventoryState.get_quantity(item_id)
 		lines.append(tr("• %s  %d/%d  (carrying %d)") % [tr(item.display_name) if item != null else String(item_id), progress, required, carried])
+		var ways := sources.get_ways(item_id)
+		if progress + carried < required and not ways.is_empty():
+			lines.append("   [i]%s[/i]" % (tr("Where to get: %s") % "; ".join(ways)))
 	lines.append("")
 	lines.append("[b]%s[/b]" % tr("Reward"))
 	if project.reward_money > 0:

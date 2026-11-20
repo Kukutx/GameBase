@@ -3,8 +3,9 @@ extends GutTest
 ## The progression module's menus, the town's projects, the tool upgrades and
 ## the mailbox, each opened on content of the test's own, full and empty: the
 ## focus starts in the menu on a control that works, and every control fits
-## the view, a long list scrolling within it; and the mailbox stays on the
-## letter claimed from and the button pressed.
+## the view, a long list scrolling within it; the mailbox stays on the
+## letter claimed from and the button pressed; and a project tells where to
+## get a material the player still lacks.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
@@ -83,6 +84,20 @@ func test_the_mailbox_stays_on_the_letter_claimed_from_and_the_button_pressed() 
 	assert_true(menu.claim_button.has_focus(), "the last letter hands the focus from Next to its claim")
 	menu.close()
 	await get_tree().process_frame
+
+func test_a_project_tells_where_to_get_a_material_the_player_lacks() -> void:
+	var timber := _item(&"fixture_menu_timber", "Fixture Timber")
+	var project := _project(0, timber)
+	ContentFixture.use(self, [timber, project])
+	var sources := ItemSources.new()
+	sources.add(timber.id, "Sold at Fixture Mill")
+	var menu := PROJECT_MENU.instantiate() as TownProjectMenu
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	InventoryState.add_item(timber, 2)
+	assert_string_contains(menu.project_text(project, sources), "Where to get: Sold at Fixture Mill")
+	InventoryState.add_item(timber, 3)
+	assert_false(menu.project_text(project, sources).contains("Where to get"), "the player carries what it still needs")
 
 # Opens a menu of `scene` with `open`, and checks its focus and its fit.
 func _check(scene: PackedScene, open: Callable) -> void:

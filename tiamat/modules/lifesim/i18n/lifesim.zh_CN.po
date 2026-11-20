@@ -330,6 +330,9 @@ msgstr "%s · 剩余 %d 分钟"
 msgid "No processable materials"
 msgstr "没有可加工的材料"
 
+msgid "Make %s"
+msgstr "制作%s"
+
 msgid "%s finished %s"
 msgstr "%s完成了%s"
 
