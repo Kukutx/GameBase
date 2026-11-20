@@ -27,7 +27,9 @@ extends MiniGame
 ##
 ## Battle time runs at the game's speed (`RtsSettings.battle_speed`) times the
 ## player's choice (`SPEED_OPTION`, which `RtsModule` declares), read as the
-## battle runs, so a change in the settings holds at once.
+## battle runs, so a change in the settings holds at once. The player's foes
+## start with the health the player's foe strength gives them
+## (`FOE_STRENGTH_OPTION`), as the battle begins.
 
 enum Command {
 	## Arms an attack-move: the next click, accept or interact picks where.
@@ -54,6 +56,11 @@ const DIRECTION_ACTIONS: Array[StringName] = [&"ui_left", &"ui_right", &"ui_up",
 ## here keeps it.
 const SPEED_OPTION := &"command_battle_speed"
 const SPEED_SCALES: Dictionary[String, float] = {"Slow": 0.5, "Standard": 1.0, "Fast": 1.5}
+## The player's option of how strong the foes of a command battle are, and the
+## share of their kinds' health each of its choices starts them with; a choice
+## not named here starts them with all of it.
+const FOE_STRENGTH_OPTION := &"command_foe_strength"
+const FOE_STRENGTH_SCALES: Dictionary[String, float] = {"Weak": 0.75, "Standard": 1.0, "Strong": 1.5}
 
 var battle: RtsBattle
 var map: RtsMapData
@@ -80,7 +87,7 @@ func setup(settings: Dictionary) -> void:
 	var rts := RtsSettings.current()
 	_speed = rts.battle_speed
 	_cursor_speed = rts.cursor_speed
-	battle = RtsBattle.from_map(map)
+	battle = RtsBattle.from_map(map, GameSettings.options.scale_of(FOE_STRENGTH_OPTION, FOE_STRENGTH_SCALES))
 	battle.unit_defeated.connect(_on_unit_defeated)
 	battle.ended.connect(_on_ended)
 	_field.show_battle(battle)

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GameOption" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/settings/game_option.gd" id="1_option"]
+
+[resource]
+script = ExtResource("1_option")
+id = &"grid_foe_strength"
+display_name = "Grid Foe Strength"
+kind = 1
+choices = PackedStringArray("Weak", "Standard", "Strong")
+default_choice = 1

@@ -158,3 +158,9 @@ msgstr "赢下的战斗"
 
 msgid "Raiders Defeated"
 msgstr "击败的敌人"
+
+msgid "Against the Odds"
+msgstr "以寡敌众"
+
+msgid "Win a battle with its foe strength on Strong."
+msgstr "在敌人强度为「强」时赢下一场战斗。"

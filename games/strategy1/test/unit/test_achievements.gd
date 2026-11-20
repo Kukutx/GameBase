@@ -8,14 +8,18 @@ const TEST_PATH := "user://test_strategy1_achievements/profile.json"
 
 var _saved_path: String
 var _saved_profile: Dictionary
+var _saved_options: GameOptions
 
 func before_each() -> void:
+	_saved_options = GameSettings.options
+	GameSettings.options = GameOptions.of_running_game()
 	_saved_path = GameProfile.profile_path
 	_saved_profile = GameProfile.to_save_data()
 	GameProfile.profile_path = TEST_PATH
 	GameProfile.load_save_data({})
 
 func after_each() -> void:
+	GameSettings.options = _saved_options
 	GameProfile.load_save_data(_saved_profile)
 	GameProfile.profile_path = _saved_path
 	for path: String in [TEST_PATH, TEST_PATH + ".tmp"]:
@@ -32,6 +36,15 @@ func test_winning_both_battles_unlocks_each_and_then_the_banner_bearer() -> void
 	assert_true(GameProfile.is_unlocked(&"pass_held"))
 	assert_true(GameProfile.is_unlocked(&"banner_bearer"), "both battles won")
 	assert_eq(RecordData.find(&"battles_won").get_value(), 2, "the record counts the wins, not the loss")
+
+func test_a_win_against_strong_foes_goes_against_the_odds() -> void:
+	GameTriggers.fire(&"RtsEvents.battle_ended", {"rts_map_id": &"hill_pass", "won": true})
+	assert_false(GameProfile.is_unlocked(&"against_the_odds"), "on standard foes")
+	GameSettings.options.set_value(RtsBattleGame.FOE_STRENGTH_OPTION, "Strong")
+	GameTriggers.fire(&"RtsEvents.battle_ended", {"rts_map_id": &"hill_pass", "won": false})
+	assert_false(GameProfile.is_unlocked(&"against_the_odds"), "a loss")
+	GameTriggers.fire(&"RtsEvents.battle_ended", {"rts_map_id": &"hill_pass", "won": true})
+	assert_true(GameProfile.is_unlocked(&"against_the_odds"))
 
 func test_raiders_defeated_in_every_battle_count_toward_veteran() -> void:
 	# As if earlier battles had defeated 48.

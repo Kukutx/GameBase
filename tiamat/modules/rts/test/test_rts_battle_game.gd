@@ -223,6 +223,20 @@ func test_the_player_chooses_how_fast_a_battle_runs() -> void:
 	GameSettings.options = GameOptions.new()
 	assert_eq(game.get_speed(), 4.0, "a game without the option keeps its speed")
 
+func test_the_player_chooses_how_strong_the_foes_are() -> void:
+	GameSettings.options = GameOptions.new(RtsModule.new().get_options())
+	assert_eq(GameSettings.get_option(RtsBattleGame.FOE_STRENGTH_OPTION), "Standard", "the module offers the choice, standard at first")
+	GameSettings.options.set_value(RtsBattleGame.FOE_STRENGTH_OPTION, "Strong")
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var battle := _game().battle
+	var foes := 0
+	for unit: RtsUnit in battle.units:
+		var foe := FactionData.are_hostile(unit.faction, battle.player_faction)
+		foes += 1 if foe else 0
+		assert_eq(unit.health.maximum, roundi(unit.data.max_health * 1.5) if foe else unit.data.max_health, "a foe starts stronger, the player's side as it is")
+	assert_gt(foes, 0)
+	GameSettings.options = GameOptions.new()
+
 # The minigame the host runs now; the one the last test cancelled may still
 # wait to be freed.
 func _game() -> RtsBattleGame:

@@ -17,7 +17,9 @@ extends MiniGame
 ##
 ## Battle time runs at the game's speed (`TacticsSettings.battle_speed`) times
 ## the player's choice (`SPEED_OPTION`, which `TacticsModule` declares), read
-## as the battle runs, so a change in the settings holds at once.
+## as the battle runs, so a change in the settings holds at once. The player's
+## foes start with the health the player's foe strength gives them
+## (`FOE_STRENGTH_OPTION`), as the battle begins.
 
 enum Mode {
 	## Time passes; no unit of the player's waits for commands.
@@ -41,6 +43,11 @@ const CONFIRM_ACTIONS: Array[StringName] = [&"ui_accept", &"interact"]
 ## keeps it.
 const SPEED_OPTION := &"grid_battle_speed"
 const SPEED_SCALES: Dictionary[String, float] = {"Slow": 0.5, "Standard": 1.0, "Fast": 1.5}
+## The player's option of how strong the foes of a grid battle are, and the
+## share of their kinds' health each of its choices starts them with; a choice
+## not named here starts them with all of it.
+const FOE_STRENGTH_OPTION := &"grid_foe_strength"
+const FOE_STRENGTH_SCALES: Dictionary[String, float] = {"Weak": 0.75, "Standard": 1.0, "Strong": 1.5}
 
 var battle: AtbBattle
 var map: BattleMapData
@@ -67,7 +74,7 @@ func setup(settings: Dictionary) -> void:
 		return
 	var tactics := TacticsSettings.current()
 	_speed = tactics.battle_speed
-	battle = AtbBattle.from_map(map, tactics)
+	battle = AtbBattle.from_map(map, tactics, GameSettings.options.scale_of(FOE_STRENGTH_OPTION, FOE_STRENGTH_SCALES))
 	battle.turn_started.connect(_on_turn_started)
 	battle.unit_moved.connect(_on_unit_moved)
 	battle.unit_acted.connect(_on_unit_acted)

@@ -16,6 +16,7 @@ const CONTROLS: Array[String] = [
 ]
 const OPTIONS: Array[String] = [
 	"res://tiamat/modules/rts/options/battle_speed.tres",
+	"res://tiamat/modules/rts/options/foe_strength.tres",
 ]
 
 func install() -> void:
