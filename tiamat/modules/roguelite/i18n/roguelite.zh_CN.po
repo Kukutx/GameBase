@@ -60,3 +60,6 @@ msgstr "祝福：%s"
 
 msgid "%s in one run: %d"
 msgstr "一次出发中%s：%d"
+
+msgid "Runs"
+msgstr "出发记录"
