@@ -72,7 +72,7 @@ static func choice_of(boon: BoonData) -> ChoiceMenu.Choice:
 		lines.append(TranslationServer.translate(boon.description))
 	var changes := GameStats.describe_changes(boon.multipliers, boon.bonuses)
 	if not changes.is_empty():
-		lines.append(", ".join(changes))
+		lines.append(GameText.list(changes))
 	var stacks := boon.get_stacks()
 	if stacks > 0 and boon.max_stacks >= BoonData.UNLIMITED:
 		lines.append(TranslationServer.translate("Taken %d") % stacks)

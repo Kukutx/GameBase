@@ -79,4 +79,4 @@ static func describe_amounts(registry: ContentRegistry, amounts: Dictionary) -> 
 		var item_name := String(TranslationServer.translate(item.display_name)) if item != null else String(raw_id)
 		var count := int(amounts[raw_id])
 		parts.append(item_name if count <= 1 else "%s x%d" % [item_name, count])
-	return ", ".join(parts)
+	return GameText.list(parts)

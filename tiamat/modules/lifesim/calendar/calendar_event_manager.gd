@@ -62,7 +62,7 @@ func get_summary(location_id: StringName = &"") -> String:
 	var names := PackedStringArray()
 	for event: CalendarEventData in events:
 		names.append(tr(event.display_name))
-	return ", ".join(names)
+	return GameText.list(names)
 
 func get_event(event_id: StringName) -> CalendarEventData:
 	return CalendarEventData.find(event_id)

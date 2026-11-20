@@ -63,7 +63,7 @@ func _feed_names(needs: Dictionary[StringName, int]) -> String:
 	for item_id: StringName in needs:
 		var item := ItemData.find(item_id)
 		names.append(tr(item.display_name) if item != null else String(item_id))
-	return ", ".join(names)
+	return GameText.list(names)
 
 ## A trough feeds a housing of its own scene.
 func find_scene_problems(_registry: ContentRegistry, _location: WorldLocationData) -> PackedStringArray:

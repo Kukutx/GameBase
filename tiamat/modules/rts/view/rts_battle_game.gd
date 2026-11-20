@@ -330,7 +330,7 @@ func _show_selection() -> void:
 		var kinds := PackedStringArray()
 		for data: RtsUnitData in counts:
 			kinds.append("%s ×%d" % [tr(data.display_name), counts[data]])
-		_info.text = tr("%d selected: %s") % [_selection.size(), ", ".join(kinds)]
+		_info.text = tr("%d selected: %s") % [_selection.size(), GameText.list(kinds)]
 	var has_units := battle != null and not battle.get_player_units().is_empty()
 	for index in _buttons.size():
 		_buttons[index].disabled = not has_units if index == Command.SELECT_ALL else _selection.is_empty()

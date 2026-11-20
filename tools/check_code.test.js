@@ -33,6 +33,20 @@ test("resources never come from user:// nor are saved at runtime", () => {
   assert.deepEqual(checkScript("tiamat/core/test/test_a.gd", "ResourceSaver.save(scene, path)\n"), [], "a test may write a fixture scene");
 });
 
+test("a list the player reads is joined in their language", () => {
+  const problems = checkScript("tiamat/modules/items/a.gd", [
+    'var text := tr("Needs: %s") % ", ".join(needs)',
+    "return ', '.join(parts)",
+    'return GameText.list(parts) # not ", ".join(parts)',
+    'var path := "/".join(parts)',
+  ].join("\n"));
+  assert.equal(problems.length, 2);
+  assert.match(problems[0], /a\.gd:1 joins a list with ", "; join what the player reads with GameText\.list/);
+  assert.match(problems[1], /a\.gd:2 joins a list/);
+  assert.deepEqual(checkScript("tiamat/modules/npc_ai/ai/npc_ai_prompt.gd", 'lines.append("On today: %s." % ", ".join(events))\n'), [], "a prompt a model reads stays English");
+  assert.deepEqual(checkScript("tiamat/core/test/test_a.gd", 'assert_eq(", ".join(parts), "a, b")\n'), [], "a test may join as it likes");
+});
+
 test("a user:// path held in a name is still a user:// path", () => {
   const source = [
     'const MODS_DIR := "user://mods"',

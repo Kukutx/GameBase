@@ -62,7 +62,7 @@ func _reward_text(mail: MailData) -> String:
 		parts.append("%s x%d" % [tr(item.display_name) if item != null else String(raw_id), int(mail.reward_items[raw_id])])
 	if mail.reward_money > 0:
 		parts.append("%dg" % mail.reward_money)
-	return tr("Attachments: %s") % ", ".join(parts) if not parts.is_empty() else tr("No attachments")
+	return tr("Attachments: %s") % GameText.list(parts) if not parts.is_empty() else tr("No attachments")
 
 func _claim() -> void:
 	if _mail.is_empty():

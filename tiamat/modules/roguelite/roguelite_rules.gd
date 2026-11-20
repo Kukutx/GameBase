@@ -34,7 +34,7 @@ static func _describe_boon_taken(args: PackedStringArray) -> String:
 	var names := PackedStringArray()
 	for boon_id: String in args:
 		names.append(GameRulesService.entry_name(BoonData.KIND, boon_id))
-	return TranslationServer.translate("With %s") % ", ".join(names)
+	return TranslationServer.translate("With %s") % GameText.list(names)
 
 ## BOONS_AT_LEAST <count>: the run going on took at least that many boons,
 ## each as many times as it took it.
