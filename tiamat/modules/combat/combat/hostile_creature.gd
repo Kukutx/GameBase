@@ -90,6 +90,7 @@ func _ready() -> void:
 	hurtbox.ailed.connect(_on_ailed)
 	drop.changed.connect(_persist)
 	WorldClock.day_changed.connect(_on_day_changed)
+	GameSettings.locale_changed.connect(_refresh_health_label.unbind(1))
 	if is_defeated:
 		_set_defeated_visual()
 		# Nothing of a defeated creature moves until it comes back.

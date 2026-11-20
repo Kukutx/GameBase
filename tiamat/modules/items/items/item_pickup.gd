@@ -25,6 +25,7 @@ func _ready() -> void:
 		if left != null:
 			quantity = mini(int(left), quantity)
 	interactable.interacted.connect(_on_interacted)
+	GameSettings.locale_changed.connect(_refresh_label.unbind(1))
 	_refresh_label()
 
 func _on_interacted(actor: Node) -> void:

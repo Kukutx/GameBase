@@ -19,6 +19,7 @@ func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 	MineState.deepest_floor_changed.connect(_on_deepest_changed)
 	MineState.floor_changed.connect(_on_floor_changed)
+	GameSettings.locale_changed.connect(refresh.unbind(1))
 	refresh()
 
 ## The floors the elevator takes the player to from the one they are on, from

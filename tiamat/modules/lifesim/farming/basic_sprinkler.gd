@@ -6,6 +6,7 @@ extends PlacedStructure
 
 func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
+	GameSettings.locale_changed.connect(_refresh.unbind(1))
 	_refresh()
 
 func configure_from_record(record: Dictionary) -> void:

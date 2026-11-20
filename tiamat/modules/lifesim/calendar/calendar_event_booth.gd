@@ -11,6 +11,7 @@ func _ready() -> void:
 	EventState.active_events_changed.connect(_refresh)
 	EventState.participation_claimed.connect(_on_participation_claimed)
 	interactable.interacted.connect(_on_interacted)
+	GameSettings.locale_changed.connect(_refresh.unbind(1))
 	_refresh()
 
 func _on_interacted(_actor: Node) -> void:

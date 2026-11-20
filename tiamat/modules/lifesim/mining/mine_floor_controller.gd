@@ -228,6 +228,7 @@ func _refresh_ladder() -> void:
 			chest.locked = guarded
 
 func _on_locale_changed(_locale: String) -> void:
+	_refresh_label()
 	_refresh_ladder()
 
 func _refresh_label() -> void:
