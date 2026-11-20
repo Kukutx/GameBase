@@ -12,3 +12,6 @@ msgstr "请先结束当前对话"
 
 msgid "Talk"
 msgstr "交谈"
+
+msgid "Auto-advance Dialogue"
+msgstr "对话自动播放"

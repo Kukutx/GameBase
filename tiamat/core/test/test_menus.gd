@@ -133,7 +133,7 @@ func test_the_controls_page_follows_a_change_of_language() -> void:
 	GameSettings.set_locale("zh_CN")
 	var translated := label.text
 	var expected := TranslationServer.translate("Interact")
-	GameSettings.set_locale(GameSettingsService.SOURCE_LOCALE)
+	GameSettings.set_locale(GameLocales.SOURCE)
 	assert_eq(translated, expected)
 	assert_ne(translated, "Interact")
 	assert_eq(label.text, "Interact", "and back")
@@ -162,7 +162,7 @@ func test_escape_cancels_a_rebind() -> void:
 func test_reset_all_asks_then_restores_every_setting_but_the_language() -> void:
 	var menu := _settings()
 	menu.open()
-	var locales := GameSettings.get_supported_locales()
+	var locales := GameLocales.supported()
 	var language := locales[locales.size() - 1]
 	GameSettings.set_master_volume(0.2)
 	GameSettings.set_integer_scaling(true)
@@ -186,7 +186,7 @@ func test_reset_all_asks_then_restores_every_setting_but_the_language() -> void:
 	assert_eq(GameSettings.bindings.get_binding(&"interact"), interact.get_default_binding())
 	assert_eq(GameSettings.bindings.get_gamepad_button(&"interact"), interact.gamepad_button)
 	assert_eq(GameSettings.locale, language, "the language stays")
-	GameSettings.set_locale(GameSettingsService.SOURCE_LOCALE)
+	GameSettings.set_locale(GameLocales.SOURCE)
 
 func test_a_game_without_weather_shows_no_weather_toggle() -> void:
 	var definition := GameDefinition.new()

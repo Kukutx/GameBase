@@ -13,7 +13,7 @@ func after_each() -> void:
 	GameSettings.apply()
 
 func test_supported_locale_translation_and_selector() -> void:
-	assert_eq(GameSettings.get_supported_locales(), PackedStringArray(["en", "zh_CN"]))
+	assert_eq(GameLocales.supported(), PackedStringArray(["en", "zh_CN"]))
 	var previous := TranslationServer.get_locale()
 	TranslationServer.set_locale("zh_CN")
 	assert_eq(TranslationServer.translate("Settings"), "设置")
@@ -30,7 +30,7 @@ func test_supported_locale_translation_and_selector() -> void:
 	var menu := scene.instantiate() as SettingsMenu
 	add_child_autofree(menu)
 	await get_tree().process_frame
-	assert_eq(menu.language_select.item_count, GameSettings.get_supported_locales().size())
+	assert_eq(menu.language_select.item_count, GameLocales.supported().size())
 	menu.open()
 	menu.show_page(SettingsMenu.Page.ACCESSIBILITY)
 	await get_tree().process_frame

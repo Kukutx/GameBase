@@ -21,8 +21,8 @@ func test_the_theme_font_has_every_character_of_the_translations() -> void:
 
 func test_the_theme_font_has_the_name_of_each_language() -> void:
 	var font := _theme_font()
-	for locale: String in GameSettings.get_supported_locales():
-		var display_name := GameSettings.get_locale_display_name(locale)
+	for locale: String in GameLocales.supported():
+		var display_name := GameLocales.display_name(locale)
 		assert_eq(_missing_characters(font, display_name), PackedStringArray(), display_name)
 
 func test_labels_and_rich_text_draw_in_the_core_font_unless_the_theme_names_one() -> void:

@@ -79,6 +79,11 @@ static func current() -> GameDefinition:
 ## array makes GDScript's shutdown skip scripts (a loop upstream has since
 ## rewritten), so every test run ends with leak errors.
 @export var controls: Array[Resource] = []
+## The choices the game leaves to the player beyond the core's settings,
+## `GameOption` resources in the order the settings list them, before those
+## its modules declare (`GameOptions`); one with a module option's id replaces
+## it. Typed `Resource` for the same reason as `controls`.
+@export var options: Array[Resource] = []
 ## What the game sets for its modules (`ModuleSettings`), at most one of each
 ## kind; a module whose settings the game does not list takes their defaults.
 ## Typed `Resource` for the same reason as `controls`.

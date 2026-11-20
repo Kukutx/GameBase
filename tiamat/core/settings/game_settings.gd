@@ -3,25 +3,27 @@ extends Node
 
 ## The player's settings: the volumes, the display, autosave, how fast text
 ## types out, hints, accessibility, the language, the size and sides of the
-## touch controls, vibration and the bindings of the controls (`bindings`).
+## touch controls, vibration, the bindings of the controls (`bindings`) and
+## the choices the game and its modules leave to the player (`options`).
 ## It applies them to the audio buses, the window, the frame rate, the
 ## translation server and the input map, and writes them to `settings_path` (JSON) once the frame of a
 ## change is done: a slider dragged across writes once a frame, not once a step.
 ## The file is replaced whole (`JsonFile`), so a crash never leaves half of it.
 ##
 ## The first launch, with no settings file yet, speaks the supported language
-## nearest the system's (`system_locale`, `nearest_locale()`).
+## nearest the system's (`GameLocales.nearest()`).
 ##
 ## Settings belong to the player, not to a save slot: starting or loading a game
 ## leaves them as they are. The controls are those of the game, its modules
 ## and the core (`GameControls`); binding one follows the rules of
 ## `ControlBindings`, which `bindings` reads. `changed` fires on any change,
-## `controls_changed` when a binding changes and `locale_changed` when the
-## language does. As the game starts it makes the core's font (`GameFont`)
+## `controls_changed` when a binding changes, `option_changed` when an option
+## does and `locale_changed` when the language does. As the game starts it makes the core's font (`GameFont`)
 ## the font every text shows in.
 
 signal changed
 signal controls_changed
+signal option_changed(id: StringName, value: Variant)
 signal locale_changed(locale: String)
 
 ## The settings are JSON: unlike `ConfigFile` or `str_to_var()`, whose text
@@ -30,26 +32,6 @@ signal locale_changed(locale: String)
 const DEFAULT_SETTINGS_PATH := "user://settings.json"
 ## The layout of the settings file; a file of another version is not read.
 const SETTINGS_VERSION := 2
-## Source text is English; the other locales are those the game registers
-## translations for.
-const SOURCE_LOCALE := "en"
-## Each language's name in that language, for the language picker.
-const LOCALE_NAMES := {
-	"de": "Deutsch",
-	"en": "English",
-	"es": "Español",
-	"fr": "Français",
-	"it": "Italiano",
-	"ja": "日本語",
-	"ko": "한국어",
-	"pl": "Polski",
-	"pt_BR": "Português (Brasil)",
-	"ru": "Русский",
-	"tr": "Türkçe",
-	"zh_CN": "简体中文",
-	"zh_TW": "繁體中文",
-}
-
 ## How fast a dialogue types its lines out (`get_seconds_per_character()`).
 enum TextSpeed { SLOW, NORMAL, FAST, INSTANT }
 ## Each text speed's name, as the settings file holds it and the menu shows it.
@@ -78,10 +60,6 @@ const BATTERY_SAVER_FRAME_RATE := 30
 ## layout may add effects to them; the core adds the ones it lacks.
 const AUDIO_BUSES: Array[StringName] = [&"Music", &"Sounds"]
 
-## The system's language as the game starts (`OS.get_locale()`); a test run
-## sets the source language here, so no test depends on the machine's.
-static var system_locale := OS.get_locale()
-
 var settings_path := DEFAULT_SETTINGS_PATH
 # The values `reset_all()` restores are those `_reset_values()` sets.
 var master_volume: float
@@ -105,7 +83,7 @@ var reduced_motion: bool
 ## Whether the player lets the game reach online services (an NPC chat's
 ## language model: `register_online_service()`); off until they turn it on.
 var online_services: bool
-var locale := SOURCE_LOCALE
+var locale := GameLocales.SOURCE
 ## How large the touch controls show.
 var touch_size: TouchSize
 ## Whether the touch controls swap sides: the stick at the lower right, the
@@ -120,6 +98,9 @@ var vibration: bool
 ## them here; change them with `bind_control()`, `bind_gamepad_button()` and
 ## `reset_controls()`, which save and apply the change.
 var bindings: ControlBindings
+## The options of the running game (`GameOption`) and the player's value of
+## each: read one with `get_option()`, change it with `set_option()`.
+var options: GameOptions
 
 # Whether a change waits to be written at the end of its frame.
 var _save_pending := false
@@ -140,10 +121,11 @@ func _init() -> void:
 	GameFont.use(load(GameFont.PATH) as Font)
 	_reset_values()
 	bindings = ControlBindings.new(GameControls.of_running_game())
+	options = GameOptions.of_running_game()
 
 func _ready() -> void:
 	ensure_audio_buses()
-	locale = nearest_locale(system_locale, get_supported_locales())
+	locale = GameLocales.nearest(GameLocales.system, GameLocales.supported())
 	load_settings()
 	WindowMemory.restore()
 	apply()
@@ -282,37 +264,23 @@ func set_reduced_motion(value: bool) -> void:
 	_save_and_emit()
 
 func set_locale(value: String) -> void:
-	locale = value if get_supported_locales().has(value) else SOURCE_LOCALE
+	locale = value if GameLocales.is_supported(value) else GameLocales.SOURCE
 	TranslationServer.set_locale(locale)
 	_request_save()
 	locale_changed.emit(locale)
 	changed.emit()
 
-## The source locale followed by every locale the game registers a translation for.
-func get_supported_locales() -> PackedStringArray:
-	var result := PackedStringArray([SOURCE_LOCALE])
-	var loaded := TranslationServer.get_loaded_locales()
-	loaded.sort()
-	for loaded_locale: String in loaded:
-		if not result.has(loaded_locale):
-			result.append(loaded_locale)
-	return result
+## The player's value of the game's option `id` (`GameOption`): a bool, a
+## choice's name or a float.
+func get_option(id: StringName) -> Variant:
+	return options.get_value(id)
 
-## The locale of `supported` nearest `system` (an `OS.get_locale()`): the same
-## one, else one of the same language (a Traditional Chinese system reads
-## Simplified Chinese before English), else the source language.
-static func nearest_locale(system: String, supported: PackedStringArray) -> String:
-	var nearest := SOURCE_LOCALE
-	var nearest_score := 0
-	for candidate: String in supported:
-		var score := TranslationServer.compare_locales(system, candidate)
-		if score > nearest_score:
-			nearest = candidate
-			nearest_score = score
-	return nearest
-
-func get_locale_display_name(value: String) -> String:
-	return String(LOCALE_NAMES.get(value, TranslationServer.get_locale_name(value)))
+## Sets the game's option `id` to `value`, held to what the option takes.
+func set_option(id: StringName, value: Variant) -> void:
+	if options.set_value(id, value):
+		_request_save()
+		option_changed.emit(id, options.get_value(id))
+		changed.emit()
 
 ## Binds `binding`, a key or mouse button (`ControlBindings`), to the
 ## rebindable `action`; false when the rules of `ControlBindings` refuse it.
@@ -329,10 +297,14 @@ func reset_controls() -> void:
 	bindings.reset()
 	_changed_controls(true)
 
-## Restores every setting but the language to its default, controls included.
+## Restores every setting but the language to its default, the controls and
+## the options included.
 func reset_all() -> void:
 	_reset_values()
 	bindings.reset()
+	options.reset()
+	for option: GameOption in options.get_declared():
+		option_changed.emit(option.id, options.get_value(option.id))
 	apply()
 	_request_save()
 	controls_changed.emit()
@@ -371,6 +343,7 @@ func to_data() -> Dictionary:
 		"localization": {"locale": locale},
 		"controls": controls["controls"],
 		"gamepad": controls["gamepad"],
+		"options": options.to_data(),
 	}
 
 ## Writes the settings to `settings_path` now. A change writes them by itself
@@ -384,8 +357,8 @@ func save_settings() -> void:
 ## Reads the settings from `settings_path`. A missing, unreadable or other
 ## version's file changes nothing. In a file that is read, a value of the wrong
 ## type keeps the current one, except that a locale the game does not support
-## reads as the source language, and the controls read as
-## `ControlBindings.read_data()` tells.
+## reads as the source language, and the controls and the options read as
+## `ControlBindings.read_data()` and `GameOptions.read_data()` tell.
 func load_settings() -> void:
 	var data: Variant = JsonFile.read(settings_path)
 	if not (data is Dictionary) or _read_number(data, "settings_version", "", 0.0) != SETTINGS_VERSION:
@@ -415,8 +388,9 @@ func load_settings() -> void:
 	touch_stick_right = _read_bool(data, "touch", "stick_right", touch_stick_right)
 	touch_opacity = clampf(_read_number(data, "touch", "opacity", touch_opacity), TOUCH_OPACITY_MIN, 1.0)
 	var loaded_locale: Variant = _read(data, "localization", "locale")
-	locale = loaded_locale if loaded_locale is String and get_supported_locales().has(loaded_locale) else SOURCE_LOCALE
+	locale = loaded_locale if GameLocales.is_supported(loaded_locale) else GameLocales.SOURCE
 	bindings.read_data(data.get("controls"), data.get("gamepad"))
+	options.read_data(data.get("options"))
 
 # The value under `section` and `key` of the settings file's `data`, or null
 # (`key` "" reads `section` itself).

@@ -2,8 +2,9 @@ class_name SettingsMenu
 extends CanvasLayer
 
 ## The settings every game shares (`GameSettings`): volume, display, autosave,
-## text speed, language, accessibility and the game's controls, whose key or
-## mouse button and gamepad button the player can rebind, under a heading for
+## text speed, language, the options the game and its modules leave to the
+## player (`GameOptionRows`), accessibility and the game's controls, whose key
+## or mouse button and gamepad button the player can rebind, under a heading for
 ## each group of controls a minigame reads (`ControlAction.group`). The left
 ## mouse button stays the pointer's: a click cancels a rebind. Its pages
 ## scroll inside one panel that fits the game's view; `ui_cancel` or Back
@@ -64,6 +65,8 @@ const BINDING_WIDTH := 76.0
 @onready var confirm_reset: ConfirmationDialog = $ConfirmReset
 
 var page := Page.MAIN
+## The rows of the game's own options, on the main page.
+var option_rows: GameOptionRows
 var _syncing := false
 # The rebind under way: the action, whether it waits for a gamepad button
 # rather than a key or mouse button, and the button that shows it.
@@ -114,6 +117,9 @@ func _ready() -> void:
 	vibration_check.toggled.connect(_on_vibration_toggled)
 	_build_language_selector()
 	language_select.item_selected.connect(_on_language_selected)
+	option_rows = GameOptionRows.new()
+	main_page.add_child(option_rows)
+	main_page.move_child(option_rows, accessibility_button.get_index())
 	_build_controls()
 	controls_reset.pressed.connect(_reset_controls)
 	back_button.pressed.connect(go_back)
@@ -239,15 +245,16 @@ func _sync_from_settings() -> void:
 	vibration_check.visible = Haptics.is_offered()
 	vibration_check.button_pressed = GameSettings.vibration
 	_select_current_language()
+	option_rows.sync()
 	_syncing = false
 	if _waiting_action == &"":
 		_refresh_controls()
 
 func _build_language_selector() -> void:
 	language_select.clear()
-	for locale_id: String in GameSettings.get_supported_locales():
+	for locale_id: String in GameLocales.supported():
 		var index := language_select.item_count
-		language_select.add_item(GameSettings.get_locale_display_name(locale_id))
+		language_select.add_item(GameLocales.display_name(locale_id))
 		language_select.set_item_metadata(index, locale_id)
 	_select_current_language()
 
