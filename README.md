@@ -45,10 +45,10 @@ node tools/link.js
 
 Then open `games/<id>/project.godot` in a stable Godot 4.x editor. The shared engine baseline is `.godot-version` (currently 4.7.2); newer stable 4.x releases are allowed locally. The tooling needs Node.js 26 (the current LTS) or newer and has no other dependency; tools use `--godot-bin <path>`, else `GODOT_BIN`, else `godot` from `PATH`. Every tool says what it does and lists its options with `--help` (`node tools/export.js --help`).
 
-Create a new game, a small one that plays on the core alone (no module), with:
+Create a new game, a small one that plays on the core and the modules it names (with every module they require; none without `--modules`), with:
 
 ```text
-node tools/new_game.js --id <id> --name "<Game Name>" [--description "<One line>"]
+node tools/new_game.js --id <id> --name "<Game Name>" [--description "<One line>"] [--modules <module>[,<module>...]]
 ```
 
 Start a new module, a piece of gameplay games share, with its class, catalog, test and declaration ([docs/MODULES.md](docs/MODULES.md) says what it can register):

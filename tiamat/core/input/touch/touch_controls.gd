@@ -36,9 +36,8 @@ extends CanvasLayer
 ## taps a field, a slot or a person while walking.
 ##
 ## A phone's keyboard comes up over the game when the player types (a name, an
-## amount): the menu of the field typed in (its `CanvasLayer`) rises until the
-## field shows above the keyboard, and goes back down when the keyboard goes
-## or the field loses the focus (`lift_for_keyboard()`).
+## amount): the menu of the field typed in rises until the field shows above
+## the keyboard (`keyboard_lift`, a `KeyboardLift`).
 ##
 ## On a device played by touch, a button smaller than a fingertip takes the
 ## taps that land just beside it (`TouchTarget`), and a list scrolls under a
@@ -65,9 +64,6 @@ const FINGER_MOUSE_DEVICE := -8
 const SAFE_AREA_CHECK := 0.5
 ## The most buttons a game's controls get.
 const MAX_BUTTONS := 5
-## How far above a phone's keyboard the field typed in shows, in the window's
-## pixels.
-const KEYBOARD_GAP := 12.0
 ## Sizes against the height of the view, at the normal touch size
 ## (`GameSettings.get_touch_scale()`).
 const STICK_RADIUS := 0.13
@@ -80,6 +76,9 @@ const PAUSE_HEIGHT := 0.4
 ## left, up, then further left and up (mirrored while the player has the
 ## stick at the right, `GameSettings.touch_stick_right`).
 const BUTTON_PLACES: Array[Vector2] = [Vector2(-2.3, 0.0), Vector2(-1.7, -1.7), Vector2(0.0, -2.3), Vector2(-4.4, 0.2), Vector2(-3.6, -2.4)]
+
+## Lifts the menu of the field typed in over a phone's keyboard.
+var keyboard_lift := KeyboardLift.new()
 
 var _stick: TouchStick
 var _corner: TouchButton
@@ -102,9 +101,6 @@ var _mouse_at := Vector2.ZERO
 # time to the next look at it.
 var _laid_out_safe := Rect2()
 var _safe_check_in := 0.0
-# The layer raised over the keyboard, and where it sat before.
-var _lifted: CanvasLayer = null
-var _lifted_from := Vector2.ZERO
 
 func _ready() -> void:
 	layer = LAYER
@@ -144,43 +140,7 @@ func _process(delta: float) -> void:
 		_safe_check_in = SAFE_AREA_CHECK
 		if safe_rect() != _laid_out_safe:
 			_layout()
-	lift_for_keyboard(keyboard_height() if _typing_field() != null else 0)
-
-## How tall the keyboard on the screen is, in the window's pixels: 0 while it
-## is down, or where the platform tells nothing (a computer; a browser, which
-## does not say).
-static func keyboard_height() -> int:
-	if OS.has_feature("web") or not DisplayServer.has_feature(DisplayServer.FEATURE_VIRTUAL_KEYBOARD):
-		return 0
-	return DisplayServer.virtual_keyboard_get_height()
-
-## Raises the menu of the field typed in (the `CanvasLayer` it draws on) so
-## the field shows above a keyboard `keyboard` window pixels tall, no higher
-## than takes the field's top to the window's; sets it back down once the
-## keyboard is gone (0) or no field is typed in.
-func lift_for_keyboard(keyboard: int) -> void:
-	var field := _typing_field()
-	var layer: CanvasLayer = field.get_canvas_layer_node() if keyboard > 0 and field != null else null
-	if layer != _lifted:
-		if is_instance_valid(_lifted):
-			_lifted.offset = _lifted_from
-		_lifted = layer
-		if layer != null:
-			_lifted_from = layer.offset
-	if layer == null:
-		return
-	# Where the field stands on the window with its layer down.
-	var to_window := get_tree().root.get_final_transform()
-	var down := Transform2D(0.0, Vector2(0.0, _lifted_from.y - layer.offset.y)) * layer.get_final_transform()
-	var rect := to_window * (down * field.get_global_rect())
-	var keyboard_top := float(get_tree().root.size.y - keyboard)
-	var rise := clampf(rect.end.y + KEYBOARD_GAP - keyboard_top, 0.0, maxf(rect.position.y, 0.0))
-	layer.offset.y = _lifted_from.y - rise / to_window.get_scale().y
-
-# The text field the player types in, or null.
-func _typing_field() -> Control:
-	var focused := get_viewport().gui_get_focus_owner()
-	return focused if focused is LineEdit or focused is TextEdit else null
+	keyboard_lift.follow(get_viewport())
 
 ## Goes back, as Android's back button does: closes what is open (a menu, a
 ## dialogue, a minigame, a dialog window) with the cancel action, pauses play,

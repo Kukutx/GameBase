@@ -97,6 +97,25 @@ test("a new game is complete and translated as it is created", () => {
   }
 });
 
+test("a new game takes the modules it names with every module they require", () => {
+  const out = tempFile("tiamat-new-game-modules-test");
+  try {
+    assert.throws(() => createGame({ id: "probe", name: "Probe Game", modules: ["boats"], out }), /Unknown module 'boats'/);
+    assert.equal(fs.existsSync(out) && fs.readdirSync(out).length > 0, false, "a refused game writes nothing");
+    const game = createGame({ id: "probe", name: "Probe Game", modules: ["npc_ai", "combat", "combat"], out });
+    const listed = ["combat", "damage", "dialogue", "items", "npc_ai", "npc_social"];
+    assert.deepEqual(game.modules, listed);
+    assert.deepEqual(JSON.parse(fs.readFileSync(gamePath(game, "game.json"), "utf8")), { id: "probe", modules: listed });
+    assert.ok(game.addons.includes("dialogue_manager"), "the addon its modules use");
+    assert.ok(projectInSync(game), "linked: the modules' autoloads and catalogs are registered");
+    const project = fs.readFileSync(gamePath(game, "project.godot"), "utf8");
+    assert.ok(project.includes('"res://tiamat/modules/npc_social/i18n/npc_social.zh_CN.po"'));
+    assert.equal(quietly(() => checkLocalization(game)), 0);
+  } finally {
+    removeRecursive(out);
+  }
+});
+
 test("a new game takes its description, with a catalog entry that keeps the English text until it is translated", () => {
   const out = tempFile("tiamat-description-test");
   try {
