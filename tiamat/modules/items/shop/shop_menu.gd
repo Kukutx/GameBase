@@ -124,18 +124,9 @@ func _rebuild(keep_focus := false) -> void:
 		buttons.append(child as Button)
 	MenuLayer.focus_kept(buttons, kept, close_button)
 
-## What the counter tells of `item`: its description, then what it does
-## (`ItemData.describe_effects()`), on a line of its own; "" for none.
+## What the counter tells of `item` (`ItemData.describe()`); "" for none.
 static func describe_item(item: ItemData) -> String:
-	if item == null:
-		return ""
-	var parts := PackedStringArray()
-	if not item.description.is_empty():
-		parts.append(TranslationServer.translate(item.description))
-	var effects := item.describe_effects()
-	if not effects.is_empty():
-		parts.append(ItemData.EFFECT_SEPARATOR.join(effects))
-	return "\n".join(parts)
+	return item.describe() if item != null else ""
 
 func _tell_about(item: ItemData) -> void:
 	about_label.text = describe_item(item)

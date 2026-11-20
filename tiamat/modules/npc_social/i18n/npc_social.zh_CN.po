@@ -64,3 +64,30 @@ msgstr "%s觉得一般"
 
 msgid "%s dislikes it"
 msgstr "%s讨厌"
+
+msgid "A gift"
+msgstr "礼物"
+
+msgid "A gift for %s"
+msgstr "送给%s的礼物"
+
+msgid "Their birthday: a gift counts twice"
+msgstr "今天是生日：礼物效果加倍"
+
+msgid "Give"
+msgstr "赠送"
+
+msgid "You carry nothing to give"
+msgstr "身上没有可以送的东西"
+
+msgid "Loved"
+msgstr "最爱"
+
+msgid "Liked"
+msgstr "喜欢"
+
+msgid "Neutral"
+msgstr "一般"
+
+msgid "Disliked"
+msgstr "讨厌"

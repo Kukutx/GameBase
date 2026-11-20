@@ -4,8 +4,8 @@ extends TopDownPlayer
 ## Farm1's player: walks, works the soil with the selected tool (its
 ## `FarmToolController`), attacks (its `MeleeAttack`) and uses what is near
 ## (its `InteractionController`), as a `TopDownPlayer`; picks a hotbar slot
-## (its `HotbarInput`); gives the selected item as a gift and packs up a
-## placed structure.
+## (its `HotbarInput`); gives a gift, picked in the HUD's `GiftMenu`, and packs
+## up a placed structure.
 
 @onready var interaction_controller: InteractionController = $InteractionController
 
@@ -30,6 +30,11 @@ func _give_selected_gift() -> void:
 		GameEvents.toast("That is not someone you can gift")
 		return
 	var item_id := Hotbar.get_selected_item_id()
+	# The HUD's gift menu picks among every gift carried, the one in hand first.
+	var menu := get_tree().get_first_node_in_group(&"gift_menu") as GiftMenu
+	if menu != null and npc.profile != null:
+		menu.open(npc.profile, item_id)
+		return
 	if item_id == &"":
 		GameEvents.toast("Select a gift in the hotbar")
 		return

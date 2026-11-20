@@ -118,6 +118,9 @@ msgstr "背包已满或材料发生了变化"
 msgid "Crafted %s"
 msgstr "已制作%s"
 
+msgid "Crafted %s x%d"
+msgstr "已制作%s x%d"
+
 msgid "Empty this chest before packing it up"
 msgstr "收起储物箱前请先清空它"
 
