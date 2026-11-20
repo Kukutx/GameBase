@@ -9,7 +9,7 @@ extends MenuLayer
 ## its `ShopOffer.can_buy()` refuses) is dimmed, and opens again as soon as a
 ## sale or the bag makes room for it. Under the lists it tells of the item
 ## whose button has the focus: its description and what it does
-## (`describe_item()`).
+## (`describe_item()`), or of the offer (`ShopOffer.describe()`).
 
 ## The amounts one press buys or sells, in the order the amount button steps
 ## through them, the first as the counter opens; one amount hides the button.
@@ -92,7 +92,7 @@ func _rebuild() -> void:
 		var button := MenuLayer.list_button()
 		_offer_buttons[offer] = button
 		button.pressed.connect(_buy_offer.bind(offer))
-		button.focus_entered.connect(_tell_about.bind(null))
+		button.focus_entered.connect(_tell_of_offer.bind(offer))
 		items_container.add_child(button)
 		buttons.append(button)
 	_refresh_buy_list()
@@ -121,6 +121,9 @@ static func describe_item(item: ItemData) -> String:
 
 func _tell_about(item: ItemData) -> void:
 	about_label.text = describe_item(item)
+
+func _tell_of_offer(offer: ShopOffer) -> void:
+	about_label.text = offer.describe(_offer_context())
 
 func _buy(item_id: StringName) -> void:
 	ShopState.buy(_shop, item_id, get_amount())

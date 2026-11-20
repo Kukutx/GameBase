@@ -15,6 +15,12 @@ func get_key() -> String:
 func get_label(_context: Dictionary) -> String:
 	return ""
 
+## What the counter tells of the offer while its button has the focus,
+## translated (what a boon does, what an animal eats and gives); "" for
+## nothing.
+func describe(_context: Dictionary) -> String:
+	return ""
+
 func can_buy(_context: Dictionary) -> bool:
 	return false
 
