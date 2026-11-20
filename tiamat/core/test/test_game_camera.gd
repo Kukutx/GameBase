@@ -2,8 +2,9 @@ extends GutTest
 
 ## The view of the world (`GameCamera`): it shows where the player was put at
 ## once, keeps inside the location's bounds (`CameraBounds`) and shows a map
-## smaller than the view whole in its middle, zooms, and shakes and settles
-## back; with reduced motion nothing shakes and a zoom is at once.
+## smaller than the view whole in its middle, goes past the bounds' top and
+## bottom by the room its HUD takes, zooms, and shakes and settles back; with
+## reduced motion nothing shakes and a zoom is at once.
 
 var _reduced_motion := false
 
@@ -44,6 +45,25 @@ func test_the_view_keeps_inside_the_bounds_and_shows_a_small_map_in_its_middle()
 	camera.use_bounds(null)
 	assert_eq(camera.limit_right, CameraBounds.UNBOUNDED)
 	assert_eq(bounds.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the bounds take no clicks")
+
+func test_the_view_goes_past_the_bounds_by_the_room_the_hud_takes() -> void:
+	# A room as tall as the view showed its top and bottom under the HUD's
+	# lines, and the player standing there under the hotbar.
+	var camera := _camera()
+	var view := camera.get_viewport_rect().size
+	camera.hud_room_top = 40.0
+	camera.hud_room_bottom = 60.0
+	_bounds(Rect2(-view.x, -view.y / 2.0, view.x * 2.0, view.y))
+	assert_eq([camera.limit_top, camera.limit_bottom], [int(-view.y / 2.0 - 40.0), int(view.y / 2.0 + 60.0)], "past the top and the bottom")
+	assert_eq([camera.limit_left, camera.limit_right], [int(-view.x), int(view.x)], "not past the sides")
+	var followed := camera.get_parent() as Node2D
+	followed.global_position = Vector2(0, view.y / 2.0 - 4.0)
+	camera.snap()
+	var bottom_on_screen := view.y / 2.0 - (camera.get_screen_center_position().y - view.y / 2.0)
+	assert_almost_eq(bottom_on_screen, view.y - 60.0, 1.0, "the bounds' bottom edge stands clear of the bottom lines")
+	camera.hud_room_bottom = 0.0
+	camera.use_bounds(CameraBounds.find_for(camera))
+	assert_eq(camera.limit_bottom, int(view.y / 2.0), "no room, no farther than the edge")
 
 func test_the_zoom_eases_to_its_level_and_is_at_once_with_reduced_motion() -> void:
 	var camera := _camera()

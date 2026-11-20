@@ -75,8 +75,8 @@ text = "Back to the start"
 position = Vector2(0, 44)
 
 [node name="CameraBounds" type="ReferenceRect" parent="."]
-offset_left = -400.0
-offset_top = -260.0
-offset_right = 400.0
-offset_bottom = 260.0
+offset_left = -140.0
+offset_top = -90.0
+offset_right = 140.0
+offset_bottom = 90.0
 script = ExtResource("91_bounds")

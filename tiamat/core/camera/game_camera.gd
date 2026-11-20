@@ -4,7 +4,8 @@ extends Camera2D
 ## The view of the world, the camera a game puts on its player: it follows its
 ## parent smoothly, jumps to it at once where the player was put rather than
 ## walked (`snap()`: a travel's spawn point, a load), keeps inside the bounds
-## the location sets (`CameraBounds`), zooms (`zoom_to()`) and shakes for a
+## the location sets (`CameraBounds`), with room past their top and bottom
+## for the HUD's lines (`hud_room_top`, `hud_room_bottom`), zooms (`zoom_to()`) and shakes for a
 ## moment (`shake()`, or `shake_view()` from anything in the world: a hit, a
 ## blast). With reduced motion (`GameSettings`) nothing shakes and a zoom
 ## takes effect at once.
@@ -13,6 +14,17 @@ extends Camera2D
 const GROUP := &"game_camera"
 ## How fast a zoom eases to its level, in seconds.
 const ZOOM_SECONDS := 0.25
+
+## How far past the top of the bounds the view may go, in pixels of the view:
+## the room the HUD's lines take there, so what stands at the bounds' edge
+## comes out from under them. A location's bounds stay the ground the player
+## walks; the game's camera knows its HUD. Past the bounds the view shows the
+## location's backdrop, which reaches that far (Ember Depths' dark around a
+## depth's floor).
+@export var hud_room_top := 0.0
+## How far past the bottom of the bounds the view may go: the room the HUD's
+## lines take at the bottom (a hotbar, the controls).
+@export var hud_room_bottom := 0.0
 
 # The bounds the view keeps inside, in world coordinates; empty for none.
 var _bounds := Rect2()
@@ -119,8 +131,9 @@ func _update_limits() -> void:
 		limit_right = CameraBounds.UNBOUNDED
 		limit_bottom = CameraBounds.UNBOUNDED
 		return
-	var spare := (view - _bounds.size).max(Vector2.ZERO) / 2.0
-	var shown := _bounds.grow_individual(spare.x, spare.y, spare.x, spare.y)
+	var bounds := _bounds.grow_individual(0.0, hud_room_top / zoom.y, 0.0, hud_room_bottom / zoom.y)
+	var spare := (view - bounds.size).max(Vector2.ZERO) / 2.0
+	var shown := bounds.grow_individual(spare.x, spare.y, spare.x, spare.y)
 	limit_left = floori(shown.position.x)
 	limit_top = floori(shown.position.y)
 	limit_right = ceili(shown.end.x)
