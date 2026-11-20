@@ -178,6 +178,24 @@ func test_a_finger_selects_and_orders_with_taps() -> void:
 	field.clicked.emit(Vector2(60.0, 85.0), false, false)
 	assert_eq(game.get_selection(), [] as Array[RtsUnit], "a click on open ground still drops the selection")
 
+func test_a_finger_s_tap_takes_the_nearest_unit_within_half_a_fingertip() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	var reach := TouchTarget.reach
+	TouchTarget.reach = 24.0 * game.get_field().get_zoom()
+	var first := game.battle.units[0]
+	var beside := first.position + Vector2(first.data.radius + 8.0, 0.0)
+	game.get_field().clicked.emit(beside, false, false)
+	assert_eq(game.get_selection(), [] as Array[RtsUnit], "a click there misses it")
+	InputPrompts.call("_set_using_touch", true)
+	assert_eq(game.get_pick_slack(), 12.0, "half a fingertip, in pixels of the field")
+	game.get_field().clicked.emit(beside, false, false)
+	assert_eq(game.get_selection(), [first] as Array[RtsUnit], "a finger's tap takes it")
+	TouchTarget.reach = 0.0
+	assert_eq(game.get_pick_slack(), RtsBattleGame.PICK_SLACK, "with no fingertip measured, as a click")
+	TouchTarget.reach = reach
+	InputPrompts.call("_set_using_touch", false)
+
 func test_cancel_drops_the_armed_move_then_the_selection_then_gives_up() -> void:
 	var outcome := {}
 	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()
