@@ -15,8 +15,10 @@ extends RefCounted
 ## of fighting.
 ## The battle ends when no two living units that fight are hostile
 ## (`FactionData.are_hostile()`), won when the player's side is left: healers
-## alone hold nothing. A unit that falls is out of the battle for good, even if
-## its health comes back.
+## alone hold nothing. On a field with ground to hold (`hold`), it also ends
+## once the side that takes it has held it long enough, won when that side is
+## the player's (`hold_changed` tells who holds it). A unit that falls is out
+## of the battle for good, even if its health comes back.
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`RtsBattleGame`) lets time pass with `advance()`, gives the player's orders
@@ -34,6 +36,9 @@ signal unit_attacked(attacker: RtsUnit, target: RtsUnit, amount: int)
 ## A healer (`RtsUnitData.heal`) mended `target` by `amount`.
 signal unit_healed(healer: RtsUnit, target: RtsUnit, amount: int)
 signal unit_defeated(unit: RtsUnit)
+## The side that holds the ground (`hold`) changed: `holder` is the first
+## placed of the units that hold it now, or null while no side does.
+signal hold_changed(holder: RtsUnit)
 signal ended(won: bool)
 
 ## The seconds of one step of the battle.
@@ -65,6 +70,9 @@ var ai := RtsBattleAi.new()
 ## The health the units hostile to the player's side start with, as a share of
 ## their kind's (`RtsUnitData.max_health`): the player's foe strength.
 var foe_health_scale := 1.0
+## The ground a side wins the battle by holding (`RtsMapData.hold_area`), or
+## null.
+var hold: RtsHold
 ## The seconds of battle that have passed.
 var time := 0.0
 var _left := 0.0
@@ -98,6 +106,8 @@ static func from_map(map: RtsMapData, foe_health := 1.0) -> RtsBattle:
 	var battle := RtsBattle.new(map.size, map.obstacles, map.player_faction_id)
 	battle.computer_advances = map.computer_advances
 	battle.foe_health_scale = foe_health
+	if map.hold_area.has_area():
+		battle.hold = RtsHold.new(map.hold_area, map.hold_seconds, map.get_hold_faction())
 	for placement: RtsPlacement in map.placements:
 		var data := RtsUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
@@ -305,6 +315,8 @@ func _step() -> void:
 		_file_units()
 		_separate()
 	_filed = false
+	if hold != null and not _over:
+		_step_hold()
 
 # Files the living units by where they stand now, in cells three times as
 # wide as the widest unit.
@@ -429,6 +441,18 @@ func _check_over() -> void:
 	_over = true
 	_won = standing.any(func(unit: RtsUnit) -> bool: return is_on_player_side(unit))
 	ended.emit(_won)
+
+# Notes who holds the ground this step, tells when that changed, and ends the
+# battle once the side that takes it held it long enough.
+func _step_hold() -> void:
+	var before := hold.holder.side if hold.holder != null else -1
+	var held := hold.step(self, STEP)
+	if (hold.holder.side if hold.holder != null else -1) != before:
+		hold_changed.emit(hold.holder)
+	if held:
+		_over = true
+		_won = is_on_player_side(hold.holder)
+		ended.emit(_won)
 
 func _set_still(group: Array[RtsUnit], order: RtsUnit.Order) -> void:
 	for unit: RtsUnit in _living(group):

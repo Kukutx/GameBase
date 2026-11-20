@@ -2,8 +2,9 @@ extends GutTest
 
 ## The battle at the raider camp, the muster's second: it opens once the pass
 ## is won, its map and units hold, the raiders wait behind their palisade, a
-## win at the ford sends two spearmen, and the battle comes to an end when the
-## player's troops storm it.
+## win at the ford sends two spearmen, the fire at the camp's heart held for
+## 20 seconds wins it, and the battle comes to an end when the player's troops
+## storm it.
 
 const GATE := Vector2(324.0, 100.0)
 
@@ -46,6 +47,24 @@ func test_a_win_at_the_ford_sends_two_spearmen_to_the_camp() -> void:
 	var map := RtsMapData.find(&"raider_camp")
 	WorldState.add_int(MiniGameDefinition.wins_key(&"ford_battle"), 1)
 	assert_eq(RtsBattle.from_map(map).get_player_units().size(), 12)
+
+func test_the_fire_at_the_camp_s_heart_held_wins_it() -> void:
+	var battle := RtsBattle.from_map(RtsMapData.find(&"raider_camp"))
+	assert_eq(battle.hold.seconds, 20.0)
+	assert_true(battle.hold.area.has_point(Vector2(370.0, 100.0)), "the fire amid the raiders")
+	assert_true(Rect2(328.0, 48.0, 84.0, 104.0).encloses(battle.hold.area), "inside the palisade")
+	# As if the troops had driven the raiders out to the field's far corners.
+	for unit: RtsUnit in battle.get_living_units():
+		if not battle.is_on_player_side(unit):
+			unit.position = Vector2(450.0, 12.0) if unit.index % 2 == 0 else Vector2(450.0, 188.0)
+			battle.order_hold([unit] as Array[RtsUnit])
+	var spear: RtsUnit = battle.get_player_units()[0]
+	spear.position = Vector2(370.0, 100.0)
+	battle.order_hold([spear] as Array[RtsUnit])
+	battle.advance(19.0)
+	assert_false(battle.is_over())
+	battle.advance(1.1)
+	assert_true(battle.is_over() and battle.is_won(), "held for 20 seconds")
 
 func test_the_battle_ends_when_the_troops_storm_the_camp() -> void:
 	var battle := RtsBattle.from_map(RtsMapData.find(&"raider_camp"))
