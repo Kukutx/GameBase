@@ -99,3 +99,12 @@ msgstr "异常状态：%s"
 
 msgid "Cured: %s"
 msgstr "已解除：%s"
+
+msgid "Cures %s"
+msgstr "可解除%s"
+
+msgid "Attack %d"
+msgstr "攻击 %d"
+
+msgid "Its hits leave foes %s"
+msgstr "命中使敌人%s"

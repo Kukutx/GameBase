@@ -67,6 +67,11 @@ horizontal_alignment = 1
 [node name="SellItems" type="VBoxContainer" parent="Panel/VBox/Lists/Entries"]
 layout_mode = 2
 
+[node name="About" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+autowrap_mode = 3
+max_lines_visible = 2
+
 [node name="Close" type="Button" parent="Panel/VBox"]
 layout_mode = 2
 text = "Close"

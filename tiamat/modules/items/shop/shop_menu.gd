@@ -2,13 +2,16 @@ class_name ShopMenu
 extends MenuLayer
 
 ## A shop's counter: buys what the shop stocks and offers, and sells, one at a
-## time, every item the inventory holds that has a sell price.
+## time, every item the inventory holds that has a sell price. Under the lists
+## it tells of the item whose button has the focus: its description and what
+## it does (`describe_item()`).
 
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var money_label: Label = $Panel/VBox/Money
 @onready var items_container: VBoxContainer = $Panel/VBox/Lists/Entries/Items
 @onready var sell_title: Label = $Panel/VBox/Lists/Entries/SellTitle
 @onready var sell_container: VBoxContainer = $Panel/VBox/Lists/Entries/SellItems
+@onready var about_label: Label = $Panel/VBox/About
 @onready var close_button: Button = $Panel/VBox/Close
 
 var _shop: ShopData
@@ -22,6 +25,8 @@ func _ready() -> void:
 	close_button.pressed.connect(close)
 	Wallet.money_changed.connect(_on_money_changed)
 	InventoryState.changed.connect(_on_inventory_changed)
+	# Two lines kept for it, so the lists keep their height as it changes.
+	about_label.custom_minimum_size.y = about_label.get_line_height() * 2
 
 func open(shop: ShopData) -> void:
 	if shop == null:
@@ -40,6 +45,7 @@ func _rebuild() -> void:
 	if _shop == null:
 		return
 	title_label.text = tr(_shop.display_name)
+	about_label.text = ""
 	money_label.text = tr("Money: %dg") % Wallet.money
 	var ids: Array[String] = []
 	for raw: Variant in _shop.get_stock().keys():
@@ -55,6 +61,7 @@ func _rebuild() -> void:
 		var button := MenuLayer.list_button()
 		button.text = tr("Buy %s — %dg") % [tr(item.display_name), price]
 		button.pressed.connect(_buy.bind(item_id))
+		button.focus_entered.connect(_tell_about.bind(item))
 		items_container.add_child(button)
 		if first_button == null:
 			first_button = button
@@ -64,6 +71,7 @@ func _rebuild() -> void:
 		button.text = offer.get_label(context)
 		button.disabled = not offer.can_buy(context)
 		button.pressed.connect(_buy_offer.bind(offer))
+		button.focus_entered.connect(_tell_about.bind(null))
 		items_container.add_child(button)
 		if first_button == null and not button.disabled:
 			first_button = button
@@ -71,6 +79,22 @@ func _rebuild() -> void:
 	if first_button == null and not _sell_buttons.is_empty():
 		first_button = sell_container.get_child(0) as Button
 	MenuLayer.focus(first_button if first_button != null else close_button)
+
+## What the counter tells of `item`: its description, then what it does
+## (`ItemData.describe_effects()`), on a line of its own; "" for none.
+static func describe_item(item: ItemData) -> String:
+	if item == null:
+		return ""
+	var parts := PackedStringArray()
+	if not item.description.is_empty():
+		parts.append(TranslationServer.translate(item.description))
+	var effects := item.describe_effects()
+	if not effects.is_empty():
+		parts.append(ItemData.EFFECT_SEPARATOR.join(effects))
+	return "\n".join(parts)
+
+func _tell_about(item: ItemData) -> void:
+	about_label.text = describe_item(item)
 
 func _buy(item_id: StringName) -> void:
 	ShopState.buy(_shop, item_id, 1)
@@ -112,6 +136,7 @@ func _refresh_sell_list() -> void:
 		if button == null:
 			button = MenuLayer.list_button()
 			button.pressed.connect(_sell.bind(item.id))
+			button.focus_entered.connect(_tell_about.bind(item))
 			sell_container.add_child(button)
 			_sell_buttons[item.id] = button
 		sell_container.move_child(button, index)

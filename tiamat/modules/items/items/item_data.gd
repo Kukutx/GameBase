@@ -26,6 +26,9 @@ enum Kind {
 }
 
 const KIND := &"item"
+## What parts the effects of an item where they share a line
+## (`describe_effects()`).
+const EFFECT_SEPARATOR := " · "
 
 
 ## The name the player reads.
@@ -74,6 +77,8 @@ static var _tool_actions: Dictionary = {}
 ## What the player may need an item for now besides what it restores and its
 ## food buff, registered with `register_consume_need()`.
 static var _consume_needs: Array[Callable] = []
+## The texts registered with `register_effect_text()`.
+static var _effect_texts: Array[Callable] = []
 
 ## The item with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> ItemData:
@@ -98,6 +103,38 @@ static func register_tool_action(action: StringName) -> void:
 static func register_consume_need(need: Callable) -> void:
 	if not _consume_needs.has(need):
 		_consume_needs.append(need)
+
+## Declares what some installed module or the game tells of what an item does,
+## beyond what it restores and its food buff: `text` takes the item and
+## returns the lines the player reads (the combat module's: how hard a weapon
+## hits, what an item cures). Called from `GameModule.install()`.
+static func register_effect_text(text: Callable) -> void:
+	if not _effect_texts.has(text):
+		_effect_texts.append(text)
+
+## What it does, as the player reads it before buying or using it (a shop, the
+## pause menu's Items): what it restores ("Restores 35 Health"), its food buff
+## and what that changes, then what the modules and the game tell of it
+## (`register_effect_text()`).
+func describe_effects() -> PackedStringArray:
+	var effects := PackedStringArray()
+	var restored := PackedStringArray()
+	for vital_id: StringName in restores:
+		var vital := VitalData.find(vital_id)
+		if vital != null and restores[vital_id] > 0:
+			restored.append("%d %s" % [restores[vital_id], tr(vital.display_name)])
+	if not restored.is_empty():
+		effects.append(tr("Restores %s") % GameText.list(restored))
+	var buff: FoodBuffData = FoodBuffData.find(food_buff_id) if food_buff_id != &"" else null
+	if buff != null:
+		var changes := buff.describe_changes()
+		if changes.is_empty():
+			effects.append(tr("Gives %s") % tr(buff.display_name))
+		else:
+			effects.append(tr("Gives %s (%s)") % [tr(buff.display_name), changes])
+	for text: Callable in _effect_texts:
+		effects.append_array(text.call(self))
+	return effects
 
 ## Whether a use registered with `register_consume_need()` wants the item now.
 func is_needed_by_others() -> bool:

@@ -38,8 +38,9 @@ func get_facts() -> Dictionary:
 	}}
 
 ## What the player carries, for the pause menu's Items: their money, then a
-## line per stack ("Wild Berry x3") with what it is and where to get more
-## under it; nothing while they carry nothing.
+## line per stack ("Wild Berry x3") with what it is, what it does
+## (`ItemData.describe_effects()`) and where to get more under it; nothing
+## while they carry nothing.
 static func describe_carried() -> PackedStringArray:
 	var lines := PackedStringArray()
 	var entries := InventoryState.get_entries()
@@ -54,6 +55,9 @@ static func describe_carried() -> PackedStringArray:
 		lines.append("%s x%d" % [TranslationServer.translate(item.display_name), int(entry["quantity"])])
 		if not item.description.is_empty():
 			lines.append("  " + TranslationServer.translate(item.description))
+		var effects := item.describe_effects()
+		if not effects.is_empty():
+			lines.append("  " + ItemData.EFFECT_SEPARATOR.join(effects))
 		var ways := sources.get_ways(item.id)
 		if not ways.is_empty():
 			lines.append("  " + TranslationServer.translate("Where to get: %s") % "; ".join(ways))

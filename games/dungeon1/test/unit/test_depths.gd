@@ -421,6 +421,8 @@ func test_an_antidote_lifts_a_venom_slime_s_poison() -> void:
 	assert_eq(InventoryState.get_quantity(&"health_potion"), 1, "the potion kept for the wound")
 	assert_eq(ShopData.find(&"camp_merchant").get_buy_price(ItemData.find(&"antidote")), 12, "at camp, at its own price")
 	assert_eq(ShopData.find(&"ember_peddler").get_buy_price(ItemData.find(&"antidote")), 18, "dearer in the depths")
+	assert_eq(ItemData.find(&"antidote").describe_effects(), PackedStringArray(["Cures Poisoned"]), "as the merchant tells it")
+	assert_true(ItemData.find(&"ember_blade").describe_effects().has("Its hits leave foes Burning"))
 
 func test_a_cleared_floor_lights_its_ember_altar_for_one_boon() -> void:
 	DepthRun.start_run()
