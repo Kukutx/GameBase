@@ -13,7 +13,9 @@ extends Node
 ## same floor of the same world always has the same rocks and enemies. A floor
 ## that a guardian tier guards (`MineFloorTable.get_guardian_ids()`) holds its
 ## guardians, furthest from the way in, and half the ordinary enemies; the
-## layout lists them first among its enemies, marked `"guardian": true`.
+## layout lists them first among its enemies, marked `"guardian": true`. Each
+## ordinary enemy may come in an elite form (`MineFloorTable.elite_odds`),
+## its id under `"elite"` (empty: none), rolled from a stream of its own.
 ## `deepest_floor_changed` fires when the player goes deeper than ever before,
 ## their first entry to floor 1 included, which quests follow.
 
@@ -129,6 +131,7 @@ func generate_floor_layout(floor: int) -> Dictionary:
 			"position": positions[index],
 			"persistent_id": String(guardian_persistent_id(resolved, index)),
 			"guardian": true,
+			"elite": "",
 		})
 	var first := guardian_kinds.size()
 	for index in range(rock_count):
@@ -153,11 +156,15 @@ func generate_floor_layout(floor: int) -> Dictionary:
 			"position": positions[first + index],
 			"persistent_id": "mine_f%03d_rock_%02d" % [resolved, index + 1],
 		})
+	# A stream of their own, so the elites leave the floor's layout as it was.
+	var elite_rolls := track.stream(resolved, "elites")
 	for index in range(enemy_count):
+		var elite: EliteData = floor_table.elite_odds.roll(elite_rolls, resolved) if floor_table.elite_odds != null else null
 		enemies.append({
 			"kind": String(enemy_kind),
 			"position": positions[first + rock_count + index],
 			"persistent_id": "mine_f%03d_enemy_%02d" % [resolved, index + 1],
+			"elite": String(elite.id) if elite != null else "",
 		})
 	return {"floor": resolved, "rocks": rocks, "enemies": enemies}
 

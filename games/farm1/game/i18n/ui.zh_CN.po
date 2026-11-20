@@ -2226,3 +2226,8 @@ msgstr "送出的礼物"
 msgid "Stones and Ores Mined"
 msgstr "开采的石头与矿石"
 
+msgid "Giant %s"
+msgstr "巨大%s"
+
+msgid "Frenzied %s"
+msgstr "狂暴%s"

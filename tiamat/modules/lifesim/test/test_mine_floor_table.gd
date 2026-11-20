@@ -127,6 +127,32 @@ func test_a_guarded_floor_holds_its_guardian_furthest_from_the_way_in() -> void:
 		assert_lte((entry["position"] as Vector2).distance_to(MineRunState.ENTRANCE), distance, "it stands furthest in")
 	assert_eq(MineState.generate_floor_layout(20), layout, "the same on every visit")
 
+func test_elite_odds_make_ordinary_enemies_elites_and_leave_the_layout_as_it_was() -> void:
+	var giant := EliteData.new()
+	giant.id = &"fixture_giant"
+	giant.display_name = "Giant %s"
+	ContentFixture.use(self, [_rock(&"fixture_stone", 1), _enemy(&"fixture_slime"), _enemy(&"fixture_king"), giant])
+	var king := _enemy_tier(&"fixture_king", 10)
+	king.guardian_every = 10
+	var table := _table(&"fixture_stone", [], [_enemy_tier(&"fixture_slime", 1), king])
+	MineState.floor_table = table
+	var plain := MineState.generate_floor_layout(30)
+	for entry: Dictionary in plain["enemies"]:
+		assert_eq(String(entry["elite"]), "", "no odds, no elites")
+	table.elite_odds = EliteOdds.new()
+	table.elite_odds.from_depth = 5
+	table.elite_odds.chance = 1.0
+	table.elite_odds.max_chance = 1.0
+	for entry: Dictionary in MineState.generate_floor_layout(4)["enemies"]:
+		assert_eq(String(entry["elite"]), "", "none above the first floor of the odds")
+	var layout := MineState.generate_floor_layout(30)
+	assert_eq(layout["rocks"], plain["rocks"], "the rocks stand where they stood")
+	for index: int in (layout["enemies"] as Array).size():
+		var entry: Dictionary = layout["enemies"][index]
+		assert_eq(String(entry["elite"]), "" if entry.has("guardian") else "fixture_giant", "every ordinary enemy at a sure chance, never the guardian")
+		assert_eq(entry["position"], plain["enemies"][index]["position"])
+		assert_eq(entry["kind"], plain["enemies"][index]["kind"])
+
 func test_the_guardians_standing_on_a_floor_are_named_until_they_fall() -> void:
 	var king := _enemy_tier(&"fixture_king", 10)
 	king.guardian_every = 10

@@ -10,6 +10,9 @@ extends Resource
 ## Ore tiers, rarest first; the first unlocked tier is guaranteed on each floor.
 @export var rock_tiers: Array[MineRockTier] = []
 @export var enemy_tiers: Array[EnemyTier] = []
+## How often the ordinary enemies of a floor come in an elite form
+## (`EliteData`); none without.
+@export var elite_odds: EliteOdds
 
 ## The enemy id for `floor`: the tier with the deepest minimum floor reached.
 func get_enemy_id(floor: int) -> StringName:
