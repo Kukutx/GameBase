@@ -255,6 +255,9 @@ msgstr "矿井电梯目前不可用"
 msgid "Mine elevator → Floor %d"
 msgstr "矿井电梯 → 第 %d 层"
 
+msgid "Floor %d"
+msgstr "第 %d 层"
+
 msgid "Nothing left to mine here"
 msgstr "这里已经没有可开采的资源"
 

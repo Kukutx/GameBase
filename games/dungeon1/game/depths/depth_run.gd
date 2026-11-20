@@ -6,16 +6,20 @@ extends Node
 ## and `depths:deepest` in the world), so the depth the player has reached and
 ## the deepest this world has seen save with it. Every depth reached also
 ## raises the profile's deepest depth, which outlives every save, and triggers
-## follow `depth_reached` (Ember Depths' achievements).
+## follow `depth_reached` (Ember Depths' achievements). Every
+## `SHORTCUT_STEP`th depth the world reached is a shortcut a new run may start
+## at (`get_shortcuts()`), which the way down offers.
 
 signal depth_reached(depth: int)
 
 const TRACK_KEY := &"depths"
 ## Profile flag: the deepest depth of any run in any save.
 const PROFILE_DEEPEST := &"deepest_depth"
+## Every how many depths a shortcut comes.
+const SHORTCUT_STEP := 5
 
 ## The depths.
-var track := DepthTrack.new(TRACK_KEY)
+var track := DepthTrack.new(TRACK_KEY, 0, SHORTCUT_STEP)
 
 ## The depth of the run, from 1.
 func get_depth() -> int:
@@ -35,10 +39,21 @@ func describe_save(snapshot: Dictionary) -> String:
 func get_run() -> int:
 	return RunState.get_run()
 
-## Starts a new run at the first depth.
-func start_run() -> void:
+## The depths a new run may start at: the first, and every `SHORTCUT_STEP`th
+## depth this world reached.
+func get_shortcuts() -> PackedInt32Array:
+	return track.get_checkpoints()
+
+## Starts a new run at `depth`, the first or a shortcut (`get_shortcuts()`);
+## at the first one for any other. A run that starts at a shortcut does not
+## reach it again: `depth_reached` tells of the first depth and of each the
+## player goes down to.
+func start_run(depth := 1) -> void:
 	RunState.start_run()
-	_reach(1)
+	if depth > 1 and track.can_return_to(depth):
+		track.set_depth(depth)
+	else:
+		_reach(1)
 
 ## Goes one depth further down; false when no run goes on (the player is on a
 ## floor because the way home failed).

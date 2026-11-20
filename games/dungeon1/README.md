@@ -23,7 +23,7 @@ game/ui/           The HUD, which holds the core pause menu and the items module
 game/i18n/         The Simplified Chinese catalog of the game's own text
 game/game_setup.gd The game's own module: why a run blocks saving, new items to the hotbar
 test/unit/         Runs, floors, the way on, potions
-test/runtime/      The delve smoke: camp, two depths, save and load, a defeat
+test/runtime/      The delve smoke: camp, two depths, save and load, a defeat, a shortcut
 ```
 
 ## Gameplay
@@ -31,6 +31,7 @@ test/runtime/      The delve smoke: camp, two depths, save and load, a defeat
 - A camp with a campfire (rest until tomorrow, which saves), a merchant who buys what the depths drop and sells potions and swords, and the way down
 - Floors laid out from the run's random stream: the same run and depth always give the same floor, a new run new ones, and deeper floors more and harder enemies (`EnemyTier`: slimes from depth 1, skeletons from 3, ember wisps from 6)
 - Stairs down and the rope back to camp open once every enemy of the floor is defeated
+- Every fifth depth a world reached is a shortcut: once there is one, the way down asks where the run starts, at the top or at a shortcut (`DepthRun.get_shortcuts()`)
 - Each trip down is a run of the roguelite module (`RunState`), from the way down until the rope back or a defeat; the game saves only between runs, at camp, and a defeat costs a quarter of the player's money
 - Combat experience and five achievements (`game/data/achievements/`), unlocked by triggers in `game/data/triggers/`: Slayer counts every creature defeated in any run, and the title and the pause menu show how far the player is; the deepest depth any save reached stays in the player's profile, and the achievements menu's Records shows it with the creatures defeated
 - A clock that stands still: a day passes when the player rests or is defeated

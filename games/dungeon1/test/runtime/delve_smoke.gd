@@ -75,6 +75,18 @@ func _run() -> void:
 	_check(bool(vitals.is_full(&"hp")), "Defeat did not restore the player's health")
 	_check(int(depth_run.get_run()) == 2 and not bool(root.get_node("RunState").is_active()), "The defeat did not end the run")
 
+	# Once the world reached the fifth depth, the way down asks where to start.
+	depth_run.get("track").call("set_depth", 5)
+	_use(current_scene.get_node("DepthEntrance/Interactable"))
+	var start: Node = current_scene.get_node("DepthEntrance").get_node_or_null("ChoiceMenu")
+	_check(start != null and bool(start.call("is_open")) and (start.call("get_buttons") as Array).size() == 2, "The way down did not offer the first depth and the fifth")
+	if start == null:
+		return
+	start.call("choose", &"5")
+	await _arrive(DEPTHS_SCENE)
+	_check(int(depth_run.get_depth()) == 5 and int(depth_run.get_run()) == 3, "The shortcut did not start a run at the fifth depth")
+	_check((current_scene.call("get_enemies") as Array).size() == 4, "The fifth depth did not spawn four enemies")
+
 # Defeats every enemy of the floor with the player's swings, standing next to
 # each in turn.
 func _clear_floor() -> void:

@@ -760,8 +760,11 @@ func _run() -> void:
 	_check(mine_state.get_deepest_floor() == 6, "Deepest mine floor did not persist")
 	_check(mine_state.get_deepest_checkpoint() == 5, "Mine Floor 5 elevator checkpoint did not unlock")
 
+	# Floor 6 stops at Floor 1 and Floor 5: the elevator lists them.
 	var mine_elevator := current_scene.get_node("MineElevator")
 	mine_elevator.get_node("Interactable").interact(player)
+	var elevator_menu: Node = mine_elevator.call("get_choice_menu")
+	_check(elevator_menu != null and bool(elevator_menu.call("choose", &"1")), "Deep-floor elevator did not list Floor 1")
 	await world_travel.travel_finished
 	await process_frame
 	player = get_first_node_in_group("player") as Node2D
@@ -843,18 +846,18 @@ func _run() -> void:
 	_check(mine_state.get_deepest_floor() == 120, "Deepest mine floor did not reach Floor 120")
 	_check(mine_state.get_deepest_checkpoint() == 120, "Floor 120 elevator checkpoint was not retained")
 
-	current_scene.get_node("MineElevator/Interactable").interact(player)
+	_ride_elevator(player, &"1")
 	await world_travel.travel_finished
 	await process_frame
 	player = get_first_node_in_group("player") as Node2D
 	_check(mine_state.get_current_floor() == 1, "Floor 120 elevator did not return to Floor 1")
 	_check(bool(current_scene.get_node("MineElevator/Interactable").enabled), "Surface elevator did not expose the Floor 120 checkpoint")
-	current_scene.get_node("MineElevator/Interactable").interact(player)
+	_ride_elevator(player, &"120")
 	await world_travel.travel_finished
 	await process_frame
 	player = get_first_node_in_group("player") as Node2D
 	_check(mine_state.get_current_floor() == 120, "Surface elevator did not return to the deepest Floor 120 checkpoint")
-	current_scene.get_node("MineElevator/Interactable").interact(player)
+	_ride_elevator(player, &"1")
 	await world_travel.travel_finished
 	await process_frame
 	player = get_first_node_in_group("player") as Node2D
@@ -888,6 +891,13 @@ func _run() -> void:
 	_check(vitals.is_full(&"hp"), "Late night did not restore health")
 	_check(current_scene.scene_file_path == "res://game/world/home_interior.tscn", "Late night did not keep player at home")
 	_check(FileAccess.file_exists(root.get_node("SaveManager").save_path), "Late night did not autosave")
+
+# Uses the mine's elevator and picks `floor` from the list of its stops.
+func _ride_elevator(player: Node2D, floor: StringName) -> void:
+	var elevator := current_scene.get_node("MineElevator")
+	elevator.get_node("Interactable").interact(player)
+	var menu: Node = elevator.call("get_choice_menu")
+	_check(menu != null and bool(menu.call("choose", floor)), "The elevator did not list Floor %s" % floor)
 
 func _clear_current_mine_floor(mine: Node) -> void:
 	if mine == null:

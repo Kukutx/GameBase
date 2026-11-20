@@ -4,7 +4,7 @@ const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const STATION_SCENE := preload("res://tiamat/core/minigames/minigame_station.tscn")
 const FIRST := &"fixture_first_battle"
 const SECOND := &"fixture_second_battle"
-const PROFILE_PATH := "user://test_minigame_picker/profile.json"
+const PROFILE_PATH := "user://test_minigame_station/profile.json"
 
 var _saved_path: String
 var _saved_profile: Dictionary
@@ -157,4 +157,4 @@ func test_the_best_score_stays_in_the_profile_and_shows_under_its_name() -> void
 	(func() -> void: await station.pick()).call()
 	assert_eq(station.get_picker().get_note(FIRST), "Hold the ford.\nBest Units Left: 3")
 	MiniGameDefinition.find(SECOND).score_name = "Units Left"
-	assert_eq(MiniGamePicker.note_text(MiniGameDefinition.find(SECOND)), "Locked: Win First Battle", "a locked one shows what it needs alone")
+	assert_eq(MiniGameStation.choice_of(MiniGameDefinition.find(SECOND)).note, "Locked: Win First Battle", "a locked one shows what it needs alone")
