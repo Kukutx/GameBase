@@ -2,7 +2,8 @@ extends GutTest
 
 ## The choices a game or a module leaves to the player (`GameOption`,
 ## `GameOptions`): each holds only a value it takes, a game's replaces a
-## module's of the same id and what is wrong is named, the player's values
+## module's of the same id and what is wrong is named, a choice gives the
+## number a system scales by, the player's values
 ## save and load with the settings (an option the game no longer declares
 ## keeps its value in the file), a reset gives the defaults back, and the
 ## settings menu shows a row for each that sets it.
@@ -63,6 +64,15 @@ func test_a_game_s_option_replaces_a_module_s_and_what_is_wrong_is_named() -> vo
 			"option 'quiet' has no name to show",
 			"an option has no id"]:
 		assert_has(problems, expected)
+
+func test_a_choice_gives_the_number_a_system_scales_by() -> void:
+	var options := GameOptions.new([GameOption.new_choice(&"pace", "Pace", PackedStringArray(["Slow", "Fast"]), 0)] as Array[GameOption])
+	var scales := {"Slow": 0.5, "Fast": 2.0}
+	assert_eq(options.scale_of(&"pace", scales), 0.5)
+	options.set_value(&"pace", "Fast")
+	assert_eq(options.scale_of(&"pace", scales), 2.0)
+	assert_eq(options.scale_of(&"pace", {"Slow": 0.5}), 1.0, "a choice it does not name")
+	assert_eq(options.scale_of(&"tempo", scales, 3.0), 3.0, "an option the game does not declare")
 
 func test_the_player_s_options_save_and_load_with_the_settings_and_a_reset_gives_the_defaults() -> void:
 	JsonFile.write(TEST_PATH, {"settings_version": GameSettingsService.SETTINGS_VERSION, "options": {"dropped_option": 3, "zoom": "far"}})

@@ -5,7 +5,8 @@ extends GutTest
 ## and the battle's end is told; the commands follow what the foes do
 ## meanwhile; a finger's tap on a cell shows it and a second tap picks it;
 ## cancel twice gives the battle up; an unknown map ends it at once,
-## and a definition that names one is a content problem.
+## and a definition that names one is a content problem; the player's choice
+## of speed speeds the game's.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -13,8 +14,10 @@ const SCENE := preload("res://tiamat/modules/tactics/view/grid_battle_game.tscn"
 const MINIGAME := &"fixture_battle"
 
 var _ended: Array = []
+var _options: GameOptions
 
 func before_each() -> void:
+	_options = GameSettings.options
 	_ended.clear()
 	var settings := TacticsSettings.new()
 	settings.battle_speed = 4.0
@@ -31,6 +34,7 @@ func after_each() -> void:
 	InputPrompts.call("_set_using_touch", false)
 	TacticsEvents.battle_ended.disconnect(_on_battle_ended)
 	MiniGameHost.cancel()
+	GameSettings.options = _options
 	ContentRegistry.active = ContentDB
 
 func test_the_player_moves_strikes_and_wins() -> void:
@@ -120,6 +124,19 @@ func test_an_unknown_map_ends_the_minigame_at_once() -> void:
 	assert_true(await _until(func() -> bool: return outcome.has("result")))
 	assert_false((outcome["result"] as MiniGameResult).success)
 	assert_false(MiniGameHost.is_running())
+
+func test_the_player_chooses_how_fast_a_battle_runs() -> void:
+	GameSettings.options = GameOptions.new(TacticsModule.new().get_options())
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_eq(GameSettings.get_option(GridBattleGame.SPEED_OPTION), "Standard", "the module offers the choice, standard at first")
+	assert_eq(game.get_speed(), 4.0, "the game's speed")
+	GameSettings.options.set_value(GridBattleGame.SPEED_OPTION, "Slow")
+	assert_eq(game.get_speed(), 2.0, "read as the battle runs")
+	GameSettings.options.set_value(GridBattleGame.SPEED_OPTION, "Fast")
+	assert_eq(game.get_speed(), 6.0)
+	GameSettings.options = GameOptions.new()
+	assert_eq(game.get_speed(), 4.0, "a game without the option keeps its speed")
 
 # The minigame the host runs now; the one the last test cancelled may still
 # wait to be freed.

@@ -24,6 +24,10 @@ extends MiniGame
 ## an armed attack-move, then the selection, and pressed twice gives the battle
 ## up. It ends won or lost a moment after the battle does (`END_SECONDS`), with
 ## the units of the player's side left as its score, and tells `RtsEvents`.
+##
+## Battle time runs at the game's speed (`RtsSettings.battle_speed`) times the
+## player's choice (`SPEED_OPTION`, which `RtsModule` declares), read as the
+## battle runs, so a change in the settings holds at once.
 
 enum Command {
 	## Arms an attack-move: the next click, accept or interact picks where.
@@ -45,6 +49,11 @@ const GROUP_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7,
 const CONFIRM_ACTIONS: Array[StringName] = [&"ui_accept", &"interact"]
 ## The actions that move the cursor: left, right, up, down.
 const DIRECTION_ACTIONS: Array[StringName] = [&"ui_left", &"ui_right", &"ui_up", &"ui_down"]
+## The player's option of how fast a command battle runs (`GameOption`), and
+## how much each of its choices speeds the game's speed; a choice not named
+## here keeps it.
+const SPEED_OPTION := &"command_battle_speed"
+const SPEED_SCALES: Dictionary[String, float] = {"Slow": 0.5, "Standard": 1.0, "Fast": 1.5}
 
 var battle: RtsBattle
 var map: RtsMapData
@@ -90,6 +99,11 @@ func find_settings_problems(settings: Dictionary, registry: ContentRegistry) -> 
 ## The units the player selected.
 func get_selection() -> Array[RtsUnit]:
 	return _selection.duplicate()
+
+## How many seconds of battle time pass in a second: the game's battle speed
+## at the player's choice (`SPEED_OPTION`).
+func get_speed() -> float:
+	return _speed * GameSettings.options.scale_of(SPEED_OPTION, SPEED_SCALES)
 
 ## The field the battle shows on.
 func get_field() -> RtsBattleField:
@@ -183,7 +197,7 @@ func _process(delta: float) -> void:
 		if direction != Vector2.ZERO:
 			_field.show_cursor = true
 			_field.cursor = (_field.cursor + direction * _cursor_speed * delta).clamp(Vector2.ZERO, battle.size)
-	battle.advance(delta * _speed)
+	battle.advance(delta * get_speed())
 
 # A command comes before the field takes a click, so one the player bound to
 # a mouse button works over the field too.

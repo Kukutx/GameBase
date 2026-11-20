@@ -45,3 +45,9 @@ msgstr "点选目标格，再点一次确认。点 × 返回。"
 
 msgid "Tap where it moves, then tap it again. × goes back."
 msgstr "点选要移动到的格子，再点一次确认。点 × 返回。"
+
+msgid "Grid Battle Speed"
+msgstr "战棋速度"
+
+msgid "Standard"
+msgstr "标准"

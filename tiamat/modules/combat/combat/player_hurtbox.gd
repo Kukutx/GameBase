@@ -42,10 +42,9 @@ static func is_standing() -> bool:
 ## damage taken (`DAMAGE_TAKEN_OPTION`), rounded, and at least 1 of a hit
 ## that does any.
 static func damage_taken(amount: int) -> int:
-	if amount <= 0 or GameSettings.options.find(DAMAGE_TAKEN_OPTION) == null:
+	if amount <= 0:
 		return amount
-	var choice := str(GameSettings.get_option(DAMAGE_TAKEN_OPTION))
-	return maxi(1, roundi(amount * DAMAGE_TAKEN_SCALES.get(choice, 1.0)))
+	return maxi(1, roundi(amount * GameSettings.options.scale_of(DAMAGE_TAKEN_OPTION, DAMAGE_TAKEN_SCALES)))
 
 func _on_hurt(damage: Damage) -> void:
 	var player := get_parent() as TopDownPlayer

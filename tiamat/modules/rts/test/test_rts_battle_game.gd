@@ -10,7 +10,7 @@ extends GutTest
 ## command; cancel drops an
 ## armed attack-move, then the selection, and twice gives the battle up; an
 ## unknown map ends it at once, and a definition that names one is a content
-## problem.
+## problem; the player's choice of speed speeds the game's.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
@@ -19,8 +19,10 @@ const MINIGAME := &"fixture_command"
 
 var _ended: Array = []
 var _fallen: Array[StringName] = []
+var _options: GameOptions
 
 func before_each() -> void:
+	_options = GameSettings.options
 	_ended.clear()
 	_fallen.clear()
 	var settings := RtsSettings.new()
@@ -39,6 +41,7 @@ func after_each() -> void:
 	RtsEvents.battle_ended.disconnect(_on_battle_ended)
 	RtsEvents.foe_defeated.disconnect(_on_foe_defeated)
 	MiniGameHost.cancel()
+	GameSettings.options = _options
 	ContentRegistry.active = ContentDB
 
 func test_the_player_selects_with_the_mouse_sends_them_after_the_foe_and_wins() -> void:
@@ -206,6 +209,19 @@ func test_an_unknown_map_ends_the_minigame_at_once_and_is_a_content_problem() ->
 	assert_false(MiniGameHost.is_running())
 	definition.settings = {"map": "fixture_nowhere"}
 	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(["sets unknown command map 'fixture_nowhere'"]))
+
+func test_the_player_chooses_how_fast_a_battle_runs() -> void:
+	GameSettings.options = GameOptions.new(RtsModule.new().get_options())
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_eq(GameSettings.get_option(RtsBattleGame.SPEED_OPTION), "Standard", "the module offers the choice, standard at first")
+	assert_eq(game.get_speed(), 4.0, "the game's speed")
+	GameSettings.options.set_value(RtsBattleGame.SPEED_OPTION, "Slow")
+	assert_eq(game.get_speed(), 2.0, "read as the battle runs")
+	GameSettings.options.set_value(RtsBattleGame.SPEED_OPTION, "Fast")
+	assert_eq(game.get_speed(), 6.0)
+	GameSettings.options = GameOptions.new()
+	assert_eq(game.get_speed(), 4.0, "a game without the option keeps its speed")
 
 # The minigame the host runs now; the one the last test cancelled may still
 # wait to be freed.

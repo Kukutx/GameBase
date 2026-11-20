@@ -96,6 +96,16 @@ func get_value(id: StringName) -> Variant:
 		return null
 	return _values[id]
 
+## The number `scales` gives the player's choice of option `id` (a choice's
+## name -> its number: how hard hits land, how fast a battle runs);
+## `fallback` when the game declares no such option or the choice is one
+## `scales` does not name (a game that replaced the option with choices of its
+## own).
+func scale_of(id: StringName, scales: Dictionary, fallback := 1.0) -> float:
+	if not _values.has(id):
+		return fallback
+	return float(scales.get(str(_values[id]), fallback))
+
 ## Sets the option `id` to `value`, as the option holds one; whether its value
 ## changed.
 func set_value(id: StringName, value: Variant) -> bool:
