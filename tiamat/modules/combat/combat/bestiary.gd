@@ -71,7 +71,8 @@ static func describe() -> PackedStringArray:
 		lines.append(TranslationServer.translate("%s — defeated %d") % [TranslationServer.translate(enemy.display_name), count(enemy.id)])
 		var parts := PackedStringArray([TranslationServer.translate("Health %d") % HostileCreature.max_health_of(enemy)])
 		if enemy.contact_damage > 0:
-			parts.append(TranslationServer.translate("Hits for %d") % enemy.contact_damage)
+			var hits := TranslationServer.translate("Shoots for %d") if enemy.shot_speed > 0.0 else TranslationServer.translate("Hits for %d")
+			parts.append(String(hits) % enemy.contact_damage)
 		var drop := ItemData.find(enemy.drop_item_id)
 		if drop != null:
 			parts.append(TranslationServer.translate("Drops %s") % TranslationServer.translate(drop.display_name))
