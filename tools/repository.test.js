@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
-const { checkLocalization, collectNonDialogueKeys, layerLiterals, repeatProblem } = require("./check_localization");
+const { checkLocalization, collectNonDialogueKeys, layerLiterals, placeholderProblem, repeatProblem } = require("./check_localization");
 const { androidIconPaths, expectedRecord, staleAndroidIcon } = require("./lib/android_icon");
 const { ENGINE_VERSION_RE, removeRecursive, rootPath, tempFile } = require("./lib/common");
 const { assertAutoloadScripts, checkFoundation, checkGameAutoloads, gamePath, gameVersion, listGameIds, loadGame, parseReleaseTag, projectString, readFoundation, releaseTag, resolveGames, templateGame } = require("./lib/games");
@@ -158,6 +158,15 @@ test("text two modules hold is translated by the lower one, or alike by each whe
   assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(quests, '"领了"'), "Claimed"), 'res://tiamat/modules/quests.po translates "Claimed" otherwise than res://tiamat/modules/farm.po does');
   assert.equal(repeatProblem(entry(items, '"已领取"'), entry(farm, '"已领取"'), "Claimed"), 'res://tiamat/modules/farm.po repeats "Claimed", which res://tiamat/modules/items.po already translates');
   assert.equal(repeatProblem(entry(farm, '"已领取"'), entry(core, '"已领取"'), "Claimed"), 'res://tiamat/core.po repeats "Claimed", which res://tiamat/modules/farm.po already translates');
+});
+
+test("a translation keeps the kinds and the order of its text's placeholders, which Godot's % fills in order", () => {
+  assert.equal(placeholderProblem("Bought %s x%d for %dg", "购买了%s x%d，花费 %dg"), "");
+  assert.equal(placeholderProblem("Bought %s x%d for %dg", "以 %dg 购买了%s x%d"), 'translates "Bought %s x%d for %dg" with the placeholders "%d %s %d", not "%s %d %d" in that order: Godot\'s % fills them in order');
+  assert.equal(placeholderProblem("%d%% off, %.1f s", "减 %d%%，%5.2f 秒"), "", "a literal %% and a width or a precision aside");
+  assert.equal(placeholderProblem("Move speed +10%", "移速 +10%"), "", "a percent sign no letter follows is no placeholder");
+  assert.match(placeholderProblem("Ate %s", "吃了"), /with the placeholders "", not "%s"/, "a placeholder the translation drops");
+  assert.equal(placeholderProblem("Ate %s", ""), "", "an empty translation is a missing one, told apart");
 });
 
 test("a count's text needs a plural entry with every form its language has", () => {

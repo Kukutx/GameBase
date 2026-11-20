@@ -85,6 +85,22 @@ func test_project_and_milestone_summaries_are_translated() -> void:
 	for category: StringName in CollectionService.CATEGORIES:
 		_assert_translated(CollectionState.get_category_name(category), "category %s" % category)
 
+func test_what_a_purchase_and_a_sale_tell_are_translated() -> void:
+	var wallet := Wallet.to_save_data()
+	InventoryState.clear()
+	Wallet.set_money(500)
+	var toasts: Array[String] = []
+	var record := func(message: String) -> void: toasts.append(message)
+	GameEvents.toast_requested.connect(record)
+	# Hay, which no quest counts, so the shop's are the only toasts.
+	assert_eq(ShopState.buy(ShopData.find(&"general_store"), &"hay", 2), 2)
+	assert_eq(ShopState.sell(&"hay", 1), 1)
+	GameEvents.toast_requested.disconnect(record)
+	Wallet.load_save_data(wallet)
+	assert_eq(toasts, ["购买了%s x2，花费 40g" % tr("Hay"), "出售了%s x1，获得 5g" % tr("Hay")] as Array[String], "the name and the numbers each where the sentence says")
+	for message: String in toasts:
+		_assert_translated(message, "shop toast")
+
 func test_save_and_load_results_are_translated() -> void:
 	# The test runner has no playable location, so saving is blocked and loading
 	# an empty slot fails; both report a reason to the player.
