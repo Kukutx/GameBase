@@ -12,7 +12,7 @@ const { desiredLinks } = require("./link");
 const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, poTranslation, projectInSync, stampedProject, syncedExportPresets, syncedGutConfig, syncedProject } = require("./lib/project");
 const { createGame } = require("./new_game");
 const { PRESET_NAMES, androidVersionCode, applicationId } = require("./lib/targets");
-const { selectGames } = require("./ci");
+const { runWithin, selectGames } = require("./ci");
 const { callArguments, pages, ruleKeys, signalsOf, stalePages } = require("./generate_reference");
 const { findTestScripts } = require("./validate");
 
@@ -463,6 +463,15 @@ test("repository tooling is Node only", () => {
     assert.ok(!text.includes("shell: pwsh"), `${workflow} must not use PowerShell`);
     assert.ok(!text.includes("setup-python"), `${workflow} must not set up Python`);
   }
+});
+
+test("a CI step that runs past its time is stopped with what it started, and one that ends in time keeps its exit code", async () => {
+  const started = Date.now();
+  const stalled = await runWithin(process.execPath, ["-e", "require('node:child_process').spawn(process.execPath, ['-e', 'setTimeout(() => {}, 60000)'], { stdio: 'inherit' }); setTimeout(() => {}, 60000)"], 0.5);
+  assert.deepEqual(stalled, { code: 1, timedOut: true });
+  assert.ok(Date.now() - started < 10000, "it does not wait for the stalled process");
+  assert.deepEqual(await runWithin(process.execPath, ["-e", "process.exit(3)"], 30), { code: 3, timedOut: false });
+  assert.deepEqual(await runWithin(process.execPath, ["-e", ""], 30), { code: 0, timedOut: false });
 });
 
 test("every workflow job has a time limit, and CI ends in one verdict over every job", () => {
