@@ -507,3 +507,18 @@ msgstr "隐藏成就"
 
 msgid "Unlock it to see what it is."
 msgstr "解锁后才会显示。"
+
+msgid "Choose"
+msgstr "选择"
+
+msgid "%s (Won)"
+msgstr "%s（已获胜）"
+
+msgid "Locked"
+msgstr "未解锁"
+
+msgid "Locked: %s"
+msgstr "未解锁：%s"
+
+msgid "Win %s"
+msgstr "赢得%s"

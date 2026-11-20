@@ -1,9 +1,21 @@
 class_name MiniGameDefinition
 extends ContentEntry
 
-## A minigame the game can start through `MiniGameHost.run()`.
+## A minigame the game can start through `MiniGameHost.run()`: from a
+## station in the world (`MiniGameStation`), which can offer several for the
+## player to pick from, such as a campaign's battles, each open once its
+## `condition` holds.
 
 const KIND := &"minigame"
+
+## The name the player picks it by at a station that offers several.
+@export var display_name := ""
+## A line under the name there.
+@export_multiline var description := ""
+## What must hold for the player to pick it there (`GameRules` syntax; empty:
+## always): `MINIGAME_WON ford_battle` opens a battle once the one before it
+## is won. A locked one says what it needs (`GameRules.describe()`).
+@export var condition := ""
 
 ## Scene whose root extends `MiniGame`.
 @export var scene: PackedScene
@@ -28,6 +40,23 @@ static func find_all() -> Array[MiniGameDefinition]:
 	var result: Array[MiniGameDefinition] = []
 	result.assign(ContentRegistry.active.get_entries(KIND))
 	return result
+
+## The key of the world state's count of the player's wins of minigame
+## `minigame_id` in this save, which `MiniGameHost` counts.
+static func wins_key(minigame_id: StringName) -> StringName:
+	return StringName("minigame:%s:wins" % minigame_id)
+
+## How many times the player won it in this save.
+func get_wins() -> int:
+	return WorldState.get_int(wins_key(id))
+
+## Whether the player can pick it at a station: its condition holds.
+func is_open() -> bool:
+	return GameRules.check(condition)
+
+## What it needs before the player can pick it, in words they read.
+func get_requirements() -> PackedStringArray:
+	return GameRules.describe(condition)
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := AudioCueData.find_reference_problems(registry, "its music", music_cue_id, AudioCueData.CueType.MUSIC)

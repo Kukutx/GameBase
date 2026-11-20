@@ -85,9 +85,6 @@ msgstr "奖励"
 msgid "Complete the earlier town project first."
 msgstr "请先完成前置城镇建设项目。"
 
-msgid "Locked"
-msgstr "未解锁"
-
 msgid "Completed"
 msgstr "已完成"
 

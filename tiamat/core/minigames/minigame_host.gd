@@ -8,7 +8,8 @@ extends Node
 ## While it runs the world can be paused, saving is blocked, its music plays
 ## over the world's (`MiniGameDefinition.music_cue_id`, layer `MUSIC_LAYER`),
 ## and when it ends the definition's success or failure actions run through
-## `GameRules`. It runs
+## `GameRules`, and a win counts in the save (`MiniGameDefinition.get_wins()`,
+## the condition `MINIGAME_WON`). It runs
 ## while its lock (`LOCK_REASON`) is on top and stands still while another
 ## lock is over it (the pause menu): nothing in it moves or reads input then.
 
@@ -82,6 +83,8 @@ func run(minigame_id: StringName, context: Dictionary = {}) -> MiniGameResult:
 	GameAudio.pop_music(MUSIC_LAYER)
 	if result == null:
 		result = MiniGameResult.lost()
+	if result.success:
+		WorldState.add_int(MiniGameDefinition.wins_key(definition.id), 1)
 	if not result.cancelled:
 		GameRules.run_actions(definition.success_actions if result.success else definition.failure_actions, {"minigame_id": definition.id, "score": result.score})
 	minigame_finished.emit(definition.id, result)

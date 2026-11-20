@@ -28,6 +28,7 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_arg_kind(ARG_OPTION, _option_problem)
 	rules.register_condition(&"OPTION", _option, 2, -1, [ARG_OPTION, GameRulesService.ARG_TEXT], Callable(), _option_values_problem)
 	rules.register_condition(&"OPTION_AT_LEAST", _option_at_least, 2, 2, [ARG_OPTION, GameRulesService.ARG_NUMBER], Callable(), _number_option_problem)
+	rules.register_condition(&"MINIGAME_WON", _minigame_won, 1, -1, [MiniGameDefinition.KIND], _describe_minigame_won)
 	rules.register_condition(&"EVENT_ARG", _event_arg, 2, -1, [GameRulesService.ARG_TEXT])
 	rules.register_condition(&"EVENT_ARG_AT_LEAST", _event_arg_at_least, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_NUMBER])
 	rules.register_action(&"SET_FLAG", _set_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_FLAG_VALUE])
@@ -113,6 +114,21 @@ static func _vital_at_least(args: PackedStringArray, _context: Dictionary) -> bo
 ## (`Playthrough`; new game plus).
 static func _playthrough_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
 	return Playthrough.get_playthrough() >= int(args[0])
+
+## MINIGAME_WON <minigame>...: the player won each of the minigames in this
+## save (`MiniGameHost` counts the wins).
+static func _minigame_won(args: PackedStringArray, _context: Dictionary) -> bool:
+	for minigame_id: String in args:
+		if WorldState.get_int(MiniGameDefinition.wins_key(StringName(minigame_id))) <= 0:
+			return false
+	return true
+
+static func _describe_minigame_won(args: PackedStringArray) -> String:
+	var names := PackedStringArray()
+	for minigame_id: String in args:
+		var minigame := MiniGameDefinition.find(StringName(minigame_id))
+		names.append(TranslationServer.translate(minigame.display_name) if minigame != null and not minigame.display_name.is_empty() else minigame_id)
+	return TranslationServer.translate("Win %s") % ", ".join(names)
 
 ## OPTION <option> <value>...: the player's option (`GameOption`) is one of
 ## the values: true or false for a switch, a choice's name (in quotes with a
