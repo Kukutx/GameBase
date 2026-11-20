@@ -48,14 +48,14 @@ func test_loaded_enemy_state_clamps_future_respawn_markers() -> void:
 	assert_true(enemy.is_defeated)
 	assert_eq(enemy.defeated_day, 10)
 	assert_eq(enemy.health.current, 0)
-	assert_eq(enemy.pending_drop_quantity, 999999)
+	assert_eq(enemy.drop.quantity, 999999)
 	assert_eq(enemy.collision_layer, 0, "a creature loaded as defeated blocks nothing")
 	assert_false(enemy.is_physics_processing())
 	enemy.load_state_data({"health": 0, "defeated": false, "defeated_day": 999999, "pending_drop_quantity": -10}, false)
 	assert_false(enemy.is_defeated)
 	assert_eq(enemy.defeated_day, 0)
 	assert_eq(enemy.health.current, enemy.data.max_health)
-	assert_eq(enemy.pending_drop_quantity, 0)
+	assert_eq(enemy.drop.quantity, 0)
 	assert_ne(enemy.collision_layer, 0, "and one loaded alive does")
 	assert_true(enemy.is_physics_processing())
 
@@ -194,14 +194,31 @@ func test_the_killing_blow_pushes_nothing() -> void:
 	await wait_seconds(Hurtbox.KNOCKBACK_SECONDS + 0.1)
 	assert_eq(slime.global_position, Vector2(-8000, 8000), "a defeated creature stays where it fell")
 
-func test_enemy_ground_drops_do_not_count_as_forage() -> void:
-	var slime := _add_slime(&"")
+func test_loot_the_bag_cannot_hold_waits_where_the_creature_fell() -> void:
+	# The pile lies in the place the player is in.
+	var place := Node2D.new()
+	get_tree().root.add_child(place)
+	autofree(place)
+	var scene_before := get_tree().current_scene
+	get_tree().current_scene = place
+	var slots := InventoryState.max_slots
+	InventoryState.max_slots = 1
 	var gel := ItemData.find(&"fixture_gel")
-	var enemy_drop := slime.call("_make_drop_pickup", gel, 1) as WorldItemPickup
-	assert_not_null(enemy_drop)
-	if enemy_drop != null:
-		assert_false(enemy_drop.counts_as_forage)
-		enemy_drop.free()
+	InventoryState.add_item(gel, gel.max_stack)
+	var slime := _add_slime(&"fixture_full_bag_slime")
+	slime.global_position = Vector2(300, 40)
+	assert_true(slime.take_damage(30))
+	assert_eq(slime.drop.quantity, 1, "the full bag left its gel")
+	var saved := WorldState.get_value(&"enemy:fixture_full_bag_slime", {}) as Dictionary
+	assert_eq(int(saved.get("pending_drop_quantity", 0)), 1, "and it saves with the creature")
+	await get_tree().process_frame
+	var piles := place.get_children().filter(func(child: Node) -> bool: return child is WorldItemPickup)
+	get_tree().current_scene = scene_before
+	InventoryState.max_slots = slots
+	assert_eq(piles.size(), 1, "the gel lies where it fell")
+	if not piles.is_empty():
+		assert_eq((piles[0] as WorldItemPickup).global_position, Vector2(300, 40))
+		assert_false((piles[0] as WorldItemPickup).counts_as_forage)
 
 func test_pending_ground_loot_is_saved_with_the_creature() -> void:
 	var enemy := _add_slime(&"fixture_pending_slime")
@@ -212,7 +229,7 @@ func test_pending_ground_loot_is_saved_with_the_creature() -> void:
 		"defeated_day": WorldClock.day,
 		"pending_drop_quantity": 3,
 	})
-	assert_eq(enemy.pending_drop_quantity, 3)
+	assert_eq(enemy.drop.quantity, 3)
 	var enemy_saved := WorldState.get_value(&"enemy:fixture_pending_slime", {}) as Dictionary
 	assert_eq(int(enemy_saved.get("pending_drop_quantity", 0)), 3)
 

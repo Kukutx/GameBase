@@ -15,7 +15,6 @@ extends CharacterBody2D
 ## player's foe strength (`STRENGTH_OPTION`, which `CombatModule` declares).
 ## An `elite` form makes it stronger, larger and tinted, and worth more.
 
-const PICKUP_SCENE := preload("res://tiamat/modules/items/items/item_pickup.tscn")
 ## How long a hit stops it.
 const HURT_SECONDS := 0.2
 
@@ -54,8 +53,9 @@ enum AnimationState {
 var health := Health.new()
 var is_defeated := false
 var defeated_day := 0
-var pending_drop_quantity := 0
-var _drop_pickup: WorldItemPickup
+## What it dropped that the player's bag could not hold, waiting where it
+## fell.
+var drop := OverflowDrop.new()
 
 var _attack_time_left := 0.0
 var _hurt_left := 0.0
@@ -77,6 +77,7 @@ func _ready() -> void:
 	_load_state()
 	_apply_data()
 	hurtbox.hurt.connect(_on_hurt)
+	drop.changed.connect(_persist)
 	WorldClock.day_changed.connect(_on_day_changed)
 	if is_defeated:
 		_set_defeated_visual()
@@ -89,7 +90,7 @@ func _ready() -> void:
 		set_physics_process(true)
 		_machine.start(STATE_IDLE)
 	_refresh_health_label()
-	_restore_pending_drop.call_deferred()
+	_show_drop.call_deferred()
 
 func _exit_tree() -> void:
 	FightState.set_hunting(self, false)
@@ -232,7 +233,7 @@ func get_state_data() -> Dictionary:
 		"health": health.current,
 		"defeated": is_defeated,
 		"defeated_day": defeated_day,
-		"pending_drop_quantity": pending_drop_quantity,
+		"pending_drop_quantity": drop.quantity,
 	}
 
 func load_state_data(state: Dictionary, persist := true) -> void:
@@ -249,7 +250,7 @@ func load_state_data(state: Dictionary, persist := true) -> void:
 		defeated_day = 0
 		if health.is_depleted():
 			health.reset(max_health)
-	pending_drop_quantity = SaveValues.count(state.get("pending_drop_quantity", 0))
+	drop.load_count(state.get("pending_drop_quantity", 0))
 	# `_ready` sets up a creature that loads as it enters the tree.
 	if is_node_ready():
 		_death_time_left = 0.0
@@ -335,57 +336,14 @@ func get_drop_quantity() -> int:
 func _drop_loot() -> void:
 	if data.drop_item_id == &"" or data.drop_quantity <= 0:
 		return
-	var item := ItemData.find(data.drop_item_id)
-	if item == null:
-		return
-	var quantity := get_drop_quantity()
-	if quantity <= 0:
-		return
-	var remaining := InventoryState.add_item(item, quantity)
-	if remaining > 0:
-		pending_drop_quantity += remaining
-		_persist()
+	drop.give(ItemData.find(data.drop_item_id), get_drop_quantity())
 	# A hit can come from a physics callback, where no area may enter the
 	# world: the drop lands once the frame's queries are done.
-	_restore_pending_drop.call_deferred()
+	_show_drop.call_deferred()
 
-func _spawn_drop(item: ItemData, quantity: int) -> void:
-	if quantity <= 0 or get_tree().current_scene == null:
-		return
-	if is_instance_valid(_drop_pickup):
-		_drop_pickup.set_quantity(quantity)
-		return
-	var pickup := _make_drop_pickup(item, quantity)
-	if pickup == null:
-		return
-	_drop_pickup = pickup
-	pickup.items_collected.connect(_on_pending_drop_collected)
-	get_tree().current_scene.add_child(pickup)
-	pickup.global_position = global_position
-
-func _make_drop_pickup(item: ItemData, quantity: int) -> WorldItemPickup:
-	if item == null or quantity <= 0:
-		return null
-	var pickup := PICKUP_SCENE.instantiate() as WorldItemPickup
-	if pickup == null:
-		return null
-	pickup.item = item
-	pickup.quantity = quantity
-	pickup.counts_as_forage = false
-	return pickup
-
-func _on_pending_drop_collected(_item_id: StringName, _collected: int, remaining: int) -> void:
-	pending_drop_quantity = maxi(remaining, 0)
-	_persist()
-	if pending_drop_quantity <= 0:
-		_drop_pickup = null
-
-func _restore_pending_drop() -> void:
-	if pending_drop_quantity <= 0 or data == null:
-		return
-	var item := ItemData.find(data.drop_item_id)
-	if item != null:
-		_spawn_drop(item, pending_drop_quantity)
+func _show_drop() -> void:
+	if data != null and drop.quantity > 0:
+		drop.show(self, ItemData.find(data.drop_item_id))
 
 func _on_day_changed(day: int) -> void:
 	if not is_defeated or data == null:
