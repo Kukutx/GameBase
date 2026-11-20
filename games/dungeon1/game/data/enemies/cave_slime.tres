@@ -6,6 +6,7 @@
 script = ExtResource("1_enemy")
 id = &"cave_slime"
 display_name = "Cave Slime"
+affliction_id = &"slimed"
 fallback_color = Color(0.36, 0.76, 0.4, 1)
 max_health = 18
 move_speed = 34.0

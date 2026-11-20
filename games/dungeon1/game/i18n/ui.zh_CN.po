@@ -465,3 +465,6 @@ msgstr "祝福：%s — %dg"
 
 msgid "Burning"
 msgstr "灼烧"
+
+msgid "Slimed"
+msgstr "黏滞"

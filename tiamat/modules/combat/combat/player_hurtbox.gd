@@ -8,8 +8,11 @@ extends Hurtbox
 ## of it), shakes the screen (`GameCamera.shake_view()`) and is announced as
 ## `CombatEvents.player_hurt`. An affliction's tick (`Hurtbox.ailed`, a burn,
 ## a poison) takes health and is announced the same way, but neither staggers
-## the player nor shakes the screen; one taking hold is told in a toast. A player without health left, or passing
-## out, takes no more hits and no more ticks. A child of the player.
+## the player nor shakes the screen; one taking hold is told in a toast. One
+## that slows (`AfflictionData.speed_scale`) slows the player's steps while it
+## lasts, through the `TopDownPlayer.MOVE_SPEED_STAT` stat, of which the
+## hurtbox is a source (`GameStats`). A player without health left, or
+## passing out, takes no more hits and no more ticks. A child of the player.
 ##
 ## The player chooses how hard hits land on them in the settings
 ## (`DAMAGE_TAKEN_OPTION`, which the combat module declares), read at each
@@ -43,6 +46,21 @@ func _ready() -> void:
 	hurt.connect(_on_hurt)
 	ailed.connect(_take)
 	afflicted.connect(func(affliction: AfflictionData) -> void: GameEvents.toastf("Afflicted: %s", [affliction.display_name]))
+	slowed.connect(GameStats.notify_changed.unbind(1))
+
+func _enter_tree() -> void:
+	GameStats.register_source(self)
+
+func _exit_tree() -> void:
+	GameStats.unregister_source(self)
+
+## Its change to the player's stats (`GameStats`): the player's steps slowed
+## while an affliction that slows is on them.
+func get_stat_multiplier(stat: StringName) -> float:
+	return get_speed_scale() if stat == TopDownPlayer.MOVE_SPEED_STAT else 1.0
+
+func get_stat_bonus(_stat: StringName) -> float:
+	return 0.0
 
 func can_be_hurt_by(damage: Damage) -> bool:
 	return is_standing() and not GameSession.is_passing_out() and super(damage)

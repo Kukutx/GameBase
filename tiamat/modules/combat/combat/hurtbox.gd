@@ -11,7 +11,8 @@ extends Area2D
 ## that brings an affliction (`Damage.affliction_id`, an `AfflictionData`)
 ## lays it on the hurtbox (`afflict()`) unless it is immune to it
 ## (`immune_to`), which then takes health on its own ticks (`ailed`) until it
-## wears off or the hurtbox turns off.
+## wears off or the hurtbox turns off, and may slow its actor while it lasts
+## (`get_speed_scale()`, `slowed`).
 
 signal hurt(damage: Damage)
 ## An affliction on it took health (`afflict()`): with no push and no stun,
@@ -19,6 +20,9 @@ signal hurt(damage: Damage)
 signal ailed(damage: Damage)
 ## An affliction took hold of it, not laid on it already (`afflict()`).
 signal afflicted(affliction: AfflictionData)
+## How fast its actor goes changed (`get_speed_scale()`): an affliction that
+## slows took hold or lifted.
+signal slowed(speed_scale: float)
 
 ## How long the actor flashes after a hit.
 const FLASH_SECONDS := 0.12
@@ -51,6 +55,7 @@ var _knockback_left := 0.0
 var _flash: Tween
 var _rest_modulate := Color.WHITE
 var _afflictions := Afflictions.new()
+var _speed_scale := 1.0
 
 func _ready() -> void:
 	# It runs only while a hit plays out.
@@ -99,6 +104,7 @@ func afflict(affliction: AfflictionData, from_faction: StringName = &"") -> bool
 	set_physics_process(true)
 	if _afflictions.lay(affliction, from_faction):
 		afflicted.emit(affliction)
+		_check_speed()
 	return true
 
 ## The afflictions on it now, in the order laid.
@@ -112,6 +118,13 @@ func is_afflicted(affliction_id: StringName) -> bool:
 ## Lifts every affliction from it.
 func cure() -> void:
 	_afflictions.clear()
+	_check_speed()
+
+## How fast its actor goes now, as a share of its speed: slower while an
+## affliction that slows is on it (`AfflictionData.speed_scale`), 1.0
+## otherwise.
+func get_speed_scale() -> float:
+	return _speed_scale
 
 ## Whether an affliction may take its health now: while it is on.
 func can_ail() -> bool:
@@ -136,6 +149,7 @@ func _physics_process(delta: float) -> void:
 		if body != null:
 			body.move_and_collide(push * delta)
 	_afflictions.advance(delta, _on_tick)
+	_check_speed()
 	if _invincible_left <= 0.0 and _knockback_left <= 0.0 and _afflictions.is_empty():
 		set_physics_process(false)
 
@@ -145,6 +159,12 @@ func _on_tick(affliction: AfflictionData, tick: Damage) -> void:
 	if can_ail():
 		_flash_actor(affliction.color)
 		ailed.emit(tick)
+
+func _check_speed() -> void:
+	var speed_scale := _afflictions.get_speed_scale()
+	if speed_scale != _speed_scale:
+		_speed_scale = speed_scale
+		slowed.emit(speed_scale)
 
 func _flash_actor(color := FLASH_COLOR) -> void:
 	var actor := get_parent() as CanvasItem

@@ -2,8 +2,9 @@ class_name AtbBattle
 extends RefCounted
 
 ## A battle on a grid (`BattleGrid`) in active time. Every unit's gauge fills
-## at its speed, and a unit whose gauge is full takes a turn, in which it may
-## move once and act once, in either order; units that fill at the same moment
+## at its speed (`GridUnit.get_speed()`, slowed by an affliction), and a
+## unit whose gauge is full takes a turn, in which it may move once and act
+## once, in either order; units that fill at the same moment
 ## go in the order they were placed. The player commands the units of their
 ## faction (`player_faction`); the others, their allies among them, take their
 ## turns at once (`GridBattleAi`). While one of the player's units waits for
@@ -181,7 +182,7 @@ func get_unit_at(cell: Vector2i) -> GridUnit:
 func advance(seconds: float) -> void:
 	var left := seconds
 	while left > 0.0 and not _over and (_turn == null or time_flows_while_choosing):
-		var filling := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive() and unit.data.speed > 0.0 and unit != _turn and not _waiting.has(unit))
+		var filling := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive() and unit.get_speed() > 0.0 and unit != _turn and not _waiting.has(unit))
 		var ailing := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive() and not unit.afflictions.is_empty())
 		if filling.is_empty() and ailing.is_empty() and arrivals.size() == 0 and time_limit == null:
 			return
@@ -191,15 +192,15 @@ func advance(seconds: float) -> void:
 		for unit: GridUnit in ailing:
 			step = minf(step, unit.afflictions.get_next_tick())
 		for unit: GridUnit in filling:
-			step = minf(step, (GAUGE_FULL - unit.gauge) / unit.data.speed)
+			step = minf(step, (GAUGE_FULL - unit.gauge) / unit.get_speed())
 		var full: Array[GridUnit] = []
 		for unit: GridUnit in filling:
 			# The one that sets the step fills exactly, whatever the rounding.
-			if (GAUGE_FULL - unit.gauge) / unit.data.speed <= step + _EPSILON:
+			if (GAUGE_FULL - unit.gauge) / unit.get_speed() <= step + _EPSILON:
 				unit.gauge = GAUGE_FULL
 				full.append(unit)
 			else:
-				unit.gauge += unit.data.speed * step
+				unit.gauge += unit.get_speed() * step
 		left -= step
 		time += step
 		for arrival: GridArrivals.Arrival in arrivals.take_due(time + _EPSILON):

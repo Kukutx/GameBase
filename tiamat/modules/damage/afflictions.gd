@@ -5,7 +5,7 @@ extends RefCounted
 ## seconds of that fight: real time for a hurtbox, battle time for a unit of a
 ## grid or command battle. Each takes its `AfflictionData.tick_damage` every
 ## `AfflictionData.tick_seconds`, `AfflictionData.get_ticks()` times
-## (`advance()`). Laid again, one lasts as long again from then, its next tick
+## (`advance()`), and the slowest slows it while on (`get_speed_scale()`). Laid again, one lasts as long again from then, its next tick
 ## still due when it was, so it never stacks and quick hits never put a tick
 ## off. Whether a thing may take one at all (immunity, standing) is for the
 ## fight to say before it lays it.
@@ -51,6 +51,14 @@ func get_damage_left() -> int:
 		left += int(entry["ticks"]) * (entry["data"] as AfflictionData).tick_damage
 	return left
 
+## How fast what they are on goes, as a share of its speed: the slowest
+## `AfflictionData.speed_scale` of them, 1.0 with none that slows.
+func get_speed_scale() -> float:
+	var slowest := 1.0
+	for entry: Dictionary in _laid.values():
+		slowest = minf(slowest, (entry["data"] as AfflictionData).speed_scale)
+	return slowest
+
 ## The seconds to the next tick of any of them; INF with none.
 func get_next_tick() -> float:
 	var soonest := INF
@@ -60,8 +68,8 @@ func get_next_tick() -> float:
 
 ## Lets `seconds` pass: calls `on_tick` with each affliction whose tick is
 ## due by then and the `Damage` it does (its `tick_damage`, from the faction
-## that laid it, with no push), and lifts each after its last. A tick that
-## lifts the rest (`clear()`, a defeat) ends it.
+## that laid it, with no push), unless it takes no health, and lifts each
+## after its last. A tick that lifts the rest (`clear()`, a defeat) ends it.
 func advance(seconds: float, on_tick: Callable) -> void:
 	for id: StringName in _laid.keys():
 		var entry: Dictionary = _laid.get(id, {})
@@ -74,4 +82,5 @@ func advance(seconds: float, on_tick: Callable) -> void:
 			entry["ticks"] = int(entry["ticks"]) - 1
 			if int(entry["ticks"]) <= 0:
 				_laid.erase(id)
-			on_tick.call(affliction, Damage.new(affliction.tick_damage, entry["faction"]))
+			if affliction.tick_damage > 0:
+				on_tick.call(affliction, Damage.new(affliction.tick_damage, entry["faction"]))

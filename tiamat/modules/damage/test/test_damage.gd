@@ -74,6 +74,32 @@ func test_a_time_limit_runs_out_for_the_side_that_holds_out() -> void:
 	assert_false(limit.wins(FactionData.MONSTERS))
 	assert_eq(BattleTimeLimit.new(-5.0, FactionData.MONSTERS).seconds, 0.0)
 
+func test_afflictions_slow_by_the_slowest_and_one_that_takes_no_health_never_ticks() -> void:
+	var chill := AfflictionData.new()
+	chill.id = &"fixture_chill"
+	chill.seconds = 2.0
+	chill.tick_seconds = 1.0
+	chill.tick_damage = 0
+	chill.speed_scale = 0.5
+	var mire := AfflictionData.new()
+	mire.id = &"fixture_mire"
+	mire.seconds = 2.0
+	mire.tick_seconds = 1.0
+	mire.speed_scale = 0.75
+	var on := Afflictions.new()
+	assert_eq(on.get_speed_scale(), 1.0, "none on it")
+	on.lay(mire)
+	assert_eq(on.get_speed_scale(), 0.75)
+	on.lay(chill)
+	assert_eq(on.get_speed_scale(), 0.5, "the slower counts, not both")
+	var ticks: Array[StringName] = []
+	var record := func(affliction: AfflictionData, _tick: Damage) -> void: ticks.append(affliction.id)
+	on.advance(1.0, record)
+	assert_eq(ticks, [&"fixture_mire"] as Array[StringName], "one that takes no health never ticks")
+	on.advance(1.0, record)
+	assert_true(on.is_empty(), "yet it wears off in time")
+	assert_eq(on.get_speed_scale(), 1.0)
+
 func test_afflictions_tick_last_anew_when_laid_again_and_stop_once_lifted() -> void:
 	var poison := AfflictionData.new()
 	poison.id = &"fixture_poison"

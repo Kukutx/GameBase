@@ -1,9 +1,9 @@
 extends GutTest
 
 ## Afflictions in real time (`AfflictionData`, `Hurtbox.afflict()`): their
-## ticks, one laid again, immunity, the player's and a creature's, what lays
-## them (a creature's strike or its elite form's, a hazard, a weapon's tag)
-## and what is wrong with them.
+## ticks, one laid again, immunity, the player's and a creature's, one that
+## slows them, what lays them (a creature's strike or its elite form's, a
+## hazard, a weapon's tag) and what is wrong with them.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const HOSTILE_CREATURE_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
@@ -12,6 +12,8 @@ const HP := &"fixture_hp"
 const BURN := &"fixture_burn"
 ## Three ticks of 1, a fifth of a second apart.
 const POISON := &"fixture_poison"
+## Half speed for three tenths of a second, taking no health.
+const SLOW := &"fixture_slow"
 
 var _vitals_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
@@ -110,6 +112,26 @@ func test_the_player_is_told_and_burns_until_they_have_no_health_left() -> void:
 	assert_signal_emit_count(CombatEvents, "player_hurt", 4, "a player with no health left takes no tick")
 	assert_false(hurtbox.afflict(AfflictionData.find(BURN)), "nor is laid with one")
 
+func test_one_that_slows_slows_the_player_and_a_creature_while_it_lasts() -> void:
+	var hurtbox := _player(Vector2(5200, 5000))
+	var slow := AfflictionData.find(SLOW)
+	var before := GameStats.get_multiplier(TopDownPlayer.MOVE_SPEED_STAT)
+	watch_signals(hurtbox)
+	watch_signals(GameStats)
+	assert_true(hurtbox.afflict(slow, FactionData.MONSTERS))
+	assert_eq(hurtbox.get_speed_scale(), 0.5)
+	assert_almost_eq(GameStats.get_multiplier(TopDownPlayer.MOVE_SPEED_STAT), before * 0.5, 0.0001, "the player's steps at half speed")
+	assert_signal_emitted_with_parameters(hurtbox, "slowed", [0.5])
+	assert_signal_emitted(GameStats, "changed", "what reads the stats reads them again")
+	assert_true(await wait_until(func() -> bool: return not hurtbox.is_afflicted(SLOW), 1.0), "it wears off")
+	assert_signal_emit_count(hurtbox, "ailed", 0, "taking no health")
+	assert_eq(hurtbox.get_speed_scale(), 1.0)
+	assert_almost_eq(GameStats.get_multiplier(TopDownPlayer.MOVE_SPEED_STAT), before, 0.0001, "and the player walks as fast as ever")
+	var slime := _creature(&"fixture_slime", Vector2(-5600, -5000))
+	assert_true(slime.hurtbox.afflict(slow, FactionData.PLAYER))
+	slime.call("_walk", Vector2.RIGHT, Vector2.RIGHT)
+	assert_almost_eq(slime.velocity.x, slime.data.move_speed * 0.5, 0.001, "a creature walks at half speed too")
+
 func test_a_creature_s_strike_lays_its_kind_s_or_its_elite_form_s() -> void:
 	var target := _player(Vector2(5600, 5000))
 	var slime := _creature(&"fixture_slime", Vector2(5610, 5000))
@@ -173,7 +195,7 @@ func test_a_weapon_that_carries_an_affliction_s_tag_lays_it() -> void:
 	assert_eq(WeaponUse.affliction_of(ItemData.find(&"fixture_brand")), AfflictionData.find(BURN))
 	assert_null(WeaponUse.affliction_of(ItemData.find(&"fixture_gel")), "an item without the tag")
 	assert_null(WeaponUse.affliction_of(null))
-	assert_eq(AfflictionData.find_all().size(), 2)
+	assert_eq(AfflictionData.find_all().size(), 3, "the burn, the poison and the slow")
 
 func test_what_is_wrong_with_an_affliction_or_what_names_one() -> void:
 	var burn := AfflictionData.find(BURN)
@@ -184,6 +206,11 @@ func test_what_is_wrong_with_an_affliction_or_what_names_one() -> void:
 	odd.seconds = 0.5
 	odd.tick_seconds = 2.0
 	assert_eq(odd.find_problems(ContentRegistry.active), PackedStringArray(["has no display name", "takes health every 2.0s but lasts only 0.5s"]))
+	var idle := _affliction(&"fixture_idle", "Idle", 1.0, 0.5, 0)
+	assert_eq(idle.find_problems(ContentRegistry.active), PackedStringArray(["takes no health and slows nothing"]))
+	idle.speed_scale = 0.5
+	assert_true(idle.slows())
+	assert_eq(idle.find_problems(ContentRegistry.active), PackedStringArray(), "one that only slows")
 	var slime := EnemyData.find(&"fixture_slime")
 	assert_eq(slime.find_problems(ContentRegistry.active), PackedStringArray())
 	slime.affliction_id = &"fixture_missing"
@@ -230,12 +257,14 @@ func _creature(enemy_id: StringName, at: Vector2, elite: EliteData = null) -> Ho
 	add_child_autofree(creature)
 	return creature
 
-# The player's health, a burn and a poison, a slime of 30 health whose hits
-# burn, a wisp that never burns and a brand whose tag burns.
+# The player's health, a burn, a poison and a slow, a slime of 30 health
+# whose hits burn, a wisp that never burns and a brand whose tag burns.
 func _fixture_content() -> Array:
 	var burn := _affliction(BURN, "Burn", 0.3, 0.1, 2)
 	burn.weapon_tag = "fixture_burns"
 	var poison := _affliction(POISON, "Poison", 0.6, 0.2, 1)
+	var slow := _affliction(SLOW, "Slow", 0.3, 0.1, 0)
+	slow.speed_scale = 0.5
 	var gel := ItemData.new()
 	gel.id = &"fixture_gel"
 	gel.display_name = "Gel"
@@ -254,7 +283,7 @@ func _fixture_content() -> Array:
 	wisp.id = &"fixture_wisp"
 	wisp.display_name = "Wisp"
 	wisp.immune_to.assign([BURN])
-	return [burn, poison, gel, brand, slime, wisp, ContentFixture.vital(HP)]
+	return [burn, poison, slow, gel, brand, slime, wisp, ContentFixture.vital(HP)]
 
 static func _affliction(id: StringName, display_name: String, seconds: float, tick_seconds: float, tick_damage: int) -> AfflictionData:
 	var affliction := AfflictionData.new()

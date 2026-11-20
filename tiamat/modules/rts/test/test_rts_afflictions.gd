@@ -4,8 +4,8 @@ extends GutTest
 ## affliction on the foe it leaves standing, which takes health in battle
 ## time until it lifts, lasts anew when laid again without ticking sooner,
 ## never takes hold of a kind immune to it, brings a unit down as a blow
-## would and ends the battle then, and is lifted when its unit falls or a
-## healer that cures mends it.
+## would and ends the battle then, is lifted when its unit falls or a healer
+## that cures mends it, and one that slows slows its unit's steps.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
@@ -104,6 +104,26 @@ func test_a_healer_that_cures_lifts_the_afflictions_of_the_friend_it_mends() -> 
 	battle.advance(RtsBattle.STEP)
 	assert_eq(footman.health.current, 30)
 	assert_true(footman.afflictions.is_empty(), "one that cures lifts it as it mends")
+
+func test_one_that_slows_slows_its_unit_s_steps_while_it_lasts() -> void:
+	var battle := _battle()
+	var footman := RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(40.0, 80.0))
+	var slow := AfflictionData.new()
+	slow.id = &"fixture_slow"
+	slow.seconds = 1.0
+	slow.tick_seconds = 0.5
+	slow.tick_damage = 0
+	slow.speed_scale = 0.5
+	assert_true(footman.afflict(slow, FactionData.MONSTERS))
+	battle.order_move([footman] as Array[RtsUnit], Vector2(300.0, 80.0))
+	battle.advance(0.5)
+	assert_almost_eq(footman.position.x, 47.5, 0.01, "at half its 30 pixels a second")
+	battle.advance(0.5)
+	assert_true(footman.afflictions.is_empty(), "it lifts a second in")
+	var at := footman.position.x
+	battle.advance(RtsBattle.STEP)
+	assert_almost_eq(footman.position.x - at, 1.0, 0.01, "then a step goes as far as ever")
+	assert_eq(_ailed, [] as Array[String], "and it took no health")
 
 func _battle() -> RtsBattle:
 	var battle := RtsFixture.battle()

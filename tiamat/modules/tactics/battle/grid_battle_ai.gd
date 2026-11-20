@@ -73,7 +73,7 @@ func best_plan(battle: AtbBattle, unit: GridUnit, stays := false) -> Dictionary:
 ## unit of its side that flees with a leader it defeats) and
 ## `DELAY_SCORE` for each point of gauge it sets back of those it leaves
 ## standing and the health its affliction would take on its ticks from those
-## it is not on already, or the health it gives back to its side and the
+## it is not on already, and the gauge its slow would cost them, or the health it gives back to its side and the
 ## health it spares them by lifting their afflictions (`cures`), and
 ## `BOOST_SCORE` for its boosts on each unit it reaches that they are not on
 ## already.
@@ -94,6 +94,8 @@ func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: 
 			var affliction := AfflictionData.find(action.affliction_id)
 			if other.can_be_afflicted(affliction) and not other.afflictions.has(affliction.id):
 				value += mini(affliction.get_ticks() * affliction.tick_damage, other.health.current - amount)
+				# A slow sets the foe's gauge back as a delay would.
+				value += roundi(affliction.seconds * (1.0 - affliction.speed_scale) * other.data.speed * DELAY_SCORE)
 		if not other.has_boost(action):
 			for stat: StringName in action.boosts:
 				value += absi(action.boosts[stat]) * action.boost_turns * BOOST_SCORE

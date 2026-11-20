@@ -15,7 +15,8 @@ extends RefCounted
 ## of fighting, and may lift the afflictions on it (`RtsUnitData.cures`). An
 ## attack also lays its kind's affliction (`RtsUnitData.affliction_id`) on the
 ## foe it leaves standing, unless that foe is immune: it takes health in
-## battle time (`unit_ailed`), and a unit it brings down falls as to a blow.
+## battle time (`unit_ailed`), and a unit it brings down falls as to a blow;
+## one that slows slows the unit's steps while it lasts.
 ## Units may also arrive while it runs (`add_arrival()`, `unit_arrived`); one
 ## the player does not command marches at once (`RtsBattleAi.arrive()`).
 ## The battle ends when no two units that fight, living or still on their way,
@@ -418,7 +419,7 @@ func _defeat(unit: RtsUnit) -> void:
 # Walks `unit` along its path for a step; false when the next point of the
 # way is not open (another unit pushed it off its line).
 func _walk(unit: RtsUnit) -> bool:
-	var budget := unit.data.move_speed * STEP
+	var budget := unit.data.move_speed * unit.afflictions.get_speed_scale() * STEP
 	while budget > 0.0 and not unit.path.is_empty():
 		var next := unit.path[0]
 		var distance := unit.position.distance_to(next)
