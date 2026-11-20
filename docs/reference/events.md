@@ -74,6 +74,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `CombatEvents.player_dodged()`: The player rolled out of the way (`DodgeRoll`).
 - `CombatEvents.enemy_hurt(enemy_id: StringName, amount: int, position: Vector2)`: A hostile creature was hurt for `amount` at `position`.
 - `CombatEvents.player_hurt(amount: int)`: The player was hurt for `amount`.
+- `CombatEvents.player_afflictions_changed()`: The afflictions on the player changed (`PlayerHurtbox`): one took hold, one wore off, or they were lifted.
 - `CombatEvents.player_defeated(money_lost: int)`: The player lost all their health and woke up again; `money_lost` is what the defeat cost (`CombatSettings.defeat_money_loss_percent`).
 - `CombatEvents.fight_started()`: A creature began hunting the player, who was in no fight (`FightState`).
 - `CombatEvents.fight_ended()`: No creature has hunted the player for `CombatSettings.fight_calm_seconds`, or the player left them behind.

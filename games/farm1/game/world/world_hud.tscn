@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://game/world/world_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://game/ui/game_menu.tscn" id="2_menu"]
@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/controls_line.gd" id="14_controls_line"]
 [ext_resource type="Script" path="res://tiamat/core/input/touch/touch_clearance.gd" id="15_touch_clearance"]
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/hud_safe_area.gd" id="16_safe_area"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/affliction_line.gd" id="17_affliction_line"]
 
 [node name="WorldHud" type="CanvasLayer"]
 layer = 5
@@ -113,6 +114,16 @@ theme_override_colors/font_color = Color(0.78, 0.68, 0.96, 1)
 theme_override_font_sizes/font_size = 9
 text = ""
 clip_text = true
+
+[node name="Afflictions" type="Label" parent="."]
+script = ExtResource("17_affliction_line")
+offset_left = 16.0
+offset_top = 110.0
+offset_right = 280.0
+offset_bottom = 124.0
+theme_override_colors/font_color = Color(0.82, 0.92, 0.55, 1)
+theme_override_font_sizes/font_size = 9
+text = ""
 
 [node name="FishingStatus" type="Label" parent="."]
 visible = false

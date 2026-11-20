@@ -41,6 +41,10 @@ func get_all() -> Array[AfflictionData]:
 func is_empty() -> bool:
 	return _laid.is_empty()
 
+## How many afflictions are on it.
+func size() -> int:
+	return _laid.size()
+
 ## Lifts every affliction.
 func clear() -> void:
 	_laid.clear()
@@ -60,6 +64,15 @@ func get_speed_scale() -> float:
 	for entry: Dictionary in _laid.values():
 		slowest = minf(slowest, (entry["data"] as AfflictionData).speed_scale)
 	return slowest
+
+## The seconds the affliction `affliction_id` lasts yet, to its last tick; 0
+## when it is not on.
+func get_seconds_left(affliction_id: StringName) -> float:
+	var entry: Dictionary = _laid.get(affliction_id, {})
+	if entry.is_empty():
+		return 0.0
+	var affliction: AfflictionData = entry["data"]
+	return float(entry["next"]) + (int(entry["ticks"]) - 1) * affliction.tick_seconds
 
 ## The seconds to the next tick of any of them; INF with none.
 func get_next_tick() -> float:

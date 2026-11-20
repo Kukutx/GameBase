@@ -8,12 +8,14 @@ extends Hurtbox
 ## of it), shakes the screen (`GameCamera.shake_view()`) and is announced as
 ## `CombatEvents.player_hurt`. An affliction's tick (`Hurtbox.ailed`, a burn,
 ## a poison) takes health and is announced the same way, but neither staggers
-## the player nor shakes the screen; one taking hold is told in a toast. One
-## that slows (`AfflictionData.speed_scale`) slows the player's steps while it
-## lasts, through the `TopDownPlayer.MOVE_SPEED_STAT` stat, of which the
-## hurtbox is a source (`GameStats`), and the `AFFLICTION_SECONDS_STAT` stat
-## makes one last shorter on the player, or not at all. A player without health left, or
-## passing out, takes no more hits and no more ticks. A child of the player.
+## the player nor shakes the screen; one taking hold is told in a toast, and
+## any change to them is announced as `CombatEvents.player_afflictions_changed`
+## (which `AfflictionLine` shows). One that slows (`AfflictionData.speed_scale`)
+## slows the player's steps while it lasts, through the
+## `TopDownPlayer.MOVE_SPEED_STAT` stat, of which the hurtbox is a source
+## (`GameStats`), and the `AFFLICTION_SECONDS_STAT` stat makes one last shorter
+## on the player, or not at all. A player without health left, or passing out,
+## takes no more hits and no more ticks. A child of the player.
 ##
 ## The player chooses how hard hits land on them in the settings
 ## (`DAMAGE_TAKEN_OPTION`, which the combat module declares), read at each
@@ -50,6 +52,7 @@ func _ready() -> void:
 	hurt.connect(_on_hurt)
 	ailed.connect(_take)
 	afflicted.connect(func(affliction: AfflictionData) -> void: GameEvents.toastf("Afflicted: %s", [affliction.display_name]))
+	afflictions_changed.connect(CombatEvents.player_afflictions_changed.emit)
 	slowed.connect(GameStats.notify_changed.unbind(1))
 
 func _enter_tree() -> void:

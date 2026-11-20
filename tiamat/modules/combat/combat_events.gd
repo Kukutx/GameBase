@@ -22,6 +22,9 @@ signal player_dodged
 signal enemy_hurt(enemy_id: StringName, amount: int, position: Vector2)
 ## The player was hurt for `amount`.
 signal player_hurt(amount: int)
+## The afflictions on the player changed (`PlayerHurtbox`): one took hold,
+## one wore off, or they were lifted.
+signal player_afflictions_changed
 ## The player lost all their health and woke up again; `money_lost` is what
 ## the defeat cost (`CombatSettings.defeat_money_loss_percent`).
 signal player_defeated(money_lost: int)
