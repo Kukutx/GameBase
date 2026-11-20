@@ -129,6 +129,20 @@ func taste_of(item: ItemData) -> Taste:
 func friendship_for_gift(item: ItemData) -> int:
 	return 0 if item == null else TASTE_POINTS[taste_of(item)]
 
+## Where they are and what they do now, by their schedule, as the player reads
+## it ("Riverside Town · Morning walk"; `NpcSchedule.find_entry()`): the
+## entry's location, else their default one, and its activity; "" without a
+## schedule for now.
+func describe_whereabouts(day: int = -1, minute_of_day: int = -1) -> String:
+	var entry := NpcSchedule.find_entry(schedule_entries, WorldClock.minute_of_day if minute_of_day < 0 else minute_of_day, day)
+	if entry == null:
+		return ""
+	var location := WorldLocationData.find(entry.location_id if entry.location_id != &"" else default_location_id)
+	var activity := String(TranslationServer.translate(entry.activity))
+	if location == null:
+		return activity
+	return "%s · %s" % [TranslationServer.translate(location.display_name), activity]
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	for list_name: String in ["loved_items", "liked_items", "disliked_items"]:

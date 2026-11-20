@@ -18,7 +18,8 @@ func before_each() -> void:
 	_profile.loved_items = [&"fixture_berry"]
 	_profile.liked_items = [&"fixture_radish"]
 	_profile.disliked_items = [&"fixture_twig"]
-	ContentFixture.use(self, [_profile, _item(&"fixture_berry"), _item(&"fixture_radish"), _item(&"fixture_twig")])
+	ContentFixture.use(self, [_profile, _item(&"fixture_berry"), _item(&"fixture_radish"), _item(&"fixture_twig"),
+		_location(&"fixture_square", "Fixture Square"), _location(&"fixture_home", "Fixture Home")])
 
 func after_each() -> void:
 	# The game's content is active again before the inventory loads its items.
@@ -126,6 +127,24 @@ func test_a_gift_tells_how_the_npc_takes_it_and_the_save_keeps_it() -> void:
 	restored.load_save_data({"points": {}})
 	assert_eq(restored.describe_known_tastes(&"fixture_npc"), PackedStringArray(), "a save from before tastes were kept")
 
+func test_the_townsfolk_page_tells_where_each_npc_is_now() -> void:
+	_profile.default_location_id = &"fixture_home"
+	_profile.schedule_entries = [_entry(8 * 60, &"fixture_square", "Morning walk"), _entry(18 * 60, &"", "Supper")]
+	WorldClock.set_time(3, 9 * 60)
+	assert_eq(_profile.describe_whereabouts(), "Fixture Square · Morning walk")
+	WorldClock.set_time(3, 19 * 60)
+	assert_eq(_profile.describe_whereabouts(), "Fixture Home · Supper", "an entry without a location is at the default one")
+	WorldClock.set_time(4, 6 * 60)
+	assert_eq(_profile.describe_whereabouts(), "Fixture Home · Supper", "before the day's first entry, where the day before left them")
+	var state := RelationshipManager.new()
+	add_child_autofree(state)
+	assert_eq(state.describe_townsfolk(), PackedStringArray(["Fixture — Villager · 0 hearts", "  Now: Fixture Home · Supper"]))
+	assert_true(PauseMenu.get_page_ids().has(&"townsfolk"), "the module adds the page")
+	_profile.schedule_entries = []
+	assert_eq(state.describe_day(_profile), PackedStringArray(), "nothing to tell of one without a schedule, talk or gift")
+	WorldClock.set_time(14, 10 * 60)
+	assert_eq(state.describe_day(_profile), PackedStringArray(["Their birthday: a gift counts twice"]), "a birthday today")
+
 func test_relationship_points_are_bounded_and_persist() -> void:
 	var state := RelationshipManager.new()
 	add_child_autofree(state)
@@ -153,3 +172,16 @@ func _item(id: StringName) -> ItemData:
 	item.display_name = String(id).capitalize()
 	item.kind = ItemData.Kind.GIFT
 	return item
+
+static func _location(id: StringName, display_name: String) -> WorldLocationData:
+	var location := WorldLocationData.new()
+	location.id = id
+	location.display_name = display_name
+	return location
+
+static func _entry(minute: int, location_id: StringName, activity: String) -> NpcScheduleEntry:
+	var entry := NpcScheduleEntry.new()
+	entry.minute_of_day = minute
+	entry.location_id = location_id
+	entry.activity = activity
+	return entry

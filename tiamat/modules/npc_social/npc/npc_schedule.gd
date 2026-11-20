@@ -52,6 +52,12 @@ func _physics_process(_delta: float) -> void:
 	actor.move_and_slide()
 
 func get_entry_for_minute(minute_of_day: int, target_day: int = -1) -> NpcScheduleEntry:
+	return find_entry(entries, minute_of_day, target_day)
+
+## The entry of `entries` an NPC follows on `target_day` (today when below 1)
+## at `minute_of_day`: the latest begun that day of the highest priority, or
+## before the day's first, the one the day before left them on; null for none.
+static func find_entry(entries: Array[NpcScheduleEntry], minute_of_day: int, target_day: int = -1) -> NpcScheduleEntry:
 	if entries.is_empty():
 		return null
 	var resolved_day := WorldClock.day if target_day < 1 else target_day
@@ -142,5 +148,5 @@ func _set_presence(value: bool) -> void:
 	current_present = value
 	presence_changed.emit(current_present)
 
-func _is_better(priority: int, minute: int, current_priority: int, current_minute: int) -> bool:
+static func _is_better(priority: int, minute: int, current_priority: int, current_minute: int) -> bool:
 	return priority > current_priority or (priority == current_priority and minute > current_minute)
