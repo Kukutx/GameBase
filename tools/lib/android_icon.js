@@ -12,8 +12,9 @@ const FOREGROUND = "foreground.png";
 const BACKGROUND = "background.png";
 const RECORD = "icon.json";
 // How the layers are drawn: a change to the drawing that should reach every
-// game raises it, and the check asks for them to be drawn again.
-const RECIPE = 1;
+// game raises it, and the check asks for them to be drawn again. 2: the record
+// keeps the background's colour, which the boot splash shows.
+const RECIPE = 2;
 
 // The project icon of the game: its res:// path and the file.
 function projectIcon(game) {
@@ -48,6 +49,18 @@ function androidIconPaths() {
   return { foreground: `res://${ICON_DIR}/${FOREGROUND}`, background: `res://${ICON_DIR}/${BACKGROUND}` };
 }
 
+// The colour of the game's background layer as its record keeps it ("#rrggbb"),
+// or null when its layers are missing or were drawn before records kept it.
+function androidIconBackground(game) {
+  if (!hasAndroidIcon(game)) return null;
+  try {
+    const { background } = JSON.parse(fs.readFileSync(gamePath(game, ICON_DIR, RECORD), "utf8"));
+    return /^#[0-9a-f]{6}$/i.test(background || "") ? background.toLowerCase() : null;
+  } catch {
+    return null;
+  }
+}
+
 // Why the game's layers are not those of its icon now, or null when they are.
 function staleAndroidIcon(game) {
   if (!hasAndroidIcon(game)) return `${gameLabel(game)} has no ${ICON_DIR}/ (run node tools/render_android_icon.js)`;
@@ -64,4 +77,4 @@ function staleAndroidIcon(game) {
   return null;
 }
 
-module.exports = { BACKGROUND, FOREGROUND, ICON_DIR, RECORD, androidIconPaths, expectedRecord, gameLabel, hasAndroidIcon, projectIcon, staleAndroidIcon };
+module.exports = { BACKGROUND, FOREGROUND, ICON_DIR, RECORD, androidIconBackground, androidIconPaths, expectedRecord, gameLabel, hasAndroidIcon, projectIcon, staleAndroidIcon };

@@ -14,6 +14,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
+boot_splash/bg_color=Color(0.1529, 0.1882, 0.2314, 1)
+boot_splash/image="res://android_icon/foreground.png"
+boot_splash/stretch_mode=0
 config/name="Iron Banners"
 config/description="Lead your banners in grid tactics and field battles."
 config/name_localized={

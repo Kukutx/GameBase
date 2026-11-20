@@ -14,7 +14,9 @@
 // of a launcher reaches past the icon's own rounded corners. It writes them to
 // games/<id>/android_icon/, which Godot does not import (no pack carries
 // them), with icon.json: the icon they were drawn from, so a check fails when
-// the icon changes and they were not drawn again (tools/repository.test.js).
+// the icon changes and they were not drawn again (tools/repository.test.js),
+// and the background's colour, which the game's boot splash shows behind the
+// foreground on every platform, as Android's own splash does.
 // The game's Android preset then names them (as tools/link.js keeps it).
 // Without --game every game is drawn, and the new-game template too.
 const fs = require("node:fs");
@@ -55,11 +57,13 @@ func _initialize() -> void:
 	var foreground := Image.create_empty(CANVAS, CANVAS, false, Image.FORMAT_RGBA8)
 	foreground.blit_rect(art, Rect2i(Vector2i.ZERO, art.get_size()), Vector2i.ONE * ((CANVAS - ART) / 2))
 	var background := Image.create_empty(CANVAS, CANVAS, false, Image.FORMAT_RGBA8)
-	background.fill(_edge_colour(art))
+	var colour := _edge_colour(art)
+	background.fill(colour)
 	if foreground.save_png(args[1].path_join("${FOREGROUND}")) != OK or background.save_png(args[1].path_join("${BACKGROUND}")) != OK:
 		push_error("ANDROID_ICON: could not write to %s" % args[1])
 		quit(4)
 		return
+	print("ANDROID_ICON_BACKGROUND #%s" % colour.to_html(false))
 	print("ANDROID_ICON_OK")
 	quit(0)
 
@@ -122,17 +126,22 @@ async function renderAndroidIcon(game, godotBin) {
   fs.mkdirSync(probeRoot, { recursive: true });
   fs.writeFileSync(path.join(probeRoot, "project.godot"), PROBE_PROJECT, "utf8");
   const probeScript = path.join(probeRoot, "probe.gd");
+  let background = "";
   fs.writeFileSync(probeScript, PROBE_SCRIPT, "utf8");
   try {
     const result = await run(godot, ["--headless", "--path", probeRoot, "-s", probeScript, "--", file, out, nearest ? "nearest" : "smooth"], { quiet: true });
     if (result.code !== 0 || !result.output.includes("ANDROID_ICON_OK")) {
       fail(`${gameLabel(game)}: drawing the launcher icon failed (exit code ${result.code}).\n${result.output.trim()}`);
     }
+    background = (/ANDROID_ICON_BACKGROUND (#[0-9a-fA-F]{6})/.exec(result.output) || [])[1];
+    if (!background) fail(`${gameLabel(game)}: drawing the launcher icon named no background colour.\n${result.output.trim()}`);
   } finally {
     removeRecursive(probeRoot);
   }
   fs.writeFileSync(path.join(out, ".gdignore"), "", "utf8");
-  fs.writeFileSync(path.join(out, RECORD), `${JSON.stringify(expectedRecord(game), null, 2)}\n`, "utf8");
+  // The background's colour, which the boot splash shows behind the
+  // foreground as Android's own splash does (tools/lib/project.js).
+  fs.writeFileSync(path.join(out, RECORD), `${JSON.stringify({ ...expectedRecord(game), background: background.toLowerCase() }, null, 2)}\n`, "utf8");
   if (!game.template) syncProject(game);
   console.log(`${gameLabel(game)}/${ICON_DIR}: launcher icon drawn from ${projectIcon(game).icon}.`);
 }

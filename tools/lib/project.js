@@ -51,7 +51,7 @@ const path = require("node:path");
 const { fail, rootPath } = require("./common");
 const { gamePath, gameVersion, readFoundation } = require("./games");
 const { PRESET_NAMES, androidVersionCode, applicationId, targetOfPreset, targetsFor } = require("./targets");
-const { androidIconPaths, hasAndroidIcon } = require("./android_icon");
+const { androidIconBackground, androidIconPaths, hasAndroidIcon } = require("./android_icon");
 
 // The game's modules, each after the modules it requires, otherwise by name.
 function moduleOrder(foundation, modules) {
@@ -262,11 +262,27 @@ function syncedProject(text, game, foundation = readFoundation()) {
     const names = { ...parseLocalizedNames(getValue(sections, "application", "config/name_localized")), ...(gameName ? localizedNames(game, gameName) : {}) };
     if (Object.keys(names).length > 0) setValue(sections, "application", "config/name_localized", localizedNamesValue(names));
   }
+  // The game opens on its own icon and colours, not the engine's logo: the
+  // boot splash shows the launcher icon's foreground, at its own size, on its
+  // background's colour, as Android's splash does before it (and a browser's
+  // loading page with them).
+  const background = androidIconBackground(game);
+  if (background) {
+    setValue(sections, "application", "boot_splash/bg_color", godotColor(background));
+    setValue(sections, "application", "boot_splash/image", JSON.stringify(androidIconPaths().foreground));
+    setValue(sections, "application", "boot_splash/stretch_mode", "0");
+  }
   // The template leaves it to the game, whose view may not keep the template's shape.
   if (!game.template && getValue(sections, "display", "window/handheld/orientation") === null) {
     setValue(sections, "display", "window/handheld/orientation", String(handheldOrientation(sections)));
   }
   return formatSections(sections);
+}
+
+// A "#rrggbb" colour as project.godot writes one.
+function godotColor(hex) {
+  const channel = (offset) => String(Number((parseInt(hex.slice(offset, offset + 2), 16) / 255).toFixed(4)));
+  return `Color(${channel(1)}, ${channel(3)}, ${channel(5)}, 1)`;
 }
 
 // The hook every game's test run starts with: English text and a profile of
@@ -362,6 +378,9 @@ function derivedPresetValues(game, preset, targets, foundation) {
     const icon = hasAndroidIcon(game) ? androidIconPaths() : { foreground: "", background: "" };
     options["launcher_icons/adaptive_foreground_432x432"] = JSON.stringify(icon.foreground);
     options["launcher_icons/adaptive_background_432x432"] = JSON.stringify(icon.background);
+    // Android's splash, the launcher icon on its background, stays until the
+    // game runs, in place of the engine's logo.
+    options["splash_screen/disable_godot_boot_splash"] = "true";
     for (const key of ["keystore/debug", "keystore/debug_user", "keystore/debug_password", "keystore/release", "keystore/release_user", "keystore/release_password"]) {
       options[key] = '""';
     }

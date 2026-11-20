@@ -14,6 +14,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
+boot_splash/bg_color=Color(0.1216, 0.1765, 0.2275, 1)
+boot_splash/image="res://android_icon/foreground.png"
+boot_splash/stretch_mode=0
 config/name="Pocket Jianghu"
 config/description="A wuxia companion who trains on your desktop"
 config/quit_on_go_back=false

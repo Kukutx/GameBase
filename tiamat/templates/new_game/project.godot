@@ -14,6 +14,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
+boot_splash/bg_color=Color(0.1176, 0.2078, 0.3176, 1)
+boot_splash/image="res://android_icon/foreground.png"
+boot_splash/stretch_mode=0
 config/name="New Game"
 config/description="New game on Tiamat"
 config/quit_on_go_back=false

@@ -213,6 +213,11 @@ test("every game's Android launcher icon is drawn from its icon as it is now, an
     const presets = fs.readFileSync(gamePath(game, "export_presets.cfg"), "utf8");
     assert.ok(presets.includes(`launcher_icons/adaptive_foreground_432x432="${foreground}"`), `${game.id} names its foreground`);
     assert.ok(presets.includes(`launcher_icons/adaptive_background_432x432="${background}"`), `${game.id} names its background`);
+    if (game.template) continue;
+    assert.ok(presets.includes("splash_screen/disable_godot_boot_splash=true"), `${game.id} opens on Android's splash, not the engine's logo`);
+    const project = fs.readFileSync(gamePath(game, "project.godot"), "utf8");
+    assert.ok(project.includes(`boot_splash/image="${foreground}"`), `${game.id} boots on its own icon`);
+    assert.match(project, /^boot_splash\/bg_color=Color\(/m, `${game.id} boots on its icon's colour`);
   }
 });
 
@@ -231,6 +236,13 @@ test("a changed icon asks for its launcher layers to be drawn again, and a game 
     fs.writeFileSync(path.join(root, "android_icon", "icon.json"), JSON.stringify(expectedRecord(game)));
     assert.equal(staleAndroidIcon(game), null);
     assert.ok(syncedExportPresets(presets, game).includes('launcher_icons/adaptive_foreground_432x432="res://android_icon/foreground.png"'));
+    const project = fs.readFileSync(path.join(root, "project.godot"), "utf8");
+    assert.ok(!syncedProject(project, game).includes("boot_splash"), "layers drawn before records kept their colour change no splash");
+    fs.writeFileSync(path.join(root, "android_icon", "icon.json"), JSON.stringify({ ...expectedRecord(game), background: "#FF8000" }));
+    const booted = syncedProject(project, game);
+    assert.ok(booted.includes("boot_splash/bg_color=Color(1, 0.502, 0, 1)\n"), "the background's colour");
+    assert.ok(booted.includes('boot_splash/image="res://android_icon/foreground.png"\n'), "the foreground");
+    assert.ok(booted.includes("boot_splash/stretch_mode=0\n"), "at its own size");
     fs.writeFileSync(path.join(root, "icon.svg"), "<svg width='2'/>");
     assert.match(staleAndroidIcon(game), /icon changed .*render_android_icon\.js --game probe/);
   } finally {
