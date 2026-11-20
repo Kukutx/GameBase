@@ -52,6 +52,13 @@ script = ExtResource("3_enemy")
 enemy_id = &"blue_slime"
 minimum_depth = 20
 
+[sub_resource type="Resource" id="enemy_spitting_slime"]
+script = ExtResource("3_enemy")
+enemy_id = &"spitting_slime"
+minimum_depth = 21
+maximum_depth = 39
+share = 0.3
+
 [sub_resource type="Resource" id="enemy_red_slime"]
 script = ExtResource("3_enemy")
 enemy_id = &"red_slime"
@@ -96,5 +103,5 @@ max_chance = 0.25
 script = ExtResource("1_table")
 default_rock_id = &"stone_rock"
 rock_tiers = Array[ExtResource("2_rock")]([SubResource("rock_iridium_rock"), SubResource("rock_gold_rock"), SubResource("rock_iron_rock"), SubResource("rock_copper_rock")])
-enemy_tiers = Array[ExtResource("3_enemy")]([SubResource("enemy_green_slime"), SubResource("enemy_cave_slime"), SubResource("enemy_blue_slime"), SubResource("enemy_red_slime"), SubResource("enemy_shadow_slime"), SubResource("enemy_void_slime"), SubResource("enemy_ancient_slime"), SubResource("enemy_slime_king"), SubResource("enemy_void_monarch")])
+enemy_tiers = Array[ExtResource("3_enemy")]([SubResource("enemy_green_slime"), SubResource("enemy_cave_slime"), SubResource("enemy_blue_slime"), SubResource("enemy_spitting_slime"), SubResource("enemy_red_slime"), SubResource("enemy_shadow_slime"), SubResource("enemy_void_slime"), SubResource("enemy_ancient_slime"), SubResource("enemy_slime_king"), SubResource("enemy_void_monarch")])
 elite_odds = SubResource("elite_odds")

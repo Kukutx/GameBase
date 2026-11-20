@@ -104,6 +104,32 @@ func test_each_floor_spawns_the_enemy_of_the_deepest_tier_it_reached() -> void:
 	for entry: Dictionary in floor20:
 		assert_eq(String(entry["kind"]), "fixture_deep_slime")
 
+func test_a_mixed_tier_comes_among_a_floor_s_enemies_and_leaves_the_rest_as_it_was() -> void:
+	var plain := _table(&"fixture_stone", [], [_enemy_tier(&"fixture_slime", 1)])
+	var spitter := _enemy_tier(&"fixture_deep_slime", 5)
+	spitter.share = 0.5
+	spitter.maximum_depth = 9
+	var mixed := _table(&"fixture_stone", [], [_enemy_tier(&"fixture_slime", 1), spitter])
+	assert_eq(mixed.get_enemy_id(6), &"fixture_slime", "the floor's leading kind is still the slime")
+	var counts := {"fixture_slime": 0, "fixture_deep_slime": 0}
+	for floor: int in range(5, 10):
+		MineState.floor_table = plain
+		var before := MineState.generate_floor_layout(floor)
+		MineState.floor_table = mixed
+		var after := MineState.generate_floor_layout(floor)
+		assert_eq(after["rocks"], before["rocks"], "floor %d keeps its rocks" % floor)
+		assert_eq((after["enemies"] as Array).size(), (before["enemies"] as Array).size())
+		for index: int in (after["enemies"] as Array).size():
+			var entry: Dictionary = after["enemies"][index]
+			assert_eq(entry["position"], before["enemies"][index]["position"], "and where its enemies stand")
+			counts[String(entry["kind"])] += 1
+	assert_gt(int(counts["fixture_deep_slime"]), 0, "some come as the mixed kind")
+	assert_gt(int(counts["fixture_slime"]), 0, "the rest as the leading one")
+	MineState.floor_table = mixed
+	for floor: int in [4, 10]:
+		for entry: Dictionary in MineState.generate_floor_layout(floor)["enemies"]:
+			assert_eq(String(entry["kind"]), "fixture_slime", "floor %d lies outside the mixed tier" % floor)
+
 func test_a_guarded_floor_holds_its_guardian_furthest_from_the_way_in() -> void:
 	var king := _enemy_tier(&"fixture_king", 10)
 	king.guardian_every = 10

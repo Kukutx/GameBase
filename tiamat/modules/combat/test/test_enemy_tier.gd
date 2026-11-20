@@ -1,7 +1,8 @@
 extends GutTest
 
 ## Enemy tiers (`EnemyTier`): the ordinary ones a depth reaches, the deepest
-## of them, and the guardians that hold only the depths they guard.
+## of them, the mixed ones that come among it, and the guardians that hold
+## only the depths they guard.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 
@@ -45,6 +46,51 @@ func test_a_tier_that_ends_before_it_starts_is_a_problem() -> void:
 	backwards.maximum_depth = 4
 	assert_eq(EnemyTier.find_problems([_tier(&"bat", 1), backwards] as Array[EnemyTier], registry), PackedStringArray([
 		"enemy tier 'bat' ends at depth 4, before it starts at 10",
+	]))
+
+func test_a_mixed_tier_comes_among_the_kind_that_leads_a_depth() -> void:
+	var spitter := _tier(&"spitter", 4)
+	spitter.share = 0.3
+	spitter.maximum_depth = 8
+	var tiers := [_tier(&"slime", 1), _tier(&"bat", 3), spitter] as Array[EnemyTier]
+	assert_true(spitter.is_mixed())
+	assert_eq(EnemyTier.deepest(tiers, 6), &"bat", "a mixed tier never leads")
+	assert_eq(EnemyTier.reached(tiers, 6), [&"slime", &"bat", &"spitter"] as Array[StringName], "but is reached")
+	var rolls := GameRandom.stream("fixture mixed")
+	var spitters := 0
+	for _enemy: int in 1000:
+		var kind := EnemyTier.pick_mixed(tiers, 6, rolls)
+		assert_true(kind in [&"spitter", &""], "its own kind or the leading one")
+		if kind == &"spitter":
+			spitters += 1
+	assert_between(spitters, 250, 350, "about its share")
+	var same := GameRandom.stream("fixture mixed")
+	var again := GameRandom.stream("fixture mixed")
+	assert_eq(EnemyTier.pick_mixed(tiers, 6, same), EnemyTier.pick_mixed(tiers, 6, again), "the same stream, the same pick")
+	var untouched := GameRandom.stream("fixture untouched")
+	var reference := GameRandom.stream("fixture untouched")
+	for depth: int in [2, 9]:
+		assert_eq(EnemyTier.pick_mixed(tiers, depth, untouched), &"", "depth %d: it does not span it" % depth)
+	assert_eq(untouched.randi(), reference.randi(), "and takes no number there")
+
+func test_shares_past_one_leave_the_later_tiers_less() -> void:
+	var first := _tier(&"spitter", 1)
+	first.share = 1.0
+	var second := _tier(&"caster", 1)
+	second.share = 0.5
+	var rolls := GameRandom.stream("fixture shares")
+	for _enemy: int in 50:
+		assert_eq(EnemyTier.pick_mixed([first, second] as Array[EnemyTier], 3, rolls), &"spitter")
+
+func test_a_guardian_that_mixes_is_a_problem() -> void:
+	var enemy := EnemyData.new()
+	enemy.id = &"warden"
+	var registry := ContentFixture.use(self, [enemy])
+	var mixing := _tier(&"warden", 5, 5)
+	mixing.share = 0.2
+	assert_false(mixing.is_mixed(), "a guardian only guards")
+	assert_eq(EnemyTier.find_problems([mixing] as Array[EnemyTier], registry), PackedStringArray([
+		"enemy tier 'warden' guards depths and mixes among their enemies (share): a guardian only guards",
 	]))
 
 func _tiers() -> Array[EnemyTier]:

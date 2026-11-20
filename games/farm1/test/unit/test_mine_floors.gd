@@ -164,6 +164,23 @@ func test_gold_and_deep_slime_tiers_unlock_at_defined_floors() -> void:
 	assert_eq(MiningNodeData.find(&"gold_rock").drop_item_id, &"gold_ore")
 	assert_gt(EnemyData.find(&"red_slime").max_health, EnemyData.find(&"blue_slime").max_health)
 
+func test_spitting_slimes_come_among_the_blue_slimes_of_floors_twenty_one_to_thirty_nine() -> void:
+	var counts := {}
+	for floor: int in range(21, 40):
+		for entry: Dictionary in MineState.generate_floor_layout(floor)["enemies"]:
+			if not entry.has("guardian"):
+				counts[String(entry["kind"])] = int(counts.get(String(entry["kind"]), 0)) + 1
+	assert_eq(counts.keys().size(), 2, "only the two kinds: %s" % [counts])
+	var spitters := int(counts.get("spitting_slime", 0))
+	var share := float(spitters) / float(spitters + int(counts.get("blue_slime", 0)))
+	assert_between(share, 0.15, 0.45, "about a third")
+	for floor: int in [20, 40]:
+		for entry: Dictionary in MineState.generate_floor_layout(floor)["enemies"]:
+			assert_ne(String(entry["kind"]), "spitting_slime", "floor %d" % floor)
+	var spitter := EnemyData.find(&"spitting_slime")
+	assert_gt(spitter.shot_speed, 0.0, "it spits from afar")
+	assert_gt(spitter.attack_range, EnemyData.find(&"blue_slime").attack_range * 3.0)
+
 func test_floor_twenty_scene_maps_gold_and_blue_slime_to_real_data() -> void:
 	MineState.set_floor(20)
 	var packed := load("res://game/world/old_mine.tscn") as PackedScene
