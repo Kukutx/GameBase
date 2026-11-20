@@ -25,6 +25,9 @@ msgstr "金钱：%dg"
 msgid "Buy %s — %dg"
 msgstr "购买 %s — %dg"
 
+msgid "Buy %s — %dg (%d left today)"
+msgstr "购买 %s — %dg（今日剩余 %d）"
+
 msgid "Sell"
 msgstr "出售"
 
@@ -36,6 +39,9 @@ msgstr "出售 %s（%d）x%d — %dg"
 
 msgid "Buy %s x%d — %dg"
 msgstr "购买 %s x%d — %dg"
+
+msgid "Buy %s x%d — %dg (%d left today)"
+msgstr "购买 %s x%d — %dg（今日剩余 %d）"
 
 msgid "Amount: %d"
 msgstr "数量：%d"
@@ -249,3 +255,6 @@ msgstr "获得%s"
 
 msgid "Gives %s (%s)"
 msgstr "获得%s（%s）"
+
+msgid "Sold out for today"
+msgstr "今天已售罄"

@@ -12,12 +12,14 @@ const SHOP_MENU := preload("res://tiamat/modules/items/shop/shop_menu.tscn")
 var _inventory_snapshot: Dictionary
 var _player_snapshot: Dictionary
 var _vitals_snapshot: Dictionary
+var _world_snapshot: Dictionary
 var _shop: ShopData
 
 func before_each() -> void:
 	_inventory_snapshot = InventoryState.to_save_data()
 	_player_snapshot = Wallet.to_save_data()
 	_vitals_snapshot = Vitals.to_save_data()
+	_world_snapshot = WorldState.to_save_data()
 	_shop = ShopData.new()
 	_shop.id = &"fixture_counter"
 	_shop.display_name = "Counter"
@@ -34,6 +36,7 @@ func after_each() -> void:
 	InventoryState.load_save_data(_inventory_snapshot)
 	Wallet.load_save_data(_player_snapshot)
 	Vitals.load_save_data(_vitals_snapshot)
+	WorldState.load_save_data(_world_snapshot)
 
 func test_selling_keeps_the_buttons_in_place_and_the_focus_on_the_list() -> void:
 	var money := Wallet.money
@@ -130,6 +133,22 @@ func test_a_purchase_the_player_cannot_make_is_dimmed_until_a_sale_pays_for_it()
 	pebble.pressed.emit()
 	assert_eq(Wallet.money, 9)
 	assert_true(service.disabled, "a purchase that leaves too little dims it again")
+	menu.close()
+
+func test_a_purchase_tells_how_many_are_left_today_and_dims_once_none_are() -> void:
+	_shop.stock = {"fixture_pebble": 4}
+	_shop.daily_limits = {"fixture_pebble": 2}
+	Wallet.set_money(30)
+	var menu := SHOP_MENU.instantiate() as ShopMenu
+	add_child_autofree(menu)
+	menu.open(_shop)
+	var pebble := menu.items_container.get_child(0) as Button
+	assert_eq(pebble.text, "Buy Pebble — 4g (2 left today)")
+	menu.amount_button.pressed.emit()
+	assert_eq(pebble.text, "Buy Pebble x5 — 20g (2 left today)")
+	pebble.pressed.emit()
+	assert_eq(InventoryState.get_quantity(&"fixture_pebble"), 3, "the two left of five")
+	assert_eq([pebble.text, pebble.disabled], ["Buy Pebble x5 — 20g (0 left today)", true])
 	menu.close()
 
 static func _sell_buttons(menu: ShopMenu) -> Array:

@@ -8,6 +8,7 @@ var _player_snapshot: Dictionary
 var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _clock_snapshot: Dictionary
+var _world_snapshot: Dictionary
 var _shop: ShopData
 
 func before_each() -> void:
@@ -17,6 +18,7 @@ func before_each() -> void:
 	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
+	_world_snapshot = WorldState.to_save_data()
 	WorldClock.set_time(1, 8 * 60)
 	_shop = ShopData.new()
 	_shop.id = &"fixture_store"
@@ -45,6 +47,7 @@ func after_each() -> void:
 	# against the game's own content.
 	ContentRegistry.active = ContentDB
 	WorldClock.load_save_data(_clock_snapshot)
+	WorldState.load_save_data(_world_snapshot)
 	InventoryState.max_slots = _inventory_max_slots
 	InventoryState.load_save_data(_inventory_snapshot)
 	Wallet.load_save_data(_player_snapshot)
@@ -221,6 +224,27 @@ func test_a_listing_is_sold_only_while_its_condition_holds() -> void:
 	listing.condition = ""
 	assert_eq(ItemSources.gather().get_ways(&"fixture_ingot"), PackedStringArray(["Sold at Store"]), "a listing open always reads as the stock")
 
+func test_a_shop_sells_so_many_of_an_item_a_day() -> void:
+	_shop.daily_limits = {"fixture_seeds": 3}
+	Wallet.money = 500
+	assert_eq(ShopState.get_left_today(_shop, &"fixture_seeds"), 3)
+	assert_eq(ShopState.get_left_today(_shop, &"fixture_spring_seeds"), -1, "an item it does not limit")
+	assert_eq(ShopState.buy(_shop, &"fixture_seeds", 2), 2)
+	assert_eq(ShopState.get_left_today(_shop, &"fixture_seeds"), 1)
+	assert_eq(ShopState.buy(_shop, &"fixture_seeds", 5), 1, "what is left of the day's")
+	assert_eq(Wallet.money, 500 - 3 * 20)
+	watch_signals(GameEvents)
+	assert_eq(ShopState.buy(_shop, &"fixture_seeds", 1), 0)
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Sold out for today"])
+	assert_eq(Wallet.money, 500 - 3 * 20, "and costs nothing")
+	var saved: Variant = JSON.parse_string(JSON.stringify(WorldState.to_save_data()))
+	WorldState.clear()
+	WorldState.load_save_data(saved)
+	assert_eq(ShopState.get_left_today(_shop, &"fixture_seeds"), 0, "a save keeps the day's count")
+	WorldClock.set_time(2, 8 * 60)
+	assert_eq(ShopState.get_left_today(_shop, &"fixture_seeds"), 3, "a new day brings the full count back")
+	assert_eq(ShopState.buy(_shop, &"fixture_seeds", 1), 1)
+
 func test_what_is_wrong_with_a_shop_s_listings() -> void:
 	_shop.seasonal_stock = {}
 	var free := ShopListing.new()
@@ -239,6 +263,14 @@ func test_what_is_wrong_with_a_shop_s_listings() -> void:
 		"leaves the listing price of 'fixture_ingot' to the item, which has no buy_price",
 		"lists unknown item 'fixture_nothing'",
 	]))
+	_shop.listings.clear()
+	_shop.daily_limits = {"fixture_ingot": 0, "fixture_nothing": 1, "fixture_berry": 2, "fixture_seeds": 4}
+	assert_eq(_shop.find_problems(ContentRegistry.active), PackedStringArray([
+		"has an invalid daily limit for 'fixture_ingot'",
+		"limits unknown item 'fixture_nothing'",
+		"limits 'fixture_berry', which it never sells",
+	]), "a limit of what it stocks is fine")
+	_shop.listings.assign([free, twice, null, unknown])
 	var problems := GameRules.validate_content(ContentRegistry.active)
 	assert_true(Array(problems).any(func(problem: String) -> bool: return problem.contains("fixture_store") and problem.contains("NO_SUCH_CONDITION")), "the content check reads a listing's condition: %s" % [problems])
 

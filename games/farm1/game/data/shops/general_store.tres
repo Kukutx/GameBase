@@ -30,4 +30,5 @@ display_name = "Village General Store"
 stock = {"berry": 45, "hay": 20, "fishing_rod": 300, "pickaxe": 600, "rusty_sword": 500, "slingshot": 900}
 seasonal_stock = {"Spring": {"turnip_seeds": 20, "carrot_seeds": 30, "potato_seeds": 40}, "Summer": {"tomato_seeds": 45}, "Autumn": {"carrot_seeds": 30, "pumpkin_seeds": 90}, "Winter": {"frostroot_seeds": 55}}
 listings = Array[ExtResource("4_listing")]([SubResource("Listing_copper_ore")])
+daily_limits = {"copper_ore": 10}
 offers = Array[ExtResource("2_offer")]([SubResource("Offer_chicken"), SubResource("Offer_cow"), SubResource("Offer_pig")])

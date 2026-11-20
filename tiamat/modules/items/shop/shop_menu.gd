@@ -41,6 +41,8 @@ func _ready() -> void:
 	amount_button.pressed.connect(_next_amount)
 	Wallet.money_changed.connect(_on_money_changed)
 	InventoryState.changed.connect(_on_inventory_changed)
+	# A purchase counts toward a daily limit once it is made.
+	ShopState.purchase_completed.connect(_on_purchase_completed)
 	# Two lines kept for it, so the lists keep their height as it changes.
 	about_label.custom_minimum_size.y = about_label.get_line_height() * 2
 
@@ -144,18 +146,24 @@ func _refresh_buy_list() -> void:
 		_offer_buttons[offer].text = offer.get_label(context)
 		_offer_buttons[offer].disabled = not offer.can_buy(context)
 
-## Whether the player can buy one `item` at `shop` now: it has a price, they
-## afford it and the bag has room for it.
+## Whether the player can buy one `item` at `shop` now: it has a price, the
+## shop has one left today, they afford it and the bag has room for it.
 static func can_buy_one(shop: ShopData, item: ItemData) -> bool:
 	var price := shop.get_buy_price(item)
-	return price > 0 and Wallet.can_afford(price) and InventoryState.get_add_capacity(item) > 0
+	return price > 0 and ShopState.get_left_today(shop, item.id) != 0 and Wallet.can_afford(price) and InventoryState.get_add_capacity(item) > 0
 
-# A purchase's button: the item and the price of one, or of the amount.
+# A purchase's button: the item and the price of one, or of the amount, and
+# how many are left today of an item the shop sells so many of a day.
 func _buy_label(item: ItemData) -> String:
 	var price := _shop.get_buy_price(item)
 	var amount := get_amount()
+	var left := ShopState.get_left_today(_shop, item.id)
 	if amount == 1:
+		if left >= 0:
+			return tr("Buy %s — %dg (%d left today)") % [tr(item.display_name), price, left]
 		return tr("Buy %s — %dg") % [tr(item.display_name), price]
+	if left >= 0:
+		return tr("Buy %s x%d — %dg (%d left today)") % [tr(item.display_name), amount, price * amount, left]
 	return tr("Buy %s x%d — %dg") % [tr(item.display_name), amount, price * amount]
 
 # A sale's button: the item, how many the player holds and what one sells
@@ -227,6 +235,10 @@ func _refresh_sell_list() -> void:
 func _on_money_changed(_amount: int) -> void:
 	if visible:
 		money_label.text = tr("Money: %dg") % Wallet.money
+		_refresh_buy_list()
+
+func _on_purchase_completed(_shop_id: StringName, _item_id: StringName, _quantity: int, _total: int) -> void:
+	if visible:
 		_refresh_buy_list()
 
 func _on_inventory_changed() -> void:
