@@ -125,6 +125,8 @@ func test_a_purchase_the_player_cannot_make_is_dimmed_until_a_sale_pays_for_it()
 	assert_eq([pebble.disabled, service.disabled], [false, true], "a berry sold pays for a pebble")
 	(_sell_buttons(menu)[0] as Button).pressed.emit()
 	assert_eq([pebble.disabled, service.disabled, service.text], [false, false, "Polish — 10g"], "and the other for the service")
+	service.grab_focus()
+	assert_eq(menu.about_label.text, "Shines a blade.", "an offer tells of itself")
 	pebble.pressed.emit()
 	assert_eq(Wallet.money, 9)
 	assert_true(service.disabled, "a purchase that leaves too little dims it again")
@@ -151,6 +153,9 @@ class FixtureOffer extends ShopOffer:
 
 	func get_label(_context: Dictionary) -> String:
 		return "Polish — %dg" % 10
+
+	func describe(_context: Dictionary) -> String:
+		return "Shines a blade."
 
 	func can_buy(_context: Dictionary) -> bool:
 		return Wallet.can_afford(10)

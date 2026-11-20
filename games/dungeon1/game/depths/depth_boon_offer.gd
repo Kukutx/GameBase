@@ -36,6 +36,12 @@ func get_label(_context: Dictionary) -> String:
 		return tr("No boon for sale")
 	return tr("Boon: %s — %dg") % [tr(boon.display_name), price]
 
+## What the boon on sale does, as the altar tells it
+## (`BoonAltar.choice_of()`: its description and what it changes).
+func describe(_context: Dictionary) -> String:
+	var boon := get_boon()
+	return BoonAltar.choice_of(boon).note if boon != null and not is_sold() else ""
+
 func can_buy(_context: Dictionary) -> bool:
 	return get_boon() != null and not is_sold() and Wallet.can_afford(price)
 
