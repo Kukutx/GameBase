@@ -198,7 +198,7 @@ function listKinds(game) {
   return [...scripts.values()].filter((entry) => entry.ownKind && entry.linked).sort((a, b) => a.ownKind.localeCompare(b.ownKind));
 }
 
-module.exports = { contentScripts, exportedFields, formatValue, newContent, plural, renderEntry };
+module.exports = { contentScripts, exportedFields, formatValue, newContent, plural, renderEntry, typeOfDefault };
 
 if (require.main === module) {
   main(() => {

@@ -1,10 +1,17 @@
 class_name MailData
 extends ContentEntry
 
+## A letter that arrives in the player's mailbox once its condition holds
+## (`MailService`), from an NPC or a name of its own, with a reward of items
+## and money the player claims from it.
+
 const KIND := &"mail"
 
+## Who it is from: an NPC (`NpcProfileData`), or a name of its own, which
+## takes the NPC's place.
 @export var sender_npc_id: StringName
 @export var sender_name: String
+## Its subject line and its text, as the player reads them.
 @export var subject: String
 @export_multiline var body: String
 ## When the letter arrives, in the `GameQuery` syntax (`DAY_AT_LEAST 2`,
@@ -12,6 +19,7 @@ const KIND := &"mail"
 ## mail service checks it each day and whenever a quest, a friendship or the
 ## world's state changes.
 @export var condition: String = ""
+## What it brings for the player to claim: items (item id -> count) and money.
 @export var reward_items: Dictionary = {}
 @export_range(0, 999999, 1) var reward_money := 0
 

@@ -1,37 +1,63 @@
 class_name NpcProfileData
 extends ContentEntry
 
+## A person of the world: who they are (`role`, `background`, `personality`,
+## `speaking_style`, which a chat module reads), where they live and stand
+## through the day (`schedule_entries`), their birthday, the dialogue they say
+## at each number of hearts, and the gifts they love, like and dislike
+## (`RelationshipManager`).
+
 const KIND := &"npc"
 
+## The name the player reads.
 @export var display_name: String
+## What they do in the world, in a few words ("Blacksmith").
 @export var role: String = "Villager"
+## Who they are, how they behave and how they talk, in prose: what a chat
+## module tells the model that speaks for them (`NpcContextService`).
 @export_multiline var background: String
 @export_multiline var personality: String
 @export_multiline var speaking_style: String
+## Where they live and where they are found most (`WorldLocationData`), for
+## their context and the game's menus; where they stand comes from their
+## `schedule_entries`.
 @export var home_location_id: StringName
 @export var default_location_id: StringName
 ## Whether the NPC chats about the topics the player brings up instead of
 ## saying its daily lines, in a game with a module that makes chats (npc_ai);
 ## its heart events play all the same.
 @export var ai_enabled := false
+## The `WorldState` keys whose values their chat context carries, facts of the
+## world they know about.
 @export var context_world_keys: Array[StringName] = []
 
 @export_group("Birthday")
 ## A season of the game's calendar; none ("") for an NPC without a birthday.
 @export var birthday_season: String = ""
+## The day of `birthday_season` it falls on, from 1.
 @export_range(1, 28, 1, "or_greater") var birthday_day := 1
 
 @export_group("Dialogue")
+## The dialogue they say from a number of hearts on, as hearts -> title in
+## their dialogue: the highest the player has reached takes the place of the
+## daily one.
 @export var dialogue_titles_by_hearts: Dictionary = {}
 
 @export_group("Presentation")
+## The folder of their sprite strips (`DirectionalActorVisual`), and the
+## colour their sprite is tinted.
 @export_dir var visual_strip_root: String
 @export var visual_modulate := Color.WHITE
 
 @export_group("Schedule")
+## Where they stand at each time of the day, the season and the weather
+## (`NpcScheduleEntry`).
 @export var schedule_entries: Array[NpcScheduleEntry] = []
 
 @export_group("Gift Preferences")
+## The items (`ItemData`) they love, like and dislike as gifts, and the item
+## tags they love and like; a gift they have no feeling for still pleases them
+## a little (`friendship_for_gift()`).
 @export var loved_items: Array[StringName] = []
 @export var liked_items: Array[StringName] = []
 @export var disliked_items: Array[StringName] = []

@@ -1,10 +1,19 @@
 class_name ShopData
 extends ContentEntry
 
+## A shop: the items it sells and at what price, those it sells only in a
+## season, and its other offers (`ShopOffer`, an animal). A `ShopStand` in a
+## scene opens its counter (`ShopMenu`); it buys every item that has a
+## `sell_price`, and `ShopService` makes each trade.
+
 const KIND := &"shop"
 
+## The name the player reads at its counter.
 @export var display_name: String = "Shop"
+## What it sells all year, as item id -> price.
 @export var stock: Dictionary = {}
+## What it sells besides in a season, as season name (`GameCalendar`) -> item
+## id -> price; a seasonal price takes the place of the year's.
 @export var seasonal_stock: Dictionary = {}
 ## What the shop sells besides items, after them (see `ShopOffer`).
 @export var offers: Array[ShopOffer] = []

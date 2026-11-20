@@ -1,11 +1,19 @@
 class_name ToolUpgradeData
 extends ContentEntry
 
+## A better tool for a tool the player has (`ToolUpgradeService`): the source
+## tool, materials and money go, the result tool comes, in the old one's hotbar
+## slots, once its condition holds. The result must be stronger
+## (`ItemData.tool_power`).
+
 const KIND := &"tool_upgrade"
 
+## The name the player reads.
 @export var display_name: String
+## The tool (`ItemData`, a `TOOL`) it takes, and the stronger one it gives.
 @export var source_item_id: StringName
 @export var result_item_id: StringName
+## What it costs besides the tool: materials (item id -> count) and money.
 @export var materials: Dictionary = {}
 @export_range(0, 999999, 1) var money_cost := 0
 ## When the upgrade is offered, as a `GameRules` query; empty: always.

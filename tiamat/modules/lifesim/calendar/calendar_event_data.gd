@@ -1,17 +1,33 @@
 class_name CalendarEventData
 extends ContentEntry
 
+## A happening of the calendar, a fair or a market: on in its `seasons`, on
+## its `day_of_season` and `days_of_week`, from `start_minute` to `end_minute`,
+## at its location (`CalendarEventManager`). While it is on, the player may
+## claim its participation reward once a year at a `CalendarEventBooth`, and
+## content asks whether it is on with `EVENT_ACTIVE <event>`.
+
 const KIND := &"calendar_event"
 
+## The name the player reads.
 @export var display_name: String
+## The location (`WorldLocationData`) it is held in, whose booths may give its
+## reward; empty, anywhere.
 @export var location_id: StringName
+## The seasons of the game's calendar it is on in; empty, every season.
 @export var seasons: PackedStringArray = PackedStringArray()
+## The day of the season it is on, from 1; 0, every day.
 @export_range(0, 28, 1, "or_greater") var day_of_season := 0
+## The days of the week it is on, from 0 for the first; empty, every day.
 @export var days_of_week: PackedInt32Array = PackedInt32Array()
+## When it begins and ends, in minutes after midnight; it is over at
+## `end_minute`.
 @export_range(0, 1439, 1) var start_minute := 9 * 60
 @export_range(1, 1440, 1) var end_minute := 17 * 60
 
 @export_group("Participation Reward")
+## What taking part gives once a year: money, items (item id -> count) and
+## experience of a skill (`SkillData`).
 @export_range(0, 999999, 1) var reward_money := 0
 @export var reward_items: Dictionary = {}
 @export var reward_skill: StringName

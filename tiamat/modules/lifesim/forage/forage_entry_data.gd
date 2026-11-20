@@ -1,12 +1,22 @@
 class_name ForageEntryData
 extends ContentEntry
 
+## Something the player finds lying about each day to pick up: an item that a
+## `ForageSpawner` of its locations scatters in its seasons, rolled among the
+## others there by `weight`, between `min_quantity` and `max_quantity` of it.
+
 const KIND := &"forage_entry"
 
+## The item (`ItemData`) found.
 @export var item_id: StringName
+## The locations (`WorldLocationData`) it lies about in; empty, any.
 @export var locations: Array[StringName] = []
+## The seasons of the game's calendar it lies about in; empty, every season.
 @export var seasons: PackedStringArray = PackedStringArray()
+## How likely each find is it, against the others there in the season.
 @export_range(0.01, 100.0, 0.01) var weight := 1.0
+## How many of it one find holds, at least and at most, before the
+## `forage_quantity` stat.
 @export_range(1, 99, 1) var min_quantity := 1
 @export_range(1, 99, 1) var max_quantity := 1
 

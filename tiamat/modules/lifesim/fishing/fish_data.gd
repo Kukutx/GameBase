@@ -1,16 +1,28 @@
 class_name FishData
 extends ContentEntry
 
+## A fish the player may catch (`FishingService`): its item, and where, in
+## which seasons, at what time of day and in what weather it bites; of the fish
+## that bite at once, one is rolled by `catch_weight`, and its `difficulty`
+## sets how hard the reel minigame is.
+
 const KIND := &"fish"
 
+## The item (`ItemData`, tagged `fish`) a catch gives.
 @export var item_id: StringName
+## The locations (`WorldLocationData`) it bites in; empty, any.
 @export var locations: Array[StringName] = []
+## The seasons of the game's calendar it bites in; empty, every season.
 @export var seasons: PackedStringArray = PackedStringArray()
+## When it bites, in minutes after midnight; a window that ends before it
+## starts runs past midnight.
 @export_range(0, 1439, 1) var start_minute := 6 * 60
 @export_range(1, 1440, 1) var end_minute := 22 * 60
 ## The weather (`WeatherData` ids) it bites in; any when empty.
 @export var allowed_weather: Array[StringName] = []
+## How likely it bites against the other fish that bite there and then.
 @export_range(0.01, 100.0, 0.01) var catch_weight := 1.0
+## How hard its reel minigame is: a smaller catch zone and a faster marker.
 @export_range(1, 10, 1) var difficulty := 1
 
 ## The fish with `entry_id` in the running game's content, or null.

@@ -1,13 +1,22 @@
 class_name ProcessingRecipeData
 extends ContentEntry
 
+## What a machine makes over time (`ProcessingStation`, which lists the
+## recipes it runs): it takes `inputs`, and `process_minutes` of the game's
+## clock later gives `output_quantity` of its output, kept in the station
+## until the player collects it.
+
 const KIND := &"processing_recipe"
 
+## The name the player reads.
 @export var display_name: String
+## What it takes, as item id -> count.
 @export var inputs: Dictionary = {}
+## The item (`ItemData`) it makes, and how many.
 @export var output_item_id: StringName
 @export_range(1, 99, 1) var output_quantity := 1
-@export_range(1, 10080, 1) var process_minutes := 60
+## How long it takes, in minutes of the game's clock.
+@export_range(1, 10080, 1, "suffix:min") var process_minutes := 60
 ## When the recipe can start, as a `GameRules` query; empty: always.
 @export var condition := ""
 
