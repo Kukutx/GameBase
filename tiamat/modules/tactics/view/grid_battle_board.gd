@@ -7,14 +7,14 @@ extends Control
 ## pennant on a goal cell in the colour of the side that takes it, a ring
 ## where a unit on its way will arrive (`AtbBattle.arrivals`), in its side's
 ## colour with the seconds of battle time left, the cells a command may pick,
-## the
-## cells the foes could strike next (`danger`), the
-## cursor, the units with their health and gauges and a crown on a side's
-## leader (`leader_color`), the numbers of what an
-## action took or gave back, the unit whose turn it is, and the units whose
-## turns come next, numbered in their order (`turns_shown`). Units walk the
-## path they took, unless the player asked for reduced motion. It reports the
-## cell under the mouse and the cell clicked.
+## the cells the foes could strike next (`danger`), the cursor, the units with
+## their health and gauges, a crown on a side's leader (`leader_color`) and an
+## arrow, up or down, on a unit its boosts make stronger or weaker
+## (`GridUnit.get_boost()`, `heal_color` and `damage_color`), the numbers of
+## what an action took or gave back, the unit whose turn it is, and the units
+## whose turns come next, numbered in their order (`turns_shown`). Units walk
+## the path they took, unless the player asked for reduced motion. It reports
+## the cell under the mouse and the cell clicked.
 
 signal cell_hovered(cell: Vector2i)
 signal cell_clicked(cell: Vector2i)
@@ -226,6 +226,12 @@ func _draw_unit(unit: GridUnit, origin: Vector2, side: float) -> void:
 		draw_string(font, Vector2(rect.position.x, center.y + font_size * 0.35), initial, HORIZONTAL_ALIGNMENT_CENTER, side, font_size, ring)
 	if unit.leader:
 		_draw_crown(Rect2(rect.end.x - side * 0.4, rect.position.y + side * 0.03, side * 0.36, side * 0.24))
+	var boosted := unit.get_boost(GridUnit.ATTACK) + unit.get_boost(GridUnit.DEFENSE)
+	if boosted != 0:
+		# An arrow at the left edge, up for a boost, down for a curse.
+		var tip := 1.0 if boosted < 0 else -1.0
+		var mid := Vector2(rect.position.x + side * 0.14, center.y)
+		draw_colored_polygon(PackedVector2Array([mid + Vector2(0.0, tip * side * 0.14), mid + Vector2(side * 0.1, -tip * side * 0.04), mid + Vector2(-side * 0.1, -tip * side * 0.04)]), heal_color if boosted > 0 else damage_color)
 	var bar := maxf(side * 0.08, 1.0)
 	var width := side - 4.0
 	var bottom := rect.end.y - 1.0

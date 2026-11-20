@@ -233,6 +233,26 @@ func test_aiming_a_delay_tells_it_sets_the_turn_back() -> void:
 	game.get_board().cell_hovered.emit(Vector2i(2, 1))
 	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text.contains(tr("%s takes %d, turn delayed") % [tr(dummy.data.display_name), 5])), "1 and the knight's 4 leave the dummy standing, its turn set back")
 
+func test_aiming_a_boost_tells_what_it_gives_and_the_unit_then_shows_it() -> void:
+	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_rally", &"fixture_hex"])
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	var knight := game.battle.get_turn_unit()
+	game.choose_command(0)
+	game.pick(Vector2i(1, 1))
+	game.choose_command(2)
+	game.get_board().cell_hovered.emit(Vector2i(2, 1))
+	assert_true(_tells(game, tr("%s takes %d") % [tr("Fixture Dummy"), 5] + ", " + tr("Defense %s") % "-2"), "1 and the knight's 4, and the curse")
+	_press(game, &"ui_cancel")
+	game.choose_command(1)
+	game.get_board().cell_hovered.emit(knight.cell)
+	assert_true(_tells(game, tr("%s gains %s") % [tr("Fixture Knight"), tr("Attack %s") % "+2"]), "a rally that heals nothing tells only its boost")
+	game.pick(knight.cell)
+	assert_true(await _until(func() -> bool: return knight.turns_taken == 2 and game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's next turn comes")
+	assert_true(_tells(game, tr("Attack %d · Defense %d · Move %d") % [6, 2, 3]), "the knight's attack with the boost")
+	assert_true(_tells(game, tr("Boosts: %s (turns left: %d)") % [tr("Attack %s") % "+2", 1]), "through this turn and one more")
+
 func test_an_action_that_recharges_tells_when_it_is_ready() -> void:
 	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_strike", &"fixture_volley"])
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
@@ -335,6 +355,10 @@ func _commands(game: GridBattleGame) -> Array[Button]:
 # Whether a label of `game` reads `text`.
 func _shows(game: GridBattleGame, text: String) -> bool:
 	return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == text)
+
+# Whether a label of `game` holds `text` among its lines.
+func _tells(game: GridBattleGame, text: String) -> bool:
+	return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text.split("\n").has(text))
 
 func _press(game: GridBattleGame, action: StringName) -> void:
 	var event := InputEventAction.new()

@@ -12,3 +12,7 @@ min_range = 0
 max_range = 2
 area = 1
 recharge_turns = 3
+boosts = Dictionary[StringName, int]({
+&"defense": 1
+})
+boost_turns = 2

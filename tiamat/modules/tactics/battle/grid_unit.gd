@@ -3,8 +3,13 @@ extends RefCounted
 
 ## A unit in a grid battle (`AtbBattle`): what kind it is, its side, its cell,
 ## its health and its time gauge, what it has done on its turn, which of its
-## actions still recharge (`BattleActionData.recharge_turns`), and whether it
-## leads its side or fled the battle.
+## actions still recharge (`BattleActionData.recharge_turns`), the boosts on
+## its attack and defense (`BattleActionData.boosts`), and whether it leads
+## its side or fled the battle.
+
+## The stats a boost changes (`BattleActionData.boosts`).
+const ATTACK := &"attack"
+const DEFENSE := &"defense"
 
 var data: BattleUnitData
 var faction: StringName
@@ -27,6 +32,9 @@ var has_acted := false
 var turns_taken := 0
 # action id -> the turn it may take that action again on.
 var _ready_on: Dictionary[StringName, int] = {}
+# action id -> the boosts of that action on it, and the last of its turns
+# they hold through: {"boosts": Dictionary[StringName, int], "until": int}.
+var _boosts: Dictionary[StringName, Dictionary] = {}
 
 func _init(unit_data: BattleUnitData, unit_faction: StringName, start_cell: Vector2i, unit_index := 0, controlled := false) -> void:
 	data = unit_data
@@ -59,6 +67,41 @@ func is_ready(action: BattleActionData) -> bool:
 func use(action: BattleActionData) -> void:
 	if action.recharge_turns > 0:
 		_ready_on[action.id] = turns_taken + action.recharge_turns + 1
+
+## Its attack now: its kind's, with the boosts on it.
+func get_attack() -> int:
+	return data.attack + get_boost(ATTACK)
+
+## Its defense now: its kind's, with the boosts on it.
+func get_defense() -> int:
+	return data.defense + get_boost(DEFENSE)
+
+## How much the boosts on it change `stat` now (`ATTACK`, `DEFENSE`).
+func get_boost(stat: StringName) -> int:
+	var total := 0
+	for entry: Dictionary in _boosts.values():
+		if turns_taken <= int(entry["until"]):
+			total += int((entry["boosts"] as Dictionary).get(stat, 0))
+	return total
+
+## Whether the boosts of `action` are on it now.
+func has_boost(action: BattleActionData) -> bool:
+	return _boosts.has(action.id) and turns_taken <= int(_boosts[action.id]["until"])
+
+## How many of its turns to come the boosts on it hold through, the longest;
+## 0 while none is on it.
+func get_boost_turns() -> int:
+	var most := 0
+	for entry: Dictionary in _boosts.values():
+		most = maxi(most, int(entry["until"]) - turns_taken)
+	return most
+
+## Puts the boosts of `action` on it (`BattleActionData.boosts`) through its
+## next `BattleActionData.boost_turns` turns; the same action's again start
+## over rather than add up.
+func boost(action: BattleActionData) -> void:
+	if not action.boosts.is_empty():
+		_boosts[action.id] = {"boosts": action.boosts, "until": turns_taken + action.boost_turns}
 
 ## The share of its gauge filled, from 0 to 1.
 func get_gauge_fraction() -> float:

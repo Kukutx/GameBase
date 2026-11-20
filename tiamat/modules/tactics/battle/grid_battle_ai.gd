@@ -20,6 +20,10 @@ const DEFEAT_SCORE := 1000
 ## What setting back a foe's gauge is worth for each point
 ## (`AtbBattle.delay_of()`): a whole turn's delay as much as 10 health.
 const DELAY_SCORE := 0.1
+## What a boost is worth (`BattleActionData.boosts`) for each point it
+## changes on a unit for each of its turns: +2 defense through two turns as
+## much as 4 health.
+const BOOST_SCORE := 1
 
 ## Takes `unit`'s turn in `battle`.
 func take_turn(battle: AtbBattle, unit: GridUnit) -> void:
@@ -68,7 +72,8 @@ func best_plan(battle: AtbBattle, unit: GridUnit, stays := false) -> Dictionary:
 ## it takes from foes, with `DEFEAT_SCORE` for each it defeats (and for each
 ## unit of its side that flees with a leader it defeats) and
 ## `DELAY_SCORE` for each point of gauge it sets back of those it leaves
-## standing, or the health it gives back to its side.
+## standing, or the health it gives back to its side, and `BOOST_SCORE` for
+## its boosts on each unit it reaches that they are not on already.
 func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: Vector2i, from: Vector2i) -> int:
 	var value := 0
 	for other: GridUnit in battle.affected_at(unit, action, target, from):
@@ -79,8 +84,11 @@ func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: 
 			value += mini(amount, other.health.current)
 			if amount >= other.health.current:
 				value += DEFEAT_SCORE * (_side_of(battle, other) if other.leader else 1)
-			else:
-				value += roundi(battle.delay_of(action, other) * DELAY_SCORE)
+				continue
+			value += roundi(battle.delay_of(action, other) * DELAY_SCORE)
+		if not other.has_boost(action):
+			for stat: StringName in action.boosts:
+				value += absi(action.boosts[stat]) * action.boost_turns * BOOST_SCORE
 	return value
 
 # How many units of `leader`'s faction are in the battle, the leader too.
