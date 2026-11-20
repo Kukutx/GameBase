@@ -2,7 +2,8 @@ class_name ShopData
 extends ContentEntry
 
 ## A shop: the items it sells and at what price, those it sells only in a
-## season, and its other offers (`ShopOffer`, an animal). A `ShopStand` in a
+## season or while a condition holds (`ShopListing`), and its other offers
+## (`ShopOffer`, an animal). A `ShopStand` in a
 ## scene opens its counter (`ShopMenu`); it buys every item that has a
 ## `sell_price`, and `ShopService` makes each trade.
 
@@ -17,6 +18,9 @@ const KIND := &"shop"
 ## id -> price (0, the item's own); a seasonal price takes the place of the
 ## year's.
 @export var seasonal_stock: Dictionary = {}
+## What it sells besides while a condition holds, each a `ShopListing` kept
+## in the shop's file; an open listing's price takes the place of the stock's.
+@export var listings: Array[ShopListing] = []
 ## What the shop sells besides items, after them (see `ShopOffer`).
 @export var offers: Array[ShopOffer] = []
 
@@ -37,6 +41,9 @@ func get_stock(season_name: String = "") -> Dictionary:
 	if seasonal is Dictionary:
 		for raw_id: Variant in seasonal.keys():
 			result[String(raw_id)] = seasonal[raw_id]
+	for listing: ShopListing in listings:
+		if listing != null and listing.is_open():
+			result[String(listing.item_id)] = listing.price
 	return result
 
 ## What the shop asks for one `item` now: its stock's price in this season, or
@@ -67,6 +74,15 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 			problems.append("seasonal stock '%s' is not a Dictionary" % season)
 		else:
 			problems.append_array(_find_price_problems(seasonal, registry, "stocks in %s" % season, "%s price" % season))
+	var listed: Dictionary = {}
+	for listing: ShopListing in listings:
+		if listing == null:
+			problems.append("has an empty listing")
+		elif listed.has(listing.item_id):
+			problems.append("lists '%s' twice" % listing.item_id)
+		else:
+			listed[listing.item_id] = listing.price
+	problems.append_array(_find_price_problems(listed, registry, "lists", "listing price"))
 	var offer_keys: Dictionary = {}
 	for offer: ShopOffer in offers:
 		if offer == null:

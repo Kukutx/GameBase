@@ -204,6 +204,44 @@ func test_seasonal_stock_changes_with_calendar() -> void:
 	assert_eq(ShopState.buy(_shop, &"fixture_spring_seeds", 1), 0)
 	assert_eq(ShopState.buy(_shop, &"fixture_seeds", 1), 1)
 
+func test_a_listing_is_sold_only_while_its_condition_holds() -> void:
+	var listing := ShopListing.new()
+	listing.item_id = &"fixture_ingot"
+	listing.price = 120
+	listing.condition = "DAY_AT_LEAST 3"
+	_shop.listings.append(listing)
+	Wallet.money = 500
+	assert_false(_shop.has_item(&"fixture_ingot"), "not on day 1")
+	assert_eq(ShopState.buy(_shop, &"fixture_ingot", 1), 0)
+	assert_eq(ItemSources.gather().get_ways(&"fixture_ingot"), PackedStringArray(["Sold at Store (From day 3)"]), "where, and once what")
+	WorldClock.set_time(3, 8 * 60)
+	assert_true(_shop.has_item(&"fixture_ingot"))
+	assert_eq(_shop.get_buy_price(ItemData.find(&"fixture_ingot")), 120, "at the listing's price")
+	assert_eq(ShopState.buy(_shop, &"fixture_ingot", 1), 1)
+	listing.condition = ""
+	assert_eq(ItemSources.gather().get_ways(&"fixture_ingot"), PackedStringArray(["Sold at Store"]), "a listing open always reads as the stock")
+
+func test_what_is_wrong_with_a_shop_s_listings() -> void:
+	_shop.seasonal_stock = {}
+	var free := ShopListing.new()
+	free.item_id = &"fixture_ingot"
+	var twice := ShopListing.new()
+	twice.item_id = &"fixture_ingot"
+	twice.price = 5
+	var unknown := ShopListing.new()
+	unknown.item_id = &"fixture_nothing"
+	unknown.price = 5
+	unknown.condition = "NO_SUCH_CONDITION"
+	_shop.listings.assign([free, twice, null, unknown])
+	assert_eq(_shop.find_problems(ContentRegistry.active), PackedStringArray([
+		"lists 'fixture_ingot' twice",
+		"has an empty listing",
+		"leaves the listing price of 'fixture_ingot' to the item, which has no buy_price",
+		"lists unknown item 'fixture_nothing'",
+	]))
+	var problems := GameRules.validate_content(ContentRegistry.active)
+	assert_true(Array(problems).any(func(problem: String) -> bool: return problem.contains("fixture_store") and problem.contains("NO_SUCH_CONDITION")), "the content check reads a listing's condition: %s" % [problems])
+
 func _item(id: StringName, buy_price: int, sell_price: int) -> ItemData:
 	var item := ItemData.new()
 	item.id = id

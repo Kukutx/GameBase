@@ -1,9 +1,16 @@
-[gd_resource type="Resource" script_class="ShopData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ShopData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://tiamat/modules/items/shop/shop_data.gd" id="1_shop"]
+[ext_resource type="Script" path="res://tiamat/modules/items/shop/shop_listing.gd" id="2_listing"]
+
+[sub_resource type="Resource" id="Listing_ember_blade"]
+script = ExtResource("2_listing")
+item_id = &"ember_blade"
+condition = "ACHIEVEMENT_UNLOCKED delver"
 
 [resource]
 script = ExtResource("1_shop")
 id = &"camp_merchant"
 display_name = "Camp Merchant"
-stock = {"health_potion": 0, "antidote": 0, "iron_sword": 0, "bone_bow": 0, "ember_blade": 0}
+stock = {"health_potion": 0, "antidote": 0, "iron_sword": 0, "bone_bow": 0}
+listings = Array[ExtResource("2_listing")]([SubResource("Listing_ember_blade")])
