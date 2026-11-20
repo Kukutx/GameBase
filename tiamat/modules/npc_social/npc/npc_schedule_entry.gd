@@ -22,4 +22,4 @@ func matches(day: int, minute_of_day: int) -> bool:
 		return false
 	if not allowed_weather.is_empty() and not allowed_weather.has(WeatherState.get_weather_id(day)):
 		return false
-	return GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day})
+	return condition.is_empty() or GameRules.check(condition, {"day": day, "minute_of_day": minute_of_day})

@@ -76,3 +76,23 @@ func test_an_absolute_minute_orders_every_moment_of_the_world() -> void:
 	WorldClock.set_time(3, 90)
 	assert_eq(WorldClock.get_absolute_minute(), 2 * GameClock.MINUTES_PER_DAY + 90, "the clock's own moment")
 	WorldClock.load_save_data(clock_snapshot)
+
+func test_a_run_of_minutes_says_so_and_ends_with_one_word() -> void:
+	var clock := GameClock.new()
+	clock.paused = true
+	add_child_autofree(clock)
+	var seen := {"running": 0, "standing": 0, "advanced": 0}
+	clock.minute_changed.connect(func(_day: int, _minute: int) -> void:
+		var key := "running" if clock.is_advancing() else "standing"
+		seen[key] = int(seen[key]) + 1)
+	clock.advanced.connect(func() -> void: seen["advanced"] = int(seen["advanced"]) + 1)
+	clock.advance_minutes(90)
+	assert_eq(seen["running"], 90, "every minute of the run passes, and says it runs")
+	assert_eq(seen["advanced"], 1, "the run ends with one word")
+	assert_false(clock.is_advancing())
+	assert_eq(clock.advance_until("FALSE", 30), -1)
+	assert_eq(seen["running"], 120, "a wait runs as well")
+	assert_eq(seen["advanced"], 2)
+	clock.set_time(2, 600)
+	assert_eq(seen["standing"], 1, "a jump is no run")
+	assert_eq(seen["advanced"], 2)
