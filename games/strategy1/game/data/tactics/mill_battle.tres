@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_definition")
 id = &"mill_battle"
+order = 20
 display_name = "Old Mill"
 description = "Raiders hold the mill across the stream. A bridge and a ford lead over. Win in the pass first, and a swordsman from there joins you."
 condition = "MINIGAME_WON ford_battle"

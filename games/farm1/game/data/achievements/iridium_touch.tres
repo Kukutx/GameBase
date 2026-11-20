@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"iridium_touch"
+order = 90
 display_name = "Iridium Touch"
 description = "Upgrade a tool to iridium."
 hidden = true

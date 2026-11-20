@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"prospector"
+order = 50
 display_name = "Prospector"
 description = "Mine 200 stones and ores, counting every save."
 progress_flag = &"resources_mined"

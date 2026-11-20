@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"angler"
+order = 20
 display_name = "Angler"
 description = "Catch your first fish."

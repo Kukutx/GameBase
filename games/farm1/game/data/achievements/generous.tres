@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"generous"
+order = 60
 display_name = "Generous"
 description = "Give 30 gifts, counting every save."
 progress_flag = &"gifts_given"

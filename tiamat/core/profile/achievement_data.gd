@@ -21,15 +21,19 @@ const KIND := &"achievement"
 @export var progress_flag: StringName
 ## What `progress_flag` reaches to unlock it.
 @export var goal := 0
+## Where it stands among the locked ones in the achievements menu: lower
+## first, then by id, so the list reads as the way through the game.
+@export var order := 0
 
 ## The achievement with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> AchievementData:
 	return ContentRegistry.active.get_entry(KIND, entry_id) as AchievementData
 
-## The running game's achievements, sorted by id.
+## The running game's achievements in their `order`.
 static func find_all() -> Array[AchievementData]:
 	var result: Array[AchievementData] = []
 	result.assign(ContentRegistry.active.get_entries(KIND))
+	result.sort_custom(ContentEntry.listed_before)
 	return result
 
 ## Whether it counts a profile counter toward a goal.

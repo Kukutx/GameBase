@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_definition")
 id = &"pass_battle"
+order = 30
 display_name = "Hill Pass"
 description = "Hold the pass between the hills as the raiders march on it."
 score_name = "Units Left"

@@ -156,6 +156,19 @@ func test_the_pause_menu_s_challenges_tell_how_far_the_player_is() -> void:
 	]), "the open ones first")
 	assert_true(PauseMenu.get_page_ids().has(&"challenges"))
 
+func test_the_challenges_follow_the_minigames_order_then_their_ids() -> void:
+	MiniGameDefinition.find(FIRST).order = 20
+	MiniGameDefinition.find(SECOND).order = 10
+	WorldState.add_int(MiniGameDefinition.wins_key(FIRST), 1)
+	assert_eq(MiniGameDefinition.find_all().map(func(minigame: MiniGameDefinition) -> StringName: return minigame.id), [SECOND, FIRST])
+	assert_eq(MiniGameDefinition.describe_challenges(), PackedStringArray([
+		"Won 1 of 2",
+		"Second Battle — not won yet",
+		"First Battle — won 1",
+	]), "both open, in their order")
+	MiniGameDefinition.find(SECOND).order = 20
+	assert_eq(MiniGameDefinition.find_all()[0].id, FIRST, "the same order: by id")
+
 func test_the_best_score_stays_in_the_profile_and_shows_under_its_name() -> void:
 	var first := MiniGameDefinition.find(FIRST)
 	(func() -> void: await MiniGameHost.run(FIRST)).call()

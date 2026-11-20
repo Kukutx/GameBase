@@ -41,7 +41,7 @@ static func has_any() -> bool:
 	return not AchievementData.find_all().is_empty() or not RecordData.find_all().is_empty()
 
 ## The running game's achievements in the menu's order: the unlocked ones in
-## the order they were unlocked, then the locked ones by id.
+## the order they were unlocked, then the locked ones in their `order`.
 static func in_order() -> Array[AchievementData]:
 	var unlocked: Array[AchievementData] = []
 	var locked: Array[AchievementData] = []

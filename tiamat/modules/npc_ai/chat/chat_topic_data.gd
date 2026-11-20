@@ -44,7 +44,7 @@ static func find_open(npc_id: StringName) -> Array[ChatTopicData]:
 	for topic: ChatTopicData in find_all():
 		if topic.is_open(npc_id):
 			result.append(topic)
-	result.sort_custom(func(a: ChatTopicData, b: ChatTopicData) -> bool: return a.order < b.order or (a.order == b.order and String(a.id) < String(b.id)))
+	result.sort_custom(ContentEntry.listed_before)
 	return result
 
 ## The placeholder names `text` uses, in order.

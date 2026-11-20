@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"elite_hunter"
+order = 80
 display_name = "Elite Hunter"
 description = "Defeat 10 elite creatures, counting every run."
 progress_flag = &"elites_defeated"

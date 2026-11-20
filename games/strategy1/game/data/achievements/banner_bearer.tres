@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"banner_bearer"
+order = 50
 display_name = "Banner Bearer"
 description = "Win at the ford and in the pass."
 hidden = true

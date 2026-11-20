@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"slayer"
+order = 70
 display_name = "Slayer"
 description = "Defeat 100 creatures of the depths, counting every run."
 progress_flag = &"creatures_defeated"

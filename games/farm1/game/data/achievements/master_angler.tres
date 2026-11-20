@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"master_angler"
+order = 40
 display_name = "Master Angler"
 description = "Catch 50 fish, counting every save."
 progress_flag = &"fish_caught"

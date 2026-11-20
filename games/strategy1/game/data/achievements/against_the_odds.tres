@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"against_the_odds"
+order = 70
 display_name = "Against the Odds"
 description = "Win a battle with its foe strength on Strong."

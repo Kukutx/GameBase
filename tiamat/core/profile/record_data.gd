@@ -24,8 +24,7 @@ static func find(entry_id: StringName) -> RecordData:
 static func find_all() -> Array[RecordData]:
 	var result: Array[RecordData] = []
 	result.assign(ContentRegistry.active.get_entries(KIND))
-	result.sort_custom(func(a: RecordData, b: RecordData) -> bool:
-		return a.order < b.order or (a.order == b.order and String(a.id) < String(b.id)))
+	result.sort_custom(ContentEntry.listed_before)
 	return result
 
 ## What the record stands at in the player's profile.

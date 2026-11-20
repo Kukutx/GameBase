@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"wardens_bane"
+order = 90
 display_name = "Warden's Bane"
 description = "Defeat the Ember Warden 10 times, counting every run."
 progress_flag = &"defeated:ember_warden"

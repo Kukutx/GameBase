@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"veteran"
+order = 60
 display_name = "Veteran"
 description = "Defeat 50 raiders, counting every battle."
 progress_flag = &"foes_defeated"
