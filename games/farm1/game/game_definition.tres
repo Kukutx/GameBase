@@ -115,6 +115,7 @@ start_items = Dictionary[StringName, int]({
 &"hay": 20
 })
 start_hotbar = Array[StringName]([&"hoe", &"watering_can", &"pickaxe", &"rusty_sword", &"turnip_seeds", &"fishing_rod", &"berry"])
+hotbar_kinds = Array[int]([2, 3, 7, 8])
 
 [sub_resource type="Resource" id="Settings_combat"]
 script = ExtResource("15_combat_settings")

@@ -3,6 +3,8 @@ extends Node
 
 ## The player's quick-select slots: which item id sits in each slot and which
 ## slot is selected. Slots hold item ids, not items; the inventory owns the items.
+## An item the player newly carries of a kind the game names
+## (`ItemsSettings.hotbar_kinds`) takes a slot by itself (`take_new_item()`).
 
 signal changed
 signal selected_slot_changed(index: int, item_id: StringName)
@@ -46,8 +48,9 @@ func set_slot_item(index: int, item_id: StringName) -> bool:
 		selected_slot_changed.emit(selected_slot, get_selected_item_id())
 	return true
 
-## Puts `item_id` in the first free slot unless a slot already holds it; returns
-## the slot, or -1 when every slot is taken.
+## Puts `item_id` in the first free slot unless a slot already holds it, else
+## in the first slot, but the one in hand, of an item the player no longer
+## carries; returns the slot, or -1 when every slot holds what they carry.
 func ensure_item(item_id: StringName, select := false) -> int:
 	if item_id == &"":
 		return -1
@@ -58,11 +61,33 @@ func ensure_item(item_id: StringName, select := false) -> int:
 		return existing
 	var empty := slots.find(&"")
 	if empty < 0:
+		empty = _first_slot_run_out()
+	if empty < 0:
 		return -1
 	set_slot_item(empty, item_id)
 	if select:
 		select_slot(empty)
 	return empty
+
+## Gives `item_id` a slot (`ensure_item()`) when the player has just come to
+## carry it (`quantity` is all they hold) and it is of a kind the game names
+## (`ItemsSettings.hotbar_kinds`); not while a game is set up or loads. The
+## items module calls it on each `InventoryState.item_added`.
+func take_new_item(item_id: StringName, quantity: int) -> void:
+	if GameSession.is_changing() or InventoryState.get_quantity(item_id) > quantity:
+		return
+	var settings := ItemsSettings.current()
+	var item := ItemData.find(item_id)
+	if settings != null and item != null and settings.hotbar_kinds.has(item.kind):
+		ensure_item(item_id)
+
+# The first slot, but the selected one, whose item the player no longer
+# carries, or -1.
+func _first_slot_run_out() -> int:
+	for index: int in slots.size():
+		if index != selected_slot and slots[index] != &"" and InventoryState.get_quantity(slots[index]) <= 0:
+			return index
+	return -1
 
 func get_selected_item_id() -> StringName:
 	if selected_slot < 0 or selected_slot >= slots.size():

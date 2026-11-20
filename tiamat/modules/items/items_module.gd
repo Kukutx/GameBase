@@ -13,6 +13,7 @@ func install() -> void:
 	GameStats.register_source(BuffState)
 	BuffState.buffs_changed.connect(GameStats.notify_changed)
 	GameStats.register_source(StatUpgrades.instance())
+	InventoryState.item_added.connect(Hotbar.take_new_item)
 	SaveManager.register_section(SaveSection.new(&"buffs", 400,
 		BuffState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: BuffState.load_save_data(section)))
 	SaveManager.register_section(SaveSection.new(&"inventory", 500,

@@ -83,22 +83,12 @@ func _rebuild() -> void:
 	_refresh_slots()
 	_refresh_buttons()
 
-# Fills `list` with `entries`, keeping selected the item that was, or, once it
-# is gone from the list, the entry now in its place.
+# Fills `list` with `entries`, keeping its pick (`MenuLayer.refill_list()`).
 func _fill(list: ItemList, entries: Array[Dictionary]) -> void:
-	var kept_id := _selected_item_id(list)
-	var selected := list.get_selected_items()
-	var kept_index := int(selected[0]) if not selected.is_empty() else -1
-	list.clear()
+	var rows: Array[Dictionary] = []
 	for entry: Dictionary in entries:
-		var item_id := StringName(String(entry["id"]))
-		var index := list.add_item("%s  x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
-		list.set_item_metadata(index, item_id)
-		if kept_id != &"" and item_id == kept_id:
-			kept_index = index
-	if kept_index >= 0 and list.item_count > 0:
-		list.select(mini(kept_index, list.item_count - 1))
-		list.ensure_current_is_visible()
+		rows.append({"text": "%s  x%d" % [tr(String(entry["display_name"])), entry["quantity"]], "key": StringName(String(entry["id"]))})
+	MenuLayer.refill_list(list, rows)
 
 func _store_selected() -> void:
 	var item_id := _selected_item_id(inventory_list)

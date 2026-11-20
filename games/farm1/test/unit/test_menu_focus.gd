@@ -71,6 +71,7 @@ func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> voi
 		{"path": "res://tiamat/modules/items/crafting/crafting_menu.tscn", "kind": "crafting"},
 		{"path": "res://tiamat/modules/items/shop/shop_menu.tscn", "kind": "shop"},
 		{"path": "res://tiamat/modules/items/storage/storage_menu.tscn", "kind": "storage"},
+		{"path": "res://tiamat/modules/lifesim/economy/shipping_menu.tscn", "kind": "shipping"},
 		{"path": "res://tiamat/modules/progression/projects/town_project_menu.tscn", "kind": "projects"},
 		{"path": "res://tiamat/modules/progression/upgrades/tool_upgrade_menu.tscn", "kind": "upgrade"},
 		{"path": "res://tiamat/core/ui/settings_menu.tscn", "kind": "settings"},
@@ -92,6 +93,8 @@ func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> voi
 				menu.call("open", ShopData.find(&"general_store"))
 			"storage":
 				menu.call("open", &"focus_test_chest", "Storage Chest", 24)
+			"shipping":
+				menu.call("open")
 			"projects":
 				menu.call("open", &"starter_town")
 			"upgrade":

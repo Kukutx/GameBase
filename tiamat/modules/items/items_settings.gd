@@ -10,6 +10,10 @@ extends ModuleSettings
 @export var start_items: Dictionary[StringName, int] = {}
 ## The hotbar of a new game, slot by slot (item ids; empty for a free slot).
 @export var start_hotbar: Array[StringName] = []
+## The kinds of item that take a hotbar slot by themselves once the player
+## carries one they did not (`HotbarService.take_new_item()`): seeds bought, a
+## potion found. Empty, the player binds every slot.
+@export var hotbar_kinds: Array[ItemData.Kind] = []
 
 ## The running game's items settings.
 static func current() -> ItemsSettings:

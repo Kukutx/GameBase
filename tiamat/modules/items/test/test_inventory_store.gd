@@ -175,6 +175,31 @@ func test_the_module_tells_what_the_player_carries() -> void:
 		"items": [{"id": "fixture_stone", "display_name": "Pebble", "quantity": 4, "max_stack": 99, "slots": 1}],
 	}})
 
+func test_an_item_newly_carried_of_a_kind_the_game_names_takes_a_hotbar_slot() -> void:
+	var settings := ItemsSettings.current()
+	var kinds := settings.hotbar_kinds.duplicate()
+	settings.hotbar_kinds.assign([ItemData.Kind.FOOD])
+	_stone.kind = ItemData.Kind.FOOD
+	var plank := ItemData.find(&"fixture_plank")
+	var ore := ItemData.find(&"fixture_ore")
+	InventoryState.clear()
+	InventoryState.add_item(ore, 1)
+	var full: Array[String] = []
+	for index: int in HotbarService.SLOT_COUNT:
+		full.append("fixture_ore" if index == 4 else "fixture_chest")
+	Hotbar.load_save_data({"slots": full, "selected_slot": 0})
+	InventoryState.add_item(plank, 3)
+	assert_eq(Hotbar.slots.find(&"fixture_plank"), -1, "a kind the game does not name binds no slot")
+	InventoryState.add_item(_stone, 2)
+	assert_eq(Hotbar.slots.find(&"fixture_stone"), 1,
+		"no slot is free: the first of an item no longer carried, but the one in hand")
+	InventoryState.add_item(ore, 1)
+	assert_eq(Hotbar.slots[4], &"fixture_ore", "the slot of an item still carried stays")
+	Hotbar.set_slot_item(1, &"fixture_ore")
+	InventoryState.add_item(_stone, 1)
+	assert_eq(Hotbar.slots.find(&"fixture_stone"), -1, "more of an item already carried binds nothing again")
+	settings.hotbar_kinds.assign(kinds)
+
 static func _item(id: StringName, display_name: String, max_stack: int) -> ItemData:
 	var item := ItemData.new()
 	item.id = id

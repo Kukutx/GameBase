@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://game/world/world_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://game/ui/game_menu.tscn" id="2_menu"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://tiamat/core/input/touch/touch_clearance.gd" id="15_touch_clearance"]
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/hud_safe_area.gd" id="16_safe_area"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/affliction_line.gd" id="17_affliction_line"]
+[ext_resource type="PackedScene" path="res://tiamat/modules/lifesim/economy/shipping_menu.tscn" id="18_shipping_menu"]
 
 [node name="WorldHud" type="CanvasLayer"]
 layer = 5
@@ -189,6 +190,8 @@ text = ""
 hidden_pages = Array[StringName]([&"items", &"skills"])
 
 [node name="StorageMenu" parent="." instance=ExtResource("5_storage_menu")]
+
+[node name="ShippingMenu" parent="." instance=ExtResource("18_shipping_menu")]
 
 [node name="MailboxMenu" parent="." instance=ExtResource("6_mailbox_menu")]
 
