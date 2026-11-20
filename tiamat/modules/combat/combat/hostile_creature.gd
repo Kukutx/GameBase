@@ -9,8 +9,11 @@ extends CharacterBody2D
 ## `SHOT_KEEP_AWAY`. One with a `windup_seconds` first stands and glows that
 ## long, and strikes only if the player is still in reach. Its own hurtbox
 ## takes the player's hits: each flashes it, pushes it back and stuns it for
-## `HURT_SECONDS` from that hit. At 0 health it is defeated, drops its loot and
-## comes back after `respawn_days`. A `StateMachine` runs it (idle, chase,
+## `HURT_SECONDS` from that hit. Its strikes and shots lay its kind's
+## affliction on the player (`EnemyData.affliction_id`) or its elite form's,
+## and an affliction on it takes its health on its ticks, with no stun, unless
+## its kind is immune to it (`EnemyData.immune_to`). At 0 health it is defeated,
+## drops its loot and comes back after `respawn_days`. A `StateMachine` runs it (idle, chase,
 ## windup, hurt, defeated), and with a `persistent_id` its state saves with the
 ## world. Chasing the player or stunned by their hit, it hunts them, which
 ## makes a fight (`FightState`). It has the health of its kind times the
@@ -84,6 +87,7 @@ func _ready() -> void:
 	_load_state()
 	_apply_data()
 	hurtbox.hurt.connect(_on_hurt)
+	hurtbox.ailed.connect(_on_ailed)
 	drop.changed.connect(_persist)
 	WorldClock.day_changed.connect(_on_day_changed)
 	if is_defeated:
@@ -199,6 +203,7 @@ func _strike(player: Node2D, offset: Vector2) -> void:
 		return
 	var push := offset.normalized() * data.knockback
 	var hit := Damage.new(roundi(data.contact_damage * _elite_scale(&"damage_scale")), data.faction_id, self, push)
+	hit.affliction_id = elite.affliction_id if elite != null and elite.affliction_id != &"" else data.affliction_id
 	if data.shot_speed > 0.0:
 		Projectile.fire(self, player.global_position, data.shot_speed, data.attack_range * SHOT_REACH, hit, data.shot_color)
 		_attack_time_left = data.attack_cooldown
@@ -296,6 +301,7 @@ func _apply_data() -> void:
 	(hurtbox.get_node("CollisionShape2D") as CollisionShape2D).shape = shape
 	hurtbox.faction = data.faction_id
 	hurtbox.knockback_scale = data.knockback_scale
+	hurtbox.immune_to = data.immune_to.duplicate()
 	visual.position = data.visual_offset * size
 	visual.scale = Vector2.ONE * data.visual_scale * size
 	_has_art = false
@@ -325,6 +331,13 @@ func _on_hurt(damage: Damage) -> void:
 		# A hit while it is still stunned stuns it again from now.
 		_hurt_left = HURT_SECONDS
 		_machine.change(STATE_HURT)
+
+# An affliction's tick takes its health, without the stun of a hit.
+func _on_ailed(damage: Damage) -> void:
+	if is_defeated or data == null:
+		return
+	CombatEvents.enemy_hurt.emit(data.id, mini(damage.amount, health.current), global_position)
+	take_damage(damage.amount)
 
 func _die() -> void:
 	is_defeated = true

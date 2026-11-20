@@ -12,3 +12,4 @@ kind = 3
 buy_price = 420
 tool_action = &"attack"
 tool_power = 20
+tags = PackedStringArray("burns")

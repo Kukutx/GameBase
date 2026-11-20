@@ -26,6 +26,7 @@ attack_cooldown = 1.9
 windup_seconds = 0.35
 shot_speed = 130.0
 shot_color = Color(0.7, 0.95, 0.35, 1)
+affliction_id = &"poisoned"
 collision_size = Vector2(15, 11)
 visual_offset = Vector2(0, -6)
 visual_scale = 1.0

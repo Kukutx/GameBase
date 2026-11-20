@@ -84,3 +84,12 @@ msgstr "远程伤害 %d"
 
 msgid "Drops %s"
 msgstr "掉落 %s"
+
+msgid "Inflicts %s"
+msgstr "施加%s"
+
+msgid "Immune to %s"
+msgstr "免疫%s"
+
+msgid "Afflicted: %s"
+msgstr "异常状态：%s"

@@ -10,5 +10,6 @@ health_scale = 1.4
 damage_scale = 1.6
 size_scale = 1.1
 tint = Color(1, 0.55, 0.35, 1)
+affliction_id = &"burning"
 xp_scale = 2.0
 extra_drops = 1

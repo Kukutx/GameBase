@@ -7,8 +7,9 @@ extends Resource
 ## every `every` depths below, `most` at most (`count_at()`). `spread()` finds
 ## their places, `spacing` apart and from what already stands on the floor;
 ## `make()` makes each from `scene` (none: a plain `Hazard`), its damage
-## raised by `damage_per_depth` for each depth below `from_depth` and started
-## a rolled share into its cycle, so hazards side by side flare in turn.
+## raised by `damage_per_depth` for each depth below `from_depth`, laying
+## `affliction_id` when it names one, and started a rolled share into its
+## cycle, so hazards side by side flare in turn.
 
 ## The first depth that holds hazards.
 @export_range(1, 9999, 1) var from_depth := 3
@@ -23,6 +24,9 @@ extends Resource
 @export var scene: PackedScene
 ## The damage a hazard gains for each depth below `from_depth`.
 @export_range(0.0, 50.0, 0.05) var damage_per_depth := 0.5
+## What each hazard's flares lay on what they hurt (`Hazard.affliction_id`);
+## empty, what its scene says.
+@export var affliction_id: StringName
 
 ## How many hazards a floor at `depth` holds.
 func count_at(depth: int) -> int:
@@ -60,12 +64,16 @@ func make(depth: int, phase := 0.0) -> Hazard:
 			return null
 	hazard.damage = mini(hazard.damage + roundi(damage_per_depth * maxi(depth - from_depth, 0)), 999)
 	hazard.phase_seconds = clampf(phase, 0.0, 1.0) * hazard.get_cycle_seconds()
+	if affliction_id != &"":
+		hazard.affliction_id = affliction_id
 	return hazard
 
 ## What is wrong with the spread, as readable problems: a scene whose root is
-## not a `Hazard`.
+## not a `Hazard`, an affliction the running game's content lacks.
 func find_problems() -> PackedStringArray:
 	var problems := PackedStringArray()
+	if affliction_id != &"" and AfflictionData.find(affliction_id) == null:
+		problems.append("lays unknown affliction '%s'" % affliction_id)
 	if scene != null:
 		var node := scene.instantiate()
 		if not node is Hazard:

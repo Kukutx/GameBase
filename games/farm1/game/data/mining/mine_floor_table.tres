@@ -110,6 +110,7 @@ every = 20
 most = 3
 spacing = 48.0
 damage_per_depth = 0.25
+affliction_id = &"burning"
 
 [sub_resource type="Resource" id="chest_copper"]
 script = ExtResource("8_entry")

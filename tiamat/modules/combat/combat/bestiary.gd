@@ -5,7 +5,8 @@ extends RefCounted
 ## profile counts each kind (`GameProfile`, flag `defeated:<enemy id>`) as
 ## `CombatEvents.enemy_defeated` tells of it, and the pause menu's Bestiary
 ## lists the kinds met, weakest first, each with how often it fell, its health
-## at the player's foe strength, how hard it hits and what it drops, and under
+## at the player's foe strength, how hard it hits, what it inflicts and is
+## immune to (`AfflictionData`) and what it drops, and under
 ## it each elite form of it the player has defeated (`EliteData`, counted as
 ## `CombatEvents.elite_defeated` tells, flag `defeated:<elite id>:<enemy id>`).
 ## The profile also counts how many kinds the player has met (`KINDS_FLAG`),
@@ -73,6 +74,13 @@ static func describe() -> PackedStringArray:
 		if enemy.contact_damage > 0:
 			var hits := TranslationServer.translate("Shoots for %d") if enemy.shot_speed > 0.0 else TranslationServer.translate("Hits for %d")
 			parts.append(String(hits) % enemy.contact_damage)
+		var affliction := AfflictionData.find(enemy.affliction_id)
+		if affliction != null:
+			parts.append(TranslationServer.translate("Inflicts %s") % TranslationServer.translate(affliction.display_name))
+		for immune: StringName in enemy.immune_to:
+			var shrugged := AfflictionData.find(immune)
+			if shrugged != null:
+				parts.append(TranslationServer.translate("Immune to %s") % TranslationServer.translate(shrugged.display_name))
 		var drop := ItemData.find(enemy.drop_item_id)
 		if drop != null:
 			parts.append(TranslationServer.translate("Drops %s") % TranslationServer.translate(drop.display_name))
