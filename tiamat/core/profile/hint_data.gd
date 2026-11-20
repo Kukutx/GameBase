@@ -7,7 +7,8 @@ extends ContentEntry
 ## with the condition `HINT_SHOWN <id>`. The player's profile (`GameProfile`)
 ## keeps which hints showed, so a hint shows once across every save, and none
 ## shows while the player turns hints off (`GameSettings.hints`). The HUD shows
-## them on a status line that shows hints (`StatusLine.shows_hints`).
+## them on a status line that shows hints (`StatusLine.shows_hints`), and the
+## pause menu's tips list the ones the player has seen (`TipsMenu`).
 ##
 ## The text names a control by its action in braces, `{interact}`, which reads
 ## as the key or button that performs it on the device in use, and `{move}` as

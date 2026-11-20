@@ -338,6 +338,9 @@ func _assert_core_menus_fit(view: Rect2) -> void:
 
 	var pause := _pause()
 	pause.open()
+	# Every button the menu may show, the tips beside the settings once one
+	# has shown among them.
+	pause.tips_button.visible = true
 	await _layout()
 	assert_eq(MenuFit.find_overflow(pause, view), PackedStringArray(), "the pause menu in %s" % view.size)
 	for dialog: Window in [pause.confirm_load, pause.confirm_title, pause.confirm_quit]:
