@@ -1,5 +1,6 @@
 // Steps used by the GitHub Actions workflows. Each subcommand replaces an
 // inline shell block so the workflows contain no logic of their own.
+const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 const { ENGINE_VERSION_RE, fail, git, main, parseToolArgs, readTrimmed, rootPath, run } = require("./lib/common");
@@ -213,6 +214,64 @@ function releaseNotes(game, tag) {
   return lines.join("\n");
 }
 
+// How often, and how long each time, the Web jobs try each download of the
+// browser their smoke test drives: about four times what one takes.
+const BROWSER_INSTALL_ATTEMPTS = 3;
+const BROWSER_INSTALL_SECONDS = 180;
+// Whether the downloaded Chromium starts, run in tools/web_smoke.
+const BROWSER_LAUNCH_CHECK = "require('playwright').chromium.launch({ headless: true }).then((browser) => browser.close())";
+
+// Runs `command` in `cwd` with the job's output, and stops it and what it
+// started once it has run `seconds`: resolves to its exit code (1 once
+// stopped) and whether it ran out of time.
+function runWithin(command, args, seconds, cwd = rootPath()) {
+  return new Promise((resolve) => {
+    let timedOut = false;
+    // Its own process group, so stopping it stops the processes it started.
+    const child = spawn(command, args, { cwd, stdio: "inherit", detached: process.platform !== "win32" });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      try {
+        if (process.platform === "win32") child.kill("SIGKILL");
+        else process.kill(-child.pid, "SIGKILL");
+      } catch {
+        // It ended on its own meanwhile.
+      }
+    }, seconds * 1000);
+    child.on("error", () => {
+      clearTimeout(timer);
+      resolve({ code: 1, timedOut });
+    });
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      resolve({ code: timedOut || code === null ? 1 : code, timedOut });
+    });
+  });
+}
+
+// Runs a Playwright download (`args` after `playwright`) until it succeeds,
+// stopping one that stalls, at most BROWSER_INSTALL_ATTEMPTS times.
+async function playwrightDownload(what, args) {
+  for (let attempt = 1; attempt <= BROWSER_INSTALL_ATTEMPTS; attempt += 1) {
+    const { code, timedOut } = await runWithin("npm", ["exec", "--prefix", "tools/web_smoke", "--", "playwright", ...args], BROWSER_INSTALL_SECONDS);
+    if (code === 0) return;
+    console.log(`::warning::${what}, attempt ${attempt} of ${BROWSER_INSTALL_ATTEMPTS}, ${timedOut ? `stalled past ${BROWSER_INSTALL_SECONDS} s` : `failed with exit code ${code}`}.`);
+  }
+  fail(`Could not download ${what} in ${BROWSER_INSTALL_ATTEMPTS} attempts.`);
+}
+
+// Installs Playwright's Chromium for the Web smoke (tools/web_smoke). The
+// runner's image already holds the system libraries it needs, so only the
+// browser is downloaded; a browser that then does not start gets them too
+// (`install-deps`, which also fetches fonts the smoke never draws from a
+// package mirror that can crawl for minutes).
+async function installBrowser() {
+  await playwrightDownload("Chromium", ["install", "chromium"]);
+  if ((await runWithin(process.execPath, ["-e", BROWSER_LAUNCH_CHECK], 60, rootPath("tools", "web_smoke"))).code === 0) return;
+  console.log("::notice::Chromium does not start with the runner's libraries; installing its own.");
+  await playwrightDownload("Chromium's system libraries", ["install-deps", "chromium"]);
+}
+
 const COMMANDS = {
   "engine-version": (values) => engineVersion({ latest: values.latest }),
   games: (values) => games({ changedFrom: values["changed-from"] }),
@@ -222,9 +281,10 @@ const COMMANDS = {
   "compat-summary": (values) => compatSummary({ baseline: values.baseline, version: values.version }),
   "append-summary": (values) => appendSummary(fs.readFileSync(path.resolve(values.file), "utf8")),
   "publish-release": (values) => publishRelease({ game: values.game }),
+  "install-browser": () => installBrowser(),
 };
 
-module.exports = { releaseNotes, selectGames };
+module.exports = { releaseNotes, runWithin, selectGames };
 
 if (require.main === module) {
   main(async () => {
