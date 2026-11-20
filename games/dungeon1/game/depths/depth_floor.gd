@@ -17,7 +17,10 @@ extends Node2D
 ## clear of the ways in and on and the altar. Now and then a floor holds a
 ## chest (`LootChest`, spread by `chests`), sealed until the floor is cleared,
 ## and a depth a guardian guards always holds the Warden's Hoard, both the
-## richer the deeper.
+## richer the deeper. From `peddler_from_depth` on, an unguarded floor now
+## and then (`peddler_chance`, from a stream of its own) has the Ember Peddler
+## wait by the altar once it is cleared, selling potions and a boon for the
+## run (`DepthBoonOffer`) and buying what the depths drop.
 
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
 # How far apart the enemies of a floor stand.
@@ -40,6 +43,10 @@ const VENT_CLEARANCE := 48.0
 @export var vents: HazardSpread
 ## Which floors hold a chest and what it holds; no chests without.
 @export var chests: ChestSpread
+## How often an unguarded floor from `peddler_from_depth` on has the
+## peddler (`Peddler`, a `ShopStand`) wait there once it is cleared.
+@export_range(0.0, 1.0, 0.01) var peddler_chance := 0.25
+@export_range(1, 999, 1) var peddler_from_depth := 2
 ## Where the rope leads.
 @export var camp_location_id: StringName
 @export var camp_spawn_id: StringName
@@ -48,12 +55,14 @@ const VENT_CLEARANCE := 48.0
 @onready var stairs: Node2D = $Stairs
 @onready var rope: Node2D = $Rope
 @onready var altar: BoonAltar = $EmberAltar
+@onready var peddler: ShopStand = $Peddler
 
 var _enemies: Array[HostileCreature] = []
 var _guardians: Array[HostileCreature] = []
 var _vents: Array[Hazard] = []
 var _chest: LootChest
-# Where the ways in and on and the altar stand.
+var _has_peddler := false
+# Where the ways in and on, the altar and the peddler stand.
 var _ways := PackedVector2Array()
 
 func _ready() -> void:
@@ -63,7 +72,10 @@ func _ready() -> void:
 	altar.boon_taken.connect(func(_boon_id: StringName) -> void: _refresh())
 	CombatEvents.enemy_defeated.connect(_on_enemy_defeated)
 	GameSettings.locale_changed.connect(_on_locale_changed)
-	_ways = PackedVector2Array([_spawn_position(arrival_spawn_id), stairs.position, rope.position, altar.position])
+	_ways = PackedVector2Array([_spawn_position(arrival_spawn_id), stairs.position, rope.position, altar.position, peddler.position])
+	var depth := DepthRun.get_depth()
+	_has_peddler = depth >= peddler_from_depth and EnemyTier.guardians(enemy_tiers, depth).is_empty() \
+		and DepthRun.floor_stream("peddler").randf() < peddler_chance
 	_spawn_vents()
 	_spawn_chest()
 	_spawn_enemies()
@@ -78,6 +90,10 @@ static func get_enemy_count(depth: int, guarded := false) -> int:
 ## The floor's ember vents.
 func get_vents() -> Array[Hazard]:
 	return _vents.duplicate()
+
+## Whether the peddler waits on this floor once it is cleared.
+func has_peddler() -> bool:
+	return _has_peddler
 
 ## The floor's chest, or null on a floor without one.
 func get_chest() -> LootChest:
@@ -205,6 +221,8 @@ func _refresh() -> void:
 		way.visible = cleared
 		(way.get_node("Interactable") as Interactable).enabled = cleared
 	altar.visible = cleared and not altar.is_spent() and RunState.is_active()
+	peddler.visible = cleared and _has_peddler
+	peddler.interactable.enabled = peddler.visible
 	if _chest != null:
 		_chest.locked = not cleared
 	altar.refresh()

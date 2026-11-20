@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ShopData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/shop/shop_data.gd" id="1_shop"]
+[ext_resource type="Script" path="res://tiamat/modules/items/shop/shop_offer.gd" id="2_offer"]
+[ext_resource type="Script" path="res://game/depths/depth_boon_offer.gd" id="3_boon"]
+
+[sub_resource type="Resource" id="Offer_boon"]
+script = ExtResource("3_boon")
+price = 60
+excluded = Array[StringName]([&"ember_tithe"])
+
+[resource]
+script = ExtResource("1_shop")
+id = &"ember_peddler"
+display_name = "Ember Peddler"
+stock = {"health_potion": 30}
+offers = Array[ExtResource("2_offer")]([SubResource("Offer_boon")])
