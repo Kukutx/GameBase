@@ -3,7 +3,8 @@ extends GutTest
 ## The tactics module's minigame (`GridBattleGame`) run by `MiniGameHost`: the
 ## player commands their unit with the command buttons and the board, wins,
 ## and the battle's end is told; the commands follow what the foes do
-## meanwhile; cancel twice gives the battle up; an unknown map ends it at once,
+## meanwhile; a finger's tap on a cell shows it and a second tap picks it;
+## cancel twice gives the battle up; an unknown map ends it at once,
 ## and a definition that names one is a content problem.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
@@ -27,6 +28,7 @@ func before_each() -> void:
 	TacticsEvents.battle_ended.connect(_on_battle_ended)
 
 func after_each() -> void:
+	InputPrompts.call("_set_using_touch", false)
 	TacticsEvents.battle_ended.disconnect(_on_battle_ended)
 	MiniGameHost.cancel()
 	ContentRegistry.active = ContentDB
@@ -69,6 +71,25 @@ func test_the_commands_follow_what_the_foes_do_meanwhile() -> void:
 	assert_eq(game.get_mode(), GridBattleGame.Mode.PICK_TARGET)
 	assert_eq(game.get_board().choices, [Vector2i(1, 1)] as Array[Vector2i])
 
+func test_a_finger_shows_a_cell_then_picks_it_on_a_second_tap() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	InputPrompts.call("_set_using_touch", true)
+	game.choose_command(0)
+	var board := game.get_board()
+	var cell := Vector2i(1, 1)
+	assert_true(board.choices.has(cell) and board.cursor != cell)
+	assert_true(_shows(game, tr("Tap where it moves, then tap it again. × goes back.")), "the hint tells to tap twice")
+	board.cell_clicked.emit(cell)
+	assert_eq(board.cursor, cell, "a first tap shows the cell")
+	assert_eq(game.battle.get_turn_unit().cell, Vector2i(0, 1), "and moves no one")
+	board.cell_clicked.emit(cell)
+	assert_eq(game.battle.get_turn_unit().cell, cell, "a second tap moves the knight there")
+	InputPrompts.call("_set_using_touch", false)
+	game.choose_command(1)
+	assert_true(_shows(game, tr("Pick what it aims at. Cancel goes back.")), "the hint follows the device in use")
+
 func test_a_definition_names_a_known_map() -> void:
 	var definition := MiniGameDefinition.find(MINIGAME)
 	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray())
@@ -107,6 +128,10 @@ func _game() -> GridBattleGame:
 		if not node.is_queued_for_deletion():
 			return node as GridBattleGame
 	return null
+
+# Whether a label of `game` reads `text`.
+func _shows(game: GridBattleGame, text: String) -> bool:
+	return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == text)
 
 func _press(game: GridBattleGame, action: StringName) -> void:
 	var event := InputEventAction.new()
