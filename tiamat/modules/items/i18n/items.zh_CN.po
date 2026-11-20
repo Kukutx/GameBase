@@ -31,6 +31,15 @@ msgstr "出售"
 msgid "Sell %s (%d) — %dg"
 msgstr "出售 %s（%d）— %dg"
 
+msgid "Sell %s (%d) x%d — %dg"
+msgstr "出售 %s（%d）x%d — %dg"
+
+msgid "Buy %s x%d — %dg"
+msgstr "购买 %s x%d — %dg"
+
+msgid "Amount: %d"
+msgstr "数量：%d"
+
 msgid "%s\n%d/%d slots"
 msgstr "%s\n%d/%d 格"
 

@@ -1,8 +1,9 @@
 extends GutTest
 
 ## A shop's counter (`ShopMenu`): its sell list follows the inventory in
-## place, the focus stays on the list as stacks sell out, and it tells of the
-## item whose button has the focus.
+## place, the focus stays on the list as stacks sell out, it tells of the
+## item whose button has the focus, and one press buys or sells the amount the
+## player picks.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const SHOP_MENU := preload("res://tiamat/modules/items/shop/shop_menu.tscn")
@@ -69,6 +70,39 @@ func test_the_counter_tells_of_the_item_whose_button_has_the_focus() -> void:
 	menu.close_button.grab_focus()
 	assert_eq(menu.about_label.text, "Sweet.", "kept while the focus is on no item")
 	assert_gt(menu.about_label.custom_minimum_size.y, 0.0, "two lines kept for it")
+	menu.close()
+
+func test_one_press_buys_or_sells_the_amount_the_player_picks() -> void:
+	_shop.stock = {"fixture_pebble": 4}
+	Wallet.set_money(30)
+	var menu := SHOP_MENU.instantiate() as ShopMenu
+	add_child_autofree(menu)
+	menu.open(_shop)
+	var buy := menu.items_container.get_child(0) as Button
+	assert_true(menu.amount_button.visible)
+	assert_eq([menu.get_amount(), menu.amount_button.text, buy.text], [1, "Amount: 1", "Buy Pebble — 4g"])
+	menu.amount_button.grab_focus()
+	menu.amount_button.pressed.emit()
+	assert_eq([menu.get_amount(), menu.amount_button.text, buy.text], [5, "Amount: 5", "Buy Pebble x5 — 20g"])
+	assert_eq(_focused(menu), menu.amount_button, "the focus stays on the amount")
+	assert_eq((_sell_buttons(menu)[0] as Button).text, "Sell Berry (2) x2 — 10g", "a sale of as many as the player holds")
+	buy.pressed.emit()
+	assert_eq([InventoryState.get_quantity(&"fixture_pebble"), Wallet.money], [6, 10], "five at a press")
+	menu.amount_button.pressed.emit()
+	assert_eq(menu.get_amount(), 10)
+	buy.pressed.emit()
+	assert_eq([InventoryState.get_quantity(&"fixture_pebble"), Wallet.money], [8, 2], "as many as the money left buys")
+	(_sell_buttons(menu)[0] as Button).pressed.emit()
+	assert_eq(InventoryState.get_quantity(&"fixture_berry"), 0, "both berries the player held")
+	menu.amount_button.pressed.emit()
+	assert_eq(menu.get_amount(), 1, "round to one again")
+	menu.close()
+	menu.amount_button.pressed.emit()
+	menu.open(_shop)
+	assert_eq(menu.get_amount(), 1, "a counter opens on the first amount")
+	menu.amounts = PackedInt32Array([1])
+	menu.open(_shop)
+	assert_false(menu.amount_button.visible, "one amount needs no button")
 	menu.close()
 
 static func _sell_buttons(menu: ShopMenu) -> Array:
