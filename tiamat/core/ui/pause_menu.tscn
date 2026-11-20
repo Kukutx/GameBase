@@ -44,14 +44,20 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Resume"
 
-[node name="Save" type="Button" parent="Dim/Panel/Layout"]
+[node name="SaveRow" type="HBoxContainer" parent="Dim/Panel/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Save" type="Button" parent="Dim/Panel/Layout/SaveRow"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Save Game"
 
-[node name="Load" type="Button" parent="Dim/Panel/Layout"]
+[node name="Load" type="Button" parent="Dim/Panel/Layout/SaveRow"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Load Game"
 
 [node name="SettingsRow" type="HBoxContainer" parent="Dim/Panel/Layout"]
@@ -75,6 +81,11 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Achievements"
+
+[node name="Bonuses" type="Button" parent="Dim/Panel/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Bonuses"
 
 [node name="ReturnTitle" type="Button" parent="Dim/Panel/Layout"]
 unique_name_in_owner = true

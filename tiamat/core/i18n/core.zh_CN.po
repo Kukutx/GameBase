@@ -493,6 +493,9 @@ msgstr "提示"
 msgid "Achievements"
 msgstr "成就"
 
+msgid "Bonuses"
+msgstr "加成"
+
 msgid "%d of %d unlocked"
 msgstr "已解锁 %d / %d"
 
