@@ -489,3 +489,15 @@ msgstr "读档"
 
 msgid "Tips"
 msgstr "提示"
+
+msgid "Achievements"
+msgstr "成就"
+
+msgid "%d of %d unlocked"
+msgstr "已解锁 %d / %d"
+
+msgid "Hidden Achievement"
+msgstr "隐藏成就"
+
+msgid "Unlock it to see what it is."
+msgstr "解锁后才会显示。"

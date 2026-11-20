@@ -330,6 +330,8 @@ func test_the_core_menus_and_their_questions_fit_the_view() -> void:
 func _assert_core_menus_fit(view: Rect2) -> void:
 	var title := (load("res://tiamat/core/ui/title_screen.tscn") as PackedScene).instantiate() as GameTitleScreen
 	add_child_autofree(title)
+	# Every button the title may show, the achievements among them.
+	title.achievements_button.visible = true
 	await _layout()
 	assert_eq(MenuFit.find_overflow(title, view), PackedStringArray(), "the title screen in %s" % view.size)
 	for dialog: Window in [title.confirm_new_game, title.confirm_delete]:
@@ -338,9 +340,10 @@ func _assert_core_menus_fit(view: Rect2) -> void:
 
 	var pause := _pause()
 	pause.open()
-	# Every button the menu may show, the tips beside the settings once one
-	# has shown among them.
+	# Every button the menu may show, the tips and the achievements beside
+	# the settings among them.
 	pause.tips_button.visible = true
+	pause.achievements_button.visible = true
 	await _layout()
 	assert_eq(MenuFit.find_overflow(pause, view), PackedStringArray(), "the pause menu in %s" % view.size)
 	for dialog: Window in [pause.confirm_load, pause.confirm_title, pause.confirm_quit]:

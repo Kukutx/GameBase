@@ -4,7 +4,8 @@ extends GameTitleBase
 ## The title screen every game opens on (its main scene) unless it brings its
 ## own: the game's name, description and version from the project settings,
 ## its save slots (as many as the game sets, each continuing from the newer of
-## its saves), a new game, the settings and quitting. Like every menu it takes
+## its saves), a new game, the settings, the achievements (in a game that has
+## any) and quitting. Like every menu it takes
 ## the project's theme (`gui/theme/custom`). What it does with a slot is
 ## GameTitleBase's; this is how it looks.
 
@@ -17,6 +18,7 @@ extends GameTitleBase
 @onready var new_game_button: Button = $Center/Menu/Actions/NewGame
 @onready var delete_button: Button = $Center/Menu/Actions/DeleteSave
 @onready var settings_button: Button = $Center/Menu/Actions/Settings
+@onready var achievements_button: Button = $Center/Menu/Actions/Achievements
 @onready var quit_button: Button = $Center/Menu/Actions/Quit
 @onready var status_label: Label = $Center/Menu/Status
 
@@ -32,6 +34,8 @@ func _ready() -> void:
 	new_game_button.pressed.connect(_new_game)
 	delete_button.pressed.connect(_delete_save)
 	settings_button.pressed.connect(_open_settings)
+	achievements_button.pressed.connect(_open_achievements)
+	achievements_button.visible = AchievementsMenu.has_any()
 	quit_button.pressed.connect(_quit)
 	quit_button.visible = can_quit()
 	_refresh_slot_ui()
@@ -71,10 +75,15 @@ func _on_settings_closed() -> void:
 	super()
 	settings_button.grab_focus()
 
+func _on_achievements_closed() -> void:
+	super()
+	achievements_button.grab_focus()
+
 func _set_buttons_disabled(value: bool) -> void:
 	slot_select.disabled = value
 	continue_button.disabled = value
 	new_game_button.disabled = value
 	delete_button.disabled = value
 	settings_button.disabled = value
+	achievements_button.disabled = value
 	quit_button.disabled = value
