@@ -6,9 +6,10 @@ extends Area2D
 ## (`Hurtbox`) of a faction hostile to `faction`. It hits for the weapon's
 ## `tool_power` changed by the `attack_damage` stat (`WeaponUse`, which a bow's
 ## `RangedAttack` beside it shares), lays the affliction the weapon's tags
-## call for (`WeaponUse.affliction_of()`), pushes what it hits away
-## by `knockback`, costs `cost` of the game's attack vital (`CombatSettings.attack_vital_id`)
-## changed by the `attack_cost` stat and
+## call for or, now and then, one the player's stats give a chance of
+## (`WeaponUse.affliction_of()`, rolled once a swing), pushes what it hits
+## away by `knockback`, costs `cost` of the game's attack vital
+## (`CombatSettings.attack_vital_id`) changed by the `attack_cost` stat and
 ## swings again only after `cooldown_seconds`. A swing draws its arc
 ## (`SwingEffect`), is announced as `CombatEvents.attack_swung`, and a swing
 ## that lands shakes the screen a little (`GameCamera.shake_view()`). A child of the

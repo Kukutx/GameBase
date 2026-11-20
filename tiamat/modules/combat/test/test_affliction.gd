@@ -4,7 +4,8 @@ extends GutTest
 ## ticks, one laid again, immunity, the player's and a creature's, one that
 ## slows them, the player's resistance, the HUD's line of those on the player,
 ## what lays them (a creature's strike or its elite form's, a hazard, a
-## weapon's tag) and what is wrong with them.
+## weapon's tag, the chance a stat gives any of the player's hits) and what is
+## wrong with them.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const HOSTILE_CREATURE_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
@@ -15,6 +16,8 @@ const BURN := &"fixture_burn"
 const POISON := &"fixture_poison"
 ## Half speed for three tenths of a second, taking no health.
 const SLOW := &"fixture_slow"
+## The stat that is the chance any hit of the player's poisons.
+const POISON_CHANCE := &"fixture_poison_chance"
 
 var _vitals_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
@@ -30,6 +33,8 @@ func before_each() -> void:
 	_vitals_snapshot = Vitals.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
 	_world_snapshot = WorldState.to_save_data()
+	# The game registers its chance stats, unnamed ones hidden from the player.
+	GameStats.register_stat(POISON_CHANCE)
 	ContentFixture.use(self, _fixture_content())
 	var settings := CombatSettings.new()
 	settings.health_vital_id = HP
@@ -241,6 +246,23 @@ func test_a_weapon_that_carries_an_affliction_s_tag_lays_it() -> void:
 	assert_null(WeaponUse.affliction_of(null))
 	assert_eq(AfflictionData.find_all().size(), 3, "the burn, the poison and the slow")
 
+func test_any_hit_of_the_player_s_may_lay_one_by_the_chance_a_stat_gives() -> void:
+	var gel := ItemData.find(&"fixture_gel")
+	assert_null(WeaponUse.affliction_of(gel), "no chance while nothing gives one")
+	var kindling := _Kindling.new()
+	GameStats.register_source(kindling)
+	assert_eq(WeaponUse.affliction_of(gel), AfflictionData.find(POISON), "every hit from 100 on")
+	assert_eq(WeaponUse.affliction_of(ItemData.find(&"fixture_brand")), AfflictionData.find(BURN), "a weapon's own first")
+	kindling.chance = 0.0
+	assert_null(WeaponUse.affliction_of(gel), "none at 0")
+	kindling.chance = 50.0
+	var laid := 0
+	for roll: int in 400:
+		laid += 1 if WeaponUse.affliction_of(gel) != null else 0
+	assert_between(laid, 140, 260, "about one hit in two")
+	GameStats.unregister_source(kindling)
+	assert_false(AfflictionData.find(BURN).rolls_chance(), "one without a chance stat never does")
+
 func test_what_is_wrong_with_an_affliction_or_what_names_one() -> void:
 	var burn := AfflictionData.find(BURN)
 	assert_eq(burn.get_ticks(), 3, "three tenths in tenths, rounding aside")
@@ -250,6 +272,10 @@ func test_what_is_wrong_with_an_affliction_or_what_names_one() -> void:
 	odd.seconds = 0.5
 	odd.tick_seconds = 2.0
 	assert_eq(odd.find_problems(ContentRegistry.active), PackedStringArray(["has no display name", "takes health every 2.0s but lasts only 0.5s"]))
+	odd.display_name = "Odd"
+	odd.seconds = 2.0
+	odd.chance_stat = &"fixture_unread"
+	assert_eq(odd.find_problems(ContentRegistry.active), PackedStringArray(["is laid by the chance of stat 'fixture_unread', which no installed module or the game reads"]))
 	var idle := _affliction(&"fixture_idle", "Idle", 1.0, 0.5, 0)
 	assert_eq(idle.find_problems(ContentRegistry.active), PackedStringArray(["takes no health and slows nothing"]))
 	idle.speed_scale = 0.5
@@ -301,12 +327,14 @@ func _creature(enemy_id: StringName, at: Vector2, elite: EliteData = null) -> Ho
 	add_child_autofree(creature)
 	return creature
 
-# The player's health, a burn, a poison and a slow, a slime of 30 health
-# whose hits burn, a wisp that never burns and a brand whose tag burns.
+# The player's health, a burn, a poison any hit of the player's may lay by
+# chance and a slow, a slime of 30 health whose hits burn, a wisp that never
+# burns and a brand whose tag burns.
 func _fixture_content() -> Array:
 	var burn := _affliction(BURN, "Burn", 0.3, 0.1, 2)
 	burn.weapon_tag = "fixture_burns"
 	var poison := _affliction(POISON, "Poison", 0.6, 0.2, 1)
+	poison.chance_stat = POISON_CHANCE
 	var slow := _affliction(SLOW, "Slow", 0.3, 0.1, 0)
 	slow.speed_scale = 0.5
 	var gel := ItemData.new()
@@ -339,6 +367,17 @@ class _Ward extends RefCounted:
 
 	func get_stat_bonus(_stat: StringName) -> float:
 		return 0.0
+
+# A stat source that gives each hit of the player's `chance` percent to
+# poison.
+class _Kindling extends RefCounted:
+	var chance := 100.0
+
+	func get_stat_multiplier(_stat: StringName) -> float:
+		return 1.0
+
+	func get_stat_bonus(stat: StringName) -> float:
+		return chance if stat == &"fixture_poison_chance" else 0.0
 
 static func _affliction(id: StringName, display_name: String, seconds: float, tick_seconds: float, tick_damage: int) -> AfflictionData:
 	var affliction := AfflictionData.new()

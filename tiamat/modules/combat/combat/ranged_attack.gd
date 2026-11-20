@@ -7,8 +7,9 @@ extends Node
 ## `aim_assist_degrees` of that way and in reach, with no wall between (`aim()`).
 ## The shot hurts the first foe it meets for the bow's power changed by the
 ## `attack_damage` stat (`WeaponUse`, which `MeleeAttack` shares), lays the
-## affliction the bow's tags call for (`WeaponUse.affliction_of()`) and
-## pushes it away by `knockback`; it costs `cost` of the game's attack vital changed by
+## affliction the bow's tags call for or one the player's stats give a chance
+## of (`WeaponUse.affliction_of()`, rolled once a shot) and pushes it away by
+## `knockback`; it costs `cost` of the game's attack vital changed by
 ## the `attack_cost` stat, plays the player's attack, is announced as
 ## `CombatEvents.attack_swung` and lets the next one go only after
 ## `cooldown_seconds`. A child of the player (a `TopDownPlayer`), beside the

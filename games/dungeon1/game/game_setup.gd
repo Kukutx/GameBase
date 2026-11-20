@@ -8,12 +8,17 @@ extends GameModule
 ## player gets goes to the hotbar, where it is swung, drunk or sold. The combat
 ## experience and the achievements are data: the triggers in
 ## `game/data/triggers/`. What the depths' chests hold is a way to get it
-## (`ItemSources`).
+## (`ItemSources`). Its Kindling boon raises the chance that the player's
+## hits set foes Burning (`BURN_CHANCE_STAT`).
 
 const DEPTH_CHESTS := preload("res://game/depths/chests.tres")
+## The stat that is the chance, in percent, that a hit of the player's sets a
+## foe Burning (`AfflictionData.chance_stat` of `burning.tres`).
+const BURN_CHANCE_STAT := &"burn_chance"
 
 func install() -> void:
 	RunState.save_block_reason = "Return to camp to save"
+	GameStats.register_stat(BURN_CHANCE_STAT, "Burn chance")
 	SaveManager.register_save_blocker(DepthRun.get_save_block_reason)
 	SaveManager.register_slot_detail(&"deepest_depth", 100, DepthRun.describe_save)
 	InventoryState.item_added.connect(_on_item_added)
