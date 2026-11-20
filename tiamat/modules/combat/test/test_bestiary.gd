@@ -53,12 +53,32 @@ func test_the_bestiary_lists_the_kinds_met_weakest_first() -> void:
 	assert_string_contains("\n".join(Bestiary.describe()), "Health 45 ·", "at the player's foe strength")
 	assert_true(PauseMenu.get_page_ids().has(&"bestiary"))
 
+func test_each_elite_form_defeated_shows_under_its_kind() -> void:
+	assert_true(CombatEvents.elite_defeated.is_connected(Bestiary.record_elite), "the module counts every elite")
+	Bestiary.record(&"fixture_slime")
+	Bestiary.record(&"fixture_slime")
+	Bestiary.record_elite(&"fixture_hulking", &"fixture_slime")
+	Bestiary.record_elite(&"fixture_hulking", &"fixture_slime")
+	Bestiary.record_elite(&"fixture_missing", &"fixture_slime")
+	assert_eq(Bestiary.count_elite(&"fixture_hulking", &"fixture_slime"), 2)
+	assert_eq(GameProfile.get_int(&"defeated:fixture_hulking:fixture_slime"), 2)
+	assert_eq(Bestiary.count_elite(&"fixture_missing", &"fixture_slime"), 0, "a form the game does not have is not counted")
+	assert_eq(Bestiary.describe(), PackedStringArray([
+		"Met 1 of 3",
+		"Slime — defeated 2",
+		"  Health 30 · Hits for 8 · Drops Gel",
+		"  Hulking Slime — defeated 2",
+	]))
+
 func _fixture_content() -> Array:
 	var gel := ItemData.new()
 	gel.id = &"fixture_gel"
 	gel.display_name = "Gel"
+	var hulking := EliteData.new()
+	hulking.id = &"fixture_hulking"
+	hulking.display_name = "Hulking %s"
 	return [gel, _enemy(&"fixture_slime", "Slime", 30, 8, gel.id), _enemy(&"fixture_king", "Slime King", 300, 20, gel.id),
-		_enemy(&"fixture_bat", "Bat", 12, 4, &"")]
+		_enemy(&"fixture_bat", "Bat", 12, 4, &""), hulking]
 
 static func _enemy(id: StringName, display_name: String, health: int, damage: int, drop: StringName) -> EnemyData:
 	var enemy := EnemyData.new()
