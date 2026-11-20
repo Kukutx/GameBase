@@ -25,6 +25,8 @@ func install() -> void:
 	ItemSources.register(&"enemy_drops", find_item_sources)
 	if not CombatEvents.enemy_defeated.is_connected(Bestiary.record):
 		CombatEvents.enemy_defeated.connect(Bestiary.record)
+	if not CombatEvents.elite_defeated.is_connected(Bestiary.record_elite):
+		CombatEvents.elite_defeated.connect(Bestiary.record_elite)
 	PauseMenu.add_page(&"bestiary", "Bestiary", 30, Bestiary.describe)
 
 func get_options() -> Array[GameOption]:

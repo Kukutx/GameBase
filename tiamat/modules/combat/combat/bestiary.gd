@@ -5,7 +5,9 @@ extends RefCounted
 ## profile counts each kind (`GameProfile`, flag `defeated:<enemy id>`) as
 ## `CombatEvents.enemy_defeated` tells of it, and the pause menu's Bestiary
 ## lists the kinds met, weakest first, each with how often it fell, its health
-## at the player's foe strength, how hard it hits and what it drops.
+## at the player's foe strength, how hard it hits and what it drops, and under
+## it each elite form of it the player has defeated (`EliteData`, counted as
+## `CombatEvents.elite_defeated` tells, flag `defeated:<elite id>:<enemy id>`).
 
 ## What the profile's count of a kind's defeats starts with.
 const FLAG_PREFIX := "defeated:"
@@ -22,6 +24,22 @@ static func count(enemy_id: StringName) -> int:
 static func record(enemy_id: StringName, _combat_xp := 0, _position := Vector2.ZERO) -> void:
 	if EnemyData.find(enemy_id) != null:
 		GameProfile.add_int(flag_of(enemy_id), 1)
+
+## The profile flag that counts the defeats of kind `enemy_id` in elite form
+## `elite_id`.
+static func elite_flag_of(elite_id: StringName, enemy_id: StringName) -> StringName:
+	return StringName("%s%s:%s" % [FLAG_PREFIX, elite_id, enemy_id])
+
+## How often the player has defeated kind `enemy_id` in elite form
+## `elite_id`, in every save.
+static func count_elite(elite_id: StringName, enemy_id: StringName) -> int:
+	return GameProfile.get_int(elite_flag_of(elite_id, enemy_id))
+
+## Counts a defeat of kind `enemy_id` in elite form `elite_id` (both of the
+## game's content).
+static func record_elite(elite_id: StringName, enemy_id: StringName, _position := Vector2.ZERO) -> void:
+	if EliteData.find(elite_id) != null and EnemyData.find(enemy_id) != null:
+		GameProfile.add_int(elite_flag_of(elite_id, enemy_id), 1)
 
 ## The pause menu's Bestiary: how many kinds the player has met of the game's,
 ## then each kind met; nothing before the first.
@@ -43,4 +61,7 @@ static func describe() -> PackedStringArray:
 		if drop != null:
 			parts.append(TranslationServer.translate("Drops %s") % TranslationServer.translate(drop.display_name))
 		lines.append("  " + " · ".join(parts))
+		for elite: EliteData in EliteData.find_all():
+			if count_elite(elite.id, enemy.id) > 0:
+				lines.append("  " + TranslationServer.translate("%s — defeated %d") % [elite.name_of(enemy), count_elite(elite.id, enemy.id)])
 	return lines
