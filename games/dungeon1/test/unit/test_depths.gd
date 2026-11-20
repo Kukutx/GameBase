@@ -325,6 +325,11 @@ func test_a_floor_spawns_only_the_tiers_its_depth_reaches() -> void:
 	assert_eq(EnemyTier.reached(tiers, 4), [&"cave_slime", &"skeleton", &"bone_archer"], "bone archers from the fourth")
 	assert_eq(EnemyTier.reached(tiers, 5), [&"cave_slime", &"skeleton", &"bone_archer"], "no wisps before the sixth")
 	assert_eq(EnemyTier.reached(tiers, 6), [&"cave_slime", &"skeleton", &"bone_archer", &"ember_wisp"])
+	assert_false(EnemyTier.reached(tiers, 7).has(&"venom_slime"))
+	assert_eq(EnemyTier.reached(tiers, 8), [&"cave_slime", &"skeleton", &"bone_archer", &"ember_wisp", &"venom_slime"], "venom slimes from the eighth")
+	var venom := EnemyData.find(&"venom_slime")
+	assert_eq(venom.affliction_id, &"poisoned", "whose touch poisons")
+	assert_eq(AfflictionData.find(&"poisoned").get_ticks(), 5, "a health a second for five seconds")
 	DepthRun.track.set_depth(5)
 	for enemy: HostileCreature in _enter_floor().get_enemies():
 		assert_ne(enemy.data.id, &"ember_wisp", "the fifth depth holds no wisps")
