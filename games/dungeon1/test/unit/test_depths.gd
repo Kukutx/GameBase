@@ -231,10 +231,11 @@ func test_the_same_run_and_depth_lay_out_the_same_floor() -> void:
 	assert_ne(_layout(_enter_floor()), first, "another run lays out its own floor")
 
 func test_from_the_third_depth_ember_vents_flare_clear_of_the_ways_in_and_on() -> void:
-	assert_eq(DepthFloor.get_vent_count(2, 3), 0, "none above the third depth")
-	assert_eq(DepthFloor.get_vent_count(3, 3), 1)
-	assert_eq(DepthFloor.get_vent_count(5, 3), 2, "one more every second depth")
-	assert_eq(DepthFloor.get_vent_count(40, 3), 4, "four at most")
+	var spread := _enter_floor().vents
+	assert_eq(spread.count_at(2), 0, "none above the third depth")
+	assert_eq(spread.count_at(3), 1)
+	assert_eq(spread.count_at(5), 2, "one more every second depth")
+	assert_eq(spread.count_at(40), 4, "four at most")
 	DepthRun.start_run()
 	DepthRun.track.set_depth(2)
 	assert_eq(_enter_floor().get_vents().size(), 0)
@@ -250,6 +251,7 @@ func test_from_the_third_depth_ember_vents_flare_clear_of_the_ways_in_and_on() -
 	for vent: Hazard in vents:
 		spots.append(vent.position)
 		assert_eq(vent.faction, &"", "a vent burns every side")
+		assert_eq(vent.damage, 12, "and burns harder the deeper")
 		assert_lt(vent.get_index(), player.get_index(), "under the player")
 		for way: Vector2 in ways:
 			assert_gte(vent.position.distance_to(way), DepthFloor.VENT_CLEARANCE, "clear of the ways in and on and the altar")

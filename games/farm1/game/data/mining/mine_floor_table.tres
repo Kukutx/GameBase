@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://tiamat/modules/lifesim/mining/mine_rock_tier.gd" id="2_rock"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="3_enemy"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/elite_odds.gd" id="4_elite_odds"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/hazard_spread.gd" id="5_hazards"]
 
 [sub_resource type="Resource" id="rock_iridium_rock"]
 script = ExtResource("2_rock")
@@ -99,9 +100,18 @@ chance = 0.04
 chance_per_depth = 0.004
 max_chance = 0.25
 
+[sub_resource type="Resource" id="hazards"]
+script = ExtResource("5_hazards")
+from_depth = 40
+every = 20
+most = 3
+spacing = 48.0
+damage_per_depth = 0.25
+
 [resource]
 script = ExtResource("1_table")
 default_rock_id = &"stone_rock"
 rock_tiers = Array[ExtResource("2_rock")]([SubResource("rock_iridium_rock"), SubResource("rock_gold_rock"), SubResource("rock_iron_rock"), SubResource("rock_copper_rock")])
 enemy_tiers = Array[ExtResource("3_enemy")]([SubResource("enemy_green_slime"), SubResource("enemy_cave_slime"), SubResource("enemy_blue_slime"), SubResource("enemy_spitting_slime"), SubResource("enemy_red_slime"), SubResource("enemy_shadow_slime"), SubResource("enemy_void_slime"), SubResource("enemy_ancient_slime"), SubResource("enemy_slime_king"), SubResource("enemy_void_monarch")])
 elite_odds = SubResource("elite_odds")
+hazards = SubResource("hazards")

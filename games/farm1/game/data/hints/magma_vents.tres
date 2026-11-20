@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="HintData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/profile/hint_data.gd" id="1_hint"]
+
+[resource]
+script = ExtResource("1_hint")
+id = &"magma_vents"
+text = "Magma vents glow before they flare and burn whatever stands on them, slimes too."

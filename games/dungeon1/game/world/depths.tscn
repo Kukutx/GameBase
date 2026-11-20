@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="2_tier"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://tiamat/core/camera/camera_bounds.gd" id="91_bounds"]
 [ext_resource type="PackedScene" path="res://tiamat/modules/roguelite/runs/boon_altar.tscn" id="6_altar"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/elite_odds.gd" id="7_elite_odds"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/hazard_spread.gd" id="8_vents"]
 
 [sub_resource type="Resource" id="Tier_slime"]
 script = ExtResource("2_tier")
@@ -42,6 +43,14 @@ chance = 0.05
 chance_per_depth = 0.03
 max_chance = 0.35
 
+[sub_resource type="Resource" id="HazardSpread_vents"]
+script = ExtResource("8_vents")
+from_depth = 3
+every = 2
+most = 4
+spacing = 56.0
+damage_per_depth = 0.5
+
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(480, 20)
 
@@ -55,6 +64,7 @@ size = Vector2(36, 30)
 script = ExtResource("1_floor")
 enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_archer"), SubResource("Tier_wisp"), SubResource("Tier_warden")])
 elite_odds = SubResource("EliteOdds_depths")
+vents = SubResource("HazardSpread_vents")
 camp_location_id = &"camp"
 camp_spawn_id = &"from_depths"
 

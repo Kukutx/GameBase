@@ -6,7 +6,8 @@ extends Node2D
 ## them with rocks and enemies generated from `MineState.floor_table`. Every
 ## floor is the same location; its ladder and elevator reload it. A floor's
 ## guardians (`EnemyTier.guardian_every`) are named on arrival and bar the
-## ladder like its other enemies. The HUD's place line tells the floor
+## ladder like its other enemies; its hazards (`MineFloorTable.hazards`) lie
+## under the player and the creatures. The HUD's place line tells the floor
 ## (`get_place_detail()`).
 
 const MINING_SCENE := preload("res://tiamat/modules/lifesim/mining/mining_node.tscn")
@@ -27,6 +28,7 @@ var _placed_enemies: Array[HostileCreature] = []
 var _generated_rocks: Array[MiningNode] = []
 var _generated_enemies: Array[HostileCreature] = []
 var _generated_guardians: Array[HostileCreature] = []
+var _generated_hazards: Array[Hazard] = []
 
 func _enter_tree() -> void:
 	# Ladder and elevator reloads arrive at floor_spawn_id and keep the floor.
@@ -81,6 +83,10 @@ func get_generated_rocks() -> Array[MiningNode]:
 func get_generated_enemies() -> Array[HostileCreature]:
 	return _generated_enemies.duplicate()
 
+## The floor's hazards of the ground.
+func get_generated_hazards() -> Array[Hazard]:
+	return _generated_hazards.duplicate()
+
 ## The floor's guardians, also among `get_generated_enemies()`.
 func get_generated_guardians() -> Array[HostileCreature]:
 	return _generated_guardians.duplicate()
@@ -109,7 +115,9 @@ func _spawn_dynamic_floor(floor: int) -> void:
 	_generated_rocks.clear()
 	_generated_enemies.clear()
 	_generated_guardians.clear()
+	_generated_hazards.clear()
 	var layout := MineState.generate_floor_layout(floor)
+	_spawn_hazards(floor, layout.get("hazards", []))
 	var rock_index := 0
 	for raw: Variant in layout.get("rocks", []):
 		if not raw is Dictionary:
@@ -155,6 +163,22 @@ func _spawn_dynamic_floor(floor: int) -> void:
 	if standing != null:
 		GameEvents.toastf("%s guards this floor", [standing.data.display_name])
 	_refresh_ladder()
+
+func _spawn_hazards(floor: int, entries: Array) -> void:
+	var spread := MineState.floor_table.hazards if MineState.floor_table != null else null
+	if spread == null:
+		return
+	for raw: Variant in entries:
+		if not raw is Dictionary:
+			continue
+		var entry: Dictionary = raw
+		var hazard := spread.make(floor, float(entry.get("phase", 0.0)))
+		if hazard == null:
+			continue
+		hazard.name = "GeneratedHazard%02d" % (_generated_hazards.size() + 1)
+		hazard.position = entry.get("position", Vector2.ZERO)
+		Hazard.add_under_actors(self, hazard)
+		_generated_hazards.append(hazard)
 
 func _get_floor_rocks() -> Array[MiningNode]:
 	return _generated_rocks if current_floor > 1 else _placed_rocks
