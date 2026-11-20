@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 id = &"antidote"
 display_name = "Antidote"
-description = "Cures poison."
+description = "A bitter draught brewed from cave herbs."
 max_stack = 20
 kind = 8
 buy_price = 12

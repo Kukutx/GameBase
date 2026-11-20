@@ -99,6 +99,21 @@ func test_the_pause_menu_s_items_tell_what_the_player_carries_and_where_to_get_m
 	assert_eq(ItemsModule.describe_carried(), PackedStringArray(["Money: %s" % Wallet.describe(), "Ore x2", "  Raw ore.", "  Where to get: Sold at Smithy"]))
 	assert_true(PauseMenu.get_page_ids().has(&"items"))
 
+func test_an_item_tells_what_it_restores_and_the_buff_it_gives() -> void:
+	var stew := _item(&"fixture_stew", "Stew")
+	stew.description = "Hot."
+	stew.restores.assign({&"fixture_hp": 20, &"fixture_energy": 5})
+	stew.food_buff_id = &"fixture_full"
+	var full := FoodBuffData.new()
+	full.id = &"fixture_full"
+	full.display_name = "Full"
+	ContentFixture.use(self, [stew, full, _item(&"fixture_ore", "Ore"), ContentFixture.vital(&"fixture_hp"), ContentFixture.vital(&"fixture_energy")])
+	assert_eq(stew.describe_effects(), PackedStringArray(["Restores 20 Hp, 5 Energy", "Gives Full"]), "a buff that changes no named stat by its name alone")
+	assert_eq(ItemData.find(&"fixture_ore").describe_effects(), PackedStringArray(), "an item that does nothing tells nothing")
+	assert_eq(ShopMenu.describe_item(stew), "Hot.\nRestores 20 Hp, 5 Energy · Gives Full", "a shop's counter tells both")
+	InventoryState.add_item(stew, 1)
+	assert_true(ItemsModule.describe_carried().has("  Restores 20 Hp, 5 Energy · Gives Full"), "and the pause menu's Items")
+
 func test_every_item_of_the_game_can_be_got() -> void:
 	assert_eq(ItemSources.gather().find_unobtainable(ContentDB), PackedStringArray(),
 		"an item the player has no way to get: sell it, craft it, drop it, reward it, or register the game's own way (ItemSources.register())")

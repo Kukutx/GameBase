@@ -1,7 +1,8 @@
 extends GutTest
 
 ## A shop's counter (`ShopMenu`): its sell list follows the inventory in
-## place, and the focus stays on the list as stacks sell out.
+## place, the focus stays on the list as stacks sell out, and it tells of the
+## item whose button has the focus.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const SHOP_MENU := preload("res://tiamat/modules/items/shop/shop_menu.tscn")
@@ -52,6 +53,22 @@ func test_selling_keeps_the_buttons_in_place_and_the_focus_on_the_list() -> void
 	assert_eq(_focused(menu), menu.close_button, "with nothing left to sell, to the close button")
 	assert_false(menu.sell_title.visible)
 	assert_eq(Wallet.money, money + 2 * 5 + 3)
+	menu.close()
+
+func test_the_counter_tells_of_the_item_whose_button_has_the_focus() -> void:
+	ItemData.find(&"fixture_berry").description = "Sweet."
+	ItemData.find(&"fixture_pebble").description = "Smooth."
+	_shop.stock = {"fixture_pebble": 4}
+	var menu := SHOP_MENU.instantiate() as ShopMenu
+	add_child_autofree(menu)
+	menu.open(_shop)
+	assert_eq(menu.about_label.text, "Smooth.", "the pebble's, whose purchase starts with the focus")
+	var buttons := _sell_buttons(menu)
+	(buttons[0] as Button).grab_focus()
+	assert_eq(menu.about_label.text, "Sweet.", "the berry's, as its sale takes the focus")
+	menu.close_button.grab_focus()
+	assert_eq(menu.about_label.text, "Sweet.", "kept while the focus is on no item")
+	assert_gt(menu.about_label.custom_minimum_size.y, 0.0, "two lines kept for it")
 	menu.close()
 
 static func _sell_buttons(menu: ShopMenu) -> Array:

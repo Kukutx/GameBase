@@ -104,8 +104,8 @@ msgstr "恢复 35 点生命。"
 msgid "Antidote"
 msgstr "解毒剂"
 
-msgid "Cures poison."
-msgstr "解除中毒。"
+msgid "A bitter draught brewed from cave herbs."
+msgstr "以洞穴草药熬成的苦涩药剂。"
 
 msgid "Slime Gel"
 msgstr "史莱姆凝胶"

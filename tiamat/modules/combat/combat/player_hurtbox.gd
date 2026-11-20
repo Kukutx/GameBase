@@ -98,6 +98,19 @@ static func would_cure(item: ItemData) -> bool:
 	var player := find_player()
 	return player != null and not player.find_cured_by(item).is_empty()
 
+## The afflictions eating or drinking `item` lifts from the player, as the
+## player reads it before buying or using it ("Cures Poisoned",
+## `ItemData.register_effect_text()`): those whose `AfflictionData.cure_tag` it
+## has; nothing for an item that cures none.
+static func describe_cures(item: ItemData) -> PackedStringArray:
+	var names := PackedStringArray()
+	for affliction: AfflictionData in AfflictionData.find_all():
+		if not affliction.cure_tag.is_empty() and item.has_tag(affliction.cure_tag):
+			names.append(TranslationServer.translate(affliction.display_name))
+	if names.is_empty():
+		return PackedStringArray()
+	return PackedStringArray([String(TranslationServer.translate("Cures %s")) % GameText.list(names)])
+
 ## Problems of the whole content (`ContentRegistry.register_check()`): an
 ## affliction cured by a tag no item has, so nothing can cure it.
 static func find_cure_problems(registry: ContentRegistry) -> PackedStringArray:

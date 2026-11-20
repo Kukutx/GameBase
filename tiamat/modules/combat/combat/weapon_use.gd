@@ -31,14 +31,35 @@ static func damage_of(weapon: ItemData) -> int:
 static func affliction_of(weapon: ItemData) -> AfflictionData:
 	if weapon == null:
 		return null
-	var afflictions := AfflictionData.find_all()
-	for affliction: AfflictionData in afflictions:
-		if not affliction.weapon_tag.is_empty() and weapon.has_tag(affliction.weapon_tag):
-			return affliction
-	for affliction: AfflictionData in afflictions:
+	var tagged := tagged_affliction_of(weapon)
+	if tagged != null:
+		return tagged
+	for affliction: AfflictionData in AfflictionData.find_all():
 		if affliction.rolls_chance():
 			return affliction
 	return null
+
+## The affliction every hit of `weapon` lays: the first by id whose
+## `AfflictionData.weapon_tag` it carries, or null.
+static func tagged_affliction_of(weapon: ItemData) -> AfflictionData:
+	for affliction: AfflictionData in AfflictionData.find_all():
+		if not affliction.weapon_tag.is_empty() and weapon.has_tag(affliction.weapon_tag):
+			return affliction
+	return null
+
+## What `item` does as a weapon, as the player reads it before buying or using
+## it (`ItemData.register_effect_text()`): how hard it hits now ("Attack 12")
+## and the affliction every hit of it lays; nothing for an item neither attack
+## swings or shoots.
+static func describe(item: ItemData) -> PackedStringArray:
+	var lines := PackedStringArray()
+	if item.tool_action != MeleeAttack.TOOL_ACTION and item.tool_action != RangedAttack.TOOL_ACTION:
+		return lines
+	lines.append(String(TranslationServer.translate("Attack %d")) % damage_of(item))
+	var tagged := tagged_affliction_of(item)
+	if tagged != null:
+		lines.append(String(TranslationServer.translate("Its hits leave foes %s")) % TranslationServer.translate(tagged.display_name))
+	return lines
 
 ## What an attack that costs `cost` takes of the attack vital now: none for
 ## none, else at least 1.

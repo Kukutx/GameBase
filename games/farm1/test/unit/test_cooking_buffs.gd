@@ -80,6 +80,7 @@ func test_fire_roasted_tomatoes_set_foes_burning_by_chance_for_four_hours() -> v
 	assert_eq(BuffState.get_minutes_remaining(&"fiery_belly"), 240)
 	assert_eq(GameStats.get_bonus(GameSetup.BURN_CHANCE_STAT), 20.0, "one blow or shot in five")
 	assert_eq(FoodBuffData.find(&"fiery_belly").describe_changes(), "Burn chance +20")
+	assert_eq(ItemData.find(&"fire_roasted_tomatoes").describe_effects(), PackedStringArray(["Restores 20 Energy, 25 Health", "Gives Fiery Belly (Burn chance +20)"]), "what a shop or the bag tells of it")
 
 func test_seaweed_tonic_lifts_a_spitting_slime_s_poison() -> void:
 	var recipe := CraftingState.get_recipe(&"seaweed_tonic")

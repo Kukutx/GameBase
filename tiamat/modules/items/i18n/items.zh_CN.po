@@ -228,3 +228,12 @@ msgstr "%s是空的"
 
 msgid "Hoard"
 msgstr "宝藏"
+
+msgid "Restores %s"
+msgstr "恢复 %s"
+
+msgid "Gives %s"
+msgstr "获得%s"
+
+msgid "Gives %s (%s)"
+msgstr "获得%s（%s）"

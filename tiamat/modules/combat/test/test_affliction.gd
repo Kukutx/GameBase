@@ -288,6 +288,19 @@ func test_an_item_tagged_its_cure_lifts_it_when_the_player_drinks_one() -> void:
 	assert_false(PlayerHurtbox.would_cure(antidote))
 	assert_false(hurtbox.lift(POISON), "not on the player any more")
 	assert_false(PlayerHurtbox.would_cure(ItemData.find(&"fixture_gel")), "an item untagged cures nothing")
+	assert_eq(antidote.describe_effects(), PackedStringArray(["Cures Poison"]), "what the player reads of it before buying it")
+	assert_eq(ItemData.find(&"fixture_gel").describe_effects(), PackedStringArray())
+
+func test_a_weapon_tells_how_hard_it_hits_and_what_its_hits_lay() -> void:
+	var brand := ItemData.find(&"fixture_brand")
+	assert_eq(WeaponUse.describe(brand), PackedStringArray(), "no attack swings an item with no weapon's action")
+	brand.kind = ItemData.Kind.TOOL
+	brand.tool_action = MeleeAttack.TOOL_ACTION
+	brand.tool_power = 7
+	assert_eq(brand.describe_effects(), PackedStringArray(["Attack %d" % WeaponUse.damage_of(brand), "Its hits leave foes Burn"]))
+	brand.tags = PackedStringArray(["weapon"])
+	brand.tool_action = RangedAttack.TOOL_ACTION
+	assert_eq(WeaponUse.describe(brand), PackedStringArray(["Attack %d" % WeaponUse.damage_of(brand)]), "a bow too, its hits laying nothing untagged")
 
 func test_what_is_wrong_with_an_affliction_or_what_names_one() -> void:
 	var burn := AfflictionData.find(BURN)
