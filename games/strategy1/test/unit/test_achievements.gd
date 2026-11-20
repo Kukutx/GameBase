@@ -64,3 +64,14 @@ func test_the_second_battle_of_each_station_has_its_own_achievement() -> void:
 	GameTriggers.fire(&"RtsEvents.battle_ended", {"rts_map_id": &"raider_camp", "won": true})
 	assert_true(GameProfile.is_unlocked(&"camp_stormed"))
 	assert_false(GameProfile.is_unlocked(&"pass_held"))
+
+func test_every_star_of_the_four_battles_makes_a_master_of_the_field() -> void:
+	for battle: StringName in [&"ford_battle", &"mill_battle", &"pass_battle", &"camp_battle"]:
+		var definition := MiniGameDefinition.find(battle)
+		assert_eq(definition.score_goals.size(), 3, "%s has three stars" % battle)
+		GameProfile.set_flag(MiniGameDefinition.best_score_key(battle), definition.score_goals[-1] - (1 if battle == &"camp_battle" else 0))
+	GameTriggers.fire(&"MiniGameHost.minigame_finished", {"minigame_id": &"camp_battle", "result": MiniGameResult.won(1)})
+	assert_false(GameProfile.is_unlocked(&"every_star"), "two stars at the camp")
+	GameProfile.set_flag(MiniGameDefinition.best_score_key(&"camp_battle"), MiniGameDefinition.find(&"camp_battle").score_goals[-1])
+	GameTriggers.fire(&"MiniGameHost.minigame_finished", {"minigame_id": &"camp_battle", "result": MiniGameResult.won(7)})
+	assert_true(GameProfile.is_unlocked(&"every_star"))

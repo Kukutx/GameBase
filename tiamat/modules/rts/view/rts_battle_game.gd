@@ -103,6 +103,12 @@ func find_settings_problems(settings: Dictionary, registry: ContentRegistry) -> 
 		problems.append("sets unknown command map '%s'" % settings["map"])
 	return problems
 
+## The units the player's side of the map in `settings` can field: its score
+## when none falls.
+func get_best_possible_score(settings: Dictionary, registry: ContentRegistry) -> int:
+	var command_map := registry.get_entry(RtsMapData.KIND, StringName(str(settings.get("map", "")))) as RtsMapData
+	return command_map.count_player_side() if command_map != null else -1
+
 ## The units the player selected.
 func get_selection() -> Array[RtsUnit]:
 	return _selection.duplicate()

@@ -10,6 +10,7 @@ display_name = "Old Mill"
 description = "Raiders hold the mill across the stream. A bridge and a ford lead over. Win in the pass first, and a swordsman from there joins you."
 condition = "MINIGAME_WON ford_battle"
 score_name = "Units Left"
+score_goals = PackedInt32Array(3, 4, 5)
 scene = ExtResource("2_scene")
 music_cue_id = &"music_battle"
 settings = {

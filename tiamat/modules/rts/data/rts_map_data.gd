@@ -33,6 +33,11 @@ static func find_all() -> Array[RtsMapData]:
 	result.assign(ContentRegistry.active.get_entries(KIND))
 	return result
 
+## How many units the player's side can field: those its placements put on
+## it, with a condition or without.
+func count_player_side() -> int:
+	return placements.filter(func(placement: RtsPlacement) -> bool: return not FactionData.are_hostile(placement.faction_id, player_faction_id)).size()
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if display_name.is_empty():

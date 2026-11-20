@@ -197,3 +197,9 @@ msgstr "攻破劫掠者营地。"
 
 msgid "Units Left"
 msgstr "剩余兵力"
+
+msgid "Master of the Field"
+msgstr "沙场宗师"
+
+msgid "Earn all three stars at each of the four battles."
+msgstr "在全部四场战斗中各拿满三颗星。"

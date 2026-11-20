@@ -100,6 +100,18 @@ func test_a_definition_names_a_known_map() -> void:
 	definition.settings = {"map": "fixture_nowhere"}
 	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(["sets unknown battle map 'fixture_nowhere'"]))
 
+func test_a_definition_s_score_goals_ask_for_no_more_units_than_the_player_fields() -> void:
+	var definition := MiniGameDefinition.find(MINIGAME)
+	definition.score_name = "Units Left"
+	definition.score_goals = PackedInt32Array([1])
+	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(), "the knight alone")
+	definition.score_goals = PackedInt32Array([1, 2])
+	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(["asks for a score of 2, but 1 is the most it can give"]))
+	var joining := TacticsFixture.placement(&"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	joining.condition = "MINIGAME_WON %s" % MINIGAME
+	BattleMapData.find(&"fixture_field").placements.append(joining)
+	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(), "a unit that joins on a condition counts")
+
 func test_cancel_twice_gives_the_battle_up() -> void:
 	var outcome := {}
 	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()

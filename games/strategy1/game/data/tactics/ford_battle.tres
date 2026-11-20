@@ -9,6 +9,7 @@ id = &"ford_battle"
 display_name = "Border Ford"
 description = "Hold the only ford over the river against the raiders."
 score_name = "Units Left"
+score_goals = PackedInt32Array(2, 3, 4)
 scene = ExtResource("2_scene")
 music_cue_id = &"music_battle"
 settings = {

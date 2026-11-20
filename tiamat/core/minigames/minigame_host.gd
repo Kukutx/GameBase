@@ -10,7 +10,9 @@ extends Node
 ## and when it ends the definition's success or failure actions run through
 ## `GameRules`, a win counts in the save (`MiniGameDefinition.get_wins()`,
 ## the condition `MINIGAME_WON`), and a score above the player's best is
-## their best in the profile (`MiniGameDefinition.get_best_score()`). It runs
+## their best in the profile (`MiniGameDefinition.get_best_score()`), the
+## status line telling of a star it earned (`MiniGameDefinition.score_goals`,
+## the condition `MINIGAME_STARS`). It runs
 ## while its lock (`LOCK_REASON`) is on top and stands still while another
 ## lock is over it (the pause menu): nothing in it moves or reads input then.
 
@@ -89,7 +91,9 @@ func run(minigame_id: StringName, context: Dictionary = {}) -> MiniGameResult:
 		WorldState.add_int(MiniGameDefinition.wins_key(definition.id), 1)
 	var best_key := MiniGameDefinition.best_score_key(definition.id)
 	if not result.cancelled and result.score > GameProfile.get_int(best_key):
+		var stars := definition.get_stars()
 		GameProfile.set_flag(best_key, result.score)
+		_tell_new_stars(definition, definition.get_stars() - stars)
 	if not result.cancelled:
 		GameRules.run_actions(definition.success_actions if result.success else definition.failure_actions, {"minigame_id": definition.id, "score": result.score})
 	minigame_finished.emit(definition.id, result)
@@ -105,6 +109,14 @@ func cancel() -> void:
 func _update_running() -> void:
 	if _active != null:
 		_active.process_mode = Node.PROCESS_MODE_ALWAYS if InputLock.is_top(_active) else Node.PROCESS_MODE_DISABLED
+
+# Tells on the status line of the `count` stars a best score just earned.
+static func _tell_new_stars(definition: MiniGameDefinition, count: int) -> void:
+	var title := definition.display_name if not definition.display_name.is_empty() else String(definition.id)
+	if count == 1:
+		GameEvents.toastf("%s: a new star! %s", [title, definition.describe_stars()])
+	elif count > 1:
+		GameEvents.toastf("%s: %d new stars! %s", [title, count, definition.describe_stars()])
 
 func _save_block_reason() -> String:
 	return tr("Finish the minigame before saving") if is_running() else ""

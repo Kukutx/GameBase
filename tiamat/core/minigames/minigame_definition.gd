@@ -22,6 +22,12 @@ const KIND := &"minigame"
 ## profile, across saves (`get_best_score()`), so a record can show it
 ## (`RecordData.flag`, `best_score_key()`).
 @export var score_name := ""
+## The scores the player aims for, lowest first, each above the one before
+## (Units Left 2, 3, 4): each one their best score reaches is a star, which
+## the list of a station and the pause menu's Challenges show (★★☆) with the
+## score the next star needs, and which `MINIGAME_STARS` counts. Needs a
+## `score_name`; empty: no stars.
+@export var score_goals: PackedInt32Array = PackedInt32Array()
 
 ## Scene whose root extends `MiniGame`.
 @export var scene: PackedScene
@@ -65,10 +71,52 @@ static func best_score_key(minigame_id: StringName) -> StringName:
 func get_best_score() -> int:
 	return GameProfile.get_int(best_score_key(id))
 
+## The stars the player's best score has earned (`score_goals`).
+func get_stars() -> int:
+	return stars_for(get_best_score())
+
+## The stars a best score of `score` earns.
+func stars_for(score: int) -> int:
+	var stars := 0
+	for goal: int in score_goals:
+		if score >= goal:
+			stars += 1
+	return stars
+
+## The score the player's next star needs, or 0 once they have every star
+## (or it has none).
+func get_next_goal() -> int:
+	for goal: int in score_goals:
+		if get_best_score() < goal:
+			return goal
+	return 0
+
+## The stars earned and those still to earn, as the player sees them: "★★☆";
+## empty without `score_goals`.
+func describe_stars() -> String:
+	var stars := get_stars()
+	return "★".repeat(stars) + "☆".repeat(score_goals.size() - stars)
+
+## The player's best score and stars, in lines they read ("Best Units Left: 3",
+## "★★☆ · Next star: Units Left 4"); nothing without a `score_name`.
+func describe_score() -> PackedStringArray:
+	var lines := PackedStringArray()
+	if score_name.is_empty():
+		return lines
+	var score_title := String(TranslationServer.translate(score_name))
+	if get_best_score() > 0:
+		lines.append(TranslationServer.translate("Best %s: %d") % [score_title, get_best_score()])
+	if score_goals.is_empty():
+		return lines
+	var next := get_next_goal()
+	lines.append(describe_stars() if next == 0 else TranslationServer.translate("%s · Next star: %s %d") % [describe_stars(), score_title, next])
+	return lines
+
 ## The pause menu's Challenges: how many of the minigames the player picks by
-## name at a station (`display_name`) they have won in this save, then each,
-## those open first, with its wins and best score, or what it needs while it
-## is locked; nothing in a game without any.
+## name at a station (`display_name`) they have won in this save, and how
+## many of their stars they have, then each, those open first, with its wins,
+## best score and stars, or what it needs while it is locked; nothing in a
+## game without any.
 static func describe_challenges() -> PackedStringArray:
 	var lines := PackedStringArray()
 	var named: Array[MiniGameDefinition] = []
@@ -77,14 +125,21 @@ static func describe_challenges() -> PackedStringArray:
 		return lines
 	var won := named.filter(func(minigame: MiniGameDefinition) -> bool: return minigame.get_wins() > 0)
 	lines.append(TranslationServer.translate("Won %d of %d") % [won.size(), named.size()])
+	var stars := 0
+	var all_stars := 0
+	for minigame: MiniGameDefinition in named:
+		stars += minigame.get_stars()
+		all_stars += minigame.score_goals.size()
+	if all_stars > 0:
+		lines.append(TranslationServer.translate("Stars %d of %d") % [stars, all_stars])
 	for open: bool in [true, false]:
 		for minigame: MiniGameDefinition in named:
 			if minigame.is_open() == open:
 				lines.append_array(minigame.describe_progress())
 	return lines
 
-## How far the player is with it, in lines they read: its wins in this save
-## and its best score, or what it needs while it is locked.
+## How far the player is with it, in lines they read: its wins in this save,
+## its best score and stars, or what it needs while it is locked.
 func describe_progress() -> PackedStringArray:
 	var title := String(TranslationServer.translate(display_name))
 	if not is_open():
@@ -94,8 +149,8 @@ func describe_progress() -> PackedStringArray:
 		return PackedStringArray([TranslationServer.translate("%s — needs %s") % [title, ", ".join(needs)]])
 	var wins := get_wins()
 	var lines := PackedStringArray([TranslationServer.translate("%s — won %d") % [title, wins] if wins > 0 else TranslationServer.translate("%s — not won yet") % title])
-	if not score_name.is_empty() and get_best_score() > 0:
-		lines.append("  " + TranslationServer.translate("Best %s: %d") % [TranslationServer.translate(score_name), get_best_score()])
+	for line: String in describe_score():
+		lines.append("  " + line)
 	return lines
 
 ## Whether the player can pick it at a station: its condition holds.
@@ -108,6 +163,12 @@ func get_requirements() -> PackedStringArray:
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := AudioCueData.find_reference_problems(registry, "its music", music_cue_id, AudioCueData.CueType.MUSIC)
+	if not score_goals.is_empty() and score_name.is_empty():
+		problems.append("has score goals but no score name")
+	for index: int in score_goals.size():
+		if score_goals[index] <= (score_goals[index - 1] if index > 0 else 0):
+			problems.append("score goals must be above 0, each above the one before: %s" % [Array(score_goals)])
+			break
 	if scene == null:
 		problems.append("has no scene")
 		return problems
@@ -117,6 +178,9 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		problems.append("scene root does not extend MiniGame")
 	else:
 		problems.append_array(minigame.find_settings_problems(settings, registry))
+		var best := minigame.get_best_possible_score(settings, registry)
+		if not score_goals.is_empty() and best >= 0 and score_goals[-1] > best:
+			problems.append("asks for a score of %d, but %d is the most it can give" % [score_goals[-1], best])
 	if root != null:
 		root.free()
 	return problems
