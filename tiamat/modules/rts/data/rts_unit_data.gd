@@ -7,7 +7,9 @@ extends ContentEntry
 ## seconds, and goes after foes it sees (`sight_range`) when it has no order
 ## that keeps it from them (`RtsBattle`). A healer (`heal`) mends its side
 ## instead of fighting. A unit may be strong against some kinds
-## (`strong_against`): it hits them harder and goes after them first.
+## (`strong_against`): it hits them harder and goes after them first. Its
+## attacks may lay an affliction (`affliction_id`), and some afflictions never
+## take hold of it (`immune_to`).
 ## Distances are in pixels of the field.
 
 const KIND := &"rts_unit"
@@ -41,6 +43,12 @@ const KIND := &"rts_unit"
 ## running down slingers, a spear holding off a brute.
 @export var strong_against: Array[StringName] = []
 @export_range(1.0, 4.0, 0.25) var strong_multiplier := 2.0
+## The affliction (`AfflictionData`) its attacks lay on the foes they leave
+## standing, a burn that takes more health in battle time; empty, none.
+@export var affliction_id: StringName
+## The afflictions (`AfflictionData` ids) that never take hold of it: a
+## fire-born brute that never burns.
+@export var immune_to: Array[StringName] = []
 
 ## Whether it mends its side instead of fighting (`heal`).
 func heals() -> bool:
@@ -56,6 +64,10 @@ func is_strong_against(other: RtsUnitData) -> bool:
 func damage_to(target: RtsUnitData) -> int:
 	var dealt := damage * (strong_multiplier if is_strong_against(target) else 1.0)
 	return maxi(roundi(dealt) - target.armor, 1)
+
+## The affliction its attacks lay (`affliction_id`), or null.
+func get_affliction() -> AfflictionData:
+	return AfflictionData.find(affliction_id) if affliction_id != &"" else null
 
 ## The unit with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> RtsUnitData:
@@ -74,6 +86,13 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 			problems.append("is strong against unknown unit '%s'" % kind)
 	if heals() and not strong_against.is_empty():
 		problems.append("heals, yet is strong against units it never strikes")
+	if affliction_id != &"" and not registry.has_entry(AfflictionData.KIND, affliction_id):
+		problems.append("lays unknown affliction '%s'" % affliction_id)
+	if heals() and affliction_id != &"":
+		problems.append("heals, yet lays an affliction with the blows it never strikes")
+	for affliction: StringName in immune_to:
+		if not registry.has_entry(AfflictionData.KIND, affliction):
+			problems.append("is immune to unknown affliction '%s'" % affliction)
 	if display_name.is_empty():
 		problems.append("has no display name")
 	if sight_range < attack_range:

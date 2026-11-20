@@ -97,6 +97,18 @@ func is_line_open(from: Vector2, to: Vector2) -> bool:
 			return false
 	return true
 
+## Where a push of `offset` takes a body at `point`: all the way when that is
+## open, else along one axis only, sliding by the closed part of the field,
+## else nowhere. The whole way must be open, not only its end, so a hard push
+## never jumps a wall.
+func push(point: Vector2, offset: Vector2) -> Vector2:
+	if offset == Vector2.ZERO:
+		return point
+	for to: Vector2 in [point + offset, point + Vector2(offset.x, 0.0), point + Vector2(0.0, offset.y)]:
+		if is_open(to) and is_line_open(point, to):
+			return to
+	return point
+
 ## An open point near `point`: the point itself when it is open, else the
 ## middle of the nearest open cell around it, or `point` when the field has
 ## none.

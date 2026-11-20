@@ -12,7 +12,10 @@ extends RefCounted
 ## one go once it gets well out of sight (`LEASH`); a holding unit fights only
 ## what it reaches.
 ## A healer (`RtsUnitData.heal`) mends the most hurt friend it sees instead
-## of fighting.
+## of fighting. An attack also lays its kind's affliction
+## (`RtsUnitData.affliction_id`) on the foe it leaves standing, unless that
+## foe is immune: it takes health in battle time (`unit_ailed`), and a unit it
+## brings down falls as to a blow.
 ## Units may also arrive while it runs (`add_arrival()`, `unit_arrived`); one
 ## the player does not command marches at once (`RtsBattleAi.arrive()`).
 ## The battle ends when no two units that fight, living or still on their way,
@@ -40,6 +43,8 @@ signal unit_attacked(attacker: RtsUnit, target: RtsUnit, amount: int)
 ## A healer (`RtsUnitData.heal`) mended `target` by `amount`.
 signal unit_healed(healer: RtsUnit, target: RtsUnit, amount: int)
 signal unit_defeated(unit: RtsUnit)
+## An affliction on `unit` (`RtsUnit.afflictions`) took `amount` of its health.
+signal unit_ailed(unit: RtsUnit, affliction: AfflictionData, amount: int)
 ## `unit` arrived on the field (`add_arrival()`).
 signal unit_arrived(unit: RtsUnit)
 ## The side that holds the ground (`goal`) changed: `holder` is the first
@@ -321,6 +326,11 @@ func _step() -> void:
 		if not unit.player_controlled:
 			ai.arrive(self, unit)
 		unit_arrived.emit(unit)
+	# Afflictions tick before anyone acts, so one laid in a step first counts
+	# down in the next, whichever unit comes first.
+	for unit: RtsUnit in _alive:
+		if unit.is_alive() and not unit.afflictions.is_empty() and not _over:
+			unit.afflictions.advance(STEP, _ail.bind(unit))
 	_file_units()
 	for unit: RtsUnit in _alive:
 		if _over:
@@ -337,7 +347,7 @@ func _step() -> void:
 		_alive = get_living_units()
 	if not _over:
 		_file_units()
-		_separate()
+		_grid.separate(_alive, navigation, _widest_radius)
 	_filed = false
 	if goal != null and not _over:
 		_step_goal()
@@ -386,10 +396,22 @@ func _attack(unit: RtsUnit, target: RtsUnit) -> void:
 		return
 	var amount := target.health.take(unit.data.damage_to(target.data))
 	unit_attacked.emit(unit, target, amount)
-	if not target.is_alive():
-		_fallen = true
-		unit_defeated.emit(target)
-		_check_over()
+	if target.is_alive():
+		target.afflict(unit.data.get_affliction(), unit.faction)
+	else:
+		_defeat(target)
+
+# A tick of an affliction on `unit`.
+func _ail(affliction: AfflictionData, hit: Damage, unit: RtsUnit) -> void:
+	unit_ailed.emit(unit, affliction, unit.health.take(hit.amount))
+	if not unit.is_alive():
+		_defeat(unit)
+
+func _defeat(unit: RtsUnit) -> void:
+	_fallen = true
+	unit.afflictions.clear()
+	unit_defeated.emit(unit)
+	_check_over()
 
 # Walks `unit` along its path for a step; false when the next point of the
 # way is not open (another unit pushed it off its line).
@@ -411,44 +433,6 @@ func _find_path(unit: RtsUnit, point: Vector2) -> void:
 	unit.path = navigation.find_path(unit.position, point)
 	unit.path_end = point
 	unit.repath_left = REPATH_SECONDS
-
-# Pushes apart each two living units whose bodies overlap: half each, or all
-# of it on the one that does not hold. A push into the closed part of the
-# field slides along it, or is left out. Each two are found through the
-# filing; two that the pushes before theirs brought together part in the
-# next step.
-func _separate() -> void:
-	for first: RtsUnit in _alive:
-		if not first.is_alive():
-			continue
-		for second: RtsUnit in _grid.get_near(first.position, first.data.radius + _widest_radius * 2.0, _sides.every()):
-			if second.index <= first.index or not second.is_alive():
-				continue
-			var apart := second.position - first.position
-			var reach := first.data.radius + second.data.radius
-			var distance_squared := apart.length_squared()
-			if distance_squared >= reach * reach:
-				continue
-			var distance := sqrt(distance_squared)
-			# Two units on one point part along a direction of their own.
-			var away := apart / distance if distance > 0.001 else Vector2.RIGHT.rotated(second.index * 2.39996)
-			var share := 0.5
-			if first.order == RtsUnit.Order.HOLD and second.order != RtsUnit.Order.HOLD:
-				share = 0.0
-			elif second.order == RtsUnit.Order.HOLD and first.order != RtsUnit.Order.HOLD:
-				share = 1.0
-			var overlap := reach - distance
-			_nudge(first, -away * overlap * share)
-			_nudge(second, away * overlap * (1.0 - share))
-
-func _nudge(unit: RtsUnit, offset: Vector2) -> void:
-	if offset == Vector2.ZERO:
-		return
-	for point: Vector2 in [unit.position + offset, unit.position + Vector2(offset.x, 0.0), unit.position + Vector2(0.0, offset.y)]:
-		# The whole way open, not only its end: a hard push never jumps a wall.
-		if navigation.is_open(point) and navigation.is_line_open(unit.position, point):
-			unit.position = point
-			return
 
 # Ends the battle once no two units that fight, living or on their way, are
 # foes: the sides they stand for.

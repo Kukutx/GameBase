@@ -1,8 +1,8 @@
 extends RefCounted
 
 ## Fixture content for the rts module's tests: a footman that fights up
-## close, a bowman that shoots from afar, a medic who mends, a raider and a
-## brute.
+## close, a bowman that shoots from afar, a medic who mends, a raider, a
+## brute, and a torchbearer whose blows burn.
 ##
 ##     const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
 
@@ -23,7 +23,8 @@ static func unit(id: StringName, health: int, damage: int, armor: int, attack_ra
 ## The fixture units: a footman (30 health, 6 damage, 1 armor, a blow every
 ## second), a bowman (shoots 50 pixels away every second and a half), a
 ## medic (mends 4 health 10 pixels away every second, never strikes), a
-## raider (24 health, 5 damage) and a slow brute (60 health, 2 armor).
+## raider (24 health, 5 damage), a slow brute (60 health, 2 armor), a
+## torchbearer (`torch()`) and its burn (`burn()`).
 static func entries() -> Array:
 	return [
 		unit(&"fixture_footman", 30, 6, 1, 3.0, 1.0, 30.0, 60.0),
@@ -31,7 +32,26 @@ static func entries() -> Array:
 		medic(),
 		unit(&"fixture_raider", 24, 5, 0, 3.0, 1.0, 32.0, 60.0),
 		unit(&"fixture_brute", 60, 12, 2, 4.0, 2.0, 20.0, 50.0, 7.0),
+		torch(),
+		burn(),
 	]
+
+## The fixture torchbearer: 30 health, a blow of 3 every two seconds that
+## burns (`burn()`).
+static func torch() -> RtsUnitData:
+	var entry := unit(&"fixture_torch", 30, 3, 0, 3.0, 2.0, 30.0, 60.0)
+	entry.affliction_id = &"fixture_burn"
+	return entry
+
+## A burn: 2 health a second of battle time for three seconds.
+static func burn() -> AfflictionData:
+	var entry := AfflictionData.new()
+	entry.id = &"fixture_burn"
+	entry.display_name = "Fixture Burn"
+	entry.seconds = 3.0
+	entry.tick_seconds = 1.0
+	entry.tick_damage = 2
+	return entry
 
 ## The fixture medic.
 static func medic() -> RtsUnitData:
