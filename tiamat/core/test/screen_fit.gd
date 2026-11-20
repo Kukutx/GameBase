@@ -268,3 +268,43 @@ static func find_overlaps(test: Node, scene: PackedScene, size: Vector2) -> Pack
 			if cut.size.x > OVERLAP and cut.size.y > OVERLAP:
 				problems.append("%s %s overlaps %s %s" % [parts[first], a, parts[second], b])
 	return problems
+
+## The parts of the screen `scene`, shown in a view of `size`, that spill out
+## of the panel holding them (a `Panel` or `PanelContainer`): a menu whose
+## rows take more room than its panel gives, so its last row (its buttons)
+## hangs past the panel's edge over what lies behind. A closed menu counts, as
+## it opens; a part the menu hides itself, and what a list scrolls (inside a
+## control that clips what it holds), are left out. Each spill is named once,
+## by the outermost part that spills.
+static func find_spills(test: Node, scene: PackedScene, size: Vector2) -> PackedStringArray:
+	var view := await _host(test, scene, size)
+	var screen := view.get_child(0)
+	var problems := PackedStringArray()
+	for node: Node in screen.find_children("*", "Control", true, false):
+		var panel := node as Control
+		if (panel is Panel or panel is PanelContainer) and _shows_once_open(panel, screen):
+			_add_spills(screen, panel, panel, panel.get_global_rect().grow(OVERLAP), problems)
+	view.free()
+	return problems
+
+# Adds to `problems` each part under `holder` that reaches past `edge`, the
+# box of `panel`, without looking inside one that spills or clips.
+static func _add_spills(screen: Node, panel: Control, holder: Control, edge: Rect2, problems: PackedStringArray) -> void:
+	for child: Node in holder.get_children():
+		var inner := child as Control
+		if inner == null or inner.top_level or not inner.visible:
+			continue
+		var box := inner.get_global_rect()
+		if box.has_area() and not edge.encloses(box):
+			problems.append("%s %s spills out of %s %s" % [screen.get_path_to(inner), box, screen.get_path_to(panel), panel.get_global_rect()])
+		elif not inner.clip_contents:
+			_add_spills(screen, panel, inner, edge, problems)
+
+# Whether `node` shows once its menu opens: nothing between it and `screen`
+# hidden but a layer, which a menu is until it opens.
+static func _shows_once_open(node: Node, screen: Node) -> bool:
+	while node != null and node != screen:
+		if node is CanvasItem and not (node as CanvasItem).visible:
+			return false
+		node = node.get_parent()
+	return true

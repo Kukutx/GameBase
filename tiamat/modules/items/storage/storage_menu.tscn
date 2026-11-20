@@ -70,7 +70,7 @@ text = "Inventory"
 horizontal_alignment = 1
 
 [node name="InventoryList" type="ItemList" parent="Panel/VBox/Columns/InventoryColumn"]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_vertical = 3
 select_mode = 0
@@ -90,7 +90,7 @@ text = "Stored"
 horizontal_alignment = 1
 
 [node name="StorageList" type="ItemList" parent="Panel/VBox/Columns/StorageColumn"]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_vertical = 3
 select_mode = 0

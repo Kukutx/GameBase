@@ -20,10 +20,10 @@ extends MenuLayer
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var money_label: Label = $Panel/VBox/Money
 @onready var amount_button: Button = $Panel/VBox/Amount
-@onready var items_container: VBoxContainer = $Panel/VBox/Lists/Entries/Items
-@onready var sell_title: Label = $Panel/VBox/Lists/Entries/SellTitle
-@onready var sell_container: VBoxContainer = $Panel/VBox/Lists/Entries/SellItems
-@onready var about_label: Label = $Panel/VBox/About
+@onready var items_container: VBoxContainer = $Panel/VBox/Body/Lists/Entries/Items
+@onready var sell_title: Label = $Panel/VBox/Body/Lists/Entries/SellTitle
+@onready var sell_container: VBoxContainer = $Panel/VBox/Body/Lists/Entries/SellItems
+@onready var about_label: Label = $Panel/VBox/Body/About
 @onready var close_button: Button = $Panel/VBox/Close
 
 var _shop: ShopData

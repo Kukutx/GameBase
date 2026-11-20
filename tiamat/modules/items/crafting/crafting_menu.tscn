@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://tiamat/modules/items/crafting/crafting_menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://tiamat/core/ui/menu_columns.gd" id="2_columns"]
 
 [node name="CraftingMenu" type="CanvasLayer"]
 layer = 50
@@ -43,20 +44,31 @@ horizontal_alignment = 1
 [node name="Amount" type="Button" parent="Panel/VBox"]
 layout_mode = 2
 
-[node name="Scroll" type="ScrollContainer" parent="Panel/VBox"]
+[node name="Body" type="BoxContainer" parent="Panel/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+vertical = true
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 follow_focus = true
 horizontal_scroll_mode = 0
 
-[node name="Recipes" type="VBoxContainer" parent="Panel/VBox/Scroll"]
+[node name="Recipes" type="VBoxContainer" parent="Panel/VBox/Body/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="About" type="Label" parent="Panel/VBox"]
+[node name="About" type="Label" parent="Panel/VBox/Body"]
 layout_mode = 2
+size_flags_horizontal = 3
 autowrap_mode = 3
 max_lines_visible = 2
+
+[node name="Columns" type="Node" parent="Panel/VBox/Body"]
+script = ExtResource("2_columns")
 
 [node name="Close" type="Button" parent="Panel/VBox"]
 layout_mode = 2
