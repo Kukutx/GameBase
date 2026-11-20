@@ -21,6 +21,9 @@ const STATS_FONT_SIZE := 12
 @onready var buffs_label: Label = $Buffs
 
 func _ready() -> void:
+	# The lines this tells read over any ground, as the core's lines do.
+	for label: Label in [stats_label, quest_label, skills_label, inventory_label, fishing_label, buffs_label]:
+		ReadableText.outline(label)
 	WorldClock.minute_changed.connect(_on_time_changed)
 	InventoryState.changed.connect(_refresh_inventory)
 	Vitals.changed.connect(_on_vital_changed)

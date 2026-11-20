@@ -12,6 +12,8 @@ extends RefCounted
 ## shows it in a narrow one; the test of every game's screens holds each text
 ## to it in the view the game shows a phone (`test_screens_fit.gd`).
 
+## The colour of the outline `outline()` draws around text over the world.
+const OUTLINE_COLOR := Color(0.02, 0.02, 0.03, 0.75)
 ## The height of Android's smallest text, 12 sp, in millimetres.
 const MIN_TEXT_MM := 1.9
 ## The short side of a small phone's screen, in millimetres.
@@ -75,6 +77,16 @@ static func fit_width(label: Label, size: int) -> void:
 	while fitted > smallest and font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fitted).x > label.size.x:
 		fitted -= 1
 	label.add_theme_font_size_override(&"font_size", fitted)
+
+## Draws a dark outline around `label`'s text, a quarter of its font size
+## thick and at least 2 pixels, so a line over the world (the HUD's, its
+## messages) reads on bright ground as well as on dark. A label whose scene
+## or theme gives it an outline keeps that one.
+static func outline(label: Label) -> void:
+	if label.get_theme_constant(&"outline_size") > 0:
+		return
+	label.add_theme_constant_override(&"outline_size", maxi(roundi(label.get_theme_font_size(&"font_size") / 4.0), 2))
+	label.add_theme_color_override(&"font_outline_color", OUTLINE_COLOR)
 
 # The theme font size `control` draws its text with, or empty for one that
 # draws none.

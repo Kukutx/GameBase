@@ -23,6 +23,9 @@ extends Label
 @export var shows_hints := false
 ## Whether it shows what a save or a load the player asked for says.
 @export var shows_saves := true
+## Whether its text has a dark outline, to read over any ground
+## (`ReadableText.outline()`).
+@export var outlined := true
 
 var _waiting: PackedStringArray = []
 # How long each waiting message stays.
@@ -35,6 +38,8 @@ var _hint_id := &""
 
 func _ready() -> void:
 	text = ""
+	if outlined:
+		ReadableText.outline(self)
 	if shows_toasts:
 		GameEvents.toast_requested.connect(show_message)
 	if shows_hints:

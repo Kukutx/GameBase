@@ -18,12 +18,17 @@ extends Label
 ## rather than run over the line beside it: for a line that grows with what it
 ## tells, such as the money or the place and the time.
 @export var shrinks_to_fit := false
+## Whether its text has a dark outline, to read over any ground
+## (`ReadableText.outline()`).
+@export var outlined := true
 
 var _queued := false
 # The font size the line draws at while its text fits.
 var _full_font_size := 0
 
 func _ready() -> void:
+	if outlined:
+		ReadableText.outline(self)
 	if shrinks_to_fit:
 		_full_font_size = get_theme_font_size(&"font_size")
 		resized.connect(_fit)
