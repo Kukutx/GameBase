@@ -16,9 +16,10 @@ layer = 20
 
 [node name="Stats" type="Label" parent="."]
 script = ExtResource("1_stats_line")
+shrinks_to_fit = true
+anchor_right = 0.6
 offset_left = 8.0
 offset_top = 6.0
-offset_right = 260.0
 offset_bottom = 22.0
 theme_override_colors/font_color = Color(0.96, 0.86, 0.72, 1)
 theme_override_font_sizes/font_size = 11
@@ -26,10 +27,11 @@ text = ""
 
 [node name="Run" type="Label" parent="."]
 script = ExtResource("6_depth_line")
+shrinks_to_fit = true
 shows_time = false
-anchor_left = 1.0
+anchor_left = 0.6
 anchor_right = 1.0
-offset_left = -220.0
+offset_left = 8.0
 offset_top = 6.0
 offset_right = -8.0
 offset_bottom = 22.0
@@ -54,6 +56,7 @@ horizontal_alignment = 1
 
 [node name="Boons" type="Label" parent="."]
 script = ExtResource("10_boon_line")
+shrinks_to_fit = true
 offset_left = 8.0
 offset_top = 42.0
 offset_right = 330.0

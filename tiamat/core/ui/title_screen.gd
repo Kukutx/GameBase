@@ -11,7 +11,7 @@ extends GameTitleBase
 
 @onready var title_label: Label = $Center/Menu/Title
 @onready var subtitle_label: Label = $Center/Menu/Subtitle
-@onready var version_label: Label = $Version
+@onready var version_label: Label = $Center/Menu/Footer/Version
 @onready var slot_select: OptionButton = $Center/Menu/SaveSlot
 @onready var slot_info: Label = $Center/Menu/SlotInfo
 @onready var continue_button: Button = $Center/Menu/Continue
@@ -20,7 +20,7 @@ extends GameTitleBase
 @onready var settings_button: Button = $Center/Menu/Actions/Settings
 @onready var achievements_button: Button = $Center/Menu/Actions/Achievements
 @onready var quit_button: Button = $Center/Menu/Actions/Quit
-@onready var status_label: Label = $Center/Menu/Status
+@onready var status_label: Label = $Center/Menu/Footer/Status
 
 func _ready() -> void:
 	super()
