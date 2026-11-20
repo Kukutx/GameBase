@@ -59,6 +59,7 @@ func show_battle(battle_to_show: AtbBattle) -> void:
 	for unit: GridUnit in battle.units:
 		_shown[unit] = Vector2(unit.cell)
 	battle.unit_moved.connect(_on_unit_moved)
+	battle.move_undone.connect(func(unit: GridUnit) -> void: _routes.erase(unit))
 	battle.unit_acted.connect(_on_unit_acted)
 	queue_redraw()
 

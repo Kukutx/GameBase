@@ -10,7 +10,9 @@ extends RefCounted
 ## its commands, time stands still, unless it flows while the player chooses
 ## (`time_flows_while_choosing`): then the gauges go on filling and the foes go
 ## on acting. A unit that skips its move or its action comes back sooner
-## (`SKIP_BONUS`). The battle ends when no two living units are hostile
+## (`SKIP_BONUS`). Until one of the player's units acts, the player may take
+## its move back (`undo_move()`), unless a foe took a turn since or someone
+## stands where it came from. The battle ends when no two living units are hostile
 ## (`FactionData.are_hostile()`), won when the player's side is left.
 ##
 ## It is plain data, with no node or frame of its own: a view
@@ -20,6 +22,9 @@ extends RefCounted
 
 signal turn_started(unit: GridUnit)
 signal unit_moved(unit: GridUnit, path: Array[Vector2i])
+## The player took back the move of `unit` (`undo_move()`): it stands where
+## its turn found it again.
+signal move_undone(unit: GridUnit)
 ## `hits` holds a {"unit": GridUnit, "amount": int} for each unit it reached:
 ## the health it took or gave back.
 signal unit_acted(unit: GridUnit, action: BattleActionData, cell: Vector2i, hits: Array[Dictionary])
@@ -49,6 +54,9 @@ var foe_health_scale := 1.0
 var _turn: GridUnit
 var _waiting: Array[GridUnit] = []
 var _ai_turn: GridUnit
+# The player's unit whose move may be taken back, and the cell it came from.
+var _undo_unit: GridUnit
+var _undo_cell: Vector2i
 var _over := false
 var _won := false
 
@@ -180,10 +188,32 @@ func move(unit: GridUnit, cell: Vector2i) -> bool:
 	if _over or not _is_turn(unit) or not get_moves(unit).has(cell):
 		return false
 	var walked := grid.path(unit.cell, cell, foe_cells(unit))
+	if unit == _turn:
+		_undo_unit = unit
+		_undo_cell = unit.cell
 	unit.cell = cell
 	unit.has_moved = true
 	unit_moved.emit(unit, walked)
 	_end_when_done(unit)
+	return true
+
+## Whether the player may take back the move of `unit`, whose turn it is: it
+## has moved and not acted, no foe took a turn since (as one may while time
+## flows while the player chooses), and no one stands where it came from.
+func can_undo_move(unit: GridUnit) -> bool:
+	return not _over and unit != null and unit == _turn and unit == _undo_unit and unit.has_moved \
+		and not unit.has_acted and get_unit_at(_undo_cell) == null
+
+## Takes back the move of the player's `unit` (`can_undo_move()`): it stands
+## where it came from and may move again; false, and nothing changes, when it
+## may not.
+func undo_move(unit: GridUnit) -> bool:
+	if not can_undo_move(unit):
+		return false
+	unit.cell = _undo_cell
+	unit.has_moved = false
+	_undo_unit = null
+	move_undone.emit(unit)
 	return true
 
 ## Has `unit` take `action`, one of its own, at `cell` on its turn; false, and
@@ -193,6 +223,7 @@ func act(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> bool:
 	if _over or not _is_turn(unit) or not unit.data.action_ids.has(action.id) or not get_targets(unit, action).has(cell):
 		return false
 	unit.has_acted = true
+	_undo_unit = null
 	var hits: Array[Dictionary] = []
 	for target: GridUnit in affected_at(unit, action, cell, unit.cell):
 		var amount := action.amount_for(unit, target)
@@ -231,6 +262,7 @@ func _on_gauge_full(unit: GridUnit) -> void:
 		_start_player_turn()
 		return
 	_ai_turn = unit
+	_undo_unit = null
 	unit.has_moved = false
 	unit.has_acted = false
 	turn_started.emit(unit)
@@ -243,6 +275,7 @@ func _start_player_turn() -> void:
 	if _over or _turn != null or _waiting.is_empty():
 		return
 	_turn = _waiting.pop_front()
+	_undo_unit = null
 	_turn.has_moved = false
 	_turn.has_acted = false
 	turn_started.emit(_turn)

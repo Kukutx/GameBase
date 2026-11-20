@@ -8,7 +8,9 @@ extends MiniGame
 ## action or ends its turn, picking a cell with the move keys and interact or
 ## accept, or with the mouse; on a touchscreen a tap on a cell first shows
 ## what picking it does (where the unit goes, what an action's area covers)
-## and a second tap on it picks it, so a finger's slip picks nothing. Cancel
+## and a second tap on it picks it, so a finger's slip picks nothing. Once the
+## unit has moved, Move becomes Undo Move while the battle lets the player take
+## the move back (`AtbBattle.can_undo_move()`). Cancel
 ## (the touch controls' corner button on a touchscreen) goes back to the
 ## commands. Cancel at the
 ## commands, pressed twice, gives the battle up. It ends won or lost a moment
@@ -77,6 +79,7 @@ func setup(settings: Dictionary) -> void:
 	battle = AtbBattle.from_map(map, tactics, GameSettings.options.scale_of(FOE_STRENGTH_OPTION, FOE_STRENGTH_SCALES))
 	battle.turn_started.connect(_on_turn_started)
 	battle.unit_moved.connect(_on_unit_moved)
+	battle.move_undone.connect(_on_move_undone)
 	battle.unit_acted.connect(_on_unit_acted)
 	battle.unit_defeated.connect(_on_unit_defeated)
 	battle.turn_ended.connect(_on_turn_ended)
@@ -196,7 +199,9 @@ func _fill_commands(unit: GridUnit) -> void:
 		child.queue_free()
 	if unit == null:
 		return
-	_add_command(tr("Move"), func() -> void: _set_mode(Mode.PICK_MOVE))
+	_add_command(tr("Move"), func() -> void:
+		if not battle.undo_move(unit):
+			_set_mode(Mode.PICK_MOVE))
 	for action: BattleActionData in unit.data.get_actions():
 		_add_command(tr(action.display_name), func() -> void:
 			_action = action
@@ -211,24 +216,29 @@ func _add_command(text: String, on_pressed: Callable) -> void:
 	button.pressed.connect(on_pressed)
 	_commands.add_child(button)
 
-# Which of the commands `unit` may give now (Move, its actions, End Turn), and
-# the focus on one it may.
+# Which of the commands `unit` may give now (Move or Undo Move, its actions,
+# End Turn), and the focus on one it may, Undo Move only when no other is.
 func _update_commands(unit: GridUnit) -> void:
 	var buttons := _commands.get_children()
 	var actions := unit.data.get_actions()
 	if buttons.size() != actions.size() + 2:
 		return
-	(buttons[0] as Button).disabled = unit.has_moved or battle.get_moves(unit).is_empty()
+	var move := buttons[0] as Button
+	var undo := battle.can_undo_move(unit)
+	move.text = tr("Undo Move") if undo else tr("Move")
+	move.disabled = not undo and (unit.has_moved or battle.get_moves(unit).is_empty())
 	for index in actions.size():
 		(buttons[index + 1] as Button).disabled = unit.has_acted or battle.get_targets(unit, actions[index]).is_empty()
 	var focused := get_viewport().gui_get_focus_owner() if is_inside_tree() else null
-	if focused != null and buttons.has(focused) and not (focused as Button).disabled:
+	if focused != null and buttons.has(focused) and not (focused as Button).disabled and not (undo and focused == move):
 		return
 	for child: Node in buttons:
 		var button := child as Button
-		if not button.disabled:
+		if not button.disabled and not (undo and button == move):
 			button.grab_focus()
 			return
+	if undo:
+		move.grab_focus()
 
 # Brings the commands, or the cells to pick, up to date once the battle
 # changed while one of the player's units waits (a foe acted meanwhile).
@@ -289,6 +299,10 @@ func _on_turn_started(unit: GridUnit) -> void:
 
 func _on_unit_moved(unit: GridUnit, _path: Array[Vector2i]) -> void:
 	_message.text = tr("%s moves.") % tr(unit.data.display_name)
+	_refresh()
+
+func _on_move_undone(unit: GridUnit) -> void:
+	_message.text = tr("%s steps back.") % tr(unit.data.display_name)
 	_refresh()
 
 func _on_unit_acted(unit: GridUnit, action: BattleActionData, _cell: Vector2i, _hits: Array[Dictionary]) -> void:

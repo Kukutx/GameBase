@@ -31,6 +31,12 @@ msgstr "生命 %d/%d"
 msgid "Move"
 msgstr "移动"
 
+msgid "Undo Move"
+msgstr "撤销移动"
+
+msgid "%s steps back."
+msgstr "%s 退回原位。"
+
 msgid "Pick a command."
 msgstr "选择指令。"
 

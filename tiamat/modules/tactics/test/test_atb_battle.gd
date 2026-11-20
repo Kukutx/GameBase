@@ -89,6 +89,48 @@ func test_a_turn_is_one_move_and_one_action_and_ends_once_both_are_taken() -> vo
 	assert_eq(knight.gauge, 0.0)
 	assert_false(battle.act(knight, strike, Vector2i(4, 2)))
 
+func test_the_player_takes_a_move_back_until_the_unit_acts() -> void:
+	var battle := _battle()
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(2, 2))
+	_add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(5, 2))
+	var strike := BattleActionData.find(&"fixture_strike")
+	TacticsFixture.give_turn(battle, knight)
+	assert_false(battle.can_undo_move(knight), "nothing to take back before it moves")
+	var undone: Array[GridUnit] = []
+	battle.move_undone.connect(func(unit: GridUnit) -> void: undone.append(unit))
+	assert_true(battle.move(knight, Vector2i(3, 2)))
+	assert_true(battle.can_undo_move(knight))
+	assert_true(battle.undo_move(knight))
+	assert_eq(knight.cell, Vector2i(2, 2), "back where its turn found it")
+	assert_false(knight.has_moved, "free to move again")
+	assert_eq(undone, [knight] as Array[GridUnit])
+	assert_false(battle.undo_move(knight), "nothing more to take back")
+	assert_true(battle.move(knight, Vector2i(4, 2)))
+	assert_true(battle.act(knight, strike, Vector2i(5, 2)))
+	assert_false(battle.undo_move(knight), "acted: the move stands")
+	assert_eq(knight.cell, Vector2i(4, 2))
+
+func test_a_foe_s_turn_or_a_unit_in_the_way_fixes_the_move() -> void:
+	var battle := _battle()
+	battle.time_flows_while_choosing = true
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	_add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(7, 5))
+	TacticsFixture.give_turn(battle, knight)
+	assert_true(battle.move(knight, Vector2i(1, 0)))
+	battle.advance(3.9)
+	assert_true(battle.can_undo_move(knight), "the raider has not taken its turn yet")
+	battle.advance(0.2)
+	assert_false(battle.can_undo_move(knight), "it took one meanwhile")
+	assert_false(battle.undo_move(knight))
+	var other := _battle()
+	var archer := _add(other, &"fixture_archer", FactionData.PLAYER, Vector2i(0, 0))
+	var healer := _add(other, &"fixture_healer", FactionData.PLAYER, Vector2i(3, 3))
+	_add(other, &"fixture_raider", FactionData.MONSTERS, Vector2i(7, 5))
+	TacticsFixture.give_turn(other, archer)
+	assert_true(other.move(archer, Vector2i(1, 0)))
+	healer.cell = Vector2i(0, 0)
+	assert_false(other.can_undo_move(archer), "someone stands where it came from")
+
 func test_a_unit_walks_past_its_own_side_but_never_stops_on_it() -> void:
 	var battle := _battle(Vector2i(4, 1))
 	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
