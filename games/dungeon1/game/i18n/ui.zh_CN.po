@@ -393,3 +393,18 @@ msgstr "守卫克星"
 
 msgid "Defeat the Ember Warden 10 times, counting every run."
 msgstr "击败余烬守卫 10 次，所有冒险累计。"
+
+msgid "Hulking %s"
+msgstr "巨型%s"
+
+msgid "Swift %s"
+msgstr "迅捷%s"
+
+msgid "Searing %s"
+msgstr "灼热%s"
+
+msgid "Elite Hunter"
+msgstr "精英猎手"
+
+msgid "Defeat 10 elite creatures, counting every run."
+msgstr "击败 10 只精英怪物，所有冒险累计。"

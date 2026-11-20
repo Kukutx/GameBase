@@ -207,6 +207,63 @@ func test_the_player_chooses_how_strong_the_creatures_are() -> void:
 func test_an_item_tells_which_creature_drops_it() -> void:
 	assert_eq(ItemSources.gather().get_ways(&"fixture_gel"), PackedStringArray(["Dropped by Slime"]))
 
+func test_an_elite_form_makes_a_creature_stronger_larger_and_worth_more() -> void:
+	var elite := _elite(&"fixture_hulking", "Hulking %s")
+	elite.health_scale = 1.5
+	elite.size_scale = 1.25
+	elite.tint = Color(1, 0.5, 0.5)
+	elite.xp_scale = 2.0
+	elite.extra_drops = 2
+	var plain := _add_slime(&"")
+	var slime := HOSTILE_CREATURE_SCENE.instantiate() as HostileCreature
+	slime.data = EnemyData.find(&"fixture_slime")
+	slime.elite = elite
+	slime.global_position = Vector2(10000, 10000)
+	add_child_autofree(slime)
+	assert_eq(slime.health.maximum, 45, "half again its kind's 30")
+	assert_eq(slime.get_display_name(), "Hulking Slime")
+	assert_eq(slime.health_label.text, "Hulking Slime 45/45")
+	assert_eq(plain.health_label.text, "Slime 30/30")
+	assert_eq(slime.visual.scale, plain.visual.scale * 1.25)
+	assert_eq((slime.body_shape.shape as RectangleShape2D).size, (plain.body_shape.shape as RectangleShape2D).size * 1.25)
+	assert_eq(slime.fallback.color, plain.fallback.color * Color(1, 0.5, 0.5))
+	watch_signals(CombatEvents)
+	slime.take_damage(45)
+	assert_eq(InventoryState.get_quantity(&"fixture_gel"), 3, "its gel and two more")
+	assert_signal_emitted_with_parameters(CombatEvents, "enemy_defeated", [&"fixture_slime", 40, Vector2(10000, 10000)])
+	assert_signal_emitted_with_parameters(CombatEvents, "elite_defeated", [&"fixture_hulking", &"fixture_slime", Vector2(10000, 10000)])
+	plain.take_damage(30)
+	assert_signal_emit_count(CombatEvents, "elite_defeated", 1, "a plain creature is no elite")
+
+func test_a_place_rolls_an_elite_whose_condition_holds_by_chance() -> void:
+	var swift := _elite(&"fixture_swift", "Swift %s")
+	var locked := _elite(&"fixture_locked", "Locked %s")
+	locked.condition = "FALSE"
+	ContentFixture.use(self, _fixture_content() + [swift, locked])
+	var rolls := GameRandom.stream("fixture elites")
+	var rolled := 0
+	for attempt: int in 200:
+		var elite := EliteData.roll(rolls, 0.5)
+		if elite != null:
+			rolled += 1
+			assert_eq(elite.id, &"fixture_swift", "never one whose condition does not hold")
+	assert_between(rolled, 60, 140, "about half")
+	assert_null(EliteData.roll(rolls, 0.0))
+	var unlucky := GameRandom.stream("fixture same")
+	var lucky := GameRandom.stream("fixture same")
+	EliteData.roll(unlucky, 0.0)
+	EliteData.roll(lucky, 1.0)
+	assert_eq(unlucky.randf(), lucky.randf(), "what follows does not hang on the roll")
+	assert_eq(swift.find_problems(ContentRegistry.active), PackedStringArray())
+	swift.display_name = "Swift"
+	assert_eq(swift.find_problems(ContentRegistry.active), PackedStringArray(["display name 'Swift' needs one %s for its creature's name"]))
+
+func _elite(id: StringName, display_name: String) -> EliteData:
+	var elite := EliteData.new()
+	elite.id = id
+	elite.display_name = display_name
+	return elite
+
 func _add_slime(persistent_id: StringName) -> HostileCreature:
 	var enemy := HOSTILE_CREATURE_SCENE.instantiate() as HostileCreature
 	enemy.data = EnemyData.find(&"fixture_slime")

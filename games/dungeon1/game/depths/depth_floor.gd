@@ -10,6 +10,8 @@ extends Node2D
 ## one for each depth of a run). A depth a guardian tier guards
 ## (`EnemyTier.guardian_every`: the Ember Warden every fifth depth) holds its
 ## guardian and half the creatures, and the way on opens once it falls.
+## From `elite_from_depth` on a creature may come in an elite form
+## (`EliteData`: Hulking, Swift, Searing), the more often the deeper.
 
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
 # How far apart the enemies of a floor stand.
@@ -18,6 +20,12 @@ const ENEMY_SPACING := 28.0
 ## The enemies floors spawn, each from its minimum depth on; deeper tiers come
 ## up more often, and a guardian tier's enemy only at the depths it guards.
 @export var enemy_tiers: Array[EnemyTier] = []
+## The first depth whose creatures may come as elites, the chance a creature
+## does there, and how much more each depth below adds, up to `max_elite_chance`.
+@export_range(1, 999, 1) var elite_from_depth := 3
+@export_range(0.0, 1.0, 0.01) var elite_chance := 0.05
+@export_range(0.0, 1.0, 0.01) var elite_chance_per_depth := 0.03
+@export_range(0.0, 1.0, 0.01) var max_elite_chance := 0.35
 ## Where enemies may stand, in the scene's coordinates.
 @export var arena := Rect2(-200, -110, 400, 220)
 ## The spawn point the player arrives at; enemies keep `arrival_clearance` away.
@@ -51,6 +59,12 @@ static func get_enemy_count(depth: int, guarded := false) -> int:
 	var count := clampi(2 + depth / 2, 2, 8)
 	return count / 2 if guarded else count
 
+## The chance a creature of a floor at `depth` comes as an elite.
+func get_elite_chance(depth: int) -> float:
+	if depth < elite_from_depth:
+		return 0.0
+	return minf(elite_chance + elite_chance_per_depth * (depth - elite_from_depth), max_elite_chance)
+
 func get_enemies() -> Array[HostileCreature]:
 	return _enemies.duplicate()
 
@@ -76,6 +90,8 @@ func _spawn_enemies() -> void:
 		return
 	var guardian_kinds := EnemyTier.guardians(enemy_tiers, depth)
 	var rng := DepthRun.floor_stream()
+	# A stream of their own, so the elites leave the floor's layout as it was.
+	var elite_rolls := DepthRun.floor_stream("elites")
 	var arrival := _spawn_position(arrival_spawn_id)
 	var clear_of_arrival := func(point: Vector2) -> bool: return point.distance_to(arrival) >= arrival_clearance
 	var count := guardian_kinds.size() + get_enemy_count(depth, not guardian_kinds.is_empty())
@@ -91,6 +107,7 @@ func _spawn_enemies() -> void:
 		var enemy := ENEMY_SCENE.instantiate() as HostileCreature
 		enemy.name = "Guardian%02d" % (index + 1) if guardian else "Enemy%02d" % (index + 1)
 		enemy.data = EnemyData.find(kind)
+		enemy.elite = null if guardian else EliteData.roll(elite_rolls, get_elite_chance(depth))
 		enemy.position = positions[index]
 		add_child(enemy)
 		_enemies.append(enemy)

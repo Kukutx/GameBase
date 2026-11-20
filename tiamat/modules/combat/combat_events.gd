@@ -9,8 +9,10 @@ extends Node
 ## plays (`GameAudio`).
 
 ## A hostile creature was defeated at `position`; `combat_xp` is its
-## `EnemyData.combat_xp`.
+## `EnemyData.combat_xp` (an elite form's share of it, `EliteData.xp_scale`).
 signal enemy_defeated(enemy_id: StringName, combat_xp: int, position: Vector2)
+## An enemy in an elite form (`EliteData`) was defeated, after `enemy_defeated`.
+signal elite_defeated(elite_id: StringName, enemy_id: StringName, position: Vector2)
 
 ## The player swung the weapon `weapon_item_id`, hitting or not.
 signal attack_swung(weapon_item_id: StringName)
