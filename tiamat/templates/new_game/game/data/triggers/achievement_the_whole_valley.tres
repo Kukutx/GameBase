@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_trigger"]
+
+[resource]
+script = ExtResource("1_trigger")
+id = &"achievement_the_whole_valley"
+event = &"WorldTravel.travel_ended"
+condition = "EVENT_ARG arrived true, LOCATION lookout"
+actions = PackedStringArray("UNLOCK_ACHIEVEMENT the_whole_valley")

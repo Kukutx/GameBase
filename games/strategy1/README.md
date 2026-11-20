@@ -35,5 +35,6 @@ test/runtime/      The camp smoke: the war table, the muster, the lookout, sleep
 - Time stands still while the player picks a command; cancel twice gives the battle up
 - The muster (another `MiniGameStation`) opens the battle in the Hill Pass, the rts module's `RtsBattleGame`: two hills with a pass between, and nine of the player's units (spearmen, bowmen, riders) against ten raiders (raiders, brutes, slingers) who march on them
 - The player selects units with clicks or a box and orders them with a right click, or with the bar and its keys: attack-move, stop, hold, all, and groups on Ctrl and a digit; holding the pass beats charging through it
+- Four achievements (`game/data/achievements/`): a win at the ford, a win in the pass, Veteran for 50 raiders defeated across every battle, and a hidden one for both wins; the title and the pause menu list them
 
-Everything but the maps and their units is the foundation's: the title, pause and settings menus, the war table and the muster, both battles, their boards and their foes' play, saving and the profile.
+Everything but the maps, their units and the achievements is the foundation's: the title, pause, settings and achievements menus, the war table and the muster, both battles, their boards and their foes' play, saving and the profile.

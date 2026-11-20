@@ -3,7 +3,8 @@ extends GutTest
 ## The game's achievements, from the title and the pause menu
 ## (`AchievementsMenu`): offered in a game that has any, counting those
 ## unlocked, showing the unlocked first in the order they were and the locked
-## dimmed, a hidden one keeping to itself until unlocked; the keys walk
+## dimmed, one that counts toward a goal showing how far the player is, each
+## with its icon, a hidden one keeping to itself until unlocked; the keys walk
 ## through them; it fits each view the game is laid out in, and `ui_cancel`
 ## closes it back to the menu that opened it.
 
@@ -63,6 +64,29 @@ func test_the_unlocked_come_first_in_their_order_and_a_hidden_one_keeps_to_itsel
 	assert_eq(menu.get_entries()[2], PackedStringArray(["Secret", "Find the secret."]), "unlocked, a hidden one shows itself")
 	pause.close()
 	assert_false(menu.visible, "closing the pause menu closes it")
+
+func test_a_locked_one_shows_how_far_the_player_is_and_each_its_icon() -> void:
+	var counting := _achievement(&"fixture_e_runner", "Runner", "Run ten times.")
+	counting.progress_flag = &"fixture_runs"
+	counting.goal = 10
+	counting.icon = GradientTexture2D.new()
+	var secret := _achievement(&"fixture_f_secret", "Secret", "Find it.", true)
+	secret.icon = GradientTexture2D.new()
+	ContentFixture.use(self, [counting, secret])
+	GameProfile.add_int(&"fixture_runs", 4)
+	var pause := _pause()
+	pause.open()
+	pause.achievements_button.pressed.emit()
+	var menu := pause.achievements_menu
+	assert_eq(menu.get_entries()[0], PackedStringArray(["Runner", "Run ten times.", "4 / 10"]))
+	assert_eq(menu.get_entry_icon(0), counting.icon)
+	assert_eq(menu.get_entry_icon(1), null, "a hidden one keeps its icon to itself")
+	menu.close()
+	GameProfile.add_int(&"fixture_runs", 6)
+	pause.achievements_button.pressed.emit()
+	assert_eq(menu.get_summary(), "1 of 2 unlocked")
+	assert_eq(menu.get_entries()[0], PackedStringArray(["Runner", "Run ten times."]), "unlocked, it shows no count")
+	pause.close()
 
 func test_a_game_without_achievements_offers_none() -> void:
 	ContentFixture.use(self, [])

@@ -6,6 +6,9 @@ extends CanvasLayer
 ## sees what is left to reach: how many are unlocked, then each one, those
 ## unlocked first in the order they were, then those still locked, dimmed. A
 ## hidden one keeps its name and description to itself until it is unlocked.
+## One that counts toward a goal (`AchievementData.progress_flag`) shows how
+## far the player is while it is locked, and an achievement's icon shows
+## before its name.
 ## The keys and a gamepad walk through them (`MenuEntry`), the list scrolling
 ## with them. `ui_cancel` or Back closes it.
 
@@ -79,6 +82,14 @@ func get_entries() -> Array[PackedStringArray]:
 		entries.append((entry as MenuEntry).get_lines())
 	return entries
 
+## How far the player is toward `achievement`, as its entry shows it.
+static func progress_text(achievement: AchievementData) -> String:
+	return "%d / %d" % [GameProfile.get_progress(achievement.id), achievement.goal]
+
+## The icon of the entry at `index`, or null.
+func get_entry_icon(index: int) -> Texture2D:
+	return (_list.get_child(index) as MenuEntry).get_icon()
+
 ## Whether the entry at `index` shows as locked.
 func is_entry_locked(index: int) -> bool:
 	return (_list.get_child(index) as CanvasItem).modulate == LOCKED_TINT
@@ -101,6 +112,11 @@ func _fill() -> void:
 		entry.add_line(achievement.display_name if shown else HIDDEN_NAME)
 		var about := entry.add_line(achievement.description if shown else HIDDEN_DESCRIPTION)
 		about.add_theme_color_override(&"font_color", DESCRIPTION_COLOR)
+		if shown and not is_unlocked and achievement.counts_progress():
+			var progress := entry.add_line(progress_text(achievement), false)
+			progress.add_theme_color_override(&"font_color", DESCRIPTION_COLOR)
+		if shown:
+			entry.set_icon(achievement.icon)
 		if is_unlocked:
 			unlocked += 1
 		else:
