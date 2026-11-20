@@ -37,6 +37,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `QUEST_COMPLETED` | progression | 1 | `QUEST_COMPLETED <quest>` | the quest is completed and its reward was given. |
 | `REGION` | core | 1 or more | `REGION <region>...` | the player (or the context's "location_id") is in a location of one of the regions. |
 | `RUN_ACTIVE` | roguelite | 0 | `RUN_ACTIVE` | a run goes on. |
+| `RUN_TALLY_AT_LEAST` | roguelite | 2 | `RUN_TALLY_AT_LEAST <tally> <count>` | the run going on raised the tally to at least that much. |
 | `RUNS_AT_LEAST` | roguelite | 1 | `RUNS_AT_LEAST <count>` | this world started at least that many runs. |
 | `SEASON` | core | 1 or more | `SEASON <name>...` | the season is one of the names (the calendar's seasons). |
 | `SKILL_LEVEL` | skills | 2 | `SKILL_LEVEL <skill> <level>` | the skill has reached at least the level. |
@@ -56,6 +57,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `ADD_ITEM` | items | 1 to 2 | `ADD_ITEM <item> [count]` | adds every item, or none and fails when the inventory cannot take them all, so a failed action never gives a part. |
 | `ADD_MONEY` | items | 1 | `ADD_MONEY <n>` | gives the player n money; an n of 0 or less gives nothing and takes nothing, and the action still succeeds. |
 | `ADD_PROFILE_FLAG` | core | 1 to 2 | `ADD_PROFILE_FLAG <key> [n]` | adds n (default 1) to the profile's counter. |
+| `ADD_RUN_TALLY` | roguelite | 1 to 2 | `ADD_RUN_TALLY <tally> [amount]` | adds the amount, 1 when none, to the tally of the run going on; fails while no run goes on. |
 | `ADD_SKILL_XP` | skills | 2 | `ADD_SKILL_XP <skill> <amount>` | gives the skill that much experience, which can raise its level; an amount of 0 or less gives none, and the action still succeeds. |
 | `CLEAR_FLAG` | core | 1 | `CLEAR_FLAG <key>` | removes the value stored under the key, so a flag reads as false and a counter as 0; never fails. |
 | `REMOVE_ITEM` | items | 1 to 2 | `REMOVE_ITEM <item> [count]` | fails, removing nothing, when there are not enough. |

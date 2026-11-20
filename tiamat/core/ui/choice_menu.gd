@@ -5,14 +5,17 @@ extends MenuLayer
 ## minigames (`MiniGameStation.choices`), an elevator's floors, the depth a
 ## run starts at. Each choice (`Choice`) is a button with its text and the
 ## lines under it (its note), and may be locked, its button then disabled and
-## its note saying what it needs. The keys, a gamepad and a tap pick one;
+## its note saying what it needs. Lines above the list (its body) may say
+## what the choice is about. The keys, a gamepad and a tap pick one;
 ## `ui_cancel` or Back closes the list, and `picked` tells which the player
 ## picked, or none.
 ##
 ## Whatever offers the player a choice asks with
 ## `var id := await ChoiceMenu.ask(self, choices, title)`, which adds the menu
 ## to it the first time (`of()` finds it again) and gives the id of the choice
-## picked, or &"" when the player closed the list.
+## picked, or &"" when the player closed the list. Whatever only tells the
+## player something (a run's report) shows it with `ChoiceMenu.tell(self,
+## title, lines)`, a body and one choice, OK.
 
 ## The list closed; `choice_id` is the choice the player picked, or &"".
 signal picked(choice_id: StringName)
@@ -24,6 +27,8 @@ const NODE_NAME := &"ChoiceMenu"
 ## The colour of the lines under a choice.
 const NOTE_COLOR := Color(0.78, 0.78, 0.84)
 const SCENE_PATH := "res://tiamat/core/ui/choice_menu.tscn"
+## The id of the one choice `tell()` lists, OK.
+const OK_ID := &"ok"
 
 ## One choice of the list: its id, its text and the lines under it as the
 ## player reads them (translated already), and whether the player can pick it.
@@ -42,6 +47,7 @@ class Choice:
 		enabled = choice_enabled
 
 @onready var _title: Label = %Title
+@onready var _body: Label = %Body
 @onready var _choices: ScrollContainer = %Choices
 @onready var _list: VBoxContainer = %List
 @onready var _back: Button = %Back
@@ -55,38 +61,52 @@ func _init() -> void:
 
 func _ready() -> void:
 	_back.pressed.connect(close)
+	# Its text is translated already.
+	_body.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	closed.connect(func() -> void: picked.emit(_picked))
 	# Its small print reads on a phone, in a narrow view as in a wide one.
 	ReadableText.raise(self)
 
-## Shows `choices` under `title` (translated as a key; "Choose" when empty) in
-## a menu of `host`'s, added to it the first time, and gives the id of the
-## choice the player picks, or &"" when they close the list. The focus starts
-## on `focus_id`, or on the first choice the player can pick.
-static func ask(host: Node, choices: Array[Choice], title := "", focus_id := &"") -> StringName:
-	var menu := of(host)
-	if menu == null:
-		menu = (load(SCENE_PATH) as PackedScene).instantiate() as ChoiceMenu
-		menu.name = NODE_NAME
-		host.add_child(menu)
-	menu.open(choices, title, focus_id)
+## Shows `choices` under `title` (translated as a key; "Choose" when empty)
+## and `body` (translated already) in a menu of `host`'s, added to it the
+## first time, and gives the id of the choice the player picks, or &"" when
+## they close the list. The focus starts on `focus_id`, or on the first choice
+## the player can pick.
+static func ask(host: Node, choices: Array[Choice], title := "", focus_id := &"", body := "") -> StringName:
+	var menu := _of_or_new(host)
+	menu.open(choices, title, focus_id, body)
 	var choice_id: StringName = await menu.picked
 	return choice_id
+
+## Tells the player `lines` (translated already) under `title` (translated as
+## a key) in a menu of `host`'s, with one choice, OK, and gives the menu:
+## `await menu.picked` waits until the player read on.
+static func tell(host: Node, title: String, lines: PackedStringArray) -> ChoiceMenu:
+	var menu := _of_or_new(host)
+	var choices: Array[Choice] = [Choice.new(OK_ID, TranslationServer.translate("OK"))]
+	menu.open(choices, title, OK_ID, "\n".join(lines))
+	return menu
 
 ## The menu `ask()` added to `host`, or null before it first asked.
 static func of(host: Node) -> ChoiceMenu:
 	return host.get_node_or_null(NodePath(NODE_NAME)) as ChoiceMenu
 
-## Lists `choices` under `title` and shows the list, the focus on `focus_id`
-## when the player can pick it, else on the first choice they can.
-func open(choices: Array[Choice], title := "", focus_id := &"") -> void:
+## Lists `choices` under `title` and `body` and shows the list, the focus on
+## `focus_id` when the player can pick it, else on the first choice they can.
+func open(choices: Array[Choice], title := "", focus_id := &"", body := "") -> void:
 	_picked = &""
 	_title.text = title if not title.is_empty() else tr("Choose")
+	_body.text = body
+	_body.visible = not body.is_empty()
 	_fill(choices)
 	show_menu()
 	_choices.scroll_vertical = 0
 	var button: Button = _buttons.get(focus_id)
 	MenuLayer.focus(button if button != null and not button.disabled else _first_open())
+
+## The lines above the choices, or "" when there are none.
+func get_body() -> String:
+	return _body.text
 
 ## The buttons of the choices listed, in order.
 func get_buttons() -> Array[Button]:
@@ -117,6 +137,14 @@ func choose(choice_id: StringName) -> bool:
 		return false
 	button.pressed.emit()
 	return true
+
+static func _of_or_new(host: Node) -> ChoiceMenu:
+	var menu := of(host)
+	if menu == null:
+		menu = (load(SCENE_PATH) as PackedScene).instantiate() as ChoiceMenu
+		menu.name = NODE_NAME
+		host.add_child(menu)
+	return menu
 
 func _fill(choices: Array[Choice]) -> void:
 	for child: Node in _list.get_children():

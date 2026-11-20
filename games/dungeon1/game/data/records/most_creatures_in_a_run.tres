@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RecordData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/profile/record_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"most_creatures_in_a_run"
+display_name = "Most Creatures in a Run"
+flag = &"most_creatures_in_a_run"
+order = 30

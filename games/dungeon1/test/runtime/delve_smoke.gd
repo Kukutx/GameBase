@@ -51,6 +51,7 @@ func _run() -> void:
 	_check(int(inventory.get_quantity(&"slime_gel")) > 0, "The player came back without what the enemies dropped")
 	_check(bool(profile.is_unlocked(&"first_blood")), "Defeating an enemy did not unlock First Blood")
 	_check(int(profile.get_int(&"deepest_depth")) == 2, "The profile did not keep the deepest depth")
+	await _read_report("Run 1 · Returned", "Depth Reached: 2\nCreatures Defeated: ")
 
 	var problem: String = save_manager.write_save()
 	_check(problem.is_empty(), "Saving at camp failed: %s" % problem)
@@ -74,6 +75,7 @@ func _run() -> void:
 	_check(money_lost == 8 and int(wallet.money) == 22, "Defeat did not cost a quarter of 30g (lost %d)" % money_lost)
 	_check(bool(vitals.is_full(&"hp")), "Defeat did not restore the player's health")
 	_check(int(depth_run.get_run()) == 2 and not bool(root.get_node("RunState").is_active()), "The defeat did not end the run")
+	await _read_report("Run 2 · Defeated", "Depth Reached: 1")
 
 	# Once the world reached the fifth depth, the way down asks where to start.
 	depth_run.get("track").call("set_depth", 5)
@@ -86,6 +88,24 @@ func _run() -> void:
 	await _arrive(DEPTHS_SCENE)
 	_check(int(depth_run.get_depth()) == 5 and int(depth_run.get_run()) == 3, "The shortcut did not start a run at the fifth depth")
 	_check((current_scene.call("get_enemies") as Array).size() == 4, "The fifth depth did not spawn four enemies")
+
+# Reads the report of the run that ended once camp shows it: its title is
+# `title` and its lines begin with `lines`.
+func _read_report(title: String, lines: String) -> void:
+	var menu: Node = null
+	for _frame: int in 120:
+		menu = current_scene.get_node("RunSummary").get_node_or_null("ChoiceMenu")
+		if menu != null and bool(menu.call("is_open")):
+			break
+		await process_frame
+	_check(menu != null and bool(menu.call("is_open")), "Camp did not tell the run's report (%s)" % title)
+	if menu == null:
+		return
+	var shown := (menu.get_node("%Title") as Label).text
+	var body := String(menu.call("get_body"))
+	_check(shown == title and body.begins_with(lines), "The report did not tell the run: '%s' / '%s'" % [shown, body])
+	menu.call("choose", &"ok")
+	_check(not paused and not bool(menu.call("is_open")), "Reading the report on did not give play back")
 
 # Defeats every enemy of the floor with the player's swings, standing next to
 # each in turn.

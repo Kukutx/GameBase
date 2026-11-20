@@ -4,17 +4,21 @@ extends Node
 ## Ember Depths' runs into the depths: each a run of the roguelite module
 ## (`RunState`) down a track without a bottom (`DepthTrack`, `depths:depth`
 ## and `depths:deepest` in the world), so the depth the player has reached and
-## the deepest this world has seen save with it. Every depth reached also
-## raises the profile's deepest depth, which outlives every save, and triggers
-## follow `depth_reached` (Ember Depths' achievements). Every
+## the deepest this world has seen save with it. The run's tally `depth`
+## (`RunTallyData`) keeps the depth it reached for its report and raises the
+## profile's deepest depth, which outlives every save, and triggers follow
+## `depth_reached` (Ember Depths' achievements). Every
 ## `SHORTCUT_STEP`th depth the world reached is a shortcut a new run may start
 ## at (`get_shortcuts()`), which the way down offers.
 
 signal depth_reached(depth: int)
 
 const TRACK_KEY := &"depths"
-## Profile flag: the deepest depth of any run in any save.
+## Profile flag: the deepest depth of any run in any save, the best of the
+## run tally `DEPTH_TALLY`.
 const PROFILE_DEEPEST := &"deepest_depth"
+## The run's tally of the depth it reached.
+const DEPTH_TALLY := &"depth"
 ## Every how many depths a shortcut comes.
 const SHORTCUT_STEP := 5
 
@@ -52,6 +56,7 @@ func start_run(depth := 1) -> void:
 	RunState.start_run()
 	if depth > 1 and track.can_return_to(depth):
 		track.set_depth(depth)
+		RunState.raise_tally(DEPTH_TALLY, depth)
 	else:
 		_reach(1)
 
@@ -79,6 +84,5 @@ func floor_stream() -> GameRandomStream:
 
 func _reach(depth: int) -> void:
 	track.set_depth(depth)
-	if depth > GameProfile.get_int(PROFILE_DEEPEST):
-		GameProfile.set_flag(PROFILE_DEEPEST, depth)
+	RunState.raise_tally(DEPTH_TALLY, depth)
 	depth_reached.emit(depth)

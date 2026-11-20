@@ -8,7 +8,9 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"RUNS_AT_LEAST", _runs_at_least, 1, 1, [GameRulesService.ARG_COUNT], _describe_runs_at_least)
 	rules.register_condition(&"BOON_TAKEN", _boon_taken, 1, -1, [BoonData.KIND], _describe_boon_taken)
 	rules.register_condition(&"BOONS_AT_LEAST", _boons_at_least, 1, 1, [GameRulesService.ARG_COUNT], _describe_boons_at_least)
+	rules.register_condition(&"RUN_TALLY_AT_LEAST", _run_tally_at_least, 2, 2, [RunTallyData.KIND, GameRulesService.ARG_COUNT], _describe_run_tally_at_least)
 	rules.register_action(&"TAKE_BOON", _take_boon, 1, 1, [BoonData.KIND])
+	rules.register_action(&"ADD_RUN_TALLY", _add_run_tally, 1, 2, [RunTallyData.KIND, GameRulesService.ARG_INT])
 
 ## RUN_ACTIVE: a run goes on.
 static func _run_active(_args: PackedStringArray, _context: Dictionary) -> bool:
@@ -46,3 +48,19 @@ static func _describe_boons_at_least(args: PackedStringArray) -> String:
 ## it; fails when it may not (`BoonData.can_take()`).
 static func _take_boon(args: PackedStringArray, _context: Dictionary) -> bool:
 	return RunState.take_boon(StringName(args[0]))
+
+## RUN_TALLY_AT_LEAST <tally> <count>: the run going on raised the tally to at
+## least that much.
+static func _run_tally_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
+	return RunState.get_tally(StringName(args[0])) >= int(args[1])
+
+static func _describe_run_tally_at_least(args: PackedStringArray) -> String:
+	return TranslationServer.translate("%s in one run: %d") % [GameRulesService.entry_name(RunTallyData.KIND, args[0]), int(args[1])]
+
+## ADD_RUN_TALLY <tally> [amount]: adds the amount, 1 when none, to the tally
+## of the run going on; fails while no run goes on.
+static func _add_run_tally(args: PackedStringArray, _context: Dictionary) -> bool:
+	if not RunState.is_active():
+		return false
+	RunState.add_tally(StringName(args[0]), int(args[1]) if args.size() > 1 else 1)
+	return true

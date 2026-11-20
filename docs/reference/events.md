@@ -240,6 +240,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `RunState.run_started(run: int)`
 - `RunState.run_ended(run: int, outcome: StringName)`
 - `RunState.boon_taken(boon_id: StringName)`: The run took boon `boon_id` (`take_boon()`).
+- `RunState.tally_changed(tally_id: StringName, value: int)`: The run's tally `tally_id` now stands at `value` (`add_tally()`, `raise_tally()`).
 
 ## RtsEvents (rts)
 
