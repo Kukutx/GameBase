@@ -261,6 +261,54 @@ func test_a_foe_s_action_that_recharges_past_its_next_turn_is_no_danger() -> voi
 	captain.start_turn()
 	assert_eq(_columns(battle.get_danger()), [1, 2, 3, 4, 5, 6, 7], "ready on its next turn")
 
+func test_a_delay_sets_a_foe_s_turn_back_unless_it_falls() -> void:
+	var battle := _battle()
+	var shield := _add(battle, &"fixture_shield", FactionData.PLAYER, Vector2i(1, 1))
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(2, 1))
+	var dying := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(1, 2))
+	var slow := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(0, 1))
+	raider.gauge = 80.0
+	dying.gauge = 80.0
+	dying.health.set_current(1)
+	slow.gauge = 20.0
+	TacticsFixture.give_turn(battle, shield)
+	var bash := BattleActionData.find(&"fixture_bash")
+	assert_eq(battle.forecast(shield, bash, Vector2i(2, 1)), [{"unit": raider, "amount": 2, "defeats": false, "delay": 50.0}] as Array[Dictionary], "told before it does")
+	assert_eq(battle.forecast(shield, bash, Vector2i(1, 2))[0]["delay"], 0.0, "no delay for a foe it fells")
+	assert_eq(battle.delay_of(bash, slow), 20.0, "no further back than empty")
+	assert_eq(battle.delay_of(bash, shield), 0.0, "never the unit taking its turn")
+	assert_eq(battle.delay_of(BattleActionData.find(&"fixture_strike"), raider), 0.0, "an action that does not delay")
+	var hits: Array[Dictionary] = []
+	battle.unit_acted.connect(func(_unit: GridUnit, _action: BattleActionData, _cell: Vector2i, done: Array[Dictionary]) -> void: hits.assign(done))
+	assert_true(battle.act(shield, bash, Vector2i(2, 1)))
+	assert_eq(raider.gauge, 30.0, "half a turn back")
+	assert_eq(hits, [{"unit": raider, "amount": 2, "delay": 50.0}] as Array[Dictionary])
+
+func test_a_foe_s_delay_takes_the_turn_a_player_s_unit_waited_for() -> void:
+	var battle := _battle()
+	var healer := _add(battle, &"fixture_healer", FactionData.PLAYER, Vector2i(5, 5))
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(1, 1))
+	var shield := _add(battle, &"fixture_shield", FactionData.MONSTERS, Vector2i(2, 1))
+	TacticsFixture.give_turn(battle, healer)
+	TacticsFixture.give_turn(battle, knight)
+	assert_eq(battle.get_turn_order(1), [knight] as Array[GridUnit], "the knight waits, full, for the healer's turn to end")
+	TacticsFixture.give_turn(battle, shield)
+	assert_eq(knight.gauge, 50.0, "the shield bashes it, as worth more than its strike")
+	battle.end_turn(healer)
+	assert_null(battle.get_turn_unit(), "the knight's turn comes later")
+
+func test_a_unit_delayed_by_one_that_filled_with_it_waits_for_its_gauge() -> void:
+	var battle := AtbBattle.new(BattleGrid.new(Vector2i(4, 1)), &"fixture_watchers")
+	var shield := battle.add_unit(BattleUnitData.find(&"fixture_shield"), &"fixture_red", Vector2i(0, 0))
+	var raider := battle.add_unit(BattleUnitData.find(&"fixture_raider"), &"fixture_blue", Vector2i(1, 0))
+	var started: Array[GridUnit] = []
+	battle.turn_started.connect(func(unit: GridUnit) -> void: started.append(unit))
+	battle.advance(4.0)
+	assert_eq(started, [shield] as Array[GridUnit], "both fill at once, and the shield, placed first, bashes the raider")
+	assert_eq(raider.gauge, 50.0)
+	battle.advance(2.0)
+	assert_eq(started, [shield, raider] as Array[GridUnit], "which fills again two seconds on")
+
 func test_the_battle_ends_won_when_the_last_foe_falls_and_lost_when_the_player_s_side_does() -> void:
 	var battle := _battle()
 	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))

@@ -13,6 +13,9 @@ extends RefCounted
 
 ## What a defeat is worth on top of the damage that brings it.
 const DEFEAT_SCORE := 1000
+## What setting back a foe's gauge is worth for each point
+## (`AtbBattle.delay_of()`): a whole turn's delay as much as 10 health.
+const DELAY_SCORE := 0.1
 
 ## Takes `unit`'s turn in `battle`.
 func take_turn(battle: AtbBattle, unit: GridUnit) -> void:
@@ -53,8 +56,9 @@ func best_plan(battle: AtbBattle, unit: GridUnit) -> Dictionary:
 	return best
 
 ## What `unit` taking `action` at `target` from `from` is worth: the health
-## it takes from foes, with `DEFEAT_SCORE` for each it defeats, or the health
-## it gives back to its side.
+## it takes from foes, with `DEFEAT_SCORE` for each it defeats and
+## `DELAY_SCORE` for each point of gauge it sets back of those it leaves
+## standing, or the health it gives back to its side.
 func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: Vector2i, from: Vector2i) -> int:
 	var value := 0
 	for other: GridUnit in battle.affected_at(unit, action, target, from):
@@ -65,6 +69,8 @@ func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: 
 			value += mini(amount, other.health.current)
 			if amount >= other.health.current:
 				value += DEFEAT_SCORE
+			else:
+				value += roundi(battle.delay_of(action, other) * DELAY_SCORE)
 	return value
 
 ## Moves `unit` as far as it can along the shortest way to its nearest foe

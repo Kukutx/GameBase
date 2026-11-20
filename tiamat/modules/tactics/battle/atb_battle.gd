@@ -16,7 +16,10 @@ extends RefCounted
 ## turns (`get_danger()`) tell the player where a unit stands safe, and a unit
 ## in cover (`BattleGrid.is_cover()`) takes less damage (`amount_of()`). An
 ## action that recharges (`BattleActionData.recharge_turns`) waits that many of
-## its user's turns before the user may take it again. The battle
+## its user's turns before the user may take it again, and one that delays
+## (`BattleActionData.delay`) sets back the gauges of the foes it leaves
+## standing (`delay_of()`), a player's unit that waited for its turn too. The
+## battle
 ## ends when no two living units are hostile (`FactionData.are_hostile()`), won
 ## when the player's side is left.
 ##
@@ -31,7 +34,8 @@ signal unit_moved(unit: GridUnit, path: Array[Vector2i])
 ## its turn found it again.
 signal move_undone(unit: GridUnit)
 ## `hits` holds a {"unit": GridUnit, "amount": int} for each unit it reached:
-## the health it took or gave back.
+## the health it took or gave back, and with an action that delays, "delay":
+## how far it set back the unit's gauge.
 signal unit_acted(unit: GridUnit, action: BattleActionData, cell: Vector2i, hits: Array[Dictionary])
 signal unit_defeated(unit: GridUnit)
 signal turn_ended(unit: GridUnit)
@@ -168,7 +172,8 @@ func advance(seconds: float) -> void:
 			# with it wait their turn, full, until time flows again.
 			if _over or (_turn != null and not time_flows_while_choosing):
 				break
-			if unit.is_alive():
+			# One delayed by a unit that filled with it fills again first.
+			if unit.is_alive() and unit.gauge >= GAUGE_FULL:
 				_on_gauge_full(unit)
 
 ## Where `unit` may move on its turn: the cells it walks to within its move,
@@ -263,18 +268,31 @@ func amount_of(unit: GridUnit, action: BattleActionData, target: GridUnit) -> in
 	var amount := action.amount_for(unit, target)
 	return grid.damage_on(target.cell, amount) if action.effect == BattleActionData.Effect.DAMAGE else amount
 
+## How far `action` would set back the gauge of `target` (`BattleActionData.delay`):
+## no further than empty, and not at all for a unit taking its turn now.
+func delay_of(action: BattleActionData, target: GridUnit) -> float:
+	if action.effect != BattleActionData.Effect.DAMAGE or action.delay <= 0.0 or target == _turn or target == _ai_turn:
+		return 0.0
+	return minf(action.delay, target.gauge)
+
 ## What `unit` taking `action` at `cell` from where it stands would do, told
 ## before it does: a {"unit": GridUnit, "amount": int, "defeats": bool} for
 ## each unit it reaches, the health it would take (no more than the unit has)
-## or give back (no more than it lacks), just as `act()` then does.
+## or give back (no more than it lacks), and with an action that delays,
+## "delay": how far it would set back the gauge of a unit it leaves standing,
+## just as `act()` then does.
 func forecast(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> Array[Dictionary]:
 	var hits: Array[Dictionary] = []
 	for target: GridUnit in affected_at(unit, action, cell, unit.cell):
 		var amount := amount_of(unit, action, target)
+		var hit: Dictionary
 		if action.effect == BattleActionData.Effect.HEAL:
-			hits.append({"unit": target, "amount": mini(amount, target.health.maximum - target.health.current), "defeats": false})
+			hit = {"unit": target, "amount": mini(amount, target.health.maximum - target.health.current), "defeats": false}
 		else:
-			hits.append({"unit": target, "amount": mini(amount, target.health.current), "defeats": amount >= target.health.current})
+			hit = {"unit": target, "amount": mini(amount, target.health.current), "defeats": amount >= target.health.current}
+		if action.delay > 0.0 and action.effect == BattleActionData.Effect.DAMAGE:
+			hit["delay"] = 0.0 if hit["defeats"] else delay_of(action, target)
+		hits.append(hit)
 	return hits
 
 ## The cells of the living units hostile to `unit`.
@@ -331,7 +349,10 @@ func act(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> bool:
 	var hits: Array[Dictionary] = []
 	for target: GridUnit in affected_at(unit, action, cell, unit.cell):
 		var amount := amount_of(unit, action, target)
-		hits.append({"unit": target, "amount": target.health.heal(amount) if action.effect == BattleActionData.Effect.HEAL else target.health.take(amount)})
+		var hit := {"unit": target, "amount": target.health.heal(amount) if action.effect == BattleActionData.Effect.HEAL else target.health.take(amount)}
+		if action.delay > 0.0 and action.effect == BattleActionData.Effect.DAMAGE:
+			hit["delay"] = _set_back(target, delay_of(action, target)) if target.is_alive() else 0.0
+		hits.append(hit)
 	unit_acted.emit(unit, action, cell, hits)
 	for hit: Dictionary in hits:
 		var target: GridUnit = hit["unit"]
@@ -356,6 +377,15 @@ func end_turn(unit: GridUnit) -> bool:
 func forfeit() -> void:
 	if not _over:
 		_end(false)
+
+# Sets back `unit`'s gauge by `amount`; a player's unit that waited, full,
+# for its turn waits no more.
+func _set_back(unit: GridUnit, amount: float) -> float:
+	if amount <= 0.0:
+		return 0.0
+	unit.gauge -= amount
+	_waiting.erase(unit)
+	return amount
 
 func _is_turn(unit: GridUnit) -> bool:
 	return unit != null and (unit == _turn or unit == _ai_turn)

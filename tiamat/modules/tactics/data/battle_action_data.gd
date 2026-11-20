@@ -8,7 +8,8 @@ extends ContentEntry
 ## hostile to the user's side when it does damage, those of the user's side,
 ## the user too, when it heals. It never hurts its own side. A strong one may
 ## need to recharge (`recharge_turns`): its user then waits turns before it
-## takes it again.
+## takes it again. One that does damage may also set back the time gauges of
+## the foes it leaves standing (`delay`), so their turns come later.
 
 const KIND := &"battle_action"
 
@@ -32,6 +33,10 @@ enum Effect {
 ## How many of its user's turns go by after it takes it before it may take it
 ## again; 0: on every turn.
 @export_range(0, 9) var recharge_turns := 0
+## How far it sets back the time gauge of each foe it hits and leaves standing
+## (`AtbBattle.GAUGE_FULL` is a whole turn), no further than empty; 0: not at
+## all. Only an action that does damage delays.
+@export_range(0.0, 100.0, 5.0) var delay := 0.0
 
 ## The action with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> BattleActionData:
@@ -63,4 +68,6 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 		problems.append("has a min range %d above its max range %d" % [min_range, max_range])
 	if effect == Effect.DAMAGE and max_range == 0 and area == 0:
 		problems.append("does damage only to its user's cell")
+	if effect == Effect.HEAL and delay > 0.0:
+		problems.append("delays the units it heals")
 	return problems
