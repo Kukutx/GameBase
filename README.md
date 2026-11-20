@@ -51,6 +51,12 @@ Create a new game, a small one that plays on the core alone (no module), with:
 node tools/new_game.js --id <id> --name "<Game Name>" [--description "<One line>"]
 ```
 
+Start a new module, a piece of gameplay games share, with its class, catalog, test and declaration ([docs/MODULES.md](docs/MODULES.md) says what it can register):
+
+```text
+node tools/new_module.js --id <id> [--requires <module>[,<module>...]]
+```
+
 ## Validation and release
 
 ```text

@@ -3,8 +3,11 @@ extends RefCounted
 
 ## Condition and action keys of the core (see `GameRulesService`): the world's
 ## flags, the day, season, weekday, time and weather, where the player is,
-## the player's vitals, the playthrough, and the arguments of the event that
-## set off a trigger.
+## the player's vitals, the playthrough, the player's options, and the
+## arguments of the event that set off a trigger.
+
+## The id of an option of the game (`GameOption`, `GameSettings.options`).
+const ARG_OPTION := &"option"
 
 static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"TRUE", _always.bind(true), 0, 0)
@@ -22,6 +25,9 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"REGION", _region.bind(rules), 1, -1, [RegionData.KIND])
 	rules.register_condition(&"VITAL_AT_LEAST", _vital_at_least, 2, 2, [VitalData.KIND, GameRulesService.ARG_INT])
 	rules.register_condition(&"PLAYTHROUGH_AT_LEAST", _playthrough_at_least, 1, 1, [GameRulesService.ARG_COUNT])
+	rules.register_arg_kind(ARG_OPTION, _option_problem)
+	rules.register_condition(&"OPTION", _option, 2, -1, [ARG_OPTION, GameRulesService.ARG_TEXT], Callable(), _option_values_problem)
+	rules.register_condition(&"OPTION_AT_LEAST", _option_at_least, 2, 2, [ARG_OPTION, GameRulesService.ARG_NUMBER], Callable(), _number_option_problem)
 	rules.register_condition(&"EVENT_ARG", _event_arg, 2, -1, [GameRulesService.ARG_TEXT])
 	rules.register_condition(&"EVENT_ARG_AT_LEAST", _event_arg_at_least, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_NUMBER])
 	rules.register_action(&"SET_FLAG", _set_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_FLAG_VALUE])
@@ -107,6 +113,48 @@ static func _vital_at_least(args: PackedStringArray, _context: Dictionary) -> bo
 ## (`Playthrough`; new game plus).
 static func _playthrough_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
 	return Playthrough.get_playthrough() >= int(args[0])
+
+## OPTION <option> <value>...: the player's option (`GameOption`) is one of
+## the values: true or false for a switch, a choice's name (in quotes with a
+## space: "Very Hard"), a number for a range.
+static func _option(args: PackedStringArray, _context: Dictionary) -> bool:
+	var option := GameSettings.options.find(StringName(args[0]))
+	if option == null:
+		return false
+	var value: Variant = GameSettings.get_option(option.id)
+	for text: String in args.slice(1):
+		var wanted: Variant = _option_value(option, text)
+		if wanted != null and wanted == value:
+			return true
+	return false
+
+## OPTION_AT_LEAST <option> <n>: the player's number option is at least n.
+static func _option_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
+	var option := GameSettings.options.find(StringName(args[0]))
+	return option != null and option.kind == GameOption.Kind.RANGE and float(GameSettings.get_option(option.id)) >= float(args[1])
+
+# `text` as a value of `option`, or null when the option takes no such value.
+static func _option_value(option: GameOption, text: String) -> Variant:
+	match option.kind:
+		GameOption.Kind.SWITCH:
+			return GameRulesService.to_bool(text) if ["true", "false"].has(text.to_lower()) else null
+		GameOption.Kind.CHOICE:
+			return text if option.choices.has(text) else null
+	return option.accept(float(text), null) if text.is_valid_float() else null
+
+static func _option_problem(id: String) -> String:
+	return "" if GameSettings.options.find(StringName(id)) != null else "no option '%s' of the game (GameDefinition.options, GameModule.get_options())" % id
+
+static func _option_values_problem(args: PackedStringArray) -> String:
+	var option := GameSettings.options.find(StringName(args[0]))
+	for text: String in args.slice(1):
+		if not text.begins_with("$") and _option_value(option, text) == null:
+			return "'%s' is no value of option '%s'" % [text, option.id]
+	return ""
+
+static func _number_option_problem(args: PackedStringArray) -> String:
+	var option := GameSettings.options.find(StringName(args[0]))
+	return "" if option.kind == GameOption.Kind.RANGE else "option '%s' is no number" % option.id
 
 ## EVENT_ARG <name> <value>...: the argument of the event that set off the
 ## trigger is one of the values (see `TriggerData`).

@@ -10,7 +10,8 @@ extends Resource
 ## the settings menu shows a row for each, under the game's options.
 ##
 ## A system reads its option where it acts, not as it starts, so a change the
-## player makes in the menu holds at once.
+## player makes in the menu holds at once; content reads it as a condition
+## (`OPTION <option> <value>...`, `OPTION_AT_LEAST`: `CoreRules`).
 
 ## How the player sets the option.
 enum Kind {
