@@ -383,6 +383,13 @@ func _update_tab_buttons() -> void:
 	calendar_button.button_pressed = _tab == "calendar"
 	world_button.button_pressed = _tab == "world"
 	collections_button.button_pressed = _tab == "collections"
+	# A control of the tab that still shows keeps the focus (the hotbar
+	# editor's item while the player picks one, Assign), as the tab is told
+	# again on every change; else the tab shown takes it.
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused != null and is_ancestor_of(focused) and focused.is_visible_in_tree() and not _tab_buttons().has(focused) \
+			and not (focused is BaseButton and (focused as BaseButton).disabled):
+		return
 	match _tab:
 		"quests": quests_button.grab_focus()
 		"social": social_button.grab_focus()

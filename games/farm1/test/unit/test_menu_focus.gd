@@ -45,6 +45,25 @@ func test_game_menu_keeps_selected_tab_focusable() -> void:
 	menu.close()
 	assert_signal_emitted_with_parameters(GameEvents, "menu_closed", [GameMenu.MENU_ID])
 
+func test_game_menu_leaves_the_focus_on_the_hotbar_editor_as_it_tells_the_tab_again() -> void:
+	var inventory_snapshot := InventoryState.to_save_data()
+	var hotbar_snapshot := Hotbar.to_save_data()
+	InventoryState.clear()
+	InventoryState.add_item(ItemData.find(&"copper_ore"), 3)
+	InventoryState.add_item(ItemData.find(&"rusty_sword"), 1)
+	var menu := await _instantiate("res://game/ui/game_menu.tscn") as GameMenu
+	menu.open()
+	menu.item_select.grab_focus()
+	menu.item_select.select(1)
+	menu.item_select.item_selected.emit(1)
+	assert_true(menu.item_select.has_focus(), "the player picking an item stays on the list")
+	menu.assign_button.grab_focus()
+	menu.assign_button.pressed.emit()
+	assert_true(menu.assign_button.has_focus(), "a binding made leaves the player on Assign")
+	menu.close()
+	InventoryState.load_save_data(inventory_snapshot)
+	Hotbar.load_save_data(hotbar_snapshot)
+
 func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> void:
 	var cases: Array[Dictionary] = [
 		{"path": "res://tiamat/modules/lifesim/animals/animal_management_menu.tscn", "kind": "animal"},

@@ -62,7 +62,10 @@ func close() -> void:
 	_shop = null
 	super()
 
-func _rebuild() -> void:
+## Builds the purchases' buttons; `keep_focus`, on the purchase whose button
+## had it (`MenuLayer.focus_kept()`), else on the first the player can make.
+func _rebuild(keep_focus := false) -> void:
+	var kept: Variant = MenuLayer.focused_key(self) if keep_focus else null
 	for child: Node in items_container.get_children():
 		child.queue_free()
 	_buy_buttons.clear()
@@ -85,6 +88,7 @@ func _rebuild() -> void:
 		if item == null:
 			continue
 		var button := MenuLayer.list_button()
+		button.set_meta(MenuLayer.FOCUS_KEY, "item:%s" % item_id)
 		_buy_buttons[item_id] = button
 		button.pressed.connect(_buy.bind(item_id))
 		button.focus_entered.connect(_tell_about.bind(item))
@@ -92,6 +96,7 @@ func _rebuild() -> void:
 		buttons.append(button)
 	for offer: ShopOffer in _shop.offers:
 		var button := MenuLayer.list_button()
+		button.set_meta(MenuLayer.FOCUS_KEY, "offer:%s" % offer.get_key())
 		_offer_buttons[offer] = button
 		button.pressed.connect(_buy_offer.bind(offer))
 		button.focus_entered.connect(_tell_of_offer.bind(offer))
@@ -101,12 +106,7 @@ func _rebuild() -> void:
 	_refresh_sell_list()
 	for child: Node in sell_container.get_children():
 		buttons.append(child as Button)
-	var first_button: Button = close_button
-	for button: Button in buttons:
-		if not button.disabled:
-			first_button = button
-			break
-	MenuLayer.focus(first_button)
+	MenuLayer.focus_kept(buttons, kept, close_button)
 
 ## What the counter tells of `item`: its description, then what it does
 ## (`ItemData.describe_effects()`), on a line of its own; "" for none.
@@ -186,7 +186,7 @@ func _next_amount() -> void:
 
 func _buy_offer(offer: ShopOffer) -> void:
 	ShopState.buy_offer(_shop, offer, _offer_context())
-	_rebuild()
+	_rebuild(true)
 
 func _offer_context() -> Dictionary:
 	var location := WorldLocationData.find_current(get_tree())

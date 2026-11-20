@@ -1,6 +1,13 @@
 class_name MailboxMenu
 extends MenuLayer
 
+## The player's letters, one at a time, with the previous and the next a press
+## away and a letter's attachments claimed from it. The letters keep the order
+## the mailbox opened with (the unread first), any that arrive while it shows
+## coming last, so a claim leaves the player on the letter they claimed from;
+## and the focus stays on the button that has it while that one still works,
+## so Next pages on through the letters.
+
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var sender_label: Label = $Panel/VBox/Sender
 @onready var body_label: RichTextLabel = $Panel/VBox/Body
@@ -31,9 +38,9 @@ func open() -> void:
 		return
 	_index = _first_unread_index()
 	show_menu()
-	_show_current()
+	_show_current(true)
 
-func _show_current() -> void:
+func _show_current(opening := false) -> void:
 	if _mail.is_empty():
 		close()
 		return
@@ -50,10 +57,22 @@ func _show_current() -> void:
 	claim_button.text = tr("Claimed") if MailState.is_claimed(mail.id) else tr("Claim rewards")
 	previous_button.disabled = _index <= 0
 	next_button.disabled = _index >= _mail.size() - 1
-	if not claim_button.disabled:
-		claim_button.grab_focus()
-	else:
-		close_button.grab_focus()
+	_keep_focus(opening)
+
+# Leaves the focus on the button that has it while it still works, else hands
+# it to the first that does: claiming, the next letter, the previous, closing.
+# A mailbox just opened starts on claiming, or closing.
+func _keep_focus(opening: bool) -> void:
+	var focused := get_viewport().gui_get_focus_owner() as Button
+	if not opening and focused != null and is_ancestor_of(focused) and focused.is_visible_in_tree() and not focused.disabled:
+		return
+	var order: Array[Button] = [claim_button, close_button]
+	if not opening:
+		order = [claim_button, next_button, previous_button, close_button]
+	for button: Button in order:
+		if button.visible and not button.disabled:
+			button.grab_focus()
+			return
 
 func _reward_text(mail: MailData) -> String:
 	var parts: PackedStringArray = []
@@ -86,7 +105,13 @@ func _first_unread_index() -> int:
 			return index
 	return maxi(_mail.size() - 1, 0)
 
+# A letter claimed or arrived: the letters keep their order, a new one coming
+# last, as the service's own order puts the unread first and would move the
+# one the player reads.
 func _on_mail_changed(_mail_id: StringName) -> void:
-	if visible:
-		_mail = MailState.get_received_mail()
-		_show_current()
+	if not visible:
+		return
+	for mail: MailData in MailState.get_received_mail():
+		if not _mail.has(mail):
+			_mail.append(mail)
+	_show_current()

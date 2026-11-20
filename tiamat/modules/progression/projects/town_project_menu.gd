@@ -19,15 +19,18 @@ func _ready() -> void:
 func open(location_id: StringName) -> void:
 	_location_id = location_id
 	show_menu()
-	_rebuild()
+	_rebuild(false)
 
-func _rebuild() -> void:
+## Builds the projects' blocks; `keep_focus`, on the project whose button had
+## it (`MenuLayer.focus_kept()`), so a donation leaves the player on it.
+func _rebuild(keep_focus := true) -> void:
+	var kept: Variant = MenuLayer.focused_key(self) if keep_focus else null
 	for child: Node in projects_container.get_children():
 		child.queue_free()
 	var location := WorldLocationData.find(_location_id)
 	title_label.text = tr("%s Projects") % (tr(location.display_name) if location != null else tr("Town"))
 	var projects := TownProjects.get_projects_for_location(_location_id)
-	var first_button: Button
+	var buttons: Array[Button] = []
 	if projects.is_empty():
 		var empty := Label.new()
 		empty.text = tr("No restoration projects are registered here yet.")
@@ -46,14 +49,11 @@ func _rebuild() -> void:
 		block.add_child(body)
 		var action := MenuLayer.list_button()
 		_configure_action(action, project)
+		action.set_meta(MenuLayer.FOCUS_KEY, project.id)
 		block.add_child(action)
 		projects_container.add_child(block)
-		if first_button == null and not action.disabled:
-			first_button = action
-	if first_button != null:
-		first_button.grab_focus()
-	else:
-		close_button.grab_focus()
+		buttons.append(action)
+	MenuLayer.focus_kept(buttons, kept, close_button)
 
 func _project_text(project: TownProjectData) -> String:
 	var lines := PackedStringArray([tr(project.description), "", "[b]%s[/b]" % tr("Materials")])

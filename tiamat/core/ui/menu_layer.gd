@@ -16,6 +16,11 @@ extends CanvasLayer
 ## Emitted when the menu closes.
 signal closed
 
+## The meta of a list's button that names its entry (a recipe's id), so a list
+## rebuilt after a press gives the focus back to the same entry
+## (`focused_key()`, `focus_kept()`).
+const FOCUS_KEY := &"focus_key"
+
 ## The menu's name: its group and the reason of its lock.
 var menu_id: StringName
 
@@ -54,6 +59,31 @@ static func focus(control: Control) -> void:
 		scroll.scroll_vertical = 0
 	else:
 		scroll.ensure_control_visible(control)
+
+## What names the entry whose button has the focus in `menu`'s view (its
+## `FOCUS_KEY` meta), or null: a menu reads it before it rebuilds its list.
+static func focused_key(menu: Node) -> Variant:
+	var owner := menu.get_viewport().gui_get_focus_owner() if menu.is_inside_tree() else null
+	return owner.get_meta(FOCUS_KEY) if owner != null and owner.has_meta(FOCUS_KEY) else null
+
+## Gives the focus, in a list just rebuilt, back to the button of `buttons`
+## whose `FOCUS_KEY` meta is `key`, or, while that one is disabled, to the next
+## that is not, else the nearest before it; with no such button, to the first
+## not disabled; with none, to `fallback`. So the player who crafts or buys
+## stays on the entry they pressed.
+static func focus_kept(buttons: Array[Button], key: Variant, fallback: Control) -> void:
+	var at := -1
+	if key != null:
+		for index: int in buttons.size():
+			if buttons[index].has_meta(FOCUS_KEY) and buttons[index].get_meta(FOCUS_KEY) == key:
+				at = index
+				break
+	var order: Array = range(buttons.size()) if at < 0 else range(at, buttons.size()) + range(at - 1, -1, -1)
+	for index: int in order:
+		if not buttons[index].disabled:
+			focus(buttons[index])
+			return
+	focus(fallback)
 
 # The nearest list around `control` that scrolls to the focus, or null.
 static func _scroll_of(control: Control) -> ScrollContainer:

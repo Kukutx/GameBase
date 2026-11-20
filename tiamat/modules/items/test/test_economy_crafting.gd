@@ -189,6 +189,33 @@ func test_the_crafting_menu_says_what_a_locked_recipe_still_needs() -> void:
 	assert_has(texts, "Fixture Crate  (Fixture Plank x10)", "once it holds, the recipe needs nothing more")
 	menu.close()
 
+func test_crafting_leaves_the_player_on_the_recipe_they_pressed() -> void:
+	InventoryState.add_item_by_id(&"fixture_berry", 4)
+	InventoryState.add_item_by_id(&"fixture_plank", 10)
+	var menu := (load("res://tiamat/modules/items/crafting/crafting_menu.tscn") as PackedScene).instantiate() as CraftingMenu
+	add_child_autofree(menu)
+	menu.open()
+	var snack := _recipe_button(menu, "Fixture Snack")
+	assert_ne(_recipe_button(menu, "Fixture Crate"), null)
+	snack.grab_focus()
+	snack.pressed.emit()
+	assert_eq(InventoryState.get_quantity(&"fixture_snack"), 1)
+	var focused := get_viewport().gui_get_focus_owner() as Button
+	assert_eq(focused, _recipe_button(menu, "Fixture Snack"), "the rebuilt list keeps the focus on the snack")
+	assert_false(focused.disabled, "two berries make one more")
+	focused.pressed.emit()
+	focused = get_viewport().gui_get_focus_owner() as Button
+	assert_eq(focused, _recipe_button(menu, "Fixture Crate"), "with the berries spent, the nearest recipe still open")
+	menu.close()
+
+# The button of the recipe whose text begins with `name` in `menu`'s list, the
+# one the list shows now.
+func _recipe_button(menu: CraftingMenu, name: String) -> Button:
+	for child: Node in menu.recipes_container.get_children():
+		if not child.is_queued_for_deletion() and (child as Button).text.begins_with(name):
+			return child as Button
+	return null
+
 func test_seasonal_stock_changes_with_calendar() -> void:
 	ContentFixture.use_calendar(self, GameCalendar.new())
 	var spring := _shop.get_stock("Spring")
