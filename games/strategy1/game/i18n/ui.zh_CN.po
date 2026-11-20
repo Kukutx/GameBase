@@ -85,6 +85,9 @@ msgstr "长枪兵"
 msgid "Bowman"
 msgstr "弓兵"
 
+msgid "Field Medic"
+msgstr "军医"
+
 msgid "Rider"
 msgstr "骑兵"
 

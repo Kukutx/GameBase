@@ -27,6 +27,44 @@ func test_sides_join_as_they_come_and_fight_the_factions_hostile_to_theirs() -> 
 	assert_false(sides.are_hostile(0, 0), "a side never fights itself")
 	assert_eq(sides.foes_of(0), PackedInt32Array([1]))
 	assert_eq(sides.every(), PackedInt32Array([0, 1]))
+	assert_eq(sides.friends_of(1), PackedInt32Array([1]), "and fights beside its own")
+
+func test_a_healer_mends_the_most_hurt_friend_it_sees_and_never_strikes() -> void:
+	var battle := RtsFixture.battle()
+	var medic := RtsFixture.add(battle, &"fixture_medic", FactionData.PLAYER, Vector2(100.0, 80.0))
+	var scratched := RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(130.0, 80.0))
+	var wounded := RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(100.0, 120.0))
+	# A foe out of everyone's sight, so the battle goes on.
+	RtsFixture.add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2(300.0, 20.0))
+	scratched.health.take(4)
+	wounded.health.take(12)
+	var mended: Array[String] = []
+	battle.unit_healed.connect(func(healer: RtsUnit, target: RtsUnit, amount: int) -> void:
+		mended.append("%s %d" % ["wounded" if target == wounded else "scratched", amount]))
+	var struck: Array[RtsUnit] = []
+	battle.unit_attacked.connect(func(attacker: RtsUnit, _target: RtsUnit, _amount: int) -> void: struck.append(attacker))
+	assert_eq(battle.get_most_hurt_friend(medic), wounded)
+	assert_true(RtsFixture.run_until(battle, func() -> bool: return mended.size() >= 4, 10.0))
+	assert_eq(mended, ["wounded 4", "wounded 4", "wounded 4", "scratched 4"] as Array[String], "the most hurt first, then the next")
+	assert_eq(struck, [] as Array[RtsUnit], "it never strikes")
+	assert_eq(wounded.health.current, wounded.health.maximum)
+	assert_null(battle.get_most_hurt_friend(medic), "none left to mend")
+
+func test_healers_follow_an_attack_and_alone_hold_nothing() -> void:
+	var battle := RtsFixture.battle()
+	battle.ended.connect(_on_ended)
+	var footman := RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(240.0, 120.0))
+	var medic := RtsFixture.add(battle, &"fixture_medic", FactionData.PLAYER, Vector2(20.0, 20.0))
+	var brute := RtsFixture.add(battle, &"fixture_brute", FactionData.MONSTERS, Vector2(254.0, 120.0))
+	battle.order_attack([footman, medic] as Array[RtsUnit], brute)
+	assert_eq(footman.order, RtsUnit.Order.ATTACK)
+	assert_eq(medic.order, RtsUnit.Order.ATTACK_MOVE, "a healer attack-moves to the foe, mending on the way")
+	battle.order_hold([medic] as Array[RtsUnit])
+	assert_true(RtsFixture.run_until(battle, battle.is_over, 30.0))
+	assert_false(footman.is_alive())
+	assert_true(medic.is_alive(), "the medic still stands")
+	assert_false(battle.is_won(), "but a side of healers alone has lost")
+	assert_eq(_ended, [false] as Array[bool])
 
 func test_a_group_sent_somewhere_goes_each_to_its_own_place() -> void:
 	var battle := RtsFixture.battle()

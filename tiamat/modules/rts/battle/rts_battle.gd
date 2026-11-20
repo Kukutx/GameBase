@@ -11,9 +11,12 @@ extends RefCounted
 ## with nothing to do, or attack-moving, goes after the foes it sees and lets
 ## one go once it gets well out of sight (`LEASH`); a holding unit fights only
 ## what it reaches.
-## The battle ends when no two living units are hostile
-## (`FactionData.are_hostile()`), won when the player's side is left. A unit
-## that falls is out of the battle for good, even if its health comes back.
+## A healer (`RtsUnitData.heal`) mends the most hurt friend it sees instead
+## of fighting.
+## The battle ends when no two living units that fight are hostile
+## (`FactionData.are_hostile()`), won when the player's side is left: healers
+## alone hold nothing. A unit that falls is out of the battle for good, even if
+## its health comes back.
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`RtsBattleGame`) lets time pass with `advance()`, gives the player's orders
@@ -28,6 +31,8 @@ extends RefCounted
 ## the units the player does not command think by turns.
 
 signal unit_attacked(attacker: RtsUnit, target: RtsUnit, amount: int)
+## A healer (`RtsUnitData.heal`) mended `target` by `amount`.
+signal unit_healed(healer: RtsUnit, target: RtsUnit, amount: int)
 signal unit_defeated(unit: RtsUnit)
 signal ended(won: bool)
 
@@ -180,6 +185,24 @@ func get_nearest_foe(unit: RtsUnit, within := INF) -> RtsUnit:
 				nearest = gap
 	return found
 
+## The living unit of a side `unit` does not fight, itself aside, that has
+## lost the most health and whose edge is at most `within` from its edge, or
+## null when none has lost any; of two as hurt, the earlier placed.
+func get_most_hurt_friend(unit: RtsUnit, within := INF) -> RtsUnit:
+	var candidates := _alive
+	if _filed and not is_inf(within):
+		candidates = _grid.get_near(unit.position, within + unit.data.radius + _widest_radius + _stride, _sides.friends_of(unit.side))
+	var found: RtsUnit
+	var most := 0
+	for other: RtsUnit in candidates:
+		if other == unit or not other.is_alive() or are_foes(unit, other):
+			continue
+		var lost := other.health.maximum - other.health.current
+		if lost > 0 and (lost > most or (lost == most and other.index < found.index)) and unit.get_gap_to(other) <= within:
+			found = other
+			most = lost
+	return found
+
 ## Lets `seconds` of battle time pass, a step (`STEP`) at a time.
 func advance(seconds: float) -> void:
 	_left += seconds
@@ -207,15 +230,22 @@ func order_move(group: Array[RtsUnit], point: Vector2, attack_move := false) -> 
 		_find_path(unit, unit.goal)
 
 ## Sends `group` after `target` until it falls; units of its own side are not
-## sent.
+## sent, and its healers attack-move to it, mending on the way.
 func order_attack(group: Array[RtsUnit], target: RtsUnit) -> void:
 	if target == null or not target.is_alive():
 		return
+	var healers: Array[RtsUnit] = []
 	for unit: RtsUnit in _living(group):
-		if FactionData.are_hostile(unit.faction, target.faction):
-			unit.order = RtsUnit.Order.ATTACK
-			unit.target_index = target.index
-			_clear_path(unit)
+		if not FactionData.are_hostile(unit.faction, target.faction):
+			continue
+		if unit.data.heals():
+			healers.append(unit)
+			continue
+		unit.order = RtsUnit.Order.ATTACK
+		unit.target_index = target.index
+		unit.clear_path()
+	if not healers.is_empty():
+		order_move(healers, target.position, true)
 
 ## What a right click at `point` orders `group`: to attack the foe there, else
 ## to move there.
@@ -280,10 +310,10 @@ func _file_units() -> void:
 func _update(unit: RtsUnit) -> void:
 	unit.cooldown = maxf(unit.cooldown - STEP, 0.0)
 	unit.repath_left -= STEP
-	var target := _choose_target(unit)
+	var target := RtsTargets.choose(self, unit)
 	if target != null:
 		if unit.reaches(target):
-			_clear_path(unit)
+			unit.clear_path()
 			if unit.cooldown <= 0.0:
 				_attack(unit, target)
 		elif unit.order != RtsUnit.Order.HOLD:
@@ -301,37 +331,13 @@ func _update(unit: RtsUnit) -> void:
 		_find_path(unit, unit.goal)
 	elif unit.path.is_empty() or unit.position.distance_to(unit.goal) <= unit.data.radius + ARRIVE_DISTANCE:
 		unit.order = RtsUnit.Order.IDLE
-		_clear_path(unit)
-
-# The foe `unit` fights or goes after now, as its order lets it; null when it
-# has none.
-func _choose_target(unit: RtsUnit) -> RtsUnit:
-	var current := get_unit(unit.target_index)
-	match unit.order:
-		RtsUnit.Order.MOVE:
-			return null
-		RtsUnit.Order.ATTACK:
-			if current != null:
-				return current
-			unit.order = RtsUnit.Order.IDLE
-			_clear_path(unit)
-		RtsUnit.Order.HOLD:
-			if current != null and unit.reaches(current):
-				return current
-			return _take_target(unit, get_nearest_foe(unit, unit.data.attack_range))
-	if current != null and unit.get_gap_to(current) <= unit.data.sight_range * LEASH:
-		return current
-	return _take_target(unit, get_nearest_foe(unit, unit.data.sight_range))
-
-func _take_target(unit: RtsUnit, target: RtsUnit) -> RtsUnit:
-	var index := target.index if target != null else -1
-	if index != unit.target_index:
-		unit.target_index = index
-		_clear_path(unit)
-	return target
+		unit.clear_path()
 
 func _attack(unit: RtsUnit, target: RtsUnit) -> void:
 	unit.cooldown = unit.data.attack_cooldown
+	if unit.data.heals():
+		unit_healed.emit(unit, target, target.health.heal(unit.data.heal))
+		return
 	var amount := target.health.take(maxi(unit.data.damage - target.data.armor, 1))
 	unit_attacked.emit(unit, target, amount)
 	if not target.is_alive():
@@ -359,13 +365,6 @@ func _find_path(unit: RtsUnit, point: Vector2) -> void:
 	unit.path = navigation.find_path(unit.position, point)
 	unit.path_end = point
 	unit.repath_left = REPATH_SECONDS
-
-# Drops the way `unit` walks, so that it finds one again when it next moves:
-# after a foe, or back towards its goal once the fight is over.
-func _clear_path(unit: RtsUnit) -> void:
-	unit.path.clear()
-	unit.path_end = Vector2.INF
-	unit.repath_left = 0.0
 
 # Pushes apart each two living units whose bodies overlap: half each, or all
 # of it on the one that does not hold. A push into the closed part of the
@@ -412,7 +411,7 @@ func _check_over() -> void:
 	var seen := PackedByteArray()
 	seen.resize(_sides.count())
 	for unit: RtsUnit in _alive:
-		if unit.is_alive() and seen[unit.side] == 0:
+		if unit.is_alive() and not unit.data.heals() and seen[unit.side] == 0:
 			seen[unit.side] = 1
 			standing.append(unit)
 	for first: RtsUnit in standing:
@@ -427,7 +426,7 @@ func _set_still(group: Array[RtsUnit], order: RtsUnit.Order) -> void:
 	for unit: RtsUnit in _living(group):
 		unit.order = order
 		unit.target_index = -1
-		_clear_path(unit)
+		unit.clear_path()
 
 func _living(group: Array[RtsUnit]) -> Array[RtsUnit]:
 	return group.filter(func(unit: RtsUnit) -> bool: return unit != null and unit.is_alive())

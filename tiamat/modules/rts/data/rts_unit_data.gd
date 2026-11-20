@@ -5,7 +5,8 @@ extends ContentEntry
 ## footman, a bowman, a raider. It walks the field at `move_speed`, attacks a
 ## foe at most `attack_range` away from its edge once every `attack_cooldown`
 ## seconds, and goes after foes it sees (`sight_range`) when it has no order
-## that keeps it from them (`RtsBattle`). Distances are in pixels of the field.
+## that keeps it from them (`RtsBattle`). A healer (`heal`) mends its side
+## instead of fighting. Distances are in pixels of the field.
 
 const KIND := &"rts_unit"
 
@@ -20,6 +21,11 @@ const KIND := &"rts_unit"
 ## How far from its edge to a foe's edge it attacks: a few pixels for a blade,
 ## many for a bow.
 @export_range(1.0, 400.0, 0.5) var attack_range := 4.0
+## The health it mends instead of attacking: a healer goes after the most
+## hurt unit it sees of a side it does not fight, itself aside, and mends it
+## from `attack_range` once every `attack_cooldown`, and never strikes a foe.
+## 0: it fights.
+@export_range(0, 999) var heal := 0
 ## The seconds between its attacks.
 @export_range(0.1, 10.0, 0.05) var attack_cooldown := 1.0
 ## How fast it walks, in pixels a second.
@@ -28,6 +34,10 @@ const KIND := &"rts_unit"
 @export_range(1.0, 600.0, 0.5) var sight_range := 80.0
 ## The size of its round body, which other units keep out of.
 @export_range(2.0, 32.0, 0.5) var radius := 5.0
+
+## Whether it mends its side instead of fighting (`heal`).
+func heals() -> bool:
+	return heal > 0
 
 ## The unit with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> RtsUnitData:

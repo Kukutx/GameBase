@@ -1,7 +1,8 @@
 extends RefCounted
 
 ## Fixture content for the rts module's tests: a footman that fights up
-## close, a bowman that shoots from afar, a raider and a brute.
+## close, a bowman that shoots from afar, a medic who mends, a raider and a
+## brute.
 ##
 ##     const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
 
@@ -21,14 +22,22 @@ static func unit(id: StringName, health: int, damage: int, armor: int, attack_ra
 
 ## The fixture units: a footman (30 health, 6 damage, 1 armor, a blow every
 ## second), a bowman (shoots 50 pixels away every second and a half), a
+## medic (mends 4 health 10 pixels away every second, never strikes), a
 ## raider (24 health, 5 damage) and a slow brute (60 health, 2 armor).
 static func entries() -> Array:
 	return [
 		unit(&"fixture_footman", 30, 6, 1, 3.0, 1.0, 30.0, 60.0),
 		unit(&"fixture_bowman", 20, 4, 0, 50.0, 1.5, 28.0, 70.0, 4.0),
+		medic(),
 		unit(&"fixture_raider", 24, 5, 0, 3.0, 1.0, 32.0, 60.0),
 		unit(&"fixture_brute", 60, 12, 2, 4.0, 2.0, 20.0, 50.0, 7.0),
 	]
+
+## The fixture medic.
+static func medic() -> RtsUnitData:
+	var entry := unit(&"fixture_medic", 16, 1, 0, 10.0, 1.0, 30.0, 60.0, 4.0)
+	entry.heal = 4
+	return entry
 
 static func placement(unit_id: StringName, faction_id: StringName, position: Vector2) -> RtsPlacement:
 	var entry := RtsPlacement.new()
