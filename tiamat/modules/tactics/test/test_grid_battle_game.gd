@@ -294,6 +294,7 @@ func test_aiming_a_heal_that_cures_tells_what_it_lifts() -> void:
 	game.choose_command(1)
 	game.get_board().cell_hovered.emit(Vector2i(1, 1))
 	assert_true(_tells(game, tr("%s regains %d") % [tr("Fixture Knight"), 3] + ", " + tr("cures %s") % tr("Fixture Poison")), "the knight's 3, and the poison it lifts")
+	assert_true(_tells(game, tr("Afflicted: %s") % (tr("%s %ds") % [tr("Fixture Poison"), 4])), "the knight's poison and the seconds it lasts yet")
 
 func test_an_action_that_recharges_tells_when_it_is_ready() -> void:
 	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_strike", &"fixture_volley"])

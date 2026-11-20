@@ -74,6 +74,15 @@ func get_seconds_left(affliction_id: StringName) -> float:
 	var affliction: AfflictionData = entry["data"]
 	return float(entry["next"]) + (int(entry["ticks"]) - 1) * affliction.tick_seconds
 
+## The afflictions on it, in the order laid, each named in the player's
+## language with the whole seconds it lasts yet, rounded up ("Burning 2s").
+func describe() -> PackedStringArray:
+	var told := PackedStringArray()
+	for id: StringName in _laid:
+		var affliction: AfflictionData = _laid[id]["data"]
+		told.append(tr("%s %ds") % [tr(affliction.display_name), maxi(ceili(get_seconds_left(id) - 0.01), 1)])
+	return told
+
 ## The seconds to the next tick of any of them; INF with none.
 func get_next_tick() -> float:
 	var soonest := INF

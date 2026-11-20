@@ -173,7 +173,7 @@ debug_advance_time={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://tiamat/core/i18n/core.zh_CN.po", "res://tiamat/modules/combat/i18n/combat.zh_CN.po", "res://tiamat/modules/dialogue/i18n/dialogue.zh_CN.po", "res://tiamat/modules/items/i18n/items.zh_CN.po", "res://tiamat/modules/lifesim/i18n/lifesim.zh_CN.po", "res://tiamat/modules/npc_ai/i18n/npc_ai.zh_CN.po", "res://tiamat/modules/npc_social/i18n/npc_social.zh_CN.po", "res://tiamat/modules/progression/i18n/progression.zh_CN.po", "res://tiamat/modules/skills/i18n/skills.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
+locale/translations=PackedStringArray("res://tiamat/core/i18n/core.zh_CN.po", "res://tiamat/modules/combat/i18n/combat.zh_CN.po", "res://tiamat/modules/damage/i18n/damage.zh_CN.po", "res://tiamat/modules/dialogue/i18n/dialogue.zh_CN.po", "res://tiamat/modules/items/i18n/items.zh_CN.po", "res://tiamat/modules/lifesim/i18n/lifesim.zh_CN.po", "res://tiamat/modules/npc_ai/i18n/npc_ai.zh_CN.po", "res://tiamat/modules/npc_social/i18n/npc_social.zh_CN.po", "res://tiamat/modules/progression/i18n/progression.zh_CN.po", "res://tiamat/modules/skills/i18n/skills.zh_CN.po", "res://game/i18n/ui.zh_CN.po")
 locale/translations_pot_files=PackedStringArray("res://game/dialogue/intro.dialogue", "res://game/dialogue/neri.dialogue", "res://game/dialogue/rowan.dialogue")
 
 [layer_names]

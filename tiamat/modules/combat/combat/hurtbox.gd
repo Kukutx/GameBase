@@ -133,6 +133,11 @@ func is_afflicted(affliction_id: StringName) -> bool:
 func get_affliction_seconds_left(affliction_id: StringName) -> float:
 	return _afflictions.get_seconds_left(affliction_id)
 
+## The afflictions on it now, each with the seconds it lasts yet, in the
+## player's language (`Afflictions.describe()`: "Burning 2s").
+func describe_afflictions() -> PackedStringArray:
+	return _afflictions.describe()
+
 ## Lifts every affliction from it.
 func cure() -> void:
 	if _afflictions.is_empty():

@@ -23,7 +23,8 @@ extends MiniGame
 ## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls",
 ## "Brute takes 2, turn delayed", "Swordsman gains Defense +2", "Knight takes
 ## 3, Poisoned"), and of a unit the boosts on it and how many turns they hold
-## (`GridUnit.get_boost()`), the afflictions on it (`GridUnit.afflictions`)
+## (`GridUnit.get_boost()`), the afflictions on it with the seconds each
+## lasts yet (`GridUnit.afflictions`, `Afflictions.describe()`)
 ## and of a leader that its side flees once it falls (`GridUnit.leader`). The
 ## board numbers the units whose turns come next
 ## (`GridBattleBoard.turns_shown`), and the line tells of each unit that
@@ -332,9 +333,8 @@ func _show_info() -> void:
 	var boosts := {GridUnit.ATTACK: unit.get_boost(GridUnit.ATTACK), GridUnit.DEFENSE: unit.get_boost(GridUnit.DEFENSE)}
 	if boosts.values().any(func(amount: int) -> bool: return amount != 0):
 		_info.text += "\n" + tr("Boosts: %s (turns left: %d)") % [_boost_text(boosts), unit.get_boost_turns()]
-	var afflictions := PackedStringArray(unit.afflictions.get_all().map(func(affliction: AfflictionData) -> String: return tr(affliction.display_name)))
-	if not afflictions.is_empty():
-		_info.text += "\n" + tr("Afflicted: %s") % GameText.list(afflictions)
+	if not unit.afflictions.is_empty():
+		_info.text += "\n" + tr("Afflicted: %s") % GameText.list(unit.afflictions.describe())
 	if unit.leader:
 		_info.text += "\n" + tr("Leader: their side flees when they fall")
 	if _board.show_cursor and battle.grid.is_cover(_board.cursor):
