@@ -10,7 +10,7 @@ extends GameModule
 ## `game/data/triggers/`. What the depths' chests hold is a way to get it
 ## (`ItemSources`).
 
-const CHEST_LOOT := [preload("res://game/depths/chest_loot.tres"), preload("res://game/depths/hoard_loot.tres")]
+const DEPTH_CHESTS := preload("res://game/depths/chests.tres")
 
 func install() -> void:
 	RunState.save_block_reason = "Return to camp to save"
@@ -21,8 +21,7 @@ func install() -> void:
 
 ## The depths' chests as a way to get what they hold.
 static func find_item_sources(_registry: ContentRegistry, sources: ItemSources) -> void:
-	for loot: LootTable in CHEST_LOOT:
-		loot.add_ways(sources, TranslationServer.translate("Found in chests in the depths"))
+	(DEPTH_CHESTS as ChestSpread).add_ways(sources, TranslationServer.translate("Found in chests in the depths"))
 
 func _on_item_added(item_id: StringName, _quantity: int) -> void:
 	Hotbar.ensure_item(item_id)

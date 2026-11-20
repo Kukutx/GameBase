@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ChestSpread" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/loot/chest_spread.gd" id="1_spread"]
+[ext_resource type="Resource" path="res://game/depths/chest_loot.tres" id="2_chest_loot"]
+[ext_resource type="Resource" path="res://game/depths/hoard_loot.tres" id="3_hoard_loot"]
+
+[resource]
+script = ExtResource("1_spread")
+loot = ExtResource("2_chest_loot")
+chance = 0.3
+from_level = 1
+hoard = ExtResource("3_hoard_loot")
+hoard_name = "Warden's Hoard"

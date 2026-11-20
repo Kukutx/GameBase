@@ -656,3 +656,6 @@ msgstr "用%s加工"
 
 msgid "Reward for %s"
 msgstr "%s的奖励"
+
+msgid "Found in chests in the mine"
+msgstr "矿洞的宝箱中找到"

@@ -5,6 +5,9 @@
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="3_enemy"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/elite_odds.gd" id="4_elite_odds"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/hazard_spread.gd" id="5_hazards"]
+[ext_resource type="Script" path="res://tiamat/modules/items/loot/chest_spread.gd" id="6_chests"]
+[ext_resource type="Script" path="res://tiamat/modules/items/loot/loot_table.gd" id="7_loot"]
+[ext_resource type="Script" path="res://tiamat/modules/items/loot/loot_entry.gd" id="8_entry"]
 
 [sub_resource type="Resource" id="rock_iridium_rock"]
 script = ExtResource("2_rock")
@@ -108,6 +111,90 @@ most = 3
 spacing = 48.0
 damage_per_depth = 0.25
 
+[sub_resource type="Resource" id="chest_copper"]
+script = ExtResource("8_entry")
+item_id = &"copper_ore"
+weight = 4.0
+min_quantity = 3
+max_quantity = 6
+
+[sub_resource type="Resource" id="chest_iron"]
+script = ExtResource("8_entry")
+item_id = &"iron_ore"
+weight = 3.0
+min_quantity = 2
+max_quantity = 5
+from_level = 6
+
+[sub_resource type="Resource" id="chest_gold"]
+script = ExtResource("8_entry")
+item_id = &"gold_ore"
+weight = 2.0
+min_quantity = 2
+max_quantity = 4
+from_level = 20
+
+[sub_resource type="Resource" id="chest_iridium"]
+script = ExtResource("8_entry")
+item_id = &"iridium_ore"
+weight = 1.0
+min_quantity = 1
+max_quantity = 3
+from_level = 60
+
+[sub_resource type="Resource" id="chest_snack"]
+script = ExtResource("8_entry")
+item_id = &"field_snack"
+weight = 2.0
+min_quantity = 1
+max_quantity = 2
+
+[sub_resource type="Resource" id="hoard_gold"]
+script = ExtResource("8_entry")
+item_id = &"gold_ore"
+weight = 3.0
+min_quantity = 4
+max_quantity = 8
+
+[sub_resource type="Resource" id="hoard_iridium"]
+script = ExtResource("8_entry")
+item_id = &"iridium_ore"
+weight = 2.0
+min_quantity = 2
+max_quantity = 5
+from_level = 50
+
+[sub_resource type="Resource" id="hoard_snack"]
+script = ExtResource("8_entry")
+item_id = &"field_snack"
+weight = 1.0
+min_quantity = 2
+max_quantity = 3
+
+[sub_resource type="Resource" id="chest_loot"]
+script = ExtResource("7_loot")
+entries = Array[ExtResource("8_entry")]([SubResource("chest_copper"), SubResource("chest_iron"), SubResource("chest_gold"), SubResource("chest_iridium"), SubResource("chest_snack")])
+picks = 2
+money_min = 40
+money_max = 100
+money_per_level = 3.0
+
+[sub_resource type="Resource" id="hoard_loot"]
+script = ExtResource("7_loot")
+entries = Array[ExtResource("8_entry")]([SubResource("hoard_gold"), SubResource("hoard_iridium"), SubResource("hoard_snack")])
+picks = 2
+money_min = 300
+money_max = 500
+money_per_level = 5.0
+
+[sub_resource type="Resource" id="chests"]
+script = ExtResource("6_chests")
+loot = SubResource("chest_loot")
+chance = 0.2
+from_level = 2
+hoard = SubResource("hoard_loot")
+hoard_name = "Royal Hoard"
+
 [resource]
 script = ExtResource("1_table")
 default_rock_id = &"stone_rock"
@@ -115,3 +202,4 @@ rock_tiers = Array[ExtResource("2_rock")]([SubResource("rock_iridium_rock"), Sub
 enemy_tiers = Array[ExtResource("3_enemy")]([SubResource("enemy_green_slime"), SubResource("enemy_cave_slime"), SubResource("enemy_blue_slime"), SubResource("enemy_spitting_slime"), SubResource("enemy_red_slime"), SubResource("enemy_shadow_slime"), SubResource("enemy_void_slime"), SubResource("enemy_ancient_slime"), SubResource("enemy_slime_king"), SubResource("enemy_void_monarch")])
 elite_odds = SubResource("elite_odds")
 hazards = SubResource("hazards")
+chests = SubResource("chests")

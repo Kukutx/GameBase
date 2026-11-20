@@ -322,6 +322,44 @@ func test_a_guardian_bars_the_ladder_until_it_falls() -> void:
 	assert_true((mine.get_node("DeepLadder") as MineLadder).unlocked)
 	assert_null(mine.get_standing_guardian())
 
+func test_a_guarded_floor_holds_a_royal_hoard_sealed_until_its_guardian_falls_and_found_once() -> void:
+	var inventory := InventoryState.to_save_data()
+	var wallet := Wallet.to_save_data()
+	InventoryState.clear()
+	MineState.set_floor(25)
+	var mine := (load("res://game/world/old_mine.tscn") as PackedScene).instantiate() as MineFloorController
+	add_child_autofree(mine)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var chests := mine.get_generated_chests()
+	assert_eq(chests.size(), 1)
+	var hoard := chests[0]
+	assert_eq(hoard.display_name, "Royal Hoard")
+	assert_eq(hoard.persistent_id, &"mine_f025_chest")
+	assert_lt(hoard.get_index(), mine.get_node("Player").get_index(), "under the player")
+	assert_true(hoard.locked, "sealed while the Slime King stands")
+	mine.get_generated_guardians()[0].load_state_data({"health": 0, "defeated": true, "defeated_day": WorldClock.day})
+	mine.call("_refresh_ladder")
+	assert_false(hoard.locked, "open once it falls")
+	var money := Wallet.money
+	var taken := hoard.open()
+	assert_gte(taken.money, 300 + 5 * 24, "a hoard of the twenty-fifth floor")
+	assert_eq(Wallet.money, money + taken.money)
+	assert_true(hoard.is_emptied())
+	var again := (load("res://game/world/old_mine.tscn") as PackedScene).instantiate() as MineFloorController
+	add_child_autofree(again)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_true(again.get_generated_chests()[0].is_emptied(), "found once in a world")
+	assert_true(ItemSources.describe(&"gold_ore").has(tr("Found in chests in the mine")), "a way to get what it held")
+	var with_chest := 0
+	for floor: int in range(2, 121):
+		if not MineState.generate_floor_layout(floor)["chests"].is_empty():
+			with_chest += 1
+	assert_between(with_chest, 20, 40, "about one floor in five holds one")
+	InventoryState.load_save_data(inventory)
+	Wallet.load_save_data(wallet)
+
 func test_every_mine_enemy_looks_like_no_other() -> void:
 	var looks: Dictionary[String, StringName] = {}
 	var fallbacks: Dictionary[Color, StringName] = {}

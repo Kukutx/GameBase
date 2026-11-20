@@ -16,6 +16,10 @@ extends Resource
 ## The hazards of the ground (`Hazard`) spread over the floors, the deeper the
 ## more; none without.
 @export var hazards: HazardSpread
+## Which floors hold a chest (`LootChest`) and what it holds: each found once
+## in a world, and a guarded floor's hoard sealed until its guardians fall;
+## none without.
+@export var chests: ChestSpread
 
 ## The enemy id for `floor`: the tier with the deepest minimum floor reached.
 func get_enemy_id(floor: int) -> StringName:
@@ -38,5 +42,8 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		problems.append("mine floor table %s" % problem)
 	if hazards != null:
 		for problem: String in hazards.find_problems():
+			problems.append("mine floor table %s" % problem)
+	if chests != null:
+		for problem: String in chests.find_problems(registry):
 			problems.append("mine floor table %s" % problem)
 	return problems

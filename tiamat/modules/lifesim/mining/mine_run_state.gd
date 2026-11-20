@@ -20,7 +20,10 @@ extends Node
 ## none), each rolled from a stream of its own. Its `"hazards"` are where the
 ## table's hazards stand (`MineFloorTable.hazards`), clear of the rocks, the
 ## enemies and the ways in and down, each with its `"phase"`, the share of
-## its cycle it starts at, from a stream of their own too.
+## its cycle it starts at, from a stream of their own too. Its `"chests"`
+## hold the floor's chest when it has one (`MineFloorTable.chests`), clear of
+## all of those, with its `"persistent_id"`, so what it holds is found once in
+## a world, and `"hoard"` on a guarded floor.
 ## `deepest_floor_changed` fires when the player goes deeper than ever before,
 ## their first entry to floor 1 included, which quests follow.
 
@@ -179,7 +182,20 @@ func generate_floor_layout(floor: int) -> Dictionary:
 		var hazard_rolls := track.stream(resolved, "hazards")
 		for place: Vector2 in floor_table.hazards.spread(hazard_rolls, resolved, FLOOR_AREA, scattered, _is_clear_of_doorways):
 			hazards.append({"position": place, "phase": hazard_rolls.randf()})
-	return {"floor": resolved, "rocks": rocks, "enemies": enemies, "hazards": hazards}
+	var chests: Array[Dictionary] = []
+	if floor_table != null and floor_table.chests != null:
+		var chest_rolls := track.stream(resolved, "chest")
+		var guarded := not guardian_kinds.is_empty()
+		if floor_table.chests.holds_chest(chest_rolls, resolved, guarded):
+			var taken := scattered.duplicate()
+			for hazard: Dictionary in hazards:
+				taken.append(hazard["position"])
+			chests.append({
+				"position": chest_rolls.scatter(FLOOR_AREA, 1, SPACING, taken, Vector2(8, 8), _is_clear_of_doorways, 64)[0],
+				"persistent_id": "mine_f%03d_chest" % resolved,
+				"hoard": guarded and floor_table.chests.hoard != null,
+			})
+	return {"floor": resolved, "rocks": rocks, "enemies": enemies, "hazards": hazards, "chests": chests}
 
 # Whether `point` keeps clear of the floor's way in and its way down.
 static func _is_clear_of_doorways(point: Vector2) -> bool:

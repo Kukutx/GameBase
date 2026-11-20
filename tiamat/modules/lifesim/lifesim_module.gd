@@ -74,6 +74,8 @@ static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -
 		sources.add_each(event.reward_items, TranslationServer.translate("Reward for %s") % TranslationServer.translate(event.display_name))
 	for milestone: CollectionMilestoneData in registry.get_entries(CollectionMilestoneData.KIND):
 		sources.add_each(milestone.reward_items, TranslationServer.translate("Reward for %s") % TranslationServer.translate(milestone.display_name))
+	if MineState.floor_table != null and MineState.floor_table.chests != null:
+		MineState.floor_table.chests.add_ways(sources, TranslationServer.translate("Found in chests in the mine"))
 
 # `at` (translated already) naming the locations of `location_ids`, or
 # `anywhere` without any.
