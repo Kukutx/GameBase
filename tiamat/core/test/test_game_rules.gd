@@ -10,12 +10,15 @@ const COUNTER := &"test:rules_counter"
 
 var _world_snapshot: Dictionary
 var _vitals_snapshot: Dictionary
+var _options: GameOptions
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_vitals_snapshot = Vitals.to_save_data()
+	_options = GameSettings.options
 
 func after_each() -> void:
+	GameSettings.options = _options
 	ContentRegistry.active = ContentDB
 	WorldState.load_save_data(_world_snapshot)
 	Vitals.load_save_data(_vitals_snapshot)
@@ -118,3 +121,24 @@ func test_describe_leaves_out_conditions_without_a_description() -> void:
 	assert_eq(GameRules.describe("WORLD_FLAG %s, DAY_AT_LEAST 2" % FLAG), PackedStringArray())
 	assert_eq(GameRules.describe(""), PackedStringArray())
 	assert_eq(GameRules.describe("NO_SUCH_KEY"), PackedStringArray())
+
+func test_content_reads_the_player_s_options() -> void:
+	GameSettings.options = GameOptions.new([
+		GameOption.new_switch(&"fixture_gore", "Gore", false),
+		GameOption.new_choice(&"fixture_difficulty", "Difficulty", PackedStringArray(["Easy", "Normal", "Very Hard"]), 1),
+		GameOption.new_range(&"fixture_spawns", "Spawns", 0.5, 2.0, 0.5, 1.0),
+	])
+	assert_true(GameRules.check("OPTION fixture_difficulty Normal"))
+	assert_false(GameRules.check("OPTION fixture_difficulty Easy \"Very Hard\""))
+	GameSettings.options.set_value(&"fixture_difficulty", "Very Hard")
+	assert_true(GameRules.check("OPTION fixture_difficulty Easy \"Very Hard\""), "a choice of two words, in quotes")
+	assert_true(GameRules.check("OPTION fixture_gore false, !OPTION fixture_gore true"))
+	assert_true(GameRules.check("OPTION_AT_LEAST fixture_spawns 1"))
+	assert_false(GameRules.check("OPTION_AT_LEAST fixture_spawns 1.5"))
+	assert_true(GameRules.check("OPTION fixture_spawns 1"))
+	assert_eq(GameRules.validate_query("OPTION fixture_difficulty Easy, OPTION_AT_LEAST fixture_spawns 1, OPTION fixture_gore true"), PackedStringArray())
+	var problems := "\n".join(GameRules.validate_query("OPTION fixture_difficulty Nightmare, OPTION no_such_option on, OPTION_AT_LEAST fixture_gore 1, OPTION fixture_gore maybe"))
+	assert_string_contains(problems, "'Nightmare' is no value of option 'fixture_difficulty'")
+	assert_string_contains(problems, "no option 'no_such_option' of the game")
+	assert_string_contains(problems, "option 'fixture_gore' is no number")
+	assert_string_contains(problems, "'maybe' is no value of option 'fixture_gore'")

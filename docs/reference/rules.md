@@ -24,6 +24,8 @@ The condition and action keys the core and the modules register with `GameRules`
 | `LOCATION` | core | 1 or more | `LOCATION <id>...` | the player is in one of the locations. |
 | `MILESTONE_CLAIMED` | lifesim | 1 | `MILESTONE_CLAIMED <collection_milestone>` | the player claimed the milestone's reward. |
 | `MONEY_AT_LEAST` | items | 1 | `MONEY_AT_LEAST <n>` | the player has at least n money. |
+| `OPTION` | core | 2 or more | `OPTION <option> <value>...` | the player's option (`GameOption`) is one of the values: true or false for a switch, a choice's name (in quotes with a space: "Very Hard"), a number for a range. |
+| `OPTION_AT_LEAST` | core | 2 | `OPTION_AT_LEAST <option> <n>` | the player's number option is at least n. |
 | `PLAYTHROUGH_AT_LEAST` | core | 1 | `PLAYTHROUGH_AT_LEAST <n>` | this is the nth playthrough or a later one (`Playthrough`; new game plus). |
 | `PROFILE_FLAG` | core | 1 to 2 | `PROFILE_FLAG <key> [true\|false]` | the profile's boolean flag has the value (default true). |
 | `PROFILE_FLAG_AT_LEAST` | core | 2 | `PROFILE_FLAG_AT_LEAST <key> <n>` | the profile's counter is at least n. |
