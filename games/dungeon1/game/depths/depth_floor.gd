@@ -11,11 +11,17 @@ extends Node2D
 ## (`EnemyTier.guardian_every`: the Ember Warden every fifth depth) holds its
 ## guardian and half the creatures, and the way on opens once it falls.
 ## A creature may come in an elite form (`EliteData`: Hulking, Swift,
-## Searing), the more often the deeper (`elite_odds`).
+## Searing), the more often the deeper (`elite_odds`). From
+## `hazard_from_depth` on, ember vents (`Hazard`) flare on the floor in turn,
+## burning the player and the creatures alike, more of them the deeper, from a
+## stream of their own and clear of the ways in and on and the altar.
 
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
 # How far apart the enemies of a floor stand.
 const ENEMY_SPACING := 28.0
+# How far apart a floor's vents stand, and how far from the ways in and on.
+const VENT_SPACING := 56.0
+const VENT_CLEARANCE := 48.0
 
 ## The enemies floors spawn, each from its minimum depth on; deeper tiers come
 ## up more often, and a guardian tier's enemy only at the depths it guards.
@@ -27,6 +33,8 @@ const ENEMY_SPACING := 28.0
 ## The spawn point the player arrives at; enemies keep `arrival_clearance` away.
 @export var arrival_spawn_id: StringName = &"arrival"
 @export var arrival_clearance := 90.0
+## The first depth whose floors hold ember vents.
+@export var hazard_from_depth := 3
 ## Where the rope leads.
 @export var camp_location_id: StringName
 @export var camp_spawn_id: StringName
@@ -38,6 +46,7 @@ const ENEMY_SPACING := 28.0
 
 var _enemies: Array[HostileCreature] = []
 var _guardians: Array[HostileCreature] = []
+var _vents: Array[Hazard] = []
 
 func _ready() -> void:
 	(stairs.get_node("Interactable") as Interactable).interacted.connect(_descend)
@@ -46,6 +55,7 @@ func _ready() -> void:
 	altar.boon_taken.connect(func(_boon_id: StringName) -> void: _refresh())
 	CombatEvents.enemy_defeated.connect(_on_enemy_defeated)
 	GameSettings.locale_changed.connect(_on_locale_changed)
+	_spawn_vents()
 	_spawn_enemies()
 	_refresh()
 
@@ -54,6 +64,15 @@ func _ready() -> void:
 static func get_enemy_count(depth: int, guarded := false) -> int:
 	var count := clampi(2 + depth / 2, 2, 8)
 	return count / 2 if guarded else count
+
+## How many ember vents a floor at `depth` holds when they come from
+## `from_depth` on: one there, one more every second depth, four at most.
+static func get_vent_count(depth: int, from_depth: int) -> int:
+	return 0 if depth < from_depth else mini(1 + (depth - from_depth) / 2, 4)
+
+## The floor's ember vents.
+func get_vents() -> Array[Hazard]:
+	return _vents.duplicate()
 
 func get_enemies() -> Array[HostileCreature]:
 	return _enemies.duplicate()
@@ -86,7 +105,11 @@ func _spawn_enemies() -> void:
 	var clear_of_arrival := func(point: Vector2) -> bool: return point.distance_to(arrival) >= arrival_clearance
 	var count := guardian_kinds.size() + get_enemy_count(depth, not guardian_kinds.is_empty())
 	var positions: Array[Vector2] = []
-	positions.assign(Array(rng.scatter(arena, count, ENEMY_SPACING, PackedVector2Array(), Vector2(8, 8), clear_of_arrival)))
+	# None starts on a vent.
+	var vents := PackedVector2Array()
+	for vent: Hazard in _vents:
+		vents.append(vent.position)
+	positions.assign(Array(rng.scatter(arena, count, ENEMY_SPACING, vents, Vector2(8, 8), clear_of_arrival)))
 	# The guardians stand furthest from where the player arrives.
 	if not guardian_kinds.is_empty():
 		positions.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_to(arrival) > b.distance_to(arrival))
@@ -105,6 +128,31 @@ func _spawn_enemies() -> void:
 			_guardians.append(enemy)
 	if not _guardians.is_empty():
 		GameEvents.toastf("%s guards this depth", [_guardians[0].data.display_name])
+
+func _spawn_vents() -> void:
+	var depth := DepthRun.get_depth()
+	var count := get_vent_count(depth, hazard_from_depth)
+	if count == 0:
+		return
+	var rolls := DepthRun.floor_stream("vents")
+	var keep_clear: Array[Vector2] = [_spawn_position(arrival_spawn_id), stairs.position, rope.position, altar.position]
+	var clear := func(point: Vector2) -> bool:
+		for spot: Vector2 in keep_clear:
+			if point.distance_to(spot) < VENT_CLEARANCE:
+				return false
+		return true
+	var positions := rolls.scatter(arena.grow(-16.0), count, VENT_SPACING, PackedVector2Array(), Vector2(8, 8), clear)
+	# Under the player and the creatures, which come after the altar.
+	var under := altar.get_index() + 1
+	for index: int in positions.size():
+		var vent := Hazard.new()
+		vent.name = "Vent%02d" % (index + 1)
+		vent.damage = 8 + depth / 2
+		vent.phase_seconds = rolls.randf() * vent.get_cycle_seconds()
+		vent.position = positions[index]
+		add_child(vent)
+		move_child(vent, under + index)
+		_vents.append(vent)
 
 func _spawn_position(spawn_id: StringName) -> Vector2:
 	for child: Node in get_children():

@@ -1,0 +1,112 @@
+class_name Hazard
+extends Area2D
+
+## A danger of the ground, such as a vent of fire or a pit of spikes, that
+## flares on a cycle: it rests for `rest_seconds`, glows `warn_seconds` before
+## it flares, then flares for `active_seconds`, hurting each hurtbox of a side
+## hostile to its own (`faction`; none: every side, so a creature lured onto
+## it burns too) it touches once a flare, for `damage`, and pushing it away
+## from its middle by `knockback`. With no rest it never stops, and hurts
+## what stands on it once every `active_seconds`. It starts `phase_seconds`
+## into its cycle, so hazards side by side flare in turn. It draws itself: a
+## dark mark at rest, glowing in its `color` as it warns and bright as it
+## flares; a place adds its hazards before its actors, which then stand over
+## them. Its collision mask names the hurtboxes it touches: the games'
+## layers 2 and 3 (the player's and the creatures').
+
+## Emitted as it flares.
+signal flared
+
+## How far it reaches from its middle, drawn and touching.
+@export_range(4.0, 128.0, 1.0) var radius := 14.0:
+	set(value):
+		radius = value
+		if _circle != null:
+			_circle.radius = value
+		queue_redraw()
+@export_range(1, 999, 1) var damage := 10
+## The side it belongs to: none hurts every side.
+@export var faction: StringName = &""
+@export_range(0.0, 600.0, 1.0) var knockback := 80.0
+@export_range(0.05, 30.0, 0.05) var active_seconds := 0.8
+@export_range(0.0, 30.0, 0.05) var rest_seconds := 2.4
+## How long before it flares it glows to warn; part of its rest.
+@export_range(0.0, 30.0, 0.05) var warn_seconds := 0.7
+## How far into its cycle it starts, in seconds.
+@export_range(0.0, 60.0, 0.05) var phase_seconds := 0.0
+@export var color := Color(1.0, 0.5, 0.18)
+
+var _circle: CircleShape2D
+var _time := 0.0
+var _active := false
+# The hurtboxes this flare hurt, by instance id.
+var _hurt: Dictionary[int, bool] = {}
+
+func _init() -> void:
+	collision_layer = 0
+	collision_mask = 2 | 4
+	monitorable = false
+	var shape := CollisionShape2D.new()
+	_circle = CircleShape2D.new()
+	_circle.radius = radius
+	shape.shape = _circle
+	add_child(shape)
+
+func _ready() -> void:
+	_time = fmod(phase_seconds, get_cycle_seconds())
+	_active = _time >= rest_seconds
+
+func _physics_process(delta: float) -> void:
+	var cycle := get_cycle_seconds()
+	var was_active := _active
+	var last := _time
+	_time += delta
+	# A new cycle, or the rest just ended: a new flare.
+	var turned := _time >= cycle or (last < rest_seconds and _time >= rest_seconds)
+	_time = fmod(_time, cycle)
+	_active = _time >= rest_seconds
+	if _active and (not was_active or turned):
+		_hurt.clear()
+		flared.emit()
+	if _active:
+		_hurt_what_stands_here()
+	queue_redraw()
+
+## The seconds of one cycle: its rest and its flare.
+func get_cycle_seconds() -> float:
+	return rest_seconds + active_seconds
+
+## Whether it flares now and hurts what it touches.
+func is_active() -> bool:
+	return _active
+
+## Whether it glows to warn that it flares soon.
+func is_warning() -> bool:
+	return not _active and _time >= rest_seconds - warn_seconds
+
+func _hurt_what_stands_here() -> void:
+	for area: Area2D in get_overlapping_areas():
+		var hurtbox := area as Hurtbox
+		if hurtbox == null or _hurt.has(hurtbox.get_instance_id()) or not hurtbox.enabled:
+			continue
+		var away := (hurtbox.global_position - global_position).normalized()
+		var hit := Damage.new(damage, faction, self, away * knockback)
+		if hurtbox.can_be_hurt_by(hit):
+			_hurt[hurtbox.get_instance_id()] = true
+			# What a hit sets off (a knockout, a scene change) waits until the
+			# physics step is done.
+			hurtbox.receive.call_deferred(hit)
+
+func _draw() -> void:
+	var glow := 0.0
+	if _active:
+		glow = 1.0
+	elif is_warning() and warn_seconds > 0.0:
+		var left := rest_seconds - _time
+		glow = 0.35 + 0.25 * sin(left * TAU * 3.0)
+	draw_circle(Vector2.ZERO, radius, Color(0.08, 0.05, 0.04, 0.55))
+	if glow > 0.0:
+		draw_circle(Vector2.ZERO, radius * (0.55 + 0.4 * glow), Color(color, 0.35 + 0.5 * glow))
+	if _active:
+		draw_circle(Vector2.ZERO, radius * 0.45, Color(1.0, 0.92, 0.7, 0.9))
+	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 24, Color(color, 0.25 + 0.6 * glow), 1.0)

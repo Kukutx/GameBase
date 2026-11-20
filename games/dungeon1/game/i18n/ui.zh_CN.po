@@ -188,6 +188,9 @@ msgstr "受伤了？按 {drink_potion} 喝下生命药水。"
 msgid "Foes glow before they strike. Press {dodge} to roll out of the way."
 msgstr "敌人出手前会发光。按 {dodge} 翻滚闪开。"
 
+msgid "Ember vents glow before they flare and burn whatever stands on them, creatures too. Lure foes across them."
+msgstr "余烬喷口喷发前会发光，会烧伤站在上面的一切，怪物也不例外。把敌人引过去吧。"
+
 msgid "Old Delver"
 msgstr "老探窟人"
 
