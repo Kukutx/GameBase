@@ -41,5 +41,31 @@ func test_crops_harvested_in_every_save_count_toward_seasoned_farmer() -> void:
 	_harvest(1)
 	assert_true(GameProfile.is_unlocked(&"seasoned_farmer"))
 
+func test_fish_gifts_and_mining_in_every_save_count_toward_their_achievements() -> void:
+	GameProfile.set_flag(&"fish_caught", 49)
+	GameTriggers.fire(&"LifesimEvents.fish_caught", {"fish_id": &"trout", "item_id": &"trout"})
+	assert_true(GameProfile.is_unlocked(&"master_angler"))
+	GameProfile.set_flag(&"gifts_given", 29)
+	GameTriggers.fire(&"NpcSocialEvents.gift_given", {"npc_id": &"mira", "item_id": &"turnip", "friendship_delta": 20})
+	assert_true(GameProfile.is_unlocked(&"generous"))
+	GameTriggers.fire(&"LifesimEvents.resource_mined", {"mining_node_id": &"stone_rock", "item_id": &"stone", "quantity": 3, "position": Vector2.ZERO})
+	assert_eq(GameProfile.get_progress(&"prospector"), 3, "each stone of a rock counts")
+	assert_false(GameProfile.is_unlocked(&"prospector"))
+
+func test_the_game_menu_counts_a_locked_one_toward_its_goal() -> void:
+	GameProfile.set_flag(&"crops_harvested", 95)
+	var menu := (load("res://game/ui/game_menu.tscn") as PackedScene).instantiate()
+	autofree(menu)
+	var lines := "\n".join(menu.call(&"_achievement_lines") as PackedStringArray)
+	assert_string_contains(lines, "Seasoned Farmer — Harvest 100 crops, counting every save. (95 / 100)")
+	assert_string_contains(lines, "○ ???", "a hidden one shows nothing of itself")
+
+func test_an_iridium_tool_unlocks_the_hidden_iridium_touch() -> void:
+	GameTriggers.fire(&"ProgressionEvents.tool_upgraded", {"tool_upgrade_id": &"gold_hoe_upgrade", "result_item_id": &"gold_hoe"})
+	assert_false(GameProfile.is_unlocked(&"iridium_touch"), "gold is not iridium")
+	GameTriggers.fire(&"ProgressionEvents.tool_upgraded", {"tool_upgrade_id": &"iridium_sword_upgrade", "result_item_id": &"iridium_sword"})
+	assert_true(GameProfile.is_unlocked(&"iridium_touch"))
+	assert_true(AchievementData.find(&"iridium_touch").hidden)
+
 func _harvest(quantity: int) -> void:
 	GameTriggers.fire(&"LifesimEvents.crop_harvested", {"crop_id": &"turnip", "item_id": &"turnip", "quantity": quantity})

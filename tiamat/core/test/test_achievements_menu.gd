@@ -4,9 +4,10 @@ extends GutTest
 ## (`AchievementsMenu`): offered in a game that has any, counting those
 ## unlocked, showing the unlocked first in the order they were and the locked
 ## dimmed, one that counts toward a goal showing how far the player is, each
-## with its icon, a hidden one keeping to itself until unlocked; the keys walk
-## through them; it fits each view the game is laid out in, and `ui_cancel`
-## closes it back to the menu that opened it.
+## with its icon, a hidden one keeping to itself until unlocked, and under them
+## the records the profile counts; the keys walk through them; it fits each
+## view the game is laid out in, and `ui_cancel` closes it back to the menu that
+## opened it.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
@@ -88,6 +89,33 @@ func test_a_locked_one_shows_how_far_the_player_is_and_each_its_icon() -> void:
 	assert_eq(menu.get_entries()[0], PackedStringArray(["Runner", "Run ten times."]), "unlocked, it shows no count")
 	pause.close()
 
+func test_records_show_under_the_achievements_with_what_the_profile_counts() -> void:
+	ContentFixture.use(self, [
+		_achievement(&"fixture_a_first_step", "First Step", "Take a step."),
+		_record(&"fixture_runs", "Runs", 20),
+		_record(&"fixture_depth", "Deepest", 10),
+	])
+	GameProfile.add_int(&"fixture_runs", 7)
+	var pause := _pause()
+	pause.open()
+	pause.achievements_button.pressed.emit()
+	var menu := pause.achievements_menu
+	assert_eq(menu.get_records(), PackedStringArray(["Deepest: 0", "Runs: 7"]), "in their order, each as the profile counts it")
+	assert_eq(menu.get_entries().size(), 1, "the records are not achievements")
+	pause.close()
+
+func test_a_game_with_records_alone_offers_them() -> void:
+	ContentFixture.use(self, [_record(&"fixture_runs", "Runs", 0)])
+	var pause := _pause()
+	pause.open()
+	assert_true(pause.achievements_button.visible)
+	pause.achievements_button.pressed.emit()
+	var menu := pause.achievements_menu
+	assert_eq(menu.get_records(), PackedStringArray(["Runs: 0"]))
+	assert_false(menu.get_node("%Summary").visible, "no count of achievements it has none of")
+	assert_true(get_viewport().gui_get_focus_owner() is MenuEntry, "the keys start on the first record")
+	pause.close()
+
 func test_a_game_without_achievements_offers_none() -> void:
 	ContentFixture.use(self, [])
 	var pause := _pause()
@@ -132,6 +160,14 @@ func _pause() -> PauseMenu:
 	var menu := (load("res://tiamat/core/ui/pause_menu.tscn") as PackedScene).instantiate() as PauseMenu
 	add_child_autofree(menu)
 	return menu
+
+func _record(id: StringName, title: String, order: int) -> RecordData:
+	var record := RecordData.new()
+	record.id = id
+	record.display_name = title
+	record.flag = id
+	record.order = order
+	return record
 
 func _achievement(id: StringName, title: String, description: String, hidden := false) -> AchievementData:
 	var achievement := AchievementData.new()

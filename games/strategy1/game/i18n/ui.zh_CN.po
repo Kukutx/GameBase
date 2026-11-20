@@ -152,3 +152,9 @@ msgstr "执旗者"
 
 msgid "Win at the ford and in the pass."
 msgstr "在渡口与山口都取得胜利。"
+
+msgid "Battles Won"
+msgstr "赢下的战斗"
+
+msgid "Raiders Defeated"
+msgstr "击败的敌人"

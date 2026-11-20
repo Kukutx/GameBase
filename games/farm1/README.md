@@ -41,6 +41,7 @@ New content goes into the content pack `game/data/content.tres` and is read thro
 - NPC schedules across towns, gifts, 0→10-heart relationship dialogue and five heart-event tiers per core NPC
 - A long mining quest chain, progression mail, daily contracts, seasonal festivals and chained town restoration projects
 - Six skills with Lv5/Lv10 perks, collections and archive milestones
+- Seven achievements kept across every save, four of them counted over every save (crops, fish, gifts, mining) with their progress shown in the game menu and the achievements menu, and one hidden; the achievements menu's Records shows those four counts
 - Three save slots with primary/backup/temp crash recovery, periodic and travel autosave
 - Rebindable keyboard and gamepad controls, device-aware prompts, English and Simplified Chinese UI
 

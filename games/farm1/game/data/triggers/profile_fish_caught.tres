@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_trigger"]
+
+[resource]
+script = ExtResource("1_trigger")
+id = &"profile_fish_caught"
+event = &"LifesimEvents.fish_caught"
+actions = PackedStringArray("ADD_PROFILE_FLAG fish_caught 1")

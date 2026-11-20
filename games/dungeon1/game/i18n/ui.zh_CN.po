@@ -221,3 +221,9 @@ msgstr "药水"
 
 msgid "next item"
 msgstr "下一个物品"
+
+msgid "Deepest Depth"
+msgstr "最深层数"
+
+msgid "Creatures Defeated"
+msgstr "击败的生物"

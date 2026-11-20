@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RecordData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/profile/record_data.gd" id="1_record"]
+
+[resource]
+script = ExtResource("1_record")
+id = &"crops_harvested"
+display_name = "Crops Harvested"
+flag = &"crops_harvested"
+order = 10

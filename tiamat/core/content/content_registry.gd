@@ -69,6 +69,7 @@ func _init() -> void:
 	register_kind(TriggerData.KIND, TriggerData)
 	register_kind(AchievementData.KIND, AchievementData)
 	register_kind(HintData.KIND, HintData)
+	register_kind(RecordData.KIND, RecordData)
 
 func _enter_tree() -> void:
 	if active == null:
