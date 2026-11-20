@@ -8,7 +8,8 @@ extends GutTest
 ## another size on some devices, a phone's smaller one so its text reads larger
 ## (`viewport_width.mobile`), is held to each of them. Every text on the
 ## screens reads on a phone (`ReadableText`), in the view the game shows one,
-## and no two parts of a screen lie over each other.
+## no two parts of a screen lie over each other, and no part spills out of
+## the panel that holds it.
 
 const ScreenFit := preload("res://tiamat/core/test/screen_fit.gd")
 
@@ -41,6 +42,37 @@ func test_no_two_parts_of_a_screen_lie_over_each_other() -> void:
 			for line: String in await ScreenFit.find_overlaps(self, load(path) as PackedScene, size):
 				overlaps.append("%s at %s %s" % [path, size, line])
 	assert_eq(overlaps, PackedStringArray())
+
+func test_no_part_spills_out_of_its_panel() -> void:
+	var screens := ScreenFit.find_screens(["res://game", "res://tiamat"])
+	var spills := PackedStringArray()
+	for size: Vector2 in ScreenFit.view_sizes():
+		for path: String in screens:
+			for line: String in await ScreenFit.find_spills(self, load(path) as PackedScene, size):
+				spills.append("%s at %s %s" % [path, size, line])
+	assert_eq(spills, PackedStringArray())
+
+func test_a_part_that_spills_out_of_its_panel_is_found() -> void:
+	var screen := CanvasLayer.new()
+	var panel := Panel.new()
+	panel.name = "Panel"
+	panel.position = Vector2(40, 40)
+	panel.size = Vector2(200, 100)
+	screen.add_child(panel)
+	panel.owner = screen
+	for spot: Vector2 in [Vector2(10, 10), Vector2(10, 90)]:
+		var row := Button.new()
+		row.text = "row"
+		row.position = spot
+		row.size = Vector2(120, 30)
+		panel.add_child(row)
+		row.owner = screen
+	var packed := PackedScene.new()
+	packed.pack(screen)
+	screen.free()
+	var spills := await ScreenFit.find_spills(self, packed, Vector2(480, 270))
+	assert_eq(spills.size(), 1, "the second row hangs below the panel")
+	assert_string_contains(spills[0], "spills out of Panel")
 
 func test_parts_that_lie_over_each_other_are_found() -> void:
 	var screen := CanvasLayer.new()

@@ -3,7 +3,8 @@ extends GutTest
 ## The menu every core and module menu extends (`MenuLayer`): hidden until it
 ## shows, it pauses the world and holds the controls while shown, tells its
 ## opening and closing (`GameEvents`), and `ui_cancel` closes it. Its lists
-## draw their entries' icons.
+## draw their entries' icons, and stand beside their words in a wide view
+## (`MenuColumns`).
 
 class FixtureMenu:
 	extends MenuLayer
@@ -77,3 +78,29 @@ static func _texture(side: int) -> Texture2D:
 	texture.width = side
 	texture.height = side
 	return texture
+
+func test_a_list_stands_beside_its_words_in_a_wide_view_and_above_them_in_a_narrow_one() -> void:
+	var panel := PanelContainer.new()
+	panel.offset_left = -130.0
+	panel.offset_right = 130.0
+	var box := BoxContainer.new()
+	box.vertical = true
+	var words := Label.new()
+	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	words.max_lines_visible = 2
+	var columns := MenuColumns.new()
+	box.add_child(ScrollContainer.new())
+	box.add_child(words)
+	box.add_child(columns)
+	panel.add_child(box)
+	add_child_autofree(panel)
+	columns.fit_to(480.0)
+	assert_true(columns.is_side_by_side(), "a view 480 wide holds both")
+	assert_false(box.vertical)
+	assert_eq([panel.offset_left, panel.offset_right], [-230.0, 230.0], "the panel widens")
+	assert_eq(words.max_lines_visible, columns.wide_lines, "and the words run longer")
+	columns.fit_to(360.0)
+	assert_false(columns.is_side_by_side(), "a 4:3 tablet's 360 does not")
+	assert_true(box.vertical)
+	assert_eq([panel.offset_left, panel.offset_right], [-130.0, 130.0], "the panel keeps the scene's width")
+	assert_eq(words.max_lines_visible, 2)

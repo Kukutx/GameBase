@@ -15,8 +15,8 @@ extends MenuLayer
 
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var amount_button: Button = $Panel/VBox/Amount
-@onready var recipes_container: VBoxContainer = $Panel/VBox/Scroll/Recipes
-@onready var about_label: Label = $Panel/VBox/About
+@onready var recipes_container: VBoxContainer = $Panel/VBox/Body/Scroll/Recipes
+@onready var about_label: Label = $Panel/VBox/Body/About
 @onready var close_button: Button = $Panel/VBox/Close
 
 var current_category: RecipeData.Category = RecipeData.Category.CRAFTING
