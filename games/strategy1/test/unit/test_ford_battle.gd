@@ -27,8 +27,8 @@ func test_the_battle_ends_when_both_sides_fight_on_their_own() -> void:
 			break
 	assert_true(battle.is_over(), "one side holds the field within three minutes")
 
-func test_a_volley_a_quake_and_a_prayer_recharge() -> void:
-	for pair: Array in [[&"archer", &"volley"], [&"brute", &"quake"], [&"cleric", &"prayer"]]:
+func test_a_shield_bash_a_volley_a_quake_and_a_prayer_recharge() -> void:
+	for pair: Array in [[&"swordsman", &"shield_bash"], [&"archer", &"volley"], [&"brute", &"quake"], [&"cleric", &"prayer"]]:
 		var unit := BattleUnitData.find(pair[0])
 		var action := BattleActionData.find(pair[1])
 		assert_true(unit.action_ids.has(action.id), "the %s has it" % unit.id)
@@ -44,3 +44,4 @@ func test_a_volley_a_quake_and_a_prayer_recharge() -> void:
 		if battle.is_over():
 			break
 	assert_true(used.has(&"volley"), "the archer looses its volley in a battle: %s" % [used])
+	assert_gt(BattleActionData.find(&"shield_bash").delay, 0.0, "a shield bash sets a foe's turn back")

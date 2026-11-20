@@ -12,4 +12,4 @@ attack = 5
 defense = 3
 speed = 30.0
 move = 3
-action_ids = Array[StringName]([&"strike"])
+action_ids = Array[StringName]([&"strike", &"shield_bash"])

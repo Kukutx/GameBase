@@ -87,3 +87,6 @@ msgstr "崎岖地形：进入需 %d 步"
 
 msgid "%s (ready in %d)"
 msgstr "%s（%d 回合后就绪）"
+
+msgid "%s takes %d, turn delayed"
+msgstr "%s 将受到 %d 点伤害，行动延后"

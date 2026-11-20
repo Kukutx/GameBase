@@ -19,7 +19,8 @@ extends MiniGame
 ## of a cell that gives cover how much less damage a unit there takes, and of
 ## rough ground how many steps it takes to enter; while
 ## it picks what an action aims at, the side tells what it would do to each
-## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls"). The
+## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls",
+## "Brute takes 2, turn delayed"). The
 ## board numbers the units whose turns come next
 ## (`GridBattleBoard.turns_shown`). Cancel
 ## (the touch controls' corner button on a touchscreen) goes back to the
@@ -318,7 +319,13 @@ func _show_info() -> void:
 	if _mode == Mode.PICK_TARGET and _board.choices.has(_board.cursor):
 		for hit: Dictionary in battle.forecast(battle.get_turn_unit(), _action, _board.cursor):
 			var target_name := tr((hit["unit"] as GridUnit).data.display_name)
-			var line := tr("%s regains %d") if _action.effect == BattleActionData.Effect.HEAL else (tr("%s takes %d and falls") if bool(hit["defeats"]) else tr("%s takes %d"))
+			var line := tr("%s takes %d")
+			if _action.effect == BattleActionData.Effect.HEAL:
+				line = tr("%s regains %d")
+			elif bool(hit["defeats"]):
+				line = tr("%s takes %d and falls")
+			elif float(hit.get("delay", 0.0)) > 0.0:
+				line = tr("%s takes %d, turn delayed")
 			_info.text += "\n" + line % [target_name, int(hit["amount"])]
 
 func _on_turn_started(unit: GridUnit) -> void:

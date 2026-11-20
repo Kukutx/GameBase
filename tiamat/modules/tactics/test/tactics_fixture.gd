@@ -1,8 +1,8 @@
 extends RefCounted
 
 ## Fixture content for the tactics module's tests: a strike, a shot, a blast
-## that reaches an area, a mend and a volley that recharges, and units that
-## take them.
+## that reaches an area, a mend, a volley that recharges and a bash that
+## delays, and units that take them.
 ##
 ##     const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
 
@@ -16,6 +16,13 @@ static func action(id: StringName, power: int, min_range := 1, max_range := 1, a
 	entry.area = area
 	entry.effect = BattleActionData.Effect.HEAL if heals else BattleActionData.Effect.DAMAGE
 	entry.recharge_turns = recharge
+	return entry
+
+## A bash: a blow of 1 that sets back the gauge of the foe it leaves standing
+## by half a turn.
+static func bash() -> BattleActionData:
+	var entry := action(&"fixture_bash", 1)
+	entry.delay = 50.0
 	return entry
 
 static func unit(id: StringName, health: int, attack: int, defense: int, speed: float, move: int, action_ids: Array[StringName]) -> BattleUnitData:
@@ -32,9 +39,10 @@ static func unit(id: StringName, health: int, attack: int, defense: int, speed: 
 
 ## The fixture actions and units: a knight (fast, strong), an archer (shoots
 ## two or three cells away), a healer (mends one cell away or itself), a raider,
-## a mage (blasts an area) and a captain (strikes, or looses a volley over an
-## area that then recharges for two of its turns), whose actions do the power
-## plus the attack less the defense.
+## a mage (blasts an area), a captain (strikes, or looses a volley over an
+## area that then recharges for two of its turns) and a shield (strikes, or
+## bashes for less and sets the foe's gauge back by half a turn), whose
+## actions do the power plus the attack less the defense.
 static func entries() -> Array:
 	return [
 		action(&"fixture_strike", 3),
@@ -42,12 +50,14 @@ static func entries() -> Array:
 		action(&"fixture_blast", 2, 1, 3, 1),
 		action(&"fixture_mend", 5, 0, 1, 0, true),
 		action(&"fixture_volley", 4, 2, 3, 1, false, 2),
+		bash(),
 		unit(&"fixture_knight", 20, 4, 2, 50.0, 3, [&"fixture_strike"]),
 		unit(&"fixture_archer", 12, 3, 0, 25.0, 3, [&"fixture_shot"]),
 		unit(&"fixture_healer", 10, 0, 0, 25.0, 3, [&"fixture_mend", &"fixture_strike"]),
 		unit(&"fixture_raider", 12, 3, 1, 25.0, 3, [&"fixture_strike"]),
 		unit(&"fixture_mage", 8, 2, 0, 20.0, 2, [&"fixture_blast"]),
 		unit(&"fixture_captain", 18, 3, 1, 25.0, 2, [&"fixture_strike", &"fixture_volley"]),
+		unit(&"fixture_shield", 16, 2, 2, 25.0, 2, [&"fixture_strike", &"fixture_bash"]),
 	]
 
 static func placement(unit_id: StringName, faction_id: StringName, cell: Vector2i) -> BattlePlacement:

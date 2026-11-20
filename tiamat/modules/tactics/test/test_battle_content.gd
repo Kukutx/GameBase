@@ -11,13 +11,17 @@ var _registry: ContentRegistry
 func before_each() -> void:
 	_registry = ContentFixture.use(self, TacticsFixture.entries())
 
-func test_an_action_needs_a_name_a_range_that_holds_and_a_target_besides_its_user() -> void:
+func test_an_action_needs_a_name_a_range_that_holds_a_target_besides_its_user_and_delays_only_foes() -> void:
 	assert_eq(TacticsFixture.action(&"fixture_fine", 3).find_problems(_registry), PackedStringArray())
 	var broken := TacticsFixture.action(&"fixture_broken", 3, 3, 1)
 	broken.display_name = ""
 	assert_eq(broken.find_problems(_registry), PackedStringArray(["has no display name", "has a min range 3 above its max range 1"]))
 	assert_eq(TacticsFixture.action(&"fixture_self_harm", 3, 0, 0).find_problems(_registry), PackedStringArray(["does damage only to its user's cell"]))
 	assert_eq(TacticsFixture.action(&"fixture_self_heal", 3, 0, 0, 0, true).find_problems(_registry), PackedStringArray())
+	var slowing_heal := TacticsFixture.action(&"fixture_slowing_heal", 3, 0, 1, 0, true)
+	slowing_heal.delay = 20.0
+	assert_eq(slowing_heal.find_problems(_registry), PackedStringArray(["delays the units it heals"]))
+	assert_eq(TacticsFixture.bash().find_problems(_registry), PackedStringArray(), "a blow may delay")
 
 func test_a_unit_needs_a_name_a_speed_and_known_actions() -> void:
 	var unit := TacticsFixture.unit(&"fixture_lost", 10, 1, 1, 20.0, 2, [&"fixture_strike", &"fixture_unknown"])

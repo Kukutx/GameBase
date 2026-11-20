@@ -61,6 +61,9 @@ msgstr "震地"
 msgid "Prayer"
 msgstr "祈祷"
 
+msgid "Shield Bash"
+msgstr "盾击"
+
 msgid "Swordsman"
 msgstr "剑士"
 
