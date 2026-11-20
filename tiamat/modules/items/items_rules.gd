@@ -15,6 +15,7 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_action(&"REMOVE_ITEM", _remove_item, 1, 2, [ItemData.KIND, GameRulesService.ARG_COUNT])
 	rules.register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [GameRulesService.ARG_INT], _describe_money_at_least)
 	rules.register_action(&"ADD_MONEY", _add_money, 1, 1, [GameRulesService.ARG_INT])
+	rules.register_action(&"SPEND_MONEY", _spend_money, 1, 1, [GameRulesService.ARG_COUNT])
 	rules.register_condition(&"STAT_UPGRADE_AT_LEAST", _stat_upgrade_at_least, 2, 2, [StatUpgradeData.KIND, GameRulesService.ARG_COUNT], _describe_stat_upgrade_at_least)
 	rules.register_action(&"RAISE_STAT_UPGRADE", _raise_stat_upgrade, 1, 1, [StatUpgradeData.KIND])
 
@@ -57,6 +58,11 @@ static func _describe_money_at_least(args: PackedStringArray) -> String:
 static func _add_money(args: PackedStringArray, _context: Dictionary) -> bool:
 	Wallet.add(int(args[0]))
 	return true
+
+## SPEND_MONEY <n>: takes n money, a price paid (an altar's reroll); fails,
+## taking nothing, when the player has less.
+static func _spend_money(args: PackedStringArray, _context: Dictionary) -> bool:
+	return Wallet.spend(int(args[0]))
 
 ## STAT_UPGRADE_AT_LEAST <upgrade> <level>: the world raised the upgrade to at
 ## least that level.

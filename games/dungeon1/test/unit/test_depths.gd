@@ -408,13 +408,27 @@ func test_a_cleared_floor_lights_its_ember_altar_for_one_boon() -> void:
 	var outcome := {}
 	(func() -> void: outcome["boon"] = await depth_floor.altar.choose()).call()
 	var menu := ChoiceMenu.of(depth_floor.altar)
-	assert_eq(menu.get_buttons().size(), 3, "three of the depths' boons")
+	assert_eq(menu.get_buttons().size(), 4, "three of the depths' boons and the reroll")
+	assert_eq(menu.get_note(BoonAltar.REROLL), "30g, 1 left")
 	var offered := menu.get_choice_ids()[0]
 	assert_true(menu.choose(offered))
 	assert_eq(outcome.get("boon"), offered)
 	assert_eq(RunState.get_boon_stacks(offered), 1)
 	assert_false(depth_floor.altar.visible, "spent")
 	assert_false(_enter_floor().altar.visible, "the same depth of the same run lights it no more")
+
+func test_an_ember_altar_rerolls_its_offer_once_for_30_coins() -> void:
+	DepthRun.start_run()
+	var altar := _enter_floor().altar
+	Wallet.set_money(50)
+	assert_eq(altar.get_rerolls_left(), 1)
+	assert_true(altar.reroll())
+	assert_eq(Wallet.money, 20, "30 coins")
+	assert_eq(_boon_ids(altar.get_offer()), _boon_ids(RunState.offer_boons(3, "depth1#1")))
+	assert_false(altar.can_reroll(), "once a depth")
+	DepthRun.start_run()
+	Wallet.set_money(29)
+	assert_false(_enter_floor().altar.can_reroll(), "short of 30")
 
 func test_five_boons_in_one_run_bless_the_delver() -> void:
 	DepthRun.start_run()
@@ -476,3 +490,9 @@ func test_every_kind_of_the_depths_defeated_makes_know_thy_foe() -> void:
 		assert_false(GameProfile.is_unlocked(&"know_thy_foe"))
 		Bestiary.record(enemy.id)
 	assert_true(GameProfile.is_unlocked(&"know_thy_foe"))
+
+func _boon_ids(boons: Array[BoonData]) -> Array[StringName]:
+	var ids: Array[StringName] = []
+	for boon: BoonData in boons:
+		ids.append(boon.id)
+	return ids
