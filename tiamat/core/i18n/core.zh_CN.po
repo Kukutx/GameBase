@@ -525,3 +525,21 @@ msgstr "赢得%s"
 
 msgid "Best %s: %d"
 msgstr "最佳%s：%d"
+
+msgid "At %s"
+msgstr "位于%s"
+
+msgid "From day %d"
+msgstr "第 %d 天起"
+
+msgid "In %s"
+msgstr "%s时"
+
+msgid "Playthrough %d"
+msgstr "第 %d 周目"
+
+msgid "Unlock %s"
+msgstr "解锁成就「%s」"
+
+msgid "When it is %s"
+msgstr "天气为%s时"

@@ -14,17 +14,17 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"FALSE", _always.bind(false), 0, 0)
 	rules.register_condition(&"WORLD_FLAG", _world_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_BOOL])
 	rules.register_condition(&"FLAG_AT_LEAST", _flag_at_least, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_INT])
-	rules.register_condition(&"DAY_AT_LEAST", _day_at_least, 1, 1, [GameRulesService.ARG_INT])
+	rules.register_condition(&"DAY_AT_LEAST", _day_at_least, 1, 1, [GameRulesService.ARG_INT], _describe_day_at_least)
 	rules.register_condition(&"DAY_AT_MOST", _day_at_most, 1, 1, [GameRulesService.ARG_INT])
-	rules.register_condition(&"SEASON", _season, 1, -1, [GameRulesService.ARG_SEASON])
+	rules.register_condition(&"SEASON", _season, 1, -1, [GameRulesService.ARG_SEASON], _describe_season)
 	rules.register_condition(&"DAY_OF_SEASON", _day_of_season, 1, -1, [GameRulesService.ARG_INT], Callable(), _days_within.bind(&"days_per_season", 1, "day of a season"))
 	rules.register_condition(&"WEEKDAY", _weekday, 1, -1, [GameRulesService.ARG_INT], Callable(), _days_within.bind(&"days_per_week", 0, "weekday"))
 	rules.register_condition(&"TIME_BETWEEN", _time_between, 2, 2, [GameRulesService.ARG_INT])
-	rules.register_condition(&"WEATHER", _weather, 1, -1, [WeatherData.KIND])
-	rules.register_condition(&"LOCATION", _location.bind(rules), 1, -1, [WorldLocationData.KIND])
+	rules.register_condition(&"WEATHER", _weather, 1, -1, [WeatherData.KIND], _describe_weather)
+	rules.register_condition(&"LOCATION", _location.bind(rules), 1, -1, [WorldLocationData.KIND], _describe_location)
 	rules.register_condition(&"REGION", _region.bind(rules), 1, -1, [RegionData.KIND])
-	rules.register_condition(&"VITAL_AT_LEAST", _vital_at_least, 2, 2, [VitalData.KIND, GameRulesService.ARG_INT])
-	rules.register_condition(&"PLAYTHROUGH_AT_LEAST", _playthrough_at_least, 1, 1, [GameRulesService.ARG_COUNT])
+	rules.register_condition(&"VITAL_AT_LEAST", _vital_at_least, 2, 2, [VitalData.KIND, GameRulesService.ARG_INT], _describe_vital_at_least)
+	rules.register_condition(&"PLAYTHROUGH_AT_LEAST", _playthrough_at_least, 1, 1, [GameRulesService.ARG_COUNT], _describe_playthrough_at_least)
 	rules.register_arg_kind(ARG_OPTION, _option_problem)
 	rules.register_condition(&"OPTION", _option, 2, -1, [ARG_OPTION, GameRulesService.ARG_TEXT], Callable(), _option_values_problem)
 	rules.register_condition(&"OPTION_AT_LEAST", _option_at_least, 2, 2, [ARG_OPTION, GameRulesService.ARG_NUMBER], Callable(), _number_option_problem)
@@ -124,11 +124,36 @@ static func _minigame_won(args: PackedStringArray, _context: Dictionary) -> bool
 	return true
 
 static func _describe_minigame_won(args: PackedStringArray) -> String:
+	return TranslationServer.translate("Win %s") % _names(MiniGameDefinition.KIND, args)
+
+static func _describe_day_at_least(args: PackedStringArray) -> String:
+	return TranslationServer.translate("From day %d") % int(args[0])
+
+static func _describe_season(args: PackedStringArray) -> String:
 	var names := PackedStringArray()
-	for minigame_id: String in args:
-		var minigame := MiniGameDefinition.find(StringName(minigame_id))
-		names.append(TranslationServer.translate(minigame.display_name) if minigame != null and not minigame.display_name.is_empty() else minigame_id)
-	return TranslationServer.translate("Win %s") % ", ".join(names)
+	for season: String in args:
+		names.append(TranslationServer.translate(season))
+	return TranslationServer.translate("In %s") % " / ".join(names)
+
+static func _describe_vital_at_least(args: PackedStringArray) -> String:
+	return "%s %d" % [GameRulesService.entry_name(VitalData.KIND, args[0]), int(args[1])]
+
+static func _describe_playthrough_at_least(args: PackedStringArray) -> String:
+	return TranslationServer.translate("Playthrough %d") % int(args[0])
+
+static func _describe_weather(args: PackedStringArray) -> String:
+	return TranslationServer.translate("When it is %s") % _names(WeatherData.KIND, args, " / ")
+
+static func _describe_location(args: PackedStringArray) -> String:
+	return TranslationServer.translate("At %s") % _names(WorldLocationData.KIND, args, " / ")
+
+# The names of the entries of `kind` the arguments name, between `separator`:
+# "A, B" for each of them, "A / B" for one of them.
+static func _names(kind: StringName, args: PackedStringArray, separator := ", ") -> String:
+	var names := PackedStringArray()
+	for entry_id: String in args:
+		names.append(GameRulesService.entry_name(kind, entry_id))
+	return separator.join(names)
 
 ## OPTION <option> <value>...: the player's option (`GameOption`) is one of
 ## the values: true or false for a switch, a choice's name (in quotes with a

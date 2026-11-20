@@ -9,3 +9,6 @@ msgstr ""
 
 msgid "Finish the run to save"
 msgstr "结束这一轮后才能存档"
+
+msgid "Runs: %d"
+msgstr "出发次数：%d"

@@ -162,3 +162,6 @@ msgstr "喝了%s%s"
 
 msgid "%dg"
 msgstr "%dg"
+
+msgid "Needs: %s"
+msgstr "需要：%s"

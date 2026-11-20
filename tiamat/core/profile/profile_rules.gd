@@ -6,7 +6,7 @@ extends RefCounted
 ## and the hints the player read (`HintData`).
 
 static func register(rules: GameRulesService) -> void:
-	rules.register_condition(&"ACHIEVEMENT_UNLOCKED", _achievement_unlocked, 1, 1, [AchievementData.KIND])
+	rules.register_condition(&"ACHIEVEMENT_UNLOCKED", _achievement_unlocked, 1, 1, [AchievementData.KIND], _describe_achievement_unlocked)
 	rules.register_condition(&"PROFILE_FLAG", _profile_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_BOOL])
 	rules.register_condition(&"PROFILE_FLAG_AT_LEAST", _profile_flag_at_least, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_INT])
 	rules.register_condition(&"HINT_SHOWN", _hint_shown, 1, 1, [HintData.KIND])
@@ -18,6 +18,9 @@ static func register(rules: GameRulesService) -> void:
 ## ACHIEVEMENT_UNLOCKED <achievement>: the player unlocked it, in any save.
 static func _achievement_unlocked(args: PackedStringArray, _context: Dictionary) -> bool:
 	return GameProfile.is_unlocked(StringName(args[0]))
+
+static func _describe_achievement_unlocked(args: PackedStringArray) -> String:
+	return TranslationServer.translate("Unlock %s") % GameRulesService.entry_name(AchievementData.KIND, args[0])
 
 ## PROFILE_FLAG <key> [true|false]: the profile's boolean flag has the value
 ## (default true).
