@@ -211,7 +211,7 @@ func _fill(choices: Array[Choice]) -> void:
 			continue
 		var label := Label.new()
 		label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-		label.text = choice.note
+		label.text = GameText.keep_dots(choice.note)
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.add_theme_color_override(&"font_color", NOTE_COLOR)
 		row.add_child(label)
@@ -219,7 +219,8 @@ func _fill(choices: Array[Choice]) -> void:
 	ReadableText.raise(_list)
 
 # Shows `text` (translated already) above the choices, a label a line, each
-# line that starts with spaces set in by their width, its wrapped lines too.
+# line that starts with spaces set in by their width, its wrapped lines too,
+# and none wrapped before a dot that splits its parts (`GameText.keep_dots()`).
 func _show_body(text: String) -> void:
 	_body_text = text
 	for child: Node in _body.get_children():
@@ -232,9 +233,10 @@ func _show_body(text: String) -> void:
 		var label := Label.new()
 		label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.text = line.lstrip(" ")
+		var words := line.lstrip(" ")
+		label.text = GameText.keep_dots(words)
 		_body.add_child(label)
-		var spaces := line.length() - label.text.length()
+		var spaces := line.length() - words.length()
 		if spaces > 0:
 			label.set_meta(&"indent", " ".repeat(spaces))
 	ReadableText.raise(_body)
