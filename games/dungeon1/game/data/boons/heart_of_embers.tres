@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BoonData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/boon_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"heart_of_embers"
+display_name = "Heart of Embers"
+description = "Your blade hits two fifths harder. Found by those who reached depth 10."
+weight = 6
+condition = "ACHIEVEMENT_UNLOCKED ember_heart"
+multipliers = Dictionary[StringName, float]({&"attack_damage": 1.4})

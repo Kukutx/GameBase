@@ -275,3 +275,15 @@ msgstr "余烬眷顾"
 
 msgid "Take five boons in one run."
 msgstr "在一轮中获得五项祝福。"
+
+msgid "Heart of Embers"
+msgstr "余烬之心"
+
+msgid "Your blade hits two fifths harder. Found by those who reached depth 10."
+msgstr "武器伤害提高五分之二。只有到过第 10 层的人才能找到。"
+
+msgid "Slayer's Fury"
+msgstr "屠戮者之怒"
+
+msgid "You hit a tenth harder and move a tenth faster. Found by slayers."
+msgstr "伤害和移动速度各提高十分之一。只有屠戮者才能找到。"

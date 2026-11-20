@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BoonData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/boon_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"slayers_fury"
+display_name = "Slayer's Fury"
+description = "You hit a tenth harder and move a tenth faster. Found by slayers."
+max_stacks = 2
+weight = 6
+condition = "ACHIEVEMENT_UNLOCKED slayer"
+multipliers = Dictionary[StringName, float]({&"attack_damage": 1.1, &"move_speed": 1.1})
