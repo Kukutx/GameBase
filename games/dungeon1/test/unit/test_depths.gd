@@ -230,6 +230,36 @@ func test_the_same_run_and_depth_lay_out_the_same_floor() -> void:
 	DepthRun.start_run()
 	assert_ne(_layout(_enter_floor()), first, "another run lays out its own floor")
 
+func test_from_the_third_depth_ember_vents_flare_clear_of_the_ways_in_and_on() -> void:
+	assert_eq(DepthFloor.get_vent_count(2, 3), 0, "none above the third depth")
+	assert_eq(DepthFloor.get_vent_count(3, 3), 1)
+	assert_eq(DepthFloor.get_vent_count(5, 3), 2, "one more every second depth")
+	assert_eq(DepthFloor.get_vent_count(40, 3), 4, "four at most")
+	DepthRun.start_run()
+	DepthRun.track.set_depth(2)
+	assert_eq(_enter_floor().get_vents().size(), 0)
+	DepthRun.track.set_depth(7)
+	var depth_floor := _enter_floor()
+	var vents := depth_floor.get_vents()
+	assert_eq(vents.size(), 3)
+	var ways: Array[Vector2] = []
+	for way: String in ["ArrivalSpawn", "Stairs", "Rope", "EmberAltar"]:
+		ways.append((depth_floor.get_node(way) as Node2D).position)
+	var player := depth_floor.get_node("Player")
+	var spots: Array = []
+	for vent: Hazard in vents:
+		spots.append(vent.position)
+		assert_eq(vent.faction, &"", "a vent burns every side")
+		assert_lt(vent.get_index(), player.get_index(), "under the player")
+		for way: Vector2 in ways:
+			assert_gte(vent.position.distance_to(way), DepthFloor.VENT_CLEARANCE, "clear of the ways in and on and the altar")
+		for enemy: HostileCreature in depth_floor.get_enemies():
+			assert_gte(enemy.position.distance_to(vent.position), DepthFloor.ENEMY_SPACING, "no creature starts on one")
+	var again: Array = []
+	for vent: Hazard in _enter_floor().get_vents():
+		again.append(vent.position)
+	assert_eq(again, spots, "the same run lays out the same vents")
+
 func test_a_floor_spawns_only_the_tiers_its_depth_reaches() -> void:
 	DepthRun.start_run()
 	for enemy: HostileCreature in _enter_floor().get_enemies():
