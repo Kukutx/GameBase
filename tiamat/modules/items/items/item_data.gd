@@ -112,6 +112,18 @@ static func register_effect_text(text: Callable) -> void:
 	if not _effect_texts.has(text):
 		_effect_texts.append(text)
 
+## What a menu tells of it under its list (a shop's counter, a crafting
+## station): its description, then what it does (`describe_effects()`) on a
+## line of its own; "" for neither.
+func describe() -> String:
+	var parts := PackedStringArray()
+	if not description.is_empty():
+		parts.append(TranslationServer.translate(description))
+	var effects := describe_effects()
+	if not effects.is_empty():
+		parts.append(EFFECT_SEPARATOR.join(effects))
+	return "\n".join(parts)
+
 ## What it does, as the player reads it before buying or using it (a shop, the
 ## pause menu's Items): what it restores ("Restores 35 Health"), its food buff
 ## and what that changes, then what the modules and the game tell of it

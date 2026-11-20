@@ -8,7 +8,8 @@ extends Node
 ##
 ## A gift's points come from the NPC's `NpcProfileData`, doubled on its
 ## birthday, and the `gift_friendship` stat (`GameStats`) scales a gift it
-## likes; tools and seeds are not gifts. Points stay between 0 and the maximum.
+## likes; tools, seeds and quest items are not gifts (`is_gift()`). Points
+## stay between 0 and the maximum.
 ## They are saved with the game, with the day of each NPC's last talk and gift,
 ## and a new game starts at 0. `friendship_changed` fires on every change, and
 ## for each NPC when a save loads.
@@ -119,6 +120,10 @@ func describe_known_takers(item_id: StringName) -> PackedStringArray:
 			parts.append(String(formats[taste]) % tr(profile.display_name))
 	return parts
 
+## Whether `item` can be given as a gift: no tool, seed or quest item.
+static func is_gift(item: ItemData) -> bool:
+	return item != null and item.kind != ItemData.Kind.TOOL and item.kind != ItemData.Kind.SEED and item.kind != ItemData.Kind.QUEST
+
 func give_gift(profile: NpcProfileData, item_id: StringName) -> int:
 	if profile == null or profile.id == &"":
 		return 0
@@ -127,7 +132,7 @@ func give_gift(profile: NpcProfileData, item_id: StringName) -> int:
 		GameEvents.toastf("You already gave %s a gift today", [profile.display_name])
 		return 0
 	var item := ItemData.find(item_id)
-	if item == null or item.kind == ItemData.Kind.TOOL or item.kind == ItemData.Kind.SEED:
+	if not is_gift(item):
 		GameEvents.toast("That is not a suitable gift")
 		return 0
 	# Reserve today's gift before touching inventory. item_removed listeners can

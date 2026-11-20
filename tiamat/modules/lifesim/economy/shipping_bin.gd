@@ -17,7 +17,7 @@ func _ready() -> void:
 func _on_interacted(_actor: Node) -> void:
 	var menu := get_tree().get_first_node_in_group(&"shipping_menu") as ShippingMenu
 	if menu != null:
-		menu.open()
+		menu.open(Hotbar.get_selected_item_id())
 		return
 	var item_id := Hotbar.get_selected_item_id()
 	if item_id == &"":

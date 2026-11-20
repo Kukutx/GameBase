@@ -143,11 +143,10 @@ func test_the_shipping_menu_ships_the_amount_picked_of_what_the_bin_takes() -> v
 	var menu := (load("res://tiamat/modules/lifesim/economy/shipping_menu.tscn") as PackedScene).instantiate() as ShippingMenu
 	add_child_autofree(menu)
 	await get_tree().process_frame
-	menu.open()
+	menu.open(&"fixture_turnip")
 	assert_eq(menu.item_list.item_count, 2, "every item the bin takes")
 	assert_eq(menu.item_list.get_item_text(1), tr("%s x%d — %dg each") % ["Fixture Turnip", 25, 35])
-	menu.item_list.select(1)
-	menu.item_list.item_selected.emit(1)
+	assert_eq(menu.item_list.get_selected_items(), PackedInt32Array([1]), "the item in hand is picked first")
 	assert_eq(menu.ship_selected(), 1)
 	menu.amount_button.pressed.emit()
 	assert_eq(menu.ship_button.text, tr("Ship %d") % 10)

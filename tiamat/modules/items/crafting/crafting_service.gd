@@ -7,8 +7,10 @@ extends Node
 ## one step.
 ##
 ## When the result does not fit, nothing changes and a toast tells the player
-## why. A placeable result also gets a `Hotbar` slot when one is free. The
-## service keeps no state and saves nothing; `crafted` announces each craft.
+## why. A placeable result also gets a `Hotbar` slot when one is free. A recipe
+## crafts as many times as asked while it can (`craft_times()`,
+## `get_max_crafts()`). The service keeps no state and saves nothing; `crafted`
+## announces each craft.
 
 signal crafted(recipe_id: StringName, output_item_id: StringName, quantity: int)
 
@@ -29,18 +31,47 @@ func can_craft(recipe: RecipeData) -> bool:
 	# content must fail closed here rather than becoming a free craft.
 	return InventoryState.can_apply_transaction(recipe.ingredients, {})
 
-func craft(recipe_id: StringName) -> bool:
-	if _craft_busy:
-		return false
-	_craft_busy = true
-	var result := _craft_internal(recipe_id)
-	_craft_busy = false
-	return result
+## How many times the player could craft `recipe` with the ingredients they
+## carry, 0 while it cannot be crafted; the room for what it makes is not
+## counted, so crafting may stop sooner.
+func get_max_crafts(recipe: RecipeData) -> int:
+	if not can_craft(recipe):
+		return 0
+	var most := -1
+	for raw_id: Variant in recipe.ingredients:
+		var needed := int(recipe.ingredients[raw_id])
+		if needed > 0:
+			var times := InventoryState.get_quantity(StringName(String(raw_id))) / needed
+			most = times if most < 0 else mini(most, times)
+	# A recipe of nothing crafts once a press.
+	return maxi(most, 1)
 
-func _craft_internal(recipe_id: StringName) -> bool:
+func craft(recipe_id: StringName) -> bool:
+	return craft_times(recipe_id, 1) == 1
+
+## Crafts `recipe_id` up to `times` times, while it can be; how many times it
+## was, told in one toast.
+func craft_times(recipe_id: StringName, times: int) -> int:
+	if _craft_busy or times <= 0:
+		return 0
+	_craft_busy = true
+	var count := 0
+	while count < times and _craft_internal(recipe_id, count == 0):
+		count += 1
+	_craft_busy = false
+	var recipe := get_recipe(recipe_id)
+	if count == 1:
+		GameEvents.toastf("Crafted %s", [recipe.display_name])
+	elif count > 1:
+		GameEvents.toastf("Crafted %s x%d", [recipe.display_name, count])
+	return count
+
+# Crafts the recipe once; `speak`, a toast tells why it cannot.
+func _craft_internal(recipe_id: StringName, speak: bool) -> bool:
 	var recipe := get_recipe(recipe_id)
 	if recipe == null or not can_craft(recipe):
-		GameEvents.toast("Missing materials or requirements")
+		if speak:
+			GameEvents.toast("Missing materials or requirements")
 		return false
 	var output := ItemData.find(recipe.output_item_id)
 	if output == null:
@@ -51,10 +82,10 @@ func _craft_internal(recipe_id: StringName) -> bool:
 	# inventory and no partial item_added/item_removed side effects can escape.
 	var additions := {String(output.id): recipe.output_quantity}
 	if not InventoryState.apply_transaction_atomic(recipe.ingredients, additions):
-		GameEvents.toast("Inventory is full or materials changed")
+		if speak:
+			GameEvents.toast("Inventory is full or materials changed")
 		return false
 	if output.is_placeable():
 		Hotbar.ensure_item(output.id)
 	crafted.emit(recipe.id, recipe.output_item_id, recipe.output_quantity)
-	GameEvents.toastf("Crafted %s", [recipe.display_name])
 	return true

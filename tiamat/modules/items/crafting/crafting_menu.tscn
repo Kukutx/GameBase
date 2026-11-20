@@ -24,9 +24,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -135.0
-offset_top = -90.0
+offset_top = -115.0
 offset_right = 135.0
-offset_bottom = 90.0
+offset_bottom = 115.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -40,6 +40,9 @@ theme_override_font_sizes/font_size = 18
 text = "Crafting"
 horizontal_alignment = 1
 
+[node name="Amount" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+
 [node name="Scroll" type="ScrollContainer" parent="Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -49,6 +52,11 @@ horizontal_scroll_mode = 0
 [node name="Recipes" type="VBoxContainer" parent="Panel/VBox/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="About" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+autowrap_mode = 3
+max_lines_visible = 2
 
 [node name="Close" type="Button" parent="Panel/VBox"]
 layout_mode = 2

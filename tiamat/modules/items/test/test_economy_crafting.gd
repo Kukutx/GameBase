@@ -208,6 +208,31 @@ func test_crafting_leaves_the_player_on_the_recipe_they_pressed() -> void:
 	assert_eq(focused, _recipe_button(menu, "Fixture Crate"), "with the berries spent, the nearest recipe still open")
 	menu.close()
 
+func test_one_press_crafts_the_amount_picked_and_the_menu_tells_what_a_recipe_makes() -> void:
+	InventoryState.add_item_by_id(&"fixture_berry", 15)
+	ItemData.find(&"fixture_snack").description = "Crunchy."
+	assert_eq(CraftingState.get_max_crafts(RecipeData.find(&"fixture_snack")), 7, "two berries a snack")
+	assert_eq(CraftingState.get_max_crafts(RecipeData.find(&"fixture_crate")), 0, "no planks")
+	var menu := (load("res://tiamat/modules/items/crafting/crafting_menu.tscn") as PackedScene).instantiate() as CraftingMenu
+	add_child_autofree(menu)
+	menu.open()
+	var snack := _recipe_button(menu, "Fixture Snack")
+	snack.grab_focus()
+	assert_eq(menu.about_label.text, "Crunchy.", "what the recipe whose button has the focus makes")
+	menu.amount_button.grab_focus()
+	menu.amount_button.pressed.emit()
+	assert_eq(snack.text, "Fixture Snack x5  (Fixture Berry x10)")
+	assert_eq(get_viewport().gui_get_focus_owner(), menu.amount_button, "the focus stays on the amount")
+	snack.pressed.emit()
+	assert_eq([InventoryState.get_quantity(&"fixture_snack"), InventoryState.get_quantity(&"fixture_berry")], [5, 5])
+	menu.amount_button.pressed.emit()
+	snack = _recipe_button(menu, "Fixture Snack")
+	assert_eq([menu.amount_button.text, snack.text], [tr("Amount: All"), "Fixture Snack x2  (Fixture Berry x4)"], "as many as the berries left make")
+	snack.pressed.emit()
+	assert_eq([InventoryState.get_quantity(&"fixture_snack"), InventoryState.get_quantity(&"fixture_berry")], [7, 1])
+	assert_eq(CraftingState.craft_times(&"fixture_snack", 3), 0, "one berry makes none")
+	menu.close()
+
 # The button of the recipe whose text begins with `name` in `menu`'s list, the
 # one the list shows now.
 func _recipe_button(menu: CraftingMenu, name: String) -> Button:

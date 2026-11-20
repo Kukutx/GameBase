@@ -4,10 +4,10 @@ extends MenuLayer
 ## The shipping bin's menu: every item the player carries that the bin takes
 ## (`ShippingService.can_ship()`), with what one earns overnight, shipped as
 ## many at a press as the amount the player picks (`amounts`: one, ten, the
-## whole stack), and what the bin will pay tonight. The list keeps its entry
-## picked as stacks ship, so a press repeats a shipment. A game puts it in
-## its HUD, and a `ShippingBin` opens it; without it, the bin ships the item
-## in hand.
+## whole stack), and what the bin will pay tonight. It opens on the item in
+## hand where the bin takes it, and the list keeps its entry picked as stacks
+## ship, so a press repeats a shipment. A game puts it in its HUD, and a
+## `ShippingBin` opens it; without it, the bin ships the item in hand.
 
 ## The amounts one press ships, in the order the amount button steps through
 ## them, the first as the menu opens; 0 is all the player carries of the item.
@@ -36,13 +36,20 @@ func _ready() -> void:
 	ShippingState.shipment_changed.connect(_refresh_if_open)
 	GameSettings.locale_changed.connect(_on_locale_changed)
 
-func open() -> void:
+## Shows what the player can ship, `picked` (the item in hand) picked first
+## where it is one, else the first.
+func open(picked: StringName = &"") -> void:
 	_amount_index = 0
 	item_list.clear()
 	show_menu()
 	_refresh()
 	if item_list.item_count > 0:
-		item_list.select(0)
+		var at := 0
+		for index: int in item_list.item_count:
+			if item_list.get_item_metadata(index) == picked:
+				at = index
+		item_list.select(at)
+		item_list.ensure_current_is_visible()
 		_refresh_buttons()
 		MenuLayer.focus(item_list)
 	else:
