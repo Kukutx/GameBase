@@ -46,6 +46,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `WorldClock.minute_changed(day: int, minute_of_day: int)`
 - `WorldClock.hour_changed(day: int, hour: int)`
 - `WorldClock.day_changed(day: int)`
+- `WorldClock.advanced()`: Emitted once `advance_minutes()` or `advance_until()` has run the clock on, after every minute it passed.
 
 ## WeatherState (core)
 

@@ -20,6 +20,7 @@ var _navigation_ready := false
 func _ready() -> void:
 	WorldClock.minute_changed.connect(_on_minute_changed)
 	WorldClock.day_changed.connect(_on_day_changed)
+	WorldClock.advanced.connect(_catch_up)
 	if navigation_agent != null:
 		navigation_agent.path_desired_distance = arrival_distance
 		navigation_agent.target_desired_distance = arrival_distance
@@ -65,9 +66,11 @@ static func find_entry(entries: Array[NpcScheduleEntry], minute_of_day: int, tar
 	var selected_priority := -100000
 	var selected_minute := -1
 	for entry: NpcScheduleEntry in entries:
-		if entry == null or not entry.matches(resolved_day, minute_of_day):
+		# Only an entry that would win is asked whether it holds that day: its
+		# rules cost the most.
+		if entry == null or entry.minute_of_day > minute_of_day or not _is_better(entry.priority, entry.minute_of_day, selected_priority, selected_minute):
 			continue
-		if entry.minute_of_day <= minute_of_day and _is_better(entry.priority, entry.minute_of_day, selected_priority, selected_minute):
+		if entry.matches(resolved_day, minute_of_day):
 			selected = entry
 			selected_priority = entry.priority
 			selected_minute = entry.minute_of_day
@@ -83,9 +86,9 @@ static func find_entry(entries: Array[NpcScheduleEntry], minute_of_day: int, tar
 	var fallback_priority := -100000
 	var fallback_minute := -1
 	for entry: NpcScheduleEntry in entries:
-		if entry == null or not entry.matches(previous_day, minute_of_day):
+		if entry == null or not _is_better(entry.priority, entry.minute_of_day, fallback_priority, fallback_minute):
 			continue
-		if _is_better(entry.priority, entry.minute_of_day, fallback_priority, fallback_minute):
+		if entry.matches(previous_day, minute_of_day):
 			fallback = entry
 			fallback_priority = entry.priority
 			fallback_minute = entry.minute_of_day
@@ -101,11 +104,18 @@ func is_entry_present_here(entry: NpcScheduleEntry) -> bool:
 func has_navigation_path() -> bool:
 	return navigation_agent != null and _navigation_ready and not navigation_agent.is_navigation_finished()
 
+# A wait or a night's sleep runs many minutes at once (`GameClock.is_advancing()`):
+# the villager takes up where it ends (`_catch_up()`), not each minute between.
 func _on_minute_changed(day: int, minute_of_day: int) -> void:
-	_apply_schedule(day, minute_of_day)
+	if not WorldClock.is_advancing():
+		_apply_schedule(day, minute_of_day)
 
 func _on_day_changed(day: int) -> void:
-	_apply_schedule(day, WorldClock.minute_of_day)
+	if not WorldClock.is_advancing():
+		_apply_schedule(day, WorldClock.minute_of_day)
+
+func _catch_up() -> void:
+	_apply_schedule(WorldClock.day, WorldClock.minute_of_day)
 
 func _apply_schedule(day: int, minute_of_day: int) -> void:
 	var entry := get_entry_for_minute(minute_of_day, day)

@@ -177,3 +177,32 @@ func test_a_villagers_doings_show_while_the_player_stands_at_them() -> void:
 	npc.activity_shown_near = false
 	npc.call("_show_activity", false)
 	assert_true(npc.activity_label.visible, "a game that wants them always shows them")
+
+func test_a_villager_takes_up_where_a_long_wait_ends() -> void:
+	var day := WorldClock.day
+	var minute := WorldClock.minute_of_day
+	var paused := WorldClock.paused
+	WorldClock.paused = true
+	WorldClock.set_time(1, 8 * 60)
+	var actor := CharacterBody2D.new()
+	add_child_autofree(actor)
+	var schedule := NpcSchedule.new()
+	schedule.actor = actor
+	var entries: Array[NpcScheduleEntry] = []
+	for step: int in 4:
+		var entry := NpcScheduleEntry.new()
+		entry.minute_of_day = (8 + step) * 60
+		entry.activity = "Step %d" % step
+		entry.target_position = Vector2(10 * step, 0)
+		entries.append(entry)
+	schedule.entries = entries
+	add_child_autofree(schedule)
+	assert_eq(schedule.current_activity, "Step 0")
+	var activities: Array[String] = []
+	schedule.activity_changed.connect(func(activity: String) -> void: activities.append(activity))
+	WorldClock.advance_minutes(3 * 60 + 30)
+	assert_eq(activities, ["Step 3"] as Array[String], "where the wait ends, not each step between")
+	WorldClock.advance_minutes(0)
+	assert_eq(activities.size(), 1, "and nothing more once it stands there")
+	WorldClock.set_time(day, minute)
+	WorldClock.paused = paused

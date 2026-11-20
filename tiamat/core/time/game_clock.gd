@@ -10,11 +10,17 @@ extends Node
 ## The day and minute are saved with the game. `set_time()` jumps to a moment
 ## and announces it once, without the minutes between; `advance_minutes()` and
 ## `advance_until()` run the clock on minute by minute, so every listener sees
-## each minute pass. Setting `paused` stops the clock without pausing the world.
+## each minute pass; while they do, `is_advancing()` holds, and `advanced`
+## follows once they are done, so a node that shows only the present (where a
+## villager stands) catches up once rather than at every minute between.
+## Setting `paused` stops the clock without pausing the world.
 
 signal minute_changed(day: int, minute_of_day: int)
 signal hour_changed(day: int, hour: int)
 signal day_changed(day: int)
+## Emitted once `advance_minutes()` or `advance_until()` has run the clock on,
+## after every minute it passed.
+signal advanced
 
 const MINUTES_PER_DAY := 24 * 60
 
@@ -24,6 +30,8 @@ var paused := false
 var _elapsed := 0.0
 # Callables (day, minute_of_day) -> bool: a wait ends at a minute one holds for.
 var _wait_stops: Array[Callable] = []
+# How many runs of minutes at once are under way (one within another counts).
+var _advancing := 0
 
 func _process(delta: float) -> void:
 	var minute_length := GameCalendar.current().real_seconds_per_game_minute
@@ -36,8 +44,16 @@ func _process(delta: float) -> void:
 
 ## Runs the clock `amount` minutes on, each minute as if it passed.
 func advance_minutes(amount: int) -> void:
+	_advancing += 1
 	for _index in range(maxi(amount, 0)):
 		_advance_one_minute()
+	_finish_advance()
+
+## Whether the clock is running minutes on at once (`advance_minutes()`,
+## `advance_until()`): a wait, a night's sleep. A listener that shows only the
+## present leaves the minutes between and catches up at `advanced`.
+func is_advancing() -> bool:
+	return _advancing > 0
 
 ## Runs the clock on, each minute as if it passed, until `condition` (a
 ## `GameRules` query, asked about the clock's day and minute) holds, for at
@@ -55,6 +71,13 @@ func advance_until(condition: String, limit: int) -> int:
 	if not problems.is_empty():
 		push_warning("GameClock: cannot wait until '%s': %s" % [condition, "; ".join(problems)])
 		return -1
+	_advancing += 1
+	var passed := _wait(condition, limit)
+	_finish_advance()
+	return passed
+
+# Runs the clock on until `condition` holds, as `advance_until()` says.
+func _wait(condition: String, limit: int) -> int:
 	for passed: int in range(maxi(limit, 0) + 1):
 		if passed > 0 and _is_wait_stop():
 			return -1
@@ -73,6 +96,11 @@ func register_wait_stop(stop: Callable) -> void:
 
 func unregister_wait_stop(stop: Callable) -> void:
 	_wait_stops.erase(stop)
+
+func _finish_advance() -> void:
+	_advancing -= 1
+	if _advancing == 0:
+		advanced.emit()
 
 func _is_wait_stop() -> bool:
 	for stop: Callable in _wait_stops:
