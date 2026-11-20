@@ -57,13 +57,14 @@ func _init(battle_grid: BattleGrid, side: StringName = FactionData.PLAYER) -> vo
 	player_faction = side
 
 ## The battle `map` sets up, with time flowing as `settings` say and the
-## player's foes starting with `foe_health` of their kinds' health.
+## player's foes starting with `foe_health` of their kinds' health: each unit
+## whose placement's condition holds (`BattlePlacement.joins()`).
 static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_health := 1.0) -> AtbBattle:
 	var battle := AtbBattle.new(BattleGrid.new(map.size, map.blocked_cells), map.player_faction_id)
 	battle.time_flows_while_choosing = settings != null and settings.time_flows_while_choosing
 	battle.foe_health_scale = foe_health
 	for placement: BattlePlacement in map.placements:
-		var data := BattleUnitData.find(placement.unit_id) if placement != null else null
+		var data := BattleUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
 			battle.add_unit(data, placement.faction_id, placement.cell)
 	return battle

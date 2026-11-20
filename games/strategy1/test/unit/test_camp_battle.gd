@@ -1,13 +1,15 @@
 extends GutTest
 
 ## The battle at the raider camp, the muster's second: it opens once the pass
-## is won, its map and units hold, the raiders wait behind their palisade, and
-## the battle comes to an end when the player's troops storm it.
+## is won, its map and units hold, the raiders wait behind their palisade, a
+## win at the ford sends two spearmen, and the battle comes to an end when the
+## player's troops storm it.
 
 const GATE := Vector2(324.0, 100.0)
 
 func after_each() -> void:
 	WorldState.erase(MiniGameDefinition.wins_key(&"pass_battle"))
+	WorldState.erase(MiniGameDefinition.wins_key(&"ford_battle"))
 
 func test_the_camp_opens_once_the_pass_is_won() -> void:
 	var camp := MiniGameDefinition.find(&"camp_battle")
@@ -38,6 +40,11 @@ func test_the_camp_map_sets_up_both_sides_and_the_way_in_is_the_gate() -> void:
 		at = point
 	assert_false(across.is_empty())
 	assert_eq(across.filter(func(sample: Vector2) -> bool: return sample.y < 80.0 or sample.y > 120.0), [], "into the camp only through the gate")
+
+func test_a_win_at_the_ford_sends_two_spearmen_to_the_camp() -> void:
+	var map := RtsMapData.find(&"raider_camp")
+	WorldState.add_int(MiniGameDefinition.wins_key(&"ford_battle"), 1)
+	assert_eq(RtsBattle.from_map(map).get_player_units().size(), 11)
 
 func test_the_battle_ends_when_the_troops_storm_the_camp() -> void:
 	var battle := RtsBattle.from_map(RtsMapData.find(&"raider_camp"))

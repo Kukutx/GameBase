@@ -174,14 +174,14 @@ msgstr "劫掠者向两山之间的山口进军，守住它。"
 msgid "Old Mill"
 msgstr "旧磨坊"
 
-msgid "Raiders hold the mill across the stream. A bridge and a ford lead over."
-msgstr "劫掠者占着溪对岸的磨坊。一座桥和一处浅滩通往对岸。"
+msgid "Raiders hold the mill across the stream. A bridge and a ford lead over. Win in the pass first, and a swordsman from there joins you."
+msgstr "劫掠者占着溪对岸的磨坊。一座桥和一处浅滩通往对岸。先在山口取胜，那里的一名剑士会来助战。"
 
 msgid "Raider Camp"
 msgstr "劫掠者营地"
 
-msgid "The raiders wait behind their palisade. Storm it through the gate."
-msgstr "劫掠者守在木栅后面。从营门攻进去。"
+msgid "The raiders wait behind their palisade. Storm it through the gate. Win at the ford first, and two spearmen from there join you."
+msgstr "劫掠者守在木栅后面。从营门攻进去。先在浅滩取胜，那里的两名枪兵会来助战。"
 
 msgid "Mill Taken"
 msgstr "夺回磨坊"
