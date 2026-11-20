@@ -216,6 +216,7 @@ func test_every_fifth_depth_an_ember_warden_guards_the_way_on() -> void:
 	await get_tree().process_frame
 	assert_true(depth_floor.is_cleared())
 	assert_true(GameProfile.is_unlocked(&"warden_felled"))
+	assert_eq(GameProfile.get_progress(&"wardens_bane"), 1, "the bestiary counts toward Warden's Bane")
 	assert_eq(InventoryState.get_quantity(&"ember_core"), 2, "the warden drops two ember cores")
 	assert_false((depth_floor.get_node("DepthLabel") as Label).text.contains("guards"), "a fallen warden guards nothing")
 	DepthRun.track.set_depth(10)

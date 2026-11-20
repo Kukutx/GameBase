@@ -46,6 +46,10 @@ func test_each_menu_holds_the_focus_and_fits_the_view_with_a_long_list() -> void
 	for item: ItemData in items:
 		shop.stock[String(item.id)] = 1
 		recipes.append(_recipe(item))
+	# Half the recipes lack their ingredient, and say where to get it.
+	for index: int in range(0, recipes.size(), 2):
+		var recipe: RecipeData = recipes[index]
+		recipe.ingredients[recipe.ingredients.keys()[0]] = 9
 	ContentFixture.use(self, items + recipes + [shop])
 	Wallet.money = 999999
 	for item: ItemData in items:

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/profile/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wardens_bane"
+display_name = "Warden's Bane"
+description = "Defeat the Ember Warden 10 times, counting every run."
+progress_flag = &"defeated:ember_warden"
+goal = 10
