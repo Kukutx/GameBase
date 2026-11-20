@@ -6,7 +6,8 @@ extends GutTest
 ## text stays in its corner, a line across the screen reaches both sides and
 ## a menu stays in the middle. A game that lays its screens out in a view of
 ## another size on some devices, a phone's smaller one so its text reads larger
-## (`viewport_width.mobile`), is held to each of them.
+## (`viewport_width.mobile`), is held to each of them. Every text on the
+## screens reads on a phone (`ReadableText`), in the view the game shows one.
 
 const ScreenFit := preload("res://tiamat/core/test/screen_fit.gd")
 
@@ -22,6 +23,34 @@ func test_every_screen_keeps_to_the_edges_of_a_wide_phone() -> void:
 			for line: String in await ScreenFit.find_drift(self, load(path) as PackedScene, size):
 				drift.append("%s at %s %s" % [path, size, line])
 	assert_eq(drift, PackedStringArray())
+
+func test_every_screen_s_text_reads_on_a_phone() -> void:
+	var screens := ScreenFit.find_screens(["res://game", "res://tiamat"])
+	var small := PackedStringArray()
+	for path: String in screens:
+		for line: String in await ScreenFit.find_small_text(self, load(path) as PackedScene, ScreenFit.phone_size()):
+			small.append("%s %s" % [path, line])
+	assert_eq(small, PackedStringArray(), "in the view a phone shows, %s" % ScreenFit.phone_size())
+
+func test_small_print_is_found() -> void:
+	var screen := Control.new()
+	screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var small := Label.new()
+	small.name = "Small"
+	small.text = "1.0.0"
+	small.add_theme_font_size_override(&"font_size", 6)
+	screen.add_child(small)
+	small.owner = screen
+	var empty := Label.new()
+	empty.name = "Empty"
+	empty.add_theme_font_size_override(&"font_size", 6)
+	screen.add_child(empty)
+	empty.owner = screen
+	var scene := PackedScene.new()
+	scene.pack(screen)
+	screen.free()
+	assert_eq(await ScreenFit.find_small_text(self, scene, Vector2(480, 270)), PackedStringArray(["Small: 6 px, 8 at least"]))
+	assert_eq(await ScreenFit.find_small_text(self, scene, Vector2(240, 135)), PackedStringArray(), "a view half as high needs half the size")
 
 func test_the_views_are_the_game_s_own_then_each_a_device_names() -> void:
 	var base := ScreenFit.base_size()

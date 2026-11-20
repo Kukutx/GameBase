@@ -74,6 +74,8 @@ func _ready() -> void:
 	SaveManager.save_completed.connect(_on_save_completed)
 	SaveManager.load_completed.connect(_on_load_completed)
 	InputPrompts.gamepad_disconnected.connect(_on_gamepad_disconnected)
+	# Its small print reads on a phone, in a narrow view as in a wide one.
+	ReadableText.raise(self)
 
 # The layout's controls, the settings menu and the questions.
 func _find_controls() -> void:

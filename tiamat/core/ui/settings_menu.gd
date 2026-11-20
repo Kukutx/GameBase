@@ -120,6 +120,8 @@ func _ready() -> void:
 	GameSettings.changed.connect(_on_settings_changed)
 	# The gamepad's buttons are named as the pad in use names them.
 	InputPrompts.input_method_changed.connect(_on_settings_changed.unbind(1))
+	# Its small print reads on a phone, in a narrow view as in a wide one.
+	ReadableText.raise(self)
 
 func open() -> void:
 	_sync_from_settings()

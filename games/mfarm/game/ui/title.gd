@@ -183,7 +183,7 @@ func _build_title(content: Control) -> void:
 	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title_label.size = Vector2(160, 45)
 	MFarmUiArt.place(content, title_label, Vector2(41.5, 48))
-	version_label = MFarmUiArt.label(VERSION_TEXT % String(ProjectSettings.get_setting("application/config/version", "")), 7, TEXT_COLOR)
+	version_label = MFarmUiArt.label(VERSION_TEXT % String(ProjectSettings.get_setting("application/config/version", "")), 8, TEXT_COLOR)
 	version_label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	version_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
