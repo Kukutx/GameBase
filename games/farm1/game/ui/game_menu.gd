@@ -282,8 +282,9 @@ func _achievement_lines() -> PackedStringArray:
 			lines.append("  " + tr("%s: %d") % [tr(record.display_name), record.get_value()])
 	return lines
 
-## What item `item_id` is and where the player gets more, after a blank
-## line, or nothing for no item.
+## What item `item_id` is, what it does (`ItemData.describe_effects()`: what
+## a dish restores and gives, how hard a blade hits beside the player's best)
+## and where the player gets more, after a blank line, or nothing for no item.
 func _item_details(item_id: StringName) -> PackedStringArray:
 	var item := ItemData.find(item_id)
 	if item == null:
@@ -291,6 +292,9 @@ func _item_details(item_id: StringName) -> PackedStringArray:
 	var lines := PackedStringArray(["", "[b]%s[/b]" % tr(item.display_name)])
 	if not item.description.is_empty():
 		lines.append(tr(item.description))
+	var effects := item.describe_effects()
+	if not effects.is_empty():
+		lines.append(ItemData.EFFECT_SEPARATOR.join(effects))
 	var ways := ItemSources.describe(item_id)
 	if not ways.is_empty():
 		lines.append(tr("Where to get: %s") % "; ".join(ways))
