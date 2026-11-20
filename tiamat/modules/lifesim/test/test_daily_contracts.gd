@@ -2,6 +2,8 @@ extends GutTest
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
+## The weather the eel bites in, rolled now and then outside winter.
+const RARE_WEATHER := &"fixture_storm"
 
 var _world_snapshot: Dictionary
 var _player_snapshot: Dictionary
@@ -17,7 +19,11 @@ func before_each() -> void:
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	_random_snapshot = GameRandom.to_save_data()
+	# The days, seasons and weather of the test's own, whatever the game's are.
+	ContentFixture.use_calendar(self, GameCalendar.new())
 	ContentFixture.use(self, _content())
+	var rare := {RARE_WEATHER: 0.3}
+	ContentFixture.use_weather(self, {"Spring": rare, "Summer": rare, "Autumn": rare})
 	WorldState.clear()
 	Wallet.reset_new_game()
 	Vitals.reset_new_game()
@@ -330,8 +336,8 @@ func _content() -> Array:
 	eel.seasons = PackedStringArray(["Spring", "Summer", "Autumn"])
 	eel.start_minute = 8 * 60
 	eel.end_minute = 23 * 60
-	# It bites in one kind of the game's weather only.
-	eel.allowed_weather.assign([_rare_weather()])
+	# It bites in one kind of weather only.
+	eel.allowed_weather.assign([RARE_WEATHER])
 	eel.difficulty = 7
 	var pebble_rock := MiningNodeData.new()
 	pebble_rock.id = &"fixture_pebble_rock"
@@ -353,7 +359,9 @@ func _content() -> Array:
 	gourd.allowed_seasons = PackedStringArray(["Autumn"])
 	var berry := _item(&"fixture_berry", 10)
 	berry.display_name = "Wild Berry"
-	return [
+	var content: Array = []
+	content.append_array(ContentFixture.weathers([RARE_WEATHER]))
+	content.append_array([
 		berry_patch, twig_pile, trout, eel, pebble_rock, ore_rock, radish, gourd,
 		berry,
 		_item(&"fixture_twig", 2),
@@ -363,7 +371,8 @@ func _content() -> Array:
 		_item(&"fixture_ore", 15),
 		_item(&"fixture_radish", 30),
 		_item(&"fixture_gourd", 80),
-	]
+	])
+	return content
 
 func _item(id: StringName, sell_price: int) -> ItemData:
 	var item := ItemData.new()
@@ -371,11 +380,3 @@ func _item(id: StringName, sell_price: int) -> ItemData:
 	item.display_name = String(id).capitalize()
 	item.sell_price = sell_price
 	return item
-
-# The first weather of the game's year that is not its clear weather.
-static func _rare_weather() -> StringName:
-	var clear := GameDefinition.current().clear_weather_id
-	for day: int in range(1, 366):
-		if WeatherState.get_weather_id(day) != clear:
-			return WeatherState.get_weather_id(day)
-	return &""

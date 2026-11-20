@@ -89,7 +89,7 @@ Every string the player reads is a literal in a `tr()` call, a toast or a prompt
 
 ## Tests
 
-The module's tests live in its `test/` directory, and every game that links the module runs them, after the core's. A test does not assume a game's content, calendar or controls: `ContentFixture.use()` puts fixture content in place, and `ContentFixture.use_calendar()` a calendar. `.agents/rules/testing.md` has the conventions.
+The module's tests live in its `test/` directory, and every game that links the module runs them, after the core's. A test does not assume a game's content, calendar, weather or controls: `ContentFixture.use()` puts fixture content in place, `ContentFixture.use_calendar()` a calendar and `ContentFixture.use_weather()` the odds of each season's weather. Validation runs every module's tests in a game made from the template with every module, which gives them nothing of its own. `.agents/rules/testing.md` has the conventions.
 
 ## Use it in a game
 

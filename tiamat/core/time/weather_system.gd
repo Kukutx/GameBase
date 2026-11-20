@@ -100,6 +100,12 @@ func _on_day_changed(day: int) -> void:
 	_refresh_for_day(day)
 
 func _on_seed_changed(_world_seed: int) -> void:
+	roll_again()
+
+## Rolls every day's weather again, from the world's seed and the game's odds
+## as they are now: for a game whose definition changed (a test's fixture
+## weather, `ContentFixture.use_weather()`).
+func roll_again() -> void:
 	_by_day.clear()
 	_refresh_for_day(WorldClock.day)
 
