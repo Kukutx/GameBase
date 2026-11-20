@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"achievement_fully_forged"
+event = &"ItemsEvents.stat_upgraded"
+condition = "STAT_UPGRADE_AT_LEAST tempered_blade 3, STAT_UPGRADE_AT_LEAST hardened_hide 3, STAT_UPGRADE_AT_LEAST fleet_boots 2, STAT_UPGRADE_AT_LEAST ember_brand 1"
+actions = PackedStringArray("UNLOCK_ACHIEVEMENT fully_forged")

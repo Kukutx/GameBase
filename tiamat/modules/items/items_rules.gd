@@ -2,7 +2,7 @@ class_name ItemsRules
 extends RefCounted
 
 ## Condition and action keys of the items module (see `GameRulesService`):
-## the inventory, item tags and money.
+## the inventory, item tags, money and the world's lasting upgrades.
 
 ## Rule argument kind: a tag some item has (`ItemData.tags`).
 const ARG_ITEM_TAG := &"item_tag"
@@ -15,6 +15,8 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_action(&"REMOVE_ITEM", _remove_item, 1, 2, [ItemData.KIND, GameRulesService.ARG_COUNT])
 	rules.register_condition(&"MONEY_AT_LEAST", _money_at_least, 1, 1, [GameRulesService.ARG_INT], _describe_money_at_least)
 	rules.register_action(&"ADD_MONEY", _add_money, 1, 1, [GameRulesService.ARG_INT])
+	rules.register_condition(&"STAT_UPGRADE_AT_LEAST", _stat_upgrade_at_least, 2, 2, [StatUpgradeData.KIND, GameRulesService.ARG_COUNT], _describe_stat_upgrade_at_least)
+	rules.register_action(&"RAISE_STAT_UPGRADE", _raise_stat_upgrade, 1, 1, [StatUpgradeData.KIND])
 
 ## HAS_ITEM <item> [count]: the inventory holds at least count (default 1).
 static func _has_item(args: PackedStringArray, _context: Dictionary) -> bool:
@@ -55,3 +57,18 @@ static func _describe_money_at_least(args: PackedStringArray) -> String:
 static func _add_money(args: PackedStringArray, _context: Dictionary) -> bool:
 	Wallet.add(int(args[0]))
 	return true
+
+## STAT_UPGRADE_AT_LEAST <upgrade> <level>: the world raised the upgrade to at
+## least that level.
+static func _stat_upgrade_at_least(args: PackedStringArray, _context: Dictionary) -> bool:
+	var upgrade := StatUpgradeData.find(StringName(args[0]))
+	return upgrade != null and upgrade.get_level() >= int(args[1])
+
+static func _describe_stat_upgrade_at_least(args: PackedStringArray) -> String:
+	return TranslationServer.translate("%s level %d") % [GameRulesService.entry_name(StatUpgradeData.KIND, args[0]), int(args[1])]
+
+## RAISE_STAT_UPGRADE <upgrade>: raises the upgrade one level without a cost
+## (a reward); fails once it is at its last level.
+static func _raise_stat_upgrade(args: PackedStringArray, _context: Dictionary) -> bool:
+	var upgrade := StatUpgradeData.find(StringName(args[0]))
+	return upgrade != null and upgrade.raise()

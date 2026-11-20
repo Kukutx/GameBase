@@ -79,6 +79,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 ## ItemsEvents (items)
 
 - `ItemsEvents.item_foraged(item_id: StringName, quantity: int, position: Vector2)`: Items picked up from the world (forage, drops).
+- `ItemsEvents.stat_upgraded(stat_upgrade_id: StringName, level: int)`: The world's lasting upgrade `stat_upgrade_id` reached `level` (`StatUpgradeData`), bought at a stand or given by content.
 
 ## InventoryState (items)
 

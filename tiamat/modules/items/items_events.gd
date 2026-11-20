@@ -10,3 +10,6 @@ extends Node
 
 ## Items picked up from the world (forage, drops).
 signal item_foraged(item_id: StringName, quantity: int, position: Vector2)
+## The world's lasting upgrade `stat_upgrade_id` reached `level`
+## (`StatUpgradeData`), bought at a stand or given by content.
+signal stat_upgraded(stat_upgrade_id: StringName, level: int)

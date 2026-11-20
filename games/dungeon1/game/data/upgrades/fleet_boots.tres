@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="StatUpgradeData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/upgrades/stat_upgrade_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"fleet_boots"
+display_name = "Fleet Boots"
+description = "Lighter steps: a little faster per level."
+max_level = 2
+money_costs = PackedInt32Array(60, 120)
+multipliers = Dictionary[StringName, float]({&"move_speed": 1.06})

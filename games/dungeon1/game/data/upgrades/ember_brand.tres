@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="StatUpgradeData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/upgrades/stat_upgrade_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ember_brand"
+display_name = "Ember Brand"
+description = "An ember core forged into the blade: strikes hit a fifth harder."
+condition = "ACHIEVEMENT_UNLOCKED ember_heart"
+money_costs = PackedInt32Array(200)
+materials = Dictionary[StringName, int]({&"ember_core": 2})
+multipliers = Dictionary[StringName, float]({&"attack_damage": 1.2})

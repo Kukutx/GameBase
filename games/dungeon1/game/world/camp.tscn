@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://tiamat/core/world/world_spawn_point.gd" id="2_spawn"]
@@ -11,6 +11,7 @@
 [ext_resource type="Resource" path="res://game/dialogue/camp.dialogue" id="9_camp_dialogue"]
 [ext_resource type="Script" path="res://tiamat/core/camera/camera_bounds.gd" id="91_bounds"]
 [ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/run_summary.gd" id="92_summary"]
+[ext_resource type="PackedScene" path="res://tiamat/modules/items/upgrades/stat_upgrade_stand.tscn" id="93_forge"]
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(480, 20)
@@ -78,6 +79,28 @@ prompt_text = "Rest until tomorrow"
 [node name="Merchant" parent="." instance=ExtResource("4_stand")]
 position = Vector2(110, -50)
 shop = ExtResource("5_merchant")
+
+[node name="EmberForge" parent="." instance=ExtResource("93_forge")]
+position = Vector2(-110, 50)
+upgrade_ids = Array[StringName]([&"tempered_blade", &"hardened_hide", &"fleet_boots", &"ember_brand"])
+title = "Ember Forge"
+
+[node name="Visual" type="Polygon2D" parent="EmberForge"]
+polygon = PackedVector2Array(-18, -6, 18, -6, 12, 2, 8, 2, 8, 12, 14, 14, -14, 14, -8, 12, -8, 2, -18, 0)
+color = Color(0.3, 0.3, 0.34, 1)
+
+[node name="Glow" type="Polygon2D" parent="EmberForge"]
+polygon = PackedVector2Array(-14, -10, -6, -10, -4, -6, -16, -6)
+color = Color(1, 0.45, 0.12, 1)
+
+[node name="Label" type="Label" parent="EmberForge"]
+offset_left = -52.0
+offset_top = -30.0
+offset_right = 52.0
+offset_bottom = -15.0
+theme_override_font_sizes/font_size = 9
+text = "Ember Forge"
+horizontal_alignment = 1
 
 [node name="OldDelver" parent="." instance=ExtResource("8_spot")]
 position = Vector2(0, -80)
