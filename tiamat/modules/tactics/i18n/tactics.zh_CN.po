@@ -108,3 +108,9 @@ msgstr "目标：在此结束回合即可获胜"
 
 msgid "%s takes the goal!"
 msgstr "%s 夺下了目标！"
+
+msgid "%s joins the battle."
+msgstr "%s 加入了战斗。"
+
+msgid "%s joins the foes!"
+msgstr "%s 加入了敌方！"

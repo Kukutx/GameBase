@@ -2,7 +2,8 @@ extends GutTest
 
 ## A grid battle in active time (`AtbBattle`): gauges that fill at each unit's
 ## speed, a turn of one move and one action, what an action takes or gives
-## back, the end of the battle, and the same battle playing the same way.
+## back, units that arrive while it runs, the end of the battle, and the same
+## battle playing the same way.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -375,6 +376,67 @@ func test_a_unit_of_the_side_that_takes_a_goal_wins_by_ending_its_turn_there() -
 	TacticsFixture.give_turn(lost, runner)
 	assert_eq(runner.cell, Vector2i(0, 0), "the foe steps onto the goal it takes")
 	assert_true(lost.is_over() and not lost.is_won(), "and the battle is lost")
+
+func test_units_on_their_way_arrive_once_their_battle_time_comes() -> void:
+	var battle := _battle()
+	var arrived: Array[GridUnit] = []
+	battle.unit_arrived.connect(func(unit: GridUnit) -> void: arrived.append(unit))
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	_add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(1, 0))
+	battle.add_arrival(BattleUnitData.find(&"fixture_raider"), FactionData.MONSTERS, Vector2i(7, 5), 3.0, true)
+	battle.add_arrival(BattleUnitData.find(&"fixture_archer"), FactionData.PLAYER, Vector2i(0, 0), 1.0)
+	assert_eq(battle.arrivals.size(), 2)
+	assert_eq(battle.arrivals.get_next(), 1.0, "the soonest first")
+	assert_eq(battle.units.size(), 2, "on their way, not on the grid")
+	battle.advance(1.0)
+	assert_eq(arrived.size(), 1)
+	assert_eq(arrived[0].cell, Vector2i(0, 1), "in the open cell nearest its own, where the knight stands")
+	assert_eq(arrived[0].gauge, 0.0, "its gauge empty")
+	assert_true(arrived[0].player_controlled)
+	assert_almost_eq(knight.gauge, 50.0, 0.001)
+	battle.advance(5.0)
+	assert_eq(battle.get_turn_unit(), knight)
+	assert_almost_eq(battle.time, 2.0, 0.001, "battle time stands still while the player chooses")
+	assert_eq(battle.arrivals.size(), 1, "and the next stays on its way")
+	assert_true(battle.end_turn(knight))
+	battle.advance(1.0)
+	assert_eq(arrived.size(), 2)
+	assert_eq(arrived[1].cell, Vector2i(7, 5))
+	assert_true(arrived[1].leader, "it leads its side")
+	assert_eq(battle.arrivals.get_next(), INF)
+	battle.add_arrival(BattleUnitData.find(&"fixture_archer"), FactionData.PLAYER, Vector2i(3, 3), 1.0)
+	assert_eq(battle.units.size(), 5, "one already due is placed at once")
+
+func test_units_on_their_way_keep_the_battle_going_unless_their_leader_fell() -> void:
+	var battle := _battle()
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(1, 0))
+	raider.health.set_current(1)
+	battle.add_arrival(BattleUnitData.find(&"fixture_raider"), FactionData.MONSTERS, Vector2i(7, 5), 30.0)
+	TacticsFixture.give_turn(battle, knight)
+	assert_true(battle.act(knight, BattleActionData.find(&"fixture_strike"), Vector2i(1, 0)))
+	assert_false(raider.is_alive())
+	assert_false(battle.is_over(), "a foe on its way fights on")
+
+	var held := _battle()
+	var last := _add(held, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	var foe := _add(held, &"fixture_raider", FactionData.MONSTERS, Vector2i(1, 0))
+	last.health.set_current(4)
+	held.add_arrival(BattleUnitData.find(&"fixture_archer"), FactionData.PLAYER, Vector2i(7, 5), 30.0)
+	TacticsFixture.give_turn(held, foe)
+	assert_false(last.is_alive())
+	assert_false(held.is_over(), "so does the player's")
+
+	var routed := _battle()
+	var hero := _add(routed, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	var chief := _add(routed, &"fixture_raider", FactionData.MONSTERS, Vector2i(1, 0))
+	chief.leader = true
+	chief.health.set_current(1)
+	routed.add_arrival(BattleUnitData.find(&"fixture_raider"), FactionData.MONSTERS, Vector2i(7, 5), 30.0)
+	TacticsFixture.give_turn(routed, hero)
+	assert_true(routed.act(hero, BattleActionData.find(&"fixture_strike"), Vector2i(1, 0)))
+	assert_eq(routed.arrivals.size(), 0, "its side's units on their way turn back with it")
+	assert_true(routed.is_over() and routed.is_won())
 
 func test_the_battle_ends_won_when_the_last_foe_falls_and_lost_when_the_player_s_side_does() -> void:
 	var battle := _battle()

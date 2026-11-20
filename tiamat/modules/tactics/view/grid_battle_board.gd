@@ -4,8 +4,10 @@ extends Control
 ## The grid of a grid battle as the player sees it (`GridBattleGame`): the
 ## cells, scaled to fit the board's size, with tufts of brush where they give
 ## cover (`cover_color`) and ripples on rough ground (`rough_color`), a
-## pennant on a goal cell in the colour of the side that takes it, the
-## cells a command may pick, the
+## pennant on a goal cell in the colour of the side that takes it, a ring
+## where a unit on its way will arrive (`AtbBattle.arrivals`), in its side's
+## colour with the seconds of battle time left, the cells a command may pick,
+## the
 ## cells the foes could strike next (`danger`), the
 ## cursor, the units with their health and gauges and a crown on a side's
 ## leader (`leader_color`), the numbers of what an
@@ -187,6 +189,7 @@ func _draw() -> void:
 	_draw_danger_edge(origin, side)
 	for cell: Vector2i in area:
 		draw_rect(_cell_rect(cell, origin, side), area_color)
+	_draw_arrivals(origin, side)
 	for unit: GridUnit in battle.units:
 		if unit.is_alive():
 			_draw_unit(unit, origin, side)
@@ -291,6 +294,20 @@ func _draw_goal(cell: Vector2i, origin: Vector2, side: float) -> void:
 	draw_rect(_cell_rect(cell, origin, side).grow(-line), color, false, line)
 	draw_line(corner + Vector2(0.38, 0.84) * side, corner + Vector2(0.38, 0.16) * side, color, line)
 	draw_colored_polygon(PackedVector2Array([corner + Vector2(0.38, 0.16) * side, corner + Vector2(0.76, 0.29) * side, corner + Vector2(0.38, 0.42) * side]), color)
+
+# A ring in each cell a unit on its way arrives in, the soonest there, in the
+# colour of its side, with the whole seconds of battle time until it comes.
+func _draw_arrivals(origin: Vector2, side: float) -> void:
+	var drawn: Array[Vector2i] = []
+	var font_size := maxi(roundi(side * 0.36), 8)
+	for arrival: GridArrivals.Arrival in battle.arrivals.get_all():
+		if drawn.has(arrival.cell):
+			continue
+		drawn.append(arrival.cell)
+		var color := foe_side_color if FactionData.are_hostile(arrival.faction, battle.player_faction) else player_side_color
+		var center := origin + (Vector2(arrival.cell) + Vector2(0.5, 0.5)) * side
+		draw_arc(center, side * 0.36, 0.0, TAU, 24, color, maxf(side * 0.06, 1.0))
+		draw_string(get_theme_default_font(), Vector2(center.x - side * 0.5, center.y + font_size * 0.35), str(ceili(arrival.seconds - battle.time)), HORIZONTAL_ALIGNMENT_CENTER, side, font_size, color)
 
 func _cell_rect(cell: Vector2i, origin: Vector2, side: float) -> Rect2:
 	return Rect2(origin + Vector2(cell) * side, Vector2(side, side))

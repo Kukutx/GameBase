@@ -51,6 +51,9 @@ func test_a_map_places_known_units_on_open_cells_one_each_with_both_sides() -> v
 	var called := _map()
 	called.placements[called.placements.size() - 1].condition = "WORLD_FLAG test:reinforced"
 	assert_eq(called.find_problems(_registry), PackedStringArray(["places no unit against the player that joins without a condition"]), "a foe that may not come")
+	var late := _map()
+	late.placements[late.placements.size() - 1].arrive_seconds = 5.0
+	assert_eq(late.find_problems(_registry), PackedStringArray(["places no unit against the player that joins without a condition"]), "nor one still on its way")
 	var tiny := _map()
 	tiny.size = Vector2i(1, 6)
 	assert_eq(tiny.find_problems(_registry), PackedStringArray(["has size (1, 6) outside 2x2 to 32x32"]))
@@ -131,6 +134,20 @@ func test_a_unit_with_a_condition_joins_only_while_it_holds() -> void:
 	WorldState.load_save_data(world)
 	assert_eq(without, 2)
 	assert_eq(with, 3, "the reinforcement joins once the condition holds")
+
+func test_a_unit_placed_to_arrive_later_is_on_its_way_as_the_battle_starts() -> void:
+	var map := _map()
+	var relief := TacticsFixture.placement(&"fixture_knight", FactionData.PLAYER, Vector2i(0, 1))
+	relief.arrive_seconds = 12.0
+	relief.leader = true
+	map.placements.append(relief)
+	assert_eq(map.find_problems(_registry), PackedStringArray())
+	var battle := AtbBattle.from_map(map)
+	assert_eq(battle.units.size(), 2, "the others are there")
+	assert_eq(battle.arrivals.size(), 1)
+	var arrival := battle.arrivals.get_all()[0]
+	assert_eq([arrival.cell, arrival.seconds, arrival.leader], [Vector2i(0, 1), 12.0, true])
+	assert_eq(map.count_player_side(), 2, "it counts toward the units its side can field")
 
 func _map() -> BattleMapData:
 	var map := BattleMapData.new()
