@@ -4,6 +4,10 @@ const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const STATION_SCENE := preload("res://tiamat/core/minigames/minigame_station.tscn")
 const FIRST := &"fixture_first_battle"
 const SECOND := &"fixture_second_battle"
+const PROFILE_PATH := "user://test_minigame_picker/profile.json"
+
+var _saved_path: String
+var _saved_profile: Dictionary
 
 ## A minigame the test ends itself.
 class _FixtureMiniGame:
@@ -11,6 +15,10 @@ class _FixtureMiniGame:
 
 func before_each() -> void:
 	WorldState.clear()
+	_saved_path = GameProfile.profile_path
+	_saved_profile = GameProfile.to_save_data()
+	GameProfile.profile_path = PROFILE_PATH
+	GameProfile.load_save_data({})
 	var minigame := _FixtureMiniGame.new()
 	var scene := PackedScene.new()
 	scene.pack(minigame)
@@ -20,6 +28,7 @@ func before_each() -> void:
 	first.scene = scene
 	first.display_name = "First Battle"
 	first.description = "Hold the ford."
+	first.score_name = "Units Left"
 	var second := MiniGameDefinition.new()
 	second.id = SECOND
 	second.scene = scene
@@ -32,6 +41,11 @@ func after_each() -> void:
 	MiniGameHost.cancel()
 	InputLock.clear()
 	WorldState.clear()
+	GameProfile.load_save_data(_saved_profile)
+	GameProfile.profile_path = _saved_path
+	for path: String in [PROFILE_PATH, PROFILE_PATH + ".tmp"]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 func _finish(result: MiniGameResult) -> void:
 	(MiniGameHost.get_active() as MiniGame).finish(result)
@@ -125,3 +139,22 @@ func test_a_choice_the_content_lacks_or_that_has_no_name_is_a_problem() -> void:
 		"station '%s' offers minigame '%s', which has no display name" % [station.name, FIRST],
 		"station '%s' offers unknown minigame 'fixture_no_such_battle'" % station.name,
 	]))
+
+func test_the_best_score_stays_in_the_profile_and_shows_under_its_name() -> void:
+	var first := MiniGameDefinition.find(FIRST)
+	(func() -> void: await MiniGameHost.run(FIRST)).call()
+	await _finish(MiniGameResult.won(3))
+	(func() -> void: await MiniGameHost.run(FIRST)).call()
+	await _finish(MiniGameResult.lost(1))
+	assert_eq(first.get_best_score(), 3, "a lower score leaves the best")
+	(func() -> void: await MiniGameHost.run(FIRST)).call()
+	MiniGameHost.cancel()
+	await get_tree().process_frame
+	assert_eq(GameProfile.get_int(MiniGameDefinition.best_score_key(FIRST)), 3, "the profile keeps it for every save")
+	WorldState.clear()
+	assert_eq(first.get_best_score(), 3, "a new save keeps it too")
+	var station := _station()
+	(func() -> void: await station.pick()).call()
+	assert_eq(station.get_picker().get_note(FIRST), "Hold the ford.\nBest Units Left: 3")
+	MiniGameDefinition.find(SECOND).score_name = "Units Left"
+	assert_eq(MiniGamePicker.note_text(MiniGameDefinition.find(SECOND)), "Locked: Win First Battle", "a locked one shows what it needs alone")

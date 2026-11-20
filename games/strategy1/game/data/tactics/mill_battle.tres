@@ -9,6 +9,7 @@ id = &"mill_battle"
 display_name = "Old Mill"
 description = "Raiders hold the mill across the stream. A bridge and a ford lead over."
 condition = "MINIGAME_WON ford_battle"
+score_name = "Units Left"
 scene = ExtResource("2_scene")
 music_cue_id = &"music_battle"
 settings = {

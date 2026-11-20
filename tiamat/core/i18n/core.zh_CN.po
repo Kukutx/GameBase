@@ -522,3 +522,6 @@ msgstr "未解锁：%s"
 
 msgid "Win %s"
 msgstr "赢得%s"
+
+msgid "Best %s: %d"
+msgstr "最佳%s：%d"

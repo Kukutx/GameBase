@@ -9,6 +9,7 @@ id = &"camp_battle"
 display_name = "Raider Camp"
 description = "The raiders wait behind their palisade. Storm it through the gate."
 condition = "MINIGAME_WON pass_battle"
+score_name = "Units Left"
 scene = ExtResource("2_scene")
 music_cue_id = &"music_battle"
 settings = {

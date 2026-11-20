@@ -89,7 +89,7 @@ const CALL_RE = /(?:\btr|\bTranslationServer\.translate|GameEvents\.toastf?|\bse
 const PLURAL_CALL_RE = /\btr_n\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"/g;
 
 // Player-facing fields of data resources.
-const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|text|role|activity|group) = "((?:[^"\\]|\\.)*)"$/gm;
+const DATA_RE = /^(?:display_name|short_name|title|description|subject|body|text|role|activity|group|score_name) = "((?:[^"\\]|\\.)*)"$/gm;
 
 // Player-facing lists of text in data resources, such as a calendar's seasons
 // or what an NPC answers a chat topic or the choices of a player option

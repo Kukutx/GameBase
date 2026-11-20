@@ -194,3 +194,6 @@ msgstr "踏破营寨"
 
 msgid "Storm the Raider Camp."
 msgstr "攻破劫掠者营地。"
+
+msgid "Units Left"
+msgstr "剩余兵力"

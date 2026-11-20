@@ -192,7 +192,7 @@ function addContent({ game, files = [], missing = false }) {
   return [...new Set(added)];
 }
 
-module.exports = { addContent, addToPack, contentClasses, listedPaths };
+module.exports = { addContent, addToPack, contentClasses, gamePacks, listedPaths };
 
 if (require.main === module) {
   main(() => {
