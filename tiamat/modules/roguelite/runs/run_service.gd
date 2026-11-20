@@ -19,7 +19,9 @@ extends Node
 ## it reached), which may raise the best of any run in the player's profile,
 ## and a run that ended, not abandoned, leaves a report of them and of its
 ## boons (`get_last_report()`) that a `RunSummary` shows the player once they
-## are back.
+## are back. The world remembers the last `HISTORY_SIZE` of those reports
+## (`get_history()`), which the pause menu's Runs page lists, newest first
+## (`describe_history()`).
 
 signal run_started(run: int)
 signal run_ended(run: int, outcome: StringName)
@@ -44,10 +46,19 @@ const TALLY_PREFIX := "tally:"
 ## The best of a tally the run beat, as it stood before: a run value
 ## `beat:<tally id>`, set the first time the run beats it.
 const BEAT_PREFIX := "beat:"
+## The runs that ended, not abandoned, the world remembers, newest first: a
+## list under this key of what each brought (`{"run": 3, "outcome":
+## "returned", "tallies": {<tally id>: value}, "beat": [<tally id>],
+## "boons": {<boon id>: times taken}}`), read back as reports, so a report
+## reads in the language the player reads now.
+const HISTORY_KEY := &"run:history"
+## How many runs `HISTORY_KEY` remembers.
+const HISTORY_SIZE := 10
 
 ## What a run that ended, not abandoned, brought, as the player reads it: its
 ## `title` ("Run 3 · Returned") and `lines`, each tally it raised and its
-## boons (`RunService.describe_run()`). `seen` once the player saw it.
+## boons (`RunService.describe_run()`), and what they stood at, for a game
+## that shows them its own way. `seen` once the player saw it.
 class Report:
 	extends RefCounted
 
@@ -55,13 +66,13 @@ class Report:
 	var outcome: StringName
 	var title: String
 	var lines: PackedStringArray
+	## What each tally it raised stood at, by tally id.
+	var tallies: Dictionary[StringName, int] = {}
+	## The tallies it raised past the best of the runs before it.
+	var beat: Array[StringName] = []
+	## The boons it took: boon id -> times taken.
+	var boons: Dictionary[StringName, int] = {}
 	var seen := false
-
-	func _init(report_run: int, report_outcome: StringName, report_title: String, report_lines: PackedStringArray) -> void:
-		run = report_run
-		outcome = report_outcome
-		title = report_title
-		lines = report_lines
 
 ## Whether the game cannot be saved while a run goes on.
 var blocks_saves := true
@@ -110,7 +121,9 @@ func end_run(outcome: StringName) -> bool:
 	var run := get_run()
 	_last_report = null
 	if outcome != OUTCOME_ABANDONED:
-		_last_report = Report.new(run, outcome, tr("Run %d · %s") % [run, get_outcome_name(outcome)], describe_run())
+		var entry := _entry_of_run(run, outcome)
+		_remember(entry)
+		_last_report = _report_of(entry)
 	# What lasted the run is still there while `run_ended` is handled (a game
 	# banks the run's gold when the player returned).
 	run_ended.emit(run, outcome)
@@ -147,13 +160,7 @@ func get_boons() -> Array[StringName]:
 ## ids: each by its name, with how many times when more than once
 ## ("Ember Edge ×2").
 func describe_boons() -> PackedStringArray:
-	var parts := PackedStringArray()
-	for boon_id: StringName in get_boons():
-		var boon := BoonData.find(boon_id)
-		var name := boon.get_display_name() if boon != null else String(boon_id)
-		var stacks := get_boon_stacks(boon_id)
-		parts.append(tr("%s ×%d") % [name, stacks] if stacks > 1 else name)
-	return parts
+	return _describe_boons(_read_boons())
 
 ## How many boons this run took, each as many times as it took it.
 func get_boon_count() -> int:
@@ -187,16 +194,9 @@ func beat_best(tally_id: StringName) -> bool:
 ## of the tallies, with what it stands at ("Creatures Defeated: 12", marked
 ## when it beat the best of the runs before), and the boons it took.
 func describe_run() -> PackedStringArray:
-	var lines := PackedStringArray()
-	for tally: RunTallyData in RunTallyData.find_all():
-		var value := get_tally(tally.id)
-		if value > 0:
-			var line := tr("%s: %d · New best") if beat_best(tally.id) else tr("%s: %d")
-			lines.append(line % [tally.get_display_name(), value])
-	var boons := describe_boons()
-	if not boons.is_empty():
-		lines.append(tr("Boons: %s") % ", ".join(boons))
-	return lines
+	var report := Report.new()
+	_read_entry(report, _entry_of_run(get_run(), OUTCOME_RETURNED))
+	return report.lines
 
 ## The name of `outcome` as the player reads it.
 func get_outcome_name(outcome: StringName) -> String:
@@ -213,6 +213,30 @@ func get_outcome_name(outcome: StringName) -> String:
 ## once a run starts again, or the world is loaded or cleared, there is none.
 func get_last_report() -> Report:
 	return _last_report
+
+## The reports of the runs this world remembers (`HISTORY_KEY`), newest
+## first: the last `HISTORY_SIZE` that ended, not abandoned. An entry a
+## hand-edited save spoiled is left out, and tallies and boons the game no
+## longer has.
+func get_history() -> Array[Report]:
+	var reports: Array[Report] = []
+	var entries: Variant = WorldState.get_value(HISTORY_KEY, [])
+	if entries is Array:
+		for entry: Variant in entries:
+			var report := _report_of(entry)
+			if report != null and reports.size() < HISTORY_SIZE:
+				reports.append(report)
+	return reports
+
+## The pause menu's Runs page: each run the world remembers, newest first,
+## its title and under it its lines; nothing before the first ended.
+func describe_history() -> PackedStringArray:
+	var lines := PackedStringArray()
+	for report: Report in get_history():
+		lines.append(report.title)
+		for line: String in report.lines:
+			lines.append("  " + line)
+	return lines
 
 ## Up to `count` boons of `pool` (`BoonData.pool`; empty, the common one)
 ## the run may take now (`BoonData.can_take()`), none twice, each as likely as
@@ -286,6 +310,85 @@ func abandon() -> void:
 func _on_passing_out(cause: StringName) -> void:
 	if cause == GameSession.CAUSE_DEFEAT:
 		end_run(OUTCOME_DEFEATED)
+
+# What the run going on brought, as `HISTORY_KEY` keeps it.
+func _entry_of_run(run: int, outcome: StringName) -> Dictionary:
+	var tallies := {}
+	var beat := []
+	for tally: RunTallyData in RunTallyData.find_all():
+		var value := get_tally(tally.id)
+		if value > 0:
+			tallies[String(tally.id)] = value
+			if beat_best(tally.id):
+				beat.append(String(tally.id))
+	var boons := {}
+	for boon_id: StringName in get_boons():
+		boons[String(boon_id)] = get_boon_stacks(boon_id)
+	return {"run": run, "outcome": String(outcome), "tallies": tallies, "beat": beat, "boons": boons}
+
+# Puts `entry` first among the runs the world remembers, keeping the last
+# `HISTORY_SIZE`.
+func _remember(entry: Dictionary) -> void:
+	var entries: Array = [entry]
+	var saved: Variant = WorldState.get_value(HISTORY_KEY, [])
+	if saved is Array:
+		entries.append_array((saved as Array).slice(0, HISTORY_SIZE - 1))
+	WorldState.set_value(HISTORY_KEY, entries)
+
+# The report of `entry` (see `HISTORY_KEY`), as the save holds it, or null
+# when it is not one.
+func _report_of(entry: Variant) -> Report:
+	if not entry is Dictionary:
+		return null
+	var run := SaveValues.count(entry.get("run"))
+	var outcome: Variant = entry.get("outcome")
+	if run < 1 or not outcome is String or (outcome as String).is_empty():
+		return null
+	var report := Report.new()
+	report.run = run
+	report.outcome = StringName(outcome)
+	report.title = tr("Run %d · %s") % [run, get_outcome_name(report.outcome)]
+	_read_entry(report, entry)
+	return report
+
+# Reads into `report` what `entry` (a dictionary, see `HISTORY_KEY`) holds and
+# its lines, in the player's language now: each tally the game has, in the
+# tallies' order, then the boons it has.
+func _read_entry(report: Report, entry: Dictionary) -> void:
+	var tallies: Variant = entry.get("tallies")
+	var beat: Variant = entry.get("beat")
+	for tally: RunTallyData in RunTallyData.find_all():
+		var value := SaveValues.count(tallies.get(String(tally.id))) if tallies is Dictionary else 0
+		if value > 0:
+			report.tallies[tally.id] = value
+			var beaten := beat is Array and (beat as Array).has(String(tally.id))
+			if beaten:
+				report.beat.append(tally.id)
+			report.lines.append((tr("%s: %d · New best") if beaten else tr("%s: %d")) % [tally.get_display_name(), value])
+	var boons: Variant = entry.get("boons")
+	if boons is Dictionary:
+		for key: Variant in boons:
+			var stacks := SaveValues.count(boons[key])
+			if key is String and stacks > 0 and BoonData.find(StringName(key)) != null:
+				report.boons[StringName(key)] = stacks
+	var names := _describe_boons(report.boons)
+	if not names.is_empty():
+		report.lines.append(tr("Boons: %s") % ", ".join(names))
+
+# `boons` (boon id -> times taken) as the player reads them, in the order of
+# their ids: each by its name, with how many times when more than once
+# ("Ember Edge ×2").
+func _describe_boons(boons: Dictionary[StringName, int]) -> PackedStringArray:
+	var ids: Array[StringName] = []
+	ids.assign(boons.keys())
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	var parts := PackedStringArray()
+	for boon_id: StringName in ids:
+		var boon := BoonData.find(boon_id)
+		var name := boon.get_display_name() if boon != null else String(boon_id)
+		var stacks := boons[boon_id]
+		parts.append(tr("%s ×%d") % [name, stacks] if stacks > 1 else name)
+	return parts
 
 func _clear_values() -> void:
 	for key: StringName in WorldState.get_keys(VALUE_PREFIX):

@@ -5,7 +5,8 @@ extends GameModule
 ## block saving while they go on and end, abandoned, when something takes the
 ## player out of play, the boons a run takes (`BoonData`), which change
 ## stats while it goes on, and the tallies a run counts (`RunTallyData`), which
-## its report tells (`RunSummary`).
+## its report tells (`RunSummary`), and the pause menu's Runs page, the reports
+## of the last runs that ended (`RunService.describe_history()`).
 
 func install() -> void:
 	ContentDB.register_kind(BoonData.KIND, BoonData)
@@ -14,3 +15,4 @@ func install() -> void:
 	RogueliteRules.register(GameRules)
 	SaveManager.register_save_blocker(RunState.get_save_block_reason)
 	GameSession.register_activity_end(RunState.abandon)
+	PauseMenu.add_page(&"runs", "Runs", 50, RunState.describe_history)

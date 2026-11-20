@@ -1,8 +1,8 @@
 extends GutTest
 
 ## What a run counts (`RunTallyData`), the best of any run the profile keeps,
-## the report a run leaves when it ends and the node that tells it the player
-## (`RunSummary`).
+## the report a run leaves when it ends, the node that tells it the player
+## (`RunSummary`) and the last reports the world remembers (the Runs page).
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const BEST_FLAG := &"test:most_foes"
@@ -107,6 +107,55 @@ func test_a_game_names_its_own_outcomes() -> void:
 	assert_eq(RunState.get_last_report().lines, PackedStringArray(), "a run that raised nothing tells nothing more")
 	WorldState.clear()
 	assert_null(RunState.get_last_report(), "a cleared or loaded world drops it")
+
+func test_the_world_remembers_the_runs_that_ended_newest_first() -> void:
+	assert_eq(RunState.describe_history(), PackedStringArray(), "no run ended yet")
+	RunState.start_run()
+	RunState.add_tally(&"fixture_foes", 2)
+	RunState.end_run(RunService.OUTCOME_RETURNED)
+	RunState.start_run()
+	RunState.add_tally(&"fixture_foes", 1)
+	RunState.end_run(RunService.OUTCOME_ABANDONED)
+	RunState.start_run()
+	RunState.add_tally(&"fixture_foes", 3)
+	RunState.raise_tally(&"fixture_depth", 6)
+	RunState.take_boon(&"fixture_keen")
+	RunState.end_run(RunService.OUTCOME_DEFEATED)
+	var expected := PackedStringArray([
+		"Run 3 · Defeated",
+		"  Depth: 6",
+		"  Foes: 3 · New best",
+		"  Boons: Keen",
+		"Run 1 · Returned",
+		"  Foes: 2",
+	])
+	assert_eq(RunState.describe_history(), expected, "newest first, the abandoned run left out")
+	assert_eq(PauseMenu.get_page_lines(&"runs"), expected, "the pause menu's Runs page")
+	var newest: RunService.Report = RunState.get_history()[0]
+	assert_eq(newest.lines, RunState.get_last_report().lines, "the last report is the newest")
+	assert_eq([newest.run, newest.outcome, newest.tallies.get(&"fixture_foes"), newest.tallies.get(&"fixture_depth"), newest.boons.get(&"fixture_keen")], [3, RunService.OUTCOME_DEFEATED, 3, 6, 1])
+	assert_eq(newest.beat.size(), 1)
+	assert_eq(newest.beat[0], &"fixture_foes")
+	WorldState.load_save_data(JSON.parse_string(JSON.stringify(WorldState.to_save_data())))
+	assert_eq(RunState.describe_history(), expected, "saved with the world")
+	WorldState.clear()
+	assert_eq(RunState.describe_history(), PackedStringArray(), "a new world remembers none")
+
+func test_the_world_remembers_the_last_ten_and_reads_past_a_spoiled_entry() -> void:
+	for run: int in RunService.HISTORY_SIZE + 2:
+		RunState.start_run()
+		RunState.end_run(RunService.OUTCOME_RETURNED)
+	var runs := RunState.get_history().map(func(report: RunService.Report) -> int: return report.run)
+	assert_eq(runs, range(RunService.HISTORY_SIZE + 2, 2, -1), "the last ten, newest first")
+	WorldState.set_value(RunService.HISTORY_KEY, [
+		"junk",
+		{"run": 0, "outcome": "returned"},
+		{"run": 5, "outcome": ""},
+		{"run": 4.0, "outcome": "returned", "tallies": {"fixture_foes": 2.0, "gone": 5, "fixture_depth": "deep"}, "beat": "fixture_foes", "boons": {"fixture_keen": 1.0, "gone": 2}},
+	])
+	assert_eq(RunState.describe_history(), PackedStringArray(["Run 4 · Returned", "  Foes: 2", "  Boons: Keen"]), "what the game no longer has, or a save spoiled, is left out")
+	WorldState.set_value(RunService.HISTORY_KEY, "junk")
+	assert_eq(RunState.get_history().size(), 0)
 
 func test_rule_keys_count_and_ask_about_a_tally() -> void:
 	assert_false(GameRules.run_actions(PackedStringArray(["ADD_RUN_TALLY fixture_foes"])), "no run goes on")
