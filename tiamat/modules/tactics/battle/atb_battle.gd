@@ -26,7 +26,8 @@ extends RefCounted
 ## two units, living or on their way, are hostile (`FactionData.are_hostile()`),
 ## won when the player's side is left, or once a unit of the side that takes
 ## the goal cells (`goal_cells`, `takes_goals()`) ends its turn on one, won
-## when that side is the player's (`goal_taken`).
+## when that side is the player's (`goal_taken`), or once its time limit runs
+## out (`time_limit`), won when the side it names is the player's.
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`GridBattleGame`) lets time pass with `advance()`, gives the player's
@@ -78,6 +79,8 @@ var goal_faction: StringName
 var arrivals := GridArrivals.new()
 ## The seconds of battle time that have passed: the time the gauges fill in.
 var time := 0.0
+## The battle's time limit (`BattleMapData.time_limit`), or null.
+var time_limit: BattleTimeLimit
 # The player's unit taking its turn, the units of theirs whose gauges filled
 # while it does, and the unit the AI moves now.
 var _turn: GridUnit
@@ -107,6 +110,7 @@ static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_h
 	for cell: Vector2i in map.goal_cells:
 		battle.goal_cells[cell] = true
 	battle.goal_faction = map.get_goal_faction()
+	battle.time_limit = map.get_time_limit()
 	for placement: BattlePlacement in map.placements:
 		var data := BattleUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
@@ -193,9 +197,11 @@ func advance(seconds: float) -> void:
 	var left := seconds
 	while left > 0.0 and not _over and (_turn == null or time_flows_while_choosing):
 		var filling := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive() and unit.data.speed > 0.0 and unit != _turn and not _waiting.has(unit))
-		if filling.is_empty() and arrivals.size() == 0:
+		if filling.is_empty() and arrivals.size() == 0 and time_limit == null:
 			return
 		var step := clampf(arrivals.get_next() - time, 0.0, left)
+		if time_limit != null:
+			step = minf(step, time_limit.get_left(time))
 		for unit: GridUnit in filling:
 			step = minf(step, (GAUGE_FULL - unit.gauge) / unit.data.speed)
 		var full: Array[GridUnit] = []
@@ -210,6 +216,8 @@ func advance(seconds: float) -> void:
 		time += step
 		for arrival: GridArrivals.Arrival in arrivals.take_due(time + _EPSILON):
 			_arrive(arrival)
+		if time_limit != null and time_limit.is_up(time):
+			_end(time_limit.wins(player_faction))
 		for unit: GridUnit in full:
 			# Once one of the player's units waits, the others that filled
 			# with it wait their turn, full, until time flows again.
@@ -295,22 +303,9 @@ func delay_of(action: BattleActionData, target: GridUnit) -> float:
 ## or give back (no more than it lacks), and with an action that delays,
 ## "delay": how far it would set back the gauge of a unit it leaves standing,
 ## and with one that boosts, "boosts": those it would put on such a unit,
-## just as `act()` then does.
+## just as `act()` then does (`GridForecast.of()`).
 func forecast(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> Array[Dictionary]:
-	var hits: Array[Dictionary] = []
-	for target: GridUnit in affected_at(unit, action, cell, unit.cell):
-		var amount := amount_of(unit, action, target)
-		var hit: Dictionary
-		if action.effect == BattleActionData.Effect.HEAL:
-			hit = {"unit": target, "amount": mini(amount, target.health.maximum - target.health.current), "defeats": false}
-		else:
-			hit = {"unit": target, "amount": mini(amount, target.health.current), "defeats": amount >= target.health.current}
-		if action.delay > 0.0 and action.effect == BattleActionData.Effect.DAMAGE:
-			hit["delay"] = 0.0 if hit["defeats"] else delay_of(action, target)
-		if not action.boosts.is_empty() and not hit["defeats"]:
-			hit["boosts"] = action.boosts
-		hits.append(hit)
-	return hits
+	return GridForecast.of(self, unit, action, cell)
 
 ## The cells of the living units hostile to `unit`.
 func foe_cells(unit: GridUnit) -> Dictionary[Vector2i, bool]:

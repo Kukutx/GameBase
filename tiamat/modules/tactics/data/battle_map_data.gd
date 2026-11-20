@@ -5,9 +5,10 @@ extends ContentEntry
 ## stands on or walks through (water, walls), the cells that give cover
 ## (woods, ruins: a unit there takes `cover_reduction` less damage), the rough
 ## ground (shallows, mud: entering it takes `rough_cost` steps), the cells a
-## side wins by taking (a beacon, a banner: `goal_cells`), the side the
-## player commands and the units each side starts with. The tactics module's
-## minigame plays it (`GridBattleGame`, setting `map`).
+## side wins by taking (a beacon, a banner: `goal_cells`), how long it lasts at
+## most (`time_limit`), the side the player commands and the units each side
+## starts with. The tactics module's minigame plays it (`GridBattleGame`,
+## setting `map`).
 
 const KIND := &"battle_map"
 ## The most cells a side of the grid has.
@@ -34,6 +35,13 @@ const MAX_SIDE := 32
 ## The side the player commands (`FactionData`); its allies fight with it.
 @export var player_faction_id: StringName = FactionData.PLAYER
 @export var placements: Array[BattlePlacement] = []
+## The most seconds of battle time the battle lasts: once they pass, the side
+## of `time_faction_id` wins (`BattleTimeLimit`), the player's when it is
+## theirs (a stand to hold out) and the foes' when it is not (a raid to win in
+## time); 0, no limit.
+@export_range(0.0, 900.0, 1.0, "suffix:s") var time_limit := 0.0
+## The side that wins once time runs out (`FactionData`); empty, the player's.
+@export var time_faction_id: StringName
 
 ## The map with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> BattleMapData:
@@ -59,8 +67,16 @@ func get_goal_faction() -> StringName:
 func takes_goals(faction: StringName) -> bool:
 	return not goal_cells.is_empty() and not FactionData.are_hostile(faction, get_goal_faction())
 
+## The battle's time limit (`time_limit`), or null when it has none.
+func get_time_limit() -> BattleTimeLimit:
+	if time_limit <= 0.0:
+		return null
+	return BattleTimeLimit.new(time_limit, time_faction_id if time_faction_id != &"" else player_faction_id)
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
+	if time_limit <= 0.0 and time_faction_id != &"":
+		problems.append("names side '%s' that wins once time runs out, but sets no time limit" % time_faction_id)
 	if display_name.is_empty():
 		problems.append("has no display name")
 	if size.x < 2 or size.y < 2 or size.x > MAX_SIDE or size.y > MAX_SIDE:

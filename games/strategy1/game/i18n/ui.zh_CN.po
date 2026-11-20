@@ -201,8 +201,8 @@ msgstr "匪首"
 msgid "Raider Camp"
 msgstr "劫掠者营地"
 
-msgid "The raiders wait behind their palisade. Storm it through the gate, and hold the fire at its heart for 20 seconds or defeat them all. Win at the ford first, and two spearmen from there join you."
-msgstr "劫掠者守在木栅后面。从营门攻进去，守住营地中央的篝火 20 秒，或将他们全部击败。先在浅滩取胜，那里的两名枪兵会来助战。"
+msgid "The raiders wait behind their palisade. Storm it through the gate, and hold the fire at its heart for 20 seconds or defeat them all, before their main band rides home two minutes into the battle. Win at the ford first, and two spearmen from there join you."
+msgstr "劫掠者守在木栅后面。从营门攻进去，守住营地中央的篝火 20 秒，或将他们全部击败，且须在战斗进行到两分钟、他们的大队人马返回之前完成。先在浅滩取胜，那里的两名枪兵会来助战。"
 
 msgid "Mill Taken"
 msgstr "夺回磨坊"
@@ -228,8 +228,8 @@ msgstr "在全部五场战斗中各拿满三颗星。"
 msgid "Watchtower"
 msgstr "瞭望塔"
 
-msgid "Raiders storm the watchtower to light its beacon and call their band. Hold its two doors: a raider who ends a turn on the beacon lights it, and the battle is lost. Storm the Raider Camp first, and an archer from there joins you."
-msgstr "劫掠者猛攻瞭望塔，想点燃烽火召来同伙。守住塔的两道门：只要有劫掠者在烽火上结束回合，烽火便会燃起，此战即告失败。先攻下劫掠者营地，那里的一名弓手会来助战。"
+msgid "Raiders storm the watchtower to light its beacon and call their band. Hold its two doors: a raider who ends a turn on the beacon lights it, and the battle is lost. Three more raiders come 30 seconds into the battle, but the garrison rides in at 60: hold out until then, or fell them all. Storm the Raider Camp first, and an archer from there joins you."
+msgstr "劫掠者猛攻瞭望塔，想点燃烽火召来同伙。守住塔的两道门：只要有劫掠者在烽火上结束回合，烽火便会燃起，此战即告失败。战斗 30 秒时又有三名劫掠者赶到，但守军会在第 60 秒驰援：坚守到那时，或将他们全部击倒。先攻下劫掠者营地，那里的一名弓手会来助战。"
 
 msgid "Beacon Kept"
 msgstr "烽火未燃"

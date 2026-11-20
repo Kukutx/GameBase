@@ -106,6 +106,18 @@ func test_a_unit_with_a_condition_joins_only_while_it_holds() -> void:
 	assert_eq(without, 2)
 	assert_eq(with, 3, "the reinforcement joins once the condition holds")
 
+func test_a_map_s_time_limit_ends_its_battle_for_the_side_it_names() -> void:
+	var map := _map()
+	assert_null(RtsBattle.from_map(map).time_limit, "none unless the map sets one")
+	map.time_limit = 90.0
+	var limit := RtsBattle.from_map(map).time_limit
+	assert_eq([limit.seconds, limit.faction], [90.0, FactionData.PLAYER], "the player's side holds out, unless the map names another")
+	map.time_faction_id = FactionData.MONSTERS
+	assert_eq(RtsBattle.from_map(map).time_limit.faction, FactionData.MONSTERS)
+	assert_eq(map.find_problems(_registry), PackedStringArray())
+	map.time_limit = 0.0
+	assert_eq(map.find_problems(_registry), PackedStringArray(["names side 'monsters' that wins once time runs out, but sets no time limit"]))
+
 func _map() -> RtsMapData:
 	var map := RtsMapData.new()
 	map.id = &"fixture_meadow"

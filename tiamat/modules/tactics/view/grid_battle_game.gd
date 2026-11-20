@@ -26,7 +26,9 @@ extends MiniGame
 ## (`GridUnit.get_boost()`) and of a leader that its side flees once it falls
 ## (`GridUnit.leader`). The board numbers the units whose turns come next
 ## (`GridBattleBoard.turns_shown`), and the line tells of each unit that
-## arrives while the battle runs (`AtbBattle.unit_arrived`). Cancel (the touch
+## arrives while the battle runs (`AtbBattle.unit_arrived`). With a time limit
+## (`AtbBattle.time_limit`), the line says so as the battle starts and the side
+## counts down the seconds of battle time left. Cancel (the touch
 ## controls' corner button on a touchscreen) goes back to the commands.
 ## Cancel at the commands, pressed twice, gives the battle up. It ends won or
 ## lost a moment after the battle does (`END_SECONDS`), with the units of the
@@ -75,6 +77,7 @@ var _speed := 1.0
 var _end_left := 0.0
 var _board: GridBattleBoard
 var _title: Label
+var _clock: Label
 var _info: Label
 var _commands: VBoxContainer
 var _hint: Label
@@ -106,6 +109,10 @@ func setup(settings: Dictionary) -> void:
 	battle.ended.connect(_on_ended)
 	_board.show_battle(battle)
 	_title.text = tr(map.display_name)
+	if battle.time_limit != null:
+		var line := tr("Hold out for %d seconds of battle.") if battle.time_limit.wins(battle.player_faction) else tr("Win within %d seconds of battle.")
+		_message.text = line % roundi(battle.time_limit.seconds)
+	_show_clock()
 	_set_mode(Mode.WATCH)
 
 func find_settings_problems(settings: Dictionary, registry: ContentRegistry) -> PackedStringArray:
@@ -160,6 +167,7 @@ func _process(delta: float) -> void:
 			finish(MiniGameResult.won(survivors, details) if battle.is_won() else MiniGameResult.lost(0, details))
 		return
 	battle.advance(delta * get_speed())
+	_show_clock()
 
 ## How many seconds of battle time pass in a second: the game's battle speed
 ## at the player's choice (`SPEED_OPTION`).
@@ -360,6 +368,13 @@ func _boost_text(boosts: Dictionary) -> String:
 			parts.append((tr("Attack %s") if stat == GridUnit.ATTACK else tr("Defense %s")) % signed)
 	return GameText.list(parts)
 
+# Counts down the battle time left, with a time limit.
+func _show_clock() -> void:
+	var limit := battle.time_limit
+	_clock.visible = limit != null
+	if limit != null:
+		_clock.text = (tr("Hold out: %d s") if limit.wins(battle.player_faction) else tr("Time left: %d s")) % ceili(limit.get_left(battle.time))
+
 func _on_turn_started(unit: GridUnit) -> void:
 	if unit.player_controlled:
 		_message.text = tr("%s's turn.") % tr(unit.data.display_name)
@@ -406,6 +421,8 @@ func _on_goal_taken(unit: GridUnit) -> void:
 func _on_ended(won: bool) -> void:
 	_end_left = END_SECONDS
 	_set_mode(Mode.WATCH)
+	if battle.time_limit != null and battle.time_limit.is_up(battle.time) and _goal_text.is_empty():
+		_goal_text = tr("Time is up!")
 	_message.text = get_outcome_text(won) if _goal_text.is_empty() else "%s %s" % [_goal_text, get_outcome_text(won)]
 	TacticsEvents.battle_ended.emit(map.id, won)
 
@@ -444,6 +461,8 @@ func _build() -> void:
 	side_scroll.add_child(side)
 	_title = Label.new()
 	side.add_child(_title)
+	_clock = Label.new()
+	side.add_child(_clock)
 	_info = Label.new()
 	_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_info)

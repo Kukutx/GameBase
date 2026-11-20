@@ -1,7 +1,8 @@
 extends GutTest
 
-## The shared pieces of every fight: health (`Health`), a hit (`Damage`) and
-## the sides that hurt each other (`FactionData`).
+## The shared pieces of every fight: health (`Health`), a hit (`Damage`), the
+## sides that hurt each other (`FactionData`) and a time limit
+## (`BattleTimeLimit`).
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 
@@ -59,3 +60,16 @@ func test_a_faction_s_allies_are_checked() -> void:
 		"faction 'fixture_odd' lists itself among its allies",
 		"faction 'fixture_odd' lists an empty faction among its allies",
 	]))
+
+func test_a_time_limit_runs_out_for_the_side_that_holds_out() -> void:
+	var guard := FactionData.new()
+	guard.id = &"fixture_guard"
+	guard.allies.assign([FactionData.PLAYER])
+	ContentFixture.use(self, [guard])
+	var limit := BattleTimeLimit.new(90.0, FactionData.PLAYER)
+	assert_eq([limit.get_left(30.0), limit.get_left(120.0)], [60.0, 0.0])
+	assert_false(limit.is_up(89.5))
+	assert_true(limit.is_up(90.0 - 0.0000001), "a rounding short of the limit reaches it")
+	assert_true(limit.wins(FactionData.PLAYER) and limit.wins(&"fixture_guard"), "the player's side, allies and all")
+	assert_false(limit.wins(FactionData.MONSTERS))
+	assert_eq(BattleTimeLimit.new(-5.0, FactionData.MONSTERS).seconds, 0.0)

@@ -19,8 +19,10 @@ extends RefCounted
 ## are hostile (`FactionData.are_hostile()`), won when the player's side is
 ## left: healers alone hold nothing. On a field with ground to hold (`goal`),
 ## it also ends once the side that takes it has held it long enough, won when
-## that side is the player's (`goal_changed` tells who holds it). A unit that
-## falls is out of the battle for good, even if its health comes back.
+## that side is the player's (`goal_changed` tells who holds it), and with a
+## time limit (`time_limit`) once it runs out, won when the side it names is
+## the player's. A unit that falls is out of the battle for good, even if its
+## health comes back.
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`RtsBattleGame`) lets time pass with `advance()`, gives the player's orders
@@ -81,6 +83,8 @@ var goal: RtsGoal
 var arrivals := RtsArrivals.new()
 ## The seconds of battle that have passed.
 var time := 0.0
+## The battle's time limit (`RtsMapData.time_limit`), or null.
+var time_limit: BattleTimeLimit
 var _left := 0.0
 var _steps := 0
 var _over := false
@@ -115,6 +119,7 @@ static func from_map(map: RtsMapData, foe_health := 1.0) -> RtsBattle:
 	battle.foe_health_scale = foe_health
 	if map.goal_area.has_area():
 		battle.goal = RtsGoal.new(map.goal_area, map.goal_seconds, map.get_goal_faction())
+	battle.time_limit = map.get_time_limit()
 	for placement: RtsPlacement in map.placements:
 		var data := RtsUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
@@ -250,7 +255,8 @@ func advance(seconds: float) -> void:
 ## by, or fighting the foes they see on the way (`attack_move`).
 func order_move(group: Array[RtsUnit], point: Vector2, attack_move := false) -> void:
 	var living := _living(group)
-	var places := navigation.get_formation(living.size(), point, _widest(living) * 2.0 + FORMATION_GAP)
+	var widest: float = living.reduce(func(most: float, unit: RtsUnit) -> float: return maxf(most, unit.data.radius), 0.0)
+	var places := navigation.get_formation(living.size(), point, widest * 2.0 + FORMATION_GAP)
 	# The unit nearest the point takes the place nearest it, and so on out.
 	living.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool:
 		var a_distance := a.position.distance_squared_to(point)
@@ -303,11 +309,8 @@ func order_hold(group: Array[RtsUnit]) -> void:
 
 ## Ends the battle lost, as when the player gives it up.
 func forfeit() -> void:
-	if _over:
-		return
-	_over = true
-	_won = false
-	ended.emit(false)
+	if not _over:
+		_end(false)
 
 func _step() -> void:
 	time += STEP
@@ -338,6 +341,8 @@ func _step() -> void:
 	_filed = false
 	if goal != null and not _over:
 		_step_goal()
+	if time_limit != null and not _over and time_limit.is_up(time):
+		_end(time_limit.wins(player_faction))
 
 # Files the living units by where they stand now, in cells three times as
 # wide as the widest unit.
@@ -463,9 +468,7 @@ func _check_over() -> void:
 		for second: int in standing:
 			if _sides.are_hostile(first, second):
 				return
-	_over = true
-	_won = Array(standing).any(func(side: int) -> bool: return not _sides.are_hostile(side, _player_side))
-	ended.emit(_won)
+	_end(Array(standing).any(func(side: int) -> bool: return not _sides.are_hostile(side, _player_side)))
 
 # Notes who holds the ground this step, tells when that changed, and ends the
 # battle once the side that takes it held it long enough.
@@ -475,9 +478,12 @@ func _step_goal() -> void:
 	if (goal.holder.side if goal.holder != null else -1) != before:
 		goal_changed.emit(goal.holder)
 	if held:
-		_over = true
-		_won = is_on_player_side(goal.holder)
-		ended.emit(_won)
+		_end(is_on_player_side(goal.holder))
+
+func _end(won: bool) -> void:
+	_over = true
+	_won = won
+	ended.emit(won)
 
 func _set_still(group: Array[RtsUnit], order: RtsUnit.Order) -> void:
 	for unit: RtsUnit in _living(group):
@@ -487,9 +493,3 @@ func _set_still(group: Array[RtsUnit], order: RtsUnit.Order) -> void:
 
 func _living(group: Array[RtsUnit]) -> Array[RtsUnit]:
 	return group.filter(func(unit: RtsUnit) -> bool: return unit != null and unit.is_alive())
-
-func _widest(group: Array[RtsUnit]) -> float:
-	var widest := 0.0
-	for unit: RtsUnit in group:
-		widest = maxf(widest, unit.data.radius)
-	return widest

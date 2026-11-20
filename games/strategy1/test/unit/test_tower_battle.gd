@@ -3,8 +3,9 @@ extends GutTest
 ## The battle at the watchtower, the war table's third: it opens once the mill
 ## is taken, its map and units hold, the tower's walls leave two doors to its
 ## beacon, a raider who ends a turn on the beacon wins the battle for the
-## raiders, a storm of the Raider Camp sends an archer, and the battle comes to
-## an end when both sides fight it on their own.
+## raiders, three more come 30 seconds in and the garrison relieves a tower
+## held for 60, a storm of the Raider Camp sends an archer, and the battle
+## comes to an end when both sides fight it on their own.
 
 const BEACON := Vector2i(2, 3)
 
@@ -48,6 +49,17 @@ func test_a_raider_who_ends_a_turn_on_the_beacon_lights_it() -> void:
 	battle.advance(0.001)
 	assert_eq(raider.cell, BEACON, "it runs in")
 	assert_true(battle.is_over() and not battle.is_won(), "and the beacon is lit")
+
+func test_three_more_raiders_come_and_the_garrison_relieves_the_tower_at_60_seconds() -> void:
+	var battle := AtbBattle.from_map(BattleMapData.find(&"watchtower"))
+	assert_eq(battle.arrivals.get_all().map(func(arrival: GridArrivals.Arrival) -> Array: return [arrival.data.id, arrival.seconds]),
+		[[&"raider", 30.0], [&"raider", 30.0], [&"slinger", 30.0]], "three more ride in from the east")
+	assert_eq([battle.time_limit.seconds, battle.time_limit.wins(battle.player_faction)], [60.0, true], "the player wins by holding out")
+	# As if the doors had held a minute less a second.
+	battle.time = 59.0
+	battle.advance(1.5)
+	assert_eq(battle.time, 60.0)
+	assert_true(battle.is_over() and battle.is_won(), "the garrison rides in to the tower held")
 
 func test_a_storm_of_the_raider_camp_sends_an_archer_to_the_tower() -> void:
 	WorldState.add_int(MiniGameDefinition.wins_key(&"camp_battle"), 1)

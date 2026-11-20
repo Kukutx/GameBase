@@ -3,7 +3,8 @@ extends GutTest
 ## A grid battle in active time (`AtbBattle`): gauges that fill at each unit's
 ## speed, a turn of one move and one action, what an action takes or gives
 ## back and the boosts it puts on, units that arrive while it runs, the end of
-## the battle, and the same battle playing the same way.
+## the battle, by its time limit too, and the same battle playing the same
+## way.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -525,6 +526,21 @@ func test_allies_fight_on_their_own_and_win_with_the_player() -> void:
 	TacticsFixture.give_turn(battle, guard)
 	assert_false(raider.is_alive())
 	assert_true(battle.is_won())
+
+func test_a_time_limit_ends_the_battle_for_the_side_it_names_as_time_runs_out() -> void:
+	for faction: StringName in [FactionData.PLAYER, FactionData.MONSTERS]:
+		var battle := _battle(Vector2i(8, 1))
+		battle.time_flows_while_choosing = true
+		var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+		_add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(7, 0))
+		battle.time_limit = BattleTimeLimit.new(1.5, faction)
+		battle.advance(1.0)
+		assert_false(battle.is_over())
+		battle.advance(1.0)
+		assert_true(battle.is_over())
+		assert_eq(battle.is_won(), faction == FactionData.PLAYER, "won by holding out, lost when the foes do")
+		assert_eq(battle.time, 1.5, "no further than the limit")
+		assert_almost_eq(knight.gauge, 75.0, 0.001, "the gauges filled until then")
 
 func test_the_same_battle_plays_the_same_way() -> void:
 	assert_eq(_play_out(), _play_out())

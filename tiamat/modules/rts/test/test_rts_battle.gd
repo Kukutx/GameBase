@@ -9,8 +9,8 @@ extends GutTest
 ## on the ground to hold when there is one; the side that takes that ground
 ## wins once it stood there with no foe long enough; units on their way
 ## arrive in time, march when they come to the foes, and keep the battle
-## going until they came; the same orders play the same battle; and it ends
-## won, or given up.
+## going until they came; a time limit ends it for the side it names; the same
+## orders play the same battle; and it ends won, or given up.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
@@ -334,6 +334,21 @@ func test_units_on_their_way_arrive_in_time_and_keep_the_battle_going() -> void:
 	assert_true(lost.is_over() and not lost.is_won(), "a healer on its way holds nothing")
 	lost.add_arrival(RtsUnitData.find(&"fixture_footman"), FactionData.PLAYER, Vector2(20.0, 140.0), 1.0)
 	assert_eq(lost.units.size(), 3, "one already due is placed at once")
+
+func test_a_time_limit_ends_the_battle_for_the_side_it_names() -> void:
+	for faction: StringName in [FactionData.PLAYER, FactionData.MONSTERS]:
+		_ended.clear()
+		var battle := RtsFixture.battle()
+		battle.time_limit = BattleTimeLimit.new(1.0, faction)
+		battle.ended.connect(_on_ended)
+		# Out of each other's sight, so only time ends the battle.
+		RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(20.0, 20.0))
+		RtsFixture.add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2(300.0, 150.0))
+		battle.advance(0.9)
+		assert_false(battle.is_over())
+		battle.advance(0.2)
+		assert_eq(_ended, [faction == FactionData.PLAYER] as Array[bool], "won by holding out, lost when the foes do")
+		assert_almost_eq(battle.time, 1.0, RtsBattle.STEP / 2.0, "no step past the limit")
 
 func test_the_same_orders_play_the_same_battle() -> void:
 	var first := _melee()
