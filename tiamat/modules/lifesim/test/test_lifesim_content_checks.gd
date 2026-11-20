@@ -170,13 +170,29 @@ func test_an_item_tells_where_the_life_sim_gives_it() -> void:
 	fish.id = &"fixture_fish"
 	fish.item_id = &"fixture_carp"
 	fish.locations = [meadow.id]
+	var eel := FishData.new()
+	eel.id = &"fixture_eel_fish"
+	eel.item_id = &"fixture_eel"
+	eel.seasons = PackedStringArray(["Spring"])
+	eel.start_minute = 20 * 60
+	eel.end_minute = 2 * 60
+	var storm := WeatherData.new()
+	storm.id = &"fixture_storm"
+	storm.display_name = "Storm"
+	eel.allowed_weather = [storm.id]
 	var forage := ForageEntryData.new()
 	forage.id = &"fixture_forage"
 	forage.item_id = &"fixture_mushroom"
+	forage.seasons = PackedStringArray(["Summer", "Autumn"])
 	var vein := MiningNodeData.new()
 	vein.id = &"fixture_vein"
 	vein.display_name = "Ore Vein"
 	vein.drop_item_id = &"fixture_ore"
+	var deep := MiningNodeData.new()
+	deep.id = &"fixture_deep_vein"
+	deep.display_name = "Deep Vein"
+	deep.drop_item_id = &"fixture_gem"
+	deep.minimum_mine_floor = 12
 	var hen := FarmAnimalData.new()
 	hen.id = &"fixture_hen"
 	hen.display_name = "Hen"
@@ -194,15 +210,26 @@ func test_an_item_tells_where_the_life_sim_gives_it() -> void:
 	for kind: StringName in ContentDB.get_kinds():
 		registry.register_kind(kind, ContentDB.get_kind_script(kind))
 	var pack := ContentPack.new()
-	pack.entries.assign([meadow, seed_item, berry, crop, fish, forage, vein, hen, press, fair])
+	pack.entries.assign([meadow, seed_item, berry, crop, fish, eel, storm, forage, vein, deep, hen, press, fair])
 	registry.packs = [pack]
 	registry.index()
 	autofree(registry)
+	# The mine lays out both rocks, the deep one from floor 12.
+	var table := MineFloorTable.new()
+	table.default_rock_id = vein.id
+	var tier := MineRockTier.new()
+	tier.rock_id = deep.id
+	table.rock_tiers = [tier]
+	var game_table := MineState.floor_table
+	MineState.floor_table = table
 	var sources := ItemSources.new()
 	LifesimModule.find_item_sources(registry, sources)
+	MineState.floor_table = game_table
+	assert_eq(sources.get_ways(&"fixture_gem"), PackedStringArray(["Mined from Deep Vein (from floor 12)"]), "a rock of the mine names the floor it is first found on")
 	assert_eq(sources.get_ways(&"fixture_berry"), PackedStringArray(["Grown from Berry Seeds"]), "named by its seed")
-	assert_eq(sources.get_ways(&"fixture_carp"), PackedStringArray(["Caught at Meadow"]))
-	assert_eq(sources.get_ways(&"fixture_mushroom"), PackedStringArray(["Foraged"]), "anywhere")
+	assert_eq(sources.get_ways(&"fixture_carp"), PackedStringArray(["Caught at Meadow (06:00–22:00)"]), "with the hours it bites")
+	assert_eq(sources.get_ways(&"fixture_mushroom"), PackedStringArray(["Foraged (Summer, Autumn)"]), "anywhere, in its seasons")
+	assert_eq(sources.get_ways(&"fixture_eel"), PackedStringArray(["Caught while fishing (Spring · 20:00–02:00 · Storm)"]), "anywhere, by season, night and weather")
 	assert_eq(sources.get_ways(&"fixture_ore"), PackedStringArray(["Mined from Ore Vein"]))
 	assert_eq(sources.get_ways(&"fixture_big_egg"), PackedStringArray(["Produced by Hen"]))
 	assert_eq(sources.get_ways(&"fixture_jam"), PackedStringArray(["Processed from Berry x3", "Reward for Berry Fair"]))
