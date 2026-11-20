@@ -1,7 +1,7 @@
 extends GutTest
 
 ## The hotbar's slots (`HotbarService`): saved and loaded, and picked by a
-## press on the HUD's line (`HotbarLine`).
+## press on the HUD's line (`HotbarLine`), which underlines the slot in hand.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 
@@ -59,6 +59,14 @@ func test_a_press_on_a_slot_of_the_hud_line_picks_it() -> void:
 	press.position = Vector2(first + gap + 4.0, 8.0)
 	line._gui_input(press)
 	assert_eq(Hotbar.selected_slot, 2, "a press picks the slot")
+	line.refresh()
+	var hoe_at := line.text.find(">3:Fixture Hoe x0")
+	var hoe_from := font.get_string_size(line.text.left(hoe_at), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var hoe_to := font.get_string_size(line.text.left(hoe_at + ">3:Fixture Hoe x0".length()), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	assert_eq(line.get_selected_span(), Vector2(hoe_from, hoe_to), "the slot in hand is underlined, as wide as its text")
+	Hotbar.select_slot(1)
+	assert_eq(line.get_selected_span(), Vector2.ZERO, "an empty slot in hand underlines nothing")
+	Hotbar.select_slot(2)
 	InputLock.lock(&"fixture_menu")
 	press.position = Vector2(first / 2.0, 8.0)
 	line._gui_input(press)

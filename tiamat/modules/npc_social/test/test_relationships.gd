@@ -42,6 +42,20 @@ func test_birthdays_are_calendar_based_and_double_gift_friendship() -> void:
 	assert_eq(state.give_gift(_profile, &"fixture_berry"), 160)
 	assert_eq(state.get_points(&"fixture_npc"), 160)
 
+func test_the_birthdays_ahead_come_soonest_first() -> void:
+	var early := NpcProfileData.new()
+	early.id = &"fixture_early"
+	early.birthday_season = "Spring"
+	early.birthday_day = 3
+	var none := NpcProfileData.new()
+	none.id = &"fixture_none"
+	ContentFixture.use(self, [_profile, early, none])
+	assert_eq(_profile.next_birthday(1, 28), 14)
+	assert_eq(_profile.next_birthday(15, 10), -1, "none in the days asked")
+	var upcoming := NpcProfileData.find_upcoming_birthdays(1, 28)
+	assert_eq(upcoming.map(func(entry: Dictionary) -> StringName: return (entry["profile"] as NpcProfileData).id), [&"fixture_early", &"fixture_npc"])
+	assert_eq(upcoming.map(func(entry: Dictionary) -> int: return int(entry["day"])), [3, 14])
+
 func test_only_the_first_talk_of_a_day_counts() -> void:
 	WorldClock.set_time(3, 10 * 60)
 	var state := RelationshipManager.new()
