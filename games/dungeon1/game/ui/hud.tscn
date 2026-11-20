@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://game/ui/stats_line.gd" id="1_stats_line"]
 [ext_resource type="PackedScene" path="res://tiamat/modules/items/shop/shop_menu.tscn" id="2_shop"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/controls_line.gd" id="8_controls_line"]
 [ext_resource type="Script" path="res://tiamat/core/ui/hud/hud_safe_area.gd" id="9_safe_area"]
 [ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/boon_line.gd" id="10_boon_line"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/affliction_line.gd" id="11_affliction_line"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 20
@@ -62,6 +63,16 @@ offset_top = 42.0
 offset_right = 330.0
 offset_bottom = 56.0
 theme_override_colors/font_color = Color(0.98, 0.62, 0.36, 1)
+theme_override_font_sizes/font_size = 9
+text = ""
+
+[node name="Afflictions" type="Label" parent="."]
+script = ExtResource("11_affliction_line")
+offset_left = 8.0
+offset_top = 58.0
+offset_right = 330.0
+offset_bottom = 72.0
+theme_override_colors/font_color = Color(0.82, 0.92, 0.55, 1)
 theme_override_font_sizes/font_size = 9
 text = ""
 

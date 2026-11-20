@@ -2,8 +2,9 @@ extends GutTest
 
 ## Afflictions in real time (`AfflictionData`, `Hurtbox.afflict()`): their
 ## ticks, one laid again, immunity, the player's and a creature's, one that
-## slows them, the player's resistance, what lays them (a creature's strike or its elite form's, a
-## hazard, a weapon's tag) and what is wrong with them.
+## slows them, the player's resistance, the HUD's line of those on the player,
+## what lays them (a creature's strike or its elite form's, a hazard, a
+## weapon's tag) and what is wrong with them.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const HOSTILE_CREATURE_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
@@ -148,6 +149,32 @@ func test_the_player_resists_by_a_stat_lasting_shorter_or_not_at_all() -> void:
 	GameStats.unregister_source(ward)
 	assert_eq(hurtbox.get_affliction_scale(AfflictionData.find(BURN)), 1.0)
 	assert_eq((autofree(Hurtbox.new()) as Hurtbox).get_affliction_scale(null), 1.0, "a creature's lasts whole")
+
+func test_the_hud_tells_the_afflictions_on_the_player_until_they_wear_off() -> void:
+	var line: AfflictionLine = add_child_autofree(AfflictionLine.new())
+	await wait_process_frames(2)
+	assert_false(line.visible, "it hides with none")
+	assert_false(line.is_processing())
+	var hurtbox := _player(Vector2(5200, 5000))
+	watch_signals(hurtbox)
+	watch_signals(CombatEvents)
+	assert_true(hurtbox.afflict(AfflictionData.find(POISON), FactionData.MONSTERS))
+	assert_true(hurtbox.afflict(AfflictionData.find(SLOW), FactionData.MONSTERS))
+	assert_almost_eq(hurtbox.get_affliction_seconds_left(POISON), 0.6, 0.0001)
+	await wait_process_frames(1)
+	assert_eq(line.text, "Poison 1s · Slow 1s")
+	assert_true(line.visible)
+	assert_true(line.is_processing(), "counting their seconds down")
+	assert_true(await wait_until(func() -> bool: return line.text == "Poison 1s", 1.0), "the slow wore off first")
+	assert_true(await wait_until(func() -> bool: return not line.visible, 1.0), "then the poison")
+	assert_false(line.is_processing())
+	assert_signal_emit_count(hurtbox, "afflictions_changed", 4, "two took hold, two wore off")
+	assert_signal_emit_count(CombatEvents, "player_afflictions_changed", 4)
+	hurtbox.cure()
+	assert_signal_emit_count(hurtbox, "afflictions_changed", 4, "lifting none changes nothing")
+	assert_true(hurtbox.afflict(AfflictionData.find(POISON), FactionData.MONSTERS))
+	hurtbox.cure()
+	assert_signal_emit_count(hurtbox, "afflictions_changed", 6, "lifting some does")
 
 func test_a_creature_s_strike_lays_its_kind_s_or_its_elite_form_s() -> void:
 	var target := _player(Vector2(5600, 5000))

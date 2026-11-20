@@ -1,9 +1,10 @@
 class_name WorldHud
 extends CanvasLayer
 
-## What the farmer sees over the world. The clock, the hotbar, the controls and
-## the status messages are lines of their own (`FarmClockLine`, `HotbarLine`,
-## `ControlsLine`, `StatusLine`); this tells the vitals and money, the quest,
+## What the farmer sees over the world. The clock, the hotbar, the controls,
+## the afflictions on the farmer and the status messages are lines of their own
+## (`FarmClockLine`, `HotbarLine`, `ControlsLine`, `AfflictionLine`,
+## `StatusLine`); this tells the vitals and money, the quest,
 ## the skills, the inventory, the buffs and the fishing cast. The vitals and
 ## money share the top line with the clock, each to its half: either shrinks
 ## its text to stay in it (`ReadableText.fit_width()`).

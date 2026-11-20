@@ -11,8 +11,8 @@ extends Area2D
 ## that brings an affliction (`Damage.affliction_id`, an `AfflictionData`)
 ## lays it on the hurtbox (`afflict()`) unless it is immune to it
 ## (`immune_to`), which then takes health on its own ticks (`ailed`) until it
-## wears off or the hurtbox turns off, and may slow its actor while it lasts
-## (`get_speed_scale()`, `slowed`).
+## wears off or the hurtbox turns off (`afflictions_changed`), and may slow its
+## actor while it lasts (`get_speed_scale()`, `slowed`).
 
 signal hurt(damage: Damage)
 ## An affliction on it took health (`afflict()`): with no push and no stun,
@@ -20,6 +20,9 @@ signal hurt(damage: Damage)
 signal ailed(damage: Damage)
 ## An affliction took hold of it, not laid on it already (`afflict()`).
 signal afflicted(affliction: AfflictionData)
+## The afflictions on it changed (`get_afflictions()`): one took hold, one
+## wore off, or they were lifted (`cure()`).
+signal afflictions_changed
 ## How fast its actor goes changed (`get_speed_scale()`): an affliction that
 ## slows took hold or lifted.
 signal slowed(speed_scale: float)
@@ -104,6 +107,7 @@ func afflict(affliction: AfflictionData, from_faction: StringName = &"") -> bool
 		return false
 	if _afflictions.lay(affliction, from_faction, get_affliction_scale(affliction)):
 		afflicted.emit(affliction)
+		afflictions_changed.emit()
 		_check_speed()
 	elif not _afflictions.has(affliction.id):
 		return false
@@ -124,9 +128,17 @@ func get_afflictions() -> Array[AfflictionData]:
 func is_afflicted(affliction_id: StringName) -> bool:
 	return _afflictions.has(affliction_id)
 
+## The seconds the affliction `affliction_id` lasts on it yet; 0 when it is
+## not on.
+func get_affliction_seconds_left(affliction_id: StringName) -> float:
+	return _afflictions.get_seconds_left(affliction_id)
+
 ## Lifts every affliction from it.
 func cure() -> void:
+	if _afflictions.is_empty():
+		return
 	_afflictions.clear()
+	afflictions_changed.emit()
 	_check_speed()
 
 ## How fast its actor goes now, as a share of its speed: slower while an
@@ -157,7 +169,10 @@ func _physics_process(delta: float) -> void:
 		var body := get_parent() as CharacterBody2D
 		if body != null:
 			body.move_and_collide(push * delta)
+	var laid := _afflictions.size()
 	_afflictions.advance(delta, _on_tick)
+	if _afflictions.size() < laid:
+		afflictions_changed.emit()
 	_check_speed()
 	if _invincible_left <= 0.0 and _knockback_left <= 0.0 and _afflictions.is_empty():
 		set_physics_process(false)
