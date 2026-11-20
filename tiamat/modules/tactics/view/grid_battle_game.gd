@@ -21,16 +21,16 @@ extends MiniGame
 ## side wins by ending a turn there (`AtbBattle.goal_cells`); while
 ## it picks what an action aims at, the side tells what it would do to each
 ## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls",
-## "Brute takes 2, turn delayed"), and of a leader that its side flees
-## once it falls (`GridUnit.leader`). The
-## board numbers the units whose turns come next
+## "Brute takes 2, turn delayed", "Swordsman gains Defense +2"), and of a
+## unit the boosts on it and how many turns they hold
+## (`GridUnit.get_boost()`) and of a leader that its side flees once it falls
+## (`GridUnit.leader`). The board numbers the units whose turns come next
 ## (`GridBattleBoard.turns_shown`), and the line tells of each unit that
-## arrives while the battle runs (`AtbBattle.unit_arrived`). Cancel
-## (the touch controls' corner button on a touchscreen) goes back to the
-## commands. Cancel at the
-## commands, pressed twice, gives the battle up. It ends won or lost a moment
-## after the battle does (`END_SECONDS`), with the units of the player's side
-## left as its score, and tells `TacticsEvents`.
+## arrives while the battle runs (`AtbBattle.unit_arrived`). Cancel (the touch
+## controls' corner button on a touchscreen) goes back to the commands.
+## Cancel at the commands, pressed twice, gives the battle up. It ends won or
+## lost a moment after the battle does (`END_SECONDS`), with the units of the
+## player's side left as its score, and tells `TacticsEvents`.
 ##
 ## Battle time runs at the game's speed (`TacticsSettings.battle_speed`) times
 ## the player's choice (`SPEED_OPTION`, which `TacticsModule` declares), read
@@ -316,8 +316,11 @@ func _show_info() -> void:
 	_info.text = "%s\n%s\n%s" % [
 		tr(unit.data.display_name),
 		tr("HP %d/%d") % [unit.health.current, unit.health.maximum],
-		tr("Attack %d · Defense %d · Move %d") % [unit.data.attack, unit.data.defense, unit.data.move],
+		tr("Attack %d · Defense %d · Move %d") % [unit.get_attack(), unit.get_defense(), unit.data.move],
 	]
+	var boosts := {GridUnit.ATTACK: unit.get_boost(GridUnit.ATTACK), GridUnit.DEFENSE: unit.get_boost(GridUnit.DEFENSE)}
+	if boosts.values().any(func(amount: int) -> bool: return amount != 0):
+		_info.text += "\n" + tr("Boosts: %s (turns left: %d)") % [_boost_text(boosts), unit.get_boost_turns()]
 	if unit.leader:
 		_info.text += "\n" + tr("Leader: their side flees when they fall")
 	if _board.show_cursor and battle.grid.is_cover(_board.cursor):
@@ -340,7 +343,22 @@ func _show_info() -> void:
 				line = tr("%s takes %d and falls")
 			elif float(hit.get("delay", 0.0)) > 0.0:
 				line = tr("%s takes %d, turn delayed")
-			_info.text += "\n" + line % [target_name, int(hit["amount"])]
+			var told := line % [target_name, int(hit["amount"])]
+			if hit.has("boosts"):
+				var boosted := _boost_text(hit["boosts"])
+				told = tr("%s gains %s") % [target_name, boosted] if _action.effect == BattleActionData.Effect.HEAL and int(hit["amount"]) == 0 else GameText.list(PackedStringArray([told, boosted]))
+			_info.text += "\n" + told
+
+# The boosts in `boosts` (stat -> amount) that change anything, as the player
+# reads them: "Attack +2, Defense -1".
+func _boost_text(boosts: Dictionary) -> String:
+	var parts := PackedStringArray()
+	for stat: StringName in [GridUnit.ATTACK, GridUnit.DEFENSE]:
+		var amount := int(boosts.get(stat, 0))
+		if amount != 0:
+			var signed := ("+%d" if amount > 0 else "%d") % amount
+			parts.append((tr("Attack %s") if stat == GridUnit.ATTACK else tr("Defense %s")) % signed)
+	return GameText.list(parts)
 
 func _on_turn_started(unit: GridUnit) -> void:
 	if unit.player_controlled:

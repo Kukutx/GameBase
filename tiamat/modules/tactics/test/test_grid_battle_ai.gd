@@ -4,7 +4,8 @@ extends GutTest
 ## defeat before more damage, a move only to bring a target in reach or to
 ## strike as hard from where fewer foes reach it, an action that recharges
 ## only when ready, a leader before the rest, a heal for its hurt side, a
-## goal its side takes when it can reach one, and a walk toward the nearest
+## boost or a curse not on its units already, a goal its side takes when it
+## can reach one, and a walk toward the nearest
 ## goal, else the nearest foe, when nothing is in reach.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
@@ -66,6 +67,20 @@ func test_it_looses_an_action_that_recharges_when_ready_and_strikes_meanwhile() 
 	for _turn in 4:
 		TacticsFixture.give_turn(battle, captain)
 	assert_eq(used, [&"fixture_volley", &"fixture_strike", &"fixture_strike", &"fixture_volley"], "the volley over both knights, then strikes for two turns while it recharges")
+
+func test_it_boosts_its_side_and_curses_a_foe_once_then_strikes_while_they_hold() -> void:
+	var battle := TacticsFixture.battle()
+	var herald := _add(battle, &"fixture_herald", FactionData.MONSTERS, Vector2i(0, 0))
+	_add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(1, 0))
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 1))
+	var rally := BattleActionData.find(&"fixture_rally")
+	assert_eq(battle.ai.score(battle, herald, rally, herald.cell, herald.cell), 2 * 2 * GridBattleAi.BOOST_SCORE * 2, "2 attack through two turns, on the herald and the raider")
+	var used: Array[StringName] = []
+	battle.unit_acted.connect(func(_unit: GridUnit, action: BattleActionData, _cell: Vector2i, _hits: Array[Dictionary]) -> void: used.append(action.id))
+	for _turn in 4:
+		TacticsFixture.give_turn(battle, herald)
+	assert_eq(used, [&"fixture_rally", &"fixture_hex", &"fixture_strike", &"fixture_strike"], "the rally, worth 8; the hex, 3 and 6 for the curse; then strikes worth more than either again")
+	assert_eq(knight.health.current, 20 - 3 - 7 - 5)
 
 func test_a_leader_s_fall_is_worth_its_whole_side() -> void:
 	var battle := TacticsFixture.battle()

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BattleActionData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/tactics/data/battle_action_data.gd" id="1_action"]
+
+[resource]
+script = ExtResource("1_action")
+id = &"war_cry"
+display_name = "War Cry"
+effect = 1
+power = 0
+min_range = 0
+max_range = 0
+area = 2
+recharge_turns = 3
+boosts = Dictionary[StringName, int]({
+&"attack": 2
+})
+boost_turns = 2

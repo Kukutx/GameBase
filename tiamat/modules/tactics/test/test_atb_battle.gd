@@ -2,8 +2,8 @@ extends GutTest
 
 ## A grid battle in active time (`AtbBattle`): gauges that fill at each unit's
 ## speed, a turn of one move and one action, what an action takes or gives
-## back, units that arrive while it runs, the end of the battle, and the same
-## battle playing the same way.
+## back and the boosts it puts on, units that arrive while it runs, the end of
+## the battle, and the same battle playing the same way.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -309,6 +309,53 @@ func test_a_unit_delayed_by_one_that_filled_with_it_waits_for_its_gauge() -> voi
 	assert_eq(raider.gauge, 50.0)
 	battle.advance(2.0)
 	assert_eq(started, [shield, raider] as Array[GridUnit], "which fills again two seconds on")
+
+func test_a_boost_changes_what_actions_do_through_the_unit_s_next_turns() -> void:
+	var battle := _battle()
+	var herald := _add(battle, &"fixture_herald", FactionData.PLAYER, Vector2i(1, 1))
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(1, 2))
+	_add(battle, &"fixture_archer", FactionData.PLAYER, Vector2i(5, 5))
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(2, 1))
+	TacticsFixture.give_turn(battle, herald)
+	var rally := BattleActionData.find(&"fixture_rally")
+	var strike := BattleActionData.find(&"fixture_strike")
+	assert_eq(battle.forecast(herald, rally, herald.cell), [
+		{"unit": herald, "amount": 0, "defeats": false, "boosts": rally.boosts},
+		{"unit": knight, "amount": 0, "defeats": false, "boosts": rally.boosts},
+	] as Array[Dictionary], "told before it does: its side around it, neither the archer afar nor the raider")
+	assert_eq(battle.amount_of(knight, strike, raider), 6, "3 and the knight's 4, less the raider's 1")
+	var hits: Array[Dictionary] = []
+	battle.unit_acted.connect(func(_unit: GridUnit, _action: BattleActionData, _cell: Vector2i, done: Array[Dictionary]) -> void: hits.assign(done))
+	assert_true(battle.act(herald, rally, herald.cell))
+	assert_eq(hits, [{"unit": herald, "amount": 0, "boosts": rally.boosts}, {"unit": knight, "amount": 0, "boosts": rally.boosts}] as Array[Dictionary])
+	assert_eq([herald.get_attack(), knight.get_attack(), raider.get_attack()], [4, 6, 3], "2 more attack on its side alone")
+	assert_eq(battle.amount_of(knight, strike, raider), 8)
+	assert_eq([herald.get_boost_turns(), knight.get_boost_turns()], [2, 2], "through each one's next two turns")
+	knight.start_turn()
+	knight.start_turn()
+	assert_eq(knight.get_attack(), 6, "on its second turn still")
+	knight.start_turn()
+	assert_eq([knight.get_attack(), knight.get_boost_turns(), knight.has_boost(rally)], [4, 0, false], "gone by its third")
+	knight.boost(rally)
+	knight.boost(rally)
+	assert_eq(knight.get_attack(), 6, "the same boost again starts over rather than adds up")
+
+func test_a_curse_lowers_the_defense_of_a_foe_it_leaves_standing() -> void:
+	var battle := _battle()
+	var herald := _add(battle, &"fixture_herald", FactionData.PLAYER, Vector2i(1, 1))
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(2, 1))
+	var dying := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(1, 2))
+	dying.health.set_current(1)
+	TacticsFixture.give_turn(battle, herald)
+	var hex := BattleActionData.find(&"fixture_hex")
+	assert_eq(battle.forecast(herald, hex, Vector2i(2, 1)), [{"unit": raider, "amount": 2, "defeats": false, "boosts": hex.boosts}] as Array[Dictionary], "told before it does")
+	assert_false(battle.forecast(herald, hex, Vector2i(1, 2))[0].has("boosts"), "no curse on a foe it fells")
+	var hits: Array[Dictionary] = []
+	battle.unit_acted.connect(func(_unit: GridUnit, _action: BattleActionData, _cell: Vector2i, done: Array[Dictionary]) -> void: hits.assign(done))
+	assert_true(battle.act(herald, hex, Vector2i(2, 1)))
+	assert_eq(hits, [{"unit": raider, "amount": 2, "boosts": hex.boosts}] as Array[Dictionary])
+	assert_eq([raider.get_defense(), raider.get_boost_turns()], [-1, 3], "2 less defense through its next three turns")
+	assert_eq(battle.amount_of(herald, BattleActionData.find(&"fixture_strike"), raider), 6, "3 and the herald's 2, less the raider's -1")
 
 func test_a_leader_s_fall_sends_the_rest_of_its_side_fleeing() -> void:
 	var battle := _battle()

@@ -9,13 +9,16 @@ extends ContentEntry
 ## the user too, when it heals. It never hurts its own side. A strong one may
 ## need to recharge (`recharge_turns`): its user then waits turns before it
 ## takes it again. One that does damage may also set back the time gauges of
-## the foes it leaves standing (`delay`), so their turns come later.
+## the foes it leaves standing (`delay`), so their turns come later. Any may
+## boost the attack or defense of the units it reaches and leaves standing
+## (`boosts`) for some of their turns: a blessing on its own side, a curse on
+## its foes.
 
 const KIND := &"battle_action"
 
 enum Effect {
-	## Takes health: its power and the user's attack, less the target's defense,
-	## at least 1.
+	## Takes health: its power and the user's attack, less the target's defense
+	## (each with its boosts, `GridUnit.get_attack()`), at least 1.
 	DAMAGE,
 	## Gives back health: its power.
 	HEAL,
@@ -37,6 +40,13 @@ enum Effect {
 ## (`AtbBattle.GAUGE_FULL` is a whole turn), no further than empty; 0: not at
 ## all. Only an action that does damage delays.
 @export_range(0.0, 100.0, 5.0) var delay := 0.0
+## How it changes the attack and defense (`GridUnit.ATTACK`,
+## `GridUnit.DEFENSE`) of each unit it reaches and leaves standing, as stat ->
+## amount, through that unit's next `boost_turns` turns
+## (`GridUnit.boost()`): more on its own side when it heals, less on its foes
+## when it does damage; empty, none.
+@export var boosts: Dictionary[StringName, int] = {}
+@export_range(1, 9) var boost_turns := 2
 
 ## The action with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> BattleActionData:
@@ -58,7 +68,7 @@ func affects(user: StringName, target: StringName) -> bool:
 func amount_for(user: GridUnit, target: GridUnit) -> int:
 	if effect == Effect.HEAL:
 		return power
-	return maxi(power + user.data.attack - target.data.defense, 1)
+	return maxi(power + user.get_attack() - target.get_defense(), 1)
 
 func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
@@ -70,4 +80,13 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 		problems.append("does damage only to its user's cell")
 	if effect == Effect.HEAL and delay > 0.0:
 		problems.append("delays the units it heals")
+	for stat: StringName in boosts:
+		if stat != GridUnit.ATTACK and stat != GridUnit.DEFENSE:
+			problems.append("boosts unknown stat '%s'" % stat)
+		elif boosts[stat] == 0:
+			problems.append("boosts %s by 0" % stat)
+		elif effect == Effect.HEAL and boosts[stat] < 0:
+			problems.append("lowers the %s of its own side" % stat)
+		elif effect == Effect.DAMAGE and boosts[stat] > 0:
+			problems.append("raises the %s of its foes" % stat)
 	return problems

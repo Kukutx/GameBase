@@ -114,3 +114,15 @@ msgstr "%s 加入了战斗。"
 
 msgid "%s joins the foes!"
 msgstr "%s 加入了敌方！"
+
+msgid "Boosts: %s (turns left: %d)"
+msgstr "增益：%s（剩余 %d 回合）"
+
+msgid "%s gains %s"
+msgstr "%s 将获得 %s"
+
+msgid "Attack %s"
+msgstr "攻击 %s"
+
+msgid "Defense %s"
+msgstr "防御 %s"

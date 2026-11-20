@@ -23,6 +23,16 @@ func test_an_action_needs_a_name_a_range_that_holds_a_target_besides_its_user_an
 	assert_eq(slowing_heal.find_problems(_registry), PackedStringArray(["delays the units it heals"]))
 	assert_eq(TacticsFixture.bash().find_problems(_registry), PackedStringArray(), "a blow may delay")
 
+func test_an_action_boosts_attack_or_defense_up_on_its_side_and_down_on_its_foes() -> void:
+	assert_eq(TacticsFixture.rally().find_problems(_registry), PackedStringArray())
+	assert_eq(TacticsFixture.hex().find_problems(_registry), PackedStringArray())
+	var odd := TacticsFixture.action(&"fixture_odd", 3)
+	odd.boosts = {&"speed": -1, GridUnit.ATTACK: 0, GridUnit.DEFENSE: 1}
+	assert_eq(odd.find_problems(_registry), PackedStringArray(["boosts unknown stat 'speed'", "boosts attack by 0", "raises the defense of its foes"]))
+	var sour := TacticsFixture.rally()
+	sour.boosts = {GridUnit.ATTACK: -1}
+	assert_eq(sour.find_problems(_registry), PackedStringArray(["lowers the attack of its own side"]))
+
 func test_a_unit_needs_a_name_a_speed_and_known_actions() -> void:
 	var unit := TacticsFixture.unit(&"fixture_lost", 10, 1, 1, 20.0, 2, [&"fixture_strike", &"fixture_unknown"])
 	assert_eq(unit.find_problems(_registry), PackedStringArray(["references unknown action 'fixture_unknown'"]))

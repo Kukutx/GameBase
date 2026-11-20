@@ -40,7 +40,8 @@ signal unit_moved(unit: GridUnit, path: Array[Vector2i])
 signal move_undone(unit: GridUnit)
 ## `hits` holds a {"unit": GridUnit, "amount": int} for each unit it reached:
 ## the health it took or gave back, and with an action that delays, "delay":
-## how far it set back the unit's gauge.
+## how far it set back the unit's gauge, and with one that boosts, "boosts":
+## those it put on the unit (`BattleActionData.boosts`).
 signal unit_acted(unit: GridUnit, action: BattleActionData, cell: Vector2i, hits: Array[Dictionary])
 signal unit_defeated(unit: GridUnit)
 ## `unit` left the battle when the leader of its side fell.
@@ -293,6 +294,7 @@ func delay_of(action: BattleActionData, target: GridUnit) -> float:
 ## each unit it reaches, the health it would take (no more than the unit has)
 ## or give back (no more than it lacks), and with an action that delays,
 ## "delay": how far it would set back the gauge of a unit it leaves standing,
+## and with one that boosts, "boosts": those it would put on such a unit,
 ## just as `act()` then does.
 func forecast(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> Array[Dictionary]:
 	var hits: Array[Dictionary] = []
@@ -305,6 +307,8 @@ func forecast(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> Array
 			hit = {"unit": target, "amount": mini(amount, target.health.current), "defeats": amount >= target.health.current}
 		if action.delay > 0.0 and action.effect == BattleActionData.Effect.DAMAGE:
 			hit["delay"] = 0.0 if hit["defeats"] else delay_of(action, target)
+		if not action.boosts.is_empty() and not hit["defeats"]:
+			hit["boosts"] = action.boosts
 		hits.append(hit)
 	return hits
 
@@ -365,6 +369,9 @@ func act(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> bool:
 		var hit := {"unit": target, "amount": target.health.heal(amount) if action.effect == BattleActionData.Effect.HEAL else target.health.take(amount)}
 		if action.delay > 0.0 and action.effect == BattleActionData.Effect.DAMAGE:
 			hit["delay"] = _set_back(target, delay_of(action, target)) if target.is_alive() else 0.0
+		if not action.boosts.is_empty() and target.is_alive():
+			target.boost(action)
+			hit["boosts"] = action.boosts
 		hits.append(hit)
 	unit_acted.emit(unit, action, cell, hits)
 	for hit: Dictionary in hits:
