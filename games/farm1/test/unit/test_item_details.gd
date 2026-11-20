@@ -37,7 +37,7 @@ func test_the_inventory_tells_what_a_dish_restores_and_how_hard_a_blade_hits() -
 	var item_select := menu.get("item_select") as OptionButton
 	var content := menu.get("content") as RichTextLabel
 	_choose(item_select, &"fire_roasted_tomatoes")
-	assert_string_contains(content.text, "Restores 20 Energy, 25 Health · Gives Fiery Belly (Burn chance +20)")
+	assert_string_contains(content.text, "Restores 20 Energy, 25 Health\u00a0· Gives Fiery Belly (Burn chance +20)")
 	_choose(item_select, &"copper_sword")
 	var copper := ItemData.find(&"copper_sword")
 	var gap := WeaponUse.damage_of(copper) - WeaponUse.damage_of(ItemData.find(&"rusty_sword"))

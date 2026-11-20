@@ -8,7 +8,7 @@ const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 
 func test_the_title_screen_shows_the_slot_summary_by_the_calendar() -> void:
 	var title: Node = autofree((load("res://tiamat/core/ui/title_screen.tscn") as PackedScene).instantiate())
-	for path: String in ["Center/Menu/SaveSlot", "Center/Menu/SlotInfo", "Center/Menu/Actions/DeleteSave", "ConfirmDelete"]:
+	for path: String in ["Center/Menu/SlotRow/SaveSlot", "Center/Menu/SlotInfo", "Center/Menu/SlotRow/DeleteSave", "ConfirmDelete"]:
 		assert_not_null(title.get_node_or_null(path), path)
 	var summary := {"day": 68, "minute_of_day": 600, "recoverable": true, "recovery_source": "backup"}
 	ContentFixture.use_calendar(self, GameCalendar.new())
@@ -18,6 +18,22 @@ func test_the_title_screen_shows_the_slot_summary_by_the_calendar() -> void:
 	ContentFixture.use_calendar(self, one_season)
 	summary["recoverable"] = false
 	assert_eq(String(title.call("_format_slot_summary", summary)), "Day 68 · 10:00\nPlayed 0:00")
+
+func test_its_buttons_stand_in_rows_as_full_as_each_other() -> void:
+	var expected := {1: 1, 2: 2, 3: 3, 4: 2, 5: 3, 6: 3, 7: 3, 8: 3, 9: 3, 10: 3}
+	for count: int in expected:
+		assert_eq(EvenRows.columns_for(count, 3), int(expected[count]), "%d buttons" % count)
+	assert_eq(EvenRows.columns_for(0, 3), 1)
+	var title := (load("res://tiamat/core/ui/title_screen.tscn") as PackedScene).instantiate() as GameTitleScreen
+	add_child_autofree(title)
+	var actions := title.get_node("Center/Menu/Actions") as GridContainer
+	title.achievements_button.visible = true
+	title.quit_button.visible = true
+	assert_eq(actions.columns, 2, "a new game, the settings, the achievements and quitting in two rows of two")
+	title.achievements_button.visible = false
+	assert_eq(actions.columns, 3, "three in one row")
+	title.quit_button.visible = false
+	assert_eq(actions.columns, 2, "two in one row")
 
 func test_a_slot_shows_where_the_player_stands_how_long_they_played_and_what_the_game_adds() -> void:
 	var title: Node = autofree((load("res://tiamat/core/ui/title_screen.tscn") as PackedScene).instantiate())

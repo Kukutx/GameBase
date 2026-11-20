@@ -27,8 +27,9 @@ enum Kind {
 
 const KIND := &"item"
 ## What parts the effects of an item where they share a line
-## (`describe_effects()`).
-const EFFECT_SEPARATOR := " · "
+## (`describe_effects()`): the dot no wrapped line starts with
+## (`GameText.PART_SEPARATOR`).
+const EFFECT_SEPARATOR := GameText.PART_SEPARATOR
 
 
 ## The name the player reads.
