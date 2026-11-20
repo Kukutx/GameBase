@@ -7,7 +7,8 @@ extends GutTest
 ## a menu stays in the middle. A game that lays its screens out in a view of
 ## another size on some devices, a phone's smaller one so its text reads larger
 ## (`viewport_width.mobile`), is held to each of them. Every text on the
-## screens reads on a phone (`ReadableText`), in the view the game shows one.
+## screens reads on a phone (`ReadableText`), in the view the game shows one,
+## and no two parts of a screen lie over each other.
 
 const ScreenFit := preload("res://tiamat/core/test/screen_fit.gd")
 
@@ -31,6 +32,31 @@ func test_every_screen_s_text_reads_on_a_phone() -> void:
 		for line: String in await ScreenFit.find_small_text(self, load(path) as PackedScene, ScreenFit.phone_size()):
 			small.append("%s %s" % [path, line])
 	assert_eq(small, PackedStringArray(), "in the view a phone shows, %s" % ScreenFit.phone_size())
+
+func test_no_two_parts_of_a_screen_lie_over_each_other() -> void:
+	var screens := ScreenFit.find_screens(["res://game", "res://tiamat"])
+	var overlaps := PackedStringArray()
+	for size: Vector2 in ScreenFit.view_sizes():
+		for path: String in screens:
+			for line: String in await ScreenFit.find_overlaps(self, load(path) as PackedScene, size):
+				overlaps.append("%s at %s %s" % [path, size, line])
+	assert_eq(overlaps, PackedStringArray())
+
+func test_parts_that_lie_over_each_other_are_found() -> void:
+	var screen := CanvasLayer.new()
+	for spot: Vector2 in [Vector2(10, 10), Vector2(100, 12), Vector2(10, 40)]:
+		var label := Label.new()
+		label.text = "line"
+		label.position = spot
+		label.size = Vector2(120, 16)
+		screen.add_child(label)
+		label.owner = screen
+	var packed := PackedScene.new()
+	packed.pack(screen)
+	screen.free()
+	var overlaps := await ScreenFit.find_overlaps(self, packed, Vector2(480, 270))
+	assert_eq(overlaps.size(), 1, "the first two overlap, the third keeps its own row")
+	assert_string_contains(overlaps[0], "overlaps")
 
 func test_small_print_is_found() -> void:
 	var screen := Control.new()

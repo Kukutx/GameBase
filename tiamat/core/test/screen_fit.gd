@@ -19,6 +19,9 @@ const PHONE_ASPECT := 20.0 / 9.0
 const TOLERANCE := 1.0
 ## A line across the view keeps each side's gap under this share of its width.
 const LINE_GAP := 0.05
+## How far, in pixels of the view, two parts may overlap each way: a shared
+## edge or a font's spare line is no overlap.
+const OVERLAP := 2.0
 ## A part in the middle has gaps that differ by less than this share.
 const MIDDLE_SKEW := 0.05
 
@@ -246,3 +249,22 @@ static func _fills_view(state: SceneState) -> bool:
 		anchors[state.get_node_property_name(0, index)] = state.get_node_property_value(0, index)
 	return is_equal_approx(float(anchors.get(&"anchor_right", 0.0)), 1.0) and is_equal_approx(float(anchors.get(&"anchor_bottom", 0.0)), 1.0) \
 		and is_zero_approx(float(anchors.get(&"anchor_left", 0.0))) and is_zero_approx(float(anchors.get(&"anchor_top", 0.0)))
+
+## The pairs of parts (see `find_drift()`) of the screen `scene`, shown in a
+## view of `size`, that both show and overlap by more than `OVERLAP` each way:
+## two lines of a HUD laid over each other, whose texts run into each other as
+## soon as one grows (the money, a message), or a corner label under a menu.
+## A part hidden until it is needed (a closed menu) is left out.
+static func find_overlaps(test: Node, scene: PackedScene, size: Vector2) -> PackedStringArray:
+	var shown := {}
+	var boxes := await _boxes(test, scene, size, shown)
+	var parts: Array = boxes.keys().filter(func(part: String) -> bool: return shown.has(part))
+	var problems := PackedStringArray()
+	for first: int in parts.size():
+		for second: int in range(first + 1, parts.size()):
+			var a: Rect2 = boxes[parts[first]]
+			var b: Rect2 = boxes[parts[second]]
+			var cut := a.intersection(b)
+			if cut.size.x > OVERLAP and cut.size.y > OVERLAP:
+				problems.append("%s %s overlaps %s %s" % [parts[first], a, parts[second], b])
+	return problems
