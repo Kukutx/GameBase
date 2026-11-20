@@ -98,8 +98,8 @@ msgstr "以余烬核心锻成，所击之处皆被灼烧。"
 msgid "Health Potion"
 msgstr "生命药水"
 
-msgid "Restores 35 health."
-msgstr "恢复 35 点生命。"
+msgid "A red draught that knits wounds shut."
+msgstr "一瓶红色药剂，能让伤口愈合。"
 
 msgid "Antidote"
 msgstr "解毒剂"

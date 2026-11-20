@@ -32,6 +32,20 @@ func test_items_report_unhandled_tool_actions_stacked_tools_and_stray_crops() ->
 	assert_string_contains(joined, "item 'fixture_bad_tool' is a tool and must have max_stack 1")
 	assert_string_contains(joined, "item 'fixture_bad_material' is not a seed but names crop 'fixture_crop'")
 
+func test_an_item_reports_a_description_that_only_repeats_its_effect() -> void:
+	var vital := ContentFixture.vital(&"fixture_hp")
+	vital.display_name = "Fixture Vigor"
+	var echo := _item(&"fixture_echo")
+	echo.restores = {&"fixture_hp": 35}
+	echo.description = "Restores 35 fixture vigor."
+	var told := _item(&"fixture_told")
+	told.restores = {&"fixture_hp": 35}
+	told.description = "A draught of the fixture's own."
+	var entries: Array = [vital, echo, told]
+	var joined := _problems_of(ContentFixture.use(self, entries), entries)
+	assert_string_contains(joined, "item 'fixture_echo' has a description that only repeats its effect 'Restores 35 Fixture Vigor'")
+	assert_false(joined.contains("fixture_told"), "a description that tells what the item is passes")
+
 func test_food_buffs_report_unread_stats_and_non_positive_multipliers() -> void:
 	ContentFixture.add_stat(self, &"fixture_speed")
 	var bad_buff := FoodBuffData.new()

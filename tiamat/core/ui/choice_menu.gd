@@ -6,7 +6,9 @@ extends MenuLayer
 ## run starts at. Each choice (`Choice`) is a button with its text and the
 ## lines under it (its note), and may be locked, its button then disabled and
 ## its note saying what it needs. Lines above the list (its body) may say
-## what the choice is about. The keys, a gamepad and a tap pick one;
+## what the choice is about, a label a line: a line that starts with spaces
+## (an item's description under its name) sits in by their width, its wrapped
+## lines with it. The keys, a gamepad and a tap pick one;
 ## `ui_cancel` or Back closes the list, and `picked` tells which the player
 ## picked, or none.
 ##
@@ -51,12 +53,13 @@ class Choice:
 		enabled = choice_enabled
 
 @onready var _title: Label = %Title
-@onready var _body: Label = %Body
+@onready var _body: VBoxContainer = %Body
 @onready var _choices: ScrollContainer = %Choices
 @onready var _list: VBoxContainer = %List
 @onready var _back: Button = %Back
 
 var _picked := &""
+var _body_text := ""
 # Whether the menu tells the player something (`tell()`) rather than asks.
 var _telling := false
 var _buttons: Dictionary[StringName, Button] = {}
@@ -67,8 +70,6 @@ func _init() -> void:
 
 func _ready() -> void:
 	_back.pressed.connect(close)
-	# Its text is translated already.
-	_body.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	closed.connect(func() -> void: picked.emit(_picked))
 	# Its small print reads on a phone, in a narrow view as in a wide one.
 	ReadableText.raise(self)
@@ -107,8 +108,7 @@ func open(choices: Array[Choice], title := "", focus_id := &"", body := "") -> v
 	_picked = &""
 	_telling = false
 	_title.text = title if not title.is_empty() else tr("Choose")
-	_body.text = body
-	_body.visible = not body.is_empty()
+	_show_body(body)
 	_back.show()
 	_fill(choices)
 	show_menu()
@@ -118,7 +118,7 @@ func open(choices: Array[Choice], title := "", focus_id := &"", body := "") -> v
 
 ## The lines above the choices, or "" when there are none.
 func get_body() -> String:
-	return _body.text
+	return _body_text
 
 ## The buttons of the choices listed, in order.
 func get_buttons() -> Array[Button]:
@@ -217,6 +217,34 @@ func _fill(choices: Array[Choice]) -> void:
 		row.add_child(label)
 		_notes[choice.id] = label
 	ReadableText.raise(_list)
+
+# Shows `text` (translated already) above the choices, a label a line, each
+# line that starts with spaces set in by their width, its wrapped lines too.
+func _show_body(text: String) -> void:
+	_body_text = text
+	for child: Node in _body.get_children():
+		_body.remove_child(child)
+		child.queue_free()
+	_body.visible = not text.is_empty()
+	if text.is_empty():
+		return
+	for line: String in text.split("\n"):
+		var label := Label.new()
+		label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.text = line.lstrip(" ")
+		_body.add_child(label)
+		var spaces := line.length() - label.text.length()
+		if spaces > 0:
+			label.set_meta(&"indent", " ".repeat(spaces))
+	ReadableText.raise(_body)
+	# The lines stand as far apart as a label's own wrapped lines do.
+	_body.add_theme_constant_override(&"separation", (_body.get_child(0) as Label).get_theme_constant(&"line_spacing"))
+	for label: Label in _body.get_children():
+		if label.has_meta(&"indent"):
+			var room := StyleBoxEmpty.new()
+			room.content_margin_left = label.get_theme_font(&"font").get_string_size(String(label.get_meta(&"indent")), HORIZONTAL_ALIGNMENT_LEFT, -1.0, label.get_theme_font_size(&"font_size")).x
+			label.add_theme_stylebox_override(&"normal", room)
 
 func _first_open() -> Control:
 	for button: Button in get_buttons():

@@ -33,7 +33,8 @@ const EFFECT_SEPARATOR := " · "
 
 ## The name the player reads.
 @export var display_name: String
-## What the player reads of it in the inventory and the shops.
+## What the player reads of it in the inventory and the shops, above what it
+## does (`describe_effects()`): what it is, not what it does again.
 @export_multiline var description: String
 ## How many one inventory slot holds; a tool's is 1.
 @export_range(1, 999, 1) var max_stack := 99
@@ -214,4 +215,19 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 			problems.append("restores unknown vital '%s'" % vital_id)
 		elif restores[vital_id] <= 0:
 			problems.append("restores no %s" % vital_id)
+	# The menus show the description above the effects: one that only says
+	# what an effect says reads twice ("Restores 35 health." over "Restores
+	# 35 Health"). Both are read as written, whatever the player's language.
+	var translates := can_translate_messages()
+	set_message_translation(false)
+	var effects := describe_effects()
+	set_message_translation(translates)
+	var said := _plain(description)
+	for effect: String in effects:
+		if not said.is_empty() and _plain(effect) == said:
+			problems.append("has a description that only repeats its effect '%s', which the menus show under it: tell what it is" % effect)
 	return problems
+
+# `text` as words to compare: lower case, without the stop at its end.
+static func _plain(text: String) -> String:
+	return text.strip_edges().trim_suffix(".").strip_edges().to_lower()

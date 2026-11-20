@@ -72,11 +72,11 @@ func test_lines_above_the_choices_say_what_they_are_about() -> void:
 	(func() -> void: await ChoiceMenu.ask(_host, _choices(), "Mine Elevator", &"", "Where to?")).call()
 	var menu := ChoiceMenu.of(_host)
 	assert_eq(menu.get_body(), "Where to?")
-	assert_true((menu.get_node("%Body") as Label).visible)
+	assert_true((menu.get_node("%Body") as Control).visible)
 	menu.close()
 	(func() -> void: await ChoiceMenu.ask(_host, _choices())).call()
 	assert_eq(menu.get_body(), "")
-	assert_false((menu.get_node("%Body") as Label).visible, "a list without lines shows none")
+	assert_false((menu.get_node("%Body") as Control).visible, "a list without lines shows none")
 	menu.close()
 
 func test_telling_the_player_something_waits_for_ok() -> void:
@@ -93,6 +93,24 @@ func test_telling_the_player_something_waits_for_ok() -> void:
 	assert_false(InputLock.is_locked())
 	(func() -> void: await ChoiceMenu.ask(_host, _choices())).call()
 	assert_true((menu.get_node("%Back") as Button).visible, "a list the player may leave has Back again")
+	menu.close()
+
+func test_a_line_set_in_keeps_its_wrapped_lines_in_with_it() -> void:
+	# "Where to get: ..." under an item wrapped back to the edge, under the
+	# item's name, once it ran past a line.
+	var where := "  Where to get: " + "Sold at the camp; ".repeat(12)
+	var menu := ChoiceMenu.tell(_host, "Items", PackedStringArray(["Potion x2", where]))
+	await wait_physics_frames(2)
+	assert_eq(menu.get_body(), "Potion x2\n" + where, "the body reads as told")
+	var labels := menu.get_node("%Body").get_children()
+	assert_eq(labels.size(), 2, "a label a line")
+	var name := labels[0] as Label
+	var note := labels[1] as Label
+	assert_eq(note.text, where.strip_edges(true, false), "the spaces become room")
+	assert_gt(note.get_line_count(), 1, "the note wraps")
+	var room := note.get_theme_stylebox(&"normal").get_margin(SIDE_LEFT)
+	assert_gt(room, 0.0, "every line of the note sits in")
+	assert_eq(name.get_theme_stylebox(&"normal").get_margin(SIDE_LEFT), 0.0, "the name stays at the edge")
 	menu.close()
 
 func test_a_long_story_reads_from_its_top_and_scrolls_under_the_keys() -> void:
