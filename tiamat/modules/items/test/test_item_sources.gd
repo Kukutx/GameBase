@@ -110,9 +110,9 @@ func test_an_item_tells_what_it_restores_and_the_buff_it_gives() -> void:
 	ContentFixture.use(self, [stew, full, _item(&"fixture_ore", "Ore"), ContentFixture.vital(&"fixture_hp"), ContentFixture.vital(&"fixture_energy")])
 	assert_eq(stew.describe_effects(), PackedStringArray(["Restores 20 Hp, 5 Energy", "Gives Full"]), "a buff that changes no named stat by its name alone")
 	assert_eq(ItemData.find(&"fixture_ore").describe_effects(), PackedStringArray(), "an item that does nothing tells nothing")
-	assert_eq(ShopMenu.describe_item(stew), "Hot.\nRestores 20 Hp, 5 Energy · Gives Full", "a shop's counter tells both")
+	assert_eq(ShopMenu.describe_item(stew), "Hot.\nRestores 20 Hp, 5 Energy\u00a0· Gives Full", "a shop's counter tells both")
 	InventoryState.add_item(stew, 1)
-	assert_true(ItemsModule.describe_carried().has("  Restores 20 Hp, 5 Energy · Gives Full"), "and the pause menu's Items")
+	assert_true(ItemsModule.describe_carried().has("  Restores 20 Hp, 5 Energy\u00a0· Gives Full"), "and the pause menu's Items")
 
 func test_every_item_of_the_game_can_be_got() -> void:
 	assert_eq(ItemSources.gather().find_unobtainable(ContentDB), PackedStringArray(),

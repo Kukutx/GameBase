@@ -164,9 +164,9 @@ func test_shop_sells_animals_as_offers_that_move_into_free_housing() -> void:
 	var context := {"location_id": &"fixture_farm"}
 	assert_true(cow_offer.can_buy(context))
 	assert_false(cow_offer.can_buy({}), "an animal is bought for a location")
-	assert_eq(cow_offer.describe(context), "Eats Fixture Hay · Produces Fixture Milk", "what the counter tells of it")
-	assert_eq(pig_offer.describe(context), "Eats Fixture Hay · Produces Fixture Truffle every 2 days")
-	assert_eq(_offer(&"fixture_hen").describe(context), "Eats Fixture Hay · Produces Fixture Egg (Fixture Large Egg when happy)")
+	assert_eq(cow_offer.describe(context), "Eats Fixture Hay\u00a0· Produces Fixture Milk", "what the counter tells of it")
+	assert_eq(pig_offer.describe(context), "Eats Fixture Hay\u00a0· Produces Fixture Truffle every 2 days")
+	assert_eq(_offer(&"fixture_hen").describe(context), "Eats Fixture Hay\u00a0· Produces Fixture Egg (Fixture Large Egg when happy)")
 	assert_eq(_offer(&"fixture_unknown").describe(context), "")
 
 	var money_before := Wallet.money

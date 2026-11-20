@@ -4,19 +4,20 @@ extends GameTitleBase
 ## The title screen every game opens on (its main scene) unless it brings its
 ## own: the game's name, description and version from the project settings,
 ## its save slots (as many as the game sets, each continuing from the newer of
-## its saves), a new game, the settings, the achievements (in a game that has
-## any) and quitting. Like every menu it takes
-## the project's theme (`gui/theme/custom`). What it does with a slot is
+## its saves) with a button beside them that deletes the one chosen, a new
+## game, the settings, the achievements (in a game that has any) and
+## quitting, in rows as full as each other (`EvenRows`). Like every menu it
+## takes the project's theme (`gui/theme/custom`). What it does with a slot is
 ## GameTitleBase's; this is how it looks.
 
 @onready var title_label: Label = $Center/Menu/Title
 @onready var subtitle_label: Label = $Center/Menu/Subtitle
 @onready var version_label: Label = $Center/Menu/Footer/Version
-@onready var slot_select: OptionButton = $Center/Menu/SaveSlot
+@onready var slot_select: OptionButton = $Center/Menu/SlotRow/SaveSlot
 @onready var slot_info: Label = $Center/Menu/SlotInfo
 @onready var continue_button: Button = $Center/Menu/Continue
 @onready var new_game_button: Button = $Center/Menu/Actions/NewGame
-@onready var delete_button: Button = $Center/Menu/Actions/DeleteSave
+@onready var delete_button: Button = $Center/Menu/SlotRow/DeleteSave
 @onready var settings_button: Button = $Center/Menu/Actions/Settings
 @onready var achievements_button: Button = $Center/Menu/Actions/Achievements
 @onready var quit_button: Button = $Center/Menu/Actions/Quit

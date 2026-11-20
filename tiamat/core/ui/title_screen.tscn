@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://tiamat/core/ui/title_screen.gd" id="1_title"]
+[ext_resource type="Script" path="res://tiamat/core/ui/even_rows.gd" id="2_even_rows"]
 [ext_resource type="PackedScene" path="res://tiamat/core/ui/settings_menu.tscn" id="3_settings"]
 
 [node name="TitleScreen" type="ColorRect"]
@@ -37,8 +38,17 @@ theme_override_colors/font_color = Color(0.72, 0.79, 0.75, 1)
 theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
 
-[node name="SaveSlot" type="OptionButton" parent="Center/Menu"]
+[node name="SlotRow" type="HBoxContainer" parent="Center/Menu"]
 layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SaveSlot" type="OptionButton" parent="Center/Menu/SlotRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DeleteSave" type="Button" parent="Center/Menu/SlotRow"]
+layout_mode = 2
+text = "Delete"
 
 [node name="SlotInfo" type="Label" parent="Center/Menu"]
 custom_minimum_size = Vector2(0, 39)
@@ -57,17 +67,12 @@ text = "Continue"
 layout_mode = 2
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
-columns = 3
+columns = 2
 
 [node name="NewGame" type="Button" parent="Center/Menu/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "New Game"
-
-[node name="DeleteSave" type="Button" parent="Center/Menu/Actions"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Delete Save"
 
 [node name="Settings" type="Button" parent="Center/Menu/Actions"]
 layout_mode = 2
@@ -83,6 +88,9 @@ text = "Achievements"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Quit"
+
+[node name="EvenRows" type="Node" parent="Center/Menu/Actions"]
+script = ExtResource("2_even_rows")
 
 [node name="Footer" type="HBoxContainer" parent="Center/Menu"]
 layout_mode = 2
