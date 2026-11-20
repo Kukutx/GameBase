@@ -44,3 +44,28 @@ func test_the_core_menus_read_in_a_narrow_view_and_keep_their_look_in_a_wide_one
 		var status := menu.find_child("Status", true, false) as Label
 		assert_not_null(status)
 		assert_eq(ReadableText.font_size_of(status), maxi(9, ReadableText.min_font_size(size)), "its status line in %s" % size)
+
+func test_a_line_too_long_for_its_width_shrinks_but_never_below_what_a_phone_reads() -> void:
+	var view := SubViewport.new()
+	view.size = Vector2i(480, 270)
+	view.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	add_child_autofree(view)
+	var label := Label.new()
+	label.size = Vector2(120, 20)
+	view.add_child(label)
+	label.text = "Short"
+	ReadableText.fit_width(label, 12)
+	assert_eq(label.get_theme_font_size(&"font_size"), 12, "a text that fits keeps its size")
+	label.text = "Energy 100/100 · Vigor"
+	ReadableText.fit_width(label, 12)
+	var fitted := label.get_theme_font_size(&"font_size")
+	assert_lt(fitted, 12, "a longer one shrinks")
+	assert_lte(label.get_theme_font(&"font").get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fitted).x, 120.0, "to fit")
+	label.text = "Energy 100/100 · Vigor 100/100 · 123456g · Spring 28 23:50 · Thunderstorm"
+	ReadableText.fit_width(label, 12)
+	assert_eq(label.get_theme_font_size(&"font_size"), 8, "no smaller than a phone reads in a view 270 high")
+	assert_true(label.clip_text, "and the rest is cut rather than run over its neighbour")
+	assert_eq(label.text_overrun_behavior, TextServer.OVERRUN_TRIM_ELLIPSIS)
+	label.text = "Short"
+	ReadableText.fit_width(label, 12)
+	assert_eq(label.get_theme_font_size(&"font_size"), 12, "and grows back once it fits again")

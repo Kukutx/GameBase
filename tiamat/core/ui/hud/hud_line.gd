@@ -13,10 +13,20 @@ extends Label
 @export var separator := " · "
 ## Whether the line hides while it has nothing to tell.
 @export var hides_when_empty := false
+## Whether a text too long for the line's width shrinks to fit it, down to
+## what a phone reads, and is cut past that (`ReadableText.fit_width()`),
+## rather than run over the line beside it: for a line that grows with what it
+## tells, such as the money or the place and the time.
+@export var shrinks_to_fit := false
 
 var _queued := false
+# The font size the line draws at while its text fits.
+var _full_font_size := 0
 
 func _ready() -> void:
+	if shrinks_to_fit:
+		_full_font_size = get_theme_font_size(&"font_size")
+		resized.connect(_fit)
 	watch(GameSettings.locale_changed)
 	watch(get_tree().scene_changed)
 	_watch()
@@ -38,6 +48,7 @@ func refresh() -> void:
 	text = separator.join(parts)
 	if hides_when_empty:
 		visible = not text.is_empty()
+	_fit()
 
 ## The parts of the line; an empty one is left out.
 func _get_parts() -> PackedStringArray:
@@ -59,3 +70,7 @@ func _queue_refresh() -> void:
 func _refresh_queued() -> void:
 	_queued = false
 	refresh()
+
+func _fit() -> void:
+	if shrinks_to_fit and _full_font_size > 0:
+		ReadableText.fit_width(self, _full_font_size)

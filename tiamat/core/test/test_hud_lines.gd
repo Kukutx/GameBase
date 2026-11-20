@@ -61,6 +61,23 @@ func test_a_line_that_says_so_hides_while_it_has_nothing_to_tell() -> void:
 	line.refresh()
 	assert_true(line.visible)
 
+func test_a_line_that_shrinks_to_fit_keeps_to_its_width() -> void:
+	var line := _FixtureLine.new()
+	line.changed = fixture_changed
+	line.shrinks_to_fit = true
+	line.add_theme_font_size_override(&"font_size", 12)
+	line.size = Vector2(80, 20)
+	add_child_autofree(line)
+	line.parts = PackedStringArray(["Day 1"])
+	fixture_changed.emit(1)
+	await get_tree().process_frame
+	assert_eq(line.get_theme_font_size(&"font_size"), 12, "a short text keeps its size")
+	line.parts = PackedStringArray(["Floor 100", "Winter 28 23:50", "Thunderstorm"])
+	fixture_changed.emit(2)
+	await get_tree().process_frame
+	assert_lt(line.get_theme_font_size(&"font_size"), 12, "a long one shrinks")
+	assert_true(line.clip_text)
+
 func test_the_controls_line_names_each_control_the_game_has_on_the_device_in_use() -> void:
 	InputPrompts.using_gamepad = false
 	var line := ControlsLine.new()
