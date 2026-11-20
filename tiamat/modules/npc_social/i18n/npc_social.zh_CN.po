@@ -40,3 +40,27 @@ msgstr "%s：%d 心好感"
 
 msgid "Gift friendship"
 msgstr "送礼好感"
+
+msgid "Loves: %s"
+msgstr "最爱：%s"
+
+msgid "Likes: %s"
+msgstr "喜欢：%s"
+
+msgid "Neutral: %s"
+msgstr "一般：%s"
+
+msgid "Dislikes: %s"
+msgstr "讨厌：%s"
+
+msgid "%s loves it"
+msgstr "%s最爱"
+
+msgid "%s likes it"
+msgstr "%s喜欢"
+
+msgid "%s doesn't mind it"
+msgstr "%s觉得一般"
+
+msgid "%s dislikes it"
+msgstr "%s讨厌"

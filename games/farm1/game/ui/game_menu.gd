@@ -157,6 +157,16 @@ func _social_text() -> String:
 		var points := RelationshipState.get_points(profile.id)
 		var hearts := RelationshipState.get_hearts(profile.id)
 		lines.append(tr("[b]%s[/b] — %s   %d ♥   (%d pts)") % [tr(profile.display_name), tr(profile.role), hearts, points])
+		# Today's talk and gift, then what the gifts given told of them.
+		var today := PackedStringArray()
+		if RelationshipState.has_talked_today(profile.id):
+			today.append(tr("Talked today"))
+		if RelationshipState.has_given_gift_today(profile.id):
+			today.append(tr("Gift given today"))
+		if not today.is_empty():
+			lines.append("    " + GameText.list(today))
+		for taste_line: String in RelationshipState.describe_known_tastes(profile.id):
+			lines.append("    " + taste_line)
 	return "\n".join(lines)
 
 func _skills_text() -> String:
@@ -283,8 +293,9 @@ func _achievement_lines() -> PackedStringArray:
 	return lines
 
 ## What item `item_id` is, what it does (`ItemData.describe_effects()`: what
-## a dish restores and gives, how hard a blade hits beside the player's best)
-## and where the player gets more, after a blank line, or nothing for no item.
+## a dish restores and gives, how hard a blade hits beside the player's best),
+## how the NPCs given one took it, and where the player gets more, after a
+## blank line, or nothing for no item.
 func _item_details(item_id: StringName) -> PackedStringArray:
 	var item := ItemData.find(item_id)
 	if item == null:
@@ -295,6 +306,9 @@ func _item_details(item_id: StringName) -> PackedStringArray:
 	var effects := item.describe_effects()
 	if not effects.is_empty():
 		lines.append(ItemData.EFFECT_SEPARATOR.join(effects))
+	var takers := RelationshipState.describe_known_takers(item_id)
+	if not takers.is_empty():
+		lines.append(tr("As a gift: %s") % GameText.list(takers))
 	var ways := ItemSources.describe(item_id)
 	if not ways.is_empty():
 		lines.append(tr("Where to get: %s") % "; ".join(ways))
