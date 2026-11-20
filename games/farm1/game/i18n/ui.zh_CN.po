@@ -2139,6 +2139,12 @@ msgstr "深入虚空"
 msgid "Defeat the Void Monarch, who guards every 25th floor of the mine from the 75th down."
 msgstr "击败虚空君主——自第 75 层起每隔 25 层镇守矿洞的守卫。"
 
+msgid "Monster Scholar"
+msgstr "怪物学者"
+
+msgid "Defeat every kind of creature of the mine, counting every save."
+msgstr "击败矿洞里的每一种生物（所有存档合计）。"
+
 msgid "Clear"
 msgstr "晴朗"
 

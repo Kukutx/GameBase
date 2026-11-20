@@ -382,3 +382,11 @@ func test_deeper_floors_hold_more_elites_that_count_toward_elite_hunter() -> voi
 	CombatEvents.elite_defeated.emit(&"hulking", &"cave_slime", Vector2.ZERO)
 	assert_eq(GameProfile.get_int(&"elites_defeated"), 10)
 	assert_true(GameProfile.is_unlocked(&"elite_hunter"))
+
+func test_every_kind_of_the_depths_defeated_makes_know_thy_foe() -> void:
+	var kinds := EnemyData.find_all()
+	assert_eq(AchievementData.find(&"know_thy_foe").goal, kinds.size(), "every kind the game has")
+	for enemy: EnemyData in kinds:
+		assert_false(GameProfile.is_unlocked(&"know_thy_foe"))
+		Bestiary.record(enemy.id)
+	assert_true(GameProfile.is_unlocked(&"know_thy_foe"))
