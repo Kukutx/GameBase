@@ -8,6 +8,8 @@ const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
 const TEST_DIRECTORY := "user://test_menus"
 
 var _save_directory := ""
+# A source of bonuses a test registers, which the next test does without.
+var _source: _BonusSource
 # The game's own aspect, which a test that sets another gives back.
 var _aspect := Window.CONTENT_SCALE_ASPECT_IGNORE
 
@@ -25,6 +27,9 @@ func after_each() -> void:
 	SaveManager.save_directory = _save_directory
 	SaveManager.select_slot(SaveManager.active_slot)
 	GameSettings.reset_all()
+	if _source != null:
+		GameStats.unregister_source(_source)
+		_source = null
 	InputLock.clear()
 	var focus := get_viewport().gui_get_focus_owner()
 	if focus != null:
@@ -307,6 +312,32 @@ func test_a_game_lays_out_its_own_pause_menu_and_the_core_adds_the_rest() -> voi
 	menu.resume_button.pressed.emit()
 	assert_false(menu.visible)
 
+func test_the_pause_menu_shows_what_changes_the_stats_while_anything_does() -> void:
+	var menu := _pause()
+	menu.open()
+	assert_eq(menu.bonuses_button.visible, not GameStats.describe_current().is_empty())
+	menu.close()
+	_source = _BonusSource.new()
+	GameStats.register_source(_source)
+	menu.open()
+	assert_true(menu.bonuses_button.visible, "a boon, a perk or a buff changes them")
+	menu.bonuses_button.pressed.emit()
+	var bonuses := ChoiceMenu.of(menu)
+	assert_true(bonuses.visible)
+	assert_gt(bonuses.layer, menu.layer, "over the pause menu")
+	assert_eq(bonuses.get_body(), "\n".join(GameStats.describe_current()), "each stat's bonuses added up")
+	assert_string_contains(bonuses.get_body(), "+50%")
+	assert_true(menu.resume_button.disabled)
+	menu._unhandled_input(_action(&"pause"))
+	assert_true(menu.visible, "the pause control waits for the list to close")
+	assert_true(bonuses.choose(ChoiceMenu.OK_ID))
+	assert_false(bonuses.visible)
+	assert_false(menu.resume_button.disabled)
+	assert_eq(_focus(), menu.bonuses_button, "back where the player was")
+	menu.show_bonuses()
+	menu.close()
+	assert_false(bonuses.visible, "the pause menu closes them with it")
+
 func test_quitting_from_the_pause_menu_asks_first() -> void:
 	var menu := _pause()
 	menu.open()
@@ -341,9 +372,10 @@ func _assert_core_menus_fit(view: Rect2) -> void:
 	var pause := _pause()
 	pause.open()
 	# Every button the menu may show, the tips and the achievements beside
-	# the settings among them.
+	# the settings and the bonuses among them.
 	pause.tips_button.visible = true
 	pause.achievements_button.visible = true
+	pause.bonuses_button.visible = true
 	await _layout()
 	assert_eq(MenuFit.find_overflow(pause, view), PackedStringArray(), "the pause menu in %s" % view.size)
 	for dialog: Window in [pause.confirm_load, pause.confirm_title, pause.confirm_quit]:
@@ -439,3 +471,13 @@ func _write_usable_save(autosave := false) -> void:
 	file.store_string(JSON.stringify(data))
 	file.close()
 	assert_true(SaveManager.has_save(), "the fixture save is one this build can load")
+
+# Half again of every stat.
+class _BonusSource:
+	extends RefCounted
+
+	func get_stat_multiplier(_stat: StringName) -> float:
+		return 1.5
+
+	func get_stat_bonus(_stat: StringName) -> float:
+		return 0.0

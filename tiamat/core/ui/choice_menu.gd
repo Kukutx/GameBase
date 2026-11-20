@@ -15,7 +15,8 @@ extends MenuLayer
 ## to it the first time (`of()` finds it again) and gives the id of the choice
 ## picked, or &"" when the player closed the list. Whatever only tells the
 ## player something (a run's report) shows it with `ChoiceMenu.tell(self,
-## title, lines)`, a body and one choice, OK.
+## title, lines)`, a body and one choice, OK. A menu of a layer (the pause
+## menu) shows over it.
 
 ## The list closed; `choice_id` is the choice the player picked, or &"".
 signal picked(choice_id: StringName)
@@ -146,6 +147,13 @@ static func _of_or_new(host: Node) -> ChoiceMenu:
 	if menu == null:
 		menu = (load(SCENE_PATH) as PackedScene).instantiate() as ChoiceMenu
 		menu.name = NODE_NAME
+		# A menu of a layer, or of what a layer draws, shows over that layer
+		# (the pause menu's bonuses).
+		var layer_host := host
+		while layer_host != null and not layer_host is CanvasLayer:
+			layer_host = layer_host.get_parent()
+		if layer_host != null:
+			menu.layer = maxi(menu.layer, (layer_host as CanvasLayer).layer + 1)
 		host.add_child(menu)
 	return menu
 
