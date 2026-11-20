@@ -2,8 +2,9 @@ extends GutTest
 
 ## The names prompts give a gamepad's buttons (`InputPromptService`): as its
 ## maker prints them, told from the pad's name, in characters the game's font
-## draws; the gamepad in use leaving takes the prompts back to the keyboard;
-## and a control's prompt is a module's, the movement or its actions'.
+## draws; the engine's menu actions named from the input map; the gamepad in
+## use leaving takes the prompts back to the keyboard; and a control's prompt
+## is a module's, the movement or its actions'.
 
 var _using_gamepad := false
 var _style := InputPromptService.GamepadStyle.XBOX
@@ -13,6 +14,7 @@ func before_each() -> void:
 	_style = InputPrompts.gamepad_style
 
 func after_each() -> void:
+	InputPrompts.call("_set_using_touch", false)
 	InputPrompts.using_gamepad = _using_gamepad
 	InputPrompts.gamepad_style = _style
 	InputPrompts.set("_gamepad_device", -1)
@@ -42,6 +44,17 @@ func test_the_buttons_are_named_as_the_pad_in_use_prints_them() -> void:
 	assert_eq(InputPrompts.get_action_prompt(&"interact"), "B", "the bottom button")
 	assert_eq(InputPromptService.gamepad_axis_name(JOY_AXIS_TRIGGER_RIGHT, InputPromptService.GamepadStyle.NINTENDO), "ZR")
 	assert_eq(InputPromptService.gamepad_button_name(JOY_BUTTON_DPAD_UP, InputPromptService.GamepadStyle.NINTENDO), "D-Pad ↑", "a button every pad names alike")
+
+func test_the_engine_s_menu_actions_are_named_from_the_input_map() -> void:
+	assert_eq(InputPrompts.get_action_prompt(&"ui_cancel"), ControlBindings.key_text(KEY_ESCAPE), "the key on a keyboard")
+	InputPrompts.using_gamepad = true
+	InputPrompts.call("_set_gamepad_style", InputPromptService.GamepadStyle.PLAYSTATION)
+	assert_eq(InputPrompts.get_action_prompt(&"ui_cancel"), "○", "the pad's back button")
+	assert_eq(InputPrompts.get_action_prompt(&"ui_accept"), "×")
+	InputPrompts.call("_set_using_touch", true)
+	assert_eq(InputPrompts.get_action_prompt(&"ui_cancel"), "×", "the close button over a menu")
+	assert_eq(InputPrompts.get_action_prompt(&"ui_accept"), "", "what is tapped itself")
+	InputPrompts.call("_set_using_touch", false)
 
 func test_the_games_font_draws_every_buttons_name() -> void:
 	var label := Label.new()

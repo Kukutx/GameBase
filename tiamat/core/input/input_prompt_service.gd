@@ -187,10 +187,16 @@ func _input(event: InputEvent) -> void:
 		_set_using_touch(false)
 
 ## The key, mouse button, gamepad button or axis that performs `action` on
-## the device in use.
+## the device in use. An action of the engine's that the game declares no
+## control for (`ui_cancel`, `ui_accept`) is named from the input map: its
+## first gamepad button while a pad plays, else its first key, and on touch ×
+## for `ui_cancel` (the close button over a menu) or empty, the rest being
+## tapped.
 func get_action_prompt(action: StringName) -> String:
 	var bindings := GameSettings.bindings
 	var control := bindings.get_control(action)
+	if control == null and InputMap.has_action(action):
+		return _input_map_prompt(action)
 	if using_touch and control != null:
 		return bindings.get_label(action)
 	if using_gamepad and control != null:
@@ -199,6 +205,21 @@ func get_action_prompt(action: StringName) -> String:
 		if control.gamepad_axis != JOY_AXIS_INVALID:
 			return gamepad_axis_name(control.gamepad_axis, gamepad_style)
 	return bindings.get_binding_text(action)
+
+# The prompt of `action`, no control of the game's, from its events in the
+# input map: its gamepad button while a pad plays, else (as a control with no
+# button) its key; empty where it has neither.
+func _input_map_prompt(action: StringName) -> String:
+	if using_touch:
+		return "×" if action == &"ui_cancel" else ""
+	var key := ""
+	for event: InputEvent in InputMap.action_get_events(action):
+		if using_gamepad and event is InputEventJoypadButton:
+			return get_button_name((event as InputEventJoypadButton).button_index)
+		if key.is_empty() and event is InputEventKey:
+			var pressed := event as InputEventKey
+			key = ControlBindings.key_text(pressed.physical_keycode if pressed.physical_keycode != KEY_NONE else pressed.keycode)
+	return key
 
 ## The prompt of `control` on the device in use, as the HUD names a control
 ## (`ControlsLine`): what a module registered under that name
