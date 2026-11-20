@@ -29,7 +29,7 @@ extends Node
 ## Argument checks for `register_condition`/`register_action` `arg_kinds`: a
 ## content kind (checked against the running game's content,
 ## `ContentRegistry.active`), a kind a module registers with
-## `register_arg_kind()`, or one of these value kinds.
+## `register_arg_kind()`, or one of these value kinds. `RuleArgs` checks them.
 const ARG_INT := &"int"
 const ARG_NUMBER := &"number"
 const ARG_BOOL := &"bool"
@@ -46,8 +46,7 @@ const MAX_EVENT_ARG_VALUES := 256
 
 var _conditions: Dictionary = {}
 var _actions: Dictionary = {}
-## kind -> Callable(value: String) -> String
-var _arg_kinds: Dictionary = {}
+var _args := RuleArgs.new()
 var _parsed: Dictionary = {}
 
 func _ready() -> void:
@@ -68,7 +67,7 @@ func register_action(key: StringName, run: Callable, min_args := 0, max_args := 
 ## Registers an argument kind for `arg_kinds`. `check` is
 ## `func(value: String) -> String` returning what is wrong with `value`, or "".
 func register_arg_kind(kind: StringName, check: Callable) -> void:
-	_arg_kinds[kind] = check
+	_args.register(kind, check)
 
 func has_condition(key: StringName) -> bool:
 	return _conditions.has(_normalize(key))
@@ -236,101 +235,20 @@ func _validate(text: String, registry: Dictionary, label: String, allow_negate: 
 		for index: int in args.size():
 			if kinds.is_empty():
 				break
-			var problem := _check_arg(args[index], kinds[mini(index, kinds.size() - 1)])
+			var problem := _args.check_written(args[index], RuleArgs.kind_at(kinds, index))
 			if not problem.is_empty():
 				problems.append("%s '%s' argument %d: %s" % [label, key, index + 1, problem])
 		var args_check: Callable = entry["args_check"]
 		if problems.size() == found and args_check.is_valid():
-			if not _names_event_arg(args):
+			if not RuleArgs.names_event_arg(args):
 				var problem := String(args_check.call(args))
 				if not problem.is_empty():
 					problems.append("%s '%s': %s" % [label, key, problem])
 			else:
-				var problem := _check_with_any_event_values(args_check, args, kinds)
+				var problem := _args.check_with_any_event_values(args_check, args, kinds)
 				if not problem.is_empty():
 					problems.append("%s '%s': %s, whatever the event's arguments are" % [label, key, problem])
 	return problems
-
-# What `args_check` finds wrong with `args` for every value their event
-# arguments can take, or "" when one passes. An argument whose values cannot
-# be listed (a number, text) or too many values leave the check to the event.
-func _check_with_any_event_values(args_check: Callable, args: PackedStringArray, kinds: Array[StringName]) -> String:
-	var choices: Array[PackedStringArray] = []
-	var combinations := 1
-	for index: int in args.size():
-		if not args[index].begins_with("$"):
-			choices.append(PackedStringArray([args[index]]))
-			continue
-		var values := _arg_values(kinds[mini(index, kinds.size() - 1)] if not kinds.is_empty() else &"")
-		combinations *= values.size()
-		if values.is_empty() or combinations > MAX_EVENT_ARG_VALUES:
-			return ""
-		choices.append(values)
-	var first_problem := ""
-	var picked: Array[int] = []
-	picked.resize(choices.size())
-	picked.fill(0)
-	for _combination: int in combinations:
-		var candidate := PackedStringArray()
-		for index: int in choices.size():
-			candidate.append(choices[index][picked[index]])
-		var problem := String(args_check.call(candidate))
-		if problem.is_empty():
-			return ""
-		if first_problem.is_empty():
-			first_problem = problem
-		# The next combination, the last argument turning fastest.
-		for index: int in range(choices.size() - 1, -1, -1):
-			picked[index] += 1
-			if picked[index] < choices[index].size():
-				break
-			picked[index] = 0
-	return first_problem
-
-# Every value an argument of `kind` can take, when they can be listed: true and
-# false, the calendar's seasons, or the ids of a content kind; empty when they
-# cannot.
-func _arg_values(kind: StringName) -> PackedStringArray:
-	var values := PackedStringArray()
-	if kind == ARG_BOOL:
-		return PackedStringArray(["true", "false"])
-	if kind == ARG_SEASON:
-		return GameCalendar.current().season_names.duplicate()
-	if kind in [&"", ARG_INT, ARG_NUMBER, ARG_TEXT, ARG_COUNT, ARG_FLAG_VALUE]:
-		return values
-	# A kind registered with its own check may still name content (a skill):
-	# its values are the entries that pass that check.
-	for entry: Variant in ContentRegistry.active.get_entries(kind):
-		if entry is ContentEntry:
-			var id := String((entry as ContentEntry).id)
-			if _check_value(id, kind).is_empty():
-				values.append(id)
-	return values
-
-func _check_arg(value: String, kind: StringName) -> String:
-	if value.begins_with("$"):
-		return "" if value.substr(1).is_valid_ascii_identifier() else "'%s' is not an event argument ($name)" % value
-	return _check_value(value, kind)
-
-func _check_value(value: String, kind: StringName) -> String:
-	match kind:
-		ARG_INT:
-			return "" if value.is_valid_int() else "'%s' is not an integer" % value
-		ARG_NUMBER:
-			return "" if value.is_valid_float() else "'%s' is not a number" % value
-		ARG_COUNT:
-			return "" if value.is_valid_int() and int(value) >= 1 else "'%s' is not a count (a whole number of at least 1)" % value
-		ARG_BOOL:
-			return "" if ["true", "false"].has(value.to_lower()) else "'%s' is not true or false" % value
-		ARG_TEXT:
-			return ""
-		ARG_SEASON:
-			return "" if GameCalendar.current().has_season(value) else "unknown season '%s'" % value
-		ARG_FLAG_VALUE:
-			return "" if value.is_valid_int() or ["true", "false"].has(value.to_lower()) else "'%s' is not true, false or an integer" % value
-	if _arg_kinds.has(kind):
-		return String((_arg_kinds[kind] as Callable).call(value))
-	return "" if ContentRegistry.active.has_entry(kind, StringName(value)) else "unknown %s '%s'" % [kind, value]
 
 # Whether every clause of `query` holds: true or false, or null when a value
 # an event gave any clause does not pass its check, which no negation, other
@@ -402,8 +320,7 @@ func _sorted_keys(source: Dictionary) -> PackedStringArray:
 ## &"" when nothing checks it.
 func get_arg_kind(key: StringName, index: int) -> StringName:
 	var entry: Dictionary = _conditions.get(_normalize(key), _actions.get(_normalize(key), {}))
-	var kinds: Array = entry.get("kinds", [])
-	return &"" if kinds.is_empty() else StringName(kinds[mini(index, kinds.size() - 1)])
+	return RuleArgs.kind_at(entry.get("kinds", []), index)
 
 ## Whether an event argument of the Variant `type` can stand for an argument
 ## of `kind`: a number for a number, text or an id for text or an id. An
@@ -422,18 +339,12 @@ static func takes_type(kind: StringName, type: int) -> bool:
 			return type == TYPE_BOOL or type == TYPE_INT
 	return type == TYPE_STRING_NAME or type == TYPE_STRING
 
-static func _names_event_arg(args: PackedStringArray) -> bool:
-	for arg: String in args:
-		if arg.begins_with("$"):
-			return true
-	return false
-
 # The clause's arguments with each `$name` replaced by that argument of the
 # context's event, checked as written arguments are; null, with a warning,
 # when a value the event gave does not pass (an id the content does not have).
 func _resolve_clause_args(entry: Dictionary, clause: Dictionary, context: Dictionary) -> Variant:
 	var args: PackedStringArray = clause["args"]
-	if not _names_event_arg(args):
+	if not RuleArgs.names_event_arg(args):
 		return args
 	var event: Dictionary = context.get("event", {})
 	var kinds: Array[StringName] = entry["kinds"]
@@ -448,7 +359,7 @@ func _resolve_clause_args(entry: Dictionary, clause: Dictionary, context: Dictio
 			break
 		resolved[index] = str(event[name])
 		if not kinds.is_empty():
-			problem = _check_value(resolved[index], kinds[mini(index, kinds.size() - 1)])
+			problem = _args.check(resolved[index], RuleArgs.kind_at(kinds, index))
 			if not problem.is_empty():
 				break
 	var args_check: Callable = entry["args_check"]
