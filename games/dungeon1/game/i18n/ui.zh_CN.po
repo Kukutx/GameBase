@@ -227,3 +227,12 @@ msgstr "最深层数"
 
 msgid "Creatures Defeated"
 msgstr "击败的生物"
+
+msgid "Where to Start"
+msgstr "从哪里出发"
+
+msgid "A new run from the top"
+msgstr "从最上层重新出发"
+
+msgid "Skips the first %d depths"
+msgstr "跳过前 %d 层"

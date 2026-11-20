@@ -6,15 +6,14 @@ extends Node2D
 ## the `Interactable` child the station needs, interact runs `minigame_id`
 ## through `MiniGameHost`, with `context` over the minigame's own settings, and
 ## `played` says how it went. A station that offers several minigames lists
-## its `choices` for the player to pick from first (`MiniGamePicker`): a
-## campaign's battles, each open once its condition holds
-## (`MINIGAME_WON ford_battle`). A game draws the station itself, as children
+## its `choices` for the player to pick from first (a `ChoiceMenu`): a
+## campaign's battles, each by its name, marked once won, with its description
+## and the player's best score under it, and locked while its condition does
+## not hold (`MINIGAME_WON ford_battle`), saying what it needs. A game draws the station itself, as children
 ## of its instance of `minigame_station.tscn`.
 
 ## The minigame ended, or could not start (`MiniGameHost.run()`).
 signal played(result: MiniGameResult)
-
-const PICKER_SCENE := preload("res://tiamat/core/minigames/minigame_picker.tscn")
 
 ## The minigame interact plays, when the station offers no `choices`.
 @export var minigame_id: StringName
@@ -28,8 +27,6 @@ const PICKER_SCENE := preload("res://tiamat/core/minigames/minigame_picker.tscn"
 
 @onready var interactable: Interactable = $Interactable
 
-var _picker: MiniGamePicker
-
 func _ready() -> void:
 	interactable.interacted.connect(_on_interacted)
 
@@ -42,16 +39,34 @@ func play(minigame := &"") -> MiniGameResult:
 ## Lists the `choices` and gives the one the player picks, or &"" when they
 ## close the list.
 func pick() -> StringName:
-	if _picker == null:
-		_picker = PICKER_SCENE.instantiate() as MiniGamePicker
-		add_child(_picker)
-	_picker.open(choices, title)
-	var picked: StringName = await _picker.picked
+	var offered: Array[ChoiceMenu.Choice] = []
+	for choice: StringName in choices:
+		var definition := MiniGameDefinition.find(choice)
+		if definition != null:
+			offered.append(choice_of(definition))
+	var picked: StringName = await ChoiceMenu.ask(self, offered, title)
 	return picked
 
 ## The list `pick()` shows, or null before it first shows.
-func get_picker() -> MiniGamePicker:
-	return _picker
+func get_picker() -> ChoiceMenu:
+	return ChoiceMenu.of(self)
+
+## The choice a list offers of `definition`: its name, marked once won in this
+## save, and under it its description and the player's best score, or, while
+## its condition does not hold, what it needs, the choice then locked.
+static func choice_of(definition: MiniGameDefinition) -> ChoiceMenu.Choice:
+	var name: String = TranslationServer.translate(definition.display_name) if not definition.display_name.is_empty() else String(definition.id)
+	var text: String = TranslationServer.translate("%s (Won)") % name if definition.get_wins() > 0 else name
+	if not definition.is_open():
+		var needs := definition.get_requirements()
+		var locked: String = TranslationServer.translate("Locked: %s") % ", ".join(needs) if not needs.is_empty() else TranslationServer.translate("Locked")
+		return ChoiceMenu.Choice.new(definition.id, text, locked, false)
+	var lines := PackedStringArray()
+	if not definition.description.is_empty():
+		lines.append(TranslationServer.translate(definition.description))
+	if not definition.score_name.is_empty() and definition.get_best_score() > 0:
+		lines.append(TranslationServer.translate("Best %s: %d") % [TranslationServer.translate(definition.score_name), definition.get_best_score()])
+	return ChoiceMenu.Choice.new(definition.id, text, "\n".join(lines))
 
 func _on_interacted(_actor: Node) -> void:
 	if choices.is_empty():

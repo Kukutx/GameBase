@@ -1,8 +1,9 @@
 extends GutTest
 
 ## Ember Depths' runs: the depth a run reaches and what it raises in the
-## profile (depth 10 on Heavy damage taken, one more), how long a run lasts, how a floor lays out its enemies from the
-## run's random stream, and when the way on opens.
+## profile (depth 10 on Heavy damage taken, one more), the shortcuts a run
+## may start at, how long a run lasts, how a floor lays out its enemies from
+## the run's random stream, and when the way on opens.
 
 const DEPTHS_SCENE := preload("res://game/world/depths.tscn")
 const TEST_PROFILE := "user://test_dungeon1_depths/profile.json"
@@ -109,6 +110,48 @@ func test_reaching_depth_ten_on_heavy_damage_taken_forges_one_more() -> void:
 	assert_false(GameProfile.is_unlocked(&"forged_in_fire"), "depth 9")
 	DepthRun.descend()
 	assert_true(GameProfile.is_unlocked(&"forged_in_fire"))
+
+func test_every_fifth_depth_reached_is_a_shortcut_a_run_may_start_at() -> void:
+	DepthRun.start_run()
+	assert_eq(DepthRun.get_shortcuts(), PackedInt32Array([1]))
+	for _step: int in 11:
+		DepthRun.descend()
+	assert_eq(DepthRun.get_shortcuts(), PackedInt32Array([1, 5, 10]))
+	watch_signals(DepthRun)
+	DepthRun.start_run(10)
+	assert_eq(DepthRun.get_depth(), 10)
+	assert_eq(DepthRun.get_run(), 2)
+	assert_signal_not_emitted(DepthRun, "depth_reached", "a run that starts at a shortcut does not reach it again")
+	DepthRun.descend()
+	assert_signal_emitted_with_parameters(DepthRun, "depth_reached", [11])
+	DepthRun.start_run(15)
+	assert_eq(DepthRun.get_depth(), 1, "a depth the world has not reached starts at the first")
+	DepthRun.start_run(7)
+	assert_eq(DepthRun.get_depth(), 1, "and so does a depth that is no shortcut")
+
+func test_the_way_down_asks_where_to_start_once_the_world_has_a_shortcut() -> void:
+	var entrance := DepthEntrance.new()
+	var interactable := Interactable.new()
+	interactable.name = "Interactable"
+	entrance.add_child(interactable)
+	add_child_autofree(entrance)
+	DepthRun.start_run()
+	assert_eq(await entrance.choose_start(), 1, "without a shortcut the run starts at the top")
+	assert_null(ChoiceMenu.of(entrance))
+	for _step: int in 5:
+		DepthRun.descend()
+	var outcome := {}
+	(func() -> void: outcome["depth"] = await entrance.choose_start()).call()
+	var menu := ChoiceMenu.of(entrance)
+	assert_eq(menu.get_buttons().map(func(button: Button) -> String: return button.text), ["Depth 1", "Depth 5"])
+	assert_eq(menu.get_note(&"5"), "Skips the first 4 depths")
+	assert_true(menu.get_button(&"5").has_focus(), "the deepest shortcut first")
+	menu.choose(&"5")
+	assert_eq(outcome.get("depth"), 5)
+	(func() -> void: outcome["depth"] = await entrance.choose_start()).call()
+	menu.close()
+	assert_eq(outcome.get("depth"), 0, "closing the list starts no run")
+	InputLock.clear()
 
 func test_a_deeper_floor_spawns_more_enemies() -> void:
 	assert_eq(DepthFloor.get_enemy_count(1), 2)
