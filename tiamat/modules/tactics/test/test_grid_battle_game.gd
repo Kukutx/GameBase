@@ -2,8 +2,8 @@ extends GutTest
 
 ## The tactics module's minigame (`GridBattleGame`) run by `MiniGameHost`: the
 ## player commands their unit with the command buttons and the board, wins,
-## and the battle's end is told; the commands follow what the foes do
-## meanwhile; a finger's tap on a cell shows it and a second tap picks it;
+## and the battle's end is told; once the unit moved, Move takes the move
+## back; the commands follow what the foes do meanwhile; a finger's tap on a cell shows it and a second tap picks it;
 ## cancel twice gives the battle up; an unknown map ends it at once,
 ## and a definition that names one is a content problem; the player's choice
 ## of speed speeds the game's.
@@ -60,6 +60,25 @@ func test_the_player_moves_strikes_and_wins() -> void:
 	assert_eq(result.data, {"map": &"fixture_field"})
 	assert_eq(_ended, [[&"fixture_field", true]])
 	assert_false(get_tree().paused)
+
+func test_once_moved_the_move_command_takes_the_move_back() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	var knight := game.battle.get_turn_unit()
+	game.choose_command(0)
+	game.pick(Vector2i(1, 1))
+	var buttons := _commands(game)
+	assert_eq(buttons[0].text, tr("Undo Move"))
+	assert_false(buttons[0].disabled)
+	assert_true(buttons[1].has_focus(), "the keys start on the action, not on taking the move back")
+	game.choose_command(0)
+	assert_eq(knight.cell, Vector2i(0, 1), "the knight stands where its turn found it")
+	assert_eq(game.get_mode(), GridBattleGame.Mode.COMMAND)
+	assert_true(_shows(game, tr("%s steps back.") % tr(knight.data.display_name)))
+	assert_eq(_commands(game)[0].text, tr("Move"), "and may move again")
+	game.choose_command(0)
+	assert_eq(game.get_mode(), GridBattleGame.Mode.PICK_MOVE)
 
 func test_the_commands_follow_what_the_foes_do_meanwhile() -> void:
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
@@ -171,6 +190,12 @@ func _game() -> GridBattleGame:
 		if not node.is_queued_for_deletion():
 			return node as GridBattleGame
 	return null
+
+# The command buttons of `game`, as listed.
+func _commands(game: GridBattleGame) -> Array[Button]:
+	var buttons: Array[Button] = []
+	buttons.assign(game.find_children("*", "Button", true, false))
+	return buttons
 
 # Whether a label of `game` reads `text`.
 func _shows(game: GridBattleGame, text: String) -> bool:
