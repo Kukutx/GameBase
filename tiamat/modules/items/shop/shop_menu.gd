@@ -4,9 +4,12 @@ extends MenuLayer
 ## A shop's counter: buys what the shop stocks and offers, and sells every
 ## item the inventory holds that has a sell price, as many at a press as the
 ## amount the player picks (`amounts`: one, five, ten; a purchase stops at what
-## they can afford and carry, a sale at what they hold). Under the lists it
-## tells of the item whose button has the focus: its description and what it
-## does (`describe_item()`).
+## they can afford and carry, a sale at what they hold). A purchase the
+## player cannot make now (not one of the item affordable or carried, an offer
+## its `ShopOffer.can_buy()` refuses) is dimmed, and opens again as soon as a
+## sale or the bag makes room for it. Under the lists it tells of the item
+## whose button has the focus: its description and what it does
+## (`describe_item()`).
 
 ## The amounts one press buys or sells, in the order the amount button steps
 ## through them, the first as the counter opens; one amount hides the button.
@@ -24,6 +27,8 @@ extends MenuLayer
 var _shop: ShopData
 # item id -> the button that buys it
 var _buy_buttons: Dictionary[StringName, Button] = {}
+# offer -> the button that buys it
+var _offer_buttons: Dictionary[ShopOffer, Button] = {}
 # item id -> the button that sells it
 var _sell_buttons: Dictionary[StringName, Button] = {}
 var _amount_index := 0
@@ -59,6 +64,7 @@ func _rebuild() -> void:
 	for child: Node in items_container.get_children():
 		child.queue_free()
 	_buy_buttons.clear()
+	_offer_buttons.clear()
 	if _shop == null:
 		return
 	amount_button.visible = amounts.size() > 1
@@ -70,34 +76,35 @@ func _rebuild() -> void:
 	for raw: Variant in _shop.get_stock().keys():
 		ids.append(String(raw))
 	ids.sort()
-	var first_button: Button
+	var buttons: Array[Button] = []
 	for raw_id: String in ids:
 		var item_id := StringName(raw_id)
 		var item := ItemData.find(item_id)
 		if item == null:
 			continue
 		var button := MenuLayer.list_button()
-		button.text = _buy_label(item)
 		_buy_buttons[item_id] = button
 		button.pressed.connect(_buy.bind(item_id))
 		button.focus_entered.connect(_tell_about.bind(item))
 		items_container.add_child(button)
-		if first_button == null:
-			first_button = button
-	var context := _offer_context()
+		buttons.append(button)
 	for offer: ShopOffer in _shop.offers:
 		var button := MenuLayer.list_button()
-		button.text = offer.get_label(context)
-		button.disabled = not offer.can_buy(context)
+		_offer_buttons[offer] = button
 		button.pressed.connect(_buy_offer.bind(offer))
 		button.focus_entered.connect(_tell_about.bind(null))
 		items_container.add_child(button)
-		if first_button == null and not button.disabled:
-			first_button = button
+		buttons.append(button)
+	_refresh_buy_list()
 	_refresh_sell_list()
-	if first_button == null and not _sell_buttons.is_empty():
-		first_button = sell_container.get_child(0) as Button
-	MenuLayer.focus(first_button if first_button != null else close_button)
+	for child: Node in sell_container.get_children():
+		buttons.append(child as Button)
+	var first_button: Button = close_button
+	for button: Button in buttons:
+		if not button.disabled:
+			first_button = button
+			break
+	MenuLayer.focus(first_button)
 
 ## What the counter tells of `item`: its description, then what it does
 ## (`ItemData.describe_effects()`), on a line of its own; "" for none.
@@ -117,6 +124,28 @@ func _tell_about(item: ItemData) -> void:
 
 func _buy(item_id: StringName) -> void:
 	ShopState.buy(_shop, item_id, get_amount())
+
+## Keeps each purchase's button telling its price at the amount picked, and
+## open only while the player can make it now: one of an item they can afford
+## and carry, an offer its `ShopOffer.can_buy()` lets them buy.
+func _refresh_buy_list() -> void:
+	if _shop == null:
+		return
+	for item_id: StringName in _buy_buttons:
+		var item := ItemData.find(item_id)
+		if item != null:
+			_buy_buttons[item_id].text = _buy_label(item)
+			_buy_buttons[item_id].disabled = not can_buy_one(_shop, item)
+	var context := _offer_context()
+	for offer: ShopOffer in _offer_buttons:
+		_offer_buttons[offer].text = offer.get_label(context)
+		_offer_buttons[offer].disabled = not offer.can_buy(context)
+
+## Whether the player can buy one `item` at `shop` now: it has a price, they
+## afford it and the bag has room for it.
+static func can_buy_one(shop: ShopData, item: ItemData) -> bool:
+	var price := shop.get_buy_price(item)
+	return price > 0 and Wallet.can_afford(price) and InventoryState.get_add_capacity(item) > 0
 
 # A purchase's button: the item and the price of one, or of the amount.
 func _buy_label(item: ItemData) -> String:
@@ -141,10 +170,7 @@ func _next_amount() -> void:
 		return
 	_amount_index = (_amount_index + 1) % amounts.size()
 	amount_button.text = tr("Amount: %d") % get_amount()
-	for item_id: StringName in _buy_buttons:
-		var item := ItemData.find(item_id)
-		if item != null:
-			_buy_buttons[item_id].text = _buy_label(item)
+	_refresh_buy_list()
 	_refresh_sell_list()
 
 func _buy_offer(offer: ShopOffer) -> void:
@@ -198,7 +224,9 @@ func _refresh_sell_list() -> void:
 func _on_money_changed(_amount: int) -> void:
 	if visible:
 		money_label.text = tr("Money: %dg") % Wallet.money
+		_refresh_buy_list()
 
 func _on_inventory_changed() -> void:
 	if visible:
+		_refresh_buy_list()
 		_refresh_sell_list()
