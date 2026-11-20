@@ -387,3 +387,9 @@ msgstr "守卫陨落"
 
 msgid "Defeat an Ember Warden, the guardian of every fifth depth."
 msgstr "击败余烬守卫——每隔五层镇守深渊的守护者。"
+
+msgid "Warden's Bane"
+msgstr "守卫克星"
+
+msgid "Defeat the Ember Warden 10 times, counting every run."
+msgstr "击败余烬守卫 10 次，所有冒险累计。"
