@@ -3,7 +3,8 @@ extends MiniGame
 
 ## The tactics module's minigame: the grid battle (`AtbBattle`) of the map its
 ## settings name (`map`, a `BattleMapData` id), played on a board
-## (`GridBattleBoard`) beside the unit whose turn it is and its commands. When
+## (`GridBattleBoard`) beside the unit whose turn it is and its commands, which
+## scroll when they outgrow a short view, such as a phone's. When
 ## one of the player's units has its turn, the player moves it, has it take an
 ## action or ends its turn, picking a cell with the move keys and interact or
 ## accept, or with the mouse; on a touchscreen a tap on a cell first shows
@@ -352,9 +353,16 @@ func _build() -> void:
 		if shown or not InputPrompts.using_touch:
 			pick(cell))
 	columns.add_child(_board)
+	# The side scrolls when a unit's commands outgrow a short view (a phone's),
+	# so the line under the board stays in view.
+	var side_scroll := ScrollContainer.new()
+	side_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	side_scroll.follow_focus = true
+	columns.add_child(side_scroll)
 	var side := VBoxContainer.new()
 	side.custom_minimum_size = Vector2(132.0, 0.0)
-	columns.add_child(side)
+	side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	side_scroll.add_child(side)
 	_title = Label.new()
 	side.add_child(_title)
 	_info = Label.new()

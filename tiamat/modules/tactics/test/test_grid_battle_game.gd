@@ -121,6 +121,21 @@ func test_a_finger_shows_a_cell_then_picks_it_on_a_second_tap() -> void:
 	game.choose_command(1)
 	assert_true(_shows(game, tr("Pick what it aims at. Cancel goes back.")), "the hint follows the device in use")
 
+func test_a_unit_with_many_commands_leaves_the_line_under_the_board_in_view() -> void:
+	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_strike", &"fixture_shot", &"fixture_blast", &"fixture_mend"])
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	await get_tree().process_frame
+	assert_eq(_commands(game).size(), 6, "Move, four actions and End Turn")
+	var view := game.get_viewport().get_visible_rect()
+	var line := game.find_children("*", "Label", true, false).filter(func(label: Node) -> bool: return (label as Label).text == tr("%s's turn.") % tr("Fixture Knight"))
+	assert_eq(line.size(), 1)
+	assert_true((line[0] as Label).get_global_rect().end.y <= view.end.y + 0.5, "the message stays in view: %s of %s" % [(line[0] as Label).get_global_rect(), view])
+	_commands(game)[-1].grab_focus()
+	await get_tree().process_frame
+	assert_true(_commands(game)[-1].get_global_rect().end.y <= view.end.y + 0.5, "the side scrolls to the focused command")
+
 func test_a_definition_names_a_known_map() -> void:
 	var definition := MiniGameDefinition.find(MINIGAME)
 	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray())
