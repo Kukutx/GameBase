@@ -325,13 +325,14 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 ## shop
 
-`ShopData` (items). A shop: the items it sells and at what price, those it sells only in a season, and its other offers (`ShopOffer`, an animal). A `ShopStand` in a scene opens its counter (`ShopMenu`); it buys every item that has a `sell_price`, and `ShopService` makes each trade.
+`ShopData` (items). A shop: the items it sells and at what price, those it sells only in a season or while a condition holds (`ShopListing`), and its other offers (`ShopOffer`, an animal). A `ShopStand` in a scene opens its counter (`ShopMenu`); it buys every item that has a `sell_price`, and `ShopService` makes each trade.
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
 | `display_name` | `String` | `"Shop"` | The name the player reads at its counter. |
 | `stock` | `Dictionary` | `{}` | What it sells all year, as item id -> price; 0, at the item's own `buy_price`, so a price every shop asks is set once, on the item. |
 | `seasonal_stock` | `Dictionary` | `{}` | What it sells besides in a season, as season name (`GameCalendar`) -> item id -> price (0, the item's own); a seasonal price takes the place of the year's. |
+| `listings` | `Array[ShopListing]` | `[]` | What it sells besides while a condition holds, each a `ShopListing` kept in the shop's file; an open listing's price takes the place of the stock's. |
 | `offers` | `Array[ShopOffer]` | `[]` | What the shop sells besides items, after them (see `ShopOffer`). |
 
 ## stat_upgrade

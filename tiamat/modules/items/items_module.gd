@@ -63,8 +63,9 @@ static func describe_carried() -> PackedStringArray:
 			lines.append("  " + TranslationServer.translate("Where to get: %s") % "; ".join(ways))
 	return lines
 
-## The ways to get items the module gives (`ItemSources`): a shop's stock, a
-## recipe's dish or craft, the items the player starts with and those the
+## The ways to get items the module gives (`ItemSources`): a shop's stock and
+## its listings, with what opens each ("Sold at Camp Merchant (Unlock
+## Delver)"), a recipe's dish or craft, the items the player starts with and those the
 ## actions of content add (a trigger's, a quest's).
 static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -> void:
 	for shop: ShopData in registry.get_entries(ShopData.KIND):
@@ -73,6 +74,12 @@ static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -
 		for season: Variant in shop.seasonal_stock:
 			if shop.seasonal_stock[season] is Dictionary:
 				sources.add_each(shop.seasonal_stock[season], sold_at)
+		for listing: ShopListing in shop.listings:
+			if listing == null:
+				continue
+			var opens := listing.describe_condition()
+			var listed_at: String = TranslationServer.translate("Sold at %s (%s)") % [TranslationServer.translate(shop.display_name), GameText.list(opens)]
+			sources.add(listing.item_id, sold_at if opens.is_empty() else listed_at)
 	for recipe: RecipeData in registry.get_entries(RecipeData.KIND):
 		var made: String = TranslationServer.translate("Cooked from %s") if recipe.category == RecipeData.Category.COOKING else TranslationServer.translate("Crafted from %s")
 		sources.add(recipe.output_item_id, made % ItemSources.describe_amounts(registry, recipe.ingredients))

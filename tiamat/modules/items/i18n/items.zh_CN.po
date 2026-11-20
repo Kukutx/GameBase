@@ -205,6 +205,9 @@ msgstr "每级：%s"
 msgid "Sold at %s"
 msgstr "%s有售"
 
+msgid "Sold at %s (%s)"
+msgstr "%s有售（%s）"
+
 msgid "Crafted from %s"
 msgstr "用%s制作"
 
