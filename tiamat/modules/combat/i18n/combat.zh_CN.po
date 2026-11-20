@@ -60,3 +60,21 @@ msgstr "掉落"
 
 msgid "Dropped by %s"
 msgstr "%s掉落"
+
+msgid "Bestiary"
+msgstr "怪物图鉴"
+
+msgid "Met %d of %d"
+msgstr "已遇见 %d / %d 种"
+
+msgid "%s — defeated %d"
+msgstr "%s — 已击败 %d 次"
+
+msgid "Health %d"
+msgstr "生命 %d"
+
+msgid "Hits for %d"
+msgstr "伤害 %d"
+
+msgid "Drops %s"
+msgstr "掉落 %s"

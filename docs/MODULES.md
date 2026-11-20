@@ -61,6 +61,8 @@ What a module can register:
 | `GameStats` | `register_stat()`, `register_source()` | the numbers it reads, each with the name the player knows it by, and what changes them |
 | `SaveManager` | `register_section()`, `register_load_step()`, `register_save_blocker()`, `register_slot_detail()` | what it saves, what runs after a load, when it cannot save, and a line on the title screen's slot |
 | `GameSession` | `register_new_game_step()`, `register_activity_end()` | how a new game resets it, and how passing out, a load, a new game or the title ends what it holds the player in |
+| `PauseMenu` | `add_page(id, title, order, lines)` | a page of lines the pause menu offers while it has any (the items module's Items, the skills module's Skills, the combat module's Bestiary); a game leaves one out with its pause menu's `hidden_pages` |
+| `ItemSources` (items module) | `register(id, finder)` | the ways the player gets the items the module gives (a shop's stock, an enemy's drop, a quest's reward), which the menus show and `test_item_sources` checks every item has |
 
 Each registration that takes an order interleaves with the core's own (`GameSaveManager.SECTION_ORDER_*`, `GameSessionService.NEW_GAME_ORDER_*`) and the other modules'; read the comments on the existing ones before choosing one.
 

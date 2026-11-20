@@ -38,6 +38,7 @@ test/runtime/      The delve smoke: camp, two depths, save and load, a defeat, a
 - After the first run the way down offers pacts, boons of the pool `pact` that carry a burden with their reward: Ash (foes hit harder, drop more), Glass (a harder blade, less health) and, once the player is a Delver, Greed (twice the drops, a softer blade); reaching depth 10 under Glass is Unbroken Glass
 - Each trip down is a run of the roguelite module (`RunState`), from the way down until the rope back or a defeat; the game saves only between runs, at camp, and a defeat costs a quarter of the player's money
 - Combat experience and ten achievements (`game/data/achievements/`), unlocked by triggers in `game/data/triggers/`: Slayer counts every creature defeated in any run, and the title and the pause menu show how far the player is; the deepest depth any save reached stays in the player's profile, and the achievements menu's Records shows it with the creatures defeated
+- The pause menu shows what the delver carries (with where to get more), their combat skill, the bestiary of every kind of creature they have defeated across every save, and the bonuses of the run
 - A clock that stands still: a day passes when the player rests or is defeated
 
 Everything except the floors is the foundation's: the title, pause and settings menus, the hotbar, the melee attack, the enemies, the shop, the runs and the depth track, saving, the profile and the triggers.
