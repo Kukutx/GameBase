@@ -204,6 +204,9 @@ func test_the_player_chooses_how_strong_the_creatures_are() -> void:
 	GameSettings.options = GameOptions.new()
 	assert_eq(_add_slime(&"").health.maximum, 30, "a game without the option keeps its kinds' health")
 
+func test_an_item_tells_which_creature_drops_it() -> void:
+	assert_eq(ItemSources.gather().get_ways(&"fixture_gel"), PackedStringArray(["Dropped by Slime"]))
+
 func _add_slime(persistent_id: StringName) -> HostileCreature:
 	var enemy := HOSTILE_CREATURE_SCENE.instantiate() as HostileCreature
 	enemy.data = EnemyData.find(&"fixture_slime")

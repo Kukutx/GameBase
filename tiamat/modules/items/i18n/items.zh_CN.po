@@ -192,3 +192,18 @@ msgstr "强化"
 
 msgid "Each level: %s"
 msgstr "每级：%s"
+
+msgid "Sold at %s"
+msgstr "%s有售"
+
+msgid "Crafted from %s"
+msgstr "用%s制作"
+
+msgid "Cooked from %s"
+msgstr "用%s烹饪"
+
+msgid "Carried from the start"
+msgstr "开局自带"
+
+msgid "Given as a reward"
+msgstr "作为奖励获得"

@@ -8,6 +8,7 @@ func install() -> void:
 		ContentDB.register_kind(kind_script.KIND, kind_script)
 	ContentDB.register_settings(ItemsSettings)
 	ItemsRules.register(GameRules)
+	ItemSources.register(&"items", find_item_sources)
 	GameStats.register_source(BuffState)
 	BuffState.buffs_changed.connect(GameStats.notify_changed)
 	GameStats.register_source(StatUpgrades.instance())
@@ -34,6 +35,24 @@ func get_facts() -> Dictionary:
 		"selected_item_id": String(Hotbar.get_selected_item_id()),
 		"items": InventoryState.get_entries(),
 	}}
+
+## The ways to get items the module gives (`ItemSources`): a shop's stock, a
+## recipe's dish or craft, the items the player starts with and those the
+## actions of content add (a trigger's, a quest's).
+static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -> void:
+	for shop: ShopData in registry.get_entries(ShopData.KIND):
+		var sold_at: String = TranslationServer.translate("Sold at %s") % TranslationServer.translate(shop.display_name)
+		sources.add_each(shop.stock, sold_at)
+		for season: Variant in shop.seasonal_stock:
+			if shop.seasonal_stock[season] is Dictionary:
+				sources.add_each(shop.seasonal_stock[season], sold_at)
+	for recipe: RecipeData in registry.get_entries(RecipeData.KIND):
+		var made: String = TranslationServer.translate("Cooked from %s") if recipe.category == RecipeData.Category.COOKING else TranslationServer.translate("Crafted from %s")
+		sources.add(recipe.output_item_id, made % ItemSources.describe_amounts(registry, recipe.ingredients))
+	sources.add_each(ItemsSettings.current().start_items, TranslationServer.translate("Carried from the start"))
+	for args: PackedStringArray in GameQuery.find_action_args(registry, &"ADD_ITEM"):
+		if not args.is_empty():
+			sources.add(StringName(args[0]), TranslationServer.translate("Given as a reward"))
 
 ## The game's `ItemsSettings.start_items`, once the inventory is empty.
 func _grant_start_items() -> void:

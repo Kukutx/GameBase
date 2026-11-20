@@ -47,6 +47,36 @@ static func parse(text: String) -> Dictionary:
 		})
 	return {"clauses": clauses, "error": ""}
 
+## The arguments of each `key` clause in the actions of `registry`'s content:
+## every entry's `actions` and `…_actions` texts, and those of the resources
+## it holds, as `GameRules.validate_content()` reads them (the items every
+## ADD_ITEM gives, `ItemSources`).
+static func find_action_args(registry: ContentRegistry, key: StringName) -> Array[PackedStringArray]:
+	var found: Array[PackedStringArray] = []
+	for kind: StringName in registry.get_kinds():
+		for entry: Variant in registry.get_entries(kind):
+			if entry is Resource:
+				_find_action_args(entry as Resource, StringName(String(key).to_upper()), found, 0)
+	return found
+
+static func _find_action_args(resource: Resource, key: StringName, found: Array[PackedStringArray], depth: int) -> void:
+	if depth > 4:
+		return
+	for property: Dictionary in resource.get_property_list():
+		if not int(property["usage"]) & PROPERTY_USAGE_STORAGE:
+			continue
+		var name := String(property["name"])
+		var value: Variant = resource.get(name)
+		if (name == "actions" or name.ends_with("_actions")) and (value is PackedStringArray or value is Array):
+			for text: Variant in value:
+				for clause: Dictionary in parse(String(text))["clauses"]:
+					if clause["key"] == key:
+						found.append(clause["args"])
+		elif value is Array:
+			for item: Variant in value:
+				if item is Resource and not (item as Resource).resource_path.ends_with(".tres"):
+					_find_action_args(item as Resource, key, found, depth + 1)
+
 ## Splits on `separator` outside double quotes; quotes are kept on the parts.
 static func _split_top_level(text: String, separator: String) -> Dictionary:
 	var parts: Array[String] = []

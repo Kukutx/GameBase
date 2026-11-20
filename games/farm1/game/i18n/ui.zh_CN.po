@@ -2231,3 +2231,6 @@ msgstr "送出的礼物"
 
 msgid "Stones and Ores Mined"
 msgstr "开采的石头与矿石"
+
+msgid "Where to get: %s"
+msgstr "获取途径：%s"

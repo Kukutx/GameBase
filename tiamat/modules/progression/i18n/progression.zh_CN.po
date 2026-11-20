@@ -195,3 +195,12 @@ msgstr "未知"
 
 msgid "Complete %s"
 msgstr "完成%s"
+
+msgid "Reward for %s"
+msgstr "%s的奖励"
+
+msgid "Sent by %s"
+msgstr "%s寄来"
+
+msgid "Upgraded from %s"
+msgstr "由%s升级"

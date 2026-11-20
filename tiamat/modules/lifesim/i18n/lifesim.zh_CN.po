@@ -629,3 +629,30 @@ msgstr "采集数量"
 
 msgid "Max energy"
 msgstr "体力上限"
+
+msgid "Grown from %s"
+msgstr "种植%s收获"
+
+msgid "Caught at %s"
+msgstr "在%s钓到"
+
+msgid "Caught while fishing"
+msgstr "钓鱼获得"
+
+msgid "Foraged at %s"
+msgstr "在%s采集"
+
+msgid "Foraged"
+msgstr "采集获得"
+
+msgid "Mined from %s"
+msgstr "开采%s获得"
+
+msgid "Produced by %s"
+msgstr "%s产出"
+
+msgid "Processed from %s"
+msgstr "用%s加工"
+
+msgid "Reward for %s"
+msgstr "%s的奖励"

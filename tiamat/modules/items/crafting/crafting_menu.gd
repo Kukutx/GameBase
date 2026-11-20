@@ -27,11 +27,13 @@ func _rebuild() -> void:
 	for child: Node in recipes_container.get_children():
 		child.queue_free()
 	var first_button: Button
+	# Where to get what a recipe lacks, found once for every recipe.
+	var sources := ItemSources.gather()
 	for recipe: RecipeData in CraftingState.get_all_recipes():
 		if recipe.category != current_category:
 			continue
 		var button := MenuLayer.list_button()
-		button.text = _recipe_text(recipe)
+		button.text = _recipe_text(recipe, sources)
 		button.disabled = not CraftingState.can_craft(recipe)
 		button.pressed.connect(_craft.bind(recipe.id))
 		recipes_container.add_child(button)
@@ -39,16 +41,25 @@ func _rebuild() -> void:
 			first_button = button
 	MenuLayer.focus(first_button if first_button != null else close_button)
 
-func _recipe_text(recipe: RecipeData) -> String:
+func _recipe_text(recipe: RecipeData, sources: ItemSources) -> String:
 	var parts: PackedStringArray = []
 	for raw_id: Variant in recipe.ingredients.keys():
 		var item := ItemData.find(StringName(String(raw_id)))
 		var label := tr(item.display_name) if item != null else String(raw_id)
 		parts.append("%s x%d" % [label, int(recipe.ingredients[raw_id])])
-	var text := "%s  (%s)" % [tr(recipe.display_name), ", ".join(parts)]
+	var lines := PackedStringArray(["%s  (%s)" % [tr(recipe.display_name), ", ".join(parts)]])
 	# A recipe the player cannot craft yet says what it still needs.
 	var needs := GameRules.describe(recipe.condition) if not GameRules.check(recipe.condition) else PackedStringArray()
-	return text if needs.is_empty() else "%s\n%s" % [text, tr("Needs: %s") % ", ".join(needs)]
+	if not needs.is_empty():
+		lines.append(tr("Needs: %s") % ", ".join(needs))
+	# And where to get each ingredient the player lacks.
+	for raw_id: Variant in recipe.ingredients.keys():
+		var item_id := StringName(String(raw_id))
+		var ways := sources.get_ways(item_id)
+		if InventoryState.get_quantity(item_id) < int(recipe.ingredients[raw_id]) and not ways.is_empty():
+			var item := ItemData.find(item_id)
+			lines.append("%s: %s" % [tr(item.display_name) if item != null else String(raw_id), ways[0]])
+	return "\n".join(lines)
 
 func _craft(recipe_id: StringName) -> void:
 	CraftingState.craft(recipe_id)

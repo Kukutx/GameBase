@@ -57,3 +57,6 @@ msgstr "生命上限"
 
 msgid "Loot"
 msgstr "掉落"
+
+msgid "Dropped by %s"
+msgstr "%s掉落"

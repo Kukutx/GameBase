@@ -23,6 +23,8 @@ const MENU_ID := &"game_menu"
 @onready var close_button: Button = $Panel/Layout/Close
 
 var _tab := "inventory"
+# The paragraph of the inventory tab where the chosen item's details start.
+var _details_paragraph := -1
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -35,6 +37,8 @@ func _ready() -> void:
 	world_button.pressed.connect(_show_tab.bind("world"))
 	collections_button.pressed.connect(_show_tab.bind("collections"))
 	assign_button.pressed.connect(_assign_hotbar)
+	# The item chosen to bind shows what it is and where to get more.
+	item_select.item_selected.connect(_on_item_chosen)
 	collection_claim_button.pressed.connect(_claim_first_collection_milestone)
 	close_button.pressed.connect(close)
 	InventoryState.changed.connect(_refresh_if_open)
@@ -100,8 +104,8 @@ func _show_tab(tab: String) -> void:
 		"world": content.text = _world_text()
 		"collections": content.text = _collections_text()
 		_:
-			content.text = _inventory_text()
 			_rebuild_hotbar_editor()
+			content.text = _inventory_text()
 	_update_tab_buttons()
 
 func _inventory_text() -> String:
@@ -115,6 +119,8 @@ func _inventory_text() -> String:
 			var item_id := StringName(String(entry["id"]))
 			var marker := "→ " if item_id == selected else "  "
 			lines.append("%s%s  x%d" % [marker, tr(String(entry["display_name"])), entry["quantity"]])
+	_details_paragraph = lines.size() + 1
+	lines.append_array(_item_details(_chosen_item_id()))
 	lines.append("")
 	lines.append(tr("Money: %dg") % Wallet.money)
 	lines.append("    ".join(Vitals.describe_all()))
@@ -276,12 +282,41 @@ func _achievement_lines() -> PackedStringArray:
 			lines.append("  " + tr("%s: %d") % [tr(record.display_name), record.get_value()])
 	return lines
 
+## What item `item_id` is and where the player gets more, after a blank
+## line, or nothing for no item.
+func _item_details(item_id: StringName) -> PackedStringArray:
+	var item := ItemData.find(item_id)
+	if item == null:
+		return PackedStringArray()
+	var lines := PackedStringArray(["", "[b]%s[/b]" % tr(item.display_name)])
+	if not item.description.is_empty():
+		lines.append(tr(item.description))
+	var ways := ItemSources.describe(item_id)
+	if not ways.is_empty():
+		lines.append(tr("Where to get: %s") % "; ".join(ways))
+	return lines
+
+func _on_item_chosen(_index: int) -> void:
+	_refresh_if_open()
+	# Its details come into sight below the list.
+	content.scroll_to_paragraph.call_deferred(_details_paragraph)
+
+# The item chosen in the hotbar editor, or none.
+func _chosen_item_id() -> StringName:
+	if item_select.selected < 0:
+		return &""
+	return StringName(String(item_select.get_item_metadata(item_select.selected)))
+
 func _rebuild_hotbar_editor() -> void:
+	# The choice stays on the item chosen, else on the item in hand.
+	var chosen := _chosen_item_id() if item_select.item_count > 0 else Hotbar.get_selected_item_id()
 	item_select.clear()
 	for entry: Dictionary in InventoryState.get_entries():
 		var item_id := StringName(String(entry["id"]))
 		item_select.add_item("%s x%d" % [tr(String(entry["display_name"])), entry["quantity"]])
 		item_select.set_item_metadata(item_select.item_count - 1, String(item_id))
+		if item_id == chosen:
+			item_select.select(item_select.item_count - 1)
 	slot_select.clear()
 	for index in Hotbar.slots.size():
 		var existing_id := Hotbar.slots[index]

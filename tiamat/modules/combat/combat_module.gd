@@ -21,9 +21,16 @@ func install() -> void:
 	GameStats.register_stat(PlayerHurtbox.MAX_HEALTH_STAT, "Max health")
 	GameStats.register_stat(PlayerHurtbox.LOOT_STAT, "Loot")
 	GameSession.register_activity_end(FightState.end_fight)
+	ItemSources.register(&"enemy_drops", find_item_sources)
 
 func get_options() -> Array[GameOption]:
 	var options: Array[GameOption] = []
 	for path: String in OPTIONS:
 		options.append(load(path) as GameOption)
 	return options
+
+## The ways to get items the module gives (`ItemSources`): what each enemy
+## drops.
+static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -> void:
+	for enemy: EnemyData in registry.get_entries(EnemyData.KIND):
+		sources.add(enemy.drop_item_id, TranslationServer.translate("Dropped by %s") % TranslationServer.translate(enemy.display_name))
