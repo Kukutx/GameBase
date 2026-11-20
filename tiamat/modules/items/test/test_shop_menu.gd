@@ -161,6 +161,20 @@ func test_a_purchase_tells_how_many_are_left_today_and_dims_once_none_are() -> v
 	assert_eq([pebble.text, pebble.disabled], ["Buy Pebble x5 — 20g (0 left today)", true])
 	menu.close()
 
+func test_the_counter_draws_the_items_icons() -> void:
+	var icon := GradientTexture2D.new()
+	icon.width = 16
+	icon.height = 16
+	ItemData.find(&"fixture_berry").icon = icon
+	_shop.stock = {"fixture_berry": 9, "fixture_pebble": 4}
+	var menu := SHOP_MENU.instantiate() as ShopMenu
+	add_child_autofree(menu)
+	menu.open(_shop)
+	assert_eq((menu.items_container.get_child(0) as Button).icon, icon, "the berry to buy has its icon")
+	assert_null((menu.items_container.get_child(1) as Button).icon, "the pebble has none")
+	assert_eq((_sell_buttons(menu)[0] as Button).icon, icon, "as has the berry to sell")
+	menu.close()
+
 static func _sell_buttons(menu: ShopMenu) -> Array:
 	return menu.sell_container.get_children()
 

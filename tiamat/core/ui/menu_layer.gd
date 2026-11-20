@@ -20,6 +20,10 @@ signal closed
 ## rebuilt after a press gives the focus back to the same entry
 ## (`focused_key()`, `focus_kept()`).
 const FOCUS_KEY := &"focus_key"
+## The widest and tallest an entry's icon draws in a list (`list_button()`,
+## `refill_list()`): a smaller icon keeps its size, a larger one shrinks, so a
+## large texture does not make the rows tall.
+const LIST_ICON_SIZE := 24
 
 ## The menu's name: its group and the reason of its lock.
 var menu_id: StringName
@@ -32,11 +36,14 @@ func _init(id: StringName) -> void:
 	visible = false
 
 ## A button for one entry of a menu's list (a recipe, an item to buy): its
-## text wraps at the menu's width instead of widening the menu past the view.
-static func list_button(text := "") -> Button:
+## text wraps at the menu's width instead of widening the menu past the view,
+## after `icon` (the item's, say), if any.
+static func list_button(text := "", icon: Texture2D = null) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.icon = icon
+	button.add_theme_constant_override(&"icon_max_width", LIST_ICON_SIZE)
 	return button
 
 ## Gives `control` the focus. In a list that scrolls to the focus (a
@@ -86,16 +93,22 @@ static func focus_kept(buttons: Array[Button], key: Variant, fallback: Control) 
 	focus(fallback)
 
 ## Fills `list` with `rows`, each {"text": what the entry reads, "key": what
-## names it, its metadata}, keeping selected the entry whose key was, or, once
-## it is gone, the entry now in its place: a list that changes as the player
-## moves its items (a chest, a shipping bin) keeps their pick.
+## names it, its metadata, and an optional "icon" drawn before the text},
+## keeping selected the entry whose key was, or, once it is gone, the entry
+## now in its place: a list that changes as the player moves its items (a
+## chest, a shipping bin) keeps their pick. An icon larger than
+## `LIST_ICON_SIZE` makes the list draw its icons at that size, unless the
+## list has a `fixed_icon_size` of its own.
 static func refill_list(list: ItemList, rows: Array[Dictionary]) -> void:
 	var selected := list.get_selected_items()
 	var kept_index := int(selected[0]) if not selected.is_empty() else -1
 	var kept_key: Variant = list.get_item_metadata(kept_index) if kept_index >= 0 else null
 	list.clear()
 	for row: Dictionary in rows:
-		var index := list.add_item(String(row["text"]))
+		var icon := row.get("icon") as Texture2D
+		if icon != null and list.fixed_icon_size == Vector2i.ZERO and maxi(icon.get_width(), icon.get_height()) > LIST_ICON_SIZE:
+			list.fixed_icon_size = Vector2i(LIST_ICON_SIZE, LIST_ICON_SIZE)
+		var index := list.add_item(String(row["text"]), icon)
 		list.set_item_metadata(index, row["key"])
 		if kept_key != null and row["key"] == kept_key:
 			kept_index = index

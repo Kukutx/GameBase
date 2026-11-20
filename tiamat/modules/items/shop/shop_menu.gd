@@ -103,7 +103,7 @@ func _rebuild(keep_focus := false) -> void:
 		var item := ItemData.find(item_id)
 		if item == null:
 			continue
-		var button := MenuLayer.list_button()
+		var button := MenuLayer.list_button("", item.icon)
 		button.set_meta(MenuLayer.FOCUS_KEY, "item:%s" % item_id)
 		_buy_buttons[item_id] = button
 		button.pressed.connect(_buy.bind(item_id))
@@ -228,7 +228,7 @@ func _refresh_sell_list() -> void:
 		var item := sellable[index]
 		var button: Button = _sell_buttons.get(item.id)
 		if button == null:
-			button = MenuLayer.list_button()
+			button = MenuLayer.list_button("", item.icon)
 			button.pressed.connect(_sell.bind(item.id))
 			button.focus_entered.connect(_tell_about.bind(item))
 			sell_container.add_child(button)

@@ -87,7 +87,9 @@ func _rebuild() -> void:
 func _fill(list: ItemList, entries: Array[Dictionary]) -> void:
 	var rows: Array[Dictionary] = []
 	for entry: Dictionary in entries:
-		rows.append({"text": "%s  x%d" % [tr(String(entry["display_name"])), entry["quantity"]], "key": StringName(String(entry["id"]))})
+		var item_id := StringName(String(entry["id"]))
+		var item := ItemData.find(item_id)
+		rows.append({"text": "%s  x%d" % [tr(String(entry["display_name"])), entry["quantity"]], "key": item_id, "icon": item.icon if item != null else null})
 	MenuLayer.refill_list(list, rows)
 
 func _store_selected() -> void:

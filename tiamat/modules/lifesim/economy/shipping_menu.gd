@@ -80,6 +80,7 @@ func _refresh() -> void:
 			rows.append({
 				"text": tr("%s x%d — %dg each") % [tr(item.display_name), int(entry["quantity"]), item.sell_price],
 				"key": item.id,
+				"icon": item.icon,
 			})
 	MenuLayer.refill_list(item_list, rows)
 	_refresh_buttons()
