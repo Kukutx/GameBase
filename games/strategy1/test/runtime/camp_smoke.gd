@@ -87,7 +87,7 @@ func _run() -> void:
 	await process_frame
 	_check(bool(host.is_running()) and host.get_active_id() == &"pass_battle", "The muster did not open the battle in the pass")
 	var fields := root.find_children("*", "RtsBattleGame", true, false)
-	_check(fields.size() == 1 and int(fields[0].get("battle").get("units").size()) == 19, "The battle in the pass does not show its nineteen units")
+	_check(fields.size() == 1 and int(fields[0].get("battle").get("units").size()) == 15 and int(fields[0].get("battle").get("arrivals").call("size")) == 4, "The battle in the pass does not show its fifteen units with four on their way")
 	host.cancel()
 	await process_frame
 	_check(not bool(host.is_running()), "The battle in the pass did not close")

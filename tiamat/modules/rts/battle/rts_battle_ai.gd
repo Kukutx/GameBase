@@ -7,13 +7,24 @@ extends RefCounted
 ## sight attack-moves to where the nearest foe stands, or, on a field with
 ## ground to hold (`RtsBattle.goal`), to that ground unless it stands there
 ## already; otherwise it waits where it stands until a foe comes in sight, and
-## then goes after it, as every unit with nothing to do does.
+## then goes after it, as every unit with nothing to do does. One that arrives
+## while the battle runs (`RtsBattle.add_arrival()`) marches at once, even on
+## a field where the others wait: a band comes to fight.
 
 func think(battle: RtsBattle, unit: RtsUnit) -> void:
 	if not battle.computer_advances or unit.order != RtsUnit.Order.IDLE:
 		return
 	if battle.get_unit(unit.target_index) != null:
 		return
+	_march(battle, unit)
+
+## Sends `unit`, which just arrived on the field, on its way.
+func arrive(battle: RtsBattle, unit: RtsUnit) -> void:
+	_march(battle, unit)
+
+# Attack-moves `unit` to the ground to hold, unless it stands there, or else
+# to where its nearest foe stands.
+func _march(battle: RtsBattle, unit: RtsUnit) -> void:
 	if battle.goal != null:
 		if not battle.goal.area.has_point(unit.position):
 			battle.order_move([unit] as Array[RtsUnit], battle.goal.area.get_center(), true)

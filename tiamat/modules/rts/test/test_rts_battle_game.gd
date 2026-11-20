@@ -98,6 +98,21 @@ func test_the_foes_ground_is_told() -> void:
 	var game := _game()
 	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == tr("%s: the foes win if they hold the marked ground for %d seconds.") % [tr("Fixture Meadow"), 30]))
 
+func test_units_that_arrive_are_told() -> void:
+	var map := RtsMapData.find(&"fixture_meadow")
+	var foes := RtsFixture.placement(&"fixture_raider", FactionData.MONSTERS, Vector2(180.0, 90.0))
+	foes.arrive_seconds = 1.0
+	var friends := RtsFixture.placement(&"fixture_footman", FactionData.PLAYER, Vector2(20.0, 90.0))
+	friends.arrive_seconds = 4.0
+	map.placements.append_array([foes, friends])
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	var tells := func(text: String) -> bool: return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == text)
+	assert_eq(game.battle.arrivals.size(), 2, "on their way")
+	assert_true(await _until(func() -> bool: return tells.call(tr("Foe reinforcements arrive!")), 5.0))
+	assert_true(await _until(func() -> bool: return tells.call(tr("Reinforcements arrive.")), 5.0))
+	assert_eq(game.battle.units.size(), 5)
+
 func test_the_keys_give_the_commands_and_keep_groups() -> void:
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
 	var game := _game()

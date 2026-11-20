@@ -13,12 +13,14 @@ extends RefCounted
 ## what it reaches.
 ## A healer (`RtsUnitData.heal`) mends the most hurt friend it sees instead
 ## of fighting.
-## The battle ends when no two living units that fight are hostile
-## (`FactionData.are_hostile()`), won when the player's side is left: healers
-## alone hold nothing. On a field with ground to hold (`goal`), it also ends
-## once the side that takes it has held it long enough, won when that side is
-## the player's (`goal_changed` tells who holds it). A unit that falls is out
-## of the battle for good, even if its health comes back.
+## Units may also arrive while it runs (`add_arrival()`, `unit_arrived`); one
+## the player does not command marches at once (`RtsBattleAi.arrive()`).
+## The battle ends when no two units that fight, living or still on their way,
+## are hostile (`FactionData.are_hostile()`), won when the player's side is
+## left: healers alone hold nothing. On a field with ground to hold (`goal`),
+## it also ends once the side that takes it has held it long enough, won when
+## that side is the player's (`goal_changed` tells who holds it). A unit that
+## falls is out of the battle for good, even if its health comes back.
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`RtsBattleGame`) lets time pass with `advance()`, gives the player's orders
@@ -36,6 +38,8 @@ signal unit_attacked(attacker: RtsUnit, target: RtsUnit, amount: int)
 ## A healer (`RtsUnitData.heal`) mended `target` by `amount`.
 signal unit_healed(healer: RtsUnit, target: RtsUnit, amount: int)
 signal unit_defeated(unit: RtsUnit)
+## `unit` arrived on the field (`add_arrival()`).
+signal unit_arrived(unit: RtsUnit)
 ## The side that holds the ground (`goal`) changed: `holder` is the first
 ## placed of the units that hold it now, or null while no side does.
 signal goal_changed(holder: RtsUnit)
@@ -73,6 +77,8 @@ var foe_health_scale := 1.0
 ## The ground a side wins the battle by holding (`RtsMapData.goal_area`), or
 ## null.
 var goal: RtsGoal
+## The units on their way (`add_arrival()`).
+var arrivals := RtsArrivals.new()
 ## The seconds of battle that have passed.
 var time := 0.0
 var _left := 0.0
@@ -101,7 +107,8 @@ func _init(field_size: Vector2, obstacles: Array[Rect2] = [], side: StringName =
 
 ## The battle `map` sets up, the player's foes starting with `foe_health` of
 ## their kinds' health: each unit whose placement's condition holds
-## (`RtsPlacement.joins()`).
+## (`RtsPlacement.joins()`), there at the start or on its way
+## (`RtsPlacement.arrive_seconds`).
 static func from_map(map: RtsMapData, foe_health := 1.0) -> RtsBattle:
 	var battle := RtsBattle.new(map.size, map.obstacles, map.player_faction_id)
 	battle.computer_advances = map.computer_advances
@@ -111,7 +118,7 @@ static func from_map(map: RtsMapData, foe_health := 1.0) -> RtsBattle:
 	for placement: RtsPlacement in map.placements:
 		var data := RtsUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
-			battle.add_unit(data, placement.faction_id, placement.position)
+			battle.add_arrival(data, placement.faction_id, placement.position, placement.arrive_seconds)
 	return battle
 
 ## Places a unit of `data` on `faction`'s side at `point`, or the open point
@@ -130,6 +137,15 @@ func add_unit(data: RtsUnitData, faction: StringName, point: Vector2) -> RtsUnit
 	# step files them again.
 	_filed = false
 	return unit
+
+## Has a unit of `data` on `faction`'s side arrive at `point` once `seconds`
+## of battle have passed, placed then as `add_unit()` places it; one due now
+## or before is placed at once.
+func add_arrival(data: RtsUnitData, faction: StringName, point: Vector2, seconds: float) -> void:
+	if seconds <= time + _EPSILON:
+		add_unit(data, faction, point)
+	else:
+		arrivals.add(data, faction, _sides.side_of(faction), point, seconds)
 
 func is_over() -> bool:
 	return _over
@@ -297,6 +313,11 @@ func _step() -> void:
 	time += STEP
 	var turn := _steps % THINK_STEPS
 	_steps += 1
+	for arrival: RtsArrivals.Arrival in arrivals.take_due(time + _EPSILON):
+		var unit := add_unit(arrival.data, arrival.faction, arrival.point)
+		if not unit.player_controlled:
+			ai.arrive(self, unit)
+		unit_arrived.emit(unit)
 	_file_units()
 	for unit: RtsUnit in _alive:
 		if _over:
@@ -424,22 +445,26 @@ func _nudge(unit: RtsUnit, offset: Vector2) -> void:
 			unit.position = point
 			return
 
-# Ends the battle once no two living units are foes: one of each faction
-# left stands for all of it.
+# Ends the battle once no two units that fight, living or on their way, are
+# foes: the sides they stand for.
 func _check_over() -> void:
-	var standing: Array[RtsUnit] = []
+	var standing := PackedInt32Array()
 	var seen := PackedByteArray()
 	seen.resize(_sides.count())
 	for unit: RtsUnit in _alive:
 		if unit.is_alive() and not unit.data.heals() and seen[unit.side] == 0:
 			seen[unit.side] = 1
-			standing.append(unit)
-	for first: RtsUnit in standing:
-		for second: RtsUnit in standing:
-			if are_foes(first, second):
+			standing.append(unit.side)
+	for side: int in arrivals.get_fighting_sides():
+		if seen[side] == 0:
+			seen[side] = 1
+			standing.append(side)
+	for first: int in standing:
+		for second: int in standing:
+			if _sides.are_hostile(first, second):
 				return
 	_over = true
-	_won = standing.any(func(unit: RtsUnit) -> bool: return is_on_player_side(unit))
+	_won = Array(standing).any(func(side: int) -> bool: return not _sides.are_hostile(side, _player_side))
 	ended.emit(_won)
 
 # Notes who holds the ground this step, tells when that changed, and ends the
