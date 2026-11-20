@@ -1,5 +1,6 @@
 {
   "icon": "res://icon.svg",
   "sha256": "99ed9417551ef201070b895bde52be987d3f51b5e8eb0516fef0a217d98f0c43",
-  "recipe": 1
+  "recipe": 2,
+  "background": "#1f2d3a"
 }

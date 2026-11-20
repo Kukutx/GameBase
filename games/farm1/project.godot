@@ -14,6 +14,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
+boot_splash/bg_color=Color(0.1765, 0.2, 0.2706, 1)
+boot_splash/image="res://android_icon/foreground.png"
+boot_splash/stretch_mode=0
 config/name="Farm1"
 config/description="A farming life-sim on Tiamat"
 config/quit_on_go_back=false

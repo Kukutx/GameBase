@@ -14,6 +14,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
+boot_splash/bg_color=Color(0.0941, 0.0667, 0.1098, 1)
+boot_splash/image="res://android_icon/foreground.png"
+boot_splash/stretch_mode=0
 config/name="Ember Depths"
 config/description="A dungeon delve on Tiamat"
 config/name_localized={
