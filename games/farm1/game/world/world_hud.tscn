@@ -32,9 +32,10 @@ mouse_filter = 2
 script = ExtResource("4_weather")
 
 [node name="Stats" type="Label" parent="."]
+anchor_right = 0.5
 offset_left = 16.0
 offset_top = 10.0
-offset_right = 238.0
+offset_right = 16.0
 offset_bottom = 30.0
 theme_override_colors/font_color = Color(0.92, 0.9, 0.76, 1)
 theme_override_font_sizes/font_size = 12
@@ -44,9 +45,10 @@ text = ""
 script = ExtResource("12_clock_line")
 shows_place = false
 shows_weather = true
-anchor_left = 1.0
+shrinks_to_fit = true
+anchor_left = 0.5
 anchor_right = 1.0
-offset_left = -262.0
+offset_left = 24.0
 offset_top = 10.0
 offset_right = -16.0
 offset_bottom = 30.0

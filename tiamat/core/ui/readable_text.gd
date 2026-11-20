@@ -57,6 +57,25 @@ static func raise(root: Node) -> void:
 			if control.get_theme_font_size(each) < wanted:
 				control.add_theme_font_size_override(each, wanted)
 
+## Has `label` draw its line of text at `size`, or smaller as far as its text
+## needs to fit the label's width, but never below what its view reads on a
+## phone (`min_font_size()`); a text still too long past that is cut at the
+## edge with an ellipsis rather than run over what stands beside it. A HUD
+## line that grows with what it tells (money, a deep floor) keeps clear of its
+## neighbour this way (`HudLine.shrinks_to_fit`).
+static func fit_width(label: Label, size: int) -> void:
+	label.clip_text = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	var smallest := size
+	if label.is_inside_tree():
+		var readable := ceili(min_font_size(label.get_viewport().get_visible_rect().size) / _scale_of(label) - 0.01)
+		smallest = mini(size, readable)
+	var font := label.get_theme_font(&"font")
+	var fitted := size
+	while fitted > smallest and font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fitted).x > label.size.x:
+		fitted -= 1
+	label.add_theme_font_size_override(&"font_size", fitted)
+
 # The theme font size `control` draws its text with, or empty for one that
 # draws none.
 static func _size_name(control: Control) -> StringName:

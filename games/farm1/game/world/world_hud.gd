@@ -4,7 +4,12 @@ extends CanvasLayer
 ## What the farmer sees over the world. The clock, the hotbar, the controls and
 ## the status messages are lines of their own (`FarmClockLine`, `HotbarLine`,
 ## `ControlsLine`, `StatusLine`); this tells the vitals and money, the quest,
-## the skills, the inventory, the buffs and the fishing cast.
+## the skills, the inventory, the buffs and the fishing cast. The vitals and
+## money share the top line with the clock, each to its half: either shrinks
+## its text to stay in it (`ReadableText.fit_width()`).
+
+## The size the vitals and money are drawn at while they fit their half.
+const STATS_FONT_SIZE := 12
 
 @onready var stats_label: Label = $Stats
 @onready var quest_label: Label = $Quest
@@ -27,6 +32,7 @@ func _ready() -> void:
 	FishingState.cast_state_changed.connect(_on_fishing_state_changed)
 	SaveManager.load_completed.connect(_on_load_completed)
 	GameSettings.locale_changed.connect(_on_locale_changed)
+	stats_label.resized.connect(_refresh_stats)
 	_refresh_all()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -75,7 +81,8 @@ func _on_locale_changed(_locale: String) -> void:
 func _refresh_stats() -> void:
 	var parts := Vitals.describe_all()
 	parts.append(Wallet.describe())
-	stats_label.text = "   ·   ".join(parts)
+	stats_label.text = " · ".join(parts)
+	ReadableText.fit_width(stats_label, STATS_FONT_SIZE)
 
 func _refresh_quest() -> void:
 	quest_label.text = tr("Quest: %s") % QuestState.get_active_summary()
