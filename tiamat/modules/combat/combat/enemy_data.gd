@@ -38,6 +38,12 @@ const KIND := &"enemy"
 @export_range(0.0, 600.0, 1.0) var shot_speed := 0.0
 ## The colour its shots glow in.
 @export var shot_color := Color(1.0, 0.62, 0.25)
+## What its strikes and shots lay on the player they hurt besides
+## (`AfflictionData`): an ember wisp's embers burn; empty, nothing.
+@export var affliction_id: StringName
+## The afflictions that never take hold of it (`Hurtbox.immune_to`): an ember
+## wisp does not burn.
+@export var immune_to: Array[StringName] = []
 ## The side it fights on (`FactionData`): it hurts and is hurt by the others.
 @export var faction_id: StringName = FactionData.MONSTERS
 ## How hard its strike pushes the player, in pixels a second.
@@ -73,6 +79,11 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		problems.append("has invalid animation ranges")
 	if drop_item_id != &"" and not registry.has_entry(ItemData.KIND, drop_item_id):
 		problems.append("references unknown drop '%s'" % drop_item_id)
+	if affliction_id != &"" and not registry.has_entry(AfflictionData.KIND, affliction_id):
+		problems.append("lays unknown affliction '%s'" % affliction_id)
+	for immune: StringName in immune_to:
+		if not registry.has_entry(AfflictionData.KIND, immune):
+			problems.append("is immune to unknown affliction '%s'" % immune)
 	if faction_id == &"":
 		problems.append("has no faction")
 	elif not FactionData.are_hostile(faction_id, FactionData.PLAYER):

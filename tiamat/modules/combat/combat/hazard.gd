@@ -5,8 +5,9 @@ extends Area2D
 ## flares on a cycle: it rests for `rest_seconds`, glows `warn_seconds` before
 ## it flares, then flares for `active_seconds`, hurting each hurtbox of a side
 ## hostile to its own (`faction`; none: every side, so a creature lured onto
-## it burns too) it touches once a flare, for `damage`, and pushing it away
-## from its middle by `knockback`. With no rest it never stops, and hurts
+## it burns too) it touches once a flare, for `damage`, laying its
+## `affliction_id` on it besides, and pushing it away from its middle by
+## `knockback`. With no rest it never stops, and hurts
 ## what stands on it once every `active_seconds`. It starts `phase_seconds`
 ## into its cycle, so hazards side by side flare in turn. It draws itself: a
 ## dark mark at rest, glowing in its `color` as it warns and bright as it
@@ -28,6 +29,9 @@ signal flared
 @export_range(1, 999, 1) var damage := 10
 ## The side it belongs to: none hurts every side.
 @export var faction: StringName = &""
+## What a flare lays on what it hurts besides (`AfflictionData`): a vent's
+## fire burns on; empty, nothing.
+@export var affliction_id: StringName
 @export_range(0.0, 600.0, 1.0) var knockback := 80.0
 @export_range(0.05, 30.0, 0.05) var active_seconds := 0.8
 @export_range(0.0, 30.0, 0.05) var rest_seconds := 2.4
@@ -102,6 +106,7 @@ func _hurt_what_stands_here() -> void:
 			continue
 		var away := (hurtbox.global_position - global_position).normalized()
 		var hit := Damage.new(damage, faction, self, away * knockback)
+		hit.affliction_id = affliction_id
 		if hurtbox.can_be_hurt_by(hit):
 			_hurt[hurtbox.get_instance_id()] = true
 			# What a hit sets off (a knockout, a scene change) waits until the

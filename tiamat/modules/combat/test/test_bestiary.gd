@@ -77,6 +77,13 @@ func test_the_bestiary_lists_the_kinds_met_weakest_first() -> void:
 	assert_string_contains("\n".join(Bestiary.describe()), "Health 45 ·", "at the player's foe strength")
 	assert_true(PauseMenu.get_page_ids().has(&"bestiary"))
 
+func test_a_kind_tells_what_it_inflicts_and_what_it_is_immune_to() -> void:
+	var slime := EnemyData.find(&"fixture_slime")
+	slime.affliction_id = &"fixture_burn"
+	slime.immune_to.assign([&"fixture_poison", &"fixture_missing"])
+	Bestiary.record(&"fixture_slime")
+	assert_eq(Bestiary.describe()[2], "  Health 30 · Hits for 8 · Inflicts Burning · Immune to Poison · Drops Gel")
+
 func test_each_elite_form_defeated_shows_under_its_kind() -> void:
 	assert_true(CombatEvents.elite_defeated.is_connected(Bestiary.record_elite), "the module counts every elite")
 	Bestiary.record(&"fixture_slime")
@@ -102,7 +109,13 @@ func _fixture_content() -> Array:
 	hulking.id = &"fixture_hulking"
 	hulking.display_name = "Hulking %s"
 	return [gel, _enemy(&"fixture_slime", "Slime", 30, 8, gel.id), _enemy(&"fixture_king", "Slime King", 300, 20, gel.id),
-		_enemy(&"fixture_bat", "Bat", 12, 4, &""), hulking]
+		_enemy(&"fixture_bat", "Bat", 12, 4, &""), hulking, _affliction(&"fixture_burn", "Burning"), _affliction(&"fixture_poison", "Poison")]
+
+static func _affliction(id: StringName, display_name: String) -> AfflictionData:
+	var affliction := AfflictionData.new()
+	affliction.id = id
+	affliction.display_name = display_name
+	return affliction
 
 static func _enemy(id: StringName, display_name: String, health: int, damage: int, drop: StringName) -> EnemyData:
 	var enemy := EnemyData.new()

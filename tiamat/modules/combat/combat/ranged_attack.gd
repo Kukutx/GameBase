@@ -6,8 +6,9 @@ extends Node
 ## the way the player faces, or at the nearest foe within
 ## `aim_assist_degrees` of that way and in reach, with no wall between (`aim()`).
 ## The shot hurts the first foe it meets for the bow's power changed by the
-## `attack_damage` stat (`WeaponUse`, which `MeleeAttack` shares) and pushes it
-## away by `knockback`; it costs `cost` of the game's attack vital changed by
+## `attack_damage` stat (`WeaponUse`, which `MeleeAttack` shares), lays the
+## affliction the bow's tags call for (`WeaponUse.affliction_of()`) and
+## pushes it away by `knockback`; it costs `cost` of the game's attack vital changed by
 ## the `attack_cost` stat, plays the player's attack, is announced as
 ## `CombatEvents.attack_swung` and lets the next one go only after
 ## `cooldown_seconds`. A child of the player (a `TopDownPlayer`), beside the
@@ -76,7 +77,10 @@ func shoot_selected_weapon() -> bool:
 	set_physics_process(_cooldown_left > 0.0)
 	var way := aim()
 	WeaponUse.play_attack(actor)
-	var shot := Projectile.fire(actor, actor.global_position + way, shot_speed, distance, Damage.new(WeaponUse.damage_of(bow), faction, actor, way * knockback), shot_color)
+	var hit := Damage.new(WeaponUse.damage_of(bow), faction, actor, way * knockback)
+	var affliction := WeaponUse.affliction_of(bow)
+	hit.affliction_id = affliction.id if affliction != null else &""
+	var shot := Projectile.fire(actor, actor.global_position + way, shot_speed, distance, hit, shot_color)
 	shot.wall_mask = wall_mask
 	CombatEvents.attack_swung.emit(bow.id)
 	return true

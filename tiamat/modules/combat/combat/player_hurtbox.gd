@@ -6,8 +6,10 @@ extends Hurtbox
 ## while its knockback carries them (`TopDownPlayer.stagger()`), plays `hurt`
 ## on the player's `TopDownPlayer.actor_visual` (`death` when it took the last
 ## of it), shakes the screen (`GameCamera.shake_view()`) and is announced as
-## `CombatEvents.player_hurt`. A player without health left, or passing out,
-## takes no more hits. A child of the player.
+## `CombatEvents.player_hurt`. An affliction's tick (`Hurtbox.ailed`, a burn,
+## a poison) takes health and is announced the same way, but neither staggers
+## the player nor shakes the screen; one taking hold is told in a toast. A player without health left, or passing
+## out, takes no more hits and no more ticks. A child of the player.
 ##
 ## The player chooses how hard hits land on them in the settings
 ## (`DAMAGE_TAKEN_OPTION`, which the combat module declares), read at each
@@ -39,9 +41,14 @@ func _init() -> void:
 func _ready() -> void:
 	super()
 	hurt.connect(_on_hurt)
+	ailed.connect(_take)
+	afflicted.connect(func(affliction: AfflictionData) -> void: GameEvents.toastf("Afflicted: %s", [affliction.display_name]))
 
 func can_be_hurt_by(damage: Damage) -> bool:
 	return is_standing() and not GameSession.is_passing_out() and super(damage)
+
+func can_ail() -> bool:
+	return is_standing() and not GameSession.is_passing_out() and super()
 
 ## Whether the player still stands: they have health left, or the game gives
 ## them none to lose (`CombatSettings.health_vital_id`).
@@ -62,11 +69,18 @@ func _on_hurt(damage: Damage) -> void:
 	var player := get_parent() as TopDownPlayer
 	if player != null:
 		player.stagger(get_knockback_left())
+	if _take(damage) > 0:
+		GameCamera.shake_view(self, SHAKE_STRENGTH, SHAKE_SECONDS)
+
+# Takes the health `damage` takes from the player, plays it on their visual
+# and announces it; the health taken.
+func _take(damage: Damage) -> int:
+	var player := get_parent() as TopDownPlayer
 	var health := CombatSettings.current().health_vital_id
 	var taken := Vitals.drain(health, damage_taken(damage.amount))
 	if taken <= 0:
-		return
+		return 0
 	if player != null and player.actor_visual != null:
 		player.actor_visual.play_action(&"death" if Vitals.get_value(health) <= 0 else &"hurt")
 	CombatEvents.player_hurt.emit(taken)
-	GameCamera.shake_view(self, SHAKE_STRENGTH, SHAKE_SECONDS)
+	return taken

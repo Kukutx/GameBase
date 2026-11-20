@@ -5,7 +5,8 @@ extends Area2D
 ## hotbar (a tool whose action is `TOOL_ACTION`) at every hurtbox in this area
 ## (`Hurtbox`) of a faction hostile to `faction`. It hits for the weapon's
 ## `tool_power` changed by the `attack_damage` stat (`WeaponUse`, which a bow's
-## `RangedAttack` beside it shares), pushes what it hits away
+## `RangedAttack` beside it shares), lays the affliction the weapon's tags
+## call for (`WeaponUse.affliction_of()`), pushes what it hits away
 ## by `knockback`, costs `cost` of the game's attack vital (`CombatSettings.attack_vital_id`)
 ## changed by the `attack_cost` stat and
 ## swings again only after `cooldown_seconds`. A swing draws its arc
@@ -84,9 +85,14 @@ func _attack(weapon: ItemData) -> bool:
 	_show_swing()
 	CombatEvents.attack_swung.emit(weapon.id)
 	var hits := 0
+	var affliction := WeaponUse.affliction_of(weapon)
 	for area: Area2D in get_overlapping_areas():
 		var hurtbox := area as Hurtbox
-		if hurtbox != null and hurtbox.receive(Damage.new(get_attack_damage(weapon), faction, get_parent(), _push_toward(hurtbox))):
+		if hurtbox == null:
+			continue
+		var hit := Damage.new(get_attack_damage(weapon), faction, get_parent(), _push_toward(hurtbox))
+		hit.affliction_id = affliction.id if affliction != null else &""
+		if hurtbox.receive(hit):
 			hits += 1
 	if hits > 0:
 		GameCamera.shake_view(self, SHAKE_STRENGTH, SHAKE_SECONDS)

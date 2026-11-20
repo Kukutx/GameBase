@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AfflictionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/damage/affliction_data.gd" id="1_affliction"]
+
+[resource]
+script = ExtResource("1_affliction")
+id = &"poisoned"
+display_name = "Poisoned"
+color = Color(0.55, 0.95, 0.3, 1)
+seconds = 4.0
+tick_seconds = 1.0
+tick_damage = 1

@@ -53,6 +53,7 @@ every = 2
 most = 4
 spacing = 56.0
 damage_per_depth = 0.5
+affliction_id = &"burning"
 
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(480, 20)

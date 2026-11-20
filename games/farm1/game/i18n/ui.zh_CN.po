@@ -2261,3 +2261,9 @@ msgstr "狂暴%s"
 
 msgid "Royal Hoard"
 msgstr "王者宝藏"
+
+msgid "Burning"
+msgstr "灼烧"
+
+msgid "Poisoned"
+msgstr "中毒"

@@ -27,8 +27,12 @@ func before_each() -> void:
 	_vitals_snapshot = Vitals.to_save_data()
 	_hotbar_snapshot = Hotbar.to_save_data()
 	_buff_snapshot = BuffState.to_save_data()
+	var burn := AfflictionData.new()
+	burn.id = &"fixture_burn"
+	burn.display_name = "Burn"
+	burn.weapon_tag = "fixture_burns"
 	ContentFixture.use(self, [_tool(&"fixture_sword", "Sword", MeleeAttack.TOOL_ACTION, 7), _tool(&"fixture_hoe", "Hoe", &"fixture_till", 1),
-		ContentFixture.vital(STAMINA)])
+		ContentFixture.vital(STAMINA), burn])
 	var settings := CombatSettings.new()
 	settings.attack_vital_id = STAMINA
 	ContentFixture.use_settings(self, [settings])
@@ -63,6 +67,20 @@ func test_a_swing_hits_the_hostile_hurtboxes_in_reach_for_the_weapon_s_power() -
 	assert_eq(friend.taken, 0, "the swing's own side")
 	assert_eq(Vitals.get_value(STAMINA), 50 - attack.get_cost())
 	assert_signal_emitted_with_parameters(CombatEvents, "attack_swung", [&"fixture_sword"])
+
+func test_a_weapon_that_carries_an_affliction_s_tag_lays_it_with_each_hit() -> void:
+	var attack := _attack()
+	var target := _target(FactionData.MONSTERS, Vector2(10, 0))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	Vitals.set_value(STAMINA, 50)
+	assert_true(attack.attack_selected_weapon())
+	assert_false(target.is_afflicted(&"fixture_burn"), "a plain sword lays nothing")
+	ItemData.find(&"fixture_sword").tags = PackedStringArray(["fixture_burns"])
+	await wait_seconds(attack.cooldown_seconds + 0.05)
+	await wait_until(func() -> bool: return not target.is_invincible(), 1.0)
+	assert_true(attack.attack_selected_weapon())
+	assert_true(target.is_afflicted(&"fixture_burn"), "one tagged for a burn burns")
 
 func test_a_swing_at_nothing_still_costs_and_draws_its_arc() -> void:
 	var attack := _attack()

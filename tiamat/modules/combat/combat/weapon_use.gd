@@ -25,6 +25,16 @@ static func damage_of(weapon: ItemData) -> int:
 		return 0
 	return maxi(roundi(GameStats.apply(DAMAGE_STAT, weapon.tool_power)), 1)
 
+## The affliction the hits of `weapon` lay (`AfflictionData`): the first by
+## id whose `AfflictionData.weapon_tag` it carries, or null.
+static func affliction_of(weapon: ItemData) -> AfflictionData:
+	if weapon == null:
+		return null
+	for affliction: AfflictionData in AfflictionData.find_all():
+		if not affliction.weapon_tag.is_empty() and weapon.has_tag(affliction.weapon_tag):
+			return affliction
+	return null
+
 ## What an attack that costs `cost` takes of the attack vital now: none for
 ## none, else at least 1.
 static func cost_of(cost: int) -> int:

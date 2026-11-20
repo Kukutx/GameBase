@@ -21,6 +21,9 @@ const KIND := &"elite"
 @export_range(0.5, 3.0, 0.05) var size_scale := 1.0
 ## Its colour over its kind's (`EnemyData.sprite_tint`).
 @export var tint := Color.WHITE
+## What its hits lay on the player in place of its kind's
+## (`EnemyData.affliction_id`): a searing form's burn; empty, its kind's.
+@export var affliction_id: StringName
 ## How much of its kind's experience it is worth.
 @export_range(0.0, 10.0, 0.05) var xp_scale := 1.5
 ## How many more of its kind's drop it leaves.
@@ -50,8 +53,10 @@ static func roll(rolls: GameRandomStream, chance: float) -> EliteData:
 func name_of(enemy: EnemyData) -> String:
 	return TranslationServer.translate(display_name) % TranslationServer.translate(enemy.display_name)
 
-func find_problems(_registry: ContentRegistry) -> PackedStringArray:
+func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
+	if affliction_id != &"" and not registry.has_entry(AfflictionData.KIND, affliction_id):
+		problems.append("lays unknown affliction '%s'" % affliction_id)
 	# Not one literal, which the localization check would take for text.
 	var slot := "%" + "s"
 	if display_name.count(slot) != 1:

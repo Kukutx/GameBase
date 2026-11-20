@@ -462,3 +462,6 @@ msgstr "没有可卖的祝福"
 
 msgid "Boon: %s — %dg"
 msgstr "祝福：%s — %dg"
+
+msgid "Burning"
+msgstr "灼烧"
