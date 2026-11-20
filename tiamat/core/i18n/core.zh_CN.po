@@ -552,3 +552,21 @@ msgstr "天气为%s时"
 
 msgid "Move speed"
 msgstr "移动速度"
+
+msgid "Challenges"
+msgstr "挑战"
+
+msgid "Won %d of %d"
+msgstr "已获胜 %d / %d"
+
+msgid "%s — won %d"
+msgstr "%s — 已获胜 %d 次"
+
+msgid "%s — not won yet"
+msgstr "%s — 尚未获胜"
+
+msgid "%s — needs %s"
+msgstr "%s — 需要：%s"
+
+msgid "%s — locked"
+msgstr "%s — 未解锁"

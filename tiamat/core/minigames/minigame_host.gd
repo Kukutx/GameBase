@@ -38,6 +38,7 @@ func _ready() -> void:
 	SaveManager.register_save_blocker(_save_block_reason)
 	GameSession.register_activity_end(cancel)
 	InputLock.changed.connect(_update_running)
+	PauseMenu.add_page(&"challenges", "Challenges", 40, MiniGameDefinition.describe_challenges)
 
 func is_running() -> bool:
 	return _active != null

@@ -65,6 +65,39 @@ static func best_score_key(minigame_id: StringName) -> StringName:
 func get_best_score() -> int:
 	return GameProfile.get_int(best_score_key(id))
 
+## The pause menu's Challenges: how many of the minigames the player picks by
+## name at a station (`display_name`) they have won in this save, then each,
+## those open first, with its wins and best score, or what it needs while it
+## is locked; nothing in a game without any.
+static func describe_challenges() -> PackedStringArray:
+	var lines := PackedStringArray()
+	var named: Array[MiniGameDefinition] = []
+	named.assign(find_all().filter(func(minigame: MiniGameDefinition) -> bool: return not minigame.display_name.is_empty()))
+	if named.is_empty():
+		return lines
+	var won := named.filter(func(minigame: MiniGameDefinition) -> bool: return minigame.get_wins() > 0)
+	lines.append(TranslationServer.translate("Won %d of %d") % [won.size(), named.size()])
+	for open: bool in [true, false]:
+		for minigame: MiniGameDefinition in named:
+			if minigame.is_open() == open:
+				lines.append_array(minigame.describe_progress())
+	return lines
+
+## How far the player is with it, in lines they read: its wins in this save
+## and its best score, or what it needs while it is locked.
+func describe_progress() -> PackedStringArray:
+	var title := String(TranslationServer.translate(display_name))
+	if not is_open():
+		var needs := get_requirements()
+		if needs.is_empty():
+			return PackedStringArray([TranslationServer.translate("%s — locked") % title])
+		return PackedStringArray([TranslationServer.translate("%s — needs %s") % [title, ", ".join(needs)]])
+	var wins := get_wins()
+	var lines := PackedStringArray([TranslationServer.translate("%s — won %d") % [title, wins] if wins > 0 else TranslationServer.translate("%s — not won yet") % title])
+	if not score_name.is_empty() and get_best_score() > 0:
+		lines.append("  " + TranslationServer.translate("Best %s: %d") % [TranslationServer.translate(score_name), get_best_score()])
+	return lines
+
 ## Whether the player can pick it at a station: its condition holds.
 func is_open() -> bool:
 	return GameRules.check(condition)
