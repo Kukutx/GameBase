@@ -115,6 +115,27 @@ func get_nearest_open(point: Vector2) -> Vector2:
 			return best
 	return point
 
+## The places of `count` units sent to `point` together, `spacing` apart in
+## rows and columns around it, the nearest to it first, each moved to an open
+## point when it is not one (`get_nearest_open()`).
+func get_formation(count: int, point: Vector2, spacing: float) -> Array[Vector2]:
+	var places: Array[Vector2] = []
+	if count <= 0:
+		return places
+	var columns := ceili(sqrt(float(count)))
+	var rows := ceili(float(count) / columns)
+	var offsets: Array[Vector2] = []
+	for row in rows:
+		for column in columns:
+			offsets.append((Vector2(column, row) - Vector2(columns - 1, rows - 1) * 0.5) * spacing)
+	offsets.sort_custom(func(a: Vector2, b: Vector2) -> bool:
+		var a_length := a.length_squared()
+		var b_length := b.length_squared()
+		return a_length < b_length or (a_length == b_length and (a.y < b.y or (a.y == b.y and a.x < b.x))))
+	for slot in count:
+		places.append(get_nearest_open(point + offsets[slot]))
+	return places
+
 ## The points a unit at `from` walks through, in order, to get to `to`, or as
 ## near to it as it can get; `to` (or the open point nearest it) last.
 func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:

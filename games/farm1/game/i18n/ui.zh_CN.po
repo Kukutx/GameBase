@@ -168,6 +168,9 @@ msgstr "镐"
 msgid "Rusty Sword"
 msgstr "生锈的剑"
 
+msgid "Slingshot"
+msgstr "弹弓"
+
 msgid "Fishing Rod"
 msgstr "钓鱼竿"
 
@@ -1253,6 +1256,9 @@ msgstr "铁洒水壶，每次可为附近三块土地浇水。"
 
 msgid "An old blade. Crude, but enough for cave pests."
 msgstr "一把老旧的剑。虽然粗糙，但对付洞穴害兽足够了。"
+
+msgid "Flings a pebble at the nearest pest ahead, so a spitting slime never gets close."
+msgstr "向前方最近的害兽弹出石子，让喷吐史莱姆近不了身。"
 
 msgid "Breaks rocks and ore nodes."
 msgstr "用于击碎岩石和矿点。"

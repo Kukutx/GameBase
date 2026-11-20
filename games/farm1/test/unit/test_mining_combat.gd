@@ -54,3 +54,24 @@ func test_slime_takes_melee_damage_drops_loot_and_awards_combat_xp() -> void:
 	assert_true(slime.is_defeated)
 	assert_eq(InventoryState.get_quantity(&"slime_gel"), 1)
 	assert_eq(Skills.get_xp(&"combat"), 20)
+
+func test_a_slingshot_from_the_store_flings_pebbles_at_the_nearest_slime_ahead() -> void:
+	assert_eq(ShopData.find(&"general_store").get_stock("Spring").get("slingshot"), 900, "the general store sells it")
+	var player := (load("res://game/player/player.tscn") as PackedScene).instantiate() as TopDownPlayer
+	player.global_position = Vector2(12000, 12000)
+	add_child_autofree(player)
+	var sling := player.get_node("RangedAttack") as RangedAttack
+	assert_eq(sling.action, &"use_tool", "on the tool control, like the swords")
+	InventoryState.add_item_by_id(&"slingshot", 1)
+	Hotbar.set_slot_item(0, &"slingshot")
+	Hotbar.select_slot(0)
+	var slime := (load("res://tiamat/modules/combat/combat/hostile_creature.tscn") as PackedScene).instantiate() as HostileCreature
+	slime.data = EnemyData.find(&"green_slime")
+	slime.persistent_id = &""
+	slime.global_position = Vector2(12070, 12010)
+	add_child_autofree(slime)
+	player.face(Vector2.RIGHT)
+	await wait_physics_frames(2)
+	var health := slime.health.current
+	assert_true(sling.shoot_selected_weapon())
+	assert_true(await wait_until(func() -> bool: return slime.health.current < health, 1.0), "the pebble finds the slime a little off the way the player faces")

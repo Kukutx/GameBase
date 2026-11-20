@@ -17,6 +17,17 @@ func before_each() -> void:
 	_ended.clear()
 	ContentFixture.use(self, RtsFixture.entries())
 
+func test_sides_join_as_they_come_and_fight_the_factions_hostile_to_theirs() -> void:
+	var sides := RtsSides.new()
+	assert_eq(sides.side_of(FactionData.PLAYER), 0)
+	assert_eq(sides.side_of(FactionData.MONSTERS), 1, "a new faction joins as the next side")
+	assert_eq(sides.side_of(FactionData.PLAYER), 0, "and keeps its side")
+	assert_eq(sides.count(), 2)
+	assert_true(sides.are_hostile(0, 1))
+	assert_false(sides.are_hostile(0, 0), "a side never fights itself")
+	assert_eq(sides.foes_of(0), PackedInt32Array([1]))
+	assert_eq(sides.every(), PackedInt32Array([0, 1]))
+
 func test_a_group_sent_somewhere_goes_each_to_its_own_place() -> void:
 	var battle := RtsFixture.battle()
 	var group: Array[RtsUnit] = []

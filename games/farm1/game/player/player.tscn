@@ -1,9 +1,10 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://tiamat/core/interactions/interaction_controller.gd" id="2_interaction"]
 [ext_resource type="Script" path="res://game/player/farm_tool_controller.gd" id="3_farm_tool"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/melee_attack.gd" id="4_melee"]
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/ranged_attack.gd" id="8_ranged"]
 [ext_resource type="Script" path="res://tiamat/core/visual/directional_actor_visual.gd" id="5_visual"]
 [ext_resource type="Script" path="res://tiamat/modules/items/hotbar/hotbar_input.gd" id="6_hotbar_input"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/player_hurtbox.gd" id="7_hurtbox"]
@@ -78,6 +79,11 @@ action = &"use_tool"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack"]
 shape = SubResource("Circle_interaction")
+
+[node name="RangedAttack" type="Node" parent="."]
+script = ExtResource("8_ranged")
+action = &"use_tool"
+shot_color = Color(0.78, 0.74, 0.66, 1)
 
 [node name="Hurtbox" type="Area2D" parent="."]
 collision_layer = 2
