@@ -283,7 +283,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `max_stack` | `int`, 1 to 999 | `99` | How many one inventory slot holds; a tool's is 1. |
 | `icon` | `Texture2D` |  |  |
 | `kind` | `Kind` | `Kind.MATERIAL` | Values: MATERIAL = 0, FOOD = 1, SEED = 2 (Sown to grow its `crop_id`), TOOL = 3 (Used for its `tool_action`; a tool never stacks and cannot be shipped), CROP = 4, GIFT = 5, QUEST = 6 (Kept for a quest; it cannot be shipped), PLACEABLE = 7 (Built as its `placeable_id`), POTION = 8 (Drunk rather than eaten: a potion restores and buffs as food does). |
-| `buy_price` | `int`, 0 to 999999 | `0` |  |
+| `buy_price` | `int`, 0 to 999999 | `0` | What a shop asks for it where the shop's stock leaves the price to the item (a price of 0, `ShopData.stock`). |
 | `sell_price` | `int`, 0 to 999999 | `0` | What a shop pays for it; 0, it cannot be sold. |
 | `restores` | `Dictionary[StringName, int]` | `{}` | What eating or drinking it restores, as vital id (`VitalData`) → amount. |
 | `food_buff_id` | `StringName` |  | The food buff (`FoodBuffData`) eating or drinking it gives; empty, none. |
@@ -329,8 +329,8 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
 | `display_name` | `String` | `"Shop"` | The name the player reads at its counter. |
-| `stock` | `Dictionary` | `{}` | What it sells all year, as item id -> price. |
-| `seasonal_stock` | `Dictionary` | `{}` | What it sells besides in a season, as season name (`GameCalendar`) -> item id -> price; a seasonal price takes the place of the year's. |
+| `stock` | `Dictionary` | `{}` | What it sells all year, as item id -> price; 0, at the item's own `buy_price`, so a price every shop asks is set once, on the item. |
+| `seasonal_stock` | `Dictionary` | `{}` | What it sells besides in a season, as season name (`GameCalendar`) -> item id -> price (0, the item's own); a seasonal price takes the place of the year's. |
 | `offers` | `Array[ShopOffer]` | `[]` | What the shop sells besides items, after them (see `ShopOffer`). |
 
 ## stat_upgrade

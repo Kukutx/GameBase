@@ -485,6 +485,7 @@ func test_the_ember_peddler_sells_a_boon_once_a_depth_for_60_coins() -> void:
 	Wallet.set_money(60)
 	assert_true(offer.can_buy({}), "the next depth's peddler sells again")
 	assert_eq(shop.get_buy_price(ItemData.find(&"health_potion")), 30, "potions, dearer than at camp")
+	assert_eq(ShopData.find(&"camp_merchant").get_buy_price(ItemData.find(&"health_potion")), 20, "where the merchant asks a potion's own price")
 	assert_eq(shop.find_problems(ContentDB), PackedStringArray())
 	offer = offer.duplicate()
 	offer.pool = &"no_such_pool"
