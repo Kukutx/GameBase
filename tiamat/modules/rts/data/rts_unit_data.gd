@@ -6,7 +6,9 @@ extends ContentEntry
 ## foe at most `attack_range` away from its edge once every `attack_cooldown`
 ## seconds, and goes after foes it sees (`sight_range`) when it has no order
 ## that keeps it from them (`RtsBattle`). A healer (`heal`) mends its side
-## instead of fighting. Distances are in pixels of the field.
+## instead of fighting. A unit may be strong against some kinds
+## (`strong_against`): it hits them harder and goes after them first.
+## Distances are in pixels of the field.
 
 const KIND := &"rts_unit"
 
@@ -34,10 +36,26 @@ const KIND := &"rts_unit"
 @export_range(1.0, 600.0, 0.5) var sight_range := 80.0
 ## The size of its round body, which other units keep out of.
 @export_range(2.0, 32.0, 0.5) var radius := 5.0
+## The kinds of unit (`RtsUnitData` ids) its attacks hit `strong_multiplier`
+## times as hard, and which it goes after before the rest it sees: a rider
+## running down slingers, a spear holding off a brute.
+@export var strong_against: Array[StringName] = []
+@export_range(1.0, 4.0, 0.25) var strong_multiplier := 2.0
 
 ## Whether it mends its side instead of fighting (`heal`).
 func heals() -> bool:
 	return heal > 0
+
+## Whether it is strong against units of `other` (`strong_against`).
+func is_strong_against(other: RtsUnitData) -> bool:
+	return other != null and strong_against.has(other.id)
+
+## The health an attack of it takes from a unit of `target`: its damage,
+## `strong_multiplier` times as much against a kind it is strong against,
+## less the target's armor, never below 1.
+func damage_to(target: RtsUnitData) -> int:
+	var dealt := damage * (strong_multiplier if is_strong_against(target) else 1.0)
+	return maxi(roundi(dealt) - target.armor, 1)
 
 ## The unit with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> RtsUnitData:
@@ -49,8 +67,13 @@ static func find_all() -> Array[RtsUnitData]:
 	result.assign(ContentRegistry.active.get_entries(KIND))
 	return result
 
-func find_problems(_registry: ContentRegistry) -> PackedStringArray:
+func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
+	for kind: StringName in strong_against:
+		if not registry.has_entry(KIND, kind):
+			problems.append("is strong against unknown unit '%s'" % kind)
+	if heals() and not strong_against.is_empty():
+		problems.append("heals, yet is strong against units it never strikes")
 	if display_name.is_empty():
 		problems.append("has no display name")
 	if sight_range < attack_range:

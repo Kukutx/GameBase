@@ -15,3 +15,5 @@ attack_cooldown = 1.0
 move_speed = 32.0
 sight_range = 70.0
 radius = 5.0
+strong_against = Array[StringName]([&"bowman", &"medic"])
+strong_multiplier = 1.5

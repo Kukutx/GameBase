@@ -217,6 +217,14 @@ func test_a_finger_that_wanders_a_little_taps_rather_than_drags_a_box() -> void:
 	TouchTarget.reach = reach
 	InputPrompts.call("_set_using_touch", false)
 
+func test_a_selection_of_one_kind_tells_what_it_is_strong_against() -> void:
+	RtsUnitData.find(&"fixture_footman").strong_against.assign([&"fixture_raider", &"fixture_brute"])
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	_key(game, KEY_TAB)
+	var told := tr("%d selected: %s") % [2, "%s ×2" % tr("Fixture Footman")] + " " + tr("(strong against %s)") % GameText.list(PackedStringArray([tr("Fixture Raider"), tr("Fixture Brute")]))
+	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == told), "the selection tells: %s" % told)
+
 func test_a_selected_unit_that_strikes_from_afar_shows_how_far() -> void:
 	var field: RtsBattleField = autofree(RtsBattleField.new())
 	var battle := RtsFixture.battle()

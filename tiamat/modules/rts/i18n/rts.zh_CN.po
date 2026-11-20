@@ -51,3 +51,6 @@ msgstr "弱"
 
 msgid "Strong"
 msgstr "强"
+
+msgid "(strong against %s)"
+msgstr "（克制%s）"

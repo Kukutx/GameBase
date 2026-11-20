@@ -3,7 +3,9 @@ extends MiniGame
 
 ## The rts module's minigame: the command battle (`RtsBattle`) of the map its
 ## settings name (`map`, an `RtsMapData` id), played on a field
-## (`RtsBattleField`) over a bar with the selection and the commands.
+## (`RtsBattleField`) over a bar with the selection and the commands; a
+## selection of one kind tells what it is strong against
+## (`RtsUnitData.strong_against`).
 ##
 ## With the mouse, a click selects one of the player's units and a dragged box
 ## selects those in it (Shift adds to the selection, or drops a unit from it);
@@ -331,6 +333,15 @@ func _show_selection() -> void:
 		for data: RtsUnitData in counts:
 			kinds.append("%s ×%d" % [tr(data.display_name), counts[data]])
 		_info.text = tr("%d selected: %s") % [_selection.size(), GameText.list(kinds)]
+		if counts.size() == 1:
+			var only: RtsUnitData = counts.keys()[0]
+			var strong := PackedStringArray()
+			for kind: StringName in only.strong_against:
+				var other := RtsUnitData.find(kind)
+				if other != null:
+					strong.append(tr(other.display_name))
+			if not strong.is_empty():
+				_info.text += " " + tr("(strong against %s)") % GameText.list(strong)
 	var has_units := battle != null and not battle.get_player_units().is_empty()
 	for index in _buttons.size():
 		_buttons[index].disabled = not has_units if index == Command.SELECT_ALL else _selection.is_empty()

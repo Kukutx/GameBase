@@ -4,8 +4,10 @@ extends RefCounted
 ## What a unit of a command battle (`RtsBattle`) goes after each step, as its
 ## order lets it. A fighter goes after a foe: the one it is ordered to attack,
 ## else the one it already fights while it stays near (`RtsBattle.LEASH`
-## times its sight), else the nearest it sees; holding, only one it reaches;
-## moving, none. A healer (`RtsUnitData.heal`) goes the same way after the
+## times its sight), else the nearest it reaches, else the nearest it sees,
+## of each one it is strong against (`RtsUnitData.strong_against`) before
+## the rest, so it never walks past a foe at its edge; holding, only one it
+## reaches, the same way; moving, none. A healer (`RtsUnitData.heal`) goes the same way after the
 ## most hurt friend instead, while that friend is still hurt.
 
 ## The unit `unit` fights, mends or goes to now; null when it has none.
@@ -24,10 +26,11 @@ static func choose(battle: RtsBattle, unit: RtsUnit) -> RtsUnit:
 		RtsUnit.Order.HOLD:
 			if current != null and unit.reaches(current):
 				return current
-			return _take(unit, battle.get_nearest_foe(unit, unit.data.attack_range))
+			return _take(unit, battle.get_nearest_foe(unit, unit.data.attack_range, true))
 	if current != null and unit.get_gap_to(current) <= unit.data.sight_range * RtsBattle.LEASH:
 		return current
-	return _take(unit, battle.get_nearest_foe(unit, unit.data.sight_range))
+	var reached := battle.get_nearest_foe(unit, unit.data.attack_range, true)
+	return _take(unit, reached if reached != null else battle.get_nearest_foe(unit, unit.data.sight_range, true))
 
 static func _patient(battle: RtsBattle, healer: RtsUnit) -> RtsUnit:
 	if healer.order == RtsUnit.Order.MOVE:
