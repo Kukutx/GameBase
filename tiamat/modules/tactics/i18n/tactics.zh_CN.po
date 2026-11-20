@@ -69,3 +69,12 @@ msgstr "强"
 
 msgid "Foes can strike here."
 msgstr "敌人下回合能打到这里。"
+
+msgid "%s takes %d"
+msgstr "%s 将受到 %d 点伤害"
+
+msgid "%s takes %d and falls"
+msgstr "%s 将受到 %d 点伤害并倒下"
+
+msgid "%s regains %d"
+msgstr "%s 将恢复 %d 点生命"

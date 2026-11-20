@@ -249,6 +249,20 @@ func get_threats(faction: StringName, moving: GridUnit = null) -> Dictionary[Vec
 			threats[cell] = threats.get(cell, 0) + 1
 	return threats
 
+## What `unit` taking `action` at `cell` from where it stands would do, told
+## before it does: a {"unit": GridUnit, "amount": int, "defeats": bool} for
+## each unit it reaches, the health it would take (no more than the unit has)
+## or give back (no more than it lacks), just as `act()` then does.
+func forecast(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> Array[Dictionary]:
+	var hits: Array[Dictionary] = []
+	for target: GridUnit in affected_at(unit, action, cell, unit.cell):
+		var amount := action.amount_for(unit, target)
+		if action.effect == BattleActionData.Effect.HEAL:
+			hits.append({"unit": target, "amount": mini(amount, target.health.maximum - target.health.current), "defeats": false})
+		else:
+			hits.append({"unit": target, "amount": mini(amount, target.health.current), "defeats": amount >= target.health.current})
+	return hits
+
 ## The cells of the living units hostile to `unit`.
 func foe_cells(unit: GridUnit) -> Dictionary[Vector2i, bool]:
 	var cells: Dictionary[Vector2i, bool] = {}

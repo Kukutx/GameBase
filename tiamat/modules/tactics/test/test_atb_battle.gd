@@ -195,6 +195,28 @@ func test_an_area_reaches_every_foe_in_it_and_a_heal_gives_back_what_was_lost() 
 	assert_true(battle.act(healer, mend, Vector2i(3, 1)))
 	assert_eq(ally.health.current, 20, "back to full, no more")
 
+func test_an_action_tells_what_it_would_do_before_it_does() -> void:
+	var battle := _battle()
+	var mage := _add(battle, &"fixture_mage", FactionData.PLAYER, Vector2i(0, 2))
+	var ally := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(3, 1))
+	var near := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(3, 2))
+	var below := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(3, 3))
+	var healer := _add(battle, &"fixture_healer", FactionData.PLAYER, Vector2i(2, 1))
+	below.health.set_current(2)
+	TacticsFixture.give_turn(battle, mage)
+	var blast := BattleActionData.find(&"fixture_blast")
+	assert_eq(battle.forecast(mage, blast, Vector2i(3, 2)), [
+		{"unit": near, "amount": 3, "defeats": false},
+		{"unit": below, "amount": 2, "defeats": true},
+	] as Array[Dictionary], "each foe in the area, no more than it has; nothing to its own side")
+	assert_eq(near.health.current, 12, "told, not done")
+	assert_true(battle.act(mage, blast, Vector2i(3, 2)))
+	assert_eq([near.health.current, below.is_alive()], [9, false], "as told")
+	battle.end_turn(mage)
+	ally.health.take(2)
+	TacticsFixture.give_turn(battle, healer)
+	assert_eq(battle.forecast(healer, BattleActionData.find(&"fixture_mend"), Vector2i(3, 1)), [{"unit": ally, "amount": 2, "defeats": false}] as Array[Dictionary], "no more than it lost")
+
 func test_the_battle_ends_won_when_the_last_foe_falls_and_lost_when_the_player_s_side_does() -> void:
 	var battle := _battle()
 	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
