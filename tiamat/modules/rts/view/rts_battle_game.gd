@@ -18,7 +18,8 @@ extends MiniGame
 ## or the stick move a cursor, and accept or interact at it does what fits:
 ## selects the player's unit there, or sends the selection there. A finger's
 ## tap does the same where it lands (`tap()`), since a touchscreen has no
-## right click: a tap on the player's unit selects it, a second tap on it
+## right click: a tap on the player's unit, or within half a fingertip of it
+## (`get_pick_slack()`), selects it, a second tap on it
 ## every unit of its kind, and a tap elsewhere sends the selection there; a
 ## dragged box selects, and the touch controls' corner button cancels. Cancel drops
 ## an armed attack-move, then the selection, and pressed twice gives the battle
@@ -44,6 +45,10 @@ enum Command {
 const END_SECONDS := 1.2
 ## How far, in pixels of the field, a click may miss a unit and still take it.
 const PICK_SLACK := 2.0
+## How much of a fingertip (`TouchTarget.reach`) a finger's tap may miss a
+## unit by and still take it: a unit is a few pixels across, far smaller than
+## a finger, so a tap takes the nearest unit within half a fingertip.
+const TOUCH_PICK_SHARE := 0.5
 ## The actions of the commands, in the order of `Command`.
 const COMMAND_ACTIONS: Array[StringName] = [&"rts_attack_move", &"rts_stop", &"rts_hold", &"rts_select_all"]
 ## The keys of the groups, 1 to 9.
@@ -119,6 +124,14 @@ func get_speed() -> float:
 	return _speed * GameSettings.options.scale_of(SPEED_OPTION, SPEED_SCALES)
 
 ## The field the battle shows on.
+## How far, in pixels of the field, a pick may miss a unit and still take it:
+## `PICK_SLACK` for the mouse and the cursor, and on a touchscreen
+## `TOUCH_PICK_SHARE` of a fingertip on the screen (`TouchTarget.reach`).
+func get_pick_slack() -> float:
+	if InputPrompts.using_touch and TouchTarget.reach > 0.0 and _field != null:
+		return maxf(PICK_SLACK, TouchTarget.reach * TOUCH_PICK_SHARE / _field.get_zoom())
+	return PICK_SLACK
+
 func get_field() -> RtsBattleField:
 	return _field
 
@@ -162,7 +175,7 @@ func click(point: Vector2, additive := false, double := false) -> void:
 	if _armed:
 		_order(point, true)
 		return
-	var unit := battle.get_unit_at(point, PICK_SLACK)
+	var unit := battle.get_unit_at(point, get_pick_slack())
 	if unit == null or not unit.player_controlled:
 		if not additive:
 			select([])
@@ -271,7 +284,7 @@ func _cancel() -> void:
 
 # Accept or interact at `point`: what fits there.
 func _confirm(point: Vector2) -> void:
-	var unit := battle.get_unit_at(point, PICK_SLACK)
+	var unit := battle.get_unit_at(point, get_pick_slack())
 	if _armed or unit == null or not unit.player_controlled:
 		if _armed or not _selection.is_empty():
 			_order(point, _armed)
@@ -280,12 +293,12 @@ func _confirm(point: Vector2) -> void:
 
 func _order(point: Vector2, attack_move: bool) -> void:
 	_armed = false
-	var target := battle.get_unit_at(point, PICK_SLACK)
+	var target := battle.get_unit_at(point, get_pick_slack())
 	var attacks := not attack_move and target != null and not battle.is_on_player_side(target)
 	if attack_move:
 		battle.order_move(_selection, point, true)
 	else:
-		battle.order_at(_selection, point, PICK_SLACK)
+		battle.order_at(_selection, point, get_pick_slack())
 	_field.mark(target.position if attacks else point, attacks or attack_move)
 	_show_selection()
 
