@@ -2,8 +2,9 @@ extends GutTest
 
 ## A shop's counter (`ShopMenu`): its sell list follows the inventory in
 ## place, the focus stays on the list as stacks sell out, it tells of the
-## item whose button has the focus, and one press buys or sells the amount the
-## player picks.
+## item whose button has the focus, one press buys or sells the amount the
+## player picks, and a purchase the player cannot make now is dimmed until a
+## sale pays for it.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const SHOP_MENU := preload("res://tiamat/modules/items/shop/shop_menu.tscn")
@@ -60,6 +61,7 @@ func test_the_counter_tells_of_the_item_whose_button_has_the_focus() -> void:
 	ItemData.find(&"fixture_berry").description = "Sweet."
 	ItemData.find(&"fixture_pebble").description = "Smooth."
 	_shop.stock = {"fixture_pebble": 4}
+	Wallet.set_money(30)
 	var menu := SHOP_MENU.instantiate() as ShopMenu
 	add_child_autofree(menu)
 	menu.open(_shop)
@@ -105,6 +107,29 @@ func test_one_press_buys_or_sells_the_amount_the_player_picks() -> void:
 	assert_false(menu.amount_button.visible, "one amount needs no button")
 	menu.close()
 
+func test_a_purchase_the_player_cannot_make_is_dimmed_until_a_sale_pays_for_it() -> void:
+	_shop.stock = {"fixture_pebble": 4}
+	var offer := FixtureOffer.new()
+	_shop.offers.append(offer)
+	Wallet.set_money(3)
+	var menu := SHOP_MENU.instantiate() as ShopMenu
+	add_child_autofree(menu)
+	menu.open(_shop)
+	var pebble := menu.items_container.get_child(0) as Button
+	var service := menu.items_container.get_child(1) as Button
+	assert_eq([pebble.disabled, service.disabled], [true, true], "3g buys neither")
+	assert_eq(_focused(menu), _sell_buttons(menu)[0], "so the counter starts on the first sale")
+	assert_false(ShopMenu.can_buy_one(_shop, ItemData.find(&"fixture_pebble")))
+	(_sell_buttons(menu)[0] as Button).pressed.emit()
+	assert_eq(Wallet.money, 8)
+	assert_eq([pebble.disabled, service.disabled], [false, true], "a berry sold pays for a pebble")
+	(_sell_buttons(menu)[0] as Button).pressed.emit()
+	assert_eq([pebble.disabled, service.disabled, service.text], [false, false, "Polish — 10g"], "and the other for the service")
+	pebble.pressed.emit()
+	assert_eq(Wallet.money, 9)
+	assert_true(service.disabled, "a purchase that leaves too little dims it again")
+	menu.close()
+
 static func _sell_buttons(menu: ShopMenu) -> Array:
 	return menu.sell_container.get_children()
 
@@ -117,3 +142,18 @@ static func _item(id: StringName, display_name: String, sell_price: int) -> Item
 	item.display_name = display_name
 	item.sell_price = sell_price
 	return item
+
+## An offer that costs 10g, which the counter may buy while the player
+## affords it.
+class FixtureOffer extends ShopOffer:
+	func get_key() -> String:
+		return "fixture_polish"
+
+	func get_label(_context: Dictionary) -> String:
+		return "Polish — %dg" % 10
+
+	func can_buy(_context: Dictionary) -> bool:
+		return Wallet.can_afford(10)
+
+	func buy(_context: Dictionary) -> bool:
+		return Wallet.spend(10)
