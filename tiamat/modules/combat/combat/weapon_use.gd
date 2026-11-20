@@ -48,18 +48,35 @@ static func tagged_affliction_of(weapon: ItemData) -> AfflictionData:
 	return null
 
 ## What `item` does as a weapon, as the player reads it before buying or using
-## it (`ItemData.register_effect_text()`): how hard it hits now ("Attack 12")
-## and the affliction every hit of it lays; nothing for an item neither attack
-## swings or shoots.
+## it (`ItemData.register_effect_text()`): how hard it hits now ("Attack 12"),
+## beside the hardest hitting other weapon of its kind the player carries
+## (`rival_of()`: "Attack 12 (+4 vs. your Iron Sword)"), and the affliction
+## every hit of it lays; nothing for an item neither attack swings or shoots.
 static func describe(item: ItemData) -> PackedStringArray:
 	var lines := PackedStringArray()
 	if item.tool_action != MeleeAttack.TOOL_ACTION and item.tool_action != RangedAttack.TOOL_ACTION:
 		return lines
-	lines.append(String(TranslationServer.translate("Attack %d")) % damage_of(item))
+	var damage := damage_of(item)
+	var rival := rival_of(item)
+	if rival == null:
+		lines.append(String(TranslationServer.translate("Attack %d")) % damage)
+	else:
+		lines.append(String(TranslationServer.translate("Attack %d (%+d vs. your %s)")) % [
+			damage, damage - damage_of(rival), TranslationServer.translate(rival.display_name)])
 	var tagged := tagged_affliction_of(item)
 	if tagged != null:
 		lines.append(String(TranslationServer.translate("Its hits leave foes %s")) % TranslationServer.translate(tagged.display_name))
 	return lines
+
+## The other weapon the player carries that `weapon` is weighed against: of
+## the same tool action, the one that hits hardest now (the first by id of
+## those that hit as hard), or null when they carry no other.
+static func rival_of(weapon: ItemData) -> ItemData:
+	var rival: ItemData = null
+	for carried: ItemData in InventoryState.find_tools(weapon.tool_action):
+		if carried.id != weapon.id and (rival == null or damage_of(carried) > damage_of(rival)):
+			rival = carried
+	return rival
 
 ## What an attack that costs `cost` takes of the attack vital now: none for
 ## none, else at least 1.

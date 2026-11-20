@@ -104,11 +104,18 @@ func has_item(item_id: StringName, quantity: int = 1) -> bool:
 ## Whether the inventory holds a tool that performs `action`
 ## (`ItemData.tool_action`).
 func has_tool(action: StringName) -> bool:
+	return not find_tools(action).is_empty()
+
+## Every tool the inventory holds that performs `action`
+## (`ItemData.tool_action`), by id.
+func find_tools(action: StringName) -> Array[ItemData]:
+	var tools: Array[ItemData] = []
 	for key: String in _items.keys():
 		var item: ItemData = _definitions[key]
 		if item.is_tool() and item.tool_action == action:
-			return true
-	return false
+			tools.append(item)
+	tools.sort_custom(func(a: ItemData, b: ItemData) -> bool: return String(a.id) < String(b.id))
+	return tools
 
 ## Eats one `item` the inventory holds, or drinks it when it is a potion: it
 ## restores the player's vitals (`ItemData.restores`), starts its food buff and
