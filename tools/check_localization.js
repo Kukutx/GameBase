@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { fail, main, parseToolArgs, rootPath } = require("./lib/common");
 const { gamePath, projectSetting, projectString, readFoundation, resolveGames } = require("./lib/games");
+const { placeholders } = require("./lib/format_text");
 
 // Player-visible text is translated in the layer that owns it: the core and
 // each module ship their own catalogs under <layer>/i18n/<name>.<locale>.po,
@@ -430,13 +431,6 @@ function repeatProblem(first, second, text) {
   const related = first.layer === second.layer || first.layer.below.includes(second.layer.name) || second.layer.below.includes(first.layer.name);
   if (related) return `${second.res} repeats "${text}", which ${first.res} already translates`;
   return first.text === second.text ? "" : `${second.res} translates "${text}" otherwise than ${first.res} does`;
-}
-
-// The format placeholders of `text` as Godot's `%` fills them, in order: the
-// kind of each ("%5.1f" is f), "%%" aside.
-const PLACEHOLDER_RE = /%(?:%|[-+0]*(?:\*|\d+)?(?:\.(?:\*|\d+))?([scdoxXfv]))/g;
-function placeholders(text) {
-  return [...text.matchAll(PLACEHOLDER_RE)].filter((match) => match[1]).map((match) => `%${match[1]}`).join(" ");
 }
 
 // What is wrong with `translation` of `text` as a format, or "": Godot's `%`
