@@ -8,6 +8,7 @@ extends ContentEntry
 
 const KIND := &"vital"
 
+## The name the player reads: Health, Energy.
 @export var display_name: String
 ## How much a full one holds at the start of a game.
 @export_range(1, 9999, 1) var maximum := 100

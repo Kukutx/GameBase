@@ -13,11 +13,15 @@ const KIND := &"rts_map"
 const MIN_SIZE := Vector2(64.0, 64.0)
 const MAX_SIZE := Vector2(2048.0, 2048.0)
 
+## The name the player reads.
 @export var display_name := ""
+## The size of the field, in pixels, from `MIN_SIZE` to `MAX_SIZE`.
 @export var size := Vector2(480.0, 216.0)
+## The rectangles of the field no unit walks through: rocks, walls, water.
 @export var obstacles: Array[Rect2] = []
 ## The side the player commands (`FactionData`); its allies fight with it.
 @export var player_faction_id: StringName = FactionData.PLAYER
+## The units of each side, where they stand and when they come (`RtsPlacement`).
 @export var placements: Array[RtsPlacement] = []
 ## Whether the units the player does not command march on the nearest foe
 ## when they have nothing to do; if not, they wait where they stand until a

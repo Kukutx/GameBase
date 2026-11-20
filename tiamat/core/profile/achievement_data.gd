@@ -10,8 +10,11 @@ extends ContentEntry
 
 const KIND := &"achievement"
 
+## The name the player reads in the achievements menu.
 @export var display_name := ""
+## What the player did, or does to unlock it, as the menu tells it.
 @export_multiline var description := ""
+## The picture the menu shows before its name once it shows; none, no picture.
 @export var icon: Texture2D
 ## Whether menus hide its name and description until it is unlocked.
 @export var hidden := false

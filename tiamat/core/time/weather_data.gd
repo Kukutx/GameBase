@@ -15,6 +15,7 @@ enum Particle {
 	SNOW,
 }
 
+## The name the player reads.
 @export var display_name: String
 ## Whether it waters the ground outside: what grows there needs no watering.
 @export var wets_ground := false

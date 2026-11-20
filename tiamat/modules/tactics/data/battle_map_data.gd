@@ -14,8 +14,11 @@ const KIND := &"battle_map"
 ## The most cells a side of the grid has.
 const MAX_SIDE := 32
 
+## The name the player reads.
 @export var display_name := ""
+## The columns and rows of its grid, at most `MAX_SIDE` each.
 @export var size := Vector2i(8, 6)
+## The cells no unit stands on or walks through: water, walls.
 @export var blocked_cells: Array[Vector2i] = []
 ## The open cells that give cover to who stands there.
 @export var cover_cells: Array[Vector2i] = []
@@ -34,6 +37,8 @@ const MAX_SIDE := 32
 @export var goal_faction_id: StringName
 ## The side the player commands (`FactionData`); its allies fight with it.
 @export var player_faction_id: StringName = FactionData.PLAYER
+## The units of each side, in which cells and when they come
+## (`BattlePlacement`).
 @export var placements: Array[BattlePlacement] = []
 ## The most seconds of battle time the battle lasts: once they pass, the side
 ## of `time_faction_id` wins (`BattleTimeLimit`), the player's when it is

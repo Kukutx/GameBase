@@ -7,6 +7,7 @@ extends ContentEntry
 
 const KIND := &"skill"
 
+## The name the player reads.
 @export var display_name: String
 ## The name where space is short (the HUD line); empty uses `display_name`.
 @export var short_name: String

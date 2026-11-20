@@ -23,6 +23,8 @@ const KIND := &"location"
 ## The scene of the place; validation opens it to check its spawn points,
 ## portals and the content its nodes name.
 @export_file("*.tscn") var scene_path: String
+## What kind of place it is: what may be built there
+## (`PlaceableData.allowed_location_types`), and what a game's menus call it.
 @export var type: LocationType = LocationType.TOWN
 ## Whether the weather shows here (`WeatherOverlay`); off for a place indoors.
 @export var weather_exposed := true

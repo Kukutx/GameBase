@@ -57,9 +57,9 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
-| `description` | `String`, several lines | `""` |  |
-| `icon` | `Texture2D` |  |  |
+| `display_name` | `String` | `""` | The name the player reads in the achievements menu. |
+| `description` | `String`, several lines | `""` | What the player did, or does to unlock it, as the menu tells it. |
+| `icon` | `Texture2D` |  | The picture the menu shows before its name once it shows; none, no picture. |
 | `hidden` | `bool` | `false` | Whether menus hide its name and description until it is unlocked. |
 | `progress_flag` | `StringName` |  | The profile counter (a `GameProfile` flag that `ADD_PROFILE_FLAG` raises) it counts toward `goal`, or none. The profile unlocks it once the counter reaches the goal, and the achievements menu shows how far the player is. |
 | `goal` | `int` | `0` | What `progress_flag` reaches to unlock it. |
@@ -71,16 +71,16 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `cue_type` | `CueType` | `CueType.SFX` | Values: SFX = 0, MUSIC = 1. |
-| `stream` | `AudioStream` |  |  |
-| `volume_db` | `float`, -60 to 12 | `0.0` |  |
-| `pitch_min` | `float`, 0.5 to 2 | `1.0` |  |
-| `pitch_max` | `float`, 0.5 to 2 | `1.0` |  |
+| `cue_type` | `CueType` | `CueType.SFX` | A sound, which plays over the others (`max_voices`), or music, which plays alone and fades in over the music before it (`fade_seconds`). Values: SFX = 0, MUSIC = 1. |
+| `stream` | `AudioStream` |  | What plays; none, a slot waiting for its audio. |
+| `volume_db` | `float`, -60 to 12 | `0.0` | How loud it plays, in decibels: 0 as recorded, about -6 half as loud. |
+| `pitch_min` | `float`, 0.5 to 2 | `1.0` | The lowest and highest pitch it plays at, 1 as recorded: each time a pitch between them, so a sound heard often never sounds the same twice. |
+| `pitch_max` | `float`, 0.5 to 2 | `1.0` | With `pitch_min`, above. |
 | `fade_seconds` | `float`, 0 to 10 | `1.0` | Music: how long it takes to fade in, and the music before it to fade out. |
 | `max_voices` | `int`, 1 to 8 | `3` | Sounds: how many of the cue play at once at most; one more stops the oldest of them. |
 | `hearing_distance` | `float`, 16 to 4000 | `640.0` | Sounds played at a place in the world: how far from the view's centre they are still heard, in pixels. |
 | `rumble` | `float`, 0 to 1 | `0.0` | Sounds: how hard the player's gamepad or phone shakes as the sound plays, from 0 (not at all) to 1 (`Haptics`), less the farther away a sound played at a place is; and for how long. |
-| `rumble_seconds` | `float`, 0.01 to 1 | `0.1` |  |
+| `rumble_seconds` | `float`, 0.01 to 1 | `0.1` | With `rumble`, above. |
 
 ## hint
 
@@ -88,7 +88,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `text` | `String`, several lines | `""` |  |
+| `text` | `String`, several lines | `""` | What the player reads, each control named by its action in braces (`{interact}`, `{move}`). |
 
 ## location
 
@@ -98,7 +98,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | --- | --- | --- | --- |
 | `display_name` | `String` |  | The name the player reads. |
 | `scene_path` | `String`, a *.tscn file |  | The scene of the place; validation opens it to check its spawn points, portals and the content its nodes name. |
-| `type` | `LocationType` | `LocationType.TOWN` | Values: TOWN = 0, INTERIOR = 1, WILDERNESS = 2, DUNGEON = 3. |
+| `type` | `LocationType` | `LocationType.TOWN` | What kind of place it is: what may be built there (`PlaceableData.allowed_location_types`), and what a game's menus call it. Values: TOWN = 0, INTERIOR = 1, WILDERNESS = 2, DUNGEON = 3. |
 | `weather_exposed` | `bool` | `true` | Whether the weather shows here (`WeatherOverlay`); off for a place indoors. |
 | `default_spawn_id` | `StringName` |  | The spawn point (`WorldSpawnPoint.spawn_id`) travel puts the player at when it names none; the scene must have it. |
 | `music_cue_id` | `StringName` |  | The music (`AudioCueData`, a `MUSIC` cue) that plays while the player is here; empty, silence. |
@@ -119,7 +119,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `scene` | `PackedScene` |  | Scene whose root extends `MiniGame`. |
 | `pause_world` | `bool` | `true` | Pauses the world (clock, actors, other menus) while the minigame runs. |
 | `success_actions` | `PackedStringArray` | `PackedStringArray()` | Actions (`GameRules` syntax) run when the player wins or loses. |
-| `failure_actions` | `PackedStringArray` | `PackedStringArray()` |  |
+| `failure_actions` | `PackedStringArray` | `PackedStringArray()` | With `success_actions`, above. |
 | `music_cue_id` | `StringName` | `&""` | The music it plays over the world's while it runs (`GameAudio.push_music()`); empty: the world's plays on. |
 | `settings` | `Dictionary` | `{}` | Tuning passed to the minigame's `setup()`; the caller's context overrides it. The minigame checks it (`MiniGame.find_settings_problems()`). |
 
@@ -129,7 +129,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
+| `display_name` | `String` | `""` | The name the player reads under Records. |
 | `flag` | `StringName` |  | The profile counter it shows. |
 | `order` | `int` | `0` | Where it stands among the records: lower first, then by id. |
 
@@ -139,7 +139,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` |  |  |
+| `display_name` | `String` |  | The name the player reads. |
 
 ## trigger
 
@@ -159,7 +159,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` |  |  |
+| `display_name` | `String` |  | The name the player reads: Health, Energy. |
 | `maximum` | `int`, 1 to 9999 | `100` | How much a full one holds at the start of a game. |
 | `refill_on_sleep` | `bool` | `true` | Whether a night's sleep fills it again (`SleepSpot`). |
 | `maximum_stat` | `StringName` |  | A stat its maximum follows (`GameStats`, registered by a module or the game: combat's `max_health`): the stat's bonuses add to the maximum and its multipliers scale it, so a boon or a lasting upgrade raises it. None follows none. |
@@ -170,7 +170,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` |  |  |
+| `display_name` | `String` |  | The name the player reads. |
 | `wets_ground` | `bool` | `false` | Whether it waters the ground outside: what grows there needs no watering. |
 | `particle` | `Particle` | `Particle.NONE` | What falls from the sky, drawn by the `WeatherOverlay`. Values: NONE = 0, RAIN = 1, SNOW = 2. |
 | `density` | `float`, 0 to 3 | `1.0` | How much falls: 1 is a shower. |
@@ -189,8 +189,8 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `display_name` | `String` | `""` | Its creature's name in it, `%s` the kind's name: "Hulking %s". |
 | `condition` | `String` | `""` | What must hold for a place to roll it (`GameRules` syntax; empty: always). |
 | `health_scale` | `float`, 0.1 to 10 | `1.5` | How much of its kind's health, contact damage and move speed it has. |
-| `damage_scale` | `float`, 0.1 to 10 | `1.0` |  |
-| `speed_scale` | `float`, 0.1 to 10 | `1.0` |  |
+| `damage_scale` | `float`, 0.1 to 10 | `1.0` | With `health_scale`, above. |
+| `speed_scale` | `float`, 0.1 to 10 | `1.0` | With `health_scale`, above. |
 | `size_scale` | `float`, 0.5 to 3 | `1.0` | How much larger it is drawn, and how much it is hit where it stands. |
 | `tint` | `Color` | `Color.WHITE` | Its colour over its kind's (`EnemyData.sprite_tint`). |
 | `affliction_id` | `StringName` |  | What its hits lay on the player in place of its kind's (`EnemyData.affliction_id`): a searing form's burn; empty, its kind's. |
@@ -210,11 +210,11 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `frame_size` | `Vector2i` | `Vector2i(32, 32)` | The size of a cell of its sheet, in pixels. |
 | `animation_fps` | `int`, 1 to 60 | `12` | How fast its frames play. |
 | `idle_from` | `int`, 0 to 999 | `0` | The first and last frames, counted from 0 along the rows of its sheet, it plays standing, moving and once when defeated (that long it lies there). |
-| `idle_to` | `int`, 0 to 999 | `0` |  |
-| `move_from` | `int`, 0 to 999 | `0` |  |
-| `move_to` | `int`, 0 to 999 | `0` |  |
-| `death_from` | `int`, 0 to 999 | `0` |  |
-| `death_to` | `int`, 0 to 999 | `0` |  |
+| `idle_to` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
+| `move_from` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
+| `move_to` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
+| `death_from` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
+| `death_to` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
 | `max_health` | `int`, 1 to 999 | `30` | Its health, before the player's foe strength scales it. |
 | `move_speed` | `float`, 1 to 300 | `36.0` | How fast it moves, in pixels a second. |
 | `chase_radius` | `float`, 8 to 400 | `110.0` | How near the player must come for it to chase them; farther, it gives up. |
@@ -243,8 +243,8 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
-| `color` | `Color` | `Color(1.0, 0.5, 0.18)` |  |
+| `display_name` | `String` | `""` | The name the player reads (Burning): in a toast as it takes hold, and on the HUD's line while it lasts. |
+| `color` | `Color` | `Color(1.0, 0.5, 0.18)` | The colour what it is on flashes on each of its ticks. |
 | `seconds` | `float`, 0.1 to 60 s | `3.0` | How long it lasts from the hit that laid it. |
 | `tick_seconds` | `float`, 0.1 to 10 s | `1.0` | How often it takes health. |
 | `tick_damage` | `int`, 0 to 999 | `1` | The health each tick takes; 0, none: one that only slows. |
@@ -282,8 +282,8 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `display_name` | `String` |  | The name the player reads. |
 | `description` | `String`, several lines |  | What the player reads of it in the inventory and the shops. |
 | `max_stack` | `int`, 1 to 999 | `99` | How many one inventory slot holds; a tool's is 1. |
-| `icon` | `Texture2D` |  |  |
-| `kind` | `Kind` | `Kind.MATERIAL` | Values: MATERIAL = 0, FOOD = 1, SEED = 2 (Sown to grow its `crop_id`), TOOL = 3 (Used for its `tool_action`; a tool never stacks and cannot be shipped), CROP = 4, GIFT = 5, QUEST = 6 (Kept for a quest; it cannot be shipped), PLACEABLE = 7 (Built as its `placeable_id`), POTION = 8 (Drunk rather than eaten: a potion restores and buffs as food does). |
+| `icon` | `Texture2D` |  | The picture of it a game's own menus show (MFarm's bag and trade panel). |
+| `kind` | `Kind` | `Kind.MATERIAL` | What it is, which decides what the player can do with it. Values: MATERIAL = 0, FOOD = 1, SEED = 2 (Sown to grow its `crop_id`), TOOL = 3 (Used for its `tool_action`; a tool never stacks and cannot be shipped), CROP = 4, GIFT = 5, QUEST = 6 (Kept for a quest; it cannot be shipped), PLACEABLE = 7 (Built as its `placeable_id`), POTION = 8 (Drunk rather than eaten: a potion restores and buffs as food does). |
 | `buy_price` | `int`, 0 to 999999 | `0` | What a shop asks for it where the shop's stock leaves the price to the item (a price of 0, `ShopData.stock`). |
 | `sell_price` | `int`, 0 to 999999 | `0` | What a shop pays for it; 0, it cannot be sold. |
 | `restores` | `Dictionary[StringName, int]` | `{}` | What eating or drinking it restores, as vital id (`VitalData`) → amount. |
@@ -317,7 +317,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
 | `display_name` | `String` |  | The name the player reads. |
-| `category` | `Category` | `Category.CRAFTING` | Values: CRAFTING = 0, COOKING = 1. |
+| `category` | `Category` | `Category.CRAFTING` | The stations that make it (`CraftingStation`): a workbench or a kitchen. Values: CRAFTING = 0, COOKING = 1. |
 | `ingredients` | `Dictionary` | `{}` | What it takes, as item id -> count. |
 | `output_item_id` | `StringName` |  | The item (`ItemData`) it makes. |
 | `output_quantity` | `int`, 1 to 99 | `1` | How many of it one craft makes. |
@@ -340,8 +340,8 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
-| `description` | `String`, several lines | `""` |  |
+| `display_name` | `String` | `""` | The name the player reads at the stand. |
+| `description` | `String`, several lines | `""` | What each level does, as the stand tells it. |
 | `condition` | `String` | `""` | When the player may buy its next level: a `GameRules` query; empty, always. |
 | `max_level` | `int`, 1 to 99 | `1` | How many levels it has. |
 | `money_costs` | `PackedInt32Array` | `PackedInt32Array()` | The money each level costs, from the first; a level past the end of the list costs as much as the last. |
@@ -361,11 +361,11 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `day_of_season` | `int`, 0 to 28 or more | `0` | The day of the season it is on, from 1; 0, every day. |
 | `days_of_week` | `PackedInt32Array` | `PackedInt32Array()` | The days of the week it is on, from 0 for the first; empty, every day. |
 | `start_minute` | , 0 to 1439 | `9 * 60` | When it begins and ends, in minutes after midnight; it is over at `end_minute`. |
-| `end_minute` | , 1 to 1440 | `17 * 60` |  |
+| `end_minute` | , 1 to 1440 | `17 * 60` | With `start_minute`, above. |
 | `reward_money` | `int`, 0 to 999999 | `0` | What taking part gives once a year: money, items (item id -> count) and experience of a skill (`SkillData`). |
-| `reward_items` | `Dictionary` | `{}` |  |
-| `reward_skill` | `StringName` |  |  |
-| `reward_skill_xp` | `int`, 0 to 9999 | `0` |  |
+| `reward_items` | `Dictionary` | `{}` | With `reward_money`, above. |
+| `reward_skill` | `StringName` |  | With `reward_money`, above. |
+| `reward_skill_xp` | `int`, 0 to 9999 | `0` | With `reward_money`, above. |
 
 ## collection_milestone
 
@@ -379,7 +379,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `required_discovered` | `int`, 0 to 999 | `0` | How many of the category's items must be discovered; 0, all it holds. |
 | `prerequisites` | `Array[StringName]` | `[]` | The milestones (`CollectionMilestoneData`) that must be claimed first. |
 | `reward_money` | `int`, 0 to 999999 | `0` | What claiming it gives: money and items (item id -> count). |
-| `reward_items` | `Dictionary` | `{}` |  |
+| `reward_items` | `Dictionary` | `{}` | With `reward_money`, above. |
 
 ## crop
 
@@ -394,7 +394,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `harvest_quantity` | `int`, 1 to 99 | `1` | How many of it a harvest gives. |
 | `allowed_seasons` | `PackedStringArray` | `PackedStringArray()` | Seasons of the game's calendar it grows in; empty: every season. |
 | `sprout_color` | `Color` | `Color(0.36, 0.68, 0.28, 1.0)` | The colours of the plant as it sprouts and once it is ready; it shades from one to the other as it grows. |
-| `mature_color` | `Color` | `Color(0.52, 0.78, 0.32, 1.0)` |  |
+| `mature_color` | `Color` | `Color(0.52, 0.78, 0.32, 1.0)` | With `sprout_color`, above. |
 
 ## farm_animal
 
@@ -407,11 +407,11 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `frame_size` | `Vector2i` | `Vector2i(32, 32)` | The size of a cell of its sheet, in pixels. |
 | `animation_fps` | `int`, 1 to 60 | `10` | How fast its frames play. |
 | `idle_from` | `int`, 0 to 999 | `0` | The first and last frames, counted from 0 along the rows of its sheet, it plays standing, walking and eating. |
-| `idle_to` | `int`, 0 to 999 | `0` |  |
-| `walk_from` | `int`, 0 to 999 | `0` |  |
-| `walk_to` | `int`, 0 to 999 | `0` |  |
-| `eat_from` | `int`, 0 to 999 | `0` |  |
-| `eat_to` | `int`, 0 to 999 | `0` |  |
+| `idle_to` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
+| `walk_from` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
+| `walk_to` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
+| `eat_from` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
+| `eat_to` | `int`, 0 to 999 | `0` | With `idle_from`, above. |
 | `move_speed` | `float`, 1 to 300 | `28.0` | How fast it walks, in pixels a second. |
 | `wander_radius` | `float`, 8 to 256 | `56.0` | How far from where it stands it wanders, in pixels. |
 | `collision_size` | `Vector2` | `Vector2(14, 10)` | The box it stands in, in pixels. |
@@ -423,7 +423,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `missed_feed_happiness_loss` | `int`, 0 to 100 | `3` | The happiness (0 to 100) it loses for each day it goes unfed; each day it goes unpetted costs 1 more. |
 | `product_item_id` | `StringName` |  | The item (`ItemData`) it gives on a day it was fed; empty, none. |
 | `premium_product_item_id` | `StringName` |  | The better item it gives instead while its happiness is at least `premium_happiness_threshold`; empty, none. |
-| `premium_happiness_threshold` | `int`, 0 to 100 | `80` |  |
+| `premium_happiness_threshold` | `int`, 0 to 100 | `80` | With `premium_product_item_id`, above. |
 | `product_quantity` | `int`, 1 to 99 | `1` | How many of its product it gives at once. |
 | `product_interval_days` | `int`, 1 to 28 | `1` | How many days pass between two of its products. |
 | `pet_happiness_gain` | `int`, 0 to 100 | `5` | The happiness (0 to 100) petting it once a day gives. |
@@ -439,7 +439,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `housing_id` | `StringName` |  | The housing (`AnimalHousing.housing_id`) it enlarges. |
 | `capacity_after` | `int`, 1 to 32 | `8` | How many animals the housing holds once it is bought. |
 | `money_cost` | `int`, 0 to 999999 | `0` | What it costs: money and materials (item id -> count), taken together. |
-| `materials` | `Dictionary` | `{}` |  |
+| `materials` | `Dictionary` | `{}` | With `money_cost`, above. |
 | `prerequisites` | `Array[StringName]` | `[]` | The expansions (`FarmExpansionData`) that must be bought first. |
 | `condition` | `String` | `""` | When the expansion is offered once its prerequisites are built, in the `GameQuery` syntax (`PROJECT_COMPLETED barn_fund`); empty means always. |
 
@@ -453,7 +453,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `locations` | `Array[StringName]` | `[]` | The locations (`WorldLocationData`) it bites in; empty, any. |
 | `seasons` | `PackedStringArray` | `PackedStringArray()` | The seasons of the game's calendar it bites in; empty, every season. |
 | `start_minute` | , 0 to 1439 | `6 * 60` | When it bites, in minutes after midnight; a window that ends before it starts runs past midnight. |
-| `end_minute` | , 1 to 1440 | `22 * 60` |  |
+| `end_minute` | , 1 to 1440 | `22 * 60` | With `start_minute`, above. |
 | `allowed_weather` | `Array[StringName]` | `[]` | The weather (`WeatherData` ids) it bites in; any when empty. |
 | `catch_weight` | `float`, 0.01 to 100 | `1.0` | How likely it bites against the other fish that bite there and then. |
 | `difficulty` | `int`, 1 to 10 | `1` | How hard its reel minigame is: a smaller catch zone and a faster marker. |
@@ -469,7 +469,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `seasons` | `PackedStringArray` | `PackedStringArray()` | The seasons of the game's calendar it lies about in; empty, every season. |
 | `weight` | `float`, 0.01 to 100 | `1.0` | How likely each find is it, against the others there in the season. |
 | `min_quantity` | `int`, 1 to 99 | `1` | How many of it one find holds, at least and at most, before the `forage_quantity` stat. |
-| `max_quantity` | `int`, 1 to 99 | `1` |  |
+| `max_quantity` | `int`, 1 to 99 | `1` | With `min_quantity`, above. |
 
 ## mining_node
 
@@ -483,7 +483,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `required_tool_power` | `int`, 1 to 20 | `1` | The power a pick needs (`ItemData.tool_power`) to hit it at all. |
 | `energy_cost` | `int`, 0 to 100 | `3` | The energy each hit spends, before the energy stats. |
 | `drop_item_id` | `StringName` |  | The item (`ItemData`) it gives once broken, and how many. |
-| `drop_quantity` | `int`, 1 to 99 | `1` |  |
+| `drop_quantity` | `int`, 1 to 99 | `1` | With `drop_item_id`, above. |
 | `respawn_days` | `int`, 1 to 28 | `1` | How many days after it breaks it comes back. |
 | `visual_color` | `Color` | `Color(0.48, 0.48, 0.50, 1.0)` | The colour it is drawn in. |
 
@@ -496,7 +496,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `display_name` | `String` |  | The name the player reads. |
 | `inputs` | `Dictionary` | `{}` | What it takes, as item id -> count. |
 | `output_item_id` | `StringName` |  | The item (`ItemData`) it makes, and how many. |
-| `output_quantity` | `int`, 1 to 99 | `1` |  |
+| `output_quantity` | `int`, 1 to 99 | `1` | With `output_item_id`, above. |
 | `process_minutes` | `int`, 1 to 10080 min | `60` | How long it takes, in minutes of the game's clock. |
 | `condition` | `String` | `""` | When the recipe can start, as a `GameRules` query; empty: always. |
 
@@ -524,7 +524,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `location_id` | `StringName` |  | The location (`WorldLocationData`) it plays in; empty, any. |
 | `seasons` | `PackedStringArray` | `PackedStringArray()` | The seasons of the game's calendar it plays in; empty, every season. |
 | `start_minute` | `int`, 0 to 1439 | `0` | When in the day it plays, in minutes after midnight. |
-| `end_minute` | `int`, 1 to 1440 | `1440` |  |
+| `end_minute` | `int`, 1 to 1440 | `1440` | With `start_minute`, above. |
 | `condition` | `String` | `""` | What else must hold for the event to play, in the `GameQuery` syntax (`PROJECT_COMPLETED garden_fund`); empty means nothing else. |
 
 ## npc
@@ -536,23 +536,23 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `display_name` | `String` |  | The name the player reads. |
 | `role` | `String` | `"Villager"` | What they do in the world, in a few words ("Blacksmith"). |
 | `background` | `String`, several lines |  | Who they are, how they behave and how they talk, in prose: what a chat module tells the model that speaks for them (`NpcContextService`). |
-| `personality` | `String`, several lines |  |  |
-| `speaking_style` | `String`, several lines |  |  |
+| `personality` | `String`, several lines |  | With `background`, above. |
+| `speaking_style` | `String`, several lines |  | With `background`, above. |
 | `home_location_id` | `StringName` |  | Where they live and where they are found most (`WorldLocationData`), for their context and the game's menus; where they stand comes from their `schedule_entries`. |
-| `default_location_id` | `StringName` |  |  |
+| `default_location_id` | `StringName` |  | With `home_location_id`, above. |
 | `ai_enabled` | `bool` | `false` | Whether the NPC chats about the topics the player brings up instead of saying its daily lines, in a game with a module that makes chats (npc_ai); its heart events play all the same. |
 | `context_world_keys` | `Array[StringName]` | `[]` | The `WorldState` keys whose values their chat context carries, facts of the world they know about. |
 | `birthday_season` | `String` | `""` | A season of the game's calendar; none ("") for an NPC without a birthday. |
 | `birthday_day` | `int`, 1 to 28 or more | `1` | The day of `birthday_season` it falls on, from 1. |
 | `dialogue_titles_by_hearts` | `Dictionary` | `{}` | The dialogue they say from a number of hearts on, as hearts -> title in their dialogue: the highest the player has reached takes the place of the daily one. |
 | `visual_strip_root` | `String`, a folder |  | The folder of their sprite strips (`DirectionalActorVisual`), and the colour their sprite is tinted. |
-| `visual_modulate` | `Color` | `Color.WHITE` |  |
+| `visual_modulate` | `Color` | `Color.WHITE` | With `visual_strip_root`, above. |
 | `schedule_entries` | `Array[NpcScheduleEntry]` | `[]` | Where they stand at each time of the day, the season and the weather (`NpcScheduleEntry`). |
 | `loved_items` | `Array[StringName]` | `[]` | The items (`ItemData`) they love, like and dislike as gifts, and the item tags they love and like; a gift they have no feeling for still pleases them a little (`friendship_for_gift()`). |
-| `liked_items` | `Array[StringName]` | `[]` |  |
-| `disliked_items` | `Array[StringName]` | `[]` |  |
-| `loved_tags` | `PackedStringArray` | `PackedStringArray()` |  |
-| `liked_tags` | `PackedStringArray` | `PackedStringArray()` |  |
+| `liked_items` | `Array[StringName]` | `[]` | With `loved_items`, above. |
+| `disliked_items` | `Array[StringName]` | `[]` | With `loved_items`, above. |
+| `loved_tags` | `PackedStringArray` | `PackedStringArray()` | With `loved_items`, above. |
+| `liked_tags` | `PackedStringArray` | `PackedStringArray()` | With `loved_items`, above. |
 
 ## mail
 
@@ -561,12 +561,12 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
 | `sender_npc_id` | `StringName` |  | Who it is from: an NPC (`NpcProfileData`), or a name of its own, which takes the NPC's place. |
-| `sender_name` | `String` |  |  |
+| `sender_name` | `String` |  | With `sender_npc_id`, above. |
 | `subject` | `String` |  | Its subject line and its text, as the player reads them. |
-| `body` | `String`, several lines |  |  |
+| `body` | `String`, several lines |  | With `subject`, above. |
 | `condition` | `String` | `""` | When the letter arrives, in the `GameQuery` syntax (`DAY_AT_LEAST 2`, `QUEST_COMPLETED first_harvest, HEARTS mira 2`); empty means at once. The mail service checks it each day and whenever a quest, a friendship or the world's state changes. |
 | `reward_items` | `Dictionary` | `{}` | What it brings for the player to claim: items (item id -> count) and money. |
-| `reward_money` | `int`, 0 to 999999 | `0` |  |
+| `reward_money` | `int`, 0 to 999999 | `0` | With `reward_items`, above. |
 
 ## quest
 
@@ -580,7 +580,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `auto_start` | `bool` | `false` | Whether a new game starts it at once; otherwise content starts it (a trigger's `START_QUEST`, an earlier quest of its chain). |
 | `objectives` | `Array[QuestObjective]` | `[]` | What the quest asks, all of which must be met; at least one. |
 | `reward_money` | `int`, 0 to 999999 | `0` | What completing it gives: money and items (item id -> count). |
-| `reward_items` | `Dictionary` | `{}` |  |
+| `reward_items` | `Dictionary` | `{}` | With `reward_money`, above. |
 | `next_quest_id` | `StringName` |  | The quest (`QuestData`) completing it starts; empty, the chain ends. |
 
 ## tool_upgrade
@@ -591,9 +591,9 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | --- | --- | --- | --- |
 | `display_name` | `String` |  | The name the player reads. |
 | `source_item_id` | `StringName` |  | The tool (`ItemData`, a `TOOL`) it takes, and the stronger one it gives. |
-| `result_item_id` | `StringName` |  |  |
+| `result_item_id` | `StringName` |  | With `source_item_id`, above. |
 | `materials` | `Dictionary` | `{}` | What it costs besides the tool: materials (item id -> count) and money. |
-| `money_cost` | `int`, 0 to 999999 | `0` |  |
+| `money_cost` | `int`, 0 to 999999 | `0` | With `materials`, above. |
 | `condition` | `String` | `""` | When the upgrade is offered, as a `GameRules` query; empty: always. |
 
 ## town_project
@@ -608,7 +608,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `prerequisites` | `Array[StringName]` | `[]` | The projects (`TownProjectData`) that must be complete before it opens. |
 | `requirements` | `Dictionary` | `{}` | What it asks the player to donate, as item id -> count. |
 | `reward_money` | `int`, 0 to 999999 | `0` | What claiming it once complete gives: money and items (item id -> count). |
-| `reward_items` | `Dictionary` | `{}` |  |
+| `reward_items` | `Dictionary` | `{}` | With `reward_money`, above. |
 
 ## boon
 
@@ -616,8 +616,8 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
-| `description` | `String`, several lines | `""` |  |
+| `display_name` | `String` | `""` | The name the player reads where it is offered. |
+| `description` | `String`, several lines | `""` | What it does, as the player reads it before taking it. |
 | `condition` | `String` | `""` | When a run may take it: a `GameRules` query; empty, always. |
 | `pool` | `StringName` |  | The pool it is offered from (`RunService.offer_boons()`, `BoonAltar.pool`); empty, the common one. |
 | `weight` | `int`, 1 to 100 | `10` | How often it is offered against the others: twice the weight, twice as often. |
@@ -632,7 +632,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
+| `display_name` | `String` | `""` | The name a run's report gives it. |
 | `order` | `int` | `0` | Where it stands in a run's report: lower first, then by id. |
 | `best_flag` | `StringName` |  | The profile counter (`GameProfile`) that keeps the best this tally reached in any run, raised as the run raises the tally; none keeps no best. |
 
@@ -642,11 +642,11 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
-| `size` | `Vector2` | `Vector2(480.0, 216.0)` |  |
-| `obstacles` | `Array[Rect2]` | `[]` |  |
+| `display_name` | `String` | `""` | The name the player reads. |
+| `size` | `Vector2` | `Vector2(480.0, 216.0)` | The size of the field, in pixels, from `MIN_SIZE` to `MAX_SIZE`. |
+| `obstacles` | `Array[Rect2]` | `[]` | The rectangles of the field no unit walks through: rocks, walls, water. |
 | `player_faction_id` | `StringName` | `FactionData.PLAYER` | The side the player commands (`FactionData`); its allies fight with it. |
-| `placements` | `Array[RtsPlacement]` | `[]` |  |
+| `placements` | `Array[RtsPlacement]` | `[]` | The units of each side, where they stand and when they come (`RtsPlacement`). |
 | `computer_advances` | `bool` | `true` | Whether the units the player does not command march on the nearest foe when they have nothing to do; if not, they wait where they stand until a foe comes in sight, and then go after it as any unit with nothing to do. |
 | `goal_area` | `Rect2` | `Rect2()` | The ground a side wins the battle by holding (a camp's fire, a hilltop): once units of the side of `goal_faction_id` stood in it with no foe among them, healers aside, for `goal_seconds` in all, that side wins (`RtsGoal`), the player's when it is theirs; and the units the player does not command that advance march on it rather than on their nearest foe. With no area, the battle ends only when one side is left. |
 | `goal_seconds` | `float`, 1 to 600 s | `30.0` | The seconds of holding the ground that win the battle. |
@@ -660,12 +660,12 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
+| `display_name` | `String` | `""` | The name the player reads. |
 | `texture` | `Texture2D` |  | What the field shows of it; none: a disc of `color` with its name's initial. |
-| `color` | `Color` | `Color(0.55, 0.6, 0.7)` |  |
-| `max_health` | `int`, 1 to 9999 | `30` |  |
+| `color` | `Color` | `Color(0.55, 0.6, 0.7)` | With `texture`, above. |
+| `max_health` | `int`, 1 to 9999 | `30` | Its health as it comes on the field, and the most mending gives back. |
 | `damage` | `int`, 1 to 999 | `5` | The health an attack takes, less the target's `armor`, never below 1. |
-| `armor` | `int`, 0 to 999 | `0` |  |
+| `armor` | `int`, 0 to 999 | `0` | What it takes off each attack on it. |
 | `attack_range` | `float`, 1 to 400 | `4.0` | How far from its edge to a foe's edge it attacks: a few pixels for a blade, many for a bow. |
 | `heal` | `int`, 0 to 999 | `0` | The health it mends instead of attacking: a healer goes after the most hurt unit it sees of a side it does not fight, itself aside, and mends it from `attack_range` once every `attack_cooldown`, and never strikes a foe. 0: it fights. |
 | `cures` | `bool` | `false` | Whether its mending also lifts every affliction on the friend it mends (`RtsUnit.afflictions`): a field medic who puts out a burn. Only a healer cures. |
@@ -674,7 +674,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `sight_range` | `float`, 1 to 600 | `80.0` | How far from its edge it notices a foe and goes after it. |
 | `radius` | `float`, 2 to 32 | `5.0` | The size of its round body, which other units keep out of. |
 | `strong_against` | `Array[StringName]` | `[]` | The kinds of unit (`RtsUnitData` ids) its attacks hit `strong_multiplier` times as hard, and which it goes after before the rest it sees: a rider running down slingers, a spear holding off a brute. |
-| `strong_multiplier` | `float`, 1 to 4 | `2.0` |  |
+| `strong_multiplier` | `float`, 1 to 4 | `2.0` | With `strong_against`, above. |
 | `affliction_id` | `StringName` |  | The affliction (`AfflictionData`) its attacks lay on the foes they leave standing, a burn that takes more health in battle time; empty, none. |
 | `immune_to` | `Array[StringName]` | `[]` | The afflictions (`AfflictionData` ids) that never take hold of it: a fire-born brute that never burns. |
 
@@ -684,7 +684,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` |  |  |
+| `display_name` | `String` |  | The name the player reads. |
 | `short_name` | `String` |  | The name where space is short (the HUD line); empty uses `display_name`. |
 | `order` | `int` | `0` | Where the skill is listed among the game's skills: lower first, then by id. |
 | `level_xp` | `PackedInt32Array` | `PackedInt32Array()` | Experience to reach level 2, 3, ...: one rising amount per level above 1. |
@@ -696,16 +696,16 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
-| `effect` | `Effect` | `Effect.DAMAGE` | Values: DAMAGE = 0 (Takes health: its power and the user's attack, less the target's defense (each with its boosts, `GridUnit.get_attack()`), at least 1), HEAL = 1 (Gives back health: its power). |
-| `power` | `int`, 0 to 999 | `4` |  |
+| `display_name` | `String` | `""` | The name the player reads as they choose it. |
+| `effect` | `Effect` | `Effect.DAMAGE` | Whether it takes health or gives it back. Values: DAMAGE = 0 (Takes health: its power and the user's attack, less the target's defense (each with its boosts, `GridUnit.get_attack()`), at least 1), HEAL = 1 (Gives back health: its power). |
+| `power` | `int`, 0 to 999 | `4` | How much health it takes, before the user's attack and the target's defense, or gives back. |
 | `min_range` | `int`, 0 to 12 | `1` | How near and how far the cell it aims at may be, in steps; 0 is the user's own cell. |
-| `max_range` | `int`, 0 to 12 | `1` |  |
+| `max_range` | `int`, 0 to 12 | `1` | With `min_range`, above. |
 | `area` | `int`, 0 to 4 | `0` | How many steps from the aimed cell it reaches too; 0: that cell alone. |
 | `recharge_turns` | `int`, 0 to 9 | `0` | How many of its user's turns go by after it takes it before it may take it again; 0: on every turn. |
 | `delay` | `float`, 0 to 100 | `0.0` | How far it sets back the time gauge of each foe it hits and leaves standing (`AtbBattle.GAUGE_FULL` is a whole turn), no further than empty; 0: not at all. Only an action that does damage delays. |
 | `boosts` | `Dictionary[StringName, int]` | `{}` | How it changes the attack and defense (`GridUnit.ATTACK`, `GridUnit.DEFENSE`) of each unit it reaches and leaves standing, as stat -> amount, through that unit's next `boost_turns` turns (`GridUnit.boost()`): more on its own side when it heals, less on its foes when it does damage; empty, none. |
-| `boost_turns` | `int`, 1 to 9 | `2` |  |
+| `boost_turns` | `int`, 1 to 9 | `2` | With `boosts`, above. |
 | `affliction_id` | `StringName` |  | What it lays on each foe it hits and leaves standing (`AfflictionData`, `GridUnit.afflict()`): a poisoned dart; empty, nothing. Only an action that does damage lays one. |
 | `cures` | `bool` | `false` | Whether it lifts every affliction on each unit it heals (`GridUnit.afflictions`): a cleansing prayer. Only an action that heals cures. |
 
@@ -715,9 +715,9 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
-| `size` | `Vector2i` | `Vector2i(8, 6)` |  |
-| `blocked_cells` | `Array[Vector2i]` | `[]` |  |
+| `display_name` | `String` | `""` | The name the player reads. |
+| `size` | `Vector2i` | `Vector2i(8, 6)` | The columns and rows of its grid, at most `MAX_SIDE` each. |
+| `blocked_cells` | `Array[Vector2i]` | `[]` | The cells no unit stands on or walks through: water, walls. |
 | `cover_cells` | `Array[Vector2i]` | `[]` | The open cells that give cover to who stands there. |
 | `cover_reduction` | `float`, 0 to 0.9 | `0.3` | The share of damage a unit in cover does not take. |
 | `rough_cells` | `Array[Vector2i]` | `[]` | The open cells that take more steps to enter. |
@@ -725,7 +725,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `goal_cells` | `Array[Vector2i]` | `[]` | The open cells a side wins the battle by taking: a unit of the side of `goal_faction_id` that ends its turn on one wins it for that side, the player's when it is theirs (a banner to seize) and the foes' when it is not (a beacon to keep unlit); empty, the battle ends only when one side is left. |
 | `goal_faction_id` | `StringName` |  | The side that takes the goal cells (`FactionData`); empty, the player's. |
 | `player_faction_id` | `StringName` | `FactionData.PLAYER` | The side the player commands (`FactionData`); its allies fight with it. |
-| `placements` | `Array[BattlePlacement]` | `[]` |  |
+| `placements` | `Array[BattlePlacement]` | `[]` | The units of each side, in which cells and when they come (`BattlePlacement`). |
 | `time_limit` | `float`, 0 to 900 s | `0.0` | The most seconds of battle time the battle lasts: once they pass, the side of `time_faction_id` wins (`BattleTimeLimit`), the player's when it is theirs (a stand to hold out) and the foes' when it is not (a raid to win in time); 0, no limit. |
 | `time_faction_id` | `StringName` |  | The side that wins once time runs out (`FactionData`); empty, the player's. |
 
@@ -735,10 +735,10 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
-| `display_name` | `String` | `""` |  |
+| `display_name` | `String` | `""` | The name the player reads. |
 | `texture` | `Texture2D` |  | What a cell shows of it; none: a disc of `color` with its name's initial. |
-| `color` | `Color` | `Color(0.55, 0.6, 0.7)` |  |
-| `max_health` | `int`, 1 to 9999 | `20` |  |
+| `color` | `Color` | `Color(0.55, 0.6, 0.7)` | With `texture`, above. |
+| `max_health` | `int`, 1 to 9999 | `20` | Its health as it comes on the grid, and the most a heal gives back. |
 | `attack` | `int`, 0 to 999 | `4` | What it adds to the damage it does (`BattleActionData.amount_for()`). |
 | `defense` | `int`, 0 to 999 | `1` | What it takes off the damage it is done. |
 | `speed` | `float`, 1 to 100 | `20.0` | How fast its gauge fills, in points a second: a turn comes every `AtbBattle.GAUGE_FULL / speed` seconds. |

@@ -15,7 +15,9 @@ const KIND := &"boon"
 ## A boon a run may take this many times is taken as often as it is offered.
 const UNLIMITED := 99
 
+## The name the player reads where it is offered.
 @export var display_name := ""
+## What it does, as the player reads it before taking it.
 @export_multiline var description := ""
 ## When a run may take it: a `GameRules` query; empty, always.
 @export var condition := ""

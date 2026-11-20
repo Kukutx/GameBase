@@ -19,6 +19,8 @@ const KIND := &"hint"
 ## The placeholder that reads as the movement controls.
 const MOVE := "move"
 
+## What the player reads, each control named by its action in braces
+## (`{interact}`, `{move}`).
 @export_multiline var text := ""
 
 static var _placeholder := RegEx.create_from_string("\\{([a-z0-9_]+)\\}")

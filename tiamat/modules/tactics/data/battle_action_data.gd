@@ -27,8 +27,12 @@ enum Effect {
 	HEAL,
 }
 
+## The name the player reads as they choose it.
 @export var display_name := ""
+## Whether it takes health or gives it back.
 @export var effect := Effect.DAMAGE
+## How much health it takes, before the user's attack and the target's defense,
+## or gives back.
 @export_range(0, 999) var power := 4
 ## How near and how far the cell it aims at may be, in steps; 0 is the user's
 ## own cell.

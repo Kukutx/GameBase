@@ -10,6 +10,7 @@ extends ContentEntry
 
 const KIND := &"record"
 
+## The name the player reads under Records.
 @export var display_name := ""
 ## The profile counter it shows.
 @export var flag: StringName

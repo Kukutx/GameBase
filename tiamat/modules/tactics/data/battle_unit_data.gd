@@ -7,10 +7,12 @@ extends ContentEntry
 
 const KIND := &"battle_unit"
 
+## The name the player reads.
 @export var display_name := ""
 ## What a cell shows of it; none: a disc of `color` with its name's initial.
 @export var texture: Texture2D
 @export var color := Color(0.55, 0.6, 0.7)
+## Its health as it comes on the grid, and the most a heal gives back.
 @export_range(1, 9999) var max_health := 20
 ## What it adds to the damage it does (`BattleActionData.amount_for()`).
 @export_range(0, 999) var attack := 4

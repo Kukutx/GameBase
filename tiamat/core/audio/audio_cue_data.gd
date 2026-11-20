@@ -12,9 +12,15 @@ enum CueType {
 
 const KIND := &"audio_cue"
 
+## A sound, which plays over the others (`max_voices`), or music, which plays
+## alone and fades in over the music before it (`fade_seconds`).
 @export var cue_type: CueType = CueType.SFX
+## What plays; none, a slot waiting for its audio.
 @export var stream: AudioStream
+## How loud it plays, in decibels: 0 as recorded, about -6 half as loud.
 @export_range(-60.0, 12.0, 0.1) var volume_db := 0.0
+## The lowest and highest pitch it plays at, 1 as recorded: each time a pitch
+## between them, so a sound heard often never sounds the same twice.
 @export_range(0.5, 2.0, 0.01) var pitch_min := 1.0
 @export_range(0.5, 2.0, 0.01) var pitch_max := 1.0
 ## Music: how long it takes to fade in, and the music before it to fade out.
