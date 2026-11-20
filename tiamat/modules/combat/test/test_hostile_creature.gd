@@ -9,9 +9,11 @@ var _vitals_snapshot: Dictionary
 var _hotbar_snapshot: Dictionary
 var _world_snapshot: Dictionary
 var _reduced_motion := false
+var _options: GameOptions
 
 func before_each() -> void:
 	_reduced_motion = GameSettings.reduced_motion
+	_options = GameSettings.options
 	_clock_snapshot = WorldClock.to_save_data()
 	_inventory_snapshot = InventoryState.to_save_data()
 	_vitals_snapshot = Vitals.to_save_data()
@@ -35,6 +37,7 @@ func after_each() -> void:
 	Hotbar.load_save_data(_hotbar_snapshot)
 	WorldState.load_save_data(_world_snapshot)
 	GameSettings.reduced_motion = _reduced_motion
+	GameSettings.options = _options
 	# The creatures the test left go after this hook; their fight goes now.
 	FightState.end_fight()
 
@@ -170,6 +173,18 @@ func test_pending_ground_loot_is_saved_with_the_creature() -> void:
 	assert_eq(enemy.pending_drop_quantity, 3)
 	var enemy_saved := WorldState.get_value(&"enemy:fixture_pending_slime", {}) as Dictionary
 	assert_eq(int(enemy_saved.get("pending_drop_quantity", 0)), 3)
+
+func test_the_player_chooses_how_strong_the_creatures_are() -> void:
+	GameSettings.options = GameOptions.new(CombatModule.new().get_options())
+	assert_eq(GameSettings.get_option(HostileCreature.STRENGTH_OPTION), "Standard", "the module offers the choice, standard at first")
+	GameSettings.options.set_value(HostileCreature.STRENGTH_OPTION, "Strong")
+	var strong := _add_slime(&"")
+	assert_eq(strong.health.maximum, 45, "half again its kind's 30")
+	assert_eq(strong.health.current, 45)
+	GameSettings.options.set_value(HostileCreature.STRENGTH_OPTION, "Weak")
+	assert_eq(_add_slime(&"").health.maximum, 23, "three quarters of 30, rounded")
+	GameSettings.options = GameOptions.new()
+	assert_eq(_add_slime(&"").health.maximum, 30, "a game without the option keeps its kinds' health")
 
 func _add_slime(persistent_id: StringName) -> HostileCreature:
 	var enemy := HOSTILE_CREATURE_SCENE.instantiate() as HostileCreature

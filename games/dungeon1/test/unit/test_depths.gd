@@ -146,7 +146,7 @@ func test_the_way_on_opens_once_every_enemy_is_defeated() -> void:
 	assert_false(stairs.enabled)
 	assert_false(rope.enabled)
 	for enemy: HostileCreature in depth_floor.get_enemies():
-		enemy.take_damage(enemy.data.max_health)
+		enemy.take_damage(enemy.get_max_health())
 	await get_tree().process_frame
 	assert_true(depth_floor.is_cleared())
 	assert_true(stairs.enabled and depth_floor.get_node("Stairs").visible)

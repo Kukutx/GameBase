@@ -9,12 +9,18 @@ extends CharacterBody2D
 ## its loot and comes back after `respawn_days`. A `StateMachine` runs it
 ## (idle, chase, hurt, defeated), and with a `persistent_id` its state saves
 ## with the world. Chasing the player or stunned by their hit, it hunts them,
-## which makes a fight (`FightState`).
+## which makes a fight (`FightState`). It has the health of its kind times the
+## player's foe strength (`STRENGTH_OPTION`, which `CombatModule` declares).
 
 const PICKUP_SCENE := preload("res://tiamat/modules/items/items/item_pickup.tscn")
 ## How long a hit stops it.
 const HURT_SECONDS := 0.2
 
+## The player's option of how strong the creatures are, and the share of
+## their kinds' health each of its choices gives them; a choice not named here
+## gives them all of it.
+const STRENGTH_OPTION := &"foe_strength"
+const STRENGTH_SCALES: Dictionary[String, float] = {"Weak": 0.75, "Standard": 1.0, "Strong": 1.5}
 const STATE_IDLE := &"idle"
 const STATE_CHASE := &"chase"
 const STATE_HURT := &"hurt"
@@ -163,6 +169,12 @@ func take_damage(amount: int) -> bool:
 		_die()
 	return true
 
+## Its full health: its kind's at the player's foe strength.
+func get_max_health() -> int:
+	if data == null:
+		return 1
+	return maxi(1, roundi(data.max_health * GameSettings.options.scale_of(STRENGTH_OPTION, STRENGTH_SCALES)))
+
 func get_state_data() -> Dictionary:
 	return {
 		"health": health.current,
@@ -172,7 +184,7 @@ func get_state_data() -> Dictionary:
 	}
 
 func load_state_data(state: Dictionary, persist := true) -> void:
-	var max_health := data.max_health if data != null else 1
+	var max_health := get_max_health()
 	var current_day := maxi(WorldClock.day, 1)
 	health.reset(max_health)
 	health.current = clampi(SaveValues.whole_number_or(state.get("health", max_health), max_health), 0, max_health)
@@ -203,7 +215,7 @@ func _apply_data() -> void:
 	if data == null:
 		return
 	if health.is_depleted() and not is_defeated:
-		health.reset(data.max_health)
+		health.reset(get_max_health())
 	var shape := RectangleShape2D.new()
 	shape.size = data.collision_size
 	body_shape.shape = shape
@@ -311,7 +323,7 @@ func _on_day_changed(day: int) -> void:
 		return
 	is_defeated = false
 	defeated_day = 0
-	health.reset(data.max_health)
+	health.reset(get_max_health())
 	_set_alive_visual()
 	_machine.change(STATE_IDLE)
 	set_physics_process(true)
@@ -390,7 +402,7 @@ func _persist() -> void:
 func _load_state() -> void:
 	if data == null:
 		return
-	health.reset(data.max_health)
+	health.reset(get_max_health())
 	if persistent_id == &"":
 		return
 	var raw: Variant = WorldState.get_value(_state_key(), {})
@@ -399,7 +411,7 @@ func _load_state() -> void:
 	if is_defeated and WorldClock.day - defeated_day >= data.respawn_days:
 		is_defeated = false
 		defeated_day = 0
-		health.reset(data.max_health)
+		health.reset(get_max_health())
 		_persist()
 
 func _state_key() -> StringName:
