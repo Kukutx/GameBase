@@ -32,7 +32,7 @@ test/runtime/      The delve smoke: camp, two depths, save and load, a defeat
 - Floors laid out from the run's random stream: the same run and depth always give the same floor, a new run new ones, and deeper floors more and harder enemies (`EnemyTier`: slimes from depth 1, skeletons from 3, ember wisps from 6)
 - Stairs down and the rope back to camp open once every enemy of the floor is defeated
 - Each trip down is a run of the roguelite module (`RunState`), from the way down until the rope back or a defeat; the game saves only between runs, at camp, and a defeat costs a quarter of the player's money
-- Combat experience and three achievements, all triggers in `game/data/triggers/`; the deepest depth any save reached stays in the player's profile
+- Combat experience and five achievements (`game/data/achievements/`), unlocked by triggers in `game/data/triggers/`: Slayer counts every creature defeated in any run, and the title and the pause menu show how far the player is; the deepest depth any save reached stays in the player's profile
 - A clock that stands still: a day passes when the player rests or is defeated
 
 Everything except the floors is the foundation's: the title, pause and settings menus, the hotbar, the melee attack, the enemies, the shop, the runs and the depth track, saving, the profile and the triggers.
