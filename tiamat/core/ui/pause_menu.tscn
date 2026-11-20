@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://tiamat/core/ui/pause_menu.gd" id="1_pause"]
 [ext_resource type="PackedScene" path="res://tiamat/core/ui/settings_menu.tscn" id="2_settings"]
+[ext_resource type="Script" path="res://tiamat/core/ui/even_rows.gd" id="3_even_rows"]
 
 [node name="PauseMenu" type="CanvasLayer"]
 layer = 100
@@ -82,19 +83,30 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Achievements"
 
-[node name="Pages" type="HBoxContainer" parent="Dim/Panel/Layout"]
+[node name="Pages" type="GridContainer" parent="Dim/Panel/Layout"]
 unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 2
+
+[node name="EvenRows" type="Node" parent="Dim/Panel/Layout/Pages"]
+script = ExtResource("3_even_rows")
+
+[node name="LeaveRow" type="HBoxContainer" parent="Dim/Panel/Layout"]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="ReturnTitle" type="Button" parent="Dim/Panel/Layout"]
+[node name="ReturnTitle" type="Button" parent="Dim/Panel/Layout/LeaveRow"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Return to Title"
 
-[node name="Quit" type="Button" parent="Dim/Panel/Layout"]
+[node name="Quit" type="Button" parent="Dim/Panel/Layout/LeaveRow"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Quit to Desktop"
 
 [node name="Status" type="Label" parent="Dim/Panel/Layout"]

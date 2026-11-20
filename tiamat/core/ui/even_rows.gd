@@ -5,19 +5,31 @@ extends Node
 ## in one row while they are `most` or fewer, else in as few rows as hold them
 ## with as many in each (four in two rows of two, not three and one).
 ##
-## A child of the grid. It counts again whenever a button is shown or hidden,
-## so a menu that offers no achievements, or a web build that cannot quit,
-## keeps its rows even.
+## A child of the grid. It counts again whenever a button is shown, hidden,
+## added or taken away, so a menu that offers no achievements, a web build
+## that cannot quit, or a pause menu whose pages come and go keeps its rows
+## even.
 
 ## The most buttons a row holds.
 @export var most := 3
 
 func _ready() -> void:
-	for child: Node in get_parent().get_children():
-		var control := child as Control
-		if control != null:
-			control.visibility_changed.connect(balance)
+	var grid := get_parent()
+	grid.child_entered_tree.connect(_on_child_entered)
+	# A child leaving is still the grid's as it says so.
+	grid.child_exiting_tree.connect(func(_child: Node) -> void: balance.call_deferred())
+	for child: Node in grid.get_children():
+		_watch(child)
 	balance()
+
+func _on_child_entered(child: Node) -> void:
+	_watch(child)
+	balance()
+
+func _watch(child: Node) -> void:
+	var control := child as Control
+	if control != null and not control.visibility_changed.is_connected(balance):
+		control.visibility_changed.connect(balance)
 
 ## Gives the grid the columns that keep the buttons it shows now in even rows.
 func balance() -> void:
