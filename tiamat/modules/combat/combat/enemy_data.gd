@@ -1,30 +1,48 @@
 class_name EnemyData
 extends ContentEntry
 
+## A kind of creature that fights the player in real time (`HostileCreature`,
+## which a scene places with its id): how it looks and moves, how hard it
+## hits and how it is hurt, what it lays on the player, the side it is on, and
+## what it drops and is worth once defeated. An `EliteData` form makes one
+## stronger.
+
 const KIND := &"enemy"
 
+## The name the player reads (the bestiary, where an item comes from).
 @export var display_name: String = "Enemy"
+## Its sprite sheet, cells of `frame_size` in rows (`SheetAnimator`); empty or
+## missing, it is drawn as a shape of its `fallback_color`.
 @export var sprite_path: String
 ## Multiplies the colours of the `sprite_path` art: one sheet in another
 ## palette serves another enemy (a cave slime from a green slime's sheet).
 @export var sprite_tint := Color.WHITE
 ## The colour of the shape an enemy is drawn as while it has no `sprite_path` art.
 @export var fallback_color := Color(0.35, 0.75, 0.38)
+## The size of a cell of its sheet, in pixels.
 @export var frame_size := Vector2i(32, 32)
+## How fast its frames play.
 @export_range(1, 60, 1) var animation_fps := 12
+## The first and last frames, counted from 0 along the rows of its sheet, it
+## plays standing, moving and once when defeated (that long it lies there).
 @export_range(0, 999, 1) var idle_from := 0
 @export_range(0, 999, 1) var idle_to := 0
 @export_range(0, 999, 1) var move_from := 0
 @export_range(0, 999, 1) var move_to := 0
 @export_range(0, 999, 1) var death_from := 0
 @export_range(0, 999, 1) var death_to := 0
+## Its health, before the player's foe strength scales it.
 @export_range(1, 999, 1) var max_health := 30
+## How fast it moves, in pixels a second.
 @export_range(1.0, 300.0, 1.0) var move_speed := 36.0
+## How near the player must come for it to chase them; farther, it gives up.
 @export_range(8.0, 400.0, 1.0) var chase_radius := 110.0
 ## How near the player must be for it to strike, or to shoot (`shot_speed`).
 @export_range(4.0, 320.0, 1.0) var attack_range := 16.0
+## The damage of each strike or shot.
 @export_range(0, 999, 1) var contact_damage := 8
-@export_range(0.1, 10.0, 0.1) var attack_cooldown := 1.2
+## How long it waits after a strike or a shot before the next.
+@export_range(0.1, 10.0, 0.1, "suffix:s") var attack_cooldown := 1.2
 ## How long it winds up a strike once the player is in reach, standing still
 ## and glowing (`HostileCreature.windup_color`), so the player sees it coming:
 ## a step out of reach or a hit that stuns it before it lands spares them.
@@ -50,11 +68,18 @@ const KIND := &"enemy"
 @export_range(0.0, 600.0, 1.0) var knockback := 90.0
 ## How far a hit pushes it: 0 for not at all, 1 for the hit's full push.
 @export_range(0.0, 4.0, 0.05) var knockback_scale := 1.0
+## The box it stands in and is hit in, in pixels.
 @export var collision_size := Vector2(16, 12)
+## Where its sprite is drawn from where it stands, in pixels.
 @export var visual_offset := Vector2(0, -5)
+## How large its sprite is drawn.
 @export_range(0.1, 4.0, 0.05) var visual_scale := 1.0
+## The item (`ItemData`) it drops when defeated; empty, none.
 @export var drop_item_id: StringName
+## How many of it it drops, before the player's loot stat and an elite's
+## extra.
 @export_range(0, 99, 1) var drop_quantity := 1
+## How many days after its defeat it comes back.
 @export_range(1, 28, 1) var respawn_days := 1
 ## Combat experience a defeat is worth, which `CombatEvents.enemy_defeated`
 ## passes on for the game to award (0: none).

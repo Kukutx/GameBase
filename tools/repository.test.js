@@ -13,7 +13,7 @@ const { desiredAddonExcludes, desiredAutoloads, desiredTestDirs, moduleOrder, po
 const { createGame } = require("./new_game");
 const { PRESET_NAMES, androidVersionCode, applicationId } = require("./lib/targets");
 const { runWithin, selectGames } = require("./ci");
-const { callArguments, pages, ruleKeys, signalsOf, stalePages } = require("./generate_reference");
+const { callArguments, classSummary, contentKinds, enumsOf, fieldsOf, pages, ruleKeys, signalsOf, stalePages } = require("./generate_reference");
 const { findTestScripts } = require("./validate");
 
 const read = (...parts) => fs.readFileSync(rootPath(...parts), "utf8");
@@ -520,6 +520,32 @@ test("the reference pages name every autoload with what it does and every rule k
     { name: "done", params: "(at: int)", doc: "Done." },
     { name: "bare", params: "()", doc: "" },
   ]);
+});
+
+test("the content reference lists every kind of content with the fields its entries set", () => {
+  const page = pages()["content.md"];
+  const kinds = contentKinds();
+  assert.ok(kinds.length > 0);
+  for (const entry of kinds) {
+    assert.ok(page.includes(`\n## ${entry.kind}\n`), `content.md has a section for ${entry.kind}`);
+    assert.ok(page.includes(`| [${entry.kind}](#${entry.kind}) |`), `content.md lists ${entry.kind}`);
+    assert.ok(classSummary(entry.source), `${entry.file} has a class doc saying what a ${entry.kind} is`);
+  }
+  assert.equal(new Set(kinds.map((entry) => entry.kind)).size, kinds.length, "no two classes declare one kind");
+  assert.deepEqual(
+    fieldsOf('## How long.\n@export_range(0.1, 60.0, 0.1, "suffix:s") var seconds := 3.0\n@export var tag: StringName\n## Not a field\nvar inner := 1\n@export_file("*.tscn") var scene: String\n'),
+    [
+      { name: "seconds", annotation: "_range", args: '0.1, 60.0, 0.1, "suffix:s"', type: "", initial: "3.0", doc: "How long." },
+      { name: "tag", annotation: "", args: "", type: "StringName", initial: "", doc: "" },
+      { name: "scene", annotation: "_file", args: '"*.tscn"', type: "String", initial: "", doc: "" },
+    ],
+  );
+  assert.deepEqual([...enumsOf("enum Effect {\n\t## Takes health.\n\tDAMAGE,\n\tHEAL = 4, # a comment, with a comma\n\tCURE,\n}\n").entries()], [
+    ["Effect", [{ value: "DAMAGE", number: 0, doc: "Takes health." }, { value: "HEAL", number: 4, doc: "" }, { value: "CURE", number: 5, doc: "" }]],
+  ]);
+  const row = page.split("\n").find((line) => line.startsWith("| `seconds` |") && line.includes("hit that laid it"));
+  assert.match(row, /`float`, 0\.1 to 60 s \| `3\.0` \|/, "a range and its unit show beside the type");
+  assert.ok(page.includes("Values: DAMAGE = 0 ("), "an enum field lists its values and their numbers");
 });
 
 test("validate --test finds a GUT script in the test directories a game runs, and only there", () => {

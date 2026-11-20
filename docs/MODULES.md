@@ -2,7 +2,7 @@
 
 A module is an optional piece of gameplay under `tiamat/modules/<module>/` that every game listing it in its `game.json` shares: `items`, `skills`, `damage`, `dialogue`, `combat`, `lifesim`, `npc_social`, `npc_ai`, `progression`, `roguelite`, `rts` and `tactics` today. A module is written once and wires itself into the core; a game only lists it. What only one game needs stays in that game's `game/`, and something every game needs belongs in `tiamat/core/`.
 
-The reference pages list what the foundation already offers: [autoloads](reference/autoloads.md), [events](reference/events.md) and [rule keys](reference/rules.md).
+The reference pages list what the foundation already offers: [autoloads](reference/autoloads.md), [events](reference/events.md), [rule keys](reference/rules.md) and [content kinds](reference/content.md).
 
 ## Layout
 
@@ -70,7 +70,7 @@ Three more methods of `<Module>Module` answer rather than register. `get_control
 
 ## Content
 
-Each kind of content is a class that extends `ContentEntry`, declares `const KIND`, and gives static `find(id)` and `find_all()` that read `ContentRegistry.active`. Its `find_problems(registry)` returns what is wrong with an entry: missing fields and references to unknown ids. A node in a location's scene that refers to content implements `find_scene_problems(registry, location)`. `ContentDB` asks both while it indexes, and a problem fails validation. Code always reads content through these classes, never through `ContentDB` directly, so a test's fixture content reaches it.
+Each kind of content is a class that extends `ContentEntry`, declares `const KIND`, and gives static `find(id)` and `find_all()` that read `ContentRegistry.active`. Its `find_problems(registry)` returns what is wrong with an entry: missing fields and references to unknown ids. A node in a location's scene that refers to content implements `find_scene_problems(registry, location)`. `ContentDB` asks both while it indexes, and a problem fails validation. Code always reads content through these classes, never through `ContentDB` directly, so a test's fixture content reaches it. The [content kinds](reference/content.md) page shows each kind's exported fields with their `##` doc comments, so a field a game sets carries one.
 
 Nothing in the module names a game's ids. When it needs one (the location of a mine, the item a quest starts with), it reads it from a slot the game fills: an exported property set in the game's scene, a field of the game's data, or `GameDefinition`.
 
@@ -83,7 +83,7 @@ A service keeps its state in the autoload and saves it in a section of its own, 
 - `<Module>Events` declares the signals of what happened in the module (an item crafted, a fish caught). Only the module emits them; higher modules, the game, triggers and quest objectives listen (`"<Module>Events.<signal>"`, `GameEvent`), so a module that counts or rewards what happens elsewhere listens to an event named in content rather than to another module's code. An argument that holds a content id is named `<kind>_id` after its kind (`crop_id`, `mining_node_id`, or `result_item_id` for an item that is a result), which lets content checks verify the ids compared with it.
 - `<Module>Rules.register(rules)` registers the module's keys. Each handler has a doc comment `## KEY <arg> [optional]: what it means.`, which the [rule keys](reference/rules.md) page shows.
 
-After changing an autoload, a signal or a rule key, run `node tools/generate_reference.js`; validation fails while a reference page differs from the code.
+After changing an autoload, a signal, a rule key or a content kind's fields, run `node tools/generate_reference.js`; validation fails while a reference page differs from the code.
 
 ## Text
 

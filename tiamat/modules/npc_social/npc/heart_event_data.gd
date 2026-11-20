@@ -1,13 +1,25 @@
 class_name HeartEventData
 extends ContentEntry
 
+## An NPC's scripted scene the player sees once (`HeartEventService`): it
+## plays in place of the NPC's daily lines when the player talks to them with
+## at least `required_hearts` of friendship, at its location, in its seasons
+## and hours, once its condition holds; its dialogue is `dialogue_title` of the
+## NPC's dialogue.
+
 const KIND := &"heart_event"
 
+## The NPC (`NpcProfileData`) whose scene it is.
 @export var npc_id: StringName
+## The hearts of friendship with them it takes.
 @export_range(0, 10, 1) var required_hearts := 2
+## The title, in the NPC's dialogue, of the scene it plays.
 @export var dialogue_title: String = "heart_event"
+## The location (`WorldLocationData`) it plays in; empty, any.
 @export var location_id: StringName
+## The seasons of the game's calendar it plays in; empty, every season.
 @export var seasons: PackedStringArray = PackedStringArray()
+## When in the day it plays, in minutes after midnight.
 @export_range(0, 1439, 1) var start_minute := 0
 @export_range(1, 1440, 1) var end_minute := 1440
 ## What else must hold for the event to play, in the `GameQuery` syntax

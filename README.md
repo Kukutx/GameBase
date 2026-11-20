@@ -94,7 +94,7 @@ GitHub Actions:
 - `.github/workflows/engine-compat.yml`: weekly validation and exports of every game against the newest stable Godot 4.x release, without moving the shared baseline.
 - `.github/workflows/addon-freshness.yml`: weekly stable-tag comparison for the vendored addons; it maintains one reminder issue and never replaces addon code.
 
-See `docs/MODULES.md` (writing a module), `docs/RELEASE.md`, `docs/ENGINE_UPGRADES.md`, `docs/LOCALIZATION.md`, `docs/AUDIO.md`, `docs/SUPPORT.md` and the reference pages `docs/reference/autoloads.md`, `docs/reference/events.md` and `docs/reference/rules.md`, which `node tools/generate_reference.js` writes from the code.
+See `docs/MODULES.md` (writing a module), `docs/RELEASE.md`, `docs/ENGINE_UPGRADES.md`, `docs/LOCALIZATION.md`, `docs/AUDIO.md`, `docs/SUPPORT.md` and the reference pages `docs/reference/autoloads.md`, `docs/reference/events.md`, `docs/reference/rules.md` and `docs/reference/content.md`, which `node tools/generate_reference.js` writes from the code.
 
 ## Development rules
 

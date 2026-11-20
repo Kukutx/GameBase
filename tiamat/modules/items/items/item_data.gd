@@ -1,14 +1,25 @@
 class_name ItemData
 extends ContentEntry
 
+## Something the player can carry in the inventory (`InventoryState`), buy and
+## sell (`ShopData`, `sell_price`), eat or drink (`restores`, `food_buff_id`),
+## use as a tool or a weapon (`tool_action`, `tool_power`), sow (`crop_id`) or
+## build (`placeable_id`), as its `kind` says. Content asks about it by id and
+## by its `tags` (the condition `ITEM_TAG`).
+
+## What the item is, which decides what the player can do with it.
 enum Kind {
 	MATERIAL,
 	FOOD,
+	## Sown to grow its `crop_id`.
 	SEED,
+	## Used for its `tool_action`; a tool never stacks and cannot be shipped.
 	TOOL,
 	CROP,
 	GIFT,
+	## Kept for a quest; it cannot be shipped.
 	QUEST,
+	## Built as its `placeable_id`.
 	PLACEABLE,
 	## Drunk rather than eaten: a potion restores and buffs as food does.
 	POTION,
@@ -17,16 +28,25 @@ enum Kind {
 const KIND := &"item"
 
 
+## The name the player reads.
 @export var display_name: String
+## What the player reads of it in the inventory and the shops.
 @export_multiline var description: String
+## How many one inventory slot holds; a tool's is 1.
 @export_range(1, 999, 1) var max_stack := 99
 @export var icon: Texture2D
 @export var kind: Kind = Kind.MATERIAL
 @export_range(0, 999999, 1) var buy_price := 0
+## What a shop pays for it; 0, it cannot be sold.
 @export_range(0, 999999, 1) var sell_price := 0
 ## What eating or drinking it restores, as vital id (`VitalData`) → amount.
 @export var restores: Dictionary[StringName, int] = {}
+## The food buff (`FoodBuffData`) eating or drinking it gives; empty, none.
 @export var food_buff_id: StringName
+## Words content asks about it by (`ITEM_TAG <item> <tag>`): a quest that counts
+## every fish caught, the player's weapons whose hits lay an affliction
+## (`AfflictionData.weapon_tag`), the items a new game carries over
+## (`ItemInheritance.tags`).
 @export var tags: PackedStringArray = PackedStringArray()
 ## What the tool does: an action some installed module or the game responds
 ## to. Whoever handles an action names it with a constant of its own (the
@@ -34,8 +54,15 @@ const KIND := &"item"
 ## (`register_tool_action()`); content checks reject a tool whose action
 ## nobody registered.
 @export var tool_action: StringName
+## How strong the tool is: the damage a weapon deals before the player's
+## stats (`WeaponUse`), the rocks a pick breaks and how fast
+## (`MiningNodeData.required_tool_power`), the energy a hoe or a watering can
+## spends on a plot (divided by it); a better tool raises it
+## (`ToolUpgradeData`).
 @export_range(1, 999, 1) var tool_power := 1
+## The crop (`CropData`) a seed grows.
 @export var crop_id: StringName
+## The placeable (`PlaceableData`) a placeable item builds.
 @export var placeable_id: StringName
 
 ## Tool actions registered with `register_tool_action()`, as action -> true.

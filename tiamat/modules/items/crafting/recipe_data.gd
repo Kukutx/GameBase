@@ -1,6 +1,11 @@
 class_name RecipeData
 extends ContentEntry
 
+## What the player makes from what they carry: `ingredients` swapped for the
+## `output_item_id` in one step (`CraftingService`), at a station of its
+## `category` (`CraftingStation`), once its `condition` holds.
+
+## The stations that make it: a workbench crafts, a kitchen cooks.
 enum Category {
 	CRAFTING,
 	COOKING,
@@ -8,10 +13,14 @@ enum Category {
 
 const KIND := &"recipe"
 
+## The name the player reads.
 @export var display_name: String
 @export var category: Category = Category.CRAFTING
+## What it takes, as item id -> count.
 @export var ingredients: Dictionary = {}
+## The item (`ItemData`) it makes.
 @export var output_item_id: StringName
+## How many of it one craft makes.
 @export_range(1, 99, 1) var output_quantity := 1
 ## When the recipe can be crafted, as a `GameRules` query; empty: always.
 @export var condition := ""

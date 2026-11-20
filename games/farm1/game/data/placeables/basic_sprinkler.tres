@@ -8,7 +8,6 @@ id = &"basic_sprinkler"
 display_name = "Basic Sprinkler"
 item_id = &"basic_sprinkler"
 scene_path = "res://tiamat/modules/lifesim/farming/basic_sprinkler.tscn"
-grid_size = Vector2i(1, 1)
 snap_size = 16
 minimum_spacing = 24.0
 daily_effect = &"water"

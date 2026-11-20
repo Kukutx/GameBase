@@ -1,13 +1,25 @@
 class_name CollectionMilestoneData
 extends ContentEntry
 
+## A reward of the player's collection log (`CollectionService`): for having
+## discovered a number of the items of a `category` (harvested, caught, mined,
+## ...), or for having claimed every one of its `prerequisites`. The player
+## claims its reward once it is ready (`CollectionMilestoneService`).
+
 const KIND := &"collection_milestone"
 
+## The name the player reads.
 @export var display_name: String
+## What the player reads of it.
 @export_multiline var description: String
+## The collection it counts (`CollectionService.CATEGORIES`: harvested,
+## caught, ...); empty, it counts its `prerequisites` instead.
 @export var category: StringName
+## How many of the category's items must be discovered; 0, all it holds.
 @export_range(0, 999, 1) var required_discovered := 0
+## The milestones (`CollectionMilestoneData`) that must be claimed first.
 @export var prerequisites: Array[StringName] = []
+## What claiming it gives: money and items (item id -> count).
 @export_range(0, 999999, 1) var reward_money := 0
 @export var reward_items: Dictionary = {}
 

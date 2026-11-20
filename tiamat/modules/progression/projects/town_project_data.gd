@@ -1,13 +1,24 @@
 class_name TownProjectData
 extends ContentEntry
 
+## A community project of the town (`TownProjectService`): the player donates
+## the items it asks (`requirements`) until all are in, and then claims its
+## reward. It opens once its prerequisites are complete, and content asks about
+## it with `PROJECT_COMPLETED <project>`.
+
 const KIND := &"town_project"
 
+## The name the player reads.
 @export var display_name: String = "Town Project"
+## What the player reads of it.
 @export_multiline var description: String
+## The location (`WorldLocationData`) whose project board lists it.
 @export var location_id: StringName
+## The projects (`TownProjectData`) that must be complete before it opens.
 @export var prerequisites: Array[StringName] = []
+## What it asks the player to donate, as item id -> count.
 @export var requirements: Dictionary = {}
+## What claiming it once complete gives: money and items (item id -> count).
 @export_range(0, 999999, 1) var reward_money := 0
 @export var reward_items: Dictionary = {}
 

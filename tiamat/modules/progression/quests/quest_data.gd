@@ -7,17 +7,25 @@ extends ContentEntry
 
 const KIND := &"quest"
 
+## The name the player reads in the quest log.
 @export var title: String
+## What the player reads of it.
 @export_multiline var description: String
 @export_group("Start")
+## Whether it begins a chain: every quest must be one or be led to from one
+## (`next_quest_id`).
 @export var entry_point := false
+## Whether a new game starts it at once; otherwise content starts it (a
+## trigger's `START_QUEST`, an earlier quest of its chain).
 @export var auto_start := false
 @export_group("Objectives")
 ## What the quest asks, all of which must be met; at least one.
 @export var objectives: Array[QuestObjective] = []
 @export_group("Reward")
+## What completing it gives: money and items (item id -> count).
 @export_range(0, 999999, 1) var reward_money := 0
 @export var reward_items: Dictionary = {}
+## The quest (`QuestData`) completing it starts; empty, the chain ends.
 @export var next_quest_id: StringName
 
 ## The quest with `entry_id` in the running game's content, or null.

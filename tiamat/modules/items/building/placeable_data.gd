@@ -1,17 +1,35 @@
 class_name PlaceableData
 extends ContentEntry
 
+## A structure the player builds in the world from its item and packs up again
+## (`BuildingPlacementService`): a chest, a furnace, a sprinkler. Its scene is
+## what stands there, and it may do something each day around it
+## (`daily_effect`).
+
 const KIND := &"placeable"
 
+## The name the player reads.
 @export var display_name: String
+## The item (`ItemData`, a `PLACEABLE` that names this placeable) that builds
+## it and that packing it up gives back.
 @export var item_id: StringName
+## What stands where it is built: a scene whose root is a `PlacedStructure`.
 @export_file("*.tscn") var scene_path: String
-@export var grid_size := Vector2i(1, 1)
+## The grid, in pixels, a spot to build it snaps to.
 @export_range(8, 128, 1) var snap_size := 16
+## How near another structure it may stand, in pixels; of two, the larger
+## counts.
 @export_range(0.0, 256.0, 1.0) var minimum_spacing := 20.0
+## What it does each day within its `effect_radius`, an effect some module
+## asks about (`BuildingPlacementService.is_point_affected()`): "water", a
+## sprinkler that waters the farm plots around it; empty, none.
 @export var daily_effect: StringName
+## How far its `daily_effect` reaches, in pixels.
 @export_range(0.0, 512.0, 1.0) var effect_radius := 0.0
+## The kinds of location it may be built in; empty, any.
 @export var allowed_location_types: Array[WorldLocationData.LocationType] = []
+## The locations (`WorldLocationData`) it may be built in; empty, any of the
+## allowed kinds.
 @export var allowed_location_ids: Array[StringName] = []
 
 ## The placeable with `entry_id` in the running game's content, or null.
