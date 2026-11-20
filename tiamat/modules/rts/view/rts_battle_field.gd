@@ -7,7 +7,8 @@ extends Control
 ## side that takes it is along its top), where units still on their way
 ## arrive (`RtsBattle.arrivals`, ringed in their side's colour with the
 ## seconds until the first comes), the units with
-## their health, the units the player selected, with how far each that strikes
+## their health and the afflictions on them (a dot in the colour of each,
+## ringed as it takes health), the units the player selected, with how far each that strikes
 ## from afar reaches (`get_range_rings()`), the blows and shots between
 ## units, where the player's last orders went, the box the player drags and
 ## the cursor of the keys and the gamepad. It reports where on the field, in
@@ -87,6 +88,7 @@ func show_battle(battle_to_show: RtsBattle) -> void:
 	_marks.clear()
 	battle.unit_attacked.connect(_on_unit_attacked)
 	battle.unit_healed.connect(_on_unit_healed)
+	battle.unit_ailed.connect(_on_unit_ailed)
 	queue_redraw()
 
 ## How many pixels on the screen a pixel of the field takes: whole when the
@@ -198,7 +200,10 @@ func _draw() -> void:
 	for entry: Dictionary in _flashes:
 		var color: Color = entry["color"]
 		color.a = 1.0 - float(entry["age"]) / FLASH_SECONDS
-		draw_line(to_screen(entry["from"] as Vector2), to_screen(entry["to"] as Vector2), color, maxf(zoom * 0.5, 1.0))
+		if entry.has("radius"):
+			draw_arc(to_screen(entry["from"] as Vector2), (float(entry["radius"]) + 1.0) * zoom, 0.0, TAU, 20, color, maxf(zoom * 0.5, 1.0))
+		else:
+			draw_line(to_screen(entry["from"] as Vector2), to_screen(entry["to"] as Vector2), color, maxf(zoom * 0.5, 1.0))
 	if _dragging:
 		var box := Rect2(_press_at, Vector2.ZERO).expand(_drag_to)
 		draw_rect(box, Color(box_color, box_color.a * 0.15))
@@ -249,6 +254,10 @@ func _draw_unit(unit: RtsUnit, zoom: float) -> void:
 		var font_size := maxi(roundi(radius * 1.3), 6)
 		var initial := TranslationServer.translate(unit.data.display_name).left(1).to_upper()
 		draw_string(font, Vector2(at.x - radius, at.y + font_size * 0.35), initial, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, font_size, ring)
+	if not unit.afflictions.is_empty():
+		var laid := unit.afflictions.get_all()
+		for index in laid.size():
+			draw_circle(at + Vector2(radius - index * maxf(zoom * 2.5, 2.5), radius), maxf(zoom, 1.5), laid[index].color)
 	if unit.health.current < unit.health.maximum or selection.has(unit):
 		var width := radius * 2.0
 		var top := at + Vector2(-radius, -radius - maxf(zoom * 2.5, 3.0))
@@ -265,6 +274,11 @@ func _age(list: Array[Dictionary], lasts: float, delta: float) -> void:
 
 func _on_unit_attacked(attacker: RtsUnit, target: RtsUnit, _amount: int) -> void:
 	_flashes.append({"from": attacker.position, "to": target.position, "age": 0.0, "color": flash_color})
+
+# A ring round `unit` in the colour of the affliction that took its health.
+func _on_unit_ailed(unit: RtsUnit, affliction: AfflictionData, amount: int) -> void:
+	if amount > 0:
+		_flashes.append({"from": unit.position, "to": unit.position, "age": 0.0, "color": affliction.color, "radius": unit.data.radius})
 
 func _on_unit_healed(healer: RtsUnit, target: RtsUnit, amount: int) -> void:
 	if amount > 0:

@@ -11,7 +11,9 @@ extends GutTest
 ## command; cancel drops an
 ## armed attack-move, then the selection, and twice gives the battle up; an
 ## unknown map ends it at once, and a definition that names one is a content
-## problem; the player's choice of speed speeds the game's.
+## problem; the player's choice of speed speeds the game's; a selection of
+## one kind tells what it is strong against and what it inflicts, and an
+## affliction rings its unit as it takes health.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
@@ -280,6 +282,26 @@ func test_a_selection_of_one_kind_tells_what_it_is_strong_against() -> void:
 	_key(game, KEY_TAB)
 	var told := tr("%d selected: %s") % [2, "%s ×2" % tr("Fixture Footman")] + " " + tr("(strong against %s)") % GameText.list(PackedStringArray([tr("Fixture Raider"), tr("Fixture Brute")]))
 	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == told), "the selection tells: %s" % told)
+
+func test_a_selection_of_one_kind_tells_what_it_inflicts() -> void:
+	RtsUnitData.find(&"fixture_footman").affliction_id = &"fixture_burn"
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	_key(game, KEY_TAB)
+	var told := tr("%d selected: %s") % [2, "%s ×2" % tr("Fixture Footman")] + " " + tr("(inflicts %s)") % tr("Fixture Burn")
+	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == told), "the selection tells: %s" % told)
+
+func test_an_affliction_rings_its_unit_as_it_takes_health() -> void:
+	var field: RtsBattleField = autofree(RtsBattleField.new())
+	var battle := RtsFixture.battle()
+	var raider := RtsFixture.add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2(40.0, 20.0))
+	field.show_battle(battle)
+	raider.afflict(AfflictionData.find(&"fixture_burn"), FactionData.PLAYER)
+	battle.advance(1.0 - RtsBattle.STEP)
+	assert_true(field.is_settled(), "nothing before its first tick")
+	battle.advance(RtsBattle.STEP)
+	assert_eq(raider.health.current, 22)
+	assert_false(field.is_settled(), "its tick rings the unit")
 
 func test_a_selected_unit_that_strikes_from_afar_shows_how_far() -> void:
 	var field: RtsBattleField = autofree(RtsBattleField.new())

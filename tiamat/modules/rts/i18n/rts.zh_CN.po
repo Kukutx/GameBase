@@ -55,6 +55,9 @@ msgstr "强"
 msgid "(strong against %s)"
 msgstr "（克制%s）"
 
+msgid "(inflicts %s)"
+msgstr "（施加%s）"
+
 msgid "%s: hold the marked ground for %d seconds, or defeat every foe."
 msgstr "%s：守住标出的地块 %d 秒，或击败所有敌人。"
 

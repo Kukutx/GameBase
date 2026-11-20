@@ -359,6 +359,9 @@ func _show_selection() -> void:
 					strong.append(tr(other.display_name))
 			if not strong.is_empty():
 				_info.text += " " + tr("(strong against %s)") % GameText.list(strong)
+			var affliction := only.get_affliction()
+			if affliction != null:
+				_info.text += " " + tr("(inflicts %s)") % tr(affliction.display_name)
 	var has_units := battle != null and not battle.get_player_units().is_empty()
 	for index in _buttons.size():
 		_buttons[index].disabled = not has_units if index == Command.SELECT_ALL else _selection.is_empty()

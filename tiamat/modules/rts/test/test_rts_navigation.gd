@@ -4,7 +4,7 @@ extends GutTest
 ## cells an obstacle or the edge closes, the straight line when it is clear,
 ## the way around an obstacle through open cells only, as near as it gets when
 ## nothing gets there, the open point nearest a closed one, and the places of
-## a group sent somewhere together.
+## a group sent somewhere together, and how far a push takes a body.
 
 func test_an_obstacle_and_the_edge_close_cells() -> void:
 	var navigation := _navigation()
@@ -62,5 +62,11 @@ func test_a_group_s_places_stand_in_rows_around_the_point_the_nearest_first() ->
 		assert_true(walled.is_open(place), "a place in a wall moves to an open point")
 
 # A field 100 by 60 with a wall from the top, 8 wide, 40 down.
+func test_a_push_goes_all_the_way_slides_along_a_wall_and_never_jumps_it() -> void:
+	var navigation := _navigation()
+	assert_eq(navigation.push(Vector2(10.0, 10.0), Vector2(3.0, 4.0)), Vector2(13.0, 14.0), "all the way when open")
+	assert_eq(navigation.push(Vector2(30.0, 10.0), Vector2(10.0, 2.0)), Vector2(30.0, 12.0), "along the wall it would go into")
+	assert_eq(navigation.push(Vector2(30.0, 10.0), Vector2(30.0, 0.0)), Vector2(30.0, 10.0), "never over it to the open ground beyond")
+
 func _navigation() -> RtsNavigation:
 	return RtsNavigation.new(Vector2(100.0, 60.0), [Rect2(40.0, 0.0, 8.0, 40.0)] as Array[Rect2])

@@ -26,6 +26,18 @@ func test_a_unit_is_strong_against_known_units_and_only_when_it_fights() -> void
 	medic.strong_against.assign([&"fixture_brute"])
 	assert_eq(medic.find_problems(_registry), PackedStringArray(["heals, yet is strong against units it never strikes"]))
 
+func test_a_unit_lays_and_is_immune_to_known_afflictions_and_only_when_it_fights() -> void:
+	var torch := RtsUnitData.find(&"fixture_torch")
+	assert_eq(torch.find_problems(_registry), PackedStringArray())
+	assert_eq(torch.get_affliction(), AfflictionData.find(&"fixture_burn"))
+	assert_null(RtsUnitData.find(&"fixture_footman").get_affliction(), "none laid")
+	torch.affliction_id = &"fixture_frost"
+	torch.immune_to.assign([&"fixture_burn", &"fixture_rot"])
+	assert_eq(torch.find_problems(_registry), PackedStringArray(["lays unknown affliction 'fixture_frost'", "is immune to unknown affliction 'fixture_rot'"]))
+	var medic := RtsUnitData.find(&"fixture_medic")
+	medic.affliction_id = &"fixture_burn"
+	assert_eq(medic.find_problems(_registry), PackedStringArray(["heals, yet lays an affliction with the blows it never strikes"]))
+
 func test_a_map_places_known_units_on_open_ground_with_both_sides() -> void:
 	var map := _map()
 	assert_eq(map.find_problems(_registry), PackedStringArray())

@@ -2,7 +2,8 @@ class_name RtsUnit
 extends RefCounted
 
 ## A unit in a command battle (`RtsBattle`): what kind it is, its side, where
-## it stands, its health, the order it follows and the way it walks.
+## it stands, its health, the afflictions on it, the order it follows and the
+## way it walks.
 
 enum Order {
 	## Nothing to do: it goes after the foes it sees.
@@ -25,6 +26,9 @@ var side := 0
 var index := 0
 var position := Vector2.ZERO
 var health: Health
+## The afflictions on it (`AfflictionData`), which `RtsBattle` has tick in
+## battle time.
+var afflictions := Afflictions.new()
 ## The player orders it.
 var player_controlled := false
 var order := Order.IDLE
@@ -51,6 +55,20 @@ func _init(unit_data: RtsUnitData, unit_faction: StringName, start: Vector2, uni
 
 func is_alive() -> bool:
 	return not health.is_depleted()
+
+## Lays `affliction` on it from a hit of `from_faction` (`Afflictions.lay()`):
+## false when it has fallen, the affliction is null or its kind is immune to
+## it (`RtsUnitData.immune_to`).
+func afflict(affliction: AfflictionData, from_faction: StringName) -> bool:
+	if not can_be_afflicted(affliction):
+		return false
+	afflictions.lay(affliction, from_faction)
+	return true
+
+## Whether `affliction` would take hold of it: it stands and its kind is not
+## immune to it.
+func can_be_afflicted(affliction: AfflictionData) -> bool:
+	return affliction != null and is_alive() and not data.immune_to.has(affliction.id)
 
 ## How far its edge is from `other`'s.
 func get_gap_to(other: RtsUnit) -> float:

@@ -3,8 +3,8 @@ extends RefCounted
 
 ## The units of a command battle (`RtsBattle`) filed by their side
 ## (`RtsUnit.side`) and by the square cell of the field each stands in, so a
-## unit finds the ones near it (the foes it sees, the units it overlaps)
-## without looking at every other one.
+## unit finds the ones near it (the foes it sees, the units it overlaps and
+## pushes apart: `separate()`) without looking at every other one.
 
 ## The side of a cell, in pixels.
 var cell_size: float
@@ -68,6 +68,37 @@ func get_near(point: Vector2, reach: float, sides: PackedInt32Array) -> Array[Rt
 				if filed != null:
 					near.append_array(filed)
 	return near
+
+## Pushes apart each two of `units`, filed as they stand now, whose bodies
+## overlap: half each, or all of it on the one that does not hold
+## (`RtsUnit.Order.HOLD`), never into the closed part of `navigation`
+## (`RtsNavigation.push()`). `widest_radius` is the widest unit's. Each two
+## are found through the filing; two that the pushes before theirs brought
+## together part the next time.
+func separate(units: Array[RtsUnit], navigation: RtsNavigation, widest_radius: float) -> void:
+	var every := PackedInt32Array(range(_units.size()))
+	for first: RtsUnit in units:
+		if not first.is_alive():
+			continue
+		for second: RtsUnit in get_near(first.position, first.data.radius + widest_radius * 2.0, every):
+			if second.index <= first.index or not second.is_alive():
+				continue
+			var apart := second.position - first.position
+			var reach := first.data.radius + second.data.radius
+			var distance_squared := apart.length_squared()
+			if distance_squared >= reach * reach:
+				continue
+			var distance := sqrt(distance_squared)
+			# Two units on one point part along a direction of their own.
+			var away := apart / distance if distance > 0.001 else Vector2.RIGHT.rotated(second.index * 2.39996)
+			var share := 0.5
+			if first.order == RtsUnit.Order.HOLD and second.order != RtsUnit.Order.HOLD:
+				share = 0.0
+			elif second.order == RtsUnit.Order.HOLD and first.order != RtsUnit.Order.HOLD:
+				share = 1.0
+			var overlap := reach - distance
+			first.position = navigation.push(first.position, -away * overlap * share)
+			second.position = navigation.push(second.position, away * overlap * (1.0 - share))
 
 func _cell_of(point: Vector2) -> Vector2i:
 	return Vector2i(floori(point.x / cell_size), floori(point.y / cell_size))
