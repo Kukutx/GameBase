@@ -15,3 +15,5 @@ signal item_foraged(item_id: StringName, quantity: int, position: Vector2)
 signal stat_upgraded(stat_upgrade_id: StringName, level: int)
 ## A chest (`LootChest`) opened for the first time.
 signal chest_opened(position: Vector2)
+## The player ate or drank one `item_id` (`InventoryStore.consume()`).
+signal item_consumed(item_id: StringName)

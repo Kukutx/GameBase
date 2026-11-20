@@ -101,6 +101,12 @@ msgstr "生命药水"
 msgid "Restores 35 health."
 msgstr "恢复 35 点生命。"
 
+msgid "Antidote"
+msgstr "解毒剂"
+
+msgid "Cures poison."
+msgstr "解除中毒。"
+
 msgid "Slime Gel"
 msgstr "史莱姆凝胶"
 

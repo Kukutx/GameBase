@@ -4,7 +4,8 @@ extends GameModule
 ## Wires the combat module into the core (see `GameModule`): enemies, the
 ## weapons' tool action, the stats a melee attack and a hit on the player read, a fight that ends
 ## when the player is taken out of play, and the player's choice of how hard
-## hits land on them (`PlayerHurtbox.DAMAGE_TAKEN_OPTION`).
+## hits land on them (`PlayerHurtbox.DAMAGE_TAKEN_OPTION`), and the items that
+## lift an affliction on them (`PlayerHurtbox.would_cure()`).
 
 const OPTIONS: Array[String] = [
 	"res://tiamat/modules/combat/options/damage_taken.tres",
@@ -25,6 +26,8 @@ func install() -> void:
 	GameStats.register_stat(DodgeRoll.COOLDOWN_STAT, "Dodge cooldown")
 	GameStats.register_stat(PlayerHurtbox.AFFLICTION_SECONDS_STAT, "Affliction length")
 	GameSession.register_activity_end(FightState.end_fight)
+	ItemData.register_consume_need(PlayerHurtbox.would_cure)
+	ContentDB.register_check(PlayerHurtbox.find_cure_problems)
 	ItemSources.register(&"enemy_drops", find_item_sources)
 	if not CombatEvents.enemy_defeated.is_connected(Bestiary.record):
 		CombatEvents.enemy_defeated.connect(Bestiary.record)

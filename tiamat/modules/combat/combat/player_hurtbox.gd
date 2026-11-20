@@ -14,8 +14,12 @@ extends Hurtbox
 ## slows the player's steps while it lasts, through the
 ## `TopDownPlayer.MOVE_SPEED_STAT` stat, of which the hurtbox is a source
 ## (`GameStats`), and the `AFFLICTION_SECONDS_STAT` stat makes one last shorter
-## on the player, or not at all. A player without health left, or passing out,
-## takes no more hits and no more ticks. A child of the player.
+## on the player, or not at all. Eating or drinking an item tagged an
+## affliction's `AfflictionData.cure_tag` lifts it (`ItemsEvents.item_consumed`,
+## an antidote's poison), told in a toast; such an item is wanted while the
+## affliction is on (`would_cure()`) even when it restores nothing the player
+## lacks. A player without health left, or passing out, takes no more hits and
+## no more ticks. A child of the player.
 ##
 ## The player chooses how hard hits land on them in the settings
 ## (`DAMAGE_TAKEN_OPTION`, which the combat module declares), read at each
@@ -54,6 +58,7 @@ func _ready() -> void:
 	afflicted.connect(func(affliction: AfflictionData) -> void: GameEvents.toastf("Afflicted: %s", [affliction.display_name]))
 	afflictions_changed.connect(CombatEvents.player_afflictions_changed.emit)
 	slowed.connect(GameStats.notify_changed.unbind(1))
+	ItemsEvents.item_consumed.connect(_on_item_consumed)
 
 func _enter_tree() -> void:
 	GameStats.register_source(self)
@@ -78,6 +83,34 @@ func get_affliction_scale(_affliction: AfflictionData) -> float:
 func can_ail() -> bool:
 	return is_standing() and not GameSession.is_passing_out() and super()
 
+## The player's hurtbox: the `PlayerHurtbox` of the node in the "player" group,
+## or null.
+static func find_player() -> PlayerHurtbox:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return null
+	return Hurtbox.of(tree.get_first_node_in_group(&"player")) as PlayerHurtbox
+
+## Whether eating or drinking `item` now would lift an affliction on the player
+## (`AfflictionData.cure_tag`): the combat module's use of what the player eats
+## (`ItemData.register_consume_need()`).
+static func would_cure(item: ItemData) -> bool:
+	var player := find_player()
+	return player != null and not player.find_cured_by(item).is_empty()
+
+## Problems of the whole content (`ContentRegistry.register_check()`): an
+## affliction cured by a tag no item has, so nothing can cure it.
+static func find_cure_problems(registry: ContentRegistry) -> PackedStringArray:
+	var problems := PackedStringArray()
+	var tags := {}
+	for item: ItemData in registry.get_entries(ItemData.KIND):
+		for tag: String in item.tags:
+			tags[tag] = true
+	for affliction: AfflictionData in registry.get_entries(AfflictionData.KIND):
+		if not affliction.cure_tag.is_empty() and not tags.has(affliction.cure_tag):
+			problems.append("affliction '%s' is cured by items tagged '%s', which no item is" % [affliction.id, affliction.cure_tag])
+	return problems
+
 ## Whether the player still stands: they have health left, or the game gives
 ## them none to lose (`CombatSettings.health_vital_id`).
 static func is_standing() -> bool:
@@ -99,6 +132,11 @@ func _on_hurt(damage: Damage) -> void:
 		player.stagger(get_knockback_left())
 	if _take(damage) > 0:
 		GameCamera.shake_view(self, SHAKE_STRENGTH, SHAKE_SECONDS)
+
+func _on_item_consumed(item_id: StringName) -> void:
+	for affliction: AfflictionData in find_cured_by(ItemData.find(item_id)):
+		lift(affliction.id)
+		GameEvents.toastf("Cured: %s", [affliction.display_name])
 
 # Takes the health `damage` takes from the player, plays it on their visual
 # and announces it; the health taken.

@@ -9,7 +9,8 @@ extends ContentEntry
 ## another. Any kind of fight may lay it: what lays it and what keeps
 ## it is the fight's own, in real time the hits of creatures, hazards and the
 ## player's weapons that carry its `weapon_tag`, or any of the player's hits
-## by the chance its `chance_stat` gives.
+## by the chance its `chance_stat` gives. What lifts it is the fight's too: in
+## real time, the items tagged its `cure_tag` the player eats or drinks.
 
 const KIND := &"affliction"
 
@@ -32,6 +33,9 @@ const KIND := &"affliction"
 ## percent, that a hit of the player's lays it whatever their weapon (Ember
 ## Depths' Kindling boon, a blow in four burning); empty, none.
 @export var chance_stat: StringName
+## The tag of the items whose eating or drinking lifts it from the player (an
+## antidote's poison); empty, none.
+@export var cure_tag := ""
 
 ## The affliction with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> AfflictionData:

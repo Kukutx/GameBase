@@ -329,7 +329,7 @@ func test_a_floor_spawns_only_the_tiers_its_depth_reaches() -> void:
 	assert_eq(EnemyTier.reached(tiers, 8), [&"cave_slime", &"skeleton", &"bone_archer", &"ember_wisp", &"venom_slime"], "venom slimes from the eighth")
 	var venom := EnemyData.find(&"venom_slime")
 	assert_eq(venom.affliction_id, &"poisoned", "whose touch poisons")
-	assert_eq(AfflictionData.find(&"poisoned").get_ticks(), 5, "a health a second for five seconds")
+	assert_eq(AfflictionData.find(&"poisoned").get_ticks(), 8, "a health a second for eight seconds")
 	DepthRun.track.set_depth(5)
 	for enemy: HostileCreature in _enter_floor().get_enemies():
 		assert_ne(enemy.data.id, &"ember_wisp", "the fifth depth holds no wisps")
@@ -400,6 +400,27 @@ func test_a_potion_is_drunk_only_when_it_heals() -> void:
 	InventoryState.clear()
 	assert_false(player.drink_potion(), "no potion, no drink")
 	player.free()
+
+func test_an_antidote_lifts_a_venom_slime_s_poison() -> void:
+	InventoryState.clear()
+	InventoryState.add_item_by_id(&"health_potion")
+	InventoryState.add_item_by_id(&"antidote")
+	Vitals.refill(&"hp")
+	var player := (load("res://game/player/player.tscn") as PackedScene).instantiate() as DelverPlayer
+	player.add_to_group(&"player")
+	add_child_autofree(player)
+	var hurtbox := Hurtbox.of(player)
+	assert_false(player.drink_potion(), "neither is wanted at full health and unpoisoned")
+	var poison := AfflictionData.find(&"poisoned")
+	assert_eq(poison.cure_tag, "antidote")
+	assert_true(hurtbox.afflict(poison, FactionData.MONSTERS))
+	Vitals.drain(&"hp", 40)
+	assert_true(player.drink_potion())
+	assert_false(hurtbox.is_afflicted(&"poisoned"), "the antidote first, while poisoned")
+	assert_eq(InventoryState.get_quantity(&"antidote"), 0)
+	assert_eq(InventoryState.get_quantity(&"health_potion"), 1, "the potion kept for the wound")
+	assert_eq(ShopData.find(&"camp_merchant").get_buy_price(ItemData.find(&"antidote")), 12, "at camp, at its own price")
+	assert_eq(ShopData.find(&"ember_peddler").get_buy_price(ItemData.find(&"antidote")), 18, "dearer in the depths")
 
 func test_a_cleared_floor_lights_its_ember_altar_for_one_boon() -> void:
 	DepthRun.start_run()

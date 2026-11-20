@@ -239,7 +239,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 
 ## affliction
 
-`AfflictionData` (damage). Something a hit lays on what it hurts besides (`Damage.affliction_id`), a burn, a poison or a sticky slime: for `seconds` it takes `tick_damage` of health every `tick_seconds`, with neither a push nor a stun, and shows in its `color` as it does, and it may slow what it is on (`speed_scale`). A hit that lays it again has it last as long again rather than adding another. Any kind of fight may lay it: what lays it and what keeps it is the fight's own, in real time the hits of creatures, hazards and the player's weapons that carry its `weapon_tag`, or any of the player's hits by the chance its `chance_stat` gives.
+`AfflictionData` (damage). Something a hit lays on what it hurts besides (`Damage.affliction_id`), a burn, a poison or a sticky slime: for `seconds` it takes `tick_damage` of health every `tick_seconds`, with neither a push nor a stun, and shows in its `color` as it does, and it may slow what it is on (`speed_scale`). A hit that lays it again has it last as long again rather than adding another. Any kind of fight may lay it: what lays it and what keeps it is the fight's own, in real time the hits of creatures, hazards and the player's weapons that carry its `weapon_tag`, or any of the player's hits by the chance its `chance_stat` gives. What lifts it is the fight's too: in real time, the items tagged its `cure_tag` the player eats or drinks.
 
 | Field | Type | Default | What it is |
 | --- | --- | --- | --- |
@@ -251,6 +251,7 @@ The kinds of content the core and the modules define. An entry is a `.tres` reso
 | `speed_scale` | `float`, 0.1 to 1 | `1.0` | How fast what it is on goes while it lasts, as a share of its speed: its steps in real time and in a command battle, its time gauge in a grid battle. 1: as fast as ever; of two that slow, the slower counts. |
 | `weapon_tag` | `String` | `""` | The tag of the player's weapons whose hits lay it (an ember blade's burn); empty, none. |
 | `chance_stat` | `StringName` |  | The stat (`GameStats`, which the game registers) that is the chance, in percent, that a hit of the player's lays it whatever their weapon (Ember Depths' Kindling boon, a blow in four burning); empty, none. |
+| `cure_tag` | `String` | `""` | The tag of the items whose eating or drinking lifts it from the player (an antidote's poison); empty, none. |
 
 ## faction
 

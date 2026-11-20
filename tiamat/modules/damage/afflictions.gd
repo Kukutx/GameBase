@@ -49,6 +49,10 @@ func size() -> int:
 func clear() -> void:
 	_laid.clear()
 
+## Lifts the affliction `affliction_id`: true when it was on.
+func lift(affliction_id: StringName) -> bool:
+	return _laid.erase(affliction_id)
+
 ## The health they would all still take, every tick left of each: what lifting
 ## them (`clear()`, a cure) spares.
 func get_damage_left() -> int:

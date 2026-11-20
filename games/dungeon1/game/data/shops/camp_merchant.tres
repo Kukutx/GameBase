@@ -6,4 +6,4 @@
 script = ExtResource("1_shop")
 id = &"camp_merchant"
 display_name = "Camp Merchant"
-stock = {"health_potion": 0, "iron_sword": 0, "bone_bow": 0, "ember_blade": 0}
+stock = {"health_potion": 0, "antidote": 0, "iron_sword": 0, "bone_bow": 0, "ember_blade": 0}
