@@ -91,13 +91,14 @@ func _init(field_size: Vector2, obstacles: Array[Rect2] = [], side: StringName =
 	_side_of(side)
 
 ## The battle `map` sets up, the player's foes starting with `foe_health` of
-## their kinds' health.
+## their kinds' health: each unit whose placement's condition holds
+## (`RtsPlacement.joins()`).
 static func from_map(map: RtsMapData, foe_health := 1.0) -> RtsBattle:
 	var battle := RtsBattle.new(map.size, map.obstacles, map.player_faction_id)
 	battle.computer_advances = map.computer_advances
 	battle.foe_health_scale = foe_health
 	for placement: RtsPlacement in map.placements:
-		var data := RtsUnitData.find(placement.unit_id) if placement != null else null
+		var data := RtsUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
 			battle.add_unit(data, placement.faction_id, placement.position)
 	return battle

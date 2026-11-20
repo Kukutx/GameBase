@@ -7,7 +7,7 @@
 script = ExtResource("1_definition")
 id = &"camp_battle"
 display_name = "Raider Camp"
-description = "The raiders wait behind their palisade. Storm it through the gate."
+description = "The raiders wait behind their palisade. Storm it through the gate. Win at the ford first, and two spearmen from there join you."
 condition = "MINIGAME_WON pass_battle"
 score_name = "Units Left"
 scene = ExtResource("2_scene")

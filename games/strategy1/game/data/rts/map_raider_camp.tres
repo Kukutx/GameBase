@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="RtsMapData" load_steps=24 format=3]
+[gd_resource type="Resource" script_class="RtsMapData" load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://tiamat/modules/rts/data/rts_map_data.gd" id="1_map"]
 [ext_resource type="Script" path="res://tiamat/modules/rts/data/rts_placement.gd" id="2_placement"]
@@ -128,6 +128,20 @@ unit_id = &"brute"
 faction_id = &"raiders"
 position = Vector2(385, 80)
 
+[sub_resource type="Resource" id="Placement_22"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 50)
+condition = "MINIGAME_WON ford_battle"
+
+[sub_resource type="Resource" id="Placement_23"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 150)
+condition = "MINIGAME_WON ford_battle"
+
 [resource]
 script = ExtResource("1_map")
 id = &"raider_camp"
@@ -135,5 +149,5 @@ display_name = "Raider Camp"
 size = Vector2(464, 200)
 obstacles = Array[Rect2]([Rect2(320, 40, 100, 8), Rect2(320, 152, 100, 8), Rect2(320, 40, 8, 40), Rect2(320, 120, 8, 40), Rect2(412, 40, 8, 120), Rect2(150, 20, 20, 20), Rect2(170, 162, 24, 18), Rect2(240, 92, 16, 16)])
 player_faction_id = &"banners"
-placements = Array[ExtResource("2_placement")]([SubResource("Placement_1"), SubResource("Placement_2"), SubResource("Placement_3"), SubResource("Placement_4"), SubResource("Placement_5"), SubResource("Placement_6"), SubResource("Placement_7"), SubResource("Placement_8"), SubResource("Placement_9"), SubResource("Placement_10"), SubResource("Placement_11"), SubResource("Placement_12"), SubResource("Placement_13"), SubResource("Placement_14"), SubResource("Placement_15"), SubResource("Placement_16"), SubResource("Placement_17"), SubResource("Placement_18"), SubResource("Placement_19"), SubResource("Placement_20"), SubResource("Placement_21")])
+placements = Array[ExtResource("2_placement")]([SubResource("Placement_1"), SubResource("Placement_2"), SubResource("Placement_3"), SubResource("Placement_4"), SubResource("Placement_5"), SubResource("Placement_6"), SubResource("Placement_7"), SubResource("Placement_8"), SubResource("Placement_9"), SubResource("Placement_10"), SubResource("Placement_11"), SubResource("Placement_12"), SubResource("Placement_13"), SubResource("Placement_14"), SubResource("Placement_15"), SubResource("Placement_16"), SubResource("Placement_17"), SubResource("Placement_18"), SubResource("Placement_19"), SubResource("Placement_20"), SubResource("Placement_21"), SubResource("Placement_22"), SubResource("Placement_23")])
 computer_advances = false

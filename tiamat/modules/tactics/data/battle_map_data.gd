@@ -54,12 +54,15 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		elif taken.has(placement.cell):
 			problems.append("places two units on cell %s" % placement.cell)
 		taken[placement.cell] = true
+		# A battle starts with a unit on each side whatever the conditions.
+		if not placement.condition.is_empty():
+			continue
 		if FactionData.are_hostile(placement.faction_id, player_faction_id):
 			others += 1
 		else:
 			players += 1
 	if players == 0:
-		problems.append("places no unit on the player's side '%s'" % player_faction_id)
+		problems.append("places no unit on the player's side '%s' that joins without a condition" % player_faction_id)
 	if others == 0:
-		problems.append("places no unit against the player")
+		problems.append("places no unit against the player that joins without a condition")
 	return problems

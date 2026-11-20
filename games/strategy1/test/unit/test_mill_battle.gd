@@ -2,11 +2,12 @@ extends GutTest
 
 ## The battle at the old mill, the war table's second: it opens once the ford
 ## is won, its map and units hold, the stream is crossed only by the bridge
-## and the ford, and the battle comes to an end when both sides fight it on
-## their own.
+## and the ford, a win in the pass sends a swordsman, and the battle comes to
+## an end when both sides fight it on their own.
 
 func after_each() -> void:
 	WorldState.erase(MiniGameDefinition.wins_key(&"ford_battle"))
+	WorldState.erase(MiniGameDefinition.wins_key(&"pass_battle"))
 
 func test_the_mill_opens_once_the_ford_is_won() -> void:
 	var mill := MiniGameDefinition.find(&"mill_battle")
@@ -27,6 +28,11 @@ func test_the_mill_map_sets_up_both_sides_across_the_stream() -> void:
 	assert_true(upper.has(Vector2i(6, 1)), "the near way over is the bridge")
 	var lower := battle.grid.path(Vector2i(1, 5), Vector2i(9, 6))
 	assert_true(lower.has(Vector2i(6, 6)), "and the ford below the mill")
+
+func test_a_win_in_the_pass_sends_a_swordsman_to_the_mill() -> void:
+	WorldState.add_int(MiniGameDefinition.wins_key(&"pass_battle"), 1)
+	var battle := AtbBattle.from_map(BattleMapData.find(&"old_mill"))
+	assert_eq(battle.units.filter(func(unit: GridUnit) -> bool: return unit.player_controlled).size(), 6)
 
 func test_the_battle_ends_when_both_sides_fight_on_their_own() -> void:
 	var battle := AtbBattle.from_map(BattleMapData.find(&"old_mill"))
