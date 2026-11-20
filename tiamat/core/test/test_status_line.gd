@@ -15,6 +15,14 @@ func test_messages_sent_together_are_each_shown_in_turn() -> void:
 	line._process(2.0)
 	assert_eq(line.text, "")
 
+func test_a_message_stands_on_a_band_unless_the_line_asks_for_none() -> void:
+	var line := _line()
+	assert_true(line.has_meta(&"band"), "a band behind its messages")
+	var bare := StatusLine.new()
+	bare.backed = false
+	add_child_autofree(bare)
+	assert_false(bare.has_meta(&"band"))
+
 func test_a_repeated_message_stays_longer_instead_of_waiting() -> void:
 	var line := _line()
 	line.show_message("Not enough energy")

@@ -104,3 +104,23 @@ func test_the_hud_s_lines_and_messages_are_outlined() -> void:
 	var saved := SaveIndicator.new()
 	add_child_autofree(saved)
 	assert_gt(saved.get_theme_constant(&"outline_size"), 0, "the word that the game saved")
+
+func test_a_band_stands_behind_a_message_over_the_world() -> void:
+	var label := Label.new()
+	label.size = Vector2(200, 20)
+	label.add_theme_font_size_override(&"font_size", 10)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	add_child_autofree(label)
+	assert_false(ReadableText.text_rect(label).has_area(), "no text, no band")
+	label.text = "Press E to talk"
+	var width := label.get_theme_font(&"font").get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10).x
+	var rect := ReadableText.text_rect(label)
+	assert_almost_eq(rect.size.x, width, 0.5, "as wide as the text")
+	assert_almost_eq(rect.position.x, (200.0 - width) / 2.0, 0.5, "where the label centres it")
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	assert_almost_eq(ReadableText.text_rect(label).end.x, 200.0, 0.5)
+	ReadableText.back(label)
+	ReadableText.back(label)
+	assert_eq(label.get_child_count(true), 1, "one band behind it, however often it is backed")
+	assert_eq(label.get_child_count(), 0, "which is no child a scene or a test counts")
+	assert_true((label.get_child(0, true) as Control).show_behind_parent, "drawn under the text")
