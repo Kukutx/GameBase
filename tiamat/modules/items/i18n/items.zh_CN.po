@@ -74,7 +74,7 @@ msgid "Inventory changed before the purchase completed"
 msgstr "购买完成前背包内容发生了变化"
 
 msgid "Bought %s x%d for %dg"
-msgstr "以 %dg 购买了%s x%d"
+msgstr "购买了%s x%d，花费 %dg"
 
 msgid "That item cannot be sold"
 msgstr "该物品不能出售"
@@ -83,7 +83,7 @@ msgid "You do not have that item"
 msgstr "你没有该物品"
 
 msgid "Sold %s x%d for %dg"
-msgstr "以 %dg 出售了%s x%d"
+msgstr "出售了%s x%d，获得 %dg"
 
 msgid "Buff: %s (%d min)"
 msgstr "增益：%s（%d 分钟）"

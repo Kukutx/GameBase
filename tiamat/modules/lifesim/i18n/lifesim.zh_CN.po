@@ -128,7 +128,7 @@ msgid "Animal name must be 1–20 characters"
 msgstr "动物名称必须为 1–20 个字符"
 
 msgid "Sell %s for %dg? This cannot be undone."
-msgstr "以 %dg 出售 %s？此操作无法撤销。"
+msgstr "出售%s，换得 %dg？此操作无法撤销。"
 
 msgid "Fed %d animal"
 msgid_plural "Fed %d animals"
@@ -340,7 +340,7 @@ msgid "Renamed animal to %s"
 msgstr "动物已重命名为%s"
 
 msgid "Sold %s for %dg"
-msgstr "以 %dg 出售了%s"
+msgstr "出售了%s，获得 %dg"
 
 msgid "No free %s slots"
 msgstr "%s没有空余位置"
@@ -349,7 +349,7 @@ msgid "Housing changed before the purchase completed"
 msgstr "购买完成前饲养设施发生了变化"
 
 msgid "Bought %s for %dg"
-msgstr "以 %dg 购买了%s"
+msgstr "购买了%s，花费 %dg"
 
 msgid "Petted %s · Happiness %d"
 msgstr "抚摸了%s · 幸福度 %d"

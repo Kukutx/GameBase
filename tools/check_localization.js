@@ -432,6 +432,25 @@ function repeatProblem(first, second, text) {
   return first.text === second.text ? "" : `${second.res} translates "${text}" otherwise than ${first.res} does`;
 }
 
+// The format placeholders of `text` as Godot's `%` fills them, in order: the
+// kind of each ("%5.1f" is f), "%%" aside.
+const PLACEHOLDER_RE = /%(?:%|[-+0]*(?:\*|\d+)?(?:\.(?:\*|\d+))?([scdoxXfv]))/g;
+function placeholders(text) {
+  return [...text.matchAll(PLACEHOLDER_RE)].filter((match) => match[1]).map((match) => `%${match[1]}`).join(" ");
+}
+
+// What is wrong with `translation` of `text` as a format, or "": Godot's `%`
+// fills the placeholders in order and has no positions, so a translation
+// keeps the kinds and the order of the text's ("以 %dg 购买了%s" for "Bought %s
+// for %dg" puts the name where a number goes, and the toast fails).
+function placeholderProblem(text, translation) {
+  if (!translation) return "";
+  const wanted = placeholders(text);
+  const found = placeholders(translation);
+  if (wanted === found) return "";
+  return `translates "${text}" with the placeholders "${found}", not "${wanted}" in that order: Godot's % fills them in order`;
+}
+
 function checkLocalization(game, { reportOnly = false } = {}) {
   const layers = textLayers(game);
   const catalogs = registeredCatalogs(game, layers);
@@ -458,6 +477,11 @@ function checkLocalization(game, { reportOnly = false } = {}) {
         if (key === "\u0000") continue; // the header
         const text = key.slice(key.indexOf("\u0000") + 1);
         const translation = { res: catalog.res, layer, text: JSON.stringify(entries.get(catalog).plurals.get(key) ?? entries.get(catalog).get(key)) };
+        const plural = entries.get(catalog).plurals.get(key);
+        for (const form of plural ? plural.forms : [entries.get(catalog).get(key)]) {
+          const problem = placeholderProblem(text, form);
+          if (problem) problems.push(`${catalog.res} ${problem}`);
+        }
         if (!owners.has(key)) owners.set(key, translation);
         else {
           const problem = repeatProblem(owners.get(key), translation, text);
@@ -498,7 +522,7 @@ function checkLocalization(game, { reportOnly = false } = {}) {
   return problems.length > 0 && !reportOnly ? 1 : 0;
 }
 
-module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPluralKeys, collectPoEntries, layerLiterals, repeatProblem, textLayers };
+module.exports = { checkLocalization, collectDialogueKeys, collectNonDialogueKeys, collectPluralKeys, collectPoEntries, layerLiterals, placeholderProblem, repeatProblem, textLayers };
 
 if (require.main === module) {
   main(() => {
