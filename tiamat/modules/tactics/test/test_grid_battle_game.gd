@@ -10,7 +10,8 @@ extends GutTest
 ## finger's tap on a cell shows it and a second tap picks it;
 ## cancel twice gives the battle up; an unknown map ends it at once,
 ## and a definition that names one is a content problem; the player's choice
-## of speed speeds the game's.
+## of speed speeds the game's; the side's words serve any view
+## (`GridBattleText`).
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -310,6 +311,22 @@ func test_an_action_that_recharges_tells_when_it_is_ready() -> void:
 	game.battle.unit_moved.emit(knight, [] as Array[Vector2i])
 	assert_eq(_commands(game)[2].text, tr("%s (ready in %d)") % [tr("Fixture Volley"), 2], "it tells in how many of the knight's turns")
 	assert_true(_commands(game)[2].disabled)
+
+func test_the_words_of_the_side_serve_any_view_of_a_battle() -> void:
+	var text := GridBattleText.new()
+	assert_eq(text.describe_boosts({GridUnit.ATTACK: 2, GridUnit.DEFENSE: -1}), tr("Attack %s") % "+2" + GameText.LIST_SEPARATOR + tr("Defense %s") % "-1")
+	assert_eq(text.describe_boosts({GridUnit.ATTACK: 0}), "", "none that changes anything")
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	var knight := game.battle.get_turn_unit()
+	var lines := text.describe_unit(knight)
+	assert_eq(lines[0], tr("Fixture Knight"))
+	assert_eq(lines[1], tr("HP %d/%d") % [knight.health.current, knight.health.maximum])
+	assert_eq(lines.size(), 3, "no boosts, afflictions or leadership")
+	assert_true(knight.afflict(AfflictionData.find(&"fixture_poison"), FactionData.MONSTERS))
+	assert_eq(text.describe_unit(knight)[3], tr("Afflicted: %s") % (tr("%s %ds") % [tr("Fixture Poison"), 4]))
+	assert_eq(text.describe_cell(game.battle, knight.cell), PackedStringArray(), "an open cell")
 
 func test_a_definition_names_a_known_map() -> void:
 	var definition := MiniGameDefinition.find(MINIGAME)

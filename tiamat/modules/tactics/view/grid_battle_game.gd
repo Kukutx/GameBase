@@ -20,12 +20,9 @@ extends MiniGame
 ## rough ground how many steps it takes to enter, and of a goal cell which
 ## side wins by ending a turn there (`AtbBattle.goal_cells`); while
 ## it picks what an action aims at, the side tells what it would do to each
-## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls",
-## "Brute takes 2, turn delayed", "Swordsman gains Defense +2", "Knight takes
-## 3, Poisoned"), and of a unit the boosts on it and how many turns they hold
-## (`GridUnit.get_boost()`), the afflictions on it with the seconds each
-## lasts yet (`GridUnit.afflictions`, `Afflictions.describe()`)
-## and of a leader that its side flees once it falls (`GridUnit.leader`). The
+## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls"), and
+## of a unit its stats, boosts, afflictions and leadership (the words are
+## `GridBattleText`'s). The
 ## board numbers the units whose turns come next
 ## (`GridBattleBoard.turns_shown`), and the line tells of each unit that
 ## arrives while the battle runs (`AtbBattle.unit_arrived`) and of each tick
@@ -87,6 +84,8 @@ var _hint: Label
 var _message: Label
 # What took a goal, told with the outcome.
 var _goal_text := ""
+# What the side tells of units, cells and actions.
+var _text := GridBattleText.new()
 
 func setup(settings: Dictionary) -> void:
 	map = BattleMapData.find(StringName(str(settings.get("map", ""))))
@@ -325,59 +324,14 @@ func _show_info() -> void:
 	if unit == null:
 		_info.text = ""
 		return
-	_info.text = "%s\n%s\n%s" % [
-		tr(unit.data.display_name),
-		tr("HP %d/%d") % [unit.health.current, unit.health.maximum],
-		tr("Attack %d · Defense %d · Move %d") % [unit.get_attack(), unit.get_defense(), unit.data.move],
-	]
-	var boosts := {GridUnit.ATTACK: unit.get_boost(GridUnit.ATTACK), GridUnit.DEFENSE: unit.get_boost(GridUnit.DEFENSE)}
-	if boosts.values().any(func(amount: int) -> bool: return amount != 0):
-		_info.text += "\n" + tr("Boosts: %s (turns left: %d)") % [_boost_text(boosts), unit.get_boost_turns()]
-	if not unit.afflictions.is_empty():
-		_info.text += "\n" + tr("Afflicted: %s") % GameText.list(unit.afflictions.describe())
-	if unit.leader:
-		_info.text += "\n" + tr("Leader: their side flees when they fall")
-	if _board.show_cursor and battle.grid.is_cover(_board.cursor):
-		_info.text += "\n" + tr("Cover: %d%% less damage") % roundi(battle.grid.cover_reduction * 100.0)
-	if _board.show_cursor and battle.grid.is_rough(_board.cursor):
-		_info.text += "\n" + tr("Rough ground: %d steps to enter") % battle.grid.rough_cost
-	if _board.show_cursor and battle.goal_cells.has(_board.cursor):
-		_info.text += "\n" + (tr("Goal: a foe that ends a turn here wins") if FactionData.are_hostile(battle.goal_faction, battle.player_faction) else tr("Goal: end a turn here to win"))
+	var lines := _text.describe_unit(unit)
+	if _board.show_cursor:
+		lines.append_array(_text.describe_cell(battle, _board.cursor))
 	if _mode == Mode.PICK_MOVE and _board.danger.has(_board.cursor):
-		_info.text += "\n" + tr("Foes can strike here.")
+		lines.append(tr("Foes can strike here."))
 	if _mode == Mode.PICK_TARGET and _board.choices.has(_board.cursor):
-		for hit: Dictionary in battle.forecast(battle.get_turn_unit(), _action, _board.cursor):
-			var target_name := tr((hit["unit"] as GridUnit).data.display_name)
-			var line := tr("%s takes %d")
-			if _action.effect == BattleActionData.Effect.HEAL:
-				line = tr("%s regains %d")
-			elif bool(hit["defeats"]) and (hit["unit"] as GridUnit).leader:
-				line = tr("%s takes %d and falls; their side flees")
-			elif bool(hit["defeats"]):
-				line = tr("%s takes %d and falls")
-			elif float(hit.get("delay", 0.0)) > 0.0:
-				line = tr("%s takes %d, turn delayed")
-			var told := line % [target_name, int(hit["amount"])]
-			if hit.has("boosts"):
-				var boosted := _boost_text(hit["boosts"])
-				told = tr("%s gains %s") % [target_name, boosted] if _action.effect == BattleActionData.Effect.HEAL and int(hit["amount"]) == 0 else GameText.list(PackedStringArray([told, boosted]))
-			if hit.has("affliction"):
-				told = GameText.list(PackedStringArray([told, tr((hit["affliction"] as AfflictionData).display_name)]))
-			if hit.has("cures"):
-				var cured := PackedStringArray((hit["cures"] as Array).map(func(affliction: AfflictionData) -> String: return tr(affliction.display_name)))
-				told = GameText.list(PackedStringArray([told, tr("cures %s") % GameText.list(cured)]))
-			_info.text += "\n" + told
-
-# The boosts in `boosts` (stat -> amount) that change anything, as the player
-# reads them: "Attack +2, Defense -1".
-func _boost_text(boosts: Dictionary) -> String:
-	var parts := PackedStringArray()
-	for stat: StringName in [GridUnit.ATTACK, GridUnit.DEFENSE]:
-		var amount := int(boosts.get(stat, 0))
-		if amount != 0:
-			var signed := ("+%d" if amount > 0 else "%d") % amount
-			parts.append((tr("Attack %s") if stat == GridUnit.ATTACK else tr("Defense %s")) % signed)
-	return GameText.list(parts)
+		lines.append_array(_text.describe_forecast(battle, battle.get_turn_unit(), _action, _board.cursor))
+	_info.text = "\n".join(lines)
 
 # Counts down the battle time left, with a time limit.
 func _show_clock() -> void:
