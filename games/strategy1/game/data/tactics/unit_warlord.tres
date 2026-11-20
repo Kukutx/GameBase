@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleUnitData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/tactics/data/battle_unit_data.gd" id="1_unit"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"warlord"
+display_name = "Warlord"
+color = Color(0.45, 0.12, 0.18, 1)
+max_health = 28
+attack = 6
+defense = 3
+speed = 22.0
+move = 3
+action_ids = Array[StringName]([&"strike", &"quake"])

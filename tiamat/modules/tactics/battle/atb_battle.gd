@@ -18,8 +18,9 @@ extends RefCounted
 ## action that recharges (`BattleActionData.recharge_turns`) waits that many of
 ## its user's turns before the user may take it again, and one that delays
 ## (`BattleActionData.delay`) sets back the gauges of the foes it leaves
-## standing (`delay_of()`), a player's unit that waited for its turn too. The
-## battle
+## standing (`delay_of()`), a player's unit that waited for its turn too. A
+## side with a leader (`GridUnit.leader`) flees the battle once the leader
+## falls (`unit_fled`). The battle
 ## ends when no two living units are hostile (`FactionData.are_hostile()`), won
 ## when the player's side is left.
 ##
@@ -38,6 +39,8 @@ signal move_undone(unit: GridUnit)
 ## how far it set back the unit's gauge.
 signal unit_acted(unit: GridUnit, action: BattleActionData, cell: Vector2i, hits: Array[Dictionary])
 signal unit_defeated(unit: GridUnit)
+## `unit` left the battle when the leader of its side fell.
+signal unit_fled(unit: GridUnit)
 signal turn_ended(unit: GridUnit)
 signal ended(won: bool)
 
@@ -85,7 +88,7 @@ static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_h
 	for placement: BattlePlacement in map.placements:
 		var data := BattleUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
-			battle.add_unit(data, placement.faction_id, placement.cell)
+			battle.add_unit(data, placement.faction_id, placement.cell).leader = placement.leader
 	return battle
 
 ## Places a unit of `data` on `faction`'s side in `cell`; the player commands
@@ -356,8 +359,12 @@ func act(unit: GridUnit, action: BattleActionData, cell: Vector2i) -> bool:
 	unit_acted.emit(unit, action, cell, hits)
 	for hit: Dictionary in hits:
 		var target: GridUnit = hit["unit"]
-		if not target.is_alive():
+		if target.health.is_depleted():
 			_defeat(target)
+	for hit: Dictionary in hits:
+		var fallen: GridUnit = hit["unit"]
+		if fallen.leader and fallen.health.is_depleted():
+			_rout(fallen)
 	_check_over()
 	if not _over:
 		_end_when_done(unit)
@@ -427,6 +434,17 @@ func _defeat(unit: GridUnit) -> void:
 	if unit == _turn:
 		_turn = null
 	unit_defeated.emit(unit)
+
+# The rest of `leader`'s faction flees the battle.
+func _rout(leader: GridUnit) -> void:
+	for unit: GridUnit in units:
+		if unit != leader and unit.faction == leader.faction and unit.is_alive():
+			unit.fled = true
+			unit.gauge = 0.0
+			_waiting.erase(unit)
+			if unit == _turn:
+				_turn = null
+			unit_fled.emit(unit)
 
 func _check_over() -> void:
 	var alive := units.filter(func(unit: GridUnit) -> bool: return unit.is_alive())

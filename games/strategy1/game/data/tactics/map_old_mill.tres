@@ -47,9 +47,10 @@ cell = Vector2i(9, 6)
 
 [sub_resource type="Resource" id="Placement_8"]
 script = ExtResource("2_placement")
-unit_id = &"brute"
+unit_id = &"warlord"
 faction_id = &"raiders"
 cell = Vector2i(10, 2)
+leader = true
 
 [sub_resource type="Resource" id="Placement_9"]
 script = ExtResource("2_placement")

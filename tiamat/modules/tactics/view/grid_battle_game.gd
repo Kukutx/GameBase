@@ -20,7 +20,8 @@ extends MiniGame
 ## rough ground how many steps it takes to enter; while
 ## it picks what an action aims at, the side tells what it would do to each
 ## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls",
-## "Brute takes 2, turn delayed"). The
+## "Brute takes 2, turn delayed"), and of a leader that its side flees
+## once it falls (`GridUnit.leader`). The
 ## board numbers the units whose turns come next
 ## (`GridBattleBoard.turns_shown`). Cancel
 ## (the touch controls' corner button on a touchscreen) goes back to the
@@ -94,6 +95,7 @@ func setup(settings: Dictionary) -> void:
 	battle.move_undone.connect(_on_move_undone)
 	battle.unit_acted.connect(_on_unit_acted)
 	battle.unit_defeated.connect(_on_unit_defeated)
+	battle.unit_fled.connect(_on_unit_fled)
 	battle.turn_ended.connect(_on_turn_ended)
 	battle.ended.connect(_on_ended)
 	_board.show_battle(battle)
@@ -310,6 +312,8 @@ func _show_info() -> void:
 		tr("HP %d/%d") % [unit.health.current, unit.health.maximum],
 		tr("Attack %d · Defense %d · Move %d") % [unit.data.attack, unit.data.defense, unit.data.move],
 	]
+	if unit.leader:
+		_info.text += "\n" + tr("Leader: their side flees when they fall")
 	if _board.show_cursor and battle.grid.is_cover(_board.cursor):
 		_info.text += "\n" + tr("Cover: %d%% less damage") % roundi(battle.grid.cover_reduction * 100.0)
 	if _board.show_cursor and battle.grid.is_rough(_board.cursor):
@@ -322,6 +326,8 @@ func _show_info() -> void:
 			var line := tr("%s takes %d")
 			if _action.effect == BattleActionData.Effect.HEAL:
 				line = tr("%s regains %d")
+			elif bool(hit["defeats"]) and (hit["unit"] as GridUnit).leader:
+				line = tr("%s takes %d and falls; their side flees")
 			elif bool(hit["defeats"]):
 				line = tr("%s takes %d and falls")
 			elif float(hit.get("delay", 0.0)) > 0.0:
@@ -346,9 +352,15 @@ func _on_unit_acted(unit: GridUnit, action: BattleActionData, _cell: Vector2i, _
 	_refresh()
 
 func _on_unit_defeated(unit: GridUnit) -> void:
-	_message.text = tr("%s is defeated.") % tr(unit.data.display_name)
+	_message.text = (tr("%s falls, and their side flees!") if unit.leader else tr("%s is defeated.")) % tr(unit.data.display_name)
 	if not battle.is_on_player_side(unit):
 		TacticsEvents.foe_defeated.emit(unit.data.id)
+	if _board.turn_unit == unit:
+		_set_mode(Mode.WATCH)
+	else:
+		_refresh()
+
+func _on_unit_fled(unit: GridUnit) -> void:
 	if _board.turn_unit == unit:
 		_set_mode(Mode.WATCH)
 	else:

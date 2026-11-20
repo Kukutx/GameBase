@@ -172,6 +172,25 @@ func test_a_unit_with_many_commands_leaves_the_line_under_the_board_in_view() ->
 	await get_tree().process_frame
 	assert_true(_commands(game)[-1].get_global_rect().end.y <= view.end.y + 0.5, "the side scrolls to the focused command")
 
+func test_a_leader_is_told_and_its_fall_routs_its_side() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	var dummy := game.battle.get_unit_at(Vector2i(2, 1))
+	dummy.leader = true
+	game.choose_command(0)
+	game.pick(Vector2i(1, 1))
+	game.choose_command(1)
+	game.get_board().cell_hovered.emit(Vector2i(2, 1))
+	var dummy_name := tr(dummy.data.display_name)
+	var tells := func(text: String) -> bool: return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text.contains(text))
+	assert_true(tells.call(tr("Leader: their side flees when they fall")), "the side tells the leader")
+	assert_true(tells.call(tr("%s takes %d and falls; their side flees") % [dummy_name, 6]))
+	var told := []
+	game.battle.unit_defeated.connect(func(_unit: GridUnit) -> void: told.append(_shows(game, tr("%s falls, and their side flees!") % dummy_name)))
+	game.pick(Vector2i(2, 1))
+	assert_eq(told, [true], "the message tells the rout")
+
 func test_aiming_a_delay_tells_it_sets_the_turn_back() -> void:
 	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_bash"])
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
