@@ -21,7 +21,8 @@ const KIND := &"enemy"
 @export_range(1, 999, 1) var max_health := 30
 @export_range(1.0, 300.0, 1.0) var move_speed := 36.0
 @export_range(8.0, 400.0, 1.0) var chase_radius := 110.0
-@export_range(4.0, 64.0, 1.0) var attack_range := 16.0
+## How near the player must be for it to strike, or to shoot (`shot_speed`).
+@export_range(4.0, 320.0, 1.0) var attack_range := 16.0
 @export_range(0, 999, 1) var contact_damage := 8
 @export_range(0.1, 10.0, 0.1) var attack_cooldown := 1.2
 ## How long it winds up a strike once the player is in reach, standing still
@@ -29,6 +30,14 @@ const KIND := &"enemy"
 ## a step out of reach or a hit that stuns it before it lands spares them.
 ## 0 strikes at once (a slime that hurts at a touch).
 @export_range(0.0, 2.0, 0.05) var windup_seconds := 0.0
+## With a speed, it strikes from afar: it throws a shot (`CreatureShot`) that
+## flies this fast, in pixels a second, at where the player stands, for its
+## `contact_damage`, and fades past half again its `attack_range`; a wall
+## stops it and a step aside dodges it. It backs away from a player who comes
+## near (`HostileCreature.SHOT_KEEP_AWAY`). 0 strikes in reach.
+@export_range(0.0, 600.0, 1.0) var shot_speed := 0.0
+## The colour its shots glow in.
+@export var shot_color := Color(1.0, 0.62, 0.25)
 ## The side it fights on (`FactionData`): it hurts and is hurt by the others.
 @export var faction_id: StringName = FactionData.MONSTERS
 ## How hard its strike pushes the player, in pixels a second.

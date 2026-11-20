@@ -70,6 +70,8 @@ func test_the_bestiary_lists_the_kinds_met_weakest_first() -> void:
 		"Slime King — defeated 1",
 		"  Health 300 · Hits for 20 · Drops Gel",
 	]))
+	EnemyData.find(&"fixture_king").shot_speed = 120.0
+	assert_string_contains("\n".join(Bestiary.describe()), "Health 300 · Shoots for 20 ·", "a kind that shoots from afar says so")
 	GameSettings.options = GameOptions.new(CombatModule.new().get_options())
 	GameSettings.options.set_value(HostileCreature.STRENGTH_OPTION, "Strong")
 	assert_string_contains("\n".join(Bestiary.describe()), "Health 45 ·", "at the player's foe strength")

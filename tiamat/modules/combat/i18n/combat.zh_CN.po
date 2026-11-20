@@ -76,5 +76,8 @@ msgstr "生命 %d"
 msgid "Hits for %d"
 msgstr "伤害 %d"
 
+msgid "Shoots for %d"
+msgstr "远程伤害 %d"
+
 msgid "Drops %s"
 msgstr "掉落 %s"

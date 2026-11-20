@@ -2,21 +2,28 @@ class_name HostileCreature
 extends CharacterBody2D
 
 ## A creature that attacks the player (`EnemyData`): it waits, chases the
-## player within its `chase_radius` and strikes their hurtbox (`Hurtbox`) within
-## its `attack_range` every `attack_cooldown`, for its `contact_damage`, pushing
-## them back; one with a `windup_seconds` first stands and glows that long, and
-## strikes only if the player is still in reach. Its own hurtbox takes the
-## player's hits: each flashes it, pushes
-## it back and stuns it for `HURT_SECONDS` from that hit. At 0 health it is defeated, drops
-## its loot and comes back after `respawn_days`. A `StateMachine` runs it
-## (idle, chase, windup, hurt, defeated), and with a `persistent_id` its state saves
-## with the world. Chasing the player or stunned by their hit, it hunts them,
-## which makes a fight (`FightState`). It has the health of its kind times the
+## player within its `chase_radius` and strikes their hurtbox (`Hurtbox`)
+## within its `attack_range` every `attack_cooldown`, for its
+## `contact_damage`, pushing them back, or with a `shot_speed` shoots at them
+## from there (`CreatureShot`) and backs away from them nearer than
+## `SHOT_KEEP_AWAY`. One with a `windup_seconds` first stands and glows that
+## long, and strikes only if the player is still in reach. Its own hurtbox
+## takes the player's hits: each flashes it, pushes it back and stuns it for
+## `HURT_SECONDS` from that hit. At 0 health it is defeated, drops its loot and
+## comes back after `respawn_days`. A `StateMachine` runs it (idle, chase,
+## windup, hurt, defeated), and with a `persistent_id` its state saves with the
+## world. Chasing the player or stunned by their hit, it hunts them, which
+## makes a fight (`FightState`). It has the health of its kind times the
 ## player's foe strength (`STRENGTH_OPTION`, which `CombatModule` declares).
 ## An `elite` form makes it stronger, larger and tinted, and worth more.
 
 ## How long a hit stops it.
 const HURT_SECONDS := 0.2
+## How far its shots fly (`EnemyData.shot_speed`), in its `attack_range`.
+const SHOT_REACH := 1.5
+## How near one that shoots lets the player come before it backs away, in its
+## `attack_range`.
+const SHOT_KEEP_AWAY := 0.4
 
 ## The player's option of how strong the creatures are, and the share of
 ## their kinds' health each of its choices gives them; a choice not named here
@@ -126,11 +133,9 @@ func _chase(_delta: float) -> void:
 	var offset := player.global_position - global_position
 	var distance := offset.length()
 	if distance > data.attack_range * 0.65:
-		velocity = offset.normalized() * data.move_speed * _elite_scale(&"speed_scale")
-		move_and_slide()
-		_set_animation(AnimationState.MOVE)
-		if absf(velocity.x) > 0.1 and _has_art:
-			visual.flip_h = velocity.x < 0.0
+		_walk(offset, offset)
+	elif data.shot_speed > 0.0 and distance < data.attack_range * SHOT_KEEP_AWAY:
+		_walk(-offset, offset)
 	else:
 		velocity = Vector2.ZERO
 		_set_animation(AnimationState.IDLE)
@@ -139,6 +144,14 @@ func _chase(_delta: float) -> void:
 			_strike(player, offset)
 		elif _attack_time_left <= 0.0 and PlayerHurtbox.is_standing():
 			_machine.change(STATE_WINDUP)
+
+# Walks along `direction` at its speed, facing along `facing`.
+func _walk(direction: Vector2, facing: Vector2) -> void:
+	velocity = direction.normalized() * data.move_speed * _elite_scale(&"speed_scale")
+	move_and_slide()
+	_set_animation(AnimationState.MOVE)
+	if absf(facing.x) > 0.1 and _has_art:
+		visual.flip_h = facing.x < 0.0
 
 func _start_windup() -> void:
 	velocity = Vector2.ZERO
@@ -178,15 +191,20 @@ func _rest(delta: float) -> void:
 func _stop() -> void:
 	velocity = Vector2.ZERO
 
-# Strikes the player's hurtbox; the cooldown starts only with a strike that
-# hurt (the player may still be invincible from the last).
+# Strikes the player's hurtbox, or shoots at them; the cooldown starts only
+# with a strike that hurt (the player may still be invincible from the last)
+# and with each shot.
 func _strike(player: Node2D, offset: Vector2) -> void:
 	if _attack_time_left > 0.0 or not PlayerHurtbox.is_standing():
 		return
-	var target := Hurtbox.of(player)
 	var push := offset.normalized() * data.knockback
-	var amount := roundi(data.contact_damage * _elite_scale(&"damage_scale"))
-	if target != null and target.receive(Damage.new(amount, data.faction_id, self, push)):
+	var hit := Damage.new(roundi(data.contact_damage * _elite_scale(&"damage_scale")), data.faction_id, self, push)
+	if data.shot_speed > 0.0:
+		CreatureShot.fire(self, player.global_position, data.shot_speed, data.attack_range * SHOT_REACH, hit, data.shot_color)
+		_attack_time_left = data.attack_cooldown
+		return
+	var target := Hurtbox.of(player)
+	if target != null and target.receive(hit):
 		_attack_time_left = data.attack_cooldown
 
 # The location's player, looked up again only when it left the tree.
