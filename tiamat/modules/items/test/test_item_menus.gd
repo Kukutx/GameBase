@@ -103,6 +103,36 @@ func test_the_chest_keeps_the_entry_picked_and_moves_the_amount_picked() -> void
 	menu.close()
 	await get_tree().process_frame
 
+func test_the_chest_stores_what_it_already_holds_but_a_tool() -> void:
+	var items := _items().slice(0, 2)
+	var hoe := ItemData.new()
+	hoe.id = &"fixture_menu_hoe"
+	hoe.display_name = "Fixture Hoe"
+	hoe.kind = ItemData.Kind.TOOL
+	hoe.tool_action = &"till"
+	hoe.max_stack = 1
+	ContentFixture.use(self, items + [hoe])
+	StorageState.clear_container(CHEST)
+	InventoryState.add_item(items[0], 7)
+	InventoryState.add_item(items[1], 3)
+	InventoryState.add_item(hoe, 2)
+	StorageState.store_item(CHEST, items[0].id, 2)
+	StorageState.store_item(CHEST, hoe.id, 1)
+	var menu := STORAGE_MENU.instantiate() as StorageMenu
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	menu.open(CHEST, "Chest", 24)
+	assert_false(menu.matching_button.disabled)
+	menu.matching_button.grab_focus()
+	menu.matching_button.pressed.emit()
+	assert_eq(StorageState.get_quantity(CHEST, items[0].id), 7, "all of an item the chest holds")
+	assert_eq(InventoryState.get_quantity(items[1].id), 3, "an item the chest does not hold stays")
+	assert_eq(InventoryState.get_quantity(hoe.id), 1, "a tool stays in hand")
+	assert_true(menu.matching_button.disabled, "nothing more matches")
+	assert_true(menu.inventory_list.has_focus(), "the button closed hands the focus to the inventory")
+	menu.close()
+	await get_tree().process_frame
+
 # Opens a menu of `scene` with `open`, and checks its focus and its fit.
 func _check(scene: PackedScene, open: Callable) -> void:
 	var menu := scene.instantiate()

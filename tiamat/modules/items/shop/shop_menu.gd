@@ -3,8 +3,8 @@ extends MenuLayer
 
 ## A shop's counter: buys what the shop stocks and offers, and sells every
 ## item the inventory holds that has a sell price, as many at a press as the
-## amount the player picks (`amounts`: one, five, ten; a purchase stops at what
-## they can afford and carry, a sale at what they hold). A purchase the
+## amount the player picks (`amounts`: one, five, ten or all; a purchase stops
+## at what they can afford and carry, a sale at what they hold). A purchase the
 ## player cannot make now (not one of the item affordable or carried, an offer
 ## its `ShopOffer.can_buy()` refuses) is dimmed, and opens again as soon as a
 ## sale or the bag makes room for it. Under the lists it tells of the item
@@ -12,8 +12,10 @@ extends MenuLayer
 ## (`describe_item()`), or of the offer (`ShopOffer.describe()`).
 
 ## The amounts one press buys or sells, in the order the amount button steps
-## through them, the first as the counter opens; one amount hides the button.
-@export var amounts: PackedInt32Array = PackedInt32Array([1, 5, 10])
+## through them, the first as the counter opens; 0 is all: as many as the
+## player can buy now (`most_to_buy()`), every one they hold. One amount hides
+## the button.
+@export var amounts: PackedInt32Array = PackedInt32Array([1, 5, 10, 0])
 
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var money_label: Label = $Panel/VBox/Money
@@ -54,9 +56,23 @@ func open(shop: ShopData) -> void:
 	show_menu()
 	_rebuild()
 
-## How many one press buys or sells now.
+## How many one press buys or sells now; 0, all.
 func get_amount() -> int:
-	return maxi(amounts[_amount_index], 1) if _amount_index < amounts.size() else 1
+	return maxi(amounts[_amount_index], 0) if _amount_index < amounts.size() else 1
+
+## How many of `item` the player can buy at `shop` now: what their money
+## pays for, the bag holds and the shop has left today.
+static func most_to_buy(shop: ShopData, item: ItemData) -> int:
+	var price := shop.get_buy_price(item)
+	if price <= 0:
+		return 0
+	var most := mini(Wallet.money / price, InventoryState.get_add_capacity(item))
+	var left := ShopState.get_left_today(shop, item.id)
+	return mini(most, left) if left >= 0 else most
+
+# The text of the amount button.
+func _amount_text() -> String:
+	return tr("Amount: %d") % get_amount() if get_amount() > 0 else tr("Amount: All")
 
 func close() -> void:
 	_shop = null
@@ -73,7 +89,7 @@ func _rebuild(keep_focus := false) -> void:
 	if _shop == null:
 		return
 	amount_button.visible = amounts.size() > 1
-	amount_button.text = tr("Amount: %d") % get_amount()
+	amount_button.text = _amount_text()
 	title_label.text = tr(_shop.display_name)
 	about_label.text = ""
 	money_label.text = tr("Money: %dg") % Wallet.money
@@ -128,7 +144,9 @@ func _tell_of_offer(offer: ShopOffer) -> void:
 	about_label.text = offer.describe(_offer_context())
 
 func _buy(item_id: StringName) -> void:
-	ShopState.buy(_shop, item_id, get_amount())
+	var item := ItemData.find(item_id)
+	if item != null:
+		ShopState.buy(_shop, item_id, get_amount() if get_amount() > 0 else most_to_buy(_shop, item))
 
 ## Keeps each purchase's button telling its price at the amount picked, and
 ## open only while the player can make it now: one of an item they can afford
@@ -156,9 +174,9 @@ static func can_buy_one(shop: ShopData, item: ItemData) -> bool:
 # how many are left today of an item the shop sells so many of a day.
 func _buy_label(item: ItemData) -> String:
 	var price := _shop.get_buy_price(item)
-	var amount := get_amount()
+	var amount := get_amount() if get_amount() > 0 else most_to_buy(_shop, item)
 	var left := ShopState.get_left_today(_shop, item.id)
-	if amount == 1:
+	if amount == 1 or (get_amount() == 0 and amount < 1):
 		if left >= 0:
 			return tr("Buy %s — %dg (%d left today)") % [tr(item.display_name), price, left]
 		return tr("Buy %s — %dg") % [tr(item.display_name), price]
@@ -170,7 +188,7 @@ func _buy_label(item: ItemData) -> String:
 # for, or as many of the amount as they hold.
 func _sell_label(item: ItemData) -> String:
 	var held := InventoryState.get_quantity(item.id)
-	var amount := mini(get_amount(), held)
+	var amount := mini(get_amount(), held) if get_amount() > 0 else held
 	if get_amount() == 1:
 		return tr("Sell %s (%d) — %dg") % [tr(item.display_name), held, item.sell_price]
 	return tr("Sell %s (%d) x%d — %dg") % [tr(item.display_name), held, amount, item.sell_price * amount]
@@ -180,7 +198,7 @@ func _next_amount() -> void:
 	if amounts.size() < 2 or _shop == null:
 		return
 	_amount_index = (_amount_index + 1) % amounts.size()
-	amount_button.text = tr("Amount: %d") % get_amount()
+	amount_button.text = _amount_text()
 	_refresh_buy_list()
 	_refresh_sell_list()
 
@@ -193,7 +211,7 @@ func _offer_context() -> Dictionary:
 	return {"location_id": location.id if location != null else &""}
 
 func _sell(item_id: StringName) -> void:
-	ShopState.sell(item_id, get_amount())
+	ShopState.sell(item_id, get_amount() if get_amount() > 0 else InventoryState.get_quantity(item_id))
 
 ## Keeps one sell button per sellable item the inventory holds, in the
 ## inventory's order, so a sale changes the buttons in place and the focus

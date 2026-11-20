@@ -142,6 +142,9 @@ msgstr "存入 %d 个 →"
 msgid "Store all →"
 msgstr "全部存入 →"
 
+msgid "Store matching →"
+msgstr "存入同类 →"
+
 msgid "Stored"
 msgstr "已储存"
 
