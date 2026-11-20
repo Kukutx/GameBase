@@ -302,6 +302,32 @@ func test_a_weapon_tells_how_hard_it_hits_and_what_its_hits_lay() -> void:
 	brand.tool_action = RangedAttack.TOOL_ACTION
 	assert_eq(WeaponUse.describe(brand), PackedStringArray(["Attack %d" % WeaponUse.damage_of(brand)]), "a bow too, its hits laying nothing untagged")
 
+func test_a_weapon_is_weighed_against_the_hardest_hitting_one_the_player_carries() -> void:
+	var blade := _weapon(&"fixture_blade", "Blade", MeleeAttack.TOOL_ACTION, 7)
+	assert_null(WeaponUse.rival_of(blade), "the player carries no weapon")
+	var stick := _weapon(&"fixture_stick", "Stick", MeleeAttack.TOOL_ACTION, 3)
+	var saber := _weapon(&"fixture_saber", "Saber", MeleeAttack.TOOL_ACTION, 9)
+	var bow := _weapon(&"fixture_bow", "Bow", RangedAttack.TOOL_ACTION, 20)
+	for item: ItemData in [stick, saber, bow, blade]:
+		InventoryState.add_item(item)
+	assert_eq(InventoryState.find_tools(MeleeAttack.TOOL_ACTION), [blade, saber, stick] as Array[ItemData], "by id")
+	assert_eq(WeaponUse.rival_of(blade), saber, "the hardest hitting other blade, never the bow")
+	assert_eq(WeaponUse.rival_of(saber), blade)
+	var gap := WeaponUse.damage_of(blade) - WeaponUse.damage_of(saber)
+	assert_lt(gap, 0)
+	assert_eq(WeaponUse.describe(blade), PackedStringArray(["Attack %d (%+d vs. your Saber)" % [WeaponUse.damage_of(blade), gap]]))
+	assert_string_contains(WeaponUse.describe(saber)[0], "(+", "a harder hitter reads as a gain")
+	assert_eq(WeaponUse.describe(bow), PackedStringArray(["Attack %d" % WeaponUse.damage_of(bow)]), "no other bow carried")
+
+func _weapon(id: StringName, display_name: String, action: StringName, power: int) -> ItemData:
+	var weapon := ItemData.new()
+	weapon.id = id
+	weapon.display_name = display_name
+	weapon.kind = ItemData.Kind.TOOL
+	weapon.tool_action = action
+	weapon.tool_power = power
+	return weapon
+
 func test_what_is_wrong_with_an_affliction_or_what_names_one() -> void:
 	var burn := AfflictionData.find(BURN)
 	assert_eq(burn.get_ticks(), 3, "three tenths in tenths, rounding aside")

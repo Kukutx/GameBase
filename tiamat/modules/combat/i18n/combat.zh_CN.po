@@ -106,5 +106,8 @@ msgstr "可解除%s"
 msgid "Attack %d"
 msgstr "攻击 %d"
 
+msgid "Attack %d (%+d vs. your %s)"
+msgstr "攻击 %d（%+d，对比你的%s）"
+
 msgid "Its hits leave foes %s"
 msgstr "命中使敌人%s"
