@@ -7,9 +7,10 @@ extends CharacterBody2D
 ## its `InteractionController`) `reach` in front of where it faces. It stands
 ## still while anything holds the controls (`InputLock`) or its
 ## `actor_visual` plays an action (combat's `PlayerHurtbox` plays `hurt` and
-## `death` on it). A game adds its own actions in
-## `_unhandled_input`, checking `is_input_locked()` first. On a touchscreen it
-## walks with the stick of `TouchControls`, as one of its `MOVER_GROUP`.
+## `death` on it), and a `dash()` carries it for a moment. A game adds its own
+## actions in `_unhandled_input`, checking `is_input_locked()` first. On a
+## touchscreen it walks with the stick of `TouchControls`, as one of its
+## `MOVER_GROUP`.
 
 ## Emitted when the player turns to face another way, not while it keeps
 ## walking the way it faces.
@@ -31,6 +32,8 @@ const MOVE_SPEED_STAT := &"move_speed"
 var facing := Vector2.DOWN
 
 var _stagger_left := 0.0
+var _dash := Vector2.ZERO
+var _dash_left := 0.0
 
 func _notification(what: int) -> void:
 	# The touch stick shows while a player that walks is in the tree.
@@ -40,7 +43,13 @@ func _notification(what: int) -> void:
 func _physics_process(delta: float) -> void:
 	if _stagger_left > 0.0:
 		_stagger_left = maxf(_stagger_left - delta, 0.0)
+		_dash_left = 0.0
 		velocity = Vector2.ZERO
+		return
+	if _dash_left > 0.0:
+		_dash_left = maxf(_dash_left - delta, 0.0)
+		velocity = _dash
+		move_and_slide()
 		return
 	if is_input_locked():
 		velocity = Vector2.ZERO
@@ -59,6 +68,18 @@ func stagger(seconds: float) -> void:
 ## Whether the player is staggered (`stagger()`) and does not walk.
 func is_staggered() -> bool:
 	return _stagger_left > 0.0
+
+## Carries the player along `motion` (pixels a second) for `seconds`, facing
+## it, whatever the controls say, as a dodge does (combat's `DodgeRoll`); walls
+## still stop them, and a stagger cuts it short.
+func dash(motion: Vector2, seconds: float) -> void:
+	_dash = motion
+	_dash_left = maxf(seconds, 0.0)
+	face(motion)
+
+## Whether a dash (`dash()`) still carries the player.
+func is_dashing() -> bool:
+	return _dash_left > 0.0
 
 ## Turns the player to face `direction`, and its reach with it.
 func face(direction: Vector2) -> void:

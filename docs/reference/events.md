@@ -71,6 +71,7 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `CombatEvents.enemy_defeated(enemy_id: StringName, combat_xp: int, position: Vector2)`: A hostile creature was defeated at `position`; `combat_xp` is its `EnemyData.combat_xp` (an elite form's share of it, `EliteData.xp_scale`).
 - `CombatEvents.elite_defeated(elite_id: StringName, enemy_id: StringName, position: Vector2)`: An enemy in an elite form (`EliteData`) was defeated, after `enemy_defeated`.
 - `CombatEvents.attack_swung(weapon_item_id: StringName)`: The player swung the weapon `weapon_item_id`, hitting or not.
+- `CombatEvents.player_dodged()`: The player rolled out of the way (`DodgeRoll`).
 - `CombatEvents.enemy_hurt(enemy_id: StringName, amount: int, position: Vector2)`: A hostile creature was hurt for `amount` at `position`.
 - `CombatEvents.player_hurt(amount: int)`: The player was hurt for `amount`.
 - `CombatEvents.player_defeated(money_lost: int)`: The player lost all their health and woke up again; `money_lost` is what the defeat cost (`CombatSettings.defeat_money_loss_percent`).

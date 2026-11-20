@@ -16,6 +16,8 @@ signal elite_defeated(elite_id: StringName, enemy_id: StringName, position: Vect
 
 ## The player swung the weapon `weapon_item_id`, hitting or not.
 signal attack_swung(weapon_item_id: StringName)
+## The player rolled out of the way (`DodgeRoll`).
+signal player_dodged
 ## A hostile creature was hurt for `amount` at `position`.
 signal enemy_hurt(enemy_id: StringName, amount: int, position: Vector2)
 ## The player was hurt for `amount`.

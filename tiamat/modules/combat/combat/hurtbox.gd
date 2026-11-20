@@ -72,6 +72,12 @@ func can_be_hurt_by(damage: Damage) -> bool:
 func is_invincible() -> bool:
 	return _invincible_left > 0.0
 
+## Lets no hit hurt for `seconds` from now (a dodge, `DodgeRoll`), or for
+## longer while the last hit's moment lasts longer.
+func make_invincible(seconds: float) -> void:
+	_invincible_left = maxf(_invincible_left, seconds)
+	set_physics_process(_invincible_left > 0.0 or _knockback_left > 0.0)
+
 ## Seconds the last hit's knockback still pushes the actor.
 func get_knockback_left() -> float:
 	return _knockback_left

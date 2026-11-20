@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_trigger"]
+
+[resource]
+script = ExtResource("1_trigger")
+id = &"hint_dodge_controls"
+event = &"WorldTravel.travel_finished"
+condition = "LOCATION depths, RUN_TALLY_AT_LEAST depth 2"
+actions = PackedStringArray("SHOW_HINT dodge_controls")
