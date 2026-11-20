@@ -59,6 +59,7 @@ start_items = Dictionary[StringName, int]({
 &"health_potion": 2
 })
 start_hotbar = Array[StringName]([&"rusty_sword", &"health_potion"])
+hotbar_kinds = Array[int]([0, 3, 8])
 
 [sub_resource type="Resource" id="Settings_combat"]
 script = ExtResource("21_combat_settings")

@@ -21,12 +21,8 @@ func install() -> void:
 	GameStats.register_stat(BURN_CHANCE_STAT, "Burn chance")
 	SaveManager.register_save_blocker(DepthRun.get_save_block_reason)
 	SaveManager.register_slot_detail(&"deepest_depth", 100, DepthRun.describe_save)
-	InventoryState.item_added.connect(_on_item_added)
 	ItemSources.register(&"depth_chests", find_item_sources)
 
 ## The depths' chests as a way to get what they hold.
 static func find_item_sources(_registry: ContentRegistry, sources: ItemSources) -> void:
 	(DEPTH_CHESTS as ChestSpread).add_ways(sources, TranslationServer.translate("Found in chests in the depths"))
-
-func _on_item_added(item_id: StringName, _quantity: int) -> void:
-	Hotbar.ensure_item(item_id)

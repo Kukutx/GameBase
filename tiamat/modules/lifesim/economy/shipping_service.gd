@@ -31,11 +31,16 @@ func ship_item(item_id: StringName, quantity: int = 1) -> bool:
 	_shipping_busy = false
 	return result
 
+## Whether `item` can go in the bin: it has a sell price and is no tool or
+## quest item.
+static func can_ship(item: ItemData) -> bool:
+	return item != null and item.sell_price > 0 and item.kind != ItemData.Kind.TOOL and item.kind != ItemData.Kind.QUEST
+
 func _ship_item_internal(item_id: StringName, quantity: int) -> bool:
 	if item_id == &"" or quantity <= 0:
 		return false
 	var item := ItemData.find(item_id)
-	if item == null or item.sell_price <= 0 or item.kind == ItemData.Kind.TOOL or item.kind == ItemData.Kind.QUEST:
+	if not can_ship(item):
 		GameEvents.toast("That item cannot be shipped")
 		return false
 	if not InventoryState.remove_item(item_id, quantity):

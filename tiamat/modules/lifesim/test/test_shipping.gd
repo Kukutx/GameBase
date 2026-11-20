@@ -137,6 +137,46 @@ func test_shipping_state_round_trips_without_early_payout() -> void:
 	assert_eq(ShippingState.get_pending_total(), expected)
 	assert_eq(int(saved["last_day_seen"]), 1)
 
+func test_the_shipping_menu_ships_the_amount_picked_of_what_the_bin_takes() -> void:
+	InventoryState.add_item(ItemData.find(&"fixture_turnip"), 25)
+	InventoryState.add_item(ItemData.find(&"fixture_carrot"), 2)
+	var menu := (load("res://tiamat/modules/lifesim/economy/shipping_menu.tscn") as PackedScene).instantiate() as ShippingMenu
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	menu.open()
+	assert_eq(menu.item_list.item_count, 2, "every item the bin takes")
+	assert_eq(menu.item_list.get_item_text(1), tr("%s x%d — %dg each") % ["Fixture Turnip", 25, 35])
+	menu.item_list.select(1)
+	menu.item_list.item_selected.emit(1)
+	assert_eq(menu.ship_selected(), 1)
+	menu.amount_button.pressed.emit()
+	assert_eq(menu.ship_button.text, tr("Ship %d") % 10)
+	assert_false(menu.ship_button.disabled, "the turnips stay picked")
+	menu.ship_button.pressed.emit()
+	assert_eq(ShippingState.get_pending_quantity(&"fixture_turnip"), 11)
+	menu.amount_button.pressed.emit()
+	menu.ship_button.grab_focus()
+	menu.ship_button.pressed.emit()
+	assert_eq([ShippingState.get_pending_quantity(&"fixture_turnip"), InventoryState.get_quantity(&"fixture_turnip")], [25, 0], "all of the stack")
+	assert_eq(menu.pending_label.text, tr("Shipping tonight: %dg") % (25 * 35))
+	assert_eq(menu.item_list.get_item_metadata(menu.item_list.get_selected_items()[0]), &"fixture_carrot",
+		"the entry now in the place of the one gone is picked")
+	menu.ship_button.pressed.emit()
+	assert_eq(menu.item_list.item_count, 0)
+	assert_true(menu.ship_button.disabled)
+	assert_true(menu.close_button.has_focus(), "an empty list hands the focus to closing")
+	menu.close()
+
+func test_the_bin_takes_neither_tools_nor_quest_items() -> void:
+	var hoe := _item(&"fixture_hoe", 10)
+	hoe.kind = ItemData.Kind.TOOL
+	var letter := _item(&"fixture_letter", 10)
+	letter.kind = ItemData.Kind.QUEST
+	assert_false(ShippingService.can_ship(hoe))
+	assert_false(ShippingService.can_ship(letter))
+	assert_false(ShippingService.can_ship(_item(&"fixture_pebble", 0)), "nor an item without a price")
+	assert_true(ShippingService.can_ship(ItemData.find(&"fixture_turnip")))
+
 func _item(id: StringName, sell_price: int) -> ItemData:
 	var item := ItemData.new()
 	item.id = id

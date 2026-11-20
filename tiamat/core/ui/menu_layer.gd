@@ -85,6 +85,24 @@ static func focus_kept(buttons: Array[Button], key: Variant, fallback: Control) 
 			return
 	focus(fallback)
 
+## Fills `list` with `rows`, each {"text": what the entry reads, "key": what
+## names it, its metadata}, keeping selected the entry whose key was, or, once
+## it is gone, the entry now in its place: a list that changes as the player
+## moves its items (a chest, a shipping bin) keeps their pick.
+static func refill_list(list: ItemList, rows: Array[Dictionary]) -> void:
+	var selected := list.get_selected_items()
+	var kept_index := int(selected[0]) if not selected.is_empty() else -1
+	var kept_key: Variant = list.get_item_metadata(kept_index) if kept_index >= 0 else null
+	list.clear()
+	for row: Dictionary in rows:
+		var index := list.add_item(String(row["text"]))
+		list.set_item_metadata(index, row["key"])
+		if kept_key != null and row["key"] == kept_key:
+			kept_index = index
+	if kept_index >= 0 and list.item_count > 0:
+		list.select(mini(kept_index, list.item_count - 1))
+		list.ensure_current_is_visible()
+
 # The nearest list around `control` that scrolls to the focus, or null.
 static func _scroll_of(control: Control) -> ScrollContainer:
 	var node := control.get_parent()

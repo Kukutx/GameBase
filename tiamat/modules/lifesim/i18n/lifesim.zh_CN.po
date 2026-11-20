@@ -671,3 +671,21 @@ msgstr "产出%s，每 %d 天一次"
 
 msgid "%s (%s when happy)"
 msgstr "%s（心情好时为%s）"
+
+msgid "Ship items"
+msgstr "出货"
+
+msgid "Shipping Bin"
+msgstr "出货箱"
+
+msgid "Shipping tonight: %dg"
+msgstr "今晚结算：%dg"
+
+msgid "%s x%d — %dg each"
+msgstr "%s x%d — 每个 %dg"
+
+msgid "Ship %d"
+msgstr "出货 %d 个"
+
+msgid "Ship all"
+msgstr "全部出货"
