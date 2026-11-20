@@ -10,6 +10,8 @@ signal changed
 signal selected_slot_changed(index: int, item_id: StringName)
 
 const SLOT_COUNT := 9
+## What stands between two slots in the hotbar's line (`get_text()`).
+const PART_SEPARATOR := "  "
 
 var slots: Array[StringName] = default_slots()
 var selected_slot := 0
@@ -97,8 +99,21 @@ func get_selected_item_id() -> StringName:
 func get_selected_item() -> ItemData:
 	return ItemData.find(get_selected_item_id())
 
+## The hotbar as one line of text: `get_slot_parts()` joined by
+## `PART_SEPARATOR`.
 func get_text() -> String:
-	var parts: PackedStringArray = []
+	var texts := PackedStringArray()
+	for part: Dictionary in get_slot_parts():
+		texts.append(String(part["text"]))
+	return PART_SEPARATOR.join(texts)
+
+## The slots that hold an item, in order, each as {"slot": its index, "text":
+## how the hotbar's line names it}: its number, its item, how many the
+## inventory holds of what is not a tool, after a ">" for the slot in hand
+## (">1:Hoe", " 5:Parsnip Seeds x12"). A line that knows where each part
+## sits lets the player tap a slot (`HotbarLine.get_slot_at()`).
+func get_slot_parts() -> Array[Dictionary]:
+	var parts: Array[Dictionary] = []
 	for index in slots.size():
 		var item_id := slots[index]
 		if item_id == &"":
@@ -109,8 +124,8 @@ func get_text() -> String:
 		if item != null and item.kind != ItemData.Kind.TOOL:
 			label += " x%d" % quantity
 		var prefix := ">" if index == selected_slot else " "
-		parts.append("%s%d:%s" % [prefix, index + 1, label])
-	return "  ".join(parts)
+		parts.append({"slot": index, "text": "%s%d:%s" % [prefix, index + 1, label]})
+	return parts
 
 func reset_new_game() -> void:
 	selected_slot = 0
