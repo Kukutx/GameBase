@@ -44,6 +44,7 @@ Each statement below was confirmed either by running Godot 4.7.2 headless or by 
 - Ids are `StringName` literals (`&"turnip"`). A value that arrived from a save, a dictionary or a signal with a looser type is converted with `StringName(String(value))` before it is used as an id.
 - Player-visible text never appears as a bare literal assigned to a control; see `.agents/rules/localization.md`.
 - A new script gets a `.gd.uid` file from the import step; see `.agents/rules/scenes-resources.md`.
+- A content class (a script that declares `const KIND`) says what its entries are in a class doc, and what each exported field is in a `##` doc above it. A field on the line right after a documented one, with no doc of its own, shares that doc (a pair of bounds, the frames of a sheet), and `docs/reference/content.md` says so; give a field its own doc wherever the one above does not tell it. The repository tests fail on a kind or a field without one.
 
 ## Verification
 

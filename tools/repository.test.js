@@ -530,14 +530,18 @@ test("the content reference lists every kind of content with the fields its entr
     assert.ok(page.includes(`\n## ${entry.kind}\n`), `content.md has a section for ${entry.kind}`);
     assert.ok(page.includes(`| [${entry.kind}](#${entry.kind}) |`), `content.md lists ${entry.kind}`);
     assert.ok(classSummary(entry.source), `${entry.file} has a class doc saying what a ${entry.kind} is`);
+    for (const field of fieldsOf(entry.source)) {
+      assert.ok(field.doc || field.shares, `${entry.file}: ${field.name} has a ## doc saying what it is, or shares the doc of the field on the line above`);
+    }
   }
   assert.equal(new Set(kinds.map((entry) => entry.kind)).size, kinds.length, "no two classes declare one kind");
   assert.deepEqual(
-    fieldsOf('## How long.\n@export_range(0.1, 60.0, 0.1, "suffix:s") var seconds := 3.0\n@export var tag: StringName\n## Not a field\nvar inner := 1\n@export_file("*.tscn") var scene: String\n'),
+    fieldsOf('## How long, at least and at most.\n@export_range(0.1, 60.0, 0.1, "suffix:s") var seconds := 3.0\n@export var most := 4.0\n@export var tag: StringName\n## Not a field\nvar inner := 1\n@export_file("*.tscn") var scene: String\n'),
     [
-      { name: "seconds", annotation: "_range", args: '0.1, 60.0, 0.1, "suffix:s"', type: "", initial: "3.0", doc: "How long." },
-      { name: "tag", annotation: "", args: "", type: "StringName", initial: "", doc: "" },
-      { name: "scene", annotation: "_file", args: '"*.tscn"', type: "String", initial: "", doc: "" },
+      { name: "seconds", annotation: "_range", args: '0.1, 60.0, 0.1, "suffix:s"', type: "", initial: "3.0", doc: "How long, at least and at most.", shares: "" },
+      { name: "most", annotation: "", args: "", type: "", initial: "4.0", doc: "", shares: "seconds" },
+      { name: "tag", annotation: "", args: "", type: "StringName", initial: "", doc: "", shares: "seconds" },
+      { name: "scene", annotation: "_file", args: '"*.tscn"', type: "String", initial: "", doc: "", shares: "" },
     ],
   );
   assert.deepEqual([...enumsOf("enum Effect {\n\t## Takes health.\n\tDAMAGE,\n\tHEAL = 4, # a comment, with a comma\n\tCURE,\n}\n").entries()], [
@@ -546,6 +550,7 @@ test("the content reference lists every kind of content with the fields its entr
   const row = page.split("\n").find((line) => line.startsWith("| `seconds` |") && line.includes("hit that laid it"));
   assert.match(row, /`float`, 0\.1 to 60 s \| `3\.0` \|/, "a range and its unit show beside the type");
   assert.ok(page.includes("Values: DAMAGE = 0 ("), "an enum field lists its values and their numbers");
+  assert.ok(page.includes("| `idle_to` | `int`, 0 to 999 | `0` | With `idle_from`, above. |"), "a field told with the one above says so");
 });
 
 test("validate --test finds a GUT script in the test directories a game runs, and only there", () => {

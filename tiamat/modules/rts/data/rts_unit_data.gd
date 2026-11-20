@@ -14,13 +14,16 @@ extends ContentEntry
 
 const KIND := &"rts_unit"
 
+## The name the player reads.
 @export var display_name := ""
 ## What the field shows of it; none: a disc of `color` with its name's initial.
 @export var texture: Texture2D
 @export var color := Color(0.55, 0.6, 0.7)
+## Its health as it comes on the field, and the most mending gives back.
 @export_range(1, 9999) var max_health := 30
 ## The health an attack takes, less the target's `armor`, never below 1.
 @export_range(1, 999) var damage := 5
+## What it takes off each attack on it.
 @export_range(0, 999) var armor := 0
 ## How far from its edge to a foe's edge it attacks: a few pixels for a blade,
 ## many for a bow.

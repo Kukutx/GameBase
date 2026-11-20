@@ -14,7 +14,10 @@ extends ContentEntry
 
 const KIND := &"affliction"
 
+## The name the player reads (Burning): in a toast as it takes hold, and on the
+## HUD's line while it lasts.
 @export var display_name := ""
+## The colour what it is on flashes on each of its ticks.
 @export var color := Color(1.0, 0.5, 0.18)
 ## How long it lasts from the hit that laid it.
 @export_range(0.1, 60.0, 0.1, "suffix:s") var seconds := 3.0

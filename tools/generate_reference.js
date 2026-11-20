@@ -264,20 +264,29 @@ function enumsOf(source) {
 }
 
 // The fields the script exports, in order, each with its annotation and its
-// arguments, its type as declared, its default and its doc comment.
+// arguments, its type as declared, its default and its doc comment. A field
+// with no doc of its own on the line after a documented one shares that doc
+// (`shares`: the field that has it), as a pair of bounds or the frames of a
+// sheet are told together.
 function fieldsOf(source) {
   const fields = [];
   let doc = [];
+  let previous = null;
   for (const line of source.split(/\r?\n/)) {
     const match = FIELD_RE.exec(line);
     if (match) {
       const [, annotation, args, name, type, initial] = match;
-      fields.push({ name, annotation, args: args || "", type: (type || "").trim(), initial: (initial || "").trim(), doc: docText(doc).join(" ") });
+      const own = docText(doc).join(" ");
+      const shares = !own && previous ? previous.shares || (previous.doc ? previous.name : "") : "";
+      previous = { name, annotation, args: args || "", type: (type || "").trim(), initial: (initial || "").trim(), doc: own, shares };
+      fields.push(previous);
       doc = [];
     } else if (line.startsWith("##")) {
       doc.push(line);
+      previous = null;
     } else {
       doc = [];
+      previous = null;
     }
   }
   return fields;
@@ -364,7 +373,8 @@ function contentPage() {
       if (!type && constant && (own.has(constant[1]) || ENGINE_TYPE_RE.test(constant[1]))) type = constant[1];
       const hint = editorHint(field);
       const values = enumValues(type, own, enumsByClass);
-      const meaning = [field.doc, values ? `Values: ${values}.` : ""].filter(Boolean).join(" ");
+      const told = field.doc || (field.shares ? `With \`${field.shares}\`, above.` : "");
+      const meaning = [told, values ? `Values: ${values}.` : ""].filter(Boolean).join(" ");
       lines.push(`| \`${field.name}\` | ${type ? `\`${cell(type)}\`` : ""}${hint ? `, ${cell(hint)}` : ""} | ${field.initial ? `\`${cell(field.initial)}\`` : ""} | ${cell(meaning)} |`);
     }
     lines.push("");

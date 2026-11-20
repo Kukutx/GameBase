@@ -8,6 +8,7 @@ extends ContentEntry
 
 const KIND := &"region"
 
+## The name the player reads.
 @export var display_name: String
 
 ## The region with `entry_id` in the running game's content, or null.

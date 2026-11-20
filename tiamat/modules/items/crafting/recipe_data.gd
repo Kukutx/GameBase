@@ -15,6 +15,7 @@ const KIND := &"recipe"
 
 ## The name the player reads.
 @export var display_name: String
+## The stations that make it (`CraftingStation`): a workbench or a kitchen.
 @export var category: Category = Category.CRAFTING
 ## What it takes, as item id -> count.
 @export var ingredients: Dictionary = {}

@@ -12,6 +12,7 @@ extends ContentEntry
 
 const KIND := &"run_tally"
 
+## The name a run's report gives it.
 @export var display_name := ""
 ## Where it stands in a run's report: lower first, then by id.
 @export var order := 0

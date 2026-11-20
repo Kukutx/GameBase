@@ -34,7 +34,9 @@ const KIND := &"item"
 @export_multiline var description: String
 ## How many one inventory slot holds; a tool's is 1.
 @export_range(1, 999, 1) var max_stack := 99
+## The picture of it a game's own menus show (MFarm's bag and trade panel).
 @export var icon: Texture2D
+## What it is, which decides what the player can do with it.
 @export var kind: Kind = Kind.MATERIAL
 ## What a shop asks for it where the shop's stock leaves the price to the item
 ## (a price of 0, `ShopData.stock`).

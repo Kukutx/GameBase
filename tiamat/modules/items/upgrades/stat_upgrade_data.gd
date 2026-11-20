@@ -15,7 +15,9 @@ const KIND := &"stat_upgrade"
 ## The level of each upgrade: a world value `stat_upgrade:<upgrade id>`.
 const LEVEL_PREFIX := "stat_upgrade:"
 
+## The name the player reads at the stand.
 @export var display_name := ""
+## What each level does, as the stand tells it.
 @export_multiline var description := ""
 ## When the player may buy its next level: a `GameRules` query; empty, always.
 @export var condition := ""
