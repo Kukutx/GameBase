@@ -7,4 +7,4 @@ script = ExtResource("1_achievement")
 id = &"every_star"
 order = 80
 display_name = "Master of the Field"
-description = "Earn all three stars at each of the four battles."
+description = "Earn all three stars at each of the five battles."

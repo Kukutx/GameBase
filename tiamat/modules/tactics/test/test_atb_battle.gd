@@ -344,6 +344,38 @@ func test_a_leader_s_fall_sends_the_rest_of_its_side_fleeing() -> void:
 	assert_true(lost.is_over())
 	assert_true(lost.is_won(), "won with the ally left")
 
+func test_a_unit_of_the_side_that_takes_a_goal_wins_by_ending_its_turn_there() -> void:
+	var battle := _battle()
+	battle.goal_cells[Vector2i(4, 0)] = true
+	battle.goal_cells[Vector2i(3, 2)] = true
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(3, 0))
+	var guard := _add(battle, &"fixture_archer", &"fixture_guard", Vector2i(7, 5))
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(4, 0))
+	assert_true(battle.takes_goals(knight) and battle.takes_goals(guard), "the player's side takes the goals at first")
+	assert_false(battle.takes_goals(raider))
+	var taken: Array[GridUnit] = []
+	battle.goal_taken.connect(func(unit: GridUnit) -> void: taken.append(unit))
+	TacticsFixture.give_turn(battle, raider)
+	assert_eq(raider.cell, Vector2i(4, 0))
+	assert_eq(knight.health.current, 16, "the raider struck from a goal")
+	assert_false(battle.is_over(), "a foe that ends its turn on one takes nothing")
+	TacticsFixture.give_turn(battle, knight)
+	assert_true(battle.move(knight, Vector2i(3, 2)))
+	assert_false(battle.is_over(), "not until its turn ends")
+	assert_true(battle.can_undo_move(knight), "the move may still be taken back")
+	assert_true(battle.end_turn(knight))
+	assert_eq(taken, [knight] as Array[GridUnit])
+	assert_true(battle.is_over() and battle.is_won(), "won with a foe standing")
+
+	var lost := _battle()
+	lost.goal_cells[Vector2i(0, 0)] = true
+	lost.goal_faction = FactionData.MONSTERS
+	_add(lost, &"fixture_archer", FactionData.PLAYER, Vector2i(7, 5))
+	var runner := _add(lost, &"fixture_raider", FactionData.MONSTERS, Vector2i(2, 0))
+	TacticsFixture.give_turn(lost, runner)
+	assert_eq(runner.cell, Vector2i(0, 0), "the foe steps onto the goal it takes")
+	assert_true(lost.is_over() and not lost.is_won(), "and the battle is lost")
+
 func test_the_battle_ends_won_when_the_last_foe_falls_and_lost_when_the_player_s_side_does() -> void:
 	var battle := _battle()
 	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))

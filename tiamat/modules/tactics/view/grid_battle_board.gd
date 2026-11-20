@@ -3,7 +3,8 @@ extends Control
 
 ## The grid of a grid battle as the player sees it (`GridBattleGame`): the
 ## cells, scaled to fit the board's size, with tufts of brush where they give
-## cover (`cover_color`) and ripples on rough ground (`rough_color`), the
+## cover (`cover_color`) and ripples on rough ground (`rough_color`), a
+## pennant on a goal cell in the colour of the side that takes it, the
 ## cells a command may pick, the
 ## cells the foes could strike next (`danger`), the
 ## cursor, the units with their health and gauges and a crown on a side's
@@ -175,6 +176,8 @@ func _draw() -> void:
 				_draw_cover(cell, origin, side)
 			if battle.grid.is_rough(cell):
 				_draw_rough(cell, origin, side)
+			if battle.goal_cells.has(cell):
+				_draw_goal(cell, origin, side)
 	for cell: Vector2i in reach:
 		draw_rect(_cell_rect(cell, origin, side), reach_color)
 	for cell: Vector2i in danger:
@@ -278,6 +281,16 @@ func _draw_rough(cell: Vector2i, origin: Vector2, side: float) -> void:
 	var corner := origin + Vector2(cell) * side
 	for row: float in [0.38, 0.66]:
 		draw_line(corner + Vector2(0.2, row) * side, corner + Vector2(0.8, row) * side, rough_color, maxf(side * 0.06, 1.0))
+
+# A pennant on a goal cell, and its edge, in the colour of the side that
+# takes it, so the edge shows under a unit standing there.
+func _draw_goal(cell: Vector2i, origin: Vector2, side: float) -> void:
+	var color := foe_side_color if FactionData.are_hostile(battle.goal_faction, battle.player_faction) else player_side_color
+	var corner := origin + Vector2(cell) * side
+	var line := maxf(side * 0.06, 1.0)
+	draw_rect(_cell_rect(cell, origin, side).grow(-line), color, false, line)
+	draw_line(corner + Vector2(0.38, 0.84) * side, corner + Vector2(0.38, 0.16) * side, color, line)
+	draw_colored_polygon(PackedVector2Array([corner + Vector2(0.38, 0.16) * side, corner + Vector2(0.76, 0.29) * side, corner + Vector2(0.38, 0.42) * side]), color)
 
 func _cell_rect(cell: Vector2i, origin: Vector2, side: float) -> Rect2:
 	return Rect2(origin + Vector2(cell) * side, Vector2(side, side))

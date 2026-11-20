@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MiniGameDefinition" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/minigames/minigame_definition.gd" id="1_definition"]
+[ext_resource type="PackedScene" path="res://tiamat/modules/tactics/view/grid_battle_game.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_definition")
+id = &"tower_battle"
+order = 25
+display_name = "Watchtower"
+description = "Raiders storm the watchtower to light its beacon and call their band. Hold its two doors: a raider who ends a turn on the beacon lights it, and the battle is lost. Storm the Raider Camp first, and an archer from there joins you."
+condition = "MINIGAME_WON mill_battle"
+score_name = "Units Left"
+score_goals = PackedInt32Array(2, 3, 4)
+scene = ExtResource("2_scene")
+music_cue_id = &"music_battle"
+settings = {
+"map": "watchtower"
+}
+failure_actions = PackedStringArray("SHOW_HINT lost_battle")

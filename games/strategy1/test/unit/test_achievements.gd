@@ -55,22 +55,25 @@ func test_raiders_defeated_in_every_battle_count_toward_veteran() -> void:
 	GameTriggers.fire(&"RtsEvents.foe_defeated", {"rts_unit_id": &"raider"})
 	assert_true(GameProfile.is_unlocked(&"veteran"))
 
-func test_the_second_battle_of_each_station_has_its_own_achievement() -> void:
+func test_each_later_battle_has_its_own_achievement() -> void:
 	GameTriggers.fire(&"TacticsEvents.battle_ended", {"battle_map_id": &"old_mill", "won": false})
 	assert_false(GameProfile.is_unlocked(&"mill_taken"), "a lost battle takes nothing")
 	GameTriggers.fire(&"TacticsEvents.battle_ended", {"battle_map_id": &"old_mill", "won": true})
 	assert_true(GameProfile.is_unlocked(&"mill_taken"))
 	assert_false(GameProfile.is_unlocked(&"ford_held"), "the mill is not the ford")
+	assert_false(GameProfile.is_unlocked(&"beacon_kept"))
+	GameTriggers.fire(&"TacticsEvents.battle_ended", {"battle_map_id": &"watchtower", "won": true})
+	assert_true(GameProfile.is_unlocked(&"beacon_kept"))
 	GameTriggers.fire(&"RtsEvents.battle_ended", {"rts_map_id": &"raider_camp", "won": true})
 	assert_true(GameProfile.is_unlocked(&"camp_stormed"))
 	assert_false(GameProfile.is_unlocked(&"pass_held"))
 
 func test_the_challenges_and_the_achievements_follow_the_campaign() -> void:
-	assert_eq(MiniGameDefinition.find_all().map(func(minigame: MiniGameDefinition) -> StringName: return minigame.id), [&"ford_battle", &"mill_battle", &"pass_battle", &"camp_battle"])
-	assert_eq(AchievementData.find_all().slice(0, 4).map(func(achievement: AchievementData) -> StringName: return achievement.id), [&"ford_held", &"mill_taken", &"pass_held", &"camp_stormed"], "each battle's achievement in the order it is fought")
+	assert_eq(MiniGameDefinition.find_all().map(func(minigame: MiniGameDefinition) -> StringName: return minigame.id), [&"ford_battle", &"mill_battle", &"tower_battle", &"pass_battle", &"camp_battle"])
+	assert_eq(AchievementData.find_all().slice(0, 5).map(func(achievement: AchievementData) -> StringName: return achievement.id), [&"ford_held", &"mill_taken", &"beacon_kept", &"pass_held", &"camp_stormed"], "each battle's achievement in the order it is fought")
 
-func test_every_star_of_the_four_battles_makes_a_master_of_the_field() -> void:
-	for battle: StringName in [&"ford_battle", &"mill_battle", &"pass_battle", &"camp_battle"]:
+func test_every_star_of_the_five_battles_makes_a_master_of_the_field() -> void:
+	for battle: StringName in [&"ford_battle", &"mill_battle", &"tower_battle", &"pass_battle", &"camp_battle"]:
 		var definition := MiniGameDefinition.find(battle)
 		assert_eq(definition.score_goals.size(), 3, "%s has three stars" % battle)
 		GameProfile.set_flag(MiniGameDefinition.best_score_key(battle), definition.score_goals[-1] - (1 if battle == &"camp_battle" else 0))

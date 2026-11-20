@@ -48,7 +48,7 @@ Current location music slots:
 - `music_old_mine`
 - `music_fight` (Farm1 and Ember Depths: a fight)
 - `music_camp` and `music_depths` (Ember Depths' camp and depths)
-- `music_camp` (Iron Banners' camp and lookout, which share it, so it plays on between them) and `music_battle` (both of its battles)
+- `music_camp` (Iron Banners' camp and lookout, which share it, so it plays on between them) and `music_battle` (every one of its battles)
 
 A `WorldLocationData` may store a stable `music_cue_id` (each location of the three games does; a location without one plays no music); scene filenames are not used as music keys.
 

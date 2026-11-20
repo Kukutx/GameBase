@@ -6,5 +6,5 @@
 script = ExtResource("1_trigger")
 id = &"achievement_every_star"
 event = &"MiniGameHost.minigame_finished"
-condition = "MINIGAME_STARS ford_battle 3, MINIGAME_STARS mill_battle 3, MINIGAME_STARS pass_battle 3, MINIGAME_STARS camp_battle 3"
+condition = "MINIGAME_STARS ford_battle 3, MINIGAME_STARS mill_battle 3, MINIGAME_STARS tower_battle 3, MINIGAME_STARS pass_battle 3, MINIGAME_STARS camp_battle 3"
 actions = PackedStringArray("UNLOCK_ACHIEVEMENT every_star")

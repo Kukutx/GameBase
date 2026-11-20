@@ -73,6 +73,24 @@ func test_a_map_gives_cover_and_rough_ground_on_its_open_cells() -> void:
 	var knight := battle.get_unit_at(Vector2i(0, 0))
 	assert_eq(battle.grid.walk(knight.cell, knight.data.move).get(Vector2i(1, 0)), 3, "the knight's whole move to step onto it")
 
+func test_a_map_s_goals_are_open_cells_no_unit_of_the_side_that_takes_them_starts_on() -> void:
+	var map := _map()
+	map.goal_cells.assign([Vector2i(3, 0), Vector2i(2, 0), Vector2i(0, 0)])
+	assert_eq(map.get_goal_faction(), FactionData.PLAYER, "the player's side takes them unless the map names another")
+	assert_eq(map.find_problems(_registry), PackedStringArray([
+		"makes cell (2, 0) a goal, which is blocked or outside its grid",
+		"places unit 'fixture_knight' on goal cell (0, 0), which its side takes",
+	]))
+	map.goal_faction_id = FactionData.MONSTERS
+	map.goal_cells.assign([Vector2i(0, 0)])
+	assert_eq(map.find_problems(_registry), PackedStringArray(), "the foes' goal under the player's unit")
+	var battle := AtbBattle.from_map(map)
+	assert_eq(battle.goal_cells.keys(), [Vector2i(0, 0)])
+	assert_eq(battle.goal_faction, FactionData.MONSTERS)
+	assert_true(battle.takes_goals(battle.get_unit_at(Vector2i(3, 2))))
+	assert_false(battle.takes_goals(battle.get_unit_at(Vector2i(0, 0))))
+	assert_false(AtbBattle.from_map(_map()).takes_goals(battle.get_unit_at(Vector2i(0, 0))), "no goal, no side takes one")
+
 func test_a_map_sets_up_its_battle_with_the_player_commanding_their_side() -> void:
 	var settings := TacticsSettings.new()
 	settings.time_flows_while_choosing = true

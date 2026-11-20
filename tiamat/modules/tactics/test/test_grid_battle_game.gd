@@ -4,7 +4,8 @@ extends GutTest
 ## player commands their unit with the command buttons and the board, wins,
 ## and the battle's end is told; once the unit moved, Move takes the move
 ## back; the commands follow what the foes do meanwhile, and an action that
-## recharges tells when it is ready; a finger's tap on a cell shows it and a second tap picks it;
+## recharges tells when it is ready; a goal is told and taking it wins; a
+## finger's tap on a cell shows it and a second tap picks it;
 ## cancel twice gives the battle up; an unknown map ends it at once,
 ## and a definition that names one is a content problem; the player's choice
 ## of speed speeds the game's.
@@ -190,6 +191,23 @@ func test_a_leader_is_told_and_its_fall_routs_its_side() -> void:
 	game.battle.unit_defeated.connect(func(_unit: GridUnit) -> void: told.append(_shows(game, tr("%s falls, and their side flees!") % dummy_name)))
 	game.pick(Vector2i(2, 1))
 	assert_eq(told, [true], "the message tells the rout")
+
+func test_a_goal_is_told_and_taking_it_wins() -> void:
+	BattleMapData.find(&"fixture_field").goal_cells.assign([Vector2i(1, 0)])
+	var outcome := {}
+	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	game.choose_command(0)
+	game.get_board().cell_hovered.emit(Vector2i(1, 0))
+	var tells := func(text: String) -> bool: return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text.contains(text))
+	assert_true(tells.call(tr("Goal: end a turn here to win")), "the side tells the goal")
+	game.pick(Vector2i(1, 0))
+	game.choose_command(2)
+	assert_true(_shows(game, "%s %s" % [tr("%s takes the goal!") % tr("Fixture Knight"), tr("Victory!")]), "the message tells who took it")
+	assert_true(await _until(func() -> bool: return outcome.has("result")))
+	assert_true((outcome["result"] as MiniGameResult).success, "won with the dummy standing")
+	assert_eq(_ended, [[&"fixture_field", true]])
 
 func test_aiming_a_delay_tells_it_sets_the_turn_back() -> void:
 	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_bash"])
