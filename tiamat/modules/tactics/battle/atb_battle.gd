@@ -41,6 +41,9 @@ var units: Array[GridUnit] = []
 var player_faction: StringName
 var time_flows_while_choosing := false
 var ai := GridBattleAi.new()
+## The health the units hostile to the player's side start with, as a share of
+## their kind's (`BattleUnitData.max_health`): the player's foe strength.
+var foe_health_scale := 1.0
 # The player's unit taking its turn, the units of theirs whose gauges filled
 # while it does, and the unit the AI moves now.
 var _turn: GridUnit
@@ -53,10 +56,12 @@ func _init(battle_grid: BattleGrid, side: StringName = FactionData.PLAYER) -> vo
 	grid = battle_grid
 	player_faction = side
 
-## The battle `map` sets up, with time flowing as `settings` say.
-static func from_map(map: BattleMapData, settings: TacticsSettings = null) -> AtbBattle:
+## The battle `map` sets up, with time flowing as `settings` say and the
+## player's foes starting with `foe_health` of their kinds' health.
+static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_health := 1.0) -> AtbBattle:
 	var battle := AtbBattle.new(BattleGrid.new(map.size, map.blocked_cells), map.player_faction_id)
 	battle.time_flows_while_choosing = settings != null and settings.time_flows_while_choosing
+	battle.foe_health_scale = foe_health
 	for placement: BattlePlacement in map.placements:
 		var data := BattleUnitData.find(placement.unit_id) if placement != null else null
 		if data != null:
@@ -64,9 +69,12 @@ static func from_map(map: BattleMapData, settings: TacticsSettings = null) -> At
 	return battle
 
 ## Places a unit of `data` on `faction`'s side in `cell`; the player commands
-## it when `faction` is theirs.
+## it when `faction` is theirs, and it starts with `foe_health_scale` of its
+## kind's health when it is hostile to them.
 func add_unit(data: BattleUnitData, faction: StringName, cell: Vector2i) -> GridUnit:
 	var unit := GridUnit.new(data, faction, cell, units.size(), faction == player_faction)
+	if foe_health_scale != 1.0 and FactionData.are_hostile(faction, player_faction):
+		unit.health.reset(roundi(data.max_health * foe_health_scale))
 	units.append(unit)
 	return unit
 

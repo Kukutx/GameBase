@@ -57,6 +57,12 @@ Start a new module, a piece of gameplay games share, with its class, catalog, te
 node tools/new_module.js --id <id> [--requires <module>[,<module>...]]
 ```
 
+List new content files (an item, a trigger, an achievement) in the game's content pack, or with `--missing` every content file beside the pack that it does not list yet:
+
+```text
+node tools/add_content.js --game <id> <file>... | --missing
+```
+
 ## Validation and release
 
 ```text

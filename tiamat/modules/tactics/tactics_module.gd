@@ -7,6 +7,7 @@ extends GameModule
 
 const OPTIONS: Array[String] = [
 	"res://tiamat/modules/tactics/options/battle_speed.tres",
+	"res://tiamat/modules/tactics/options/foe_strength.tres",
 ]
 
 func install() -> void:

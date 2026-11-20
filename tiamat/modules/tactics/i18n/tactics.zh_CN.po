@@ -51,3 +51,12 @@ msgstr "战棋速度"
 
 msgid "Standard"
 msgstr "标准"
+
+msgid "Grid Foe Strength"
+msgstr "战棋敌人强度"
+
+msgid "Weak"
+msgstr "弱"
+
+msgid "Strong"
+msgstr "强"

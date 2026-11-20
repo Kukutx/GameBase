@@ -42,3 +42,12 @@ msgstr "指挥战斗速度"
 
 msgid "Standard"
 msgstr "标准"
+
+msgid "Command Foe Strength"
+msgstr "指挥战敌人强度"
+
+msgid "Weak"
+msgstr "弱"
+
+msgid "Strong"
+msgstr "强"

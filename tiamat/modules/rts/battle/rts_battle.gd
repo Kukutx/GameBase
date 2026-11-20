@@ -57,6 +57,9 @@ var units: Array[RtsUnit] = []
 var player_faction: StringName
 var computer_advances := true
 var ai := RtsBattleAi.new()
+## The health the units hostile to the player's side start with, as a share of
+## their kind's (`RtsUnitData.max_health`): the player's foe strength.
+var foe_health_scale := 1.0
 ## The seconds of battle that have passed.
 var time := 0.0
 var _left := 0.0
@@ -87,10 +90,12 @@ func _init(field_size: Vector2, obstacles: Array[Rect2] = [], side: StringName =
 	player_faction = side
 	_side_of(side)
 
-## The battle `map` sets up.
-static func from_map(map: RtsMapData) -> RtsBattle:
+## The battle `map` sets up, the player's foes starting with `foe_health` of
+## their kinds' health.
+static func from_map(map: RtsMapData, foe_health := 1.0) -> RtsBattle:
 	var battle := RtsBattle.new(map.size, map.obstacles, map.player_faction_id)
 	battle.computer_advances = map.computer_advances
+	battle.foe_health_scale = foe_health
 	for placement: RtsPlacement in map.placements:
 		var data := RtsUnitData.find(placement.unit_id) if placement != null else null
 		if data != null:
@@ -98,9 +103,12 @@ static func from_map(map: RtsMapData) -> RtsBattle:
 	return battle
 
 ## Places a unit of `data` on `faction`'s side at `point`, or the open point
-## nearest it; the player orders it when `faction` is theirs.
+## nearest it; the player orders it when `faction` is theirs, and it starts
+## with `foe_health_scale` of its kind's health when it is hostile to them.
 func add_unit(data: RtsUnitData, faction: StringName, point: Vector2) -> RtsUnit:
 	var unit := RtsUnit.new(data, faction, navigation.get_nearest_open(point), units.size(), faction == player_faction)
+	if foe_health_scale != 1.0 and FactionData.are_hostile(faction, player_faction):
+		unit.health.reset(roundi(data.max_health * foe_health_scale))
 	unit.side = _side_of(faction)
 	units.append(unit)
 	_alive.append(unit)
