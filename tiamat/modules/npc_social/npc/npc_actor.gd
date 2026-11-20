@@ -6,6 +6,11 @@ extends CharacterBody2D
 @export var display_name: String = "Villager"
 @export var dialogue: DialogueResource
 @export var dialogue_title: String = "start"
+## Whether the line under the name, what the villager is doing and their
+## hearts, shows only while the player stands at them (`Interactable.is_focused()`),
+## so a square full of villagers shows their names alone; false shows it
+## always.
+@export var activity_shown_near := true
 
 @onready var label: Label = $NameLabel
 @onready var activity_label: Label = $ActivityLabel
@@ -25,6 +30,8 @@ func _ready() -> void:
 	label.text = display_name
 	schedule.set_current_location(location_id)
 	interactable.interacted.connect(_on_interacted)
+	interactable.focus_changed.connect(_show_activity)
+	_show_activity(interactable.is_focused())
 	schedule.activity_changed.connect(_on_activity_changed)
 	schedule.presence_changed.connect(_on_presence_changed)
 	RelationshipState.friendship_changed.connect(_on_friendship_changed)
@@ -51,6 +58,9 @@ func _on_interacted(actor: Node) -> void:
 	var first_today := RelationshipState.record_talk(npc_id)
 	NpcSocialEvents.npc_talked.emit(npc_id, first_today)
 	ConversationService.start_conversation(self, actor, dialogue, dialogue_title)
+
+func _show_activity(near: bool) -> void:
+	activity_label.visible = near or not activity_shown_near
 
 func _on_activity_changed(activity: String) -> void:
 	activity_label.text = "%s · %s" % [tr(activity), get_relationship_text()]

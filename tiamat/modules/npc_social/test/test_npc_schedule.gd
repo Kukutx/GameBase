@@ -158,3 +158,22 @@ func test_weather_specific_schedule_overrides_normal_route_on_its_weather() -> v
 
 	assert_eq(schedule.get_entry_for_minute(10 * 60, storm_day), storm_shelter)
 	assert_eq(schedule.get_entry_for_minute(10 * 60, clear_day), normal)
+
+func test_a_villagers_doings_show_while_the_player_stands_at_them() -> void:
+	var npc := GameNpc.new()
+	npc.display_name = "Fixture"
+	var parts: Dictionary[String, Node] = {"NameLabel": Label.new(), "ActivityLabel": Label.new(), "Interactable": Interactable.new(), "Schedule": NpcSchedule.new()}
+	for part_name: String in parts:
+		parts[part_name].name = part_name
+		npc.add_child(parts[part_name])
+	add_child_autofree(npc)
+	assert_eq(npc.label.text, "Fixture")
+	assert_false(npc.activity_label.visible, "a villager afar shows their name alone")
+	npc.interactable.set_focused(true)
+	assert_true(npc.activity_label.visible, "the player at them reads what they do")
+	assert_string_contains(npc.activity_label.text, "0 hearts")
+	npc.interactable.set_focused(false)
+	assert_false(npc.activity_label.visible)
+	npc.activity_shown_near = false
+	npc.call("_show_activity", false)
+	assert_true(npc.activity_label.visible, "a game that wants them always shows them")

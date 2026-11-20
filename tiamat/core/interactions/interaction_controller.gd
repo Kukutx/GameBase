@@ -26,6 +26,11 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	_refresh_focus()
 
+func _exit_tree() -> void:
+	# The player who leaves (another place, the title) stands at nothing.
+	if is_instance_valid(_focused):
+		_focused.set_focused(false)
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not InputLock.is_player_press(event, action):
 		return
@@ -64,12 +69,15 @@ func _refresh_focus() -> void:
 	if next_id == _focused_id:
 		return
 	# The prompt is written when the focus or what it says changes, not every frame.
-	if is_instance_valid(_focused) and _focused.prompt_changed.is_connected(_update_prompt):
-		_focused.prompt_changed.disconnect(_update_prompt)
+	if is_instance_valid(_focused):
+		if _focused.prompt_changed.is_connected(_update_prompt):
+			_focused.prompt_changed.disconnect(_update_prompt)
+		_focused.set_focused(false)
 	_focused = next_focus
 	_focused_id = next_id
 	if _focused != null:
 		_focused.prompt_changed.connect(_update_prompt)
+		_focused.set_focused(true)
 	focus_changed.emit(_focused)
 	_update_prompt()
 

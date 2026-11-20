@@ -4,6 +4,9 @@ extends Area2D
 signal interacted(actor: Node)
 ## Emitted when what the prompt says changes (`prompt_text`, `set_prompt()`).
 signal prompt_changed
+## Emitted when the player's `InteractionController` takes it in focus (the
+## nearest it can use in reach) or lets it go (`is_focused()`).
+signal focus_changed(focused: bool)
 
 ## What the prompt says, without arguments; `set_prompt()` sets it with them.
 @export var prompt_text: String = "Interact":
@@ -15,6 +18,20 @@ signal prompt_changed
 
 var _prompt_text := "Interact"
 var _prompt_args: Array[Variant] = []
+var _focused := false
+
+## Whether the player stands at it: their `InteractionController` has it in
+## focus, so a press of the control uses it. A node shows what it tells only
+## then (a villager's doings), so a crowd of them does not cover the view.
+func is_focused() -> bool:
+	return _focused
+
+## Takes it in focus or lets it go; the `InteractionController` calls it.
+func set_focused(value: bool) -> void:
+	if _focused == value:
+		return
+	_focused = value
+	focus_changed.emit(value)
 
 ## Sets what the prompt says: `template`, translated when it is shown, with
 ## `args` formatted into it.
