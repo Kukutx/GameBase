@@ -496,6 +496,12 @@ msgstr "成就"
 msgid "%d of %d unlocked"
 msgstr "已解锁 %d / %d"
 
+msgid "Records"
+msgstr "记录"
+
+msgid "%s: %d"
+msgstr "%s：%d"
+
 msgid "Hidden Achievement"
 msgstr "隐藏成就"
 

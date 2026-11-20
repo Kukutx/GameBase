@@ -31,6 +31,7 @@ func test_winning_both_battles_unlocks_each_and_then_the_banner_bearer() -> void
 	GameTriggers.fire(&"RtsEvents.battle_ended", {"rts_map_id": &"hill_pass", "won": true})
 	assert_true(GameProfile.is_unlocked(&"pass_held"))
 	assert_true(GameProfile.is_unlocked(&"banner_bearer"), "both battles won")
+	assert_eq(RecordData.find(&"battles_won").get_value(), 2, "the record counts the wins, not the loss")
 
 func test_raiders_defeated_in_every_battle_count_toward_veteran() -> void:
 	# As if earlier battles had defeated 48.

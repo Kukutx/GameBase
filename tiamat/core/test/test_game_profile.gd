@@ -150,6 +150,17 @@ func test_an_achievement_names_itself() -> void:
 	assert_string_contains("\n".join(registry.find_entry_problems(goalless)), "counts fixture_runs toward no goal")
 	assert_string_contains("\n".join(registry.find_entry_problems(flagless)), "has a goal but no progress flag")
 
+func test_a_record_names_itself_and_the_counter_it_shows() -> void:
+	var record := RecordData.new()
+	record.id = &"fixture_record"
+	var registry := ContentFixture.use(self, [record])
+	var problems := "\n".join(registry.find_entry_problems(record))
+	assert_string_contains(problems, "record 'fixture_record' has no display name")
+	assert_string_contains(problems, "record 'fixture_record' names no profile flag")
+	record.flag = &"fixture_runs"
+	GameProfile.set_flag(&"fixture_runs", 4)
+	assert_eq(record.get_value(), 4)
+
 func _achievement(id: StringName, hidden: bool) -> AchievementData:
 	var achievement := AchievementData.new()
 	achievement.id = id

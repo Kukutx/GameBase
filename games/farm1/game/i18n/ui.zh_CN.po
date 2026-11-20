@@ -2192,3 +2192,15 @@ msgstr "存档/读档"
 
 msgid "Next Item"
 msgstr "下一个物品"
+
+msgid "Crops Harvested"
+msgstr "收获的作物"
+
+msgid "Fish Caught"
+msgstr "钓到的鱼"
+
+msgid "Gifts Given"
+msgstr "送出的礼物"
+
+msgid "Stones and Ores Mined"
+msgstr "开采的石头与矿石"
