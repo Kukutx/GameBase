@@ -116,6 +116,30 @@ func test_a_creature_chases_and_strikes_the_player_s_hurtbox() -> void:
 	slime.free()
 	assert_eq(FightState.get_hunter_count(), 0, "one that leaves hunts no more")
 
+func test_a_creature_that_winds_up_strikes_only_if_the_player_stays_in_reach() -> void:
+	var player := CharacterBody2D.new()
+	player.add_to_group(&"player")
+	player.add_child(PlayerHurtbox.new())
+	player.global_position = Vector2(5000, 5000)
+	add_child_autofree(player)
+	var slime := _add_slime(&"")
+	slime.data.windup_seconds = 0.3
+	slime.global_position = player.global_position + Vector2(10, 0)
+	assert_true(await wait_until(func() -> bool: return slime.get_state() == HostileCreature.STATE_WINDUP, 1.0), "the player in reach")
+	assert_eq(slime.visual.modulate, slime.windup_color, "it glows")
+	assert_true(Vitals.is_full(&"fixture_hp"), "nothing lands yet")
+	player.global_position += Vector2(slime.data.attack_range * 2.0, 0)
+	assert_true(await wait_until(func() -> bool: return slime.get_state() != HostileCreature.STATE_WINDUP, 1.0))
+	assert_true(Vitals.is_full(&"fixture_hp"), "a step out of reach dodges it")
+	assert_eq(slime.visual.modulate, Color.WHITE)
+	slime.global_position = player.global_position + Vector2(10, 0)
+	assert_true(await wait_until(func() -> bool: return slime.get_state() == HostileCreature.STATE_WINDUP, 3.0), "again once its cooldown is over")
+	assert_true(slime.hurtbox.receive(Damage.new(1, FactionData.PLAYER)))
+	assert_eq(slime.get_state(), HostileCreature.STATE_HURT, "a hit stuns it out of its windup")
+	assert_eq(slime.visual.modulate, Color.WHITE)
+	assert_true(await wait_until(func() -> bool: return not Vitals.is_full(&"fixture_hp"), 3.0), "one that stays in reach is struck")
+	assert_eq(Vitals.get_value(&"fixture_hp"), 100 - slime.data.contact_damage)
+
 func test_a_hit_stuns_the_creature_for_a_moment() -> void:
 	var slime := _add_slime(&"")
 	slime.global_position = Vector2(-5000, -5000)

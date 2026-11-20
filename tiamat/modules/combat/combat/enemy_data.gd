@@ -24,6 +24,11 @@ const KIND := &"enemy"
 @export_range(4.0, 64.0, 1.0) var attack_range := 16.0
 @export_range(0, 999, 1) var contact_damage := 8
 @export_range(0.1, 10.0, 0.1) var attack_cooldown := 1.2
+## How long it winds up a strike once the player is in reach, standing still
+## and glowing (`HostileCreature.windup_color`), so the player sees it coming:
+## a step out of reach or a hit that stuns it before it lands spares them.
+## 0 strikes at once (a slime that hurts at a touch).
+@export_range(0.0, 2.0, 0.05) var windup_seconds := 0.0
 ## The side it fights on (`FactionData`): it hurts and is hurt by the others.
 @export var faction_id: StringName = FactionData.MONSTERS
 ## How hard its strike pushes the player, in pixels a second.

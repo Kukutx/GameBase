@@ -4,10 +4,12 @@ extends CharacterBody2D
 ## A creature that attacks the player (`EnemyData`): it waits, chases the
 ## player within its `chase_radius` and strikes their hurtbox (`Hurtbox`) within
 ## its `attack_range` every `attack_cooldown`, for its `contact_damage`, pushing
-## them back. Its own hurtbox takes the player's hits: each flashes it, pushes
+## them back; one with a `windup_seconds` first stands and glows that long, and
+## strikes only if the player is still in reach. Its own hurtbox takes the
+## player's hits: each flashes it, pushes
 ## it back and stuns it for `HURT_SECONDS` from that hit. At 0 health it is defeated, drops
 ## its loot and comes back after `respawn_days`. A `StateMachine` runs it
-## (idle, chase, hurt, defeated), and with a `persistent_id` its state saves
+## (idle, chase, windup, hurt, defeated), and with a `persistent_id` its state saves
 ## with the world. Chasing the player or stunned by their hit, it hunts them,
 ## which makes a fight (`FightState`). It has the health of its kind times the
 ## player's foe strength (`STRENGTH_OPTION`, which `CombatModule` declares).
@@ -25,6 +27,7 @@ const STRENGTH_SCALES: Dictionary[String, float] = {"Weak": 0.75, "Standard": 1.
 const STATE_IDLE := &"idle"
 const STATE_CHASE := &"chase"
 const STATE_HURT := &"hurt"
+const STATE_WINDUP := &"windup"
 const STATE_DEFEATED := &"defeated"
 
 enum AnimationState {
@@ -38,6 +41,9 @@ enum AnimationState {
 ## The stronger form it takes (`EliteData`), set before it enters the tree;
 ## null: its kind as it is.
 @export var elite: EliteData
+## How it glows while it winds up a strike (`EnemyData.windup_seconds`): a
+## warm brightening that shows on art of any colour.
+@export var windup_color := Color(2.2, 1.9, 1.5)
 
 @onready var visual: Sprite2D = $Visual
 @onready var fallback: Polygon2D = $Fallback
@@ -53,6 +59,7 @@ var _drop_pickup: WorldItemPickup
 
 var _attack_time_left := 0.0
 var _hurt_left := 0.0
+var _windup_left := 0.0
 var _death_time_left := 0.0
 # Plays its sheet's frames while it has art.
 var _animator: SheetAnimator
@@ -64,6 +71,7 @@ func _ready() -> void:
 	_machine.add_state(STATE_IDLE, _idle) \
 		.add_state(STATE_CHASE, _chase) \
 		.add_state(STATE_HURT, _hurt, _stop) \
+		.add_state(STATE_WINDUP, _windup, _start_windup, _end_windup) \
 		.add_state(STATE_DEFEATED, _rest, _stop)
 	_machine.state_changed.connect(_on_state_changed)
 	_load_state()
@@ -126,7 +134,33 @@ func _chase(_delta: float) -> void:
 		velocity = Vector2.ZERO
 		_set_animation(AnimationState.IDLE)
 	if distance <= data.attack_range:
-		_strike(player, offset)
+		if data.windup_seconds <= 0.0:
+			_strike(player, offset)
+		elif _attack_time_left <= 0.0 and PlayerHurtbox.is_standing():
+			_machine.change(STATE_WINDUP)
+
+func _start_windup() -> void:
+	velocity = Vector2.ZERO
+	_windup_left = data.windup_seconds
+	_set_animation(AnimationState.IDLE)
+	visual.modulate = windup_color
+	fallback.modulate = windup_color
+
+# Once wound up it strikes where the player is then, if still in reach; hit or
+# missed, the next waits for its cooldown.
+func _windup(delta: float) -> void:
+	_windup_left -= delta
+	if _windup_left > 0.0:
+		return
+	var player := _find_player()
+	if player != null and global_position.distance_to(player.global_position) <= data.attack_range:
+		_strike(player, player.global_position - global_position)
+	_attack_time_left = maxf(_attack_time_left, data.attack_cooldown)
+	_machine.change(STATE_CHASE)
+
+func _end_windup() -> void:
+	visual.modulate = Color.WHITE
+	fallback.modulate = Color.WHITE
 
 func _hurt(delta: float) -> void:
 	_hurt_left -= delta
