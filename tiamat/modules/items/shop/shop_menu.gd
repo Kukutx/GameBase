@@ -1,13 +1,20 @@
 class_name ShopMenu
 extends MenuLayer
 
-## A shop's counter: buys what the shop stocks and offers, and sells, one at a
-## time, every item the inventory holds that has a sell price. Under the lists
-## it tells of the item whose button has the focus: its description and what
-## it does (`describe_item()`).
+## A shop's counter: buys what the shop stocks and offers, and sells every
+## item the inventory holds that has a sell price, as many at a press as the
+## amount the player picks (`amounts`: one, five, ten; a purchase stops at what
+## they can afford and carry, a sale at what they hold). Under the lists it
+## tells of the item whose button has the focus: its description and what it
+## does (`describe_item()`).
+
+## The amounts one press buys or sells, in the order the amount button steps
+## through them, the first as the counter opens; one amount hides the button.
+@export var amounts: PackedInt32Array = PackedInt32Array([1, 5, 10])
 
 @onready var title_label: Label = $Panel/VBox/Title
 @onready var money_label: Label = $Panel/VBox/Money
+@onready var amount_button: Button = $Panel/VBox/Amount
 @onready var items_container: VBoxContainer = $Panel/VBox/Lists/Entries/Items
 @onready var sell_title: Label = $Panel/VBox/Lists/Entries/SellTitle
 @onready var sell_container: VBoxContainer = $Panel/VBox/Lists/Entries/SellItems
@@ -15,14 +22,18 @@ extends MenuLayer
 @onready var close_button: Button = $Panel/VBox/Close
 
 var _shop: ShopData
-# item id -> the button that sells one of it
+# item id -> the button that buys it
+var _buy_buttons: Dictionary[StringName, Button] = {}
+# item id -> the button that sells it
 var _sell_buttons: Dictionary[StringName, Button] = {}
+var _amount_index := 0
 
 func _init() -> void:
 	super(&"shop_menu")
 
 func _ready() -> void:
 	close_button.pressed.connect(close)
+	amount_button.pressed.connect(_next_amount)
 	Wallet.money_changed.connect(_on_money_changed)
 	InventoryState.changed.connect(_on_inventory_changed)
 	# Two lines kept for it, so the lists keep their height as it changes.
@@ -32,8 +43,13 @@ func open(shop: ShopData) -> void:
 	if shop == null:
 		return
 	_shop = shop
+	_amount_index = 0
 	show_menu()
 	_rebuild()
+
+## How many one press buys or sells now.
+func get_amount() -> int:
+	return maxi(amounts[_amount_index], 1) if _amount_index < amounts.size() else 1
 
 func close() -> void:
 	_shop = null
@@ -42,8 +58,11 @@ func close() -> void:
 func _rebuild() -> void:
 	for child: Node in items_container.get_children():
 		child.queue_free()
+	_buy_buttons.clear()
 	if _shop == null:
 		return
+	amount_button.visible = amounts.size() > 1
+	amount_button.text = tr("Amount: %d") % get_amount()
 	title_label.text = tr(_shop.display_name)
 	about_label.text = ""
 	money_label.text = tr("Money: %dg") % Wallet.money
@@ -57,9 +76,9 @@ func _rebuild() -> void:
 		var item := ItemData.find(item_id)
 		if item == null:
 			continue
-		var price := _shop.get_buy_price(item)
 		var button := MenuLayer.list_button()
-		button.text = tr("Buy %s — %dg") % [tr(item.display_name), price]
+		button.text = _buy_label(item)
+		_buy_buttons[item_id] = button
 		button.pressed.connect(_buy.bind(item_id))
 		button.focus_entered.connect(_tell_about.bind(item))
 		items_container.add_child(button)
@@ -97,7 +116,36 @@ func _tell_about(item: ItemData) -> void:
 	about_label.text = describe_item(item)
 
 func _buy(item_id: StringName) -> void:
-	ShopState.buy(_shop, item_id, 1)
+	ShopState.buy(_shop, item_id, get_amount())
+
+# A purchase's button: the item and the price of one, or of the amount.
+func _buy_label(item: ItemData) -> String:
+	var price := _shop.get_buy_price(item)
+	var amount := get_amount()
+	if amount == 1:
+		return tr("Buy %s — %dg") % [tr(item.display_name), price]
+	return tr("Buy %s x%d — %dg") % [tr(item.display_name), amount, price * amount]
+
+# A sale's button: the item, how many the player holds and what one sells
+# for, or as many of the amount as they hold.
+func _sell_label(item: ItemData) -> String:
+	var held := InventoryState.get_quantity(item.id)
+	var amount := mini(get_amount(), held)
+	if get_amount() == 1:
+		return tr("Sell %s (%d) — %dg") % [tr(item.display_name), held, item.sell_price]
+	return tr("Sell %s (%d) x%d — %dg") % [tr(item.display_name), held, amount, item.sell_price * amount]
+
+# Steps to the next amount, keeping the buttons and the focus where they are.
+func _next_amount() -> void:
+	if amounts.size() < 2 or _shop == null:
+		return
+	_amount_index = (_amount_index + 1) % amounts.size()
+	amount_button.text = tr("Amount: %d") % get_amount()
+	for item_id: StringName in _buy_buttons:
+		var item := ItemData.find(item_id)
+		if item != null:
+			_buy_buttons[item_id].text = _buy_label(item)
+	_refresh_sell_list()
 
 func _buy_offer(offer: ShopOffer) -> void:
 	ShopState.buy_offer(_shop, offer, _offer_context())
@@ -108,7 +156,7 @@ func _offer_context() -> Dictionary:
 	return {"location_id": location.id if location != null else &""}
 
 func _sell(item_id: StringName) -> void:
-	ShopState.sell(item_id, 1)
+	ShopState.sell(item_id, get_amount())
 
 ## Keeps one sell button per sellable item the inventory holds, in the
 ## inventory's order, so a sale changes the buttons in place and the focus
@@ -140,7 +188,7 @@ func _refresh_sell_list() -> void:
 			sell_container.add_child(button)
 			_sell_buttons[item.id] = button
 		sell_container.move_child(button, index)
-		button.text = tr("Sell %s (%d) — %dg") % [tr(item.display_name), InventoryState.get_quantity(item.id), item.sell_price]
+		button.text = _sell_label(item)
 	sell_title.visible = not sellable.is_empty()
 	if focus_index >= 0 and visible:
 		var count := sell_container.get_child_count()
