@@ -5,7 +5,8 @@ extends GutTest
 ## and the battle's end is told; once the unit moved, Move takes the move
 ## back; the commands follow what the foes do meanwhile, and an action that
 ## recharges tells when it is ready; a goal is told and taking it wins; a
-## unit that arrives is told, and so is an affliction and each of its ticks; a
+## unit that arrives is told, and so is an affliction and each of its ticks,
+## and what a heal that cures lifts; a
 ## finger's tap on a cell shows it and a second tap picks it;
 ## cancel twice gives the battle up; an unknown map ends it at once,
 ## and a definition that names one is a content problem; the player's choice
@@ -278,6 +279,21 @@ func test_aiming_an_affliction_tells_it_and_each_tick_is_told() -> void:
 	assert_true(_tells(game, tr("%s takes %d") % [tr("Fixture Dummy"), 4] + ", " + tr("Fixture Poison")), "the knight's 4, and the poison")
 	game.pick(Vector2i(2, 1))
 	assert_true(await _until(func() -> bool: return _shows(game, tr("%s takes %d from %s.") % [tr("Fixture Dummy"), 1, tr("Fixture Poison")])), "each tick is told")
+
+func test_aiming_a_heal_that_cures_tells_what_it_lifts() -> void:
+	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_mend"])
+	BattleActionData.find(&"fixture_mend").cures = true
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	var knight := game.battle.get_turn_unit()
+	knight.health.take(3)
+	assert_true(knight.afflict(AfflictionData.find(&"fixture_poison"), FactionData.MONSTERS))
+	game.choose_command(0)
+	game.pick(Vector2i(1, 1))
+	game.choose_command(1)
+	game.get_board().cell_hovered.emit(Vector2i(1, 1))
+	assert_true(_tells(game, tr("%s regains %d") % [tr("Fixture Knight"), 3] + ", " + tr("cures %s") % tr("Fixture Poison")), "the knight's 3, and the poison it lifts")
 
 func test_an_action_that_recharges_tells_when_it_is_ready() -> void:
 	BattleUnitData.find(&"fixture_knight").action_ids.assign([&"fixture_strike", &"fixture_volley"])

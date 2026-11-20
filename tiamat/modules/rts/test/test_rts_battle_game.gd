@@ -12,7 +12,8 @@ extends GutTest
 ## armed attack-move, then the selection, and twice gives the battle up; an
 ## unknown map ends it at once, and a definition that names one is a content
 ## problem; the player's choice of speed speeds the game's; a selection of
-## one kind tells what it is strong against and what it inflicts, and an
+## one kind tells what it is strong against, what it inflicts and whether it
+## cures, and an
 ## affliction rings its unit as it takes health.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
@@ -289,6 +290,16 @@ func test_a_selection_of_one_kind_tells_what_it_inflicts() -> void:
 	var game := _game()
 	_key(game, KEY_TAB)
 	var told := tr("%d selected: %s") % [2, "%s ×2" % tr("Fixture Footman")] + " " + tr("(inflicts %s)") % tr("Fixture Burn")
+	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == told), "the selection tells: %s" % told)
+
+func test_a_selection_of_healers_that_cure_tells_it() -> void:
+	var footman := RtsUnitData.find(&"fixture_footman")
+	footman.heal = 4
+	footman.cures = true
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	_key(game, KEY_TAB)
+	var told := tr("%d selected: %s") % [2, "%s ×2" % tr("Fixture Footman")] + " " + tr("(cures afflictions)")
 	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == told), "the selection tells: %s" % told)
 
 func test_an_affliction_rings_its_unit_as_it_takes_health() -> void:

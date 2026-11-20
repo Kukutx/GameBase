@@ -16,3 +16,4 @@ boosts = Dictionary[StringName, int]({
 &"defense": 1
 })
 boost_turns = 2
+cures = true

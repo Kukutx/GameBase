@@ -14,7 +14,8 @@ extends ContentEntry
 ## (`boosts`) for some of their turns: a blessing on its own side, a curse on
 ## its foes. One that does damage may lay an affliction on the foes it leaves
 ## standing (`affliction_id`), a poison that takes their health on its ticks in
-## battle time.
+## battle time, and one that heals may lift the afflictions on the units it
+## reaches (`cures`).
 
 const KIND := &"battle_action"
 
@@ -53,6 +54,10 @@ enum Effect {
 ## `GridUnit.afflict()`): a poisoned dart; empty, nothing. Only an action that
 ## does damage lays one.
 @export var affliction_id: StringName
+## Whether it lifts every affliction on each unit it heals
+## (`GridUnit.afflictions`): a cleansing prayer. Only an action that heals
+## cures.
+@export var cures := false
 
 ## The action with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> BattleActionData:
@@ -82,6 +87,8 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		problems.append("lays unknown affliction '%s'" % affliction_id)
 	elif affliction_id != &"" and effect == Effect.HEAL:
 		problems.append("lays an affliction on the units it heals")
+	if cures and effect == Effect.DAMAGE:
+		problems.append("cures the foes it hits")
 	if display_name.is_empty():
 		problems.append("has no display name")
 	if min_range > max_range:

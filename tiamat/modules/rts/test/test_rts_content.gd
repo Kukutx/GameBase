@@ -37,6 +37,9 @@ func test_a_unit_lays_and_is_immune_to_known_afflictions_and_only_when_it_fights
 	var medic := RtsUnitData.find(&"fixture_medic")
 	medic.affliction_id = &"fixture_burn"
 	assert_eq(medic.find_problems(_registry), PackedStringArray(["heals, yet lays an affliction with the blows it never strikes"]))
+	var footman := RtsUnitData.find(&"fixture_footman")
+	footman.cures = true
+	assert_eq(footman.find_problems(_registry), PackedStringArray(["cures, yet never mends"]))
 
 func test_a_map_places_known_units_on_open_ground_with_both_sides() -> void:
 	var map := _map()

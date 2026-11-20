@@ -145,5 +145,8 @@ msgstr "须在 %d 秒战斗时间内取胜。"
 msgid "Afflicted: %s"
 msgstr "异常状态：%s"
 
+msgid "cures %s"
+msgstr "解除%s"
+
 msgid "%s takes %d from %s."
 msgstr "%s 受到 %d 点伤害（%s）。"

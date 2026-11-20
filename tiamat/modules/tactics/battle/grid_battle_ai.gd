@@ -73,7 +73,8 @@ func best_plan(battle: AtbBattle, unit: GridUnit, stays := false) -> Dictionary:
 ## unit of its side that flees with a leader it defeats) and
 ## `DELAY_SCORE` for each point of gauge it sets back of those it leaves
 ## standing and the health its affliction would take on its ticks from those
-## it is not on already, or the health it gives back to its side, and
+## it is not on already, or the health it gives back to its side and the
+## health it spares them by lifting their afflictions (`cures`), and
 ## `BOOST_SCORE` for its boosts on each unit it reaches that they are not on
 ## already.
 func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: Vector2i, from: Vector2i) -> int:
@@ -82,6 +83,8 @@ func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: 
 		var amount := battle.amount_of(unit, action, other)
 		if action.effect == BattleActionData.Effect.HEAL:
 			value += mini(amount, other.health.maximum - other.health.current)
+			if action.cures:
+				value += mini(other.afflictions.get_damage_left(), other.health.current)
 		else:
 			value += mini(amount, other.health.current)
 			if amount >= other.health.current:

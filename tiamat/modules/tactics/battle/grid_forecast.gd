@@ -11,7 +11,8 @@ extends RefCounted
 ## how far it would set back the gauge of a unit it leaves standing, with one
 ## that boosts, "boosts": those it would put on such a unit, and with one that
 ## lays an affliction, "affliction": the `AfflictionData` it would leave on such
-## a unit that may take it.
+## a unit that may take it, and with one that cures, "cures": the afflictions
+## it would lift from a unit that has any.
 static func of(battle: AtbBattle, unit: GridUnit, action: BattleActionData, cell: Vector2i) -> Array[Dictionary]:
 	var hits: Array[Dictionary] = []
 	for target: GridUnit in battle.affected_at(unit, action, cell, unit.cell):
@@ -28,5 +29,7 @@ static func of(battle: AtbBattle, unit: GridUnit, action: BattleActionData, cell
 		var affliction := AfflictionData.find(action.affliction_id) if action.effect == BattleActionData.Effect.DAMAGE else null
 		if not hit["defeats"] and target.can_be_afflicted(affliction):
 			hit["affliction"] = affliction
+		if action.effect == BattleActionData.Effect.HEAL and action.cures and not target.afflictions.is_empty():
+			hit["cures"] = target.afflictions.get_all()
 		hits.append(hit)
 	return hits

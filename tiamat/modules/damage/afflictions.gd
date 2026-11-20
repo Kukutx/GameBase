@@ -43,6 +43,14 @@ func is_empty() -> bool:
 func clear() -> void:
 	_laid.clear()
 
+## The health they would all still take, every tick left of each: what lifting
+## them (`clear()`, a cure) spares.
+func get_damage_left() -> int:
+	var left := 0
+	for entry: Dictionary in _laid.values():
+		left += int(entry["ticks"]) * (entry["data"] as AfflictionData).tick_damage
+	return left
+
 ## The seconds to the next tick of any of them; INF with none.
 func get_next_tick() -> float:
 	var soonest := INF

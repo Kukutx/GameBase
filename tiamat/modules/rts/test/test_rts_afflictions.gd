@@ -4,7 +4,8 @@ extends GutTest
 ## affliction on the foe it leaves standing, which takes health in battle
 ## time until it lifts, lasts anew when laid again without ticking sooner,
 ## never takes hold of a kind immune to it, brings a unit down as a blow
-## would and ends the battle then, and is lifted when its unit falls.
+## would and ends the battle then, and is lifted when its unit falls or a
+## healer that cures mends it.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
@@ -87,6 +88,22 @@ func test_an_affliction_takes_hold_only_of_a_standing_unit() -> void:
 	raider.health.take(100)
 	assert_false(raider.afflict(burn, FactionData.PLAYER), "a fallen unit takes none")
 	assert_true(raider.afflictions.is_empty())
+
+func test_a_healer_that_cures_lifts_the_afflictions_of_the_friend_it_mends() -> void:
+	var battle := _battle()
+	var medic := RtsFixture.add(battle, &"fixture_medic", FactionData.PLAYER, Vector2(100.0, 80.0))
+	var footman := RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(112.0, 80.0))
+	battle.order_hold([medic, footman] as Array[RtsUnit])
+	footman.health.take(5)
+	assert_true(footman.afflict(AfflictionData.find(&"fixture_burn"), FactionData.MONSTERS))
+	battle.advance(RtsBattle.STEP)
+	assert_eq(footman.health.current, 29, "mended by 4")
+	assert_true(footman.afflictions.has(&"fixture_burn"), "a medic that does not cure leaves the burn")
+	medic.data.cures = true
+	medic.cooldown = 0.0
+	battle.advance(RtsBattle.STEP)
+	assert_eq(footman.health.current, 30)
+	assert_true(footman.afflictions.is_empty(), "one that cures lifts it as it mends")
 
 func _battle() -> RtsBattle:
 	var battle := RtsFixture.battle()

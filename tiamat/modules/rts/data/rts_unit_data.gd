@@ -8,8 +8,8 @@ extends ContentEntry
 ## that keeps it from them (`RtsBattle`). A healer (`heal`) mends its side
 ## instead of fighting. A unit may be strong against some kinds
 ## (`strong_against`): it hits them harder and goes after them first. Its
-## attacks may lay an affliction (`affliction_id`), and some afflictions never
-## take hold of it (`immune_to`).
+## attacks may lay an affliction (`affliction_id`), some afflictions never
+## take hold of it (`immune_to`), and a healer may lift them (`cures`).
 ## Distances are in pixels of the field.
 
 const KIND := &"rts_unit"
@@ -30,6 +30,10 @@ const KIND := &"rts_unit"
 ## from `attack_range` once every `attack_cooldown`, and never strikes a foe.
 ## 0: it fights.
 @export_range(0, 999) var heal := 0
+## Whether its mending also lifts every affliction on the friend it mends
+## (`RtsUnit.afflictions`): a field medic who puts out a burn. Only a healer
+## cures.
+@export var cures := false
 ## The seconds between its attacks.
 @export_range(0.1, 10.0, 0.05) var attack_cooldown := 1.0
 ## How fast it walks, in pixels a second.
@@ -90,6 +94,8 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		problems.append("lays unknown affliction '%s'" % affliction_id)
 	if heals() and affliction_id != &"":
 		problems.append("heals, yet lays an affliction with the blows it never strikes")
+	if cures and not heals():
+		problems.append("cures, yet never mends")
 	for affliction: StringName in immune_to:
 		if not registry.has_entry(AfflictionData.KIND, affliction):
 			problems.append("is immune to unknown affliction '%s'" % affliction)
