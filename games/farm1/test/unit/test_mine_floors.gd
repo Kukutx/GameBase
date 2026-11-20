@@ -293,3 +293,19 @@ func test_every_mine_enemy_looks_like_no_other() -> void:
 		assert_false(fallbacks.has(enemy.fallback_color), "%s shares its fallback colour with %s" % [enemy.id, fallbacks.get(enemy.fallback_color, &"")])
 		looks[look] = enemy.id
 		fallbacks[enemy.fallback_color] = enemy.id
+
+func test_the_elevator_names_the_guardian_that_holds_a_stop() -> void:
+	MineState.set_floor(26)
+	MineState.set_floor(1)
+	var elevator := (load("res://tiamat/modules/lifesim/mining/mine_elevator.tscn") as PackedScene).instantiate() as MineElevator
+	add_child_autofree(elevator)
+	elevator.interactable.interacted.emit(null)
+	var menu := elevator.get_choice_menu()
+	assert_eq(menu.get_note(&"25"), "Guarded by Slime King")
+	assert_eq(menu.get_note(&"20"), "")
+	menu.close()
+	WorldState.set_value(HostileCreature.state_key_of(MineRunState.guardian_persistent_id(25, 0)), {"health": 0, "defeated": true, "defeated_day": WorldClock.day})
+	elevator.interactable.interacted.emit(null)
+	assert_eq(menu.get_note(&"25"), "", "felled this week, it holds the stop no more")
+	menu.close()
+	InputLock.clear()

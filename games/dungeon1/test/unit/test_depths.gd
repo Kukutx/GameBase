@@ -202,6 +202,7 @@ func test_every_fifth_depth_an_ember_warden_guards_the_way_on() -> void:
 	assert_eq(depth_floor.get_enemies().size(), 3, "the warden and half the fifth depth's four creatures")
 	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Ember Warden guards this depth"])
 	assert_string_contains((depth_floor.get_node("DepthLabel") as Label).text, "Ember Warden guards this depth")
+	assert_eq(depth_floor.get_place_detail(), "Depth 5", "the HUD tells the depth")
 	var arrival := depth_floor.get_node("ArrivalSpawn") as Node2D
 	for enemy: HostileCreature in depth_floor.get_enemies():
 		assert_true(guardians[0].position.distance_to(arrival.position) >= enemy.position.distance_to(arrival.position) - 0.01,

@@ -127,6 +127,20 @@ func test_a_guarded_floor_holds_its_guardian_furthest_from_the_way_in() -> void:
 		assert_lte((entry["position"] as Vector2).distance_to(MineRunState.ENTRANCE), distance, "it stands furthest in")
 	assert_eq(MineState.generate_floor_layout(20), layout, "the same on every visit")
 
+func test_the_guardians_standing_on_a_floor_are_named_until_they_fall() -> void:
+	var king := _enemy_tier(&"fixture_king", 10)
+	king.guardian_every = 10
+	MineState.floor_table = _table(&"fixture_stone", [], [_enemy_tier(&"fixture_slime", 1), king])
+	(_registry.get_entry(EnemyData.KIND, &"fixture_king") as EnemyData).display_name = "Fixture King"
+	assert_eq(MineState.get_standing_guardian_names(10), PackedStringArray(["Fixture King"]))
+	assert_eq(MineState.get_standing_guardian_names(11), PackedStringArray())
+	assert_eq(String(MineState.generate_floor_layout(10)["enemies"][0]["persistent_id"]), String(MineRunState.guardian_persistent_id(10, 0)))
+	var key := HostileCreature.state_key_of(MineRunState.guardian_persistent_id(10, 0))
+	WorldState.set_value(key, {"health": 0, "defeated": true, "defeated_day": WorldClock.day})
+	assert_eq(MineState.get_standing_guardian_names(10), PackedStringArray(), "a fallen guardian holds the floor no more")
+	WorldState.set_value(key, {"health": 0, "defeated": true, "defeated_day": WorldClock.day - 1})
+	assert_eq(MineState.get_standing_guardian_names(10), PackedStringArray(["Fixture King"]), "until its respawn days pass")
+
 func test_a_floor_table_reports_ids_that_are_not_content() -> void:
 	var table := _table(&"fixture_stone", [_rock_tier(&"fixture_gold", 0.1, 0.2)], [_enemy_tier(&"fixture_slime", 1)])
 	assert_eq(table.find_problems(_registry), PackedStringArray())

@@ -68,6 +68,25 @@ func is_checkpoint_floor(floor: int) -> bool:
 func get_deepest_checkpoint() -> int:
 	return track.get_deepest_checkpoint()
 
+## The names, in the player's language, of the guardians that stand on
+## `floor` now: those its table names (`MineFloorTable.get_guardian_ids()`)
+## that do not lie defeated (`HostileCreature.is_down()`).
+func get_standing_guardian_names(floor: int) -> PackedStringArray:
+	var names := PackedStringArray()
+	if floor_table == null or floor < 2:
+		return names
+	var resolved := mini(floor, MAX_FLOOR)
+	var ids := floor_table.get_guardian_ids(resolved)
+	for index: int in ids.size():
+		var data := EnemyData.find(ids[index])
+		if data != null and not HostileCreature.is_down(guardian_persistent_id(resolved, index), data):
+			names.append(tr(data.display_name))
+	return names
+
+## The id the `index`th guardian of `floor` is saved under.
+static func guardian_persistent_id(floor: int, index: int) -> StringName:
+	return StringName("mine_f%03d_guardian_%02d" % [floor, index + 1])
+
 func generate_floor_layout(floor: int) -> Dictionary:
 	var resolved := clampi(floor, 2, MAX_FLOOR)
 	var rng := track.stream(resolved)
@@ -108,7 +127,7 @@ func generate_floor_layout(floor: int) -> Dictionary:
 		enemies.append({
 			"kind": String(guardian_kinds[index]),
 			"position": positions[index],
-			"persistent_id": "mine_f%03d_guardian_%02d" % [resolved, index + 1],
+			"persistent_id": String(guardian_persistent_id(resolved, index)),
 			"guardian": true,
 		})
 	var first := guardian_kinds.size()

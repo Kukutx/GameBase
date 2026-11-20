@@ -58,6 +58,10 @@ func get_enemies() -> Array[HostileCreature]:
 func get_guardians() -> Array[HostileCreature]:
 	return _guardians.duplicate()
 
+## What the HUD's place line (`PlaceLine`) adds on this floor: its depth.
+func get_place_detail() -> String:
+	return tr("Depth %d") % DepthRun.get_depth()
+
 ## Whether every enemy of the floor is defeated.
 func is_cleared() -> bool:
 	for enemy: HostileCreature in _enemies:
