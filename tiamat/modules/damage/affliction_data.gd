@@ -43,9 +43,9 @@ func slows() -> bool:
 	return speed_scale < 1.0
 
 ## How many times it takes health in all: once every `tick_seconds` while it
-## lasts.
-func get_ticks() -> int:
-	return floori(seconds / tick_seconds + 0.000001)
+## lasts, `seconds_scale` times its `seconds` (shorter on what resists it).
+func get_ticks(seconds_scale := 1.0) -> int:
+	return floori(seconds * seconds_scale / tick_seconds + 0.000001)
 
 func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()

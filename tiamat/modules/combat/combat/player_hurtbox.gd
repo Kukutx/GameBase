@@ -11,7 +11,8 @@ extends Hurtbox
 ## the player nor shakes the screen; one taking hold is told in a toast. One
 ## that slows (`AfflictionData.speed_scale`) slows the player's steps while it
 ## lasts, through the `TopDownPlayer.MOVE_SPEED_STAT` stat, of which the
-## hurtbox is a source (`GameStats`). A player without health left, or
+## hurtbox is a source (`GameStats`), and the `AFFLICTION_SECONDS_STAT` stat
+## makes one last shorter on the player, or not at all. A player without health left, or
 ## passing out, takes no more hits and no more ticks. A child of the player.
 ##
 ## The player chooses how hard hits land on them in the settings
@@ -36,6 +37,9 @@ const MAX_HEALTH_STAT := &"max_health"
 ## The stat what a defeated enemy drops is changed by (`GameStats`): 1.5 drops
 ## half again as much, the fraction rounded by chance.
 const LOOT_STAT := &"loot_quantity"
+## The stat how long an affliction lasts on the player is changed by
+## (`GameStats`): 0.5 lasts half as long, 0 never takes hold.
+const AFFLICTION_SECONDS_STAT := &"affliction_seconds"
 
 func _init() -> void:
 	faction = FactionData.PLAYER
@@ -64,6 +68,9 @@ func get_stat_bonus(_stat: StringName) -> float:
 
 func can_be_hurt_by(damage: Damage) -> bool:
 	return is_standing() and not GameSession.is_passing_out() and super(damage)
+
+func get_affliction_scale(_affliction: AfflictionData) -> float:
+	return maxf(GameStats.get_multiplier(AFFLICTION_SECONDS_STAT), 0.0)
 
 func can_ail() -> bool:
 	return is_standing() and not GameSession.is_passing_out() and super()
