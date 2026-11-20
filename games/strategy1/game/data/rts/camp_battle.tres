@@ -10,6 +10,7 @@ display_name = "Raider Camp"
 description = "The raiders wait behind their palisade. Storm it through the gate. Win at the ford first, and two spearmen from there join you."
 condition = "MINIGAME_WON pass_battle"
 score_name = "Units Left"
+score_goals = PackedInt32Array(3, 5, 7)
 scene = ExtResource("2_scene")
 music_cue_id = &"music_battle"
 settings = {

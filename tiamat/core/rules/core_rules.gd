@@ -29,6 +29,7 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_condition(&"OPTION", _option, 2, -1, [ARG_OPTION, GameRulesService.ARG_TEXT], Callable(), _option_values_problem)
 	rules.register_condition(&"OPTION_AT_LEAST", _option_at_least, 2, 2, [ARG_OPTION, GameRulesService.ARG_NUMBER], Callable(), _number_option_problem)
 	rules.register_condition(&"MINIGAME_WON", _minigame_won, 1, -1, [MiniGameDefinition.KIND], _describe_minigame_won)
+	rules.register_condition(&"MINIGAME_STARS", _minigame_stars, 2, 2, [MiniGameDefinition.KIND, GameRulesService.ARG_COUNT], _describe_minigame_stars, _check_minigame_stars)
 	rules.register_condition(&"EVENT_ARG", _event_arg, 2, -1, [GameRulesService.ARG_TEXT])
 	rules.register_condition(&"EVENT_ARG_AT_LEAST", _event_arg_at_least, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_NUMBER])
 	rules.register_action(&"SET_FLAG", _set_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_FLAG_VALUE])
@@ -125,6 +126,23 @@ static func _minigame_won(args: PackedStringArray, _context: Dictionary) -> bool
 
 static func _describe_minigame_won(args: PackedStringArray) -> String:
 	return TranslationServer.translate("Win %s") % _names(MiniGameDefinition.KIND, args)
+
+## MINIGAME_STARS <minigame> <count>: the player's best score of the
+## minigame, in any save, has earned at least `count` of its stars
+## (`MiniGameDefinition.score_goals`).
+static func _minigame_stars(args: PackedStringArray, _context: Dictionary) -> bool:
+	var definition := MiniGameDefinition.find(StringName(args[0]))
+	return definition != null and definition.get_stars() >= int(args[1])
+
+static func _describe_minigame_stars(args: PackedStringArray) -> String:
+	return TranslationServer.translate("%d stars at %s") % [int(args[1]), _names(MiniGameDefinition.KIND, args.slice(0, 1))]
+
+static func _check_minigame_stars(args: PackedStringArray) -> String:
+	var definition := MiniGameDefinition.find(StringName(args[0]))
+	var goals := definition.score_goals.size()
+	if int(args[1]) <= goals:
+		return ""
+	return "minigame '%s' has %d stars to earn, not %d" % [args[0], goals, int(args[1])]
 
 static func _describe_day_at_least(args: PackedStringArray) -> String:
 	return TranslationServer.translate("From day %d") % int(args[0])

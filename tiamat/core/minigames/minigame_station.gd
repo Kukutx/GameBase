@@ -7,8 +7,8 @@ extends Node2D
 ## through `MiniGameHost`, with `context` over the minigame's own settings, and
 ## `played` says how it went. A station that offers several minigames lists
 ## its `choices` for the player to pick from first (a `ChoiceMenu`): a
-## campaign's battles, each by its name, marked once won, with its description
-## and the player's best score under it, and locked while its condition does
+## campaign's battles, each by its name, marked once won, with its description,
+## the player's best score and stars under it, and locked while its condition does
 ## not hold (`MINIGAME_WON ford_battle`), saying what it needs. A game draws the station itself, as children
 ## of its instance of `minigame_station.tscn`.
 
@@ -52,8 +52,9 @@ func get_picker() -> ChoiceMenu:
 	return ChoiceMenu.of(self)
 
 ## The choice a list offers of `definition`: its name, marked once won in this
-## save, and under it its description and the player's best score, or, while
-## its condition does not hold, what it needs, the choice then locked.
+## save, and under it its description, the player's best score and stars
+## (`MiniGameDefinition.describe_score()`), or, while its condition does not
+## hold, what it needs, the choice then locked.
 static func choice_of(definition: MiniGameDefinition) -> ChoiceMenu.Choice:
 	var name: String = TranslationServer.translate(definition.display_name) if not definition.display_name.is_empty() else String(definition.id)
 	var text: String = TranslationServer.translate("%s (Won)") % name if definition.get_wins() > 0 else name
@@ -64,8 +65,7 @@ static func choice_of(definition: MiniGameDefinition) -> ChoiceMenu.Choice:
 	var lines := PackedStringArray()
 	if not definition.description.is_empty():
 		lines.append(TranslationServer.translate(definition.description))
-	if not definition.score_name.is_empty() and definition.get_best_score() > 0:
-		lines.append(TranslationServer.translate("Best %s: %d") % [TranslationServer.translate(definition.score_name), definition.get_best_score()])
+	lines.append_array(definition.describe_score())
 	return ChoiceMenu.Choice.new(definition.id, text, "\n".join(lines))
 
 func _on_interacted(_actor: Node) -> void:

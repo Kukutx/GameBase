@@ -559,6 +559,21 @@ msgstr "挑战"
 msgid "Won %d of %d"
 msgstr "已获胜 %d / %d"
 
+msgid "Stars %d of %d"
+msgstr "星数 %d / %d"
+
+msgid "%s · Next star: %s %d"
+msgstr "%s · 下一颗星：%s %d"
+
+msgid "%s: a new star! %s"
+msgstr "%s：新得一颗星！%s"
+
+msgid "%s: %d new stars! %s"
+msgstr "%s：新得 %d 颗星！%s"
+
+msgid "%d stars at %s"
+msgstr "获得 %d 颗星：%s"
+
 msgid "%s — won %d"
 msgstr "%s — 已获胜 %d 次"
 

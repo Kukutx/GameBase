@@ -174,3 +174,49 @@ func test_the_best_score_stays_in_the_profile_and_shows_under_its_name() -> void
 	assert_eq(station.get_picker().get_note(FIRST), "Hold the ford.\nBest Units Left: 3")
 	MiniGameDefinition.find(SECOND).score_name = "Units Left"
 	assert_eq(MiniGameStation.choice_of(MiniGameDefinition.find(SECOND)).note, "Locked: Win First Battle", "a locked one shows what it needs alone")
+
+func test_score_goals_earn_stars_that_the_list_the_challenges_and_a_rule_count() -> void:
+	var first := MiniGameDefinition.find(FIRST)
+	first.score_goals = PackedInt32Array([2, 3, 4])
+	assert_eq(MiniGameStation.choice_of(first).note, "Hold the ford.\n☆☆☆ · Next star: Units Left 2", "before a best score, the first goal")
+	assert_false(GameRules.check("MINIGAME_STARS %s 1" % FIRST))
+	var toasts: Array[String] = []
+	var on_toast := func(message: String) -> void: toasts.append(message)
+	GameEvents.toast_requested.connect(on_toast)
+	for score: int in [3, 3, 4]:
+		(func() -> void: await MiniGameHost.run(FIRST)).call()
+		await _finish(MiniGameResult.won(score))
+	GameEvents.toast_requested.disconnect(on_toast)
+	assert_eq(toasts, ["First Battle: 2 new stars! ★★☆", "First Battle: a new star! ★★★"], "the same score again earns nothing")
+	assert_eq(first.get_stars(), 3)
+	assert_eq(first.get_next_goal(), 0)
+	assert_eq(first.describe_score(), PackedStringArray(["Best Units Left: 4", "★★★"]), "every star: no next goal")
+	GameProfile.set_flag(MiniGameDefinition.best_score_key(FIRST), 3)
+	assert_eq(first.get_next_goal(), 4)
+	assert_eq(MiniGameStation.choice_of(first).note, "Hold the ford.\nBest Units Left: 3\n★★☆ · Next star: Units Left 4")
+	assert_true(GameRules.check("MINIGAME_STARS %s 2" % FIRST))
+	assert_false(GameRules.check("MINIGAME_STARS %s 3" % FIRST))
+	assert_eq(GameRules.describe("MINIGAME_STARS %s 3" % FIRST), PackedStringArray(["3 stars at First Battle"]))
+	assert_eq(MiniGameDefinition.describe_challenges(), PackedStringArray([
+		"Won 1 of 2",
+		"Stars 2 of 3",
+		"First Battle — won 3",
+		"  Best Units Left: 3",
+		"  ★★☆ · Next star: Units Left 4",
+		"Second Battle — not won yet",
+	]))
+
+func test_score_goals_need_a_score_name_and_rise_and_a_rule_counts_only_their_stars() -> void:
+	var first := MiniGameDefinition.find(FIRST)
+	first.score_goals = PackedInt32Array([2, 2, 4])
+	assert_has(first.find_problems(ContentRegistry.active), "score goals must be above 0, each above the one before: [2, 2, 4]")
+	first.score_goals = PackedInt32Array([0, 1])
+	assert_has(first.find_problems(ContentRegistry.active), "score goals must be above 0, each above the one before: [0, 1]")
+	first.score_goals = PackedInt32Array([1, 2, 3])
+	assert_false(Array(first.find_problems(ContentRegistry.active)).any(func(problem: String) -> bool: return problem.begins_with("score goals")))
+	assert_eq(GameRules.validate_query("MINIGAME_STARS %s 3" % FIRST), PackedStringArray())
+	assert_eq(GameRules.validate_query("MINIGAME_STARS %s 4" % FIRST), PackedStringArray([
+		"condition 'MINIGAME_STARS': minigame '%s' has 3 stars to earn, not 4" % FIRST,
+	]))
+	first.score_name = ""
+	assert_has(first.find_problems(ContentRegistry.active), "has score goals but no score name")

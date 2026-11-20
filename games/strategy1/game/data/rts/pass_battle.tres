@@ -9,6 +9,7 @@ id = &"pass_battle"
 display_name = "Hill Pass"
 description = "Hold the pass between the hills as the raiders march on it."
 score_name = "Units Left"
+score_goals = PackedInt32Array(4, 6, 8)
 scene = ExtResource("2_scene")
 music_cue_id = &"music_battle"
 settings = {

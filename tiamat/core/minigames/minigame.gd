@@ -29,6 +29,13 @@ func setup(_settings: Dictionary) -> void:
 func find_settings_problems(_settings: Dictionary, _registry: ContentRegistry) -> PackedStringArray:
 	return PackedStringArray()
 
+## The highest score it can give with `settings` and the content of
+## `registry` (a battle: the units the player's side can field), or -1 when it
+## cannot tell; a definition's score goals ask for no more
+## (`MiniGameDefinition.score_goals`).
+func get_best_possible_score(_settings: Dictionary, _registry: ContentRegistry) -> int:
+	return -1
+
 func finish(result: MiniGameResult) -> void:
 	if _finished:
 		return

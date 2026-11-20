@@ -91,6 +91,12 @@ func find_settings_problems(settings: Dictionary, registry: ContentRegistry) -> 
 		problems.append("sets unknown battle map '%s'" % settings["map"])
 	return problems
 
+## The units the player's side of the map in `settings` can field: its score
+## when none falls.
+func get_best_possible_score(settings: Dictionary, registry: ContentRegistry) -> int:
+	var battle_map := registry.get_entry(BattleMapData.KIND, StringName(str(settings.get("map", "")))) as BattleMapData
+	return battle_map.count_player_side() if battle_map != null else -1
+
 ## The mode the player is in.
 func get_mode() -> Mode:
 	return _mode

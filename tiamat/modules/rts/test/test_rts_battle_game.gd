@@ -210,6 +210,14 @@ func test_an_unknown_map_ends_the_minigame_at_once_and_is_a_content_problem() ->
 	definition.settings = {"map": "fixture_nowhere"}
 	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(["sets unknown command map 'fixture_nowhere'"]))
 
+func test_a_definition_s_score_goals_ask_for_no_more_units_than_the_player_fields() -> void:
+	var definition := MiniGameDefinition.find(MINIGAME)
+	definition.score_name = "Units Left"
+	definition.score_goals = PackedInt32Array([1, 2])
+	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(), "two footmen")
+	definition.score_goals = PackedInt32Array([2, 3])
+	assert_eq(definition.find_problems(ContentRegistry.active), PackedStringArray(["asks for a score of 3, but 2 is the most it can give"]))
+
 func test_the_player_chooses_how_fast_a_battle_runs() -> void:
 	GameSettings.options = GameOptions.new(RtsModule.new().get_options())
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
