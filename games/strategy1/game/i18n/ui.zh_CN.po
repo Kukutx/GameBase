@@ -164,3 +164,33 @@ msgstr "以寡敌众"
 
 msgid "Win a battle with its foe strength on Strong."
 msgstr "在敌人强度为「强」时赢下一场战斗。"
+
+msgid "Hold the only ford over the river against the raiders."
+msgstr "守住河上唯一的渡口，挡住劫掠者。"
+
+msgid "Hold the pass between the hills as the raiders march on it."
+msgstr "劫掠者向两山之间的山口进军，守住它。"
+
+msgid "Old Mill"
+msgstr "旧磨坊"
+
+msgid "Raiders hold the mill across the stream. A bridge and a ford lead over."
+msgstr "劫掠者占着溪对岸的磨坊。一座桥和一处浅滩通往对岸。"
+
+msgid "Raider Camp"
+msgstr "劫掠者营地"
+
+msgid "The raiders wait behind their palisade. Storm it through the gate."
+msgstr "劫掠者守在木栅后面。从营门攻进去。"
+
+msgid "Mill Taken"
+msgstr "夺回磨坊"
+
+msgid "Win the battle at the Old Mill."
+msgstr "赢下旧磨坊之战。"
+
+msgid "Camp Stormed"
+msgstr "踏破营寨"
+
+msgid "Storm the Raider Camp."
+msgstr "攻破劫掠者营地。"

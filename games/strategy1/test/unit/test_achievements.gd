@@ -54,3 +54,13 @@ func test_raiders_defeated_in_every_battle_count_toward_veteran() -> void:
 	assert_false(GameProfile.is_unlocked(&"veteran"))
 	GameTriggers.fire(&"RtsEvents.foe_defeated", {"rts_unit_id": &"raider"})
 	assert_true(GameProfile.is_unlocked(&"veteran"))
+
+func test_the_second_battle_of_each_station_has_its_own_achievement() -> void:
+	GameTriggers.fire(&"TacticsEvents.battle_ended", {"battle_map_id": &"old_mill", "won": false})
+	assert_false(GameProfile.is_unlocked(&"mill_taken"), "a lost battle takes nothing")
+	GameTriggers.fire(&"TacticsEvents.battle_ended", {"battle_map_id": &"old_mill", "won": true})
+	assert_true(GameProfile.is_unlocked(&"mill_taken"))
+	assert_false(GameProfile.is_unlocked(&"ford_held"), "the mill is not the ford")
+	GameTriggers.fire(&"RtsEvents.battle_ended", {"rts_map_id": &"raider_camp", "won": true})
+	assert_true(GameProfile.is_unlocked(&"camp_stormed"))
+	assert_false(GameProfile.is_unlocked(&"pass_held"))

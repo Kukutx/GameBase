@@ -10,31 +10,32 @@ From the repository root, link the foundation and the addons once, then open `ga
 node tools/link.js --game strategy1
 ```
 
-The main scene is the core title screen, `res://tiamat/core/ui/title_screen.tscn`. `node tools/validate.js --game strategy1` runs this game's checks; its runtime check opens the battles at the ford and in the pass and walks the camp, and ends with `Camp smoke passed.`. The version lives in `config/version` of `project.godot`; a release is the tag `game/strategy1/v<version>`.
+The main scene is the core title screen, `res://tiamat/core/ui/title_screen.tscn`. `node tools/validate.js --game strategy1` runs this game's checks; its runtime check picks the battles at the ford, the mill and in the pass and walks the camp, and ends with `Camp smoke passed.`. The version lives in `config/version` of `project.godot`; a release is the tag `game/strategy1/v<version>`.
 
 ## Layout
 
 ```text
 game/data/         Data resources, listed in the content pack content.tres
-game/data/tactics/ The battle at the ford: its map, the units of both sides, their actions and the minigame
-game/data/rts/     The battle in the pass: its map, the units of both sides and the minigame
+game/data/tactics/ The battles at the ford and the mill: their maps, the units of both sides, their actions and the minigames
+game/data/rts/     The battles in the pass and at the raider camp: their maps, the units of both sides and the minigames
 game/world/        The camp, with the war table and the muster, and the lookout
 game/player/       The player scene and controller
 game/ui/           The HUD, which holds the core pause menu
 game/i18n/         The Simplified Chinese catalog of the game's own text
 game/game_setup.gd The game's own module
-test/unit/         The maps of the ford and the pass, and a battle on each fought to its end
+test/unit/         The maps of the four battles, and a battle on each fought to its end
 test/runtime/      The camp smoke: the war table, the muster, the lookout, sleep, save and load
 ```
 
 ## Gameplay
 
-- The war table in the camp (a core `MiniGameStation`) opens the battle at the Border Ford, the tactics module's `GridBattleGame`
+- The war table in the camp (a core `MiniGameStation`) lists its battles, the tactics module's `GridBattleGame`: the Border Ford, and the Old Mill once the ford is won (`MINIGAME_WON ford_battle`); a battle won is marked in the list
 - A river that only the ford crosses, rocks, and four of the player's units (two swordsmen, an archer, a cleric who mends) against four raiders (two raiders, a brute, a slinger whose firepots burn an area)
 - Every unit's gauge fills at its speed; on its turn a unit moves and acts once each, and one that skips either comes back sooner
 - Time stands still while the player picks a command; cancel twice gives the battle up
-- The muster (another `MiniGameStation`) opens the battle in the Hill Pass, the rts module's `RtsBattleGame`: two hills with a pass between, and nine of the player's units (spearmen, bowmen, riders) against ten raiders (raiders, brutes, slingers) who march on them
+- At the Old Mill a stream crosses the field below the mill, with a bridge and a ford over it, and five of the player's units (an archer more) against seven raiders
+- The muster (another `MiniGameStation`) lists the rts module's `RtsBattleGame` battles: the Hill Pass, two hills with a pass between, and nine of the player's units (spearmen, bowmen, riders) against ten raiders (raiders, brutes, slingers) who march on them; and, once the pass is won, the Raider Camp, where twelve raiders wait behind a palisade with one gate for the player to storm
 - The player selects units with clicks or a box and orders them with a right click, or with the bar and its keys: attack-move, stop, hold, all, and groups on Ctrl and a digit; holding the pass beats charging through it
-- Five achievements (`game/data/achievements/`): a win at the ford, a win in the pass, Veteran for 50 raiders defeated across every battle, a win with the foe strength on Strong (the settings offer each battle's foe strength and speed), and a hidden one for both wins; the title and the pause menu list them, with the battles won and the raiders defeated under Records
+- Seven achievements (`game/data/achievements/`): a win at each of the four battles, Veteran for 50 raiders defeated across every battle, a win with the foe strength on Strong (the settings offer each battle's foe strength and speed), and a hidden one for winning the ford and the pass; the title and the pause menu list them, with the battles won and the raiders defeated under Records
 
 Everything but the maps, their units and the achievements is the foundation's: the title, pause, settings and achievements menus, the war table and the muster, both battles, their boards and their foes' play, saving and the profile.

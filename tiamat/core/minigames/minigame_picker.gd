@@ -47,14 +47,15 @@ func open(choices: Array[StringName], title := "") -> void:
 ## The buttons of the minigames listed, in order.
 func get_buttons() -> Array[Button]:
 	var buttons: Array[Button] = []
-	for child: Node in _list.get_children():
-		if child is Button:
-			buttons.append(child)
+	for choice: Node in _list.get_children():
+		var button := choice.get_node_or_null(^"Button") as Button
+		if button != null:
+			buttons.append(button)
 	return buttons
 
 ## The line under the button of minigame `minigame_id`, or "" when it has none.
 func get_note(minigame_id: StringName) -> String:
-	var note := _list.get_node_or_null(NodePath("%s_note" % minigame_id)) as Label
+	var note := _list.get_node_or_null(NodePath("%s/Note" % minigame_id)) as Label
 	return note.text if note != null else ""
 
 ## The text a minigame's button shows: its name, marked once won.
@@ -77,23 +78,28 @@ func _fill(choices: Array[StringName]) -> void:
 		var definition := MiniGameDefinition.find(minigame_id)
 		if definition == null:
 			continue
+		# The button and the line under it, kept together, apart from the next.
+		var choice := VBoxContainer.new()
+		choice.name = String(minigame_id)
+		choice.add_theme_constant_override(&"separation", 2)
+		_list.add_child(choice)
 		var button := MenuLayer.list_button(button_text(definition))
-		button.name = String(minigame_id)
+		button.name = "Button"
 		# Its text is translated already.
 		button.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		button.disabled = not definition.is_open()
 		button.pressed.connect(_pick.bind(minigame_id))
-		_list.add_child(button)
+		choice.add_child(button)
 		var note := note_text(definition)
 		if note.is_empty():
 			continue
 		var label := Label.new()
-		label.name = "%s_note" % minigame_id
+		label.name = "Note"
 		label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		label.text = note
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.add_theme_color_override(&"font_color", NOTE_COLOR)
-		_list.add_child(label)
+		choice.add_child(label)
 	ReadableText.raise(_list)
 
 func _first_open() -> Control:
