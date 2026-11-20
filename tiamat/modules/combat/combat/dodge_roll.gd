@@ -8,7 +8,12 @@ extends Node
 ## it rolls. It rolls again only after `cooldown_seconds`, never while the
 ## controls are held or a hit staggers the player, and costs `cost` of the
 ## game's attack vital (`CombatSettings.attack_vital_id`; none, and rolls are
-## free). Each roll is announced as `CombatEvents.player_dodged`.
+## free). A boon, a perk or an upgrade shortens or lengthens that wait through
+## the `COOLDOWN_STAT` stat. Each roll is announced as
+## `CombatEvents.player_dodged`.
+
+## The stat the wait between rolls is changed by (`GameStats`): 0.5 halves it.
+const COOLDOWN_STAT := &"dodge_cooldown"
 
 ## The input action that rolls.
 @export var action: StringName = &"dodge"
@@ -55,7 +60,7 @@ func roll() -> bool:
 	var hurtbox := Hurtbox.of(player)
 	if hurtbox != null:
 		hurtbox.make_invincible(seconds)
-	_cooldown_left = seconds + cooldown_seconds
+	_cooldown_left = seconds + get_cooldown()
 	set_physics_process(true)
 	_fade_while_rolling(player)
 	CombatEvents.player_dodged.emit()
@@ -64,6 +69,11 @@ func roll() -> bool:
 ## Whether the last roll still keeps the next one back.
 func is_cooling_down() -> bool:
 	return _cooldown_left > 0.0
+
+## The wait after a roll before the next: `cooldown_seconds` changed by the
+## `COOLDOWN_STAT` stat, never below none.
+func get_cooldown() -> float:
+	return maxf(GameStats.apply(COOLDOWN_STAT, cooldown_seconds), 0.0)
 
 func _fade_while_rolling(player: CanvasItem) -> void:
 	if _fade != null and _fade.is_valid():
