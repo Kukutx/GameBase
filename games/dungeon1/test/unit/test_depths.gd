@@ -259,6 +259,15 @@ func test_five_boons_in_one_run_bless_the_delver() -> void:
 	assert_almost_eq(RunState.get_stat_multiplier(&"attack_damage"), 1.5625, 0.001, "two Ember Edges")
 	assert_almost_eq(RunState.get_stat_multiplier(PlayerHurtbox.INCOMING_DAMAGE_STAT), 0.8, 0.001)
 
+func test_the_embers_remember_what_the_delver_achieved() -> void:
+	DepthRun.start_run()
+	var heart := BoonData.find(&"heart_of_embers")
+	assert_false(heart.can_take(), "not before Ember Heart")
+	assert_false(RunState.offer_boons(9, "all").has(heart))
+	GameProfile.unlock(&"ember_heart")
+	assert_true(heart.can_take())
+	assert_true(RunState.offer_boons(9, "all").has(heart))
+
 func _enter_floor() -> DepthFloor:
 	var depth_floor := DEPTHS_SCENE.instantiate() as DepthFloor
 	add_child_autofree(depth_floor)

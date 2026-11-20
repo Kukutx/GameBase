@@ -36,3 +36,6 @@ msgstr "一轮中的祝福：%d"
 
 msgid "Taken %d"
 msgstr "已获得 %d 次"
+
+msgid "%s ×%d"
+msgstr "%s ×%d"

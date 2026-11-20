@@ -130,6 +130,23 @@ func test_a_boon_on_offer_says_how_often_the_run_took_it() -> void:
 	RunState.take_boon(&"fixture_lucky")
 	assert_eq(BoonAltar.choice_of(BoonData.find(&"fixture_lucky")).note, "Lucky boon\nTaken 1", "one it may take as often as offered")
 
+func test_the_hud_tells_the_run_s_boons() -> void:
+	var line := BoonLine.new()
+	add_child_autofree(line)
+	await get_tree().process_frame
+	assert_false(line.visible, "no run, no line")
+	RunState.start_run()
+	RunState.take_boon(&"fixture_swift")
+	RunState.take_boon(&"fixture_swift")
+	RunState.take_boon(&"fixture_sturdy")
+	assert_eq(RunState.describe_boons(), PackedStringArray(["Sturdy", "Swift ×2"]))
+	await get_tree().process_frame
+	assert_true(line.visible)
+	assert_eq(line.text, "Sturdy · Swift ×2")
+	RunState.end_run(RunService.OUTCOME_RETURNED)
+	await get_tree().process_frame
+	assert_false(line.visible, "the boons end with the run")
+
 func test_closing_the_altar_s_list_takes_nothing() -> void:
 	RunState.start_run()
 	var altar := ALTAR_SCENE.instantiate() as BoonAltar

@@ -102,6 +102,18 @@ func get_boons() -> Array[StringName]:
 	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
 	return ids
 
+## The boons this run took as the player reads them, in the order of their
+## ids: each by its name, with how many times when more than once
+## ("Ember Edge ×2").
+func describe_boons() -> PackedStringArray:
+	var parts := PackedStringArray()
+	for boon_id: StringName in get_boons():
+		var boon := BoonData.find(boon_id)
+		var name := boon.get_display_name() if boon != null else String(boon_id)
+		var stacks := get_boon_stacks(boon_id)
+		parts.append(tr("%s ×%d") % [name, stacks] if stacks > 1 else name)
+	return parts
+
 ## How many boons this run took, each as many times as it took it.
 func get_boon_count() -> int:
 	var total := 0
