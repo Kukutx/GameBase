@@ -1,22 +1,33 @@
 class_name MenuEntry
 extends PanelContainer
 
-## A read-only entry of a menu's list (a tip, an achievement), a label a line.
+## A read-only entry of a menu's list (a tip, an achievement), a label a line,
+## with an icon before them when it has one (`set_icon()`).
 ## The keys and a gamepad move the focus through the entries as through
 ## buttons, so a list longer than its menu scrolls to the one in focus
 ## (`ScrollContainer.follow_focus`), which shows the focus as a button does;
 ## a drag on it still scrolls the list.
 
+## The side of an entry's icon.
+const ICON_SIZE := 24.0
+
+var _row: HBoxContainer
+var _icon: TextureRect
 var _lines: VBoxContainer
 
 func _init() -> void:
 	focus_mode = Control.FOCUS_ALL
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_row = HBoxContainer.new()
+	_row.name = "Row"
+	_row.add_theme_constant_override(&"separation", 6)
+	add_child(_row)
 	_lines = VBoxContainer.new()
 	_lines.name = "Lines"
 	_lines.add_theme_constant_override(&"separation", 1)
-	add_child(_lines)
+	_lines.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_row.add_child(_lines)
 	var room := StyleBoxEmpty.new()
 	room.set_content_margin_all(2.0)
 	add_theme_stylebox_override(&"panel", room)
@@ -34,6 +45,29 @@ func add_line(text: String, translate := true) -> Label:
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_lines.add_child(label)
 	return label
+
+## Shows `texture` before the lines, at `ICON_SIZE`; null takes the icon away.
+func set_icon(texture: Texture2D) -> void:
+	if texture == null:
+		if _icon != null:
+			_icon.queue_free()
+			_icon = null
+		return
+	if _icon == null:
+		_icon = TextureRect.new()
+		_icon.name = "Icon"
+		_icon.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
+		_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_row.add_child(_icon)
+		_row.move_child(_icon, 0)
+	_icon.texture = texture
+
+## The icon the entry shows, or null.
+func get_icon() -> Texture2D:
+	return _icon.texture if _icon != null else null
 
 ## The entry's lines, as its labels show them.
 func get_lines() -> PackedStringArray:

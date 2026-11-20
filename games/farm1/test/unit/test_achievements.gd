@@ -1,7 +1,8 @@
 extends GutTest
 
 ## Farm1's achievements, unlocked by its triggers (`game/data/triggers/`) from
-## what the player does, and kept in the player's profile across saves.
+## what the player does, or by the profile as a counter reaches a goal, and
+## kept in the player's profile across saves.
 
 const TEST_PATH := "user://test_farm1_achievements/profile.json"
 

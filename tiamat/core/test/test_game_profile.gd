@@ -117,6 +117,24 @@ func test_content_reads_and_changes_the_profile_through_rule_keys() -> void:
 	var problems := "\n".join(GameRules.validate_actions(PackedStringArray(["UNLOCK_ACHIEVEMENT fixture_missing"])))
 	assert_string_contains(problems, "unknown achievement 'fixture_missing'")
 
+func test_an_achievement_that_counts_toward_a_goal_unlocks_as_the_counter_reaches_it() -> void:
+	var counting := _achievement(&"fixture_runner", false)
+	counting.progress_flag = &"fixture_runs"
+	counting.goal = 3
+	ContentFixture.use(self, [counting, _achievement(&"fixture_first_step", false)])
+	watch_signals(GameProfile)
+	GameProfile.add_int(&"fixture_runs", 2)
+	assert_false(GameProfile.is_unlocked(&"fixture_runner"))
+	assert_eq(GameProfile.get_progress(&"fixture_runner"), 2)
+	assert_eq(GameProfile.get_progress(&"fixture_first_step"), 0, "one that counts nothing")
+	assert_true(GameRules.run_actions(PackedStringArray(["ADD_PROFILE_FLAG fixture_runs 5"])))
+	assert_true(GameProfile.is_unlocked(&"fixture_runner"), "the counter passed the goal")
+	assert_signal_emit_count(GameProfile, "achievement_unlocked", 1)
+	assert_eq(GameProfile.get_progress(&"fixture_runner"), 3, "at most the goal")
+	GameProfile.set_flag(&"fixture_runs", 0)
+	assert_true(GameProfile.is_unlocked(&"fixture_runner"), "unlocked, it stays unlocked")
+	assert_eq(GameProfile.get_progress(&"fixture_runner"), 3)
+
 func test_an_achievement_names_itself() -> void:
 	var nameless := AchievementData.new()
 	nameless.id = &"fixture_nameless"
@@ -124,6 +142,13 @@ func test_an_achievement_names_itself() -> void:
 	var problems := "\n".join(registry.find_entry_problems(nameless))
 	assert_string_contains(problems, "achievement 'fixture_nameless' has no display name")
 	assert_string_contains(problems, "achievement 'fixture_nameless' has no description")
+	var goalless := _achievement(&"fixture_goalless", false)
+	goalless.progress_flag = &"fixture_runs"
+	var flagless := _achievement(&"fixture_flagless", false)
+	flagless.goal = 10
+	registry = ContentFixture.use(self, [goalless, flagless])
+	assert_string_contains("\n".join(registry.find_entry_problems(goalless)), "counts fixture_runs toward no goal")
+	assert_string_contains("\n".join(registry.find_entry_problems(flagless)), "has a goal but no progress flag")
 
 func _achievement(id: StringName, hidden: bool) -> AchievementData:
 	var achievement := AchievementData.new()

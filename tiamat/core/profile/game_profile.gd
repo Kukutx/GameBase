@@ -9,7 +9,9 @@ extends Node
 ##
 ## Content reads and changes it through rule keys: `ACHIEVEMENT_UNLOCKED`,
 ## `PROFILE_FLAG`, `PROFILE_FLAG_AT_LEAST`, `UNLOCK_ACHIEVEMENT`,
-## `SET_PROFILE_FLAG` and `ADD_PROFILE_FLAG` (`GameRules`). A storefront's
+## `SET_PROFILE_FLAG` and `ADD_PROFILE_FLAG` (`GameRules`). An achievement that
+## counts a counter toward a goal (`AchievementData.progress_flag`) unlocks as
+## the counter reaches it. A storefront's
 ## achievements follow `achievement_unlocked`. A change that could not be
 ## written is written with the next one, or when the game quits.
 
@@ -57,6 +59,17 @@ func get_unlocked() -> Array[StringName]:
 	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
 	return ids
 
+## How far the player is toward an achievement that counts a profile counter
+## (`AchievementData.progress_flag`): the counter, at most the goal; the goal
+## once it is unlocked, 0 for one that counts nothing.
+func get_progress(achievement_id: StringName) -> int:
+	var achievement := AchievementData.find(achievement_id)
+	if achievement == null or not achievement.counts_progress():
+		return 0
+	if is_unlocked(achievement_id):
+		return achievement.goal
+	return clampi(get_int(achievement.progress_flag), 0, achievement.goal)
+
 ## Unlocks an achievement of the running game's content; an unlocked one stays
 ## as it was. False for an id the content does not have.
 func unlock(achievement_id: StringName) -> bool:
@@ -87,11 +100,19 @@ func set_flag(key: StringName, value: Variant) -> void:
 		return
 	_flags[key] = value
 	_request_write()
+	if typeof(value) == TYPE_INT:
+		_unlock_reached(key, value)
 	flag_changed.emit(key, value)
 
 func add_int(key: StringName, amount: int) -> int:
 	set_flag(key, get_int(key) + amount)
 	return get_int(key)
+
+# Unlocks the achievements that count `key` and whose goal `count` reaches.
+func _unlock_reached(key: StringName, count: int) -> void:
+	for achievement: AchievementData in AchievementData.find_all():
+		if achievement.progress_flag == key and achievement.counts_progress() and count >= achievement.goal:
+			unlock(achievement.id)
 
 ## Forgets every achievement and flag, as for a player who starts over.
 func reset_profile() -> void:
