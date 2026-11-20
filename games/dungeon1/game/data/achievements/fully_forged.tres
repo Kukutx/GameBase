@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/profile/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"fully_forged"
+display_name = "Fully Forged"
+description = "Raise every upgrade of the Ember Forge to its last level."

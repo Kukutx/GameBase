@@ -41,6 +41,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `RUNS_AT_LEAST` | roguelite | 1 | `RUNS_AT_LEAST <count>` | this world started at least that many runs. |
 | `SEASON` | core | 1 or more | `SEASON <name>...` | the season is one of the names (the calendar's seasons). |
 | `SKILL_LEVEL` | skills | 2 | `SKILL_LEVEL <skill> <level>` | the skill has reached at least the level. |
+| `STAT_UPGRADE_AT_LEAST` | items | 2 | `STAT_UPGRADE_AT_LEAST <upgrade> <level>` | the world raised the upgrade to at least that level. |
 | `TIME_BETWEEN` | core | 2 | `TIME_BETWEEN <from> <to>` | the minute of the day is in [from, to). |
 | `TRUE` | core | 0 | `TRUE` | always holds. |
 | `VITAL_AT_LEAST` | core | 2 | `VITAL_AT_LEAST <vital> <n>` | the player has at least n of the vital. |
@@ -60,6 +61,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `ADD_RUN_TALLY` | roguelite | 1 to 2 | `ADD_RUN_TALLY <tally> [amount]` | adds the amount, 1 when none, to the tally of the run going on; fails while no run goes on. |
 | `ADD_SKILL_XP` | skills | 2 | `ADD_SKILL_XP <skill> <amount>` | gives the skill that much experience, which can raise its level; an amount of 0 or less gives none, and the action still succeeds. |
 | `CLEAR_FLAG` | core | 1 | `CLEAR_FLAG <key>` | removes the value stored under the key, so a flag reads as false and a counter as 0; never fails. |
+| `RAISE_STAT_UPGRADE` | items | 1 | `RAISE_STAT_UPGRADE <upgrade>` | raises the upgrade one level without a cost (a reward); fails once it is at its last level. |
 | `REMOVE_ITEM` | items | 1 to 2 | `REMOVE_ITEM <item> [count]` | fails, removing nothing, when there are not enough. |
 | `RESTORE_VITAL` | core | 2 | `RESTORE_VITAL <vital> <n>` | restores n of the vital, up to its maximum; an n of 0 or less restores nothing, and the action still succeeds. |
 | `SET_FLAG` | core | 1 to 2 | `SET_FLAG <key> [value]` | value is true, false or an integer (default true). |

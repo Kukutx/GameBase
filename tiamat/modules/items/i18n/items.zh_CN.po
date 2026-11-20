@@ -165,3 +165,27 @@ msgstr "%dg"
 
 msgid "Needs: %s"
 msgstr "需要：%s"
+
+msgid "Fully upgraded"
+msgstr "已满级"
+
+msgid "%s level %d"
+msgstr "%s %d 级"
+
+msgid "Upgrades"
+msgstr "强化"
+
+msgid "%s is now level %d"
+msgstr "%s 升到了 %d 级"
+
+msgid "%s (level %d of %d)"
+msgstr "%s（%d/%d 级）"
+
+msgid "Next level: %s"
+msgstr "下一级：%s"
+
+msgid "Nothing to upgrade here"
+msgstr "这里没有可强化的东西"
+
+msgid "Upgrade"
+msgstr "强化"

@@ -1,10 +1,11 @@
 extends "res://tiamat/core/test/runtime_smoke.gd"
 
 ## Plays Ember Depths' loop through its scenes: a new game at camp with its
-## first hint and a word with the Old Delver, down into
-## the depths and one depth further, each floor cleared with the player's own
-## swings, saving refused in the depths and kept at camp, the save loaded back,
-## and a defeat that returns the player to camp a quarter poorer. As a main
+## first hint, a word with the Old Delver and a look at the Ember Forge, down
+## into the depths and one depth further, each floor cleared with the player's
+## own swings, the run's report back at camp, saving refused in the depths and
+## kept at camp, the save loaded back, and a defeat that returns the player to
+## camp a quarter poorer. As a main
 ## loop it compiles before the autoloads exist, so it names no class of the
 ## game or the foundation and reaches them through the tree.
 

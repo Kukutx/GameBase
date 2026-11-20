@@ -299,3 +299,36 @@ msgstr "余烬横扫"
 
 msgid "Defeat 15 creatures of the depths in a single run."
 msgstr "在一次冒险中击败 15 只深渊生物。"
+
+msgid "Ember Forge"
+msgstr "余烬熔炉"
+
+msgid "Tempered Blade"
+msgstr "淬火之刃"
+
+msgid "Every strike hits a tenth harder per level."
+msgstr "每级让每次攻击的伤害提高一成。"
+
+msgid "Hardened Hide"
+msgstr "硬化皮甲"
+
+msgid "Every blow hurts a tenth less per level."
+msgstr "每级让受到的伤害减少一成。"
+
+msgid "Fleet Boots"
+msgstr "轻捷之靴"
+
+msgid "Lighter steps: a little faster per level."
+msgstr "脚步更轻：每级移动快一些。"
+
+msgid "Ember Brand"
+msgstr "余烬烙印"
+
+msgid "An ember core forged into the blade: strikes hit a fifth harder."
+msgstr "把余烬之核锻进刀刃：攻击伤害提高两成。"
+
+msgid "Fully Forged"
+msgstr "百炼成钢"
+
+msgid "Raise every upgrade of the Ember Forge to its last level."
+msgstr "把余烬熔炉的所有强化升到满级。"
