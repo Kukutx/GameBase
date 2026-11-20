@@ -1344,8 +1344,8 @@ msgstr "夏季种子，第一次收获后还能继续结果。"
 msgid "Tills a farm plot."
 msgstr "用于耕作农田。"
 
-msgid "Warm food makes chores easier for a while."
-msgstr "热腾腾的食物能在一段时间内让劳作更轻松。"
+msgid "Warm food makes chores easier for a while: tools cost less energy and you have 20 more of it."
+msgstr "热腾腾的食物能在一段时间内让劳作更轻松：工具体力消耗更少，体力上限 +20。"
 
 msgid "Waters tilled soil so crops can grow overnight."
 msgstr "为已耕土地浇水，让作物能在夜间生长。"
@@ -2022,11 +2022,11 @@ msgstr "耕作"
 msgid "Farm"
 msgstr "耕作"
 
-msgid "Field Efficiency I · tool energy -10%"
-msgstr "田间效率 I · 工具体力消耗 -10%"
+msgid "Field Efficiency I · tool energy -10% · max energy +15"
+msgstr "田间效率 I · 工具体力消耗 -10% · 体力上限 +15"
 
-msgid "Field Efficiency II · tool energy -20%"
-msgstr "田间效率 II · 工具体力消耗 -20%"
+msgid "Field Efficiency II · tool energy -20% · max energy +40"
+msgstr "田间效率 II · 工具体力消耗 -20% · 体力上限 +40"
 
 msgid "Foraging"
 msgstr "采集"
@@ -2061,11 +2061,11 @@ msgstr "矿工 II · 采矿体力消耗 -20%"
 msgid "Combat"
 msgstr "战斗"
 
-msgid "Fighter I · attack +10% · attack energy -10%"
-msgstr "战士 I · 攻击 +10% · 攻击体力消耗 -10%"
+msgid "Fighter I · attack +10% · attack energy -10% · max health +15"
+msgstr "战士 I · 攻击 +10% · 攻击体力消耗 -10% · 生命上限 +15"
 
-msgid "Fighter II · attack +25% · attack energy -20%"
-msgstr "战士 II · 攻击 +25% · 攻击体力消耗 -20%"
+msgid "Fighter II · attack +25% · attack energy -20% · max health +40"
+msgstr "战士 II · 攻击 +25% · 攻击体力消耗 -20% · 生命上限 +40"
 
 msgid "Social"
 msgstr "社交"

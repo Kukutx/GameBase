@@ -4,6 +4,10 @@ extends ModuleSettings
 ## What a game sets for the life-sim module (`GameDefinition.module_settings`):
 ## the vital its work spends and how late the player may stay up.
 
+## The stat the game's energy vital may follow (`VitalData.maximum_stat`):
+## a dish or a skill perk that raises how much energy the player has.
+const MAX_ENERGY_STAT := &"max_energy"
+
 ## The vital that farming, mining and fishing spend (`VitalData`); empty: the
 ## work is free.
 @export var energy_vital_id: StringName

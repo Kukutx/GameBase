@@ -47,6 +47,27 @@ func test_skill_perks_unlock_at_levels_five_and_ten() -> void:
 	assert_almost_eq(GameStats.get_multiplier(&"farming_energy"), 0.8, 0.001)
 	assert_true(Skills.get_perk_summary(&"farming").contains("II"))
 
+func test_combat_and_farming_perks_raise_health_and_energy() -> void:
+	Vitals.set_value(&"hp", 50)
+	Skills.add_xp(&"combat", 700)
+	assert_eq(Vitals.get_maximum(&"hp"), 115)
+	assert_eq(Vitals.get_value(&"hp"), 65, "the 15 more come filled")
+	Skills.add_xp(&"combat", 2500)
+	assert_eq(Vitals.get_maximum(&"hp"), 140)
+	Skills.add_xp(&"farming", 700)
+	assert_eq(Vitals.get_maximum(&"energy"), 115)
+	assert_true(Vitals.is_full(&"energy"))
+	Skills.add_xp(&"farming", 2500)
+	assert_eq(Vitals.get_maximum(&"energy"), 140)
+	var saved := Vitals.to_save_data()
+	Vitals.set_value(&"energy", 130)
+	Vitals.load_save_data(saved)
+	await wait_physics_frames(1)
+	assert_eq(Vitals.get_value(&"energy"), 140, "a save keeps energy past the vital's own maximum")
+	Skills.reset_new_game()
+	assert_eq(Vitals.get_maximum(&"hp"), 100)
+	assert_eq(Vitals.get_value(&"energy"), 100)
+
 func test_farming_and_mining_perks_reduce_real_energy_costs() -> void:
 	InventoryState.add_item_by_id(&"hoe", 1)
 	var plot := load("res://tiamat/modules/lifesim/farming/farm_plot.tscn").instantiate() as FarmPlot

@@ -16,7 +16,7 @@ func install() -> void:
 	for action: StringName in [FarmPlot.TILL_ACTION, FarmPlot.WATER_ACTION, MiningNode.TOOL_ACTION, FishingSpot.TOOL_ACTION]:
 		ItemData.register_tool_action(action)
 	for stat: StringName in [&"tool_energy", &"farming_energy", &"mining_energy", &"fishing_wait", &"fishing_window",
-			&"forage_quantity"]:
+			&"forage_quantity", LifesimSettings.MAX_ENERGY_STAT]:
 		GameStats.register_stat(stat)
 	# Shipping restores its saved day marker before the clock (order 300) emits
 	# day_changed, so loading never pays a day twice.
