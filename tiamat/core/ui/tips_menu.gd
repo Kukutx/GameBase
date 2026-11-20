@@ -4,8 +4,9 @@ extends CanvasLayer
 ## The tips the player has seen (`HintData`), to read again from the pause
 ## menu: a hint shows once, on a status line, and may pass before the player
 ## has read it. Each tip names its controls as the device in use performs
-## them, and again when the player picks up another. `ui_cancel` or Back
-## closes it.
+## them, and again when the player picks up another. The keys and a gamepad
+## walk through the tips (`MenuEntry`), the list scrolling with them.
+## `ui_cancel` or Back closes it.
 
 signal closed
 
@@ -40,7 +41,7 @@ func open() -> void:
 	var opened := not visible
 	visible = true
 	_tips.scroll_vertical = 0
-	MenuLayer.focus(_back)
+	MenuLayer.focus(_list.get_child(0) as Control if _list.get_child_count() > 0 else _back)
 	if opened:
 		GameEvents.menu_opened.emit(MENU_ID)
 
@@ -54,8 +55,8 @@ func close() -> void:
 ## The texts the menu shows, one a tip.
 func get_texts() -> PackedStringArray:
 	var texts := PackedStringArray()
-	for label: Node in _list.get_children():
-		texts.append((label as Label).text)
+	for entry: Node in _list.get_children():
+		texts.append_array((entry as MenuEntry).get_lines())
 	return texts
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -68,15 +69,17 @@ func _fill() -> void:
 		_list.remove_child(child)
 		child.queue_free()
 	for hint: HintData in seen_hints():
-		var label := Label.new()
+		var entry := MenuEntry.new()
 		# The hint translates itself and names its controls.
-		label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-		label.text = hint.get_message()
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_list.add_child(label)
+		entry.add_line(hint.get_message(), false)
+		_list.add_child(entry)
 	ReadableText.raise(_list)
 
 func _on_input_method_changed() -> void:
-	if visible:
-		_fill()
+	if not visible:
+		return
+	# The tip in focus keeps it as the tips name their controls anew.
+	var focused := _list.get_children().find(get_viewport().gui_get_focus_owner())
+	_fill()
+	if focused >= 0 and focused < _list.get_child_count():
+		(_list.get_child(focused) as Control).grab_focus()

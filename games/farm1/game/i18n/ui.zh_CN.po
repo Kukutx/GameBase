@@ -2076,9 +2076,6 @@ msgstr "好邻居 I · 喜爱礼物的好感 +10%"
 msgid "Neighbor II · positive gift friendship +20%"
 msgstr "好邻居 II · 喜爱礼物的好感 +20%"
 
-msgid "Achievements"
-msgstr "成就"
-
 msgid "Green Thumb"
 msgstr "绿手指"
 

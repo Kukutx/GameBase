@@ -4,7 +4,8 @@ extends MenuLayer
 ## The pause menu every game's locations share: the core's `pause` control
 ## (Esc, Start) opens it over the paused world, to resume, save, load, change
 ## the settings, read again the tips the player has seen (`TipsMenu`, offered
-## once one has shown), return to the title screen (the game's main scene) or
+## once one has shown), see the achievements (`AchievementsMenu`, offered in a
+## game that has any), return to the title screen (the game's main scene) or
 ## quit;
 ## `pause` or `ui_cancel` closes it. It also opens when the window loses focus
 ## (`GameSettings.pause_on_focus_loss`): the player turns to another app, or
@@ -19,7 +20,8 @@ extends MenuLayer
 ## A game may lay the menu out its own way, as MFarm's old paper menu does.
 ## Its scene names the controls `%Resume`, `%Save`, `%Load`, `%Settings`,
 ## `%ReturnTitle`, `%Quit` (buttons) and `%Status` (a label) wherever it puts
-## them, and `%Tips` where it offers the tips, or a script extending this one
+## them, `%Tips` where it offers the tips and `%Achievements` where it offers
+## the achievements, or a script extending this one
 ## sets `resume_button` and the others
 ## before it calls `super()` in `_ready()`, and overrides `_focus_on_open()`
 ## and `_set_main_buttons_disabled()` for controls of its own. The settings
@@ -34,6 +36,7 @@ const PAUSE_ACTION := &"pause"
 
 const SETTINGS_MENU := preload("res://tiamat/core/ui/settings_menu.tscn")
 const TIPS_MENU := preload("res://tiamat/core/ui/tips_menu.tscn")
+const ACHIEVEMENTS_MENU := preload("res://tiamat/core/ui/achievements_menu.tscn")
 
 var resume_button: Button
 var save_button: Button
@@ -43,9 +46,13 @@ var title_button: Button
 var quit_button: Button
 ## The button that opens the tips, or null for a layout that offers none.
 var tips_button: Button
+## The button that opens the achievements, or null for a layout that offers
+## none.
+var achievements_button: Button
 var status_label: Label
 var settings_menu: SettingsMenu
 var tips_menu: TipsMenu
+var achievements_menu: AchievementsMenu
 var confirm_load: ConfirmationDialog
 var confirm_title: ConfirmationDialog
 var confirm_quit: ConfirmationDialog
@@ -74,8 +81,11 @@ func _ready() -> void:
 	quit_button.pressed.connect(confirm_quit.popup_centered)
 	settings_menu.closed.connect(_on_settings_closed)
 	if tips_button != null:
-		tips_button.pressed.connect(_open_tips)
-		tips_menu.closed.connect(_on_tips_closed)
+		tips_button.pressed.connect(_open_side_menu.bind(tips_menu))
+		tips_menu.closed.connect(_on_side_menu_closed.bind(tips_button))
+	if achievements_button != null:
+		achievements_button.pressed.connect(_open_side_menu.bind(achievements_menu))
+		achievements_menu.closed.connect(_on_side_menu_closed.bind(achievements_button))
 	confirm_load.confirmed.connect(_load_game)
 	confirm_title.confirmed.connect(_return_to_title)
 	confirm_quit.confirmed.connect(_quit)
@@ -98,11 +108,10 @@ func _find_controls() -> void:
 	status_label = status_label if status_label != null else get_node(^"%Status") as Label
 	tips_button = tips_button if tips_button != null else get_node_or_null(^"%Tips") as Button
 	if tips_button != null:
-		tips_menu = get_node_or_null(^"TipsMenu") as TipsMenu
-		if tips_menu == null:
-			tips_menu = TIPS_MENU.instantiate() as TipsMenu
-			tips_menu.name = "TipsMenu"
-			add_child(tips_menu)
+		tips_menu = _side_menu(^"TipsMenu", TIPS_MENU) as TipsMenu
+	achievements_button = achievements_button if achievements_button != null else get_node_or_null(^"%Achievements") as Button
+	if achievements_button != null:
+		achievements_menu = _side_menu(^"AchievementsMenu", ACHIEVEMENTS_MENU) as AchievementsMenu
 	settings_menu = get_node_or_null(^"SettingsMenu") as SettingsMenu
 	if settings_menu == null:
 		settings_menu = SETTINGS_MENU.instantiate() as SettingsMenu
@@ -111,6 +120,16 @@ func _find_controls() -> void:
 	confirm_load = _question(&"ConfirmLoad", "Load Game", "Unsaved progress will be lost. Load your last save?", "Load")
 	confirm_title = _question(&"ConfirmTitle", "Return to Title", "Unsaved progress will be lost. Return to the title screen?", "Return to Title")
 	confirm_quit = _question(&"ConfirmQuit", "Quit to Desktop", "Unsaved progress will be lost. Quit the game?", "Quit")
+
+# The scene's own menu `node_name` that opens over this one, or one made of
+# `scene`.
+func _side_menu(node_name: NodePath, scene: PackedScene) -> Node:
+	var menu := get_node_or_null(node_name)
+	if menu == null:
+		menu = scene.instantiate()
+		menu.name = String(node_name)
+		add_child(menu)
+	return menu
 
 # The scene's own question, or a new one with the core's words.
 func _question(node_name: StringName, title_text: String, text: String, ok_text: String) -> ConfirmationDialog:
@@ -147,7 +166,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var quick_load := event.is_action_pressed("quick_load")
 	if not pause and not cancel and not quick_load:
 		return
-	if settings_menu.visible or _is_tips_open() or _is_dialog_open():
+	if settings_menu.visible or _is_side_menu_open() or _is_dialog_open():
 		return
 	if not visible:
 		# Cancel only leaves the menu; something else may hold the input (a
@@ -173,6 +192,8 @@ func open() -> void:
 	load_button.disabled = not SaveManager.has_save()
 	if tips_button != null:
 		tips_button.visible = not TipsMenu.seen_hints().is_empty()
+	if achievements_button != null:
+		achievements_button.visible = AchievementsMenu.has_any()
 	_focus_on_open()
 
 ## Where the keys and a gamepad start when the menu opens.
@@ -183,8 +204,9 @@ func close() -> void:
 	if not visible:
 		return
 	settings_menu.close()
-	if tips_menu != null:
-		tips_menu.close()
+	for menu: Node in [tips_menu, achievements_menu]:
+		if menu != null:
+			menu.call(&"close")
 	for dialog: ConfirmationDialog in [confirm_load, confirm_title, confirm_quit]:
 		dialog.hide()
 	super()
@@ -227,18 +249,19 @@ func _on_settings_closed() -> void:
 	if visible:
 		settings_button.grab_focus()
 
-func _is_tips_open() -> bool:
-	return tips_menu != null and tips_menu.visible
+# Whether the tips or the achievements show over the menu.
+func _is_side_menu_open() -> bool:
+	return (tips_menu != null and tips_menu.visible) or (achievements_menu != null and achievements_menu.visible)
 
-func _open_tips() -> void:
+func _open_side_menu(menu: CanvasLayer) -> void:
 	_set_main_buttons_disabled(true)
-	tips_menu.open()
+	menu.call(&"open")
 
-func _on_tips_closed() -> void:
+func _on_side_menu_closed(button: Button) -> void:
 	_set_main_buttons_disabled(false)
 	load_button.disabled = not SaveManager.has_save()
 	if visible:
-		tips_button.grab_focus()
+		button.grab_focus()
 
 func _on_dialog_canceled(dialog: ConfirmationDialog) -> void:
 	if not visible:
@@ -276,5 +299,6 @@ func _set_main_buttons_disabled(value: bool) -> void:
 	settings_button.disabled = value
 	title_button.disabled = value
 	quit_button.disabled = value
-	if tips_button != null:
-		tips_button.disabled = value
+	for button: Button in [tips_button, achievements_button]:
+		if button != null:
+			button.disabled = value

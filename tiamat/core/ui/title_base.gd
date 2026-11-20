@@ -3,7 +3,7 @@ extends ColorRect
 
 ## What every title screen does, however it looks: it opens a save slot
 ## (continuing its game, or starting a new one there), deletes a slot's saves
-## after asking, opens the settings and quits.
+## after asking, opens the settings and the achievements, and quits.
 ##
 ## GameTitleScreen, the core's menu, is one; a game whose old title had a look
 ## of its own extends this instead and shows the slots its own way. It calls
@@ -12,17 +12,19 @@ extends ColorRect
 ## (hold the menu while a game opens or a dialog is up) and `_show_status`
 ## (a line that says what went wrong or what was done).
 ##
-## The questions it asks and the settings menu are the scene's own
-## `ConfirmNewGame`, `ConfirmDelete` and `SettingsMenu` when it has them, or
-## are made here when it has not. In a browser that keeps no saves
+## The questions it asks, the settings and the achievements are the scene's
+## own `ConfirmNewGame`, `ConfirmDelete`, `SettingsMenu` and
+## `AchievementsMenu` when it has them, or are made here when it has not. In a browser that keeps no saves
 ## (`GameSaveManager.saves_persist`) the status line says so as the title
 ## opens, before the player plays a game they would lose.
 
 const SETTINGS_MENU := preload("res://tiamat/core/ui/settings_menu.tscn")
+const ACHIEVEMENTS_MENU := preload("res://tiamat/core/ui/achievements_menu.tscn")
 ## What the status line says in a browser that keeps no saves.
 const SAVES_LOST := "This browser keeps no saves: your progress ends when the page closes. Private browsing can cause this."
 
 var settings_menu: SettingsMenu
+var achievements_menu: AchievementsMenu
 var confirm_new_game: ConfirmationDialog
 var confirm_delete: ConfirmationDialog
 
@@ -32,9 +34,15 @@ func _ready() -> void:
 		settings_menu = SETTINGS_MENU.instantiate() as SettingsMenu
 		settings_menu.name = "SettingsMenu"
 		add_child(settings_menu)
+	achievements_menu = get_node_or_null(^"AchievementsMenu") as AchievementsMenu
+	if achievements_menu == null:
+		achievements_menu = ACHIEVEMENTS_MENU.instantiate() as AchievementsMenu
+		achievements_menu.name = "AchievementsMenu"
+		add_child(achievements_menu)
 	confirm_new_game = _question(&"ConfirmNewGame", "Start New Game", "Start New Game")
 	confirm_delete = _question(&"ConfirmDelete", "Delete Save", "Delete")
 	settings_menu.closed.connect(_on_settings_closed)
+	achievements_menu.closed.connect(_on_achievements_closed)
 	confirm_new_game.confirmed.connect(_start_new_game)
 	confirm_delete.confirmed.connect(_confirm_delete_save)
 	SaveManager.load_completed.connect(_on_load_completed)
@@ -164,6 +172,14 @@ func _open_settings() -> void:
 	settings_menu.open()
 
 func _on_settings_closed() -> void:
+	_set_buttons_disabled(false)
+	_refresh_slot_ui()
+
+func _open_achievements() -> void:
+	_set_buttons_disabled(true)
+	achievements_menu.open()
+
+func _on_achievements_closed() -> void:
 	_set_buttons_disabled(false)
 	_refresh_slot_ui()
 

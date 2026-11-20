@@ -50,6 +50,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_right = 8
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_bottom = 3
 
 [node name="List" type="VBoxContainer" parent="Dim/Panel/Layout/Tips/Margin"]
 unique_name_in_owner = true
