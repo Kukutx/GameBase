@@ -59,8 +59,8 @@ func _rebuild(keep_focus := true) -> void:
 	for recipe: RecipeData in CraftingState.get_all_recipes():
 		if recipe.category != current_category:
 			continue
-		var button := MenuLayer.list_button()
-		button.text = _recipe_text(recipe, sources)
+		var output := ItemData.find(recipe.output_item_id)
+		var button := MenuLayer.list_button(_recipe_text(recipe, sources), output.icon if output != null else null)
 		button.disabled = not CraftingState.can_craft(recipe)
 		button.set_meta(MenuLayer.FOCUS_KEY, recipe.id)
 		button.pressed.connect(_craft.bind(recipe.id))

@@ -93,7 +93,7 @@ static func _rows(profile: NpcProfileData) -> Array[Dictionary]:
 		var word := taste_word(RelationshipState.get_known_taste(profile.id, item.id))
 		if not word.is_empty():
 			text += " · " + word
-		rows.append({"text": text, "key": item.id})
+		rows.append({"text": text, "key": item.id, "icon": item.icon})
 	return rows
 
 func _on_item_selected(_index: int) -> void:

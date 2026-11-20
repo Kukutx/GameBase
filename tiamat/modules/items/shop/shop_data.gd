@@ -12,7 +12,8 @@ const KIND := &"shop"
 ## The name the player reads at its counter.
 @export var display_name: String = "Shop"
 ## What it sells all year, as item id -> price; 0, at the item's own
-## `buy_price`, so a price every shop asks is set once, on the item.
+## `buy_price`, so a price every shop asks is set once, on the item. No price
+## may be below the item's `sell_price`, or buying and selling makes money.
 @export var stock: Dictionary = {}
 ## What it sells besides in a season, as season name (`GameCalendar`) -> item
 ## id -> price (0, the item's own); a seasonal price takes the place of the
@@ -125,9 +126,11 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	return problems
 
 ## Problems of `prices` (item id -> price) of the stock: an id that is no item
-## of `registry`, a price that is not a whole number of 0 or more, or a 0 for an
-## item with no `buy_price` of its own. `verb` says what the shop does with the
-## items ("stocks in Spring"), `noun` what the prices are ("Spring price").
+## of `registry`, a price that is not a whole number of 0 or more, a 0 for an
+## item with no `buy_price` of its own, or a price below what the item sells
+## for, which a player buys and sells again for endless money. `verb` says what
+## the shop does with the items ("stocks in Spring"), `noun` what the prices
+## are ("Spring price").
 func _find_price_problems(prices: Dictionary, registry: ContentRegistry, verb: String, noun: String) -> PackedStringArray:
 	var problems := PackedStringArray()
 	for raw_id: Variant in prices:
@@ -139,4 +142,8 @@ func _find_price_problems(prices: Dictionary, registry: ContentRegistry, verb: S
 			problems.append("has invalid %s for '%s'" % [noun, raw_id])
 		elif int(price) == 0 and item.buy_price <= 0:
 			problems.append("leaves the %s of '%s' to the item, which has no buy_price" % [noun, raw_id])
+		else:
+			var cost: int = int(price) if int(price) > 0 else item.buy_price
+			if cost < item.sell_price:
+				problems.append("%s '%s' for %dg, below its sell_price of %dg: buying and selling it makes money" % [verb, raw_id, cost, item.sell_price])
 	return problems
