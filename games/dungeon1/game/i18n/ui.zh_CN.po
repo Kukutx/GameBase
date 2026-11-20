@@ -344,3 +344,36 @@ msgstr "余烬活力"
 
 msgid "25 more health for the run, and it comes filled."
 msgstr "本次冒险生命上限 +25，并立即补满这部分。"
+
+msgid "Make a Pact?"
+msgstr "立下誓约？"
+
+msgid "No Pact"
+msgstr "不立誓约"
+
+msgid "The depths as they are"
+msgstr "深渊一如往常"
+
+msgid "Pact of Ash"
+msgstr "灰烬之约"
+
+msgid "Foes hit a third harder, and drop half again as much."
+msgstr "敌人的攻击强三成，掉落也多五成。"
+
+msgid "Pact of Glass"
+msgstr "琉璃之约"
+
+msgid "Your blade hits half again as hard, with 40 less health for the run."
+msgstr "本次冒险攻击伤害提高五成，但生命上限 -40。"
+
+msgid "Pact of Greed"
+msgstr "贪婪之约"
+
+msgid "Foes drop twice as much, and your blade hits a quarter softer."
+msgstr "敌人掉落翻倍，但你的攻击伤害降低两成五。"
+
+msgid "Unbroken Glass"
+msgstr "琉璃未碎"
+
+msgid "Reach depth 10 under the Pact of Glass."
+msgstr "在琉璃之约下到达第 10 层。"

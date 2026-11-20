@@ -75,6 +75,24 @@ func test_creature_takes_damage_drops_loot_and_reports_its_defeat() -> void:
 	assert_signal_emit_count(CombatEvents, "enemy_defeated", 1)
 	assert_signal_emitted_with_parameters(CombatEvents, "enemy_defeated", [&"fixture_slime", 20, Vector2(10000, 10000)])
 
+func test_the_loot_stat_changes_what_a_creature_drops() -> void:
+	var slime := HOSTILE_CREATURE_SCENE.instantiate() as HostileCreature
+	slime.data = EnemyData.find(&"fixture_slime")
+	slime.persistent_id = &""
+	add_child_autofree(slime)
+	assert_eq(slime.get_drop_quantity(), 1)
+	var loot := _Loot.new()
+	GameStats.register_source(loot)
+	loot.multiplier = 3.0
+	assert_eq(slime.get_drop_quantity(), 3)
+	loot.multiplier = 1.5
+	assert_between(slime.get_drop_quantity(), 1, 2, "half a gel more, by chance")
+	loot.multiplier = 0.0001
+	assert_eq(slime.get_drop_quantity(), 0, "next to nothing drops nothing")
+	assert_true(slime.take_damage(30))
+	assert_eq(InventoryState.get_quantity(&"fixture_gel"), 0)
+	GameStats.unregister_source(loot)
+
 func test_a_creature_chases_and_strikes_the_player_s_hurtbox() -> void:
 	GameSettings.reduced_motion = true
 	var player := CharacterBody2D.new()
@@ -208,3 +226,13 @@ func _fixture_content() -> Array:
 	slime.respawn_days = 1
 	slime.combat_xp = 20
 	return [gel, slime, ContentFixture.vital(&"fixture_hp")]
+
+class _Loot:
+	extends RefCounted
+	var multiplier := 1.0
+
+	func get_stat_multiplier(stat: StringName) -> float:
+		return multiplier if stat == PlayerHurtbox.LOOT_STAT else 1.0
+
+	func get_stat_bonus(_stat: StringName) -> float:
+		return 0.0

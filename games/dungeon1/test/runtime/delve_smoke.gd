@@ -3,11 +3,11 @@ extends "res://tiamat/core/test/runtime_smoke.gd"
 ## Plays Ember Depths' loop through its scenes: a new game at camp with its
 ## first hint, a word with the Old Delver and a look at the Ember Forge, down
 ## into the depths and one depth further, each floor cleared with the player's
-## own swings, the run's report back at camp, saving refused in the depths and
-## kept at camp, the save loaded back, and a defeat that returns the player to
-## camp a quarter poorer. As a main
-## loop it compiles before the autoloads exist, so it names no class of the
-## game or the foundation and reaches them through the tree.
+## own swings, the run's report back at camp, a pact made on the way down,
+## saving refused in the depths and kept at camp, the save loaded back, and a
+## defeat that returns the player to camp a quarter poorer. As a main loop it
+## compiles before the autoloads exist, so it names no class of the game or
+## the foundation and reaches them through the tree.
 
 const CAMP_SCENE := "res://game/world/camp.tscn"
 const DEPTHS_SCENE := "res://game/world/depths.tscn"
@@ -65,6 +65,7 @@ func _run() -> void:
 	_check(details.has("Deepest 2"), "The slot does not show the deepest depth: %s" % [details])
 	wallet.set_money(1)
 	_use(current_scene.get_node("DepthEntrance/Interactable"))
+	_make_pact(&"no_pact")
 	await _arrive(DEPTHS_SCENE)
 	var loaded: bool = await save_manager.load_game()
 	_check(loaded, "Load failed")
@@ -73,8 +74,10 @@ func _run() -> void:
 	_check(int(depth_run.get_run()) == 1 and int(depth_run.get_deepest()) == 2, "Loading did not restore the run")
 
 	_use(current_scene.get_node("DepthEntrance/Interactable"))
+	_make_pact(&"pact_of_ash")
 	await _arrive(DEPTHS_SCENE)
 	_check(int(depth_run.get_run()) == 2 and int(depth_run.get_depth()) == 1, "A new run did not start at the first depth")
+	_check(int(root.get_node("RunState").call("get_boon_stacks", &"pact_of_ash")) == 1, "The run did not start under the Pact of Ash")
 	vitals.drain(&"hp", int(vitals.get_value(&"hp")))
 	var money_lost: int = await root.get_node("CombatEvents").player_defeated
 	await _arrive(CAMP_SCENE)
@@ -91,9 +94,18 @@ func _run() -> void:
 	if start == null:
 		return
 	start.call("choose", &"5")
+	_make_pact(&"no_pact")
 	await _arrive(DEPTHS_SCENE)
 	_check(int(depth_run.get_depth()) == 5 and int(depth_run.get_run()) == 3, "The shortcut did not start a run at the fifth depth")
 	_check((current_scene.call("get_enemies") as Array).size() == 4, "The fifth depth did not spawn four enemies")
+
+# Picks `pact` at the way down, which asks after the first run whether the
+# next starts under a pact.
+func _make_pact(pact: StringName) -> void:
+	var menu: Node = current_scene.get_node("DepthEntrance").get_node_or_null("ChoiceMenu")
+	_check(menu != null and bool(menu.call("is_open")) and (menu.call("get_choice_ids") as Array).has(pact), "The way down did not offer %s" % pact)
+	if menu != null:
+		menu.call("choose", pact)
 
 # Reads the report of the run that ended once camp shows it: its title is
 # `title` and its lines begin with `lines`.

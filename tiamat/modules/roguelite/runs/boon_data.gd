@@ -7,7 +7,9 @@ extends ContentEntry
 ## on it changes stats (`multipliers` and `bonuses`, of stats an installed
 ## module or the game reads, `GameStats.register_stat()`), once more for each
 ## time the run took it, and it acts once each time it is taken (`actions`:
-## a heal, coins).
+## a heal, coins). Each boon belongs to a pool (`pool`): an altar offers one
+## pool's, so a game keeps apart the boons of different altars, or the pacts a
+## run may start under (a burden with a reward, taken as it starts).
 
 const KIND := &"boon"
 ## A boon a run may take this many times is taken as often as it is offered.
@@ -17,6 +19,9 @@ const UNLIMITED := 99
 @export_multiline var description := ""
 ## When a run may take it: a `GameRules` query; empty, always.
 @export var condition := ""
+## The pool it is offered from (`RunService.offer_boons()`, `BoonAltar.pool`);
+## empty, the common one.
+@export var pool: StringName
 ## How often it is offered against the others: twice the weight, twice as often.
 @export_range(1, 100, 1) var weight := 10
 ## How many times one run may take it; `UNLIMITED`, as often as offered.
@@ -36,6 +41,12 @@ static func find(entry_id: StringName) -> BoonData:
 static func find_all() -> Array[BoonData]:
 	var result: Array[BoonData] = []
 	result.assign(ContentRegistry.active.get_entries(KIND))
+	return result
+
+## The running game's boons of `pool_id`, sorted by id.
+static func find_pool(pool_id: StringName) -> Array[BoonData]:
+	var result: Array[BoonData] = []
+	result.assign(find_all().filter(func(boon: BoonData) -> bool: return boon.pool == pool_id))
 	return result
 
 ## How many times the run going on took it.

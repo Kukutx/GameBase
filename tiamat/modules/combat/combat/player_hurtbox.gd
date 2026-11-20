@@ -28,6 +28,9 @@ const INCOMING_DAMAGE_STAT := &"incoming_damage"
 ## The stat a game's health vital may follow (`VitalData.maximum_stat`): a
 ## bonus of 20 is 20 more health at most.
 const MAX_HEALTH_STAT := &"max_health"
+## The stat what a defeated enemy drops is changed by (`GameStats`): 1.5 drops
+## half again as much, the fraction rounded by chance.
+const LOOT_STAT := &"loot_quantity"
 
 func _init() -> void:
 	faction = FactionData.PLAYER

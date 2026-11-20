@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BoonData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/boon_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"pact_of_ash"
+display_name = "Pact of Ash"
+description = "Foes hit a third harder, and drop half again as much."
+pool = &"pact"
+condition = "RUNS_AT_LEAST 1"
+multipliers = Dictionary[StringName, float]({&"incoming_damage": 1.33, &"loot_quantity": 1.5})
