@@ -4,7 +4,10 @@ extends Node2D
 ## The root of a mine location's scene. Floor 1 is the scene as built: the
 ## MiningNode and HostileCreature children placed in it. Deeper floors replace
 ## them with rocks and enemies generated from `MineState.floor_table`. Every
-## floor is the same location; its ladder and elevator reload it.
+## floor is the same location; its ladder and elevator reload it. A floor's
+## guardians (`EnemyTier.guardian_every`) are named on arrival and bar the
+## ladder like its other enemies. The HUD's place line tells the floor
+## (`get_place_detail()`).
 
 const MINING_SCENE := preload("res://tiamat/modules/lifesim/mining/mining_node.tscn")
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
@@ -23,6 +26,7 @@ var _placed_rocks: Array[MiningNode] = []
 var _placed_enemies: Array[HostileCreature] = []
 var _generated_rocks: Array[MiningNode] = []
 var _generated_enemies: Array[HostileCreature] = []
+var _generated_guardians: Array[HostileCreature] = []
 
 func _enter_tree() -> void:
 	# Ladder and elevator reloads arrive at floor_spawn_id and keep the floor.
@@ -66,11 +70,27 @@ func travel_to_floor(floor: int) -> bool:
 	MineState.set_floor(floor)
 	return true
 
+## What the HUD's place line (`PlaceLine`) adds where the player stands: the
+## floor.
+func get_place_detail() -> String:
+	return tr("Floor %d") % current_floor
+
 func get_generated_rocks() -> Array[MiningNode]:
 	return _generated_rocks.duplicate()
 
 func get_generated_enemies() -> Array[HostileCreature]:
 	return _generated_enemies.duplicate()
+
+## The floor's guardians, also among `get_generated_enemies()`.
+func get_generated_guardians() -> Array[HostileCreature]:
+	return _generated_guardians.duplicate()
+
+## The first of the floor's guardians still standing, or null.
+func get_standing_guardian() -> HostileCreature:
+	for guardian: HostileCreature in _generated_guardians:
+		if is_instance_valid(guardian) and not guardian.is_defeated:
+			return guardian
+	return null
 
 func is_floor_cleared() -> bool:
 	var rocks := _get_floor_rocks()
@@ -88,6 +108,7 @@ func is_floor_cleared() -> bool:
 func _spawn_dynamic_floor(floor: int) -> void:
 	_generated_rocks.clear()
 	_generated_enemies.clear()
+	_generated_guardians.clear()
 	var layout := MineState.generate_floor_layout(floor)
 	var rock_index := 0
 	for raw: Variant in layout.get("rocks", []):
@@ -115,14 +136,23 @@ func _spawn_dynamic_floor(floor: int) -> void:
 		var enemy_data := EnemyData.find(StringName(String(entry.get("kind", ""))))
 		if enemy_data == null:
 			continue
+		var guardian := bool(entry.get("guardian", false))
 		var enemy := ENEMY_SCENE.instantiate() as HostileCreature
-		enemy_index += 1
-		enemy.name = "GeneratedEnemy%02d" % enemy_index
+		if guardian:
+			enemy.name = "GeneratedGuardian%02d" % (_generated_guardians.size() + 1)
+		else:
+			enemy_index += 1
+			enemy.name = "GeneratedEnemy%02d" % enemy_index
 		enemy.data = enemy_data
 		enemy.persistent_id = StringName(String(entry.get("persistent_id", "")))
 		add_child(enemy)
 		enemy.position = entry.get("position", Vector2.ZERO)
 		_generated_enemies.append(enemy)
+		if guardian:
+			_generated_guardians.append(enemy)
+	var standing := get_standing_guardian()
+	if standing != null:
+		GameEvents.toastf("%s guards this floor", [standing.data.display_name])
 	_refresh_ladder()
 
 func _get_floor_rocks() -> Array[MiningNode]:
@@ -147,7 +177,6 @@ func _refresh_ladder() -> void:
 		elevator.refresh()
 
 func _on_locale_changed(_locale: String) -> void:
-	_refresh_label()
 	_refresh_ladder()
 
 func _refresh_label() -> void:

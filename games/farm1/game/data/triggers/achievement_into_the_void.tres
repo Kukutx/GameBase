@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_trigger"]
+
+[resource]
+script = ExtResource("1_trigger")
+id = &"achievement_into_the_void"
+event = &"CombatEvents.enemy_defeated"
+condition = "EVENT_ARG enemy_id void_monarch"
+actions = PackedStringArray("UNLOCK_ACHIEVEMENT into_the_void")

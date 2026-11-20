@@ -34,7 +34,7 @@ New content goes into the content pack `game/data/content.tres` and is read thro
 - Three connected settlements (Starter Town, Riverside Town, Harbor Town), the player home and the Old Mine
 - Farming with seasonal crops, watering, harvests and sprinkler automation
 - Fishing with location, season, time and weather pools and the reel minigame
-- A 120-floor Old Mine with persistent depth, an elevator that stops at floor 1 and every fifth floor reached, the player picking the floor, ore tiers, escalating enemies, melee combat and renewable resource nodes
+- A 120-floor Old Mine with persistent depth, an elevator that stops at floor 1 and every fifth floor reached, the player picking the floor, ore tiers, escalating enemies (slimes recoloured per tier), guardians that bar the ladder on every 25th floor (a Slime King on 25 and 50, a Void Monarch from 75; weekly respawn, ore drops and an achievement each), melee combat and renewable resource nodes
 - Farm animals with housing, feeding, happiness, naming, selling, premium products and 4→8→12 slot coop and barn expansions
 - Inventory, hotbar, shops, crafting, cooking, buffs, processing and copper→iron→gold→iridium tool and weapon upgrades
 - Placeable storage, machines and persistent building placement; a shipping bin settled overnight

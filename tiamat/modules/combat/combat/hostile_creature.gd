@@ -230,6 +230,8 @@ func _apply_data() -> void:
 		var texture := load(data.sprite_path) as Texture2D
 		if texture != null:
 			visual.texture = texture
+			# Its own colours, so the hit flash (`Hurtbox`) still tints it all.
+			visual.self_modulate = data.sprite_tint
 			visual.region_enabled = true
 			visual.region_filter_clip_enabled = true
 			visual.visible = true

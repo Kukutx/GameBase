@@ -15,6 +15,11 @@ extends Resource
 func get_enemy_id(floor: int) -> StringName:
 	return EnemyTier.deepest(enemy_tiers, floor)
 
+## The enemy ids of the guardian tiers (`EnemyTier.guardian_every`) that guard
+## `floor`; empty on an ordinary floor.
+func get_guardian_ids(floor: int) -> Array[StringName]:
+	return EnemyTier.guardians(enemy_tiers, floor)
+
 ## Every id that `registry` does not know, as readable problems.
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
