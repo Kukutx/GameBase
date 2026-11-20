@@ -546,3 +546,6 @@ msgstr "解锁成就「%s」"
 
 msgid "When it is %s"
 msgstr "天气为%s时"
+
+msgid "Move speed"
+msgstr "移动速度"

@@ -15,8 +15,11 @@ func install() -> void:
 	ContentDB.register_kind(EnemyData.KIND, EnemyData)
 	ContentDB.register_settings(CombatSettings)
 	ItemData.register_tool_action(MeleeAttack.TOOL_ACTION)
-	for stat: StringName in [&"attack_damage", &"attack_cost", PlayerHurtbox.INCOMING_DAMAGE_STAT, PlayerHurtbox.MAX_HEALTH_STAT, PlayerHurtbox.LOOT_STAT]:
-		GameStats.register_stat(stat)
+	GameStats.register_stat(&"attack_damage", "Attack")
+	GameStats.register_stat(&"attack_cost", "Attack energy cost")
+	GameStats.register_stat(PlayerHurtbox.INCOMING_DAMAGE_STAT, "Damage Taken")
+	GameStats.register_stat(PlayerHurtbox.MAX_HEALTH_STAT, "Max health")
+	GameStats.register_stat(PlayerHurtbox.LOOT_STAT, "Loot")
 	GameSession.register_activity_end(FightState.end_fight)
 
 func get_options() -> Array[GameOption]:

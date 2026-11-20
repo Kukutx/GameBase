@@ -69,7 +69,7 @@ func get_perk_summary(skill: StringName) -> String:
 		return ""
 	var perk := data.get_perk_at(get_level(skill))
 	if perk != null:
-		return tr(perk.description)
+		return perk.describe()
 	var next := data.get_next_perk(get_level(skill))
 	return tr("Next passive at Lv%d") % next.level if next != null else ""
 

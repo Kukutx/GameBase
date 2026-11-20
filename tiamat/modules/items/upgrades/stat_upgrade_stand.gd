@@ -62,13 +62,17 @@ func browse() -> int:
 	return bought
 
 ## The choice a list offers of `upgrade`: its name and level, and under it
-## what it does and what its next level costs, or why the player cannot buy
-## it, which locks it.
+## what it does, what each level changes (`GameStats.describe_changes()`:
+## "Each level: Max health +20") and what its next level costs, or why the
+## player cannot buy it, which locks it.
 static func choice_of(upgrade: StatUpgradeData) -> ChoiceMenu.Choice:
 	var text := TranslationServer.translate("%s (level %d of %d)") % [upgrade.get_display_name(), upgrade.get_level(), upgrade.max_level]
 	var lines := PackedStringArray()
 	if not upgrade.description.is_empty():
 		lines.append(TranslationServer.translate(upgrade.description))
+	var changes := ", ".join(GameStats.describe_changes(upgrade.multipliers, upgrade.bonuses))
+	if not changes.is_empty():
+		lines.append(TranslationServer.translate("Each level: %s") % changes if upgrade.max_level > 1 else changes)
 	var problem := upgrade.get_buy_problem()
 	if not problem.is_empty():
 		lines.append(problem)

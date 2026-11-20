@@ -62,13 +62,17 @@ func choose() -> StringName:
 	boon_taken.emit(picked)
 	return picked
 
-## The choice a list offers of `boon`: its name, and under it its description
-## and, once the run took it, how many times of how many it may (only how many
-## for one it may take `BoonData.UNLIMITED` times).
+## The choice a list offers of `boon`: its name, and under it its
+## description, what it changes (`GameStats.describe_changes()`: "Attack
+## +25%, Max health -40") and, once the run took it, how many times of how
+## many it may (only how many for one it may take `BoonData.UNLIMITED` times).
 static func choice_of(boon: BoonData) -> ChoiceMenu.Choice:
 	var lines := PackedStringArray()
 	if not boon.description.is_empty():
 		lines.append(TranslationServer.translate(boon.description))
+	var changes := GameStats.describe_changes(boon.multipliers, boon.bonuses)
+	if not changes.is_empty():
+		lines.append(", ".join(changes))
 	var stacks := boon.get_stacks()
 	if stacks > 0 and boon.max_stacks >= BoonData.UNLIMITED:
 		lines.append(TranslationServer.translate("Taken %d") % stacks)

@@ -189,3 +189,6 @@ msgstr "这里没有可强化的东西"
 
 msgid "Upgrade"
 msgstr "强化"
+
+msgid "Each level: %s"
+msgstr "每级：%s"

@@ -45,3 +45,15 @@ msgstr "弱"
 
 msgid "Strong"
 msgstr "强"
+
+msgid "Attack"
+msgstr "攻击"
+
+msgid "Attack energy cost"
+msgstr "攻击体力消耗"
+
+msgid "Max health"
+msgstr "生命上限"
+
+msgid "Loot"
+msgstr "掉落"

@@ -602,3 +602,24 @@ msgstr "领取%s"
 
 msgid "During %s"
 msgstr "%s期间"
+
+msgid "Tool energy cost"
+msgstr "工具体力消耗"
+
+msgid "Farming energy cost"
+msgstr "耕作体力消耗"
+
+msgid "Mining energy cost"
+msgstr "采矿体力消耗"
+
+msgid "Bite wait"
+msgstr "咬钩等待"
+
+msgid "Reel window"
+msgstr "收线窗口"
+
+msgid "Forage found"
+msgstr "采集数量"
+
+msgid "Max energy"
+msgstr "体力上限"
