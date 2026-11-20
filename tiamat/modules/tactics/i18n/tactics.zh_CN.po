@@ -99,3 +99,12 @@ msgstr "首领：倒下时其部众溃逃"
 
 msgid "%s falls, and their side flees!"
 msgstr "%s 倒下了，其部众溃逃！"
+
+msgid "Goal: a foe that ends a turn here wins"
+msgstr "目标：敌方在此结束回合即获胜"
+
+msgid "Goal: end a turn here to win"
+msgstr "目标：在此结束回合即可获胜"
+
+msgid "%s takes the goal!"
+msgstr "%s 夺下了目标！"

@@ -22,7 +22,9 @@ extends RefCounted
 ## side with a leader (`GridUnit.leader`) flees the battle once the leader
 ## falls (`unit_fled`). The battle
 ## ends when no two living units are hostile (`FactionData.are_hostile()`), won
-## when the player's side is left.
+## when the player's side is left, or once a unit of the side that takes the
+## goal cells (`goal_cells`, `takes_goals()`) ends its turn on one, won when
+## that side is the player's (`goal_taken`).
 ##
 ## It is plain data, with no node or frame of its own: a view
 ## (`GridBattleGame`) lets time pass with `advance()`, gives the player's
@@ -42,6 +44,8 @@ signal unit_defeated(unit: GridUnit)
 ## `unit` left the battle when the leader of its side fell.
 signal unit_fled(unit: GridUnit)
 signal turn_ended(unit: GridUnit)
+## `unit` ended its turn on a goal cell, winning the battle for its side.
+signal goal_taken(unit: GridUnit)
 signal ended(won: bool)
 
 ## Where a gauge is full.
@@ -61,6 +65,10 @@ var ai := GridBattleAi.new()
 ## The health the units hostile to the player's side start with, as a share of
 ## their kind's (`BattleUnitData.max_health`): the player's foe strength.
 var foe_health_scale := 1.0
+## The cells a side wins the battle by taking (`BattleMapData.goal_cells`),
+## and the faction of that side (at first the player's).
+var goal_cells: Dictionary[Vector2i, bool] = {}
+var goal_faction: StringName
 # The player's unit taking its turn, the units of theirs whose gauges filled
 # while it does, and the unit the AI moves now.
 var _turn: GridUnit
@@ -75,6 +83,7 @@ var _won := false
 func _init(battle_grid: BattleGrid, side: StringName = FactionData.PLAYER) -> void:
 	grid = battle_grid
 	player_faction = side
+	goal_faction = side
 
 ## The battle `map` sets up, with time flowing as `settings` say and the
 ## player's foes starting with `foe_health` of their kinds' health: each unit
@@ -85,6 +94,9 @@ static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_h
 	var battle := AtbBattle.new(grid, map.player_faction_id)
 	battle.time_flows_while_choosing = settings != null and settings.time_flows_while_choosing
 	battle.foe_health_scale = foe_health
+	for cell: Vector2i in map.goal_cells:
+		battle.goal_cells[cell] = true
+	battle.goal_faction = map.get_goal_faction()
 	for placement: BattlePlacement in map.placements:
 		var data := BattleUnitData.find(placement.unit_id) if placement != null and placement.joins() else null
 		if data != null:
@@ -142,6 +154,11 @@ func get_turn_order(count: int) -> Array[GridUnit]:
 ## Whether `unit` fights on the player's side.
 func is_on_player_side(unit: GridUnit) -> bool:
 	return not FactionData.are_hostile(unit.faction, player_faction)
+
+## Whether `unit` fights on the side that takes the goal cells, which the
+## battle has.
+func takes_goals(unit: GridUnit) -> bool:
+	return not goal_cells.is_empty() and not FactionData.are_hostile(unit.faction, goal_faction)
 
 ## The living unit in `cell`, or null.
 func get_unit_at(cell: Vector2i) -> GridUnit:
@@ -427,6 +444,9 @@ func _end_when_done(unit: GridUnit) -> void:
 func _finish_turn(unit: GridUnit) -> void:
 	unit.gauge = (0.0 if unit.has_moved else SKIP_BONUS) + (0.0 if unit.has_acted else SKIP_BONUS)
 	turn_ended.emit(unit)
+	if goal_cells.has(unit.cell) and takes_goals(unit) and unit.is_alive():
+		goal_taken.emit(unit)
+		_end(is_on_player_side(unit))
 
 func _defeat(unit: GridUnit) -> void:
 	unit.gauge = 0.0

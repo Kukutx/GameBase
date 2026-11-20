@@ -16,8 +16,9 @@ extends MiniGame
 ## (ready in 2)"). While the player picks where
 ## a unit moves, the board marks the cells the foes could strike next
 ## (`AtbBattle.get_danger()`), and the side says so of the cell picked, and
-## of a cell that gives cover how much less damage a unit there takes, and of
-## rough ground how many steps it takes to enter; while
+## of a cell that gives cover how much less damage a unit there takes, of
+## rough ground how many steps it takes to enter, and of a goal cell which
+## side wins by ending a turn there (`AtbBattle.goal_cells`); while
 ## it picks what an action aims at, the side tells what it would do to each
 ## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls",
 ## "Brute takes 2, turn delayed"), and of a leader that its side flees
@@ -77,6 +78,8 @@ var _info: Label
 var _commands: VBoxContainer
 var _hint: Label
 var _message: Label
+# What took a goal, told with the outcome.
+var _goal_text := ""
 
 func setup(settings: Dictionary) -> void:
 	map = BattleMapData.find(StringName(str(settings.get("map", ""))))
@@ -97,6 +100,7 @@ func setup(settings: Dictionary) -> void:
 	battle.unit_defeated.connect(_on_unit_defeated)
 	battle.unit_fled.connect(_on_unit_fled)
 	battle.turn_ended.connect(_on_turn_ended)
+	battle.goal_taken.connect(_on_goal_taken)
 	battle.ended.connect(_on_ended)
 	_board.show_battle(battle)
 	_title.text = tr(map.display_name)
@@ -318,6 +322,8 @@ func _show_info() -> void:
 		_info.text += "\n" + tr("Cover: %d%% less damage") % roundi(battle.grid.cover_reduction * 100.0)
 	if _board.show_cursor and battle.grid.is_rough(_board.cursor):
 		_info.text += "\n" + tr("Rough ground: %d steps to enter") % battle.grid.rough_cost
+	if _board.show_cursor and battle.goal_cells.has(_board.cursor):
+		_info.text += "\n" + (tr("Goal: a foe that ends a turn here wins") if FactionData.are_hostile(battle.goal_faction, battle.player_faction) else tr("Goal: end a turn here to win"))
 	if _mode == Mode.PICK_MOVE and _board.danger.has(_board.cursor):
 		_info.text += "\n" + tr("Foes can strike here.")
 	if _mode == Mode.PICK_TARGET and _board.choices.has(_board.cursor):
@@ -370,10 +376,13 @@ func _on_turn_ended(unit: GridUnit) -> void:
 	if unit.player_controlled and battle.get_turn_unit() == null:
 		_set_mode(Mode.WATCH)
 
+func _on_goal_taken(unit: GridUnit) -> void:
+	_goal_text = tr("%s takes the goal!") % tr(unit.data.display_name)
+
 func _on_ended(won: bool) -> void:
 	_end_left = END_SECONDS
 	_set_mode(Mode.WATCH)
-	_message.text = get_outcome_text(won)
+	_message.text = get_outcome_text(won) if _goal_text.is_empty() else "%s %s" % [_goal_text, get_outcome_text(won)]
 	TacticsEvents.battle_ended.emit(map.id, won)
 
 func _build() -> void:

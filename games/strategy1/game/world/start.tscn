@@ -79,7 +79,7 @@ text = "To the lookout"
 
 [node name="WarTable" parent="." instance=ExtResource("5_station")]
 position = Vector2(110, -40)
-choices = Array[StringName]([&"ford_battle", &"mill_battle"])
+choices = Array[StringName]([&"ford_battle", &"mill_battle", &"tower_battle"])
 title = "Plan the Battle"
 
 [node name="Interactable" parent="WarTable" index="0"]

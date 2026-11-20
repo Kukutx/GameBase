@@ -3,8 +3,9 @@ extends GutTest
 ## How a unit the player does not command takes its turn (`GridBattleAi`): a
 ## defeat before more damage, a move only to bring a target in reach or to
 ## strike as hard from where fewer foes reach it, an action that recharges
-## only when ready, a leader before the rest, a heal for its hurt side, and a
-## walk toward the nearest foe when nothing is in reach.
+## only when ready, a leader before the rest, a heal for its hurt side, a
+## goal its side takes when it can reach one, and a walk toward the nearest
+## goal, else the nearest foe, when nothing is in reach.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -107,6 +108,29 @@ func test_with_nothing_in_reach_it_walks_toward_the_nearest_foe_or_stays_when_no
 	_add(walled, &"fixture_knight", FactionData.PLAYER, Vector2i(4, 1))
 	TacticsFixture.give_turn(walled, stuck)
 	assert_eq(stuck.cell, Vector2i(0, 1))
+
+func test_it_takes_a_goal_in_reach_striking_from_there_and_else_walks_toward_one() -> void:
+	var battle := TacticsFixture.battle()
+	battle.goal_cells[Vector2i(3, 2)] = true
+	battle.goal_faction = FactionData.MONSTERS
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(0, 2))
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(3, 3))
+	var archer := _add(battle, &"fixture_archer", FactionData.PLAYER, Vector2i(0, 3))
+	archer.health.set_current(2)
+	assert_eq(battle.ai.goal_in_reach(battle, raider), [Vector2i(3, 2)] as Array[Vector2i])
+	TacticsFixture.give_turn(battle, raider)
+	assert_eq(raider.cell, Vector2i(3, 2), "the goal before the archer it could defeat")
+	assert_eq(knight.health.current, 16, "striking the knight beside it from there")
+	assert_true(battle.is_over() and not battle.is_won())
+
+	var far := TacticsFixture.battle()
+	far.goal_cells[Vector2i(7, 0)] = true
+	far.goal_faction = FactionData.MONSTERS
+	var runner := _add(far, &"fixture_raider", FactionData.MONSTERS, Vector2i(2, 0))
+	_add(far, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 5))
+	TacticsFixture.give_turn(far, runner)
+	assert_eq(runner.cell, Vector2i(5, 0), "three cells toward the goal, not the knight")
+	assert_false(far.is_over())
 
 func _add(battle: AtbBattle, unit_id: StringName, faction: StringName, cell: Vector2i) -> GridUnit:
 	return battle.add_unit(BattleUnitData.find(unit_id), faction, cell)

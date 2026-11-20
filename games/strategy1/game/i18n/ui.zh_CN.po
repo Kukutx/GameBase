@@ -219,5 +219,17 @@ msgstr "剩余兵力"
 msgid "Master of the Field"
 msgstr "沙场宗师"
 
-msgid "Earn all three stars at each of the four battles."
-msgstr "在全部四场战斗中各拿满三颗星。"
+msgid "Earn all three stars at each of the five battles."
+msgstr "在全部五场战斗中各拿满三颗星。"
+
+msgid "Watchtower"
+msgstr "瞭望塔"
+
+msgid "Raiders storm the watchtower to light its beacon and call their band. Hold its two doors: a raider who ends a turn on the beacon lights it, and the battle is lost. Storm the Raider Camp first, and an archer from there joins you."
+msgstr "劫掠者猛攻瞭望塔，想点燃烽火召来同伙。守住塔的两道门：只要有劫掠者在烽火上结束回合，烽火便会燃起，此战即告失败。先攻下劫掠者营地，那里的一名弓手会来助战。"
+
+msgid "Beacon Kept"
+msgstr "烽火未燃"
+
+msgid "Win the battle at the Watchtower."
+msgstr "赢下瞭望塔之战。"

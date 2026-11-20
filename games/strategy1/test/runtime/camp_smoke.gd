@@ -41,7 +41,7 @@ func _run() -> void:
 	if picker == null:
 		return
 	var buttons: Array = picker.call("get_buttons")
-	_check(buttons.size() == 2 and not bool(buttons[0].get("disabled")) and bool(buttons[1].get("disabled")), "The war table does not offer the ford with the mill locked until the ford is won")
+	_check(buttons.size() == 3 and not bool(buttons[0].get("disabled")) and bool(buttons[1].get("disabled")) and bool(buttons[2].get("disabled")), "The war table does not offer the ford with the mill and the watchtower locked until the ford is won")
 	buttons[0].emit_signal("pressed")
 	await process_frame
 	_check(bool(host.is_running()) and host.get_active_id() == &"ford_battle", "The war table did not open the battle at the ford")
@@ -62,6 +62,18 @@ func _run() -> void:
 	await process_frame
 	battles = root.find_children("*", "GridBattleGame", true, false)
 	_check(host.get_active_id() == &"mill_battle" and battles.size() == 1 and int(battles[0].get("battle").get("units").size()) == 12, "The war table did not open the battle at the mill with its twelve units")
+	host.cancel()
+	await process_frame
+	# Once the mill is taken, the war table opens the watchtower.
+	world_state.add_int(&"minigame:mill_battle:wins", 1)
+	_use(current_scene.get_node("WarTable/Interactable"))
+	await process_frame
+	buttons = picker.call("get_buttons")
+	_check(not bool(buttons[2].get("disabled")), "Taking the mill did not open the battle at the watchtower")
+	buttons[2].emit_signal("pressed")
+	await process_frame
+	battles = root.find_children("*", "GridBattleGame", true, false)
+	_check(host.get_active_id() == &"tower_battle" and battles.size() == 1 and int(battles[0].get("battle").get("units").size()) == 11, "The war table did not open the battle at the watchtower with its eleven units")
 	host.cancel()
 	await process_frame
 

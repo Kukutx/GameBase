@@ -4,9 +4,10 @@ extends ContentEntry
 ## A grid battle a game sets up: the size of its grid, the cells no unit
 ## stands on or walks through (water, walls), the cells that give cover
 ## (woods, ruins: a unit there takes `cover_reduction` less damage), the rough
-## ground (shallows, mud: entering it takes `rough_cost` steps), the side the
-## player commands and the units each side starts with. The tactics module's minigame plays it
-## (`GridBattleGame`, setting `map`).
+## ground (shallows, mud: entering it takes `rough_cost` steps), the cells a
+## side wins by taking (a beacon, a banner: `goal_cells`), the side the
+## player commands and the units each side starts with. The tactics module's
+## minigame plays it (`GridBattleGame`, setting `map`).
 
 const KIND := &"battle_map"
 ## The most cells a side of the grid has.
@@ -23,6 +24,13 @@ const MAX_SIDE := 32
 @export var rough_cells: Array[Vector2i] = []
 ## The steps entering rough ground takes.
 @export_range(2, 4, 1) var rough_cost := 2
+## The open cells a side wins the battle by taking: a unit of the side of
+## `goal_faction_id` that ends its turn on one wins it for that side, the
+## player's when it is theirs (a banner to seize) and the foes' when it is not
+## (a beacon to keep unlit); empty, the battle ends only when one side is left.
+@export var goal_cells: Array[Vector2i] = []
+## The side that takes the goal cells (`FactionData`); empty, the player's.
+@export var goal_faction_id: StringName
 ## The side the player commands (`FactionData`); its allies fight with it.
 @export var player_faction_id: StringName = FactionData.PLAYER
 @export var placements: Array[BattlePlacement] = []
@@ -42,6 +50,15 @@ static func find_all() -> Array[BattleMapData]:
 func count_player_side() -> int:
 	return placements.filter(func(placement: BattlePlacement) -> bool: return not FactionData.are_hostile(placement.faction_id, player_faction_id)).size()
 
+## The side that takes the goal cells: `goal_faction_id`, else the player's.
+func get_goal_faction() -> StringName:
+	return goal_faction_id if goal_faction_id != &"" else player_faction_id
+
+## Whether `faction` fights on the side that takes the goal cells, which the
+## map has.
+func takes_goals(faction: StringName) -> bool:
+	return not goal_cells.is_empty() and not FactionData.are_hostile(faction, get_goal_faction())
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if display_name.is_empty():
@@ -59,6 +76,9 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	for cell: Vector2i in rough_cells:
 		if not grid.is_open(cell):
 			problems.append("makes cell %s rough, which is blocked or outside its grid" % cell)
+	for cell: Vector2i in goal_cells:
+		if not grid.is_open(cell):
+			problems.append("makes cell %s a goal, which is blocked or outside its grid" % cell)
 	var taken: Dictionary[Vector2i, bool] = {}
 	var led: Dictionary[StringName, bool] = {}
 	var players := 0
@@ -75,6 +95,8 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 			problems.append("places unit '%s' on cell %s, which is blocked or outside its grid" % [placement.unit_id, placement.cell])
 		elif taken.has(placement.cell):
 			problems.append("places two units on cell %s" % placement.cell)
+		elif goal_cells.has(placement.cell) and takes_goals(placement.faction_id):
+			problems.append("places unit '%s' on goal cell %s, which its side takes" % [placement.unit_id, placement.cell])
 		taken[placement.cell] = true
 		if placement.leader:
 			if led.has(placement.faction_id):
