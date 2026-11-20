@@ -68,6 +68,16 @@ func test_a_roll_costs_its_share_of_the_attack_vital() -> void:
 	assert_false(dodge.roll(), "not without enough left")
 	assert_false(player.is_dashing())
 
+func test_the_dodge_cooldown_stat_changes_the_wait_between_rolls() -> void:
+	var player := _add_player()
+	var dodge := player.get_node("DodgeRoll") as DodgeRoll
+	assert_eq(dodge.get_cooldown(), dodge.cooldown_seconds)
+	var quick := _Quick.new()
+	GameStats.register_source(quick)
+	assert_almost_eq(dodge.get_cooldown(), dodge.cooldown_seconds * 0.5, 0.001, "a boon that halves it")
+	assert_eq(GameStats.describe_changes({DodgeRoll.COOLDOWN_STAT: 0.5}, {}), PackedStringArray(["Dodge cooldown -50%"]), "and reads as the player knows it")
+	GameStats.unregister_source(quick)
+
 func _add_player() -> TopDownPlayer:
 	var player := TopDownPlayer.new()
 	var hurtbox := PlayerHurtbox.new()
@@ -78,3 +88,12 @@ func _add_player() -> TopDownPlayer:
 	player.global_position = Vector2(-9000, 9000)
 	add_child_autofree(player)
 	return player
+
+class _Quick:
+	extends RefCounted
+
+	func get_stat_multiplier(stat: StringName) -> float:
+		return 0.5 if stat == DodgeRoll.COOLDOWN_STAT else 1.0
+
+	func get_stat_bonus(_stat: StringName) -> float:
+		return 0.0

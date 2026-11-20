@@ -21,6 +21,7 @@ func install() -> void:
 	GameStats.register_stat(PlayerHurtbox.INCOMING_DAMAGE_STAT, "Damage Taken")
 	GameStats.register_stat(PlayerHurtbox.MAX_HEALTH_STAT, "Max health")
 	GameStats.register_stat(PlayerHurtbox.LOOT_STAT, "Loot")
+	GameStats.register_stat(DodgeRoll.COOLDOWN_STAT, "Dodge cooldown")
 	GameSession.register_activity_end(FightState.end_fight)
 	ItemSources.register(&"enemy_drops", find_item_sources)
 	if not CombatEvents.enemy_defeated.is_connected(Bestiary.record):

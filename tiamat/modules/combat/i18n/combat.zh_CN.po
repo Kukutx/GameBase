@@ -49,6 +49,9 @@ msgstr "强"
 msgid "Attack"
 msgstr "攻击"
 
+msgid "Dodge cooldown"
+msgstr "闪避冷却"
+
 msgid "Attack energy cost"
 msgstr "攻击体力消耗"
 

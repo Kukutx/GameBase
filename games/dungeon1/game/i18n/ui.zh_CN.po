@@ -256,6 +256,12 @@ msgstr "疾足"
 msgid "You move a sixth faster."
 msgstr "移动速度提高六分之一。"
 
+msgid "Ember Step"
+msgstr "余烬步"
+
+msgid "Your dodge is ready again in half the time."
+msgstr "闪避冷却时间减半。"
+
 msgid "Ember Skin"
 msgstr "余烬之肤"
 
