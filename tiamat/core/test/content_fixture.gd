@@ -6,8 +6,9 @@ extends RefCounted
 ## `find()` and `find_all()` read for the rest of the test; when the test ends
 ## and GUT frees it, `ContentDB` is the active registry again. `add_stat()`
 ## lets fixture content change a stat no module registers, `use_calendar()`
-## counts the days by a calendar whatever the game's is, `use_settings()`
-## stands in for its module settings, and
+## counts the days by a calendar whatever the game's is, `use_weather()`
+## rolls weather of the test's own whatever the game's is (a game may have
+## none), `use_settings()` stands in for its module settings, and
 ## `with_definition()` starts a service on a fixture `GameDefinition`.
 ##
 ## GUT runs `after_each()` before it frees the registry, so a test that
@@ -24,6 +25,9 @@ extends RefCounted
 ##     func after_each() -> void:
 ##         ContentRegistry.active = ContentDB
 ##         WorldState.load_save_data(_saved)
+
+## The clear weather of `use_weather()`: a `WeatherData` of `weathers()`.
+const CLEAR_WEATHER := &"fixture_clear"
 
 # The game's definition while `use_calendar()` stands in for it.
 static var _running_definition: GameDefinition
@@ -65,6 +69,42 @@ static func add_stat(test: GutTest, stat: StringName) -> void:
 ## A test may call it again for another calendar.
 static func use_calendar(test: GutTest, calendar: GameCalendar) -> void:
 	_stand_in(test).calendar = calendar
+
+## Makes the running game roll weather of the test's own until the test ends
+## (`WeatherState`): `chances` by season name, each a weather id -> its chance
+## (`{"Spring": {&"fixture_storm": 1.0}}`, `WeatherOdds`), and
+## `CLEAR_WEATHER` on a day they give no other. The days rolled already are
+## rolled again, and once more by the game's odds when the test ends. The
+## test's content holds the `WeatherData` it names (`weathers()`).
+static func use_weather(test: GutTest, chances: Dictionary) -> void:
+	var definition := _stand_in(test)
+	var odds: Array[WeatherOdds] = []
+	for season: String in chances:
+		var season_odds := WeatherOdds.new()
+		season_odds.season = season
+		season_odds.chances.assign(chances[season])
+		odds.append(season_odds)
+	definition.weather_odds = odds
+	definition.clear_weather_id = CLEAR_WEATHER
+	WeatherState.roll_again()
+	var holder := Node.new()
+	test.add_child_autofree(holder)
+	holder.tree_exiting.connect(func() -> void:
+		_restore_definition()
+		WeatherState.roll_again())
+
+## Weather of fixture content (`WeatherData`), named after its ids:
+## `CLEAR_WEATHER` and each of `ids`.
+static func weathers(ids: Array[StringName] = []) -> Array[WeatherData]:
+	var result: Array[WeatherData] = []
+	var all: Array[StringName] = [CLEAR_WEATHER]
+	all.append_array(ids)
+	for id: StringName in all:
+		var weather := WeatherData.new()
+		weather.id = id
+		weather.display_name = String(id).trim_prefix("fixture_").capitalize()
+		result.append(weather)
+	return result
 
 ## A copy of the game's definition that is the running one until the test
 ## ends, for a test to change (`definition(self).location_music_delay = ...`);

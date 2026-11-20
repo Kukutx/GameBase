@@ -133,11 +133,16 @@ func test_high_priority_event_schedule_overrides_normal_schedule() -> void:
 	assert_eq(schedule.get_entry_for_minute(12 * 60, 1), event_entry)
 
 func test_weather_specific_schedule_overrides_normal_route_on_its_weather() -> void:
-	# Two days of the game's year with different weather.
+	# A storm every day of spring and clear weather in summer, whatever
+	# weather the game has.
+	ContentFixture.use(self, ContentFixture.weathers([&"fixture_storm"]))
+	ContentFixture.use_calendar(self, GameCalendar.new())
+	ContentFixture.use_weather(self, {"Spring": {&"fixture_storm": 1.0}})
 	var storm_day := 1
 	var storm := WeatherState.get_weather_id(storm_day)
-	var clear_day := _find_day_without(storm)
-	assert_gt(clear_day, 0)
+	assert_eq(storm, &"fixture_storm")
+	var clear_day := 29
+	assert_eq(WeatherState.get_weather_id(clear_day), ContentFixture.CLEAR_WEATHER)
 
 	var schedule := NpcSchedule.new()
 	add_child_autofree(schedule)
@@ -153,9 +158,3 @@ func test_weather_specific_schedule_overrides_normal_route_on_its_weather() -> v
 
 	assert_eq(schedule.get_entry_for_minute(10 * 60, storm_day), storm_shelter)
 	assert_eq(schedule.get_entry_for_minute(10 * 60, clear_day), normal)
-
-func _find_day_without(weather_id: StringName) -> int:
-	for day in range(1, 366):
-		if WeatherState.get_weather_id(day) != weather_id:
-			return day
-	return -1

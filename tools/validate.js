@@ -7,8 +7,9 @@
 // Repository steps run once: agent rules, layer dependencies, code guardrails
 // (tools/check_code.js), each game's project settings against the manifests,
 // the reference pages (tools/generate_reference.js), tool tests, the engine
-// baseline and its legal bundle, the release packaging self-test, and a game
-// freshly created from the new-game template (the core on its own). Game
+// baseline and its legal bundle, the release packaging self-test, and two
+// games freshly created from the new-game template: one on the core alone and
+// one with every module, which gives the modules nothing of its own. Game
 // steps run for each selected game, all registered games by default: links,
 // version, import, localization, GUT, every runtime script under test/runtime/
 // (the *_soak.gd ones are skipped by --skip-soak) and a boot of the main scene.
@@ -41,7 +42,7 @@ const {
   runGodotStep,
   tempFile,
 } = require("./lib/common");
-const { gameName, gamePath, gameVersion, listGameIds, loadGame, resolveGames, templateGame } = require("./lib/games");
+const { gameName, gamePath, gameVersion, listGameIds, loadGame, readFoundation, resolveGames, templateGame } = require("./lib/games");
 const { projectInSync } = require("./lib/project");
 
 function step(title) {
@@ -104,17 +105,25 @@ async function validateProject(godot, game, { label, skipImport = false, skipSoa
   await runGodotStep(godot, `${label}: main scene boot`, ["--headless", "--path", project, "--quit-after", "120"]);
 }
 
-// Creates a game from the new-game template (the core and no module) outside
-// games/ and runs every game check on it: the core must work on its own, and a
-// new game must pass validation as it is created.
+// Creates two games from the new-game template outside games/ and runs every
+// game check on each: one on the core and no module, and one with every module
+// of tiamat.json and no content, weather or settings of its own. The core must
+// work on its own, every module in any game that links it (its tests assume
+// nothing of a game), and a new game must pass validation as it is created.
 async function validateScaffold(godot) {
-  const out = tempFile("tiamat-new-game");
-  try {
-    const { createGame } = require("./new_game");
-    const game = createGame({ id: "scaffold-check", name: "Tiamat New Game Check", out });
-    await validateGame(godot, game, {});
-  } finally {
-    removeRecursive(out);
+  const { createGame } = require("./new_game");
+  const scaffolds = [
+    { id: "scaffold-check", name: "Tiamat New Game Check", modules: [] },
+    { id: "scaffold-modules", name: "Tiamat Modules Check", modules: Object.keys(readFoundation().modules).sort() },
+  ];
+  for (const scaffold of scaffolds) {
+    const out = tempFile(`tiamat-${scaffold.id}`);
+    try {
+      const game = createGame({ ...scaffold, out });
+      await validateGame(godot, game, {});
+    } finally {
+      removeRecursive(out);
+    }
   }
 }
 
