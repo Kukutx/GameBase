@@ -7,13 +7,22 @@ extends GameModule
 ## and a save slot shows the deepest depth its world reached. Every item the
 ## player gets goes to the hotbar, where it is swung, drunk or sold. The combat
 ## experience and the achievements are data: the triggers in
-## `game/data/triggers/`.
+## `game/data/triggers/`. What the depths' chests hold is a way to get it
+## (`ItemSources`).
+
+const CHEST_LOOT := [preload("res://game/depths/chest_loot.tres"), preload("res://game/depths/hoard_loot.tres")]
 
 func install() -> void:
 	RunState.save_block_reason = "Return to camp to save"
 	SaveManager.register_save_blocker(DepthRun.get_save_block_reason)
 	SaveManager.register_slot_detail(&"deepest_depth", 100, DepthRun.describe_save)
 	InventoryState.item_added.connect(_on_item_added)
+	ItemSources.register(&"depth_chests", find_item_sources)
+
+## The depths' chests as a way to get what they hold.
+static func find_item_sources(_registry: ContentRegistry, sources: ItemSources) -> void:
+	for loot: LootTable in CHEST_LOOT:
+		loot.add_ways(sources, TranslationServer.translate("Found in chests in the depths"))
 
 func _on_item_added(item_id: StringName, _quantity: int) -> void:
 	Hotbar.ensure_item(item_id)

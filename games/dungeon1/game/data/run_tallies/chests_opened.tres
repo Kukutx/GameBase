@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RunTallyData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/roguelite/runs/run_tally_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"chests_opened"
+display_name = "Chests Opened"
+order = 30

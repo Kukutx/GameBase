@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="LootTable" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/loot/loot_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://tiamat/modules/items/loot/loot_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="Entry_health_potion"]
+script = ExtResource("2_entry")
+item_id = &"health_potion"
+weight = 3.0
+min_quantity = 2
+max_quantity = 3
+
+[sub_resource type="Resource" id="Entry_ember_core"]
+script = ExtResource("2_entry")
+item_id = &"ember_core"
+weight = 4.0
+min_quantity = 2
+max_quantity = 4
+
+[sub_resource type="Resource" id="Entry_bone_shard"]
+script = ExtResource("2_entry")
+item_id = &"bone_shard"
+weight = 2.0
+min_quantity = 3
+max_quantity = 5
+
+[resource]
+script = ExtResource("1_table")
+entries = Array[ExtResource("2_entry")]([SubResource("Entry_health_potion"), SubResource("Entry_ember_core"), SubResource("Entry_bone_shard")])
+picks = 2
+money_min = 40
+money_max = 70
+money_per_level = 4.0

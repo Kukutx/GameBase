@@ -14,12 +14,17 @@ extends Node2D
 ## Searing), the more often the deeper (`elite_odds`). Ember vents (`Hazard`,
 ## spread by `vents`) flare on the floor in turn, burning the player and the
 ## creatures alike, more of them the deeper, from a stream of their own and
-## clear of the ways in and on and the altar.
+## clear of the ways in and on and the altar. Now and then a floor holds a
+## chest (`LootChest`, `chest_loot`), sealed until the floor is cleared, and a
+## depth a guardian guards always holds its hoard (`hoard_loot`), both the
+## richer the deeper.
 
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
+const CHEST_SCENE := preload("res://tiamat/modules/items/loot/loot_chest.tscn")
 # How far apart the enemies of a floor stand.
 const ENEMY_SPACING := 28.0
-# How far a floor's vents stand from the ways in and on and the altar.
+# How far a floor's vents and chest stand from the ways in and on and the
+# altar.
 const VENT_CLEARANCE := 48.0
 
 ## The enemies floors spawn, each from its minimum depth on; deeper tiers come
@@ -34,6 +39,12 @@ const VENT_CLEARANCE := 48.0
 @export var arrival_clearance := 90.0
 ## The ember vents of its floors, the deeper the more; none without.
 @export var vents: HazardSpread
+## What a floor's chest holds, at the floor's depth; no chests without.
+@export var chest_loot: LootTable
+## How often a floor holds a chest.
+@export_range(0.0, 1.0, 0.01) var chest_chance := 0.3
+## What a guarded depth's chest holds; there always.
+@export var hoard_loot: LootTable
 ## Where the rope leads.
 @export var camp_location_id: StringName
 @export var camp_spawn_id: StringName
@@ -46,6 +57,9 @@ const VENT_CLEARANCE := 48.0
 var _enemies: Array[HostileCreature] = []
 var _guardians: Array[HostileCreature] = []
 var _vents: Array[Hazard] = []
+var _chest: LootChest
+# Where the ways in and on and the altar stand.
+var _ways := PackedVector2Array()
 
 func _ready() -> void:
 	(stairs.get_node("Interactable") as Interactable).interacted.connect(_descend)
@@ -54,7 +68,9 @@ func _ready() -> void:
 	altar.boon_taken.connect(func(_boon_id: StringName) -> void: _refresh())
 	CombatEvents.enemy_defeated.connect(_on_enemy_defeated)
 	GameSettings.locale_changed.connect(_on_locale_changed)
+	_ways = PackedVector2Array([_spawn_position(arrival_spawn_id), stairs.position, rope.position, altar.position])
 	_spawn_vents()
+	_spawn_chest()
 	_spawn_enemies()
 	_refresh()
 
@@ -67,6 +83,10 @@ static func get_enemy_count(depth: int, guarded := false) -> int:
 ## The floor's ember vents.
 func get_vents() -> Array[Hazard]:
 	return _vents.duplicate()
+
+## The floor's chest, or null on a floor without one.
+func get_chest() -> LootChest:
+	return _chest
 
 func get_enemies() -> Array[HostileCreature]:
 	return _enemies.duplicate()
@@ -99,11 +119,8 @@ func _spawn_enemies() -> void:
 	var clear_of_arrival := func(point: Vector2) -> bool: return point.distance_to(arrival) >= arrival_clearance
 	var count := guardian_kinds.size() + get_enemy_count(depth, not guardian_kinds.is_empty())
 	var positions: Array[Vector2] = []
-	# None starts on a vent.
-	var vent_places := PackedVector2Array()
-	for vent: Hazard in _vents:
-		vent_places.append(vent.position)
-	positions.assign(Array(rng.scatter(arena, count, ENEMY_SPACING, vent_places, Vector2(8, 8), clear_of_arrival)))
+	# None starts on a vent or the chest.
+	positions.assign(Array(rng.scatter(arena, count, ENEMY_SPACING, _taken_places(), Vector2(8, 8), clear_of_arrival)))
 	# The guardians stand furthest from where the player arrives.
 	if not guardian_kinds.is_empty():
 		positions.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_to(arrival) > b.distance_to(arrival))
@@ -128,13 +145,7 @@ func _spawn_vents() -> void:
 		return
 	var depth := DepthRun.get_depth()
 	var rolls := DepthRun.floor_stream("vents")
-	var keep_clear: Array[Vector2] = [_spawn_position(arrival_spawn_id), stairs.position, rope.position, altar.position]
-	var clear := func(point: Vector2) -> bool:
-		for spot: Vector2 in keep_clear:
-			if point.distance_to(spot) < VENT_CLEARANCE:
-				return false
-		return true
-	for place: Vector2 in vents.spread(rolls, depth, arena.grow(-16.0), PackedVector2Array(), clear):
+	for place: Vector2 in vents.spread(rolls, depth, arena.grow(-16.0), PackedVector2Array(), _is_clear_of_ways):
 		var vent := vents.make(depth, rolls.randf())
 		if vent == null:
 			continue
@@ -142,6 +153,37 @@ func _spawn_vents() -> void:
 		vent.position = place
 		Hazard.add_under_actors(self, vent)
 		_vents.append(vent)
+
+func _spawn_chest() -> void:
+	var depth := DepthRun.get_depth()
+	var rolls := DepthRun.floor_stream("chest")
+	var hoard := hoard_loot != null and not EnemyTier.guardians(enemy_tiers, depth).is_empty()
+	if not hoard and (chest_loot == null or rolls.randf() >= chest_chance):
+		return
+	_chest = CHEST_SCENE.instantiate() as LootChest
+	_chest.name = "Hoard" if hoard else "Chest"
+	_chest.display_name = "Warden's Hoard" if hoard else "Chest"
+	_chest.loot = hoard_loot if hoard else chest_loot
+	_chest.level = depth
+	_chest.locked = true
+	_chest.position = rolls.scatter(arena.grow(-24.0), 1, VENT_CLEARANCE, _taken_places(), Vector2.ZERO, _is_clear_of_ways)[0]
+	_chest.fill(rolls)
+	Hazard.add_under_actors(self, _chest)
+
+# Where the vents and the chest stand.
+func _taken_places() -> PackedVector2Array:
+	var places := PackedVector2Array()
+	for vent: Hazard in _vents:
+		places.append(vent.position)
+	if _chest != null:
+		places.append(_chest.position)
+	return places
+
+func _is_clear_of_ways(point: Vector2) -> bool:
+	for way: Vector2 in _ways:
+		if point.distance_to(way) < VENT_CLEARANCE:
+			return false
+	return true
 
 func _spawn_position(spawn_id: StringName) -> Vector2:
 	for child: Node in get_children():
@@ -172,6 +214,8 @@ func _refresh() -> void:
 		way.visible = cleared
 		(way.get_node("Interactable") as Interactable).enabled = cleared
 	altar.visible = cleared and not altar.is_spent() and RunState.is_active()
+	if _chest != null:
+		_chest.locked = not cleared
 	altar.refresh()
 	altar.interactable.enabled = altar.interactable.enabled and cleared
 	depth_label.text = tr("Depth %d · Deepest %d") % [DepthRun.get_depth(), DepthRun.get_deepest()]
@@ -190,6 +234,10 @@ func find_scene_problems(registry: ContentRegistry, location: WorldLocationData)
 		problems.append("depth floor has no enemy tier from depth 1")
 	if location != null and not registry.has_location_spawn(location.id, arrival_spawn_id):
 		problems.append("depth floor arrives at spawn '%s', which its scene does not have" % arrival_spawn_id)
+	for loot: LootTable in [chest_loot, hoard_loot]:
+		if loot != null:
+			for problem: String in loot.find_problems(registry):
+				problems.append("depth floor %s" % problem)
 	if not registry.has_location_spawn(camp_location_id, camp_spawn_id):
 		problems.append("depth floor's rope leads to spawn '%s' of '%s', which does not exist" % [camp_spawn_id, camp_location_id])
 	return problems
