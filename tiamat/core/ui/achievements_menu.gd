@@ -106,6 +106,12 @@ func get_records() -> PackedStringArray:
 static func progress_text(achievement: AchievementData) -> String:
 	return "%d / %d" % [GameProfile.get_progress(achievement.id), achievement.goal]
 
+## How far the bar of the achievement at `index` is filled, from 0 to 1, or
+## -1 for one that shows no bar.
+func get_entry_progress(index: int) -> float:
+	var bar := _achievement_entries[index].get_bar()
+	return bar.ratio if bar != null else -1.0
+
 ## The icon of the achievement at `index`, or null.
 func get_entry_icon(index: int) -> Texture2D:
 	return _achievement_entries[index].get_icon()
@@ -137,6 +143,7 @@ func _fill() -> void:
 		if shown and not is_unlocked and achievement.counts_progress():
 			var progress := entry.add_line(progress_text(achievement), false)
 			progress.add_theme_color_override(&"font_color", DESCRIPTION_COLOR)
+			entry.add_bar(GameProfile.get_progress(achievement.id), achievement.goal)
 		if shown:
 			entry.set_icon(achievement.icon)
 		if is_unlocked:
