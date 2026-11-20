@@ -309,3 +309,25 @@ func test_the_elevator_names_the_guardian_that_holds_a_stop() -> void:
 	assert_eq(menu.get_note(&"25"), "", "felled this week, it holds the stop no more")
 	menu.close()
 	InputLock.clear()
+
+func test_deeper_floors_hold_elite_slimes_the_scene_spawns_in_their_form() -> void:
+	var odds := MineState.floor_table.elite_odds
+	assert_eq(odds.get_chance(9), 0.0, "none above floor 10")
+	assert_almost_eq(odds.get_chance(62), 0.25, 0.005, "one in four from floor 62")
+	var elite_floor := 0
+	for floor: int in range(62, 120):
+		for entry: Dictionary in MineState.generate_floor_layout(floor)["enemies"]:
+			if not String(entry["elite"]).is_empty():
+				assert_false(entry.has("guardian"), "a guardian is no elite")
+				elite_floor = floor if elite_floor == 0 else elite_floor
+	assert_gt(elite_floor, 0, "some floor holds an elite")
+	MineState.set_floor(elite_floor)
+	var mine := (load("res://game/world/old_mine.tscn") as PackedScene).instantiate() as MineFloorController
+	add_child_autofree(mine)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var elites := mine.get_generated_enemies().filter(func(enemy: HostileCreature) -> bool: return enemy.elite != null)
+	assert_gt(elites.size(), 0)
+	var elite: HostileCreature = elites[0]
+	assert_eq(elite.get_display_name(), elite.elite.name_of(elite.data))
+	assert_gt(elite.get_max_health(), HostileCreature.max_health_of(elite.data))

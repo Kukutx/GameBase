@@ -144,6 +144,7 @@ func _spawn_dynamic_floor(floor: int) -> void:
 			enemy_index += 1
 			enemy.name = "GeneratedEnemy%02d" % enemy_index
 		enemy.data = enemy_data
+		enemy.elite = EliteData.find(StringName(String(entry.get("elite", ""))))
 		enemy.persistent_id = StringName(String(entry.get("persistent_id", "")))
 		add_child(enemy)
 		enemy.position = entry.get("position", Vector2.ZERO)

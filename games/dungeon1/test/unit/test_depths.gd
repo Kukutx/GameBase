@@ -362,11 +362,11 @@ func _layout(depth_floor: DepthFloor) -> Array:
 	return layout
 
 func test_deeper_floors_hold_more_elites_that_count_toward_elite_hunter() -> void:
-	var depth_floor := _enter_floor()
-	assert_eq(depth_floor.get_elite_chance(2), 0.0, "none above the third depth")
-	assert_almost_eq(depth_floor.get_elite_chance(3), 0.05, 0.001)
-	assert_almost_eq(depth_floor.get_elite_chance(8), 0.2, 0.001)
-	assert_almost_eq(depth_floor.get_elite_chance(40), 0.35, 0.001, "at most about one in three")
+	var odds := _enter_floor().elite_odds
+	assert_eq(odds.get_chance(2), 0.0, "none above the third depth")
+	assert_almost_eq(odds.get_chance(3), 0.05, 0.001)
+	assert_almost_eq(odds.get_chance(8), 0.2, 0.001)
+	assert_almost_eq(odds.get_chance(40), 0.35, 0.001, "at most about one in three")
 	DepthRun.start_run()
 	var elites := 0
 	for depth: int in range(10, 21):
