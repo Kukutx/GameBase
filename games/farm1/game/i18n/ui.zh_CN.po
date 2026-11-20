@@ -2265,6 +2265,21 @@ msgstr "王者宝藏"
 msgid "Burning"
 msgstr "灼烧"
 
+msgid "Burn chance"
+msgstr "灼烧几率"
+
+msgid "Fire-Roasted Tomatoes"
+msgstr "炭烤番茄"
+
+msgid "Tomatoes blistered over an open fire. Their heat gets into your blows."
+msgstr "在明火上烤到起泡的番茄，热劲会融进你的招式。"
+
+msgid "Fiery Belly"
+msgstr "火辣肚肠"
+
+msgid "Spice in your blood: one blow or shot in five sets foes Burning."
+msgstr "辛辣涌上血脉：每五次挥砍或射击就有一次让敌人灼烧。"
+
 msgid "Slimed"
 msgstr "黏滞"
 

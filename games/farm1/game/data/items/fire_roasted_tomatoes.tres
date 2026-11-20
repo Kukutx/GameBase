@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"fire_roasted_tomatoes"
+display_name = "Fire-Roasted Tomatoes"
+description = "Tomatoes blistered over an open fire. Their heat gets into your blows."
+max_stack = 12
+kind = 1
+sell_price = 170
+restores = Dictionary[StringName, int]({&"energy": 20, &"hp": 25})
+food_buff_id = &"fiery_belly"
+tags = PackedStringArray("food", "cooked", "vegetable", "meal")

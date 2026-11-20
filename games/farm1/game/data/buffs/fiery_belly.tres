@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FoodBuffData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/buffs/food_buff_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"fiery_belly"
+display_name = "Fiery Belly"
+description = "Spice in your blood: one blow or shot in five sets foes Burning."
+duration_minutes = 240
+bonuses = Dictionary[StringName, float]({&"burn_chance": 20.0})
