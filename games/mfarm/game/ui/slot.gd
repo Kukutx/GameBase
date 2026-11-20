@@ -38,7 +38,9 @@ func _init(slot_bag: StringName, slot_index: int, slot_size := SIZE) -> void:
 	_amount.add_theme_color_override(&"font_outline_color", Color(0.2, 0.12, 0.08))
 	_amount.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_amount.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	_amount.size = slot_size + Vector2(0, 2)
+	# The count and its outline end on the slot's bottom edge: the action bar
+	# sits on the screen's, and a count drawn lower lost its last rows there.
+	_amount.size = slot_size
 	_amount.position = Vector2(-1, 0)
 	add_child(_amount)
 	_highlight = MFarmUiArt.image(MFarmUiArt.texture("ui_select"), slot_size)

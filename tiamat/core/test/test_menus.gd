@@ -20,6 +20,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	get_tree().root.content_scale_aspect = _aspect
+	MenuFit.show_view(get_tree())
 	SaveManager.delete_save()
 	SaveManager.save_directory = _save_directory
 	SaveManager.select_slot(SaveManager.active_slot)
@@ -316,17 +317,21 @@ func test_quitting_from_the_pause_menu_asks_first() -> void:
 
 func test_the_core_menus_and_their_questions_fit_the_view() -> void:
 	# The menus fit the game's own view, its base size, whatever more a window
-	# of another shape shows of a game whose aspect expands.
-	_aspect = get_tree().root.content_scale_aspect
+	# of another shape shows of a game whose aspect expands; and each view the
+	# game names for a kind of device, as a phone's smaller one.
 	get_tree().root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP
 	await get_tree().process_frame
-	var view := get_viewport().get_visible_rect()
-	var base := Vector2(ProjectSettings.get_setting("display/window/size/viewport_width"), ProjectSettings.get_setting("display/window/size/viewport_height"))
-	assert_eq(view.size, base, "the tests see the game's own view")
+	assert_eq(get_viewport().get_visible_rect().size, MenuFit.ScreenFit.base_size(), "the tests see the game's own view")
+	for size: Vector2 in MenuFit.ScreenFit.view_sizes():
+		MenuFit.show_view(get_tree(), size)
+		await get_tree().process_frame
+		await _assert_core_menus_fit(get_viewport().get_visible_rect())
+
+func _assert_core_menus_fit(view: Rect2) -> void:
 	var title := (load("res://tiamat/core/ui/title_screen.tscn") as PackedScene).instantiate() as GameTitleScreen
 	add_child_autofree(title)
 	await _layout()
-	assert_eq(MenuFit.find_overflow(title, view), PackedStringArray(), "the title screen")
+	assert_eq(MenuFit.find_overflow(title, view), PackedStringArray(), "the title screen in %s" % view.size)
 	for dialog: Window in [title.confirm_new_game, title.confirm_delete]:
 		await _assert_window_fits(dialog, view)
 	title.queue_free()
@@ -334,7 +339,7 @@ func test_the_core_menus_and_their_questions_fit_the_view() -> void:
 	var pause := _pause()
 	pause.open()
 	await _layout()
-	assert_eq(MenuFit.find_overflow(pause, view), PackedStringArray(), "the pause menu")
+	assert_eq(MenuFit.find_overflow(pause, view), PackedStringArray(), "the pause menu in %s" % view.size)
 	for dialog: Window in [pause.confirm_load, pause.confirm_title, pause.confirm_quit]:
 		await _assert_window_fits(dialog, view)
 	pause.settings_button.pressed.emit()
@@ -342,8 +347,11 @@ func test_the_core_menus_and_their_questions_fit_the_view() -> void:
 	for page: SettingsMenu.Page in SettingsMenu.Page.values():
 		settings.show_page(page)
 		await _layout()
-		assert_eq(MenuFit.find_overflow(settings, view), PackedStringArray(), "settings page %s" % SettingsMenu.Page.keys()[page])
+		assert_eq(MenuFit.find_overflow(settings, view), PackedStringArray(), "settings page %s in %s" % [SettingsMenu.Page.keys()[page], view.size])
 	await _assert_window_fits(settings.confirm_reset, view)
+	pause.close()
+	pause.queue_free()
+	await get_tree().process_frame
 
 func _assert_window_fits(window: Window, view: Rect2) -> void:
 	(window as Window).call("popup_centered")

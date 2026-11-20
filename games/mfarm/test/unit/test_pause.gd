@@ -2,7 +2,7 @@ extends GutTest
 
 ## MFarm's pause menu, the old game's paper with its tabs leaning by the right
 ## edge: the sheet each tab brings to the top, the volumes, back to the game,
-## the old words, and that it fits the view.
+## the old words, and that it fits each view the game is laid out in.
 
 const PauseScene := preload("res://game/ui/pause.tscn")
 const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
@@ -116,11 +116,11 @@ func test_the_old_words_in_chinese() -> void:
 	var labels := menu.contents[MFarmPause.Sheet.SETTINGS].find_children("*", "Label", false, false)
 	assert_eq(labels.map(func(label: Label) -> String: return menu.tr(label.text)), ["背景音乐", "音效"])
 
-func test_the_menu_fits_the_view() -> void:
+func test_the_menu_fits_each_view() -> void:
 	var menu := _pause()
 	menu.open()
 	for sheet: MFarmPause.Sheet in MFarmPause.Sheet.values():
 		menu.show_sheet(sheet)
 		await get_tree().process_frame
-		assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray(), MFarmPause.Sheet.keys()[sheet])
+		assert_eq(await MenuFit.find_overflow_in_views(menu), PackedStringArray(), MFarmPause.Sheet.keys()[sheet])
 	menu.close()

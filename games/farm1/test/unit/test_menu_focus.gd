@@ -41,7 +41,7 @@ func test_game_menu_keeps_selected_tab_focusable() -> void:
 	assert_false(inventory.button_pressed)
 	assert_eq(get_viewport().gui_get_focus_owner(), quests)
 	await get_tree().process_frame
-	assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray())
+	assert_eq(await MenuFit.find_overflow_in_views(menu), PackedStringArray())
 	menu.close()
 	assert_signal_emitted_with_parameters(GameEvents, "menu_closed", [GameMenu.MENU_ID])
 
@@ -85,7 +85,7 @@ func test_overlay_menus_open_with_a_valid_focus_target_and_fit_the_view() -> voi
 		assert_eq(MenuFit.find_focus_problem(menu), "", String(data["path"]))
 		# Containers sort their children on the frame after a change.
 		await get_tree().process_frame
-		assert_eq(MenuFit.find_overflow(menu, get_viewport().get_visible_rect()), PackedStringArray(), String(data["path"]))
+		assert_eq(await MenuFit.find_overflow_in_views(menu), PackedStringArray(), String(data["path"]))
 		if menu.has_method("close"):
 			menu.call("close")
 		await get_tree().process_frame
