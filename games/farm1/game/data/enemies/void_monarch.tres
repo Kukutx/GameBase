@@ -23,6 +23,7 @@ chase_radius = 190.0
 attack_range = 28.0
 contact_damage = 40
 attack_cooldown = 1.2
+windup_seconds = 0.4
 knockback_scale = 0.25
 collision_size = Vector2(30, 22)
 visual_offset = Vector2(0, -15)
