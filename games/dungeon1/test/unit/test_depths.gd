@@ -187,6 +187,38 @@ func test_a_deeper_floor_spawns_more_enemies() -> void:
 	assert_eq(DepthFloor.get_enemy_count(2), 3)
 	assert_eq(DepthFloor.get_enemy_count(4), 4)
 	assert_eq(DepthFloor.get_enemy_count(40), 8, "a floor holds at most eight")
+	assert_eq(DepthFloor.get_enemy_count(10, true), 3, "half as many where a guardian stands")
+
+func test_every_fifth_depth_an_ember_warden_guards_the_way_on() -> void:
+	DepthRun.start_run()
+	DepthRun.track.set_depth(4)
+	assert_eq(_enter_floor().get_guardians(), [] as Array[HostileCreature], "the fourth depth has no guardian")
+	DepthRun.track.set_depth(5)
+	watch_signals(GameEvents)
+	var depth_floor := _enter_floor()
+	var guardians := depth_floor.get_guardians()
+	assert_eq(guardians.size(), 1)
+	assert_eq(guardians[0].data.id, &"ember_warden")
+	assert_eq(depth_floor.get_enemies().size(), 3, "the warden and half the fifth depth's four creatures")
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Ember Warden guards this depth"])
+	assert_string_contains((depth_floor.get_node("DepthLabel") as Label).text, "Ember Warden guards this depth")
+	var arrival := depth_floor.get_node("ArrivalSpawn") as Node2D
+	for enemy: HostileCreature in depth_floor.get_enemies():
+		assert_true(guardians[0].position.distance_to(arrival.position) >= enemy.position.distance_to(arrival.position) - 0.01,
+			"the warden stands furthest from the way in")
+	for enemy: HostileCreature in depth_floor.get_enemies():
+		if enemy != guardians[0]:
+			enemy.take_damage(enemy.get_max_health())
+	await get_tree().process_frame
+	assert_false(depth_floor.is_cleared(), "the way on stays shut while the warden stands")
+	guardians[0].take_damage(guardians[0].get_max_health())
+	await get_tree().process_frame
+	assert_true(depth_floor.is_cleared())
+	assert_true(GameProfile.is_unlocked(&"warden_felled"))
+	assert_eq(InventoryState.get_quantity(&"ember_core"), 2, "the warden drops two ember cores")
+	assert_false((depth_floor.get_node("DepthLabel") as Label).text.contains("guards"), "a fallen warden guards nothing")
+	DepthRun.track.set_depth(10)
+	assert_eq(_enter_floor().get_guardians().size(), 1, "and again at the tenth")
 
 func test_the_same_run_and_depth_lay_out_the_same_floor() -> void:
 	DepthRun.start_run()

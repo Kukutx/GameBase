@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="2_tier"]
@@ -23,6 +23,12 @@ script = ExtResource("2_tier")
 enemy_id = &"ember_wisp"
 minimum_depth = 6
 
+[sub_resource type="Resource" id="Tier_warden"]
+script = ExtResource("2_tier")
+enemy_id = &"ember_warden"
+minimum_depth = 5
+guardian_every = 5
+
 [sub_resource type="RectangleShape2D" id="Rect_horizontal"]
 size = Vector2(480, 20)
 
@@ -34,7 +40,7 @@ size = Vector2(36, 30)
 
 [node name="Depths" type="Node2D"]
 script = ExtResource("1_floor")
-enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_wisp")])
+enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_wisp"), SubResource("Tier_warden")])
 camp_location_id = &"camp"
 camp_spawn_id = &"from_depths"
 

@@ -7,14 +7,16 @@ extends Node2D
 ## enemy is defeated the way on opens: the stairs down to the next depth, or
 ## the rope back up to camp with what the player found; and the ember altar
 ## lights, where the player takes one of three boons for the run (`BoonAltar`,
-## one for each depth of a run).
+## one for each depth of a run). A depth a guardian tier guards
+## (`EnemyTier.guardian_every`: the Ember Warden every fifth depth) holds its
+## guardian and half the creatures, and the way on opens once it falls.
 
 const ENEMY_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
 # How far apart the enemies of a floor stand.
 const ENEMY_SPACING := 28.0
 
 ## The enemies floors spawn, each from its minimum depth on; deeper tiers come
-## up more often.
+## up more often, and a guardian tier's enemy only at the depths it guards.
 @export var enemy_tiers: Array[EnemyTier] = []
 ## Where enemies may stand, in the scene's coordinates.
 @export var arena := Rect2(-200, -110, 400, 220)
@@ -31,6 +33,7 @@ const ENEMY_SPACING := 28.0
 @onready var altar: BoonAltar = $EmberAltar
 
 var _enemies: Array[HostileCreature] = []
+var _guardians: Array[HostileCreature] = []
 
 func _ready() -> void:
 	(stairs.get_node("Interactable") as Interactable).interacted.connect(_descend)
@@ -42,12 +45,18 @@ func _ready() -> void:
 	_spawn_enemies()
 	_refresh()
 
-## How many enemies a floor at `depth` spawns.
-static func get_enemy_count(depth: int) -> int:
-	return clampi(2 + depth / 2, 2, 8)
+## How many creatures a floor at `depth` spawns besides its guardians: half
+## as many where a guardian stands (`guarded`).
+static func get_enemy_count(depth: int, guarded := false) -> int:
+	var count := clampi(2 + depth / 2, 2, 8)
+	return count / 2 if guarded else count
 
 func get_enemies() -> Array[HostileCreature]:
 	return _enemies.duplicate()
+
+## The floor's guardians (`EnemyTier.guardians()`), defeated or not.
+func get_guardians() -> Array[HostileCreature]:
+	return _guardians.duplicate()
 
 ## Whether every enemy of the floor is defeated.
 func is_cleared() -> bool:
@@ -61,19 +70,30 @@ func _spawn_enemies() -> void:
 	var kinds := EnemyTier.reached(enemy_tiers, depth)
 	if kinds.is_empty():
 		return
+	var guardian_kinds := EnemyTier.guardians(enemy_tiers, depth)
 	var rng := DepthRun.floor_stream()
 	var arrival := _spawn_position(arrival_spawn_id)
 	var clear_of_arrival := func(point: Vector2) -> bool: return point.distance_to(arrival) >= arrival_clearance
-	var positions := rng.scatter(arena, get_enemy_count(depth), ENEMY_SPACING, PackedVector2Array(), Vector2(8, 8), clear_of_arrival)
+	var count := guardian_kinds.size() + get_enemy_count(depth, not guardian_kinds.is_empty())
+	var positions: Array[Vector2] = []
+	positions.assign(Array(rng.scatter(arena, count, ENEMY_SPACING, PackedVector2Array(), Vector2(8, 8), clear_of_arrival)))
+	# The guardians stand furthest from where the player arrives.
+	if not guardian_kinds.is_empty():
+		positions.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_to(arrival) > b.distance_to(arrival))
 	for index: int in positions.size():
+		var guardian := index < guardian_kinds.size()
 		# The larger of two rolls, so the deeper of the reached tiers come up more.
-		var kind := kinds[maxi(rng.randi_range(0, kinds.size() - 1), rng.randi_range(0, kinds.size() - 1))]
+		var kind := guardian_kinds[index] if guardian else kinds[maxi(rng.randi_range(0, kinds.size() - 1), rng.randi_range(0, kinds.size() - 1))]
 		var enemy := ENEMY_SCENE.instantiate() as HostileCreature
-		enemy.name = "Enemy%02d" % (index + 1)
+		enemy.name = "Guardian%02d" % (index + 1) if guardian else "Enemy%02d" % (index + 1)
 		enemy.data = EnemyData.find(kind)
 		enemy.position = positions[index]
 		add_child(enemy)
 		_enemies.append(enemy)
+		if guardian:
+			_guardians.append(enemy)
+	if not _guardians.is_empty():
+		GameEvents.toastf("%s guards this depth", [_guardians[0].data.display_name])
 
 func _spawn_position(spawn_id: StringName) -> Vector2:
 	for child: Node in get_children():
@@ -109,6 +129,10 @@ func _refresh() -> void:
 	depth_label.text = tr("Depth %d · Deepest %d") % [DepthRun.get_depth(), DepthRun.get_deepest()]
 	if cleared and not _enemies.is_empty():
 		depth_label.text += "\n" + tr("The way on is open")
+	for guardian: HostileCreature in _guardians:
+		if is_instance_valid(guardian) and not guardian.is_defeated:
+			depth_label.text += "\n" + tr("%s guards this depth") % tr(guardian.data.display_name)
+			break
 
 func find_scene_problems(registry: ContentRegistry, location: WorldLocationData) -> PackedStringArray:
 	var problems := PackedStringArray()

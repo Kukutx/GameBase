@@ -97,7 +97,8 @@ func _run() -> void:
 	_make_pact(&"no_pact")
 	await _arrive(DEPTHS_SCENE)
 	_check(int(depth_run.get_depth()) == 5 and int(depth_run.get_run()) == 3, "The shortcut did not start a run at the fifth depth")
-	_check((current_scene.call("get_enemies") as Array).size() == 4, "The fifth depth did not spawn four enemies")
+	var guardians := current_scene.call("get_guardians") as Array
+	_check(guardians.size() == 1 and (current_scene.call("get_enemies") as Array).size() == 3, "The fifth depth did not hold its warden and two creatures")
 
 # Picks `pact` at the way down, which asks after the first run whether the
 # next starts under a pact.

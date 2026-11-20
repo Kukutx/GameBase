@@ -375,3 +375,15 @@ msgstr "琉璃未碎"
 
 msgid "Reach depth 10 under the Pact of Glass."
 msgstr "在琉璃之约下到达第 10 层。"
+
+msgid "Ember Warden"
+msgstr "余烬守卫"
+
+msgid "%s guards this depth"
+msgstr "%s 镇守着这一层"
+
+msgid "Warden Felled"
+msgstr "守卫陨落"
+
+msgid "Defeat an Ember Warden, the guardian of every fifth depth."
+msgstr "击败余烬守卫——每隔五层镇守深渊的守护者。"
