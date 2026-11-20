@@ -63,6 +63,12 @@ List new content files (an item, a trigger, an achievement) in the game's conten
 node tools/add_content.js --game <id> <file>... | --missing
 ```
 
+Write a new content entry of a kind the game can use (`--kinds` lists them) beside the game's others of its kind, with its fields, and list it in the pack; a field the entry's script does not export fails:
+
+```text
+node tools/new_content.js --game <id> --kind <kind> --id <id> [--set <field>=<value>]... | --kinds
+```
+
 ## Validation and release
 
 ```text
