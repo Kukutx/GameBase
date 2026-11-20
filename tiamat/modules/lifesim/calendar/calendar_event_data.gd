@@ -46,14 +46,46 @@ static func find_all() -> Array[CalendarEventData]:
 func has_participation_reward() -> bool:
 	return reward_money > 0 or not reward_items.is_empty() or (reward_skill != &"" and reward_skill_xp > 0)
 
+## Whether the event is on at minute `minute_of_day` of `day`.
 func is_active(day: int, minute_of_day: int) -> bool:
+	return is_held_on(day) and minute_of_day >= start_minute and minute_of_day < end_minute
+
+## Whether the event is held on `day`, at any of its hours.
+func is_held_on(day: int) -> bool:
 	if not seasons.is_empty() and not seasons.has(GameCalendar.current().get_season_name(day)):
 		return false
 	if day_of_season > 0 and GameCalendar.current().get_day_of_season(maxi(day, 1)) != day_of_season:
 		return false
-	if not days_of_week.is_empty() and not days_of_week.has(GameCalendar.current().get_weekday(day)):
-		return false
-	return minute_of_day >= start_minute and minute_of_day < end_minute
+	return days_of_week.is_empty() or days_of_week.has(GameCalendar.current().get_weekday(day))
+
+## The first day of the `days` days from `from_day` on which the event is
+## held and not yet over at minute `from_minute` of `from_day` (an event over
+## for today counts from its next day); -1 for none.
+func next_day(from_day: int, days: int, from_minute := 0) -> int:
+	for offset: int in days:
+		var day := from_day + offset
+		if is_held_on(day) and (offset > 0 or from_minute < end_minute):
+			return day
+	return -1
+
+## The running game's events held in the `days` days from minute
+## `from_minute` of `from_day` (`next_day()`), each as {"day": the day it is
+## next held, "event": it}, soonest first, then by the minute it starts.
+static func find_upcoming(from_day: int, days: int, from_minute := 0) -> Array[Dictionary]:
+	var upcoming: Array[Dictionary] = []
+	for event: CalendarEventData in find_all():
+		var day := event.next_day(from_day, days, from_minute)
+		if day >= 0:
+			upcoming.append({"day": day, "event": event})
+	upcoming.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var first: CalendarEventData = a["event"]
+		var second: CalendarEventData = b["event"]
+		if int(a["day"]) != int(b["day"]):
+			return int(a["day"]) < int(b["day"])
+		if first.start_minute != second.start_minute:
+			return first.start_minute < second.start_minute
+		return String(first.id) < String(second.id))
+	return upcoming
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()

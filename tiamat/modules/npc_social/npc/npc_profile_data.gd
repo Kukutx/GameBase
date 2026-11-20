@@ -86,6 +86,29 @@ func is_birthday(target_day: int = -1) -> bool:
 	var resolved_day := WorldClock.day if target_day < 1 else target_day
 	return GameCalendar.current().get_season_name(resolved_day) == birthday_season and GameCalendar.current().get_day_of_season(resolved_day) == birthday_day
 
+## The first day of the `days` days from `from_day` that is the NPC's
+## birthday; -1 for none.
+func next_birthday(from_day: int, days: int) -> int:
+	for offset: int in days:
+		if is_birthday(from_day + offset):
+			return from_day + offset
+	return -1
+
+## The running game's NPCs whose birthday falls in the `days` days from
+## `from_day` (`next_birthday()`), each as {"day": the birthday, "profile": the
+## NPC}, soonest first.
+static func find_upcoming_birthdays(from_day: int, days: int) -> Array[Dictionary]:
+	var upcoming: Array[Dictionary] = []
+	for profile: NpcProfileData in find_all():
+		var day := profile.next_birthday(from_day, days)
+		if day >= 0:
+			upcoming.append({"day": day, "profile": profile})
+	upcoming.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if int(a["day"]) != int(b["day"]):
+			return int(a["day"]) < int(b["day"])
+		return String((a["profile"] as NpcProfileData).id) < String((b["profile"] as NpcProfileData).id))
+	return upcoming
+
 func get_dialogue_title(base_title: String, hearts: int) -> String:
 	var best_threshold := -1
 	var resolved := base_title
