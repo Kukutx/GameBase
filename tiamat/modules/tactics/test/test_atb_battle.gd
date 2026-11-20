@@ -217,6 +217,19 @@ func test_an_action_tells_what_it_would_do_before_it_does() -> void:
 	TacticsFixture.give_turn(battle, healer)
 	assert_eq(battle.forecast(healer, BattleActionData.find(&"fixture_mend"), Vector2i(3, 1)), [{"unit": ally, "amount": 2, "defeats": false}] as Array[Dictionary], "no more than it lost")
 
+func test_a_unit_in_cover_takes_less_damage_as_told() -> void:
+	var battle := AtbBattle.new(BattleGrid.new(Vector2i(8, 6), [] as Array[Vector2i], [Vector2i(3, 2)] as Array[Vector2i], 0.5), FactionData.PLAYER)
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(2, 2))
+	var covered := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(3, 2))
+	var open := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(2, 3))
+	TacticsFixture.give_turn(battle, knight)
+	var strike := BattleActionData.find(&"fixture_strike")
+	assert_eq(battle.amount_of(knight, strike, open), 6, "all of it in the open")
+	assert_eq(battle.amount_of(knight, strike, covered), 3, "half of it in cover")
+	assert_eq(battle.forecast(knight, strike, Vector2i(3, 2)), [{"unit": covered, "amount": 3, "defeats": false}] as Array[Dictionary])
+	assert_true(battle.act(knight, strike, Vector2i(3, 2)))
+	assert_eq(covered.health.current, 9, "as told")
+
 func test_the_battle_ends_won_when_the_last_foe_falls_and_lost_when_the_player_s_side_does() -> void:
 	var battle := _battle()
 	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))

@@ -13,7 +13,8 @@ extends MiniGame
 ## unit has moved, Move becomes Undo Move while the battle lets the player take
 ## the move back (`AtbBattle.can_undo_move()`). While the player picks where
 ## a unit moves, the board marks the cells the foes could strike next
-## (`AtbBattle.get_danger()`), and the side says so of the cell picked; while
+## (`AtbBattle.get_danger()`), and the side says so of the cell picked, and
+## of a cell that gives cover how much less damage a unit there takes; while
 ## it picks what an action aims at, the side tells what it would do to each
 ## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls"). The
 ## board numbers the units whose turns come next
@@ -301,6 +302,8 @@ func _show_info() -> void:
 		tr("HP %d/%d") % [unit.health.current, unit.health.maximum],
 		tr("Attack %d · Defense %d · Move %d") % [unit.data.attack, unit.data.defense, unit.data.move],
 	]
+	if _board.show_cursor and battle.grid.is_cover(_board.cursor):
+		_info.text += "\n" + tr("Cover: %d%% less damage") % roundi(battle.grid.cover_reduction * 100.0)
 	if _mode == Mode.PICK_MOVE and _board.danger.has(_board.cursor):
 		_info.text += "\n" + tr("Foes can strike here.")
 	if _mode == Mode.PICK_TARGET and _board.choices.has(_board.cursor):

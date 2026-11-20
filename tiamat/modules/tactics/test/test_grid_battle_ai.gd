@@ -42,6 +42,18 @@ func test_for_the_same_good_it_strikes_from_where_fewer_foes_reach_it() -> void:
 	assert_eq(archer.cell, Vector2i(2, 0), "it shoots as hard from where only one knight reaches it, the first such cell")
 	assert_eq([left.health.current, right.health.current], [17, 20])
 
+func test_for_the_same_good_and_the_same_foes_it_strikes_from_cover() -> void:
+	var results: Array = []
+	for cover: Array[Vector2i] in [[] as Array[Vector2i], [Vector2i(3, 0)] as Array[Vector2i]]:
+		var battle := AtbBattle.new(BattleGrid.new(Vector2i(8, 1), [] as Array[Vector2i], cover, 0.3), FactionData.PLAYER)
+		var archer := _add(battle, &"fixture_archer", FactionData.MONSTERS, Vector2i(4, 0))
+		var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+		var threats := battle.get_threats(FactionData.MONSTERS, archer)
+		assert_eq([threats.get(Vector2i(2, 0)), threats.get(Vector2i(3, 0))], [1, 1], "the knight reaches both")
+		TacticsFixture.give_turn(battle, archer)
+		results.append([archer.cell, knight.health.current])
+	assert_eq(results, [[Vector2i(2, 0), 17], [Vector2i(3, 0), 17]], "in the open the first such cell, else the one in cover")
+
 func test_a_healer_mends_its_hurt_side() -> void:
 	var battle := TacticsFixture.battle()
 	var healer := _add(battle, &"fixture_healer", FactionData.MONSTERS, Vector2i(0, 0))
