@@ -15,3 +15,4 @@ attack_cooldown = 0.9
 move_speed = 48.0
 sight_range = 80.0
 radius = 6.0
+strong_against = Array[StringName]([&"slinger"])

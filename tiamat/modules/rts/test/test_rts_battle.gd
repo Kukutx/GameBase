@@ -116,6 +116,30 @@ func test_a_blow_takes_the_damage_less_the_armor_once_a_cooldown() -> void:
 	assert_eq(_ended, [true] as Array[bool])
 	assert_true(battle.is_won())
 
+func test_a_unit_strong_against_a_kind_hits_it_harder_and_goes_after_it_first() -> void:
+	var battle := RtsFixture.battle()
+	var footman := RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(100.0, 80.0))
+	var raider := RtsFixture.add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2(100.0, 100.0))
+	var brute := RtsFixture.add(battle, &"fixture_brute", FactionData.MONSTERS, Vector2(150.0, 80.0))
+	footman.data.strong_against.assign([&"fixture_brute"])
+	assert_eq(footman.data.damage_to(brute.data), 6 * 2 - 2, "twice its damage, less the armor")
+	assert_eq(footman.data.damage_to(raider.data), 6)
+	assert_eq(battle.get_nearest_foe(footman, 60.0), raider)
+	assert_eq(battle.get_nearest_foe(footman, 60.0, true), brute, "the brute it sees before the nearer raider")
+	assert_eq(battle.get_nearest_foe(footman, 15.0, true), raider, "and the nearest when it sees no brute")
+	var blocker := RtsFixture.add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2(112.0, 80.0))
+	assert_eq(RtsTargets.choose(battle, footman), blocker, "a foe at its edge before a brute it only sees")
+	blocker.health.take(blocker.health.current)
+	footman.target_index = -1
+	battle.advance(0.1)
+	assert_eq(battle.get_unit(footman.target_index), brute, "it goes after the brute")
+	var blows: Array[int] = []
+	battle.unit_attacked.connect(func(attacker: RtsUnit, _target: RtsUnit, amount: int) -> void:
+		if attacker == footman:
+			blows.append(amount))
+	assert_true(RtsFixture.run_until(battle, func() -> bool: return not blows.is_empty(), 5.0))
+	assert_eq(blows, [10] as Array[int], "and strikes it as hard")
+
 func test_units_with_nothing_to_do_go_after_the_foes_they_see_and_no_others() -> void:
 	var battle := RtsFixture.battle()
 	# The brute sees 50 and stands 55 from the footman's edge, which sees 60.

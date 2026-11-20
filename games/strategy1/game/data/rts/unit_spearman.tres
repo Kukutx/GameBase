@@ -15,3 +15,5 @@ attack_cooldown = 1.1
 move_speed = 28.0
 sight_range = 70.0
 radius = 5.0
+strong_against = Array[StringName]([&"brute"])
+strong_multiplier = 1.5

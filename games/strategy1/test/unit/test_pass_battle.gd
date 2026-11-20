@@ -1,8 +1,8 @@
 extends GutTest
 
 ## The battle in the pass, the muster's: its map and units hold, the way from
-## one side to the other runs through the pass, and the battle comes to an end
-## when both sides fight it on their own.
+## one side to the other runs through the pass, the battle comes to an end
+## when both sides fight it on their own, and each side has its counters.
 
 func test_the_pass_map_sets_up_both_sides_with_the_hills_between() -> void:
 	var map := RtsMapData.find(&"hill_pass")
@@ -35,3 +35,14 @@ func test_the_battle_ends_when_both_sides_fight_on_their_own() -> void:
 		if battle.is_over():
 			break
 	assert_true(battle.is_over(), "one side holds the field within three minutes")
+
+func test_each_side_has_its_counters() -> void:
+	var rider := RtsUnitData.find(&"rider")
+	var spearman := RtsUnitData.find(&"spearman")
+	var raider := RtsUnitData.find(&"raider")
+	for pair: Array in [[rider, &"slinger"], [spearman, &"brute"], [raider, &"bowman"], [raider, &"medic"]]:
+		var unit: RtsUnitData = pair[0]
+		var other := RtsUnitData.find(pair[1])
+		assert_true(unit.is_strong_against(other), "the %s is strong against the %s" % [unit.id, other.id])
+		assert_gt(unit.damage_to(other), maxi(unit.damage - other.armor, 1), "and hits it harder")
+	assert_false(rider.is_strong_against(RtsUnitData.find(&"brute")), "a rider is no match for a brute")

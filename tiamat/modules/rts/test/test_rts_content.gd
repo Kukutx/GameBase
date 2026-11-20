@@ -18,6 +18,14 @@ func test_a_unit_needs_a_name_and_sees_at_least_as_far_as_it_attacks() -> void:
 	unit.sight_range = 40.0
 	assert_eq(unit.find_problems(_registry), PackedStringArray(["has no display name", "sees 40.0, less far than it attacks, 50.0"]))
 
+func test_a_unit_is_strong_against_known_units_and_only_when_it_fights() -> void:
+	var footman := RtsUnitData.find(&"fixture_footman")
+	footman.strong_against.assign([&"fixture_brute", &"fixture_ghost"])
+	assert_eq(footman.find_problems(_registry), PackedStringArray(["is strong against unknown unit 'fixture_ghost'"]))
+	var medic := RtsUnitData.find(&"fixture_medic")
+	medic.strong_against.assign([&"fixture_brute"])
+	assert_eq(medic.find_problems(_registry), PackedStringArray(["heals, yet is strong against units it never strikes"]))
+
 func test_a_map_places_known_units_on_open_ground_with_both_sides() -> void:
 	var map := _map()
 	assert_eq(map.find_problems(_registry), PackedStringArray())

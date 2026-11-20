@@ -168,21 +168,29 @@ func get_units_in(rect: Rect2) -> Array[RtsUnit]:
 	return _alive.filter(func(unit: RtsUnit) -> bool: return unit.is_alive() and area.has_point(unit.position))
 
 ## The nearest living foe of `unit` whose edge is at most `within` from its
-## edge, or null; of two as near, the earlier placed.
-func get_nearest_foe(unit: RtsUnit, within := INF) -> RtsUnit:
+## edge, or null; of two as near, the earlier placed. With `strong_first`,
+## the nearest of those `unit` is strong against
+## (`RtsUnitData.is_strong_against()`) when there is one.
+func get_nearest_foe(unit: RtsUnit, within := INF, strong_first := false) -> RtsUnit:
 	var candidates := _alive
 	if _filed and not is_inf(within):
 		# The foes filed at the start of the step, since when any unit walked
 		# a stride at most.
 		candidates = _grid.get_near(unit.position, within + unit.data.radius + _widest_radius + _stride, _sides.foes_of(unit.side))
 	var found: RtsUnit
+	var found_strong := false
 	var nearest := within
 	for other: RtsUnit in candidates:
-		if other != unit and other.is_alive() and are_foes(unit, other):
-			var gap := unit.get_gap_to(other)
-			if gap <= nearest and (found == null or gap < nearest or other.index < found.index):
-				found = other
-				nearest = gap
+		if other == unit or not other.is_alive() or not are_foes(unit, other):
+			continue
+		var gap := unit.get_gap_to(other)
+		var strong := strong_first and unit.data.is_strong_against(other.data)
+		if gap > within or (found_strong and not strong):
+			continue
+		if (strong and not found_strong) or found == null or gap < nearest or (gap <= nearest and other.index < found.index):
+			found = other
+			found_strong = strong
+			nearest = gap
 	return found
 
 ## The living unit of a side `unit` does not fight, itself aside, that has
@@ -338,7 +346,7 @@ func _attack(unit: RtsUnit, target: RtsUnit) -> void:
 	if unit.data.heals():
 		unit_healed.emit(unit, target, target.health.heal(unit.data.heal))
 		return
-	var amount := target.health.take(maxi(unit.data.damage - target.data.armor, 1))
+	var amount := target.health.take(unit.data.damage_to(target.data))
 	unit_attacked.emit(unit, target, amount)
 	if not target.is_alive():
 		_fallen = true
