@@ -24,6 +24,23 @@ func test_a_cell_in_cover_takes_less_damage_never_below_one() -> void:
 	assert_eq(grid.damage_on(Vector2i(0, 0), 10), 10, "all of it in the open")
 	assert_eq(BattleGrid.new(Vector2i(4, 3), [] as Array[Vector2i], [Vector2i(2, 1)] as Array[Vector2i]).damage_on(Vector2i(2, 1), 10), 10, "cover that takes nothing off")
 
+func test_rough_ground_takes_more_steps_and_a_path_goes_around_it_when_that_is_shorter() -> void:
+	# . . . . .
+	# . ~ ~ . .
+	# . . . . .
+	var grid := BattleGrid.new(Vector2i(5, 3))
+	grid.set_rough([Vector2i(1, 1), Vector2i(2, 1), Vector2i(9, 9)] as Array[Vector2i], 3)
+	assert_true(grid.is_rough(Vector2i(1, 1)))
+	assert_false(grid.is_rough(Vector2i(9, 9)), "none outside the grid")
+	assert_eq([grid.step_cost(Vector2i(1, 1)), grid.step_cost(Vector2i(0, 0))], [3, 1])
+	var reached := grid.walk(Vector2i(0, 1), 3)
+	assert_eq(reached.get(Vector2i(1, 1)), 3, "entering rough ground takes its steps")
+	assert_false(reached.has(Vector2i(2, 1)), "and leaves none for more")
+	assert_eq(reached.get(Vector2i(2, 0)), 3, "around it, a step a cell")
+	assert_eq(grid.path(Vector2i(0, 1), Vector2i(3, 1)), [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0), Vector2i(3, 1)] as Array[Vector2i], "five steps around, not seven through")
+	grid.set_rough([] as Array[Vector2i])
+	assert_eq(grid.path(Vector2i(0, 1), Vector2i(3, 1)), [Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1)] as Array[Vector2i], "even ground, straight through")
+
 func test_a_walk_goes_around_blocked_cells_and_foes_within_its_steps() -> void:
 	# . # . .
 	# . # . .

@@ -81,3 +81,6 @@ msgstr "%s 将恢复 %d 点生命"
 
 msgid "Cover: %d%% less damage"
 msgstr "掩护：受到的伤害少 %d%%"
+
+msgid "Rough ground: %d steps to enter"
+msgstr "崎岖地形：进入需 %d 步"

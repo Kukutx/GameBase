@@ -51,16 +51,23 @@ func test_a_map_places_known_units_on_open_cells_one_each_with_both_sides() -> v
 	tiny.size = Vector2i(1, 6)
 	assert_eq(tiny.find_problems(_registry), PackedStringArray(["has size (1, 6) outside 2x2 to 32x32"]))
 
-func test_a_map_gives_cover_on_its_open_cells() -> void:
+func test_a_map_gives_cover_and_rough_ground_on_its_open_cells() -> void:
 	var map := _map()
 	map.cover_cells.assign([Vector2i(1, 1), Vector2i(2, 0), Vector2i(7, 7)])
+	map.rough_cells.assign([Vector2i(1, 0), Vector2i(2, 0)])
+	map.rough_cost = 3
 	assert_eq(map.find_problems(_registry), PackedStringArray([
 		"gives cover on cell (2, 0), which is blocked or outside its grid",
 		"gives cover on cell (7, 7), which is blocked or outside its grid",
+		"makes cell (2, 0) rough, which is blocked or outside its grid",
 	]))
 	var battle := AtbBattle.from_map(map)
 	assert_true(battle.grid.is_cover(Vector2i(1, 1)))
 	assert_almost_eq(battle.grid.cover_reduction, 0.3, 0.001, "30% less unless the map says otherwise")
+	assert_true(battle.grid.is_rough(Vector2i(1, 0)))
+	assert_eq(battle.grid.step_cost(Vector2i(1, 0)), 3)
+	var knight := battle.get_unit_at(Vector2i(0, 0))
+	assert_eq(battle.grid.walk(knight.cell, knight.data.move).get(Vector2i(1, 0)), 3, "the knight's whole move to step onto it")
 
 func test_a_map_sets_up_its_battle_with_the_player_commanding_their_side() -> void:
 	var settings := TacticsSettings.new()

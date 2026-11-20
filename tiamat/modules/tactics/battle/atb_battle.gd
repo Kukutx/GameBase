@@ -71,7 +71,9 @@ func _init(battle_grid: BattleGrid, side: StringName = FactionData.PLAYER) -> vo
 ## player's foes starting with `foe_health` of their kinds' health: each unit
 ## whose placement's condition holds (`BattlePlacement.joins()`).
 static func from_map(map: BattleMapData, settings: TacticsSettings = null, foe_health := 1.0) -> AtbBattle:
-	var battle := AtbBattle.new(BattleGrid.new(map.size, map.blocked_cells, map.cover_cells, map.cover_reduction), map.player_faction_id)
+	var grid := BattleGrid.new(map.size, map.blocked_cells, map.cover_cells, map.cover_reduction)
+	grid.set_rough(map.rough_cells, map.rough_cost)
+	var battle := AtbBattle.new(grid, map.player_faction_id)
 	battle.time_flows_while_choosing = settings != null and settings.time_flows_while_choosing
 	battle.foe_health_scale = foe_health
 	for placement: BattlePlacement in map.placements:
