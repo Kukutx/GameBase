@@ -11,7 +11,9 @@ extends Hurtbox
 ##
 ## The player chooses how hard hits land on them in the settings
 ## (`DAMAGE_TAKEN_OPTION`, which the combat module declares), read at each
-## hit: a light choice halves a hit, a heavy one adds half again.
+## hit: a light choice halves a hit, a heavy one adds half again. Armour, a
+## buff or a boon changes the `INCOMING_DAMAGE_STAT` stat, which a hit is
+## changed by after that.
 
 const SHAKE_STRENGTH := 3.0
 const SHAKE_SECONDS := 0.2
@@ -20,6 +22,9 @@ const SHAKE_SECONDS := 0.2
 ## choices of its own takes a hit whole on a choice not named here.
 const DAMAGE_TAKEN_OPTION := &"damage_taken"
 const DAMAGE_TAKEN_SCALES: Dictionary[String, float] = {"Light": 0.5, "Standard": 1.0, "Heavy": 1.5}
+## The stat a hit on the player is changed by (`GameStats`): 0.8 takes a fifth
+## less.
+const INCOMING_DAMAGE_STAT := &"incoming_damage"
 
 func _init() -> void:
 	faction = FactionData.PLAYER
@@ -39,12 +44,13 @@ static func is_standing() -> bool:
 	return not Vitals.has_vital(health) or Vitals.get_value(health) > 0
 
 ## The health a hit of `amount` takes from the player at their choice of
-## damage taken (`DAMAGE_TAKEN_OPTION`), rounded, and at least 1 of a hit
-## that does any.
+## damage taken (`DAMAGE_TAKEN_OPTION`), changed by the `INCOMING_DAMAGE_STAT`
+## stat, rounded, and at least 1 of a hit that does any.
 static func damage_taken(amount: int) -> int:
 	if amount <= 0:
 		return amount
-	return maxi(1, roundi(amount * GameSettings.options.scale_of(DAMAGE_TAKEN_OPTION, DAMAGE_TAKEN_SCALES)))
+	var scaled := amount * GameSettings.options.scale_of(DAMAGE_TAKEN_OPTION, DAMAGE_TAKEN_SCALES)
+	return maxi(1, roundi(GameStats.apply(INCOMING_DAMAGE_STAT, scaled)))
 
 func _on_hurt(damage: Damage) -> void:
 	var player := get_parent() as TopDownPlayer

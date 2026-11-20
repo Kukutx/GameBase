@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TriggerData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/core/rules/trigger_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"achievement_ember_blessed"
+event = &"RunState.boon_taken"
+condition = "BOONS_AT_LEAST 5"
+actions = PackedStringArray("UNLOCK_ACHIEVEMENT ember_blessed")

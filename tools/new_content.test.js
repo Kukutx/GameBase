@@ -41,6 +41,9 @@ test("a value is written as its field's type asks", () => {
   assert.equal(formatValue('PackedStringArray("a", "b")', "PackedStringArray", "tags"), 'PackedStringArray("a", "b")');
   assert.equal(formatValue("true", "", "hidden"), "true");
   assert.equal(formatValue("plain words", "", "label"), '"plain words"');
+  assert.equal(formatValue('{&"attack_damage": 1.25}', "Dictionary[StringName, float]", "multipliers"), 'Dictionary[StringName, float]({&"attack_damage": 1.25})', "a typed collection's plain literal is typed");
+  assert.equal(formatValue('Dictionary[StringName, float]({&"a": 1.0})', "Dictionary[StringName, float]", "multipliers"), 'Dictionary[StringName, float]({&"a": 1.0})');
+  assert.equal(formatValue('[&"a"]', "Array[StringName]", "choices"), 'Array[StringName]([&"a"])');
   assert.throws(() => formatValue("many", "int", "goal"), /Give goal \(int\) as Godot writes it/);
 });
 

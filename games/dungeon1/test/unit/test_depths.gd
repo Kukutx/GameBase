@@ -229,6 +229,36 @@ func test_a_potion_is_drunk_only_when_it_heals() -> void:
 	assert_false(player.drink_potion(), "no potion, no drink")
 	player.free()
 
+func test_a_cleared_floor_lights_its_ember_altar_for_one_boon() -> void:
+	DepthRun.start_run()
+	var depth_floor := _enter_floor()
+	assert_false(depth_floor.altar.visible or depth_floor.altar.interactable.enabled, "dark until the floor is cleared")
+	assert_eq(depth_floor.altar.get_key(), "depth1")
+	for enemy: HostileCreature in depth_floor.get_enemies():
+		enemy.take_damage(enemy.get_max_health())
+	await get_tree().process_frame
+	assert_true(depth_floor.altar.visible and depth_floor.altar.interactable.enabled)
+	var outcome := {}
+	(func() -> void: outcome["boon"] = await depth_floor.altar.choose()).call()
+	var menu := ChoiceMenu.of(depth_floor.altar)
+	assert_eq(menu.get_buttons().size(), 3, "three of the depths' boons")
+	var offered := menu.get_choice_ids()[0]
+	assert_true(menu.choose(offered))
+	assert_eq(outcome.get("boon"), offered)
+	assert_eq(RunState.get_boon_stacks(offered), 1)
+	assert_false(depth_floor.altar.visible, "spent")
+	assert_false(_enter_floor().altar.visible, "the same depth of the same run lights it no more")
+
+func test_five_boons_in_one_run_bless_the_delver() -> void:
+	DepthRun.start_run()
+	for boon_id: StringName in [&"ember_edge", &"ember_edge", &"fleet_foot", &"ember_skin"]:
+		assert_true(RunState.take_boon(boon_id), String(boon_id))
+	assert_false(GameProfile.is_unlocked(&"ember_blessed"))
+	assert_true(RunState.take_boon(&"second_wind"))
+	assert_true(GameProfile.is_unlocked(&"ember_blessed"))
+	assert_almost_eq(RunState.get_stat_multiplier(&"attack_damage"), 1.5625, 0.001, "two Ember Edges")
+	assert_almost_eq(RunState.get_stat_multiplier(PlayerHurtbox.INCOMING_DAMAGE_STAT), 0.8, 0.001)
+
 func _enter_floor() -> DepthFloor:
 	var depth_floor := DEPTHS_SCENE.instantiate() as DepthFloor
 	add_child_autofree(depth_floor)

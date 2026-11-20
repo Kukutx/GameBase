@@ -9,6 +9,8 @@ The condition and action keys the core and the modules register with `GameRules`
 | Key | Layer | Arguments | Usage | What it means |
 | --- | --- | --- | --- | --- |
 | `ACHIEVEMENT_UNLOCKED` | core | 1 | `ACHIEVEMENT_UNLOCKED <achievement>` | the player unlocked it, in any save. |
+| `BOON_TAKEN` | roguelite | 1 or more | `BOON_TAKEN <boon>...` | the run going on took each of these boons. |
+| `BOONS_AT_LEAST` | roguelite | 1 | `BOONS_AT_LEAST <count>` | the run going on took at least that many boons, each as many times as it took it. |
 | `DAY_AT_LEAST` | core | 1 | `DAY_AT_LEAST <n>` | the absolute day number is at least n. |
 | `DAY_AT_MOST` | core | 1 | `DAY_AT_MOST <n>` | the absolute day number is at most n. |
 | `DAY_OF_SEASON` | core | 1 or more | `DAY_OF_SEASON <n>...` | the day within the season (from 1) is one of the numbers. |
@@ -62,4 +64,5 @@ The condition and action keys the core and the modules register with `GameRules`
 | `SET_PROFILE_FLAG` | core | 1 to 2 | `SET_PROFILE_FLAG <key> [value]` | value is true, false or an integer (default true). |
 | `SHOW_HINT` | core | 1 | `SHOW_HINT <hint>` | shows the hint (`GameEvents.hint_requested`) unless it showed before, in any save, or the player turned hints off; a hint passed over while they were off shows the next time, once they are back on. Fails only when the id is not a hint. |
 | `START_QUEST` | progression | 1 | `START_QUEST <quest>` | fails when the quest already started. |
+| `TAKE_BOON` | roguelite | 1 | `TAKE_BOON <boon>` | the run going on takes the boon, as if the player picked it; fails when it may not (`BoonData.can_take()`). |
 | `UNLOCK_ACHIEVEMENT` | core | 1 | `UNLOCK_ACHIEVEMENT <achievement>` | unlocks the achievement in the player's profile, for every save; one already unlocked stays so and the action still succeeds. Fails only when the id is not an achievement. |

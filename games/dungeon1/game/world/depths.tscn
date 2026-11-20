@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="2_tier"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://tiamat/core/world/world_spawn_point.gd" id="4_spawn"]
 [ext_resource type="Script" path="res://tiamat/core/interactions/interactable.gd" id="5_interactable"]
 [ext_resource type="Script" path="res://tiamat/core/camera/camera_bounds.gd" id="91_bounds"]
+[ext_resource type="PackedScene" path="res://tiamat/modules/roguelite/runs/boon_altar.tscn" id="6_altar"]
 
 [sub_resource type="Resource" id="Tier_slime"]
 script = ExtResource("2_tier")
@@ -135,6 +136,24 @@ prompt_text = "Climb back to camp"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Rope/Interactable"]
 shape = SubResource("Rect_way")
+
+[node name="EmberAltar" parent="." instance=ExtResource("6_altar")]
+position = Vector2(0, -100)
+title = "Ember Altar"
+
+[node name="Visual" type="Polygon2D" parent="EmberAltar"]
+polygon = PackedVector2Array(-12, 12, -9, -4, -4, -4, -6, -12, 0, -8, 6, -12, 4, -4, 9, -4, 12, 12)
+color = Color(0.96, 0.46, 0.18, 1)
+
+[node name="Label" type="Label" parent="EmberAltar"]
+offset_left = -52.0
+offset_top = -30.0
+offset_right = 52.0
+offset_bottom = -15.0
+theme_override_colors/font_color = Color(0.98, 0.62, 0.36, 1)
+theme_override_font_sizes/font_size = 9
+text = "Ember Altar"
+horizontal_alignment = 1
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 position = Vector2(0, 96)

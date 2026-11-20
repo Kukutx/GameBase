@@ -35,6 +35,10 @@ func register_source(source: Object) -> void:
 	if not _sources.has(source):
 		_sources.append(source)
 
+## Removes a source of stat changes, its changes with it.
+func unregister_source(source: Object) -> void:
+	_sources.erase(source)
+
 ## The product of every source's multiplier of `stat`; 1.0 when none changes it.
 func get_multiplier(stat: StringName) -> float:
 	var result := 1.0

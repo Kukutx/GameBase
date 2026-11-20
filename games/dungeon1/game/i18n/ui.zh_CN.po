@@ -236,3 +236,42 @@ msgstr "从最上层重新出发"
 
 msgid "Skips the first %d depths"
 msgstr "跳过前 %d 层"
+
+msgid "Ember Altar"
+msgstr "余烬祭坛"
+
+msgid "Ember Edge"
+msgstr "余烬之刃"
+
+msgid "Your blade hits a quarter harder."
+msgstr "武器伤害提高四分之一。"
+
+msgid "Fleet Foot"
+msgstr "疾足"
+
+msgid "You move a sixth faster."
+msgstr "移动速度提高六分之一。"
+
+msgid "Ember Skin"
+msgstr "余烬之肤"
+
+msgid "Hits take a fifth less of your health."
+msgstr "受到的伤害减少五分之一。"
+
+msgid "Second Wind"
+msgstr "重振"
+
+msgid "Restore 40 health."
+msgstr "恢复 40 点生命。"
+
+msgid "Ember Tithe"
+msgstr "余烬什一"
+
+msgid "Find 15g in the ashes."
+msgstr "在灰烬中找到 15 金币。"
+
+msgid "Ember-Blessed"
+msgstr "余烬眷顾"
+
+msgid "Take five boons in one run."
+msgstr "在一轮中获得五项祝福。"

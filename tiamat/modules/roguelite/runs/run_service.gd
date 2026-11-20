@@ -17,6 +17,8 @@ extends Node
 
 signal run_started(run: int)
 signal run_ended(run: int, outcome: StringName)
+## The run took boon `boon_id` (`take_boon()`).
+signal boon_taken(boon_id: StringName)
 
 const OUTCOME_RETURNED := &"returned"
 const OUTCOME_DEFEATED := &"defeated"
@@ -26,6 +28,8 @@ const COUNT_KEY := &"run:count"
 const ACTIVE_KEY := &"run:active"
 ## The run's own values are kept under this prefix.
 const VALUE_PREFIX := "run:value:"
+## How many times the run took each boon: a run value `boon:<boon id>`.
+const BOON_PREFIX := "boon:"
 
 ## Whether the game cannot be saved while a run goes on.
 var blocks_saves := true
@@ -33,8 +37,14 @@ var blocks_saves := true
 ## "Finish the run to save".
 var save_block_reason := ""
 
+# The run's boons, boon id -> times taken, read again once the world changed
+# them (the player's speed asks for its stat every frame).
+var _boons: Dictionary[StringName, int] = {}
+var _boons_read := false
+
 func _ready() -> void:
 	GameSession.passing_out.connect(_on_passing_out)
+	WorldState.changed.connect(_on_world_changed)
 
 ## How many runs this world started.
 func get_run() -> int:
@@ -81,6 +91,77 @@ func set_value(key: StringName, value: Variant) -> void:
 func stream(name: String) -> GameRandomStream:
 	return GameRandom.stream("run:%d:%s" % [get_run(), name])
 
+## How many times this run took boon `boon_id`.
+func get_boon_stacks(boon_id: StringName) -> int:
+	return int(_read_boons().get(boon_id, 0))
+
+## The boons this run took, by id, in the order of their ids.
+func get_boons() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	ids.assign(_read_boons().keys())
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	return ids
+
+## How many boons this run took, each as many times as it took it.
+func get_boon_count() -> int:
+	var total := 0
+	for stacks: int in _read_boons().values():
+		total += stacks
+	return total
+
+## Up to `count` boons the run may take now (`BoonData.can_take()`), none
+## twice, each as likely as its weight, rolled from the run's stream named
+## `offer:<name>`: the same run and name offer the same boons as long as the
+## run may take them, so leaving and coming back offers no others.
+func offer_boons(count: int, name: String) -> Array[BoonData]:
+	var offered: Array[BoonData] = []
+	if not is_active():
+		return offered
+	var candidates: Array[BoonData] = []
+	candidates.assign(BoonData.find_all().filter(func(boon: BoonData) -> bool: return boon.can_take()))
+	var rng := stream("offer:%s" % name)
+	while offered.size() < count and not candidates.is_empty():
+		var weights := PackedFloat64Array()
+		for boon: BoonData in candidates:
+			weights.append(boon.weight)
+		offered.append(candidates.pop_at(rng.pick_weighted(weights)))
+	return offered
+
+## Takes boon `boon_id` in the run going on: runs its actions and counts it;
+## false when the run may not take it (`BoonData.can_take()`) or its actions
+## cannot run.
+func take_boon(boon_id: StringName) -> bool:
+	var boon := BoonData.find(boon_id)
+	if boon == null or not boon.can_take():
+		return false
+	if not boon.actions.is_empty() and not GameRules.run_actions(boon.actions):
+		return false
+	set_value(_boon_key(boon_id), get_boon_stacks(boon_id) + 1)
+	boon_taken.emit(boon_id)
+	return true
+
+## `GameStats` source: the product of the run's boons' multipliers of `stat`,
+## each once for every time the run took it.
+func get_stat_multiplier(stat: StringName) -> float:
+	var result := 1.0
+	var boons := _read_boons()
+	for boon_id: StringName in boons:
+		var boon := BoonData.find(boon_id)
+		if boon != null and boon.multipliers.has(stat):
+			result *= pow(boon.multipliers[stat], boons[boon_id])
+	return result
+
+## `GameStats` source: the sum of the run's boons' bonuses to `stat`, each
+## once for every time the run took it.
+func get_stat_bonus(stat: StringName) -> float:
+	var result := 0.0
+	var boons := _read_boons()
+	for boon_id: StringName in boons:
+		var boon := BoonData.find(boon_id)
+		if boon != null:
+			result += float(boon.bonuses.get(stat, 0.0)) * boons[boon_id]
+	return result
+
 ## Why the game cannot be saved now (a save blocker), or "".
 func get_save_block_reason() -> String:
 	if not blocks_saves or not is_active():
@@ -106,3 +187,22 @@ func _clear_values() -> void:
 
 func _value_key(key: StringName) -> StringName:
 	return StringName(VALUE_PREFIX + String(key))
+
+func _boon_key(boon_id: StringName) -> StringName:
+	return StringName(BOON_PREFIX + String(boon_id))
+
+func _read_boons() -> Dictionary[StringName, int]:
+	if _boons_read:
+		return _boons
+	_boons.clear()
+	var prefix := VALUE_PREFIX + BOON_PREFIX
+	for key: StringName in WorldState.get_keys(prefix):
+		var stacks := WorldState.get_int(key)
+		if stacks > 0:
+			_boons[StringName(String(key).trim_prefix(prefix))] = stacks
+	_boons_read = true
+	return _boons
+
+func _on_world_changed(key: StringName, _value: Variant) -> void:
+	if key == &"" or String(key).begins_with(VALUE_PREFIX + BOON_PREFIX):
+		_boons_read = false
