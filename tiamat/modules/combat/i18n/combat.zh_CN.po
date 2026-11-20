@@ -24,3 +24,15 @@ msgstr "你被击倒了，损失了 %dg，并在原地恢复"
 
 msgid "You were defeated and recovered where you fell"
 msgstr "你被击倒了，并在原地恢复"
+
+msgid "Damage Taken"
+msgstr "承受伤害"
+
+msgid "Light"
+msgstr "较轻"
+
+msgid "Standard"
+msgstr "标准"
+
+msgid "Heavy"
+msgstr "较重"

@@ -1,17 +1,21 @@
 extends GutTest
 
 ## Real-time hits (`Hurtbox`, `PlayerHurtbox`): which side's damage hurts, the
-## invincibility after a hit, the knockback, the flash, and the player's.
+## invincibility after a hit, the knockback, the flash, and the player's, at
+## the player's choice of how hard hits land on them.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const HP := &"fixture_hp"
 
 var _vitals_snapshot: Dictionary
 var _reduced_motion := false
+var _options: GameOptions
 
 func before_each() -> void:
 	_vitals_snapshot = Vitals.to_save_data()
 	_reduced_motion = GameSettings.reduced_motion
+	_options = GameSettings.options
+	GameSettings.options = GameOptions.new(CombatModule.new().get_options())
 	ContentFixture.use(self, [ContentFixture.vital(HP)])
 	var settings := CombatSettings.new()
 	settings.health_vital_id = HP
@@ -22,6 +26,7 @@ func after_each() -> void:
 	ContentRegistry.active = ContentDB
 	Vitals.load_save_data(_vitals_snapshot)
 	GameSettings.reduced_motion = _reduced_motion
+	GameSettings.options = _options
 
 func test_only_damage_of_a_hostile_side_hurts() -> void:
 	var hurtbox := _actor(FactionData.MONSTERS)
@@ -76,6 +81,31 @@ func test_the_player_s_hurtbox_takes_the_player_s_health() -> void:
 	assert_eq(Vitals.get_value(HP), 90)
 	assert_signal_emitted_with_parameters(CombatEvents, "player_hurt", [10])
 	assert_true(hurtbox.is_invincible(), "the player gets a moment after a hit")
+
+func test_the_player_chooses_how_hard_hits_land_on_them() -> void:
+	GameSettings.reduced_motion = true
+	assert_eq(GameSettings.get_option(PlayerHurtbox.DAMAGE_TAKEN_OPTION), "Standard", "the combat module offers the choice, standard at first")
+	assert_eq(PlayerHurtbox.damage_taken(10), 10)
+	GameSettings.options.set_value(PlayerHurtbox.DAMAGE_TAKEN_OPTION, "Light")
+	assert_eq(PlayerHurtbox.damage_taken(10), 5)
+	assert_eq(PlayerHurtbox.damage_taken(1), 1, "a hit that does any takes at least 1")
+	assert_eq(PlayerHurtbox.damage_taken(0), 0)
+	var player := Node2D.new()
+	var hurtbox := PlayerHurtbox.new()
+	player.add_child(hurtbox)
+	add_child_autofree(player)
+	watch_signals(CombatEvents)
+	assert_true(hurtbox.receive(Damage.new(10, FactionData.MONSTERS)))
+	assert_eq(Vitals.get_value(HP), 95, "read at the hit")
+	assert_signal_emitted_with_parameters(CombatEvents, "player_hurt", [5])
+	GameSettings.options.set_value(PlayerHurtbox.DAMAGE_TAKEN_OPTION, "Heavy")
+	assert_eq(PlayerHurtbox.damage_taken(10), 15)
+	assert_eq(PlayerHurtbox.damage_taken(3), 5, "rounded")
+	var own := GameOption.new_choice(PlayerHurtbox.DAMAGE_TAKEN_OPTION, "Damage Taken", PackedStringArray(["Kind", "Cruel"]))
+	GameSettings.options = GameOptions.new([own] as Array[GameOption])
+	assert_eq(PlayerHurtbox.damage_taken(10), 10, "a game's choice of its own takes a hit whole")
+	GameSettings.options = GameOptions.new()
+	assert_eq(PlayerHurtbox.damage_taken(10), 10, "and so does a game without the option")
 
 func test_a_hit_staggers_the_player_while_it_pushes_them() -> void:
 	GameSettings.reduced_motion = true
