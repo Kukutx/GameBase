@@ -104,6 +104,39 @@ func describe_known_tastes(npc_id: StringName) -> PackedStringArray:
 			lines.append(String(formats[taste]) % GameText.list(names))
 	return lines
 
+## The pause menu's Townsfolk: each NPC with their role and hearts, where they
+## are and what they do now (`NpcProfileData.describe_whereabouts()`), today's
+## talk and gift, and what the gifts given told of them; nothing without NPCs.
+func describe_townsfolk() -> PackedStringArray:
+	var lines := PackedStringArray()
+	for profile: NpcProfileData in NpcProfileData.find_all():
+		var hearts := get_hearts(profile.id)
+		lines.append("%s — %s · %s" % [tr(profile.display_name), tr(profile.role), tr_n("%d heart", "%d hearts", hearts) % hearts])
+		for line: String in describe_day(profile):
+			lines.append("  " + line)
+	return lines
+
+## What `profile`'s NPC is up to today, a line each: where they are now
+## ("Now: Riverside Town · Morning walk"), their birthday when it is today,
+## today's talk and gift, then what the gifts given told of them
+## (`describe_known_tastes()`).
+func describe_day(profile: NpcProfileData) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var now := profile.describe_whereabouts()
+	if not now.is_empty():
+		lines.append(tr("Now: %s") % now)
+	if profile.is_birthday():
+		lines.append(tr("Their birthday: a gift counts twice"))
+	var today := PackedStringArray()
+	if has_talked_today(profile.id):
+		today.append(tr("Talked today"))
+	if has_given_gift_today(profile.id):
+		today.append(tr("Gift given today"))
+	if not today.is_empty():
+		lines.append(GameText.list(today))
+	lines.append_array(describe_known_tastes(profile.id))
+	return lines
+
 ## What the player found of how each NPC takes `item_id` as a gift, the NPCs
 ## in their order: "Mira loves it", "Rowan dislikes it".
 func describe_known_takers(item_id: StringName) -> PackedStringArray:

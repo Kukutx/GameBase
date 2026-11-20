@@ -157,16 +157,10 @@ func _social_text() -> String:
 		var points := RelationshipState.get_points(profile.id)
 		var hearts := RelationshipState.get_hearts(profile.id)
 		lines.append(tr("[b]%s[/b] — %s   %d ♥   (%d pts)") % [tr(profile.display_name), tr(profile.role), hearts, points])
-		# Today's talk and gift, then what the gifts given told of them.
-		var today := PackedStringArray()
-		if RelationshipState.has_talked_today(profile.id):
-			today.append(tr("Talked today"))
-		if RelationshipState.has_given_gift_today(profile.id):
-			today.append(tr("Gift given today"))
-		if not today.is_empty():
-			lines.append("    " + GameText.list(today))
-		for taste_line: String in RelationshipState.describe_known_tastes(profile.id):
-			lines.append("    " + taste_line)
+		# Where they are now, today's talk and gift, then what the gifts given
+		# told of them.
+		for line: String in RelationshipState.describe_day(profile):
+			lines.append("    " + line)
 	return "\n".join(lines)
 
 func _skills_text() -> String:

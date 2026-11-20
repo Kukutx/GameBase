@@ -91,3 +91,15 @@ msgstr "一般"
 
 msgid "Disliked"
 msgstr "讨厌"
+
+msgid "Townsfolk"
+msgstr "镇民"
+
+msgid "Now: %s"
+msgstr "此刻：%s"
+
+msgid "Talked today"
+msgstr "今天聊过"
+
+msgid "Gift given today"
+msgstr "今天送过礼"
