@@ -14,6 +14,7 @@ func test_the_ford_map_sets_up_both_sides_across_the_river() -> void:
 	assert_true(across.has(Vector2i(5, 3)), "the only way over the river is the ford")
 	for cell: Vector2i in [Vector2i(3, 1), Vector2i(3, 5), Vector2i(7, 1), Vector2i(7, 4)]:
 		assert_true(battle.grid.is_cover(cell), "woods on both banks give cover")
+	assert_true(battle.grid.is_rough(Vector2i(5, 3)), "the ford takes two steps to wade into")
 
 func test_the_battle_ends_when_both_sides_fight_on_their_own() -> void:
 	var battle := AtbBattle.from_map(BattleMapData.find(&"border_ford"))

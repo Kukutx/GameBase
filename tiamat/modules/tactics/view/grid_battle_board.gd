@@ -3,7 +3,8 @@ extends Control
 
 ## The grid of a grid battle as the player sees it (`GridBattleGame`): the
 ## cells, scaled to fit the board's size, with tufts of brush where they give
-## cover (`cover_color`), the cells a command may pick, the
+## cover (`cover_color`) and ripples on rough ground (`rough_color`), the
+## cells a command may pick, the
 ## cells the foes could strike next (`danger`), the
 ## cursor, the units with their health and gauges, the numbers of what an
 ## action took or gave back, the unit whose turn it is, and the units whose
@@ -29,6 +30,8 @@ const _EDGE_CORNERS: Dictionary[Vector2i, Vector2i] = {
 @export var blocked_color := Color(0.17, 0.23, 0.31)
 ## The tufts drawn on a cell that gives cover.
 @export var cover_color := Color(0.18, 0.3, 0.16)
+## The ripples drawn on rough ground.
+@export var rough_color := Color(0.55, 0.68, 0.78, 0.8)
 @export var choice_color := Color(0.45, 0.7, 1.0, 0.45)
 @export var reach_color := Color(1.0, 0.45, 0.35, 0.22)
 ## The cells the foes could strike on their next turns: filled lightly, and
@@ -167,6 +170,8 @@ func _draw() -> void:
 			draw_rect(_cell_rect(cell, origin, side), color)
 			if battle.grid.is_cover(cell):
 				_draw_cover(cell, origin, side)
+			if battle.grid.is_rough(cell):
+				_draw_rough(cell, origin, side)
 	for cell: Vector2i in reach:
 		draw_rect(_cell_rect(cell, origin, side), reach_color)
 	for cell: Vector2i in danger:
@@ -247,6 +252,12 @@ func _draw_cover(cell: Vector2i, origin: Vector2, side: float) -> void:
 	var corner := origin + Vector2(cell) * side
 	for spot: Vector2 in [Vector2(0.3, 0.35), Vector2(0.7, 0.4), Vector2(0.5, 0.72)]:
 		draw_circle(corner + spot * side, side * 0.17, cover_color)
+
+# Two ripples across rough ground.
+func _draw_rough(cell: Vector2i, origin: Vector2, side: float) -> void:
+	var corner := origin + Vector2(cell) * side
+	for row: float in [0.38, 0.66]:
+		draw_line(corner + Vector2(0.2, row) * side, corner + Vector2(0.8, row) * side, rough_color, maxf(side * 0.06, 1.0))
 
 func _cell_rect(cell: Vector2i, origin: Vector2, side: float) -> Rect2:
 	return Rect2(origin + Vector2(cell) * side, Vector2(side, side))

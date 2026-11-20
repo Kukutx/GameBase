@@ -3,8 +3,9 @@ extends ContentEntry
 
 ## A grid battle a game sets up: the size of its grid, the cells no unit
 ## stands on or walks through (water, walls), the cells that give cover
-## (woods, ruins: a unit there takes `cover_reduction` less damage), the side
-## the player commands and the units each side starts with. The tactics module's minigame plays it
+## (woods, ruins: a unit there takes `cover_reduction` less damage), the rough
+## ground (shallows, mud: entering it takes `rough_cost` steps), the side the
+## player commands and the units each side starts with. The tactics module's minigame plays it
 ## (`GridBattleGame`, setting `map`).
 
 const KIND := &"battle_map"
@@ -18,6 +19,10 @@ const MAX_SIDE := 32
 @export var cover_cells: Array[Vector2i] = []
 ## The share of damage a unit in cover does not take.
 @export_range(0.0, 0.9, 0.05) var cover_reduction := 0.3
+## The open cells that take more steps to enter.
+@export var rough_cells: Array[Vector2i] = []
+## The steps entering rough ground takes.
+@export_range(2, 4, 1) var rough_cost := 2
 ## The side the player commands (`FactionData`); its allies fight with it.
 @export var player_faction_id: StringName = FactionData.PLAYER
 @export var placements: Array[BattlePlacement] = []
@@ -51,6 +56,9 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	for cell: Vector2i in cover_cells:
 		if not grid.is_open(cell):
 			problems.append("gives cover on cell %s, which is blocked or outside its grid" % cell)
+	for cell: Vector2i in rough_cells:
+		if not grid.is_open(cell):
+			problems.append("makes cell %s rough, which is blocked or outside its grid" % cell)
 	var taken: Dictionary[Vector2i, bool] = {}
 	var players := 0
 	var others := 0
