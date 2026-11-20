@@ -52,18 +52,18 @@ func test_a_map_places_known_units_on_open_ground_with_both_sides() -> void:
 
 func test_a_map_s_ground_to_hold_has_its_middle_on_open_ground() -> void:
 	var map := _map()
-	assert_null(RtsBattle.from_map(map).hold, "no ground, nothing to hold")
-	map.hold_area = Rect2(80.0, 30.0, 40.0, 40.0)
+	assert_null(RtsBattle.from_map(map).goal, "no ground, nothing to hold")
+	map.goal_area = Rect2(80.0, 30.0, 40.0, 40.0)
 	assert_eq(map.find_problems(_registry), PackedStringArray(["holds ground [P: (80.0, 30.0), S: (40.0, 40.0)] whose middle is in an obstacle or outside its field"]))
-	map.hold_area = Rect2(120.0, 30.0, 40.0, 40.0)
-	map.hold_seconds = 20.0
+	map.goal_area = Rect2(120.0, 30.0, 40.0, 40.0)
+	map.goal_seconds = 20.0
 	assert_eq(map.find_problems(_registry), PackedStringArray())
 	var battle := RtsBattle.from_map(map)
-	assert_eq(battle.hold.area, map.hold_area)
-	assert_eq(battle.hold.seconds, 20.0)
-	assert_eq(battle.hold.taker, FactionData.PLAYER, "the player's side takes it unless the map names another")
-	map.hold_faction_id = FactionData.MONSTERS
-	assert_eq(RtsBattle.from_map(map).hold.taker, FactionData.MONSTERS)
+	assert_eq(battle.goal.area, map.goal_area)
+	assert_eq(battle.goal.seconds, 20.0)
+	assert_eq(battle.goal.taker, FactionData.PLAYER, "the player's side takes it unless the map names another")
+	map.goal_faction_id = FactionData.MONSTERS
+	assert_eq(RtsBattle.from_map(map).goal.taker, FactionData.MONSTERS)
 
 func test_a_map_sets_up_its_battle_with_the_player_ordering_their_side() -> void:
 	var map := _map()

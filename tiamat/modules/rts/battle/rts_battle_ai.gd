@@ -5,7 +5,7 @@ extends RefCounted
 ## (`RtsBattle`) when its turn to think comes, every `RtsBattle.THINK_STEPS`:
 ## when the battle has them advance, one with nothing to do and no foe in
 ## sight attack-moves to where the nearest foe stands, or, on a field with
-## ground to hold (`RtsBattle.hold`), to that ground unless it stands there
+## ground to hold (`RtsBattle.goal`), to that ground unless it stands there
 ## already; otherwise it waits where it stands until a foe comes in sight, and
 ## then goes after it, as every unit with nothing to do does.
 
@@ -14,9 +14,9 @@ func think(battle: RtsBattle, unit: RtsUnit) -> void:
 		return
 	if battle.get_unit(unit.target_index) != null:
 		return
-	if battle.hold != null:
-		if not battle.hold.area.has_point(unit.position):
-			battle.order_move([unit] as Array[RtsUnit], battle.hold.area.get_center(), true)
+	if battle.goal != null:
+		if not battle.goal.area.has_point(unit.position):
+			battle.order_move([unit] as Array[RtsUnit], battle.goal.area.get_center(), true)
 		return
 	var foe := battle.get_nearest_foe(unit)
 	if foe != null:

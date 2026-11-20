@@ -1,8 +1,8 @@
-class_name RtsHold
+class_name RtsGoal
 extends RefCounted
 
-## The ground of a battle on an open field that a side wins by holding
-## (`RtsMapData.hold_area`, `RtsBattle.hold`): while the units standing in it,
+## The goal of a battle on an open field: ground that a side wins by holding
+## (`RtsMapData.goal_area`, `RtsBattle.goal`): while the units standing in it,
 ## healers aside, are all friends, they hold it, and once units of the side
 ## that takes it (`taker`'s, its allies among them) held it `seconds` in all,
 ## at one go or over many, that side wins the battle. Its foes standing there
@@ -20,9 +20,9 @@ var holder: RtsUnit
 ## The seconds the taking side has held the ground.
 var held := 0.0
 
-func _init(hold_area: Rect2, hold_seconds: float, taking_faction: StringName) -> void:
-	area = hold_area.abs()
-	seconds = maxf(hold_seconds, 0.0)
+func _init(goal_area: Rect2, goal_seconds: float, taking_faction: StringName) -> void:
+	area = goal_area.abs()
+	seconds = maxf(goal_seconds, 0.0)
 	taker = taking_faction
 
 ## How much of the holding that wins the battle the taking side has done,

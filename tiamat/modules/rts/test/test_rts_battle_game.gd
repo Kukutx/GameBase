@@ -76,8 +76,8 @@ func test_the_player_selects_with_the_mouse_sends_them_after_the_foe_and_wins() 
 
 func test_holding_the_ground_is_told_and_wins() -> void:
 	var map := RtsMapData.find(&"fixture_meadow")
-	map.hold_area = Rect2(0.0, 30.0, 40.0, 40.0)
-	map.hold_seconds = 2.0
+	map.goal_area = Rect2(0.0, 30.0, 40.0, 40.0)
+	map.goal_seconds = 2.0
 	var outcome := {}
 	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()
 	var game := _game()
@@ -92,8 +92,8 @@ func test_holding_the_ground_is_told_and_wins() -> void:
 
 func test_the_foes_ground_is_told() -> void:
 	var map := RtsMapData.find(&"fixture_meadow")
-	map.hold_area = Rect2(160.0, 30.0, 40.0, 40.0)
-	map.hold_faction_id = FactionData.MONSTERS
+	map.goal_area = Rect2(160.0, 30.0, 40.0, 40.0)
+	map.goal_faction_id = FactionData.MONSTERS
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
 	var game := _game()
 	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == tr("%s: the foes win if they hold the marked ground for %d seconds.") % [tr("Fixture Meadow"), 30]))

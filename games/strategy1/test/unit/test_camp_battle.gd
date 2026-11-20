@@ -50,9 +50,9 @@ func test_a_win_at_the_ford_sends_two_spearmen_to_the_camp() -> void:
 
 func test_the_fire_at_the_camp_s_heart_held_wins_it() -> void:
 	var battle := RtsBattle.from_map(RtsMapData.find(&"raider_camp"))
-	assert_eq(battle.hold.seconds, 20.0)
-	assert_true(battle.hold.area.has_point(Vector2(370.0, 100.0)), "the fire amid the raiders")
-	assert_true(Rect2(328.0, 48.0, 84.0, 104.0).encloses(battle.hold.area), "inside the palisade")
+	assert_eq(battle.goal.seconds, 20.0)
+	assert_true(battle.goal.area.has_point(Vector2(370.0, 100.0)), "the fire amid the raiders")
+	assert_true(Rect2(328.0, 48.0, 84.0, 104.0).encloses(battle.goal.area), "inside the palisade")
 	# As if the troops had driven the raiders out to the field's far corners.
 	for unit: RtsUnit in battle.get_living_units():
 		if not battle.is_on_player_side(unit):

@@ -238,18 +238,18 @@ func test_the_others_advance_on_their_foes_only_when_the_battle_says_so() -> voi
 
 func test_the_side_that_takes_the_ground_wins_once_it_held_it_long_enough() -> void:
 	var battle := RtsFixture.battle()
-	battle.hold = RtsHold.new(Rect2(140.0, 60.0, 40.0, 40.0), 3.0, FactionData.PLAYER)
+	battle.goal = RtsGoal.new(Rect2(140.0, 60.0, 40.0, 40.0), 3.0, FactionData.PLAYER)
 	battle.ended.connect(_on_ended)
 	var holders: Array = []
-	battle.hold_changed.connect(func(holder: RtsUnit) -> void: holders.append(holder))
+	battle.goal_changed.connect(func(holder: RtsUnit) -> void: holders.append(holder))
 	var footman := RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(160.0, 80.0))
 	# A foe out of sight, so only the ground ends the battle.
 	var raider := RtsFixture.add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2(300.0, 150.0))
 	RtsFixture.add(battle, &"fixture_medic", FactionData.MONSTERS, Vector2(175.0, 95.0))
 	battle.advance(2.0)
 	assert_eq(holders, [footman], "a foes' healer holds nothing")
-	assert_almost_eq(battle.hold.held, 2.0, 0.05)
-	assert_almost_eq(battle.hold.get_fraction(), 2.0 / 3.0, 0.02)
+	assert_almost_eq(battle.goal.held, 2.0, 0.05)
+	assert_almost_eq(battle.goal.get_fraction(), 2.0 / 3.0, 0.02)
 	raider.position = Vector2(170.0, 70.0)
 	battle.advance(RtsBattle.STEP)
 	assert_eq(holders, [footman, null], "foes on it together: no one holds it")
@@ -263,15 +263,15 @@ func test_the_side_that_takes_the_ground_wins_once_it_held_it_long_enough() -> v
 	assert_true(raider.is_alive(), "won with a foe standing")
 
 	var kept := RtsFixture.battle()
-	kept.hold = RtsHold.new(Rect2(140.0, 60.0, 40.0, 40.0), 1.0, FactionData.PLAYER)
+	kept.goal = RtsGoal.new(Rect2(140.0, 60.0, 40.0, 40.0), 1.0, FactionData.PLAYER)
 	RtsFixture.add(kept, &"fixture_footman", FactionData.PLAYER, Vector2(20.0, 20.0))
 	var guard := RtsFixture.add(kept, &"fixture_raider", FactionData.MONSTERS, Vector2(160.0, 80.0))
 	kept.advance(2.0)
-	assert_eq(kept.hold.holder, guard, "a foe on the player's ground holds it")
+	assert_eq(kept.goal.holder, guard, "a foe on the player's ground holds it")
 	assert_false(kept.is_over(), "and keeps it from them, but takes nothing")
 
 	var lost := RtsFixture.battle()
-	lost.hold = RtsHold.new(Rect2(140.0, 60.0, 40.0, 40.0), 1.0, FactionData.MONSTERS)
+	lost.goal = RtsGoal.new(Rect2(140.0, 60.0, 40.0, 40.0), 1.0, FactionData.MONSTERS)
 	RtsFixture.add(lost, &"fixture_footman", FactionData.PLAYER, Vector2(20.0, 20.0))
 	RtsFixture.add(lost, &"fixture_raider", FactionData.MONSTERS, Vector2(160.0, 80.0))
 	lost.advance(1.1)
@@ -280,7 +280,7 @@ func test_the_side_that_takes_the_ground_wins_once_it_held_it_long_enough() -> v
 func test_the_others_advance_on_the_ground_to_hold() -> void:
 	var battle := RtsFixture.battle()
 	battle.computer_advances = true
-	battle.hold = RtsHold.new(Rect2(140.0, 0.0, 40.0, 40.0), 30.0, FactionData.PLAYER)
+	battle.goal = RtsGoal.new(Rect2(140.0, 0.0, 40.0, 40.0), 30.0, FactionData.PLAYER)
 	RtsFixture.add(battle, &"fixture_footman", FactionData.PLAYER, Vector2(40.0, 150.0))
 	var raider := RtsFixture.add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2(280.0, 150.0))
 	battle.advance(1.5)

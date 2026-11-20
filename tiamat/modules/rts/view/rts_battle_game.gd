@@ -6,7 +6,7 @@ extends MiniGame
 ## (`RtsBattleField`) over a bar with the selection and the commands; a
 ## selection of one kind tells what it is strong against
 ## (`RtsUnitData.strong_against`). On a field with ground to hold
-## (`RtsBattle.hold`), the battle's first line says which side wins by holding
+## (`RtsBattle.goal`), the battle's first line says which side wins by holding
 ## it and how long that takes, and the line tells whenever the side that
 ## holds it changes.
 ##
@@ -100,15 +100,15 @@ func setup(settings: Dictionary) -> void:
 	battle = RtsBattle.from_map(map, GameSettings.options.scale_of(FOE_STRENGTH_OPTION, FOE_STRENGTH_SCALES))
 	battle.unit_defeated.connect(_on_unit_defeated)
 	battle.ended.connect(_on_ended)
-	battle.hold_changed.connect(_on_hold_changed)
+	battle.goal_changed.connect(_on_goal_changed)
 	_field.show_battle(battle)
 	var players := battle.get_player_units()
 	if not players.is_empty():
 		_field.cursor = players[0].position
 	_message.text = tr(map.display_name)
-	if battle.hold != null:
-		var line := tr("%s: the foes win if they hold the marked ground for %d seconds.") if FactionData.are_hostile(battle.hold.taker, battle.player_faction) else tr("%s: hold the marked ground for %d seconds, or defeat every foe.")
-		_message.text = line % [tr(map.display_name), roundi(battle.hold.seconds)]
+	if battle.goal != null:
+		var line := tr("%s: the foes win if they hold the marked ground for %d seconds.") if FactionData.are_hostile(battle.goal.taker, battle.player_faction) else tr("%s: hold the marked ground for %d seconds, or defeat every foe.")
+		_message.text = line % [tr(map.display_name), roundi(battle.goal.seconds)]
 	_show_selection()
 
 func find_settings_problems(settings: Dictionary, registry: ContentRegistry) -> PackedStringArray:
@@ -360,7 +360,7 @@ func _on_unit_defeated(unit: RtsUnit) -> void:
 	if _selection.has(unit):
 		_set_selection(_selection.filter(func(other: RtsUnit) -> bool: return other.is_alive()))
 
-func _on_hold_changed(holder: RtsUnit) -> void:
+func _on_goal_changed(holder: RtsUnit) -> void:
 	if holder == null:
 		_message.text = tr("No one holds the ground.")
 	elif battle.is_on_player_side(holder):
