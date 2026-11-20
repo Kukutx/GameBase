@@ -2,7 +2,8 @@ class_name GridTurnOrder
 extends RefCounted
 
 ## The order turns come in a grid battle (`AtbBattle.get_turn_order()`), as
-## the gauges will fill.
+## the gauges will fill at the speeds the units have now
+## (`GridUnit.get_speed()`).
 
 const _EPSILON := 0.000001
 
@@ -16,12 +17,12 @@ static func of(units: Array[GridUnit], waiting: Array[GridUnit], turn: GridUnit,
 	# When each unit fills next, in battle time from now.
 	var next: Dictionary[GridUnit, float] = {}
 	for unit: GridUnit in units:
-		if not unit.is_alive() or unit.data.speed <= 0.0:
+		if not unit.is_alive() or unit.get_speed() <= 0.0:
 			continue
 		if waiting.has(unit):
-			next[unit] = AtbBattle.GAUGE_FULL / unit.data.speed
+			next[unit] = AtbBattle.GAUGE_FULL / unit.get_speed()
 		else:
-			next[unit] = (AtbBattle.GAUGE_FULL - (0.0 if unit == turn else unit.gauge)) / unit.data.speed
+			next[unit] = (AtbBattle.GAUGE_FULL - (0.0 if unit == turn else unit.gauge)) / unit.get_speed()
 	for unit: GridUnit in waiting:
 		if order.size() < count:
 			order.append(unit)
@@ -31,5 +32,5 @@ static func of(units: Array[GridUnit], waiting: Array[GridUnit], turn: GridUnit,
 			if soonest == null or next[unit] < next[soonest] - _EPSILON or (next[unit] <= next[soonest] + _EPSILON and unit.index < soonest.index):
 				soonest = unit
 		order.append(soonest)
-		next[soonest] += AtbBattle.GAUGE_FULL / soonest.data.speed
+		next[soonest] += AtbBattle.GAUGE_FULL / soonest.get_speed()
 	return order

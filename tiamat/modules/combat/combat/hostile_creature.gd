@@ -151,7 +151,7 @@ func _chase(_delta: float) -> void:
 
 # Walks along `direction` at its speed, facing along `facing`.
 func _walk(direction: Vector2, facing: Vector2) -> void:
-	velocity = direction.normalized() * data.move_speed * _elite_scale(&"speed_scale")
+	velocity = direction.normalized() * data.move_speed * _elite_scale(&"speed_scale") * hurtbox.get_speed_scale()
 	move_and_slide()
 	_set_animation(AnimationState.MOVE)
 	if absf(facing.x) > 0.1 and _has_art:

@@ -6,6 +6,7 @@
 script = ExtResource("1_enemy")
 id = &"cave_slime"
 display_name = "Cave Slime"
+affliction_id = &"slimed"
 sprite_path = "res://game/art/licensed/gandalf_slime/Slime green.png"
 sprite_tint = Color(0.7, 0.82, 0.9, 1)
 fallback_color = Color(0.4, 0.6, 0.62, 1)

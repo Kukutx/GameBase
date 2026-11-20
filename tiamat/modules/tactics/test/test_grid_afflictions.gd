@@ -6,7 +6,8 @@ extends GutTest
 ## the player chooses; its last tick of a unit's health defeats it and can end
 ## the battle; a kind immune to it never takes it; the foes' plans count it;
 ## a heal that cures lifts it, which the forecast, the hit and the plans tell;
-## and what is wrong with the content that names one or cures.
+## one that slows fills the gauge slower while it lasts, which the plans count
+## as a delay; and what is wrong with the content that names one or cures.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -100,6 +101,31 @@ func test_a_heal_that_cures_lifts_the_afflictions_of_those_it_heals() -> void:
 	battle.advance(5.0)
 	assert_signal_not_emitted(battle, "unit_ailed", "no tick after the cure")
 
+func test_one_that_slows_fills_the_gauge_slower_while_it_lasts() -> void:
+	var battle := TacticsFixture.battle()
+	_add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(7, 5))
+	assert_true(raider.afflict(_slow(), FactionData.PLAYER))
+	assert_almost_eq(raider.get_speed(), 15.0, 0.001, "0.6 of its 25")
+	battle.advance(1.0)
+	assert_almost_eq(raider.gauge, 15.0, 0.001)
+	battle.advance(1.0)
+	assert_almost_eq(raider.gauge, 30.0, 0.001, "slowed until it lifts, two seconds in, as the knight's turn comes")
+	assert_true(raider.afflictions.is_empty())
+	assert_eq(raider.get_speed(), 25.0, "then as fast as ever")
+
+func test_the_foes_plans_count_a_slow_as_a_delay() -> void:
+	var slow := _slow()
+	var sap := TacticsFixture.action(&"fixture_sap", 0)
+	sap.affliction_id = slow.id
+	ContentFixture.use(self, TacticsFixture.entries() + [slow, sap])
+	var battle := TacticsFixture.battle()
+	var adder := _add(battle, &"fixture_adder", FactionData.MONSTERS, Vector2i(0, 0))
+	var raider := _add(battle, &"fixture_raider", FactionData.PLAYER, Vector2i(1, 0))
+	# The blow's 3 less the raider's 1, and two seconds at 0.6 of its 25: 20
+	# points of gauge it loses, at a tenth each.
+	assert_eq(GridBattleAi.new().score(battle, adder, sap, raider.cell, adder.cell), 2 + 2)
+
 func test_what_is_wrong_with_an_action_or_a_unit_that_names_an_affliction() -> void:
 	var registry := ContentRegistry.active
 	var venom := BattleActionData.find(&"fixture_venom")
@@ -115,6 +141,17 @@ func test_what_is_wrong_with_an_action_or_a_unit_that_names_an_affliction() -> v
 	var raider := BattleUnitData.find(&"fixture_raider")
 	raider.immune_to.assign([&"fixture_missing"])
 	assert_eq(raider.find_problems(registry), PackedStringArray(["is immune to unknown affliction 'fixture_missing'"]))
+
+# A slow: 0.6 of its speed for two seconds of battle time, taking no health.
+static func _slow() -> AfflictionData:
+	var slow := AfflictionData.new()
+	slow.id = &"fixture_slow"
+	slow.display_name = "Fixture Slow"
+	slow.seconds = 2.0
+	slow.tick_seconds = 1.0
+	slow.tick_damage = 0
+	slow.speed_scale = 0.6
+	return slow
 
 func _add(battle: AtbBattle, unit_id: StringName, faction: StringName, cell: Vector2i) -> GridUnit:
 	return battle.add_unit(BattleUnitData.find(unit_id), faction, cell)

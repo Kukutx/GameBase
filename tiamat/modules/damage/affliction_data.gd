@@ -2,10 +2,11 @@ class_name AfflictionData
 extends ContentEntry
 
 ## Something a hit lays on what it hurts besides (`Damage.affliction_id`), a
-## burn or a poison: for `seconds` it takes `tick_damage` of health every
-## `tick_seconds`, with neither a push nor a stun, and shows in its `color` as
-## it does. A hit that lays it again has it last as long again rather than
-## adding another. Any kind of fight may lay it: what lays it and what keeps
+## burn, a poison or a sticky slime: for `seconds` it takes `tick_damage` of
+## health every `tick_seconds`, with neither a push nor a stun, and shows in
+## its `color` as it does, and it may slow what it is on (`speed_scale`). A
+## hit that lays it again has it last as long again rather than adding
+## another. Any kind of fight may lay it: what lays it and what keeps
 ## it is the fight's own, in real time the hits of creatures, hazards and the
 ## player's weapons that carry its `weapon_tag`.
 
@@ -17,7 +18,12 @@ const KIND := &"affliction"
 @export_range(0.1, 60.0, 0.1, "suffix:s") var seconds := 3.0
 ## How often it takes health.
 @export_range(0.1, 10.0, 0.1, "suffix:s") var tick_seconds := 1.0
-@export_range(1, 999, 1) var tick_damage := 1
+## The health each tick takes; 0, none: one that only slows.
+@export_range(0, 999, 1) var tick_damage := 1
+## How fast what it is on goes while it lasts, as a share of its speed: its
+## steps in real time and in a command battle, its time gauge in a grid
+## battle. 1: as fast as ever; of two that slow, the slower counts.
+@export_range(0.1, 1.0, 0.05) var speed_scale := 1.0
 ## The tag of the player's weapons whose hits lay it (an ember blade's burn);
 ## empty, none.
 @export var weapon_tag := ""
@@ -32,6 +38,10 @@ static func find_all() -> Array[AfflictionData]:
 	result.assign(ContentRegistry.active.get_entries(KIND))
 	return result
 
+## Whether it slows what it is on (`speed_scale`).
+func slows() -> bool:
+	return speed_scale < 1.0
+
 ## How many times it takes health in all: once every `tick_seconds` while it
 ## lasts.
 func get_ticks() -> int:
@@ -43,4 +53,6 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 		problems.append("has no display name")
 	if tick_seconds > seconds:
 		problems.append("takes health every %.1fs but lasts only %.1fs" % [tick_seconds, seconds])
+	if tick_damage <= 0 and not slows():
+		problems.append("takes no health and slows nothing")
 	return problems

@@ -120,6 +120,11 @@ func afflict(affliction: AfflictionData, from_faction: StringName) -> bool:
 func can_be_afflicted(affliction: AfflictionData) -> bool:
 	return affliction != null and is_alive() and not data.immune_to.has(affliction.id)
 
+## How fast its gauge fills now: its kind's speed, slower while an affliction
+## that slows is on it (`AfflictionData.speed_scale`).
+func get_speed() -> float:
+	return data.speed * afflictions.get_speed_scale()
+
 ## The share of its gauge filled, from 0 to 1.
 func get_gauge_fraction() -> float:
 	return clampf(gauge / AtbBattle.GAUGE_FULL, 0.0, 1.0)

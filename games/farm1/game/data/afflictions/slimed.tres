@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AfflictionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/damage/affliction_data.gd" id="1_affliction"]
+
+[resource]
+script = ExtResource("1_affliction")
+id = &"slimed"
+display_name = "Slimed"
+color = Color(0.5, 0.85, 0.4, 1)
+seconds = 2.0
+tick_seconds = 1.0
+tick_damage = 0
+speed_scale = 0.6
