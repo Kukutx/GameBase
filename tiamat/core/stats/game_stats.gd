@@ -11,7 +11,14 @@ extends Node
 ## registers as a source (`register_source()`): an object with
 ## `get_stat_multiplier(stat) -> float` and `get_stat_bonus(stat) -> float`. A
 ## system reads a stat here, never from a source: a value becomes
-## `(base + get_bonus(stat)) * get_multiplier(stat)` (`apply()`).
+## `(base + get_bonus(stat)) * get_multiplier(stat)` (`apply()`). A source
+## tells when its changes changed (`notify_changed()`: a boon taken, an
+## upgrade bought, a buff run out), and `changed` tells whatever keeps a value
+## it read from a stat (a vital's maximum) to read it again.
+
+## The stats may read otherwise now: a source was added or removed, or its
+## changes changed.
+signal changed
 
 var _stats: Dictionary[StringName, bool] = {}
 var _sources: Array[Object] = []
@@ -34,10 +41,18 @@ func register_source(source: Object) -> void:
 		return
 	if not _sources.has(source):
 		_sources.append(source)
+		changed.emit()
 
 ## Removes a source of stat changes, its changes with it.
 func unregister_source(source: Object) -> void:
-	_sources.erase(source)
+	if _sources.has(source):
+		_sources.erase(source)
+		changed.emit()
+
+## Tells that a source's changes changed (`changed`); each source calls it
+## when they do.
+func notify_changed() -> void:
+	changed.emit()
 
 ## The product of every source's multiplier of `stat`; 1.0 when none changes it.
 func get_multiplier(stat: StringName) -> float:

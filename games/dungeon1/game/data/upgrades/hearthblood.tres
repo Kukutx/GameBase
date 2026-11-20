@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="StatUpgradeData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/upgrades/stat_upgrade_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hearthblood"
+display_name = "Hearthblood"
+description = "The forge's warmth in your veins: 20 more health per level."
+max_level = 3
+money_costs = PackedInt32Array(45, 95, 170)
+bonuses = Dictionary[StringName, float]({&"max_health": 20.0})

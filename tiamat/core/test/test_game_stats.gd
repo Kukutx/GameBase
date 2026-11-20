@@ -15,6 +15,20 @@ func test_stats_combine_every_source() -> void:
 	assert_almost_eq(stats.get_bonus(&"speed"), 3.0, 0.001)
 	assert_almost_eq(stats.apply(&"speed", 7.0), 7.5, 0.001, "bonuses are added before the multipliers")
 
+func test_the_stats_tell_when_they_may_read_otherwise() -> void:
+	var stats := GameStatsService.new()
+	autofree(stats)
+	watch_signals(stats)
+	var source := _StatSource.new(2.0, 0.0)
+	stats.register_source(source)
+	stats.register_source(source)
+	assert_signal_emit_count(stats, "changed", 1, "a source added once")
+	stats.notify_changed()
+	assert_signal_emit_count(stats, "changed", 2, "its changes changed")
+	stats.unregister_source(source)
+	stats.unregister_source(source)
+	assert_signal_emit_count(stats, "changed", 3, "a source removed once")
+
 class _StatSource:
 	extends RefCounted
 	var _multiplier: float

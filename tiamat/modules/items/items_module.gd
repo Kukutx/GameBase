@@ -9,6 +9,7 @@ func install() -> void:
 	ContentDB.register_settings(ItemsSettings)
 	ItemsRules.register(GameRules)
 	GameStats.register_source(BuffState)
+	BuffState.buffs_changed.connect(GameStats.notify_changed)
 	GameStats.register_source(StatUpgrades.instance())
 	SaveManager.register_section(SaveSection.new(&"buffs", 400,
 		BuffState.to_save_data, func(section: Dictionary, _snapshot: Dictionary) -> void: BuffState.load_save_data(section)))

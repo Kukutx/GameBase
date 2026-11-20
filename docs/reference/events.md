@@ -33,6 +33,10 @@ The signals of the foundation's autoloads. A trigger or a quest objective names 
 - `GameEvents.menu_opened(menu_id: StringName)`: A menu over the world opened (`MenuLayer`, the settings); `menu_id` is its name (`MenuLayer.menu_id`).
 - `GameEvents.menu_closed(menu_id: StringName)`: A menu closed.
 
+## GameStats (core)
+
+- `GameStats.changed()`: The stats may read otherwise now: a source was added or removed, or its changes changed.
+
 ## GameRandom (core)
 
 - `GameRandom.seed_changed(world_seed: int)`

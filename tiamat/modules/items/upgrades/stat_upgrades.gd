@@ -55,3 +55,4 @@ func _read_levels() -> Dictionary[StringName, int]:
 func _on_world_changed(key: StringName, _value: Variant) -> void:
 	if key == &"" or String(key).begins_with(StatUpgradeData.LEVEL_PREFIX):
 		_read = false
+		GameStats.notify_changed()

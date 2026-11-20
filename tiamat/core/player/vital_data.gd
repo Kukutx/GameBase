@@ -13,6 +13,11 @@ const KIND := &"vital"
 @export_range(1, 9999, 1) var maximum := 100
 ## Whether a night's sleep fills it again (`SleepSpot`).
 @export var refill_on_sleep := true
+## A stat its maximum follows (`GameStats`, registered by a module or the
+## game: combat's `max_health`): the stat's bonuses add to the maximum and its
+## multipliers scale it, so a boon or a lasting upgrade raises it. None
+## follows none.
+@export var maximum_stat: StringName
 
 ## The vital with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> VitalData:
@@ -37,4 +42,6 @@ func find_problems(_registry: ContentRegistry) -> PackedStringArray:
 		problems.append("has no display name")
 	if maximum < 1:
 		problems.append("maximum %d is not at least 1" % maximum)
+	if maximum_stat != &"" and not GameStats.has_stat(maximum_stat):
+		problems.append("follows stat '%s', which no installed module or the game reads" % maximum_stat)
 	return problems

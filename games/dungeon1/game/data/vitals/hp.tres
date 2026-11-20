@@ -6,3 +6,4 @@
 script = ExtResource("1_vital")
 id = &"hp"
 display_name = "Health"
+maximum_stat = &"max_health"
