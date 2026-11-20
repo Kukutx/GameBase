@@ -22,6 +22,9 @@ func install() -> void:
 	GameStats.register_stat(PlayerHurtbox.LOOT_STAT, "Loot")
 	GameSession.register_activity_end(FightState.end_fight)
 	ItemSources.register(&"enemy_drops", find_item_sources)
+	if not CombatEvents.enemy_defeated.is_connected(Bestiary.record):
+		CombatEvents.enemy_defeated.connect(Bestiary.record)
+	PauseMenu.add_page(&"bestiary", "Bestiary", 30, Bestiary.describe)
 
 func get_options() -> Array[GameOption]:
 	var options: Array[GameOption] = []

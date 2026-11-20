@@ -171,9 +171,11 @@ func take_damage(amount: int) -> bool:
 
 ## Its full health: its kind's at the player's foe strength.
 func get_max_health() -> int:
-	if data == null:
-		return 1
-	return maxi(1, roundi(data.max_health * GameSettings.options.scale_of(STRENGTH_OPTION, STRENGTH_SCALES)))
+	return max_health_of(data) if data != null else 1
+
+## The full health of kind `enemy` at the player's foe strength.
+static func max_health_of(enemy: EnemyData) -> int:
+	return maxi(1, roundi(enemy.max_health * GameSettings.options.scale_of(STRENGTH_OPTION, STRENGTH_SCALES)))
 
 func get_state_data() -> Dictionary:
 	return {

@@ -35,6 +35,7 @@ func after_each() -> void:
 	PauseMenu._pages.erase(&"fixture_page")
 	PauseMenu._pages.erase(&"fixture_items")
 	PauseMenu._pages.erase(&"fixture_skills")
+	PauseMenu._pages.erase(&"fixture_creatures")
 	_page_lines = PackedStringArray()
 	InputLock.clear()
 	var focus := get_viewport().gui_get_focus_owner()
@@ -386,17 +387,19 @@ func _assert_core_menus_fit(view: Rect2) -> void:
 	title.queue_free()
 
 	# Every button the menu may show: the tips and the achievements beside the
-	# settings, and three pages (as the items, the skills and the bonuses).
+	# settings, and four pages (as the items, the skills, the creatures met and
+	# the bonuses).
 	_page_lines = PackedStringArray(["One"])
 	PauseMenu.add_page(&"fixture_items", "Pack", 10, func() -> PackedStringArray: return _page_lines)
 	PauseMenu.add_page(&"fixture_skills", "Feats", 20, func() -> PackedStringArray: return _page_lines)
+	PauseMenu.add_page(&"fixture_creatures", "Creatures", 30, func() -> PackedStringArray: return _page_lines)
 	if _source == null:
 		_source = _BonusSource.new()
 		GameStats.register_source(_source)
 	var pause := _pause()
-	pause.hidden_pages.assign(PauseMenu.get_page_ids().filter(func(id: StringName) -> bool: return not [&"fixture_items", &"fixture_skills", PauseMenu.BONUSES_PAGE].has(id)))
+	pause.hidden_pages.assign(PauseMenu.get_page_ids().filter(func(id: StringName) -> bool: return not [&"fixture_items", &"fixture_skills", &"fixture_creatures", PauseMenu.BONUSES_PAGE].has(id)))
 	pause.open()
-	assert_eq(pause.pages_row.get_child_count(), 3)
+	assert_eq(pause.pages_row.get_child_count(), 4)
 	pause.tips_button.visible = true
 	pause.achievements_button.visible = true
 	await _layout()
