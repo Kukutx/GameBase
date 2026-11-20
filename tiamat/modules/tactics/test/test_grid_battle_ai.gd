@@ -1,9 +1,9 @@
 extends GutTest
 
 ## How a unit the player does not command takes its turn (`GridBattleAi`): a
-## defeat before more damage, a move only to bring a target in reach, a heal
-## for its hurt side, and a walk toward the nearest foe when nothing is in
-## reach.
+## defeat before more damage, a move only to bring a target in reach or to
+## strike as hard from where fewer foes reach it, a heal for its hurt side,
+## and a walk toward the nearest foe when nothing is in reach.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -30,6 +30,17 @@ func test_it_moves_to_bring_a_foe_in_reach_then_strikes() -> void:
 	TacticsFixture.give_turn(battle, raider)
 	assert_eq(raider.cell, Vector2i(2, 0))
 	assert_eq(knight.health.current, 16)
+
+func test_for_the_same_good_it_strikes_from_where_fewer_foes_reach_it() -> void:
+	var battle := TacticsFixture.battle(Vector2i(8, 1))
+	var archer := _add(battle, &"fixture_archer", FactionData.MONSTERS, Vector2i(4, 0))
+	var left := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	var right := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(7, 0))
+	var threats := battle.get_threats(FactionData.MONSTERS, archer)
+	assert_eq([threats.get(Vector2i(4, 0)), threats.get(Vector2i(2, 0)), threats.get(Vector2i(5, 0))], [2, 1, 1], "both knights reach the middle")
+	TacticsFixture.give_turn(battle, archer)
+	assert_eq(archer.cell, Vector2i(2, 0), "it shoots as hard from where only one knight reaches it, the first such cell")
+	assert_eq([left.health.current, right.health.current], [17, 20])
 
 func test_a_healer_mends_its_hurt_side() -> void:
 	var battle := TacticsFixture.battle()

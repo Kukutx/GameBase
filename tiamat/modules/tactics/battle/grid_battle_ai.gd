@@ -4,7 +4,9 @@ extends RefCounted
 ## How a unit the player does not command takes its turn in a grid battle
 ## (`AtbBattle`): the move and action that do the most good now, a defeat
 ## above all (damage to its foes, health given back to its hurt side), moving
-## first only when that brings a better target in reach; with nothing in
+## first only when that brings a better target in reach or, for the same good,
+## a cell fewer of its foes could strike next (`AtbBattle.get_threats()`: an
+## archer shoots from where the swordsman cannot reach it); with nothing in
 ## reach, a walk toward the nearest foe. It plays the same battle the same way
 ## every time. A game gives `AtbBattle.ai` one of its own to play otherwise.
 
@@ -24,19 +26,27 @@ func take_turn(battle: AtbBattle, unit: GridUnit) -> void:
 
 ## The best of `unit`'s actions from a cell it can stand in now:
 ## {"cell": Vector2i, "action": BattleActionData, "target": Vector2i,
-## "score": int}, the first found on a tie (its own cell before the cells it
+## "score": int}; for the same score, from the cell the fewest of its foes
+## could strike next, then the first found (its own cell before the cells it
 ## can move to); empty when none does any good.
 func best_plan(battle: AtbBattle, unit: GridUnit) -> Dictionary:
 	var best := {}
+	var best_threat := 0
 	var cells: Array[Vector2i] = [unit.cell]
 	cells.append_array(battle.get_moves(unit))
 	var actions := unit.data.get_actions() if not unit.has_acted else [] as Array[BattleActionData]
+	if actions.is_empty():
+		return best
+	var threats := battle.get_threats(unit.faction, unit)
 	for cell: Vector2i in cells:
+		var threat: int = threats.get(cell, 0)
 		for action: BattleActionData in actions:
 			for target: Vector2i in battle.targets_from(unit, action, cell):
 				var value := score(battle, unit, action, target, cell)
-				if value > int(best.get("score", 0)):
+				var best_value := int(best.get("score", 0))
+				if value > best_value or (value == best_value and value > 0 and threat < best_threat):
 					best = {"cell": cell, "action": action, "target": target, "score": value}
+					best_threat = threat
 	return best
 
 ## What `unit` taking `action` at `target` from `from` is worth: the health
