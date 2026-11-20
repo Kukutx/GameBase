@@ -5,7 +5,8 @@ extends GutTest
 ## foe with a right click, wins, and the battle's end is told; the keys give
 ## the commands, as the player rebinds them, and keep groups; the cursor
 ## selects and orders with accept and
-## interact, and a command key that also steers leaves it be; a finger
+## interact, and a command key that also steers leaves it be; holding the
+## ground is told and wins; a finger
 ## selects and orders with taps, and the command buttons name only their
 ## command; cancel drops an
 ## armed attack-move, then the selection, and twice gives the battle up; an
@@ -72,6 +73,30 @@ func test_the_player_selects_with_the_mouse_sends_them_after_the_foe_and_wins() 
 	assert_eq(_ended, [[&"fixture_meadow", true]])
 	assert_eq(_fallen, [&"fixture_raider"] as Array[StringName])
 	assert_false(get_tree().paused)
+
+func test_holding_the_ground_is_told_and_wins() -> void:
+	var map := RtsMapData.find(&"fixture_meadow")
+	map.goal_area = Rect2(0.0, 30.0, 40.0, 40.0)
+	map.goal_seconds = 2.0
+	var outcome := {}
+	(func() -> void: outcome["result"] = await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	var tells := func(text: String) -> bool: return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == text)
+	assert_true(tells.call(tr("%s: hold the marked ground for %d seconds, or defeat every foe.") % [tr("Fixture Meadow"), 2]), "the first line tells how long")
+	assert_true(await _until(func() -> bool: return tells.call(tr("Your units hold the ground.")), 5.0), "and who holds it")
+	assert_true(await _until(func() -> bool: return outcome.has("result"), 10.0))
+	var result: MiniGameResult = outcome["result"]
+	assert_true(result.success, "won with the raider standing")
+	assert_eq(result.score, 2)
+	assert_eq(_ended, [[&"fixture_meadow", true]])
+
+func test_the_foes_ground_is_told() -> void:
+	var map := RtsMapData.find(&"fixture_meadow")
+	map.goal_area = Rect2(160.0, 30.0, 40.0, 40.0)
+	map.goal_faction_id = FactionData.MONSTERS
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text == tr("%s: the foes win if they hold the marked ground for %d seconds.") % [tr("Fixture Meadow"), 30]))
 
 func test_the_keys_give_the_commands_and_keep_groups() -> void:
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()

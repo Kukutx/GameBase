@@ -2,10 +2,11 @@ class_name RtsMapData
 extends ContentEntry
 
 ## A command battle a game sets up: the size of its field in pixels, the
-## rectangles no unit walks through (rocks, walls, water), the side the
-## player commands, the units each side starts with, and whether the units the
-## player does not command march on their foes or wait for them. The rts
-## module's minigame plays it (`RtsBattleGame`, setting `map`).
+## rectangles no unit walks through (rocks, walls, water), the ground a side
+## wins by holding (`goal_area`), the side the player commands, the units each
+## side starts with, and whether the units the player does not command march
+## on their foes or wait for them. The rts module's minigame plays it
+## (`RtsBattleGame`, setting `map`).
 
 const KIND := &"rts_map"
 ## The smallest and largest field, in pixels.
@@ -22,6 +23,18 @@ const MAX_SIZE := Vector2(2048.0, 2048.0)
 ## when they have nothing to do; if not, they wait where they stand until a
 ## foe comes in sight, and then go after it as any unit with nothing to do.
 @export var computer_advances := true
+## The ground a side wins the battle by holding (a camp's fire, a hilltop):
+## once units of the side of `goal_faction_id` stood in it with no foe among
+## them, healers aside, for `goal_seconds` in all, that side wins (`RtsGoal`),
+## the player's when it is theirs; and the units the player does not command
+## that advance march on it rather than on their nearest foe. With no area,
+## the battle ends only when one side is left.
+@export var goal_area := Rect2()
+## The seconds of holding the ground that win the battle.
+@export_range(1.0, 600.0, 1.0, "suffix:s") var goal_seconds := 30.0
+## The side that wins by holding the ground (`FactionData`); empty, the
+## player's.
+@export var goal_faction_id: StringName
 
 ## The map with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> RtsMapData:
@@ -38,6 +51,11 @@ static func find_all() -> Array[RtsMapData]:
 func count_player_side() -> int:
 	return placements.filter(func(placement: RtsPlacement) -> bool: return not FactionData.are_hostile(placement.faction_id, player_faction_id)).size()
 
+## The side that wins by holding the ground: `goal_faction_id`, else the
+## player's.
+func get_goal_faction() -> StringName:
+	return goal_faction_id if goal_faction_id != &"" else player_faction_id
+
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()
 	if display_name.is_empty():
@@ -50,6 +68,8 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		if not field.intersects(obstacle):
 			problems.append("has obstacle %s outside its field" % obstacle)
 	var navigation := RtsNavigation.new(size, obstacles)
+	if goal_area.has_area() and not navigation.is_open(goal_area.get_center()):
+		problems.append("holds ground %s whose middle is in an obstacle or outside its field" % goal_area)
 	var players := 0
 	var others := 0
 	for placement: RtsPlacement in placements:

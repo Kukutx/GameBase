@@ -2,7 +2,9 @@ class_name RtsBattleField
 extends Control
 
 ## The field of a command battle as the player sees it (`RtsBattleGame`): the
-## ground and its obstacles, scaled to fit the field's size, the units with
+## ground and its obstacles, scaled to fit the field's size, the ground to
+## hold (`RtsBattle.goal`, tinted for the side that holds it, with how far the
+## side that takes it is along its top), the units with
 ## their health, the units the player selected, with how far each that strikes
 ## from afar reaches (`get_range_rings()`), the blows and shots between
 ## units, where the player's last orders went, the box the player drags and
@@ -42,6 +44,8 @@ const TOUCH_DRAG_SHARE := 0.35
 @export var cursor_color := Color(1.0, 1.0, 1.0, 0.95)
 ## The ring of how far a selected unit that strikes from afar reaches.
 @export var range_color := Color(0.5, 1.0, 0.55, 0.35)
+## The edge of the ground to hold, and its tint while no side holds it.
+@export var goal_color := Color(1.0, 0.86, 0.35)
 
 var battle: RtsBattle
 ## The units the player selected, ringed.
@@ -172,6 +176,8 @@ func _draw() -> void:
 	draw_rect(Rect2(origin, battle.size * zoom), ground_color)
 	for obstacle: Rect2 in battle.navigation.obstacles:
 		draw_rect(Rect2(origin + obstacle.position * zoom, obstacle.size * zoom), obstacle_color)
+	if battle.goal != null:
+		_draw_goal(origin, zoom)
 	for entry: Dictionary in _marks:
 		var age: float = entry["age"]
 		var color: Color = attack_mark_color if bool(entry["attack"]) else move_mark_color
@@ -196,6 +202,15 @@ func _draw() -> void:
 		var arm := maxf(4.0 * zoom, 4.0)
 		draw_line(at - Vector2(arm, 0.0), at + Vector2(arm, 0.0), cursor_color, 1.0)
 		draw_line(at - Vector2(0.0, arm), at + Vector2(0.0, arm), cursor_color, 1.0)
+
+func _draw_goal(origin: Vector2, zoom: float) -> void:
+	var rect := Rect2(origin + battle.goal.area.position * zoom, battle.goal.area.size * zoom)
+	var holder := battle.goal.holder
+	var tint := goal_color if holder == null else (player_side_color if battle.is_on_player_side(holder) else foe_side_color)
+	draw_rect(rect, Color(tint, 0.2))
+	draw_rect(rect, goal_color, false, maxf(zoom * 0.5, 1.0))
+	var taker_color := foe_side_color if FactionData.are_hostile(battle.goal.taker, battle.player_faction) else player_side_color
+	draw_rect(Rect2(rect.position, Vector2(rect.size.x * battle.goal.get_fraction(), maxf(zoom * 1.5, 2.0))), taker_color)
 
 func _draw_unit(unit: RtsUnit, zoom: float) -> void:
 	var at := to_screen(unit.position)
