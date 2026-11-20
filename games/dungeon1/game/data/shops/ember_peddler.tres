@@ -13,5 +13,5 @@ excluded = Array[StringName]([&"ember_tithe"])
 script = ExtResource("1_shop")
 id = &"ember_peddler"
 display_name = "Ember Peddler"
-stock = {"health_potion": 30}
+stock = {"health_potion": 30, "antidote": 18}
 offers = Array[ExtResource("2_offer")]([SubResource("Offer_boon")])

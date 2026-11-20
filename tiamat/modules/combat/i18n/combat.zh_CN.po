@@ -96,3 +96,6 @@ msgstr "免疫%s"
 
 msgid "Afflicted: %s"
 msgstr "异常状态：%s"
+
+msgid "Cured: %s"
+msgstr "已解除：%s"

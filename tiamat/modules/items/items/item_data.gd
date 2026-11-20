@@ -69,6 +69,9 @@ const KIND := &"item"
 
 ## Tool actions registered with `register_tool_action()`, as action -> true.
 static var _tool_actions: Dictionary = {}
+## What the player may need an item for now besides what it restores and its
+## food buff, registered with `register_consume_need()`.
+static var _consume_needs: Array[Callable] = []
 
 ## The item with `entry_id` in the running game's content, or null.
 static func find(entry_id: StringName) -> ItemData:
@@ -84,6 +87,22 @@ static func find_all() -> Array[ItemData]:
 ## Called from `GameModule.install()`.
 static func register_tool_action(action: StringName) -> void:
 	_tool_actions[action] = true
+
+## Declares a use some installed module or the game makes of an item the
+## player eats or drinks, beyond what it restores and its food buff: `need`
+## takes the item and says whether the player has that use for it now (the
+## combat module's: it lifts an affliction on them). Eating one the player
+## has no use for is refused. Called from `GameModule.install()`.
+static func register_consume_need(need: Callable) -> void:
+	if not _consume_needs.has(need):
+		_consume_needs.append(need)
+
+## Whether a use registered with `register_consume_need()` wants the item now.
+func is_needed_by_others() -> bool:
+	for need: Callable in _consume_needs:
+		if need.call(self):
+			return true
+	return false
 
 ## Problems of `amounts` (item id -> count) for a `find_problems()`: an id that
 ## is no item of `registry`, or a count that is not a positive integer. `verb`
@@ -112,8 +131,10 @@ func is_seed() -> bool:
 func is_placeable() -> bool:
 	return kind == Kind.PLACEABLE and placeable_id != &""
 
+## Whether the player can eat or drink it (`InventoryStore.consume()`): a
+## potion, or what restores a vital or gives a food buff.
 func is_edible() -> bool:
-	return not restores.is_empty() or food_buff_id != &""
+	return kind == Kind.POTION or not restores.is_empty() or food_buff_id != &""
 
 func has_tag(tag: String) -> bool:
 	return tags.has(tag)

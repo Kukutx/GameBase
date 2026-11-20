@@ -21,7 +21,7 @@ signal ailed(damage: Damage)
 ## An affliction took hold of it, not laid on it already (`afflict()`).
 signal afflicted(affliction: AfflictionData)
 ## The afflictions on it changed (`get_afflictions()`): one took hold, one
-## wore off, or they were lifted (`cure()`).
+## wore off, or they were lifted (`cure()`, `lift()`).
 signal afflictions_changed
 ## How fast its actor goes changed (`get_speed_scale()`): an affliction that
 ## slows took hold or lifted.
@@ -119,6 +119,25 @@ func afflict(affliction: AfflictionData, from_faction: StringName = &"") -> bool
 ## it (`PlayerHurtbox.AFFLICTION_SECONDS_STAT`).
 func get_affliction_scale(_affliction: AfflictionData) -> float:
 	return 1.0
+
+## Lifts the affliction `affliction_id` from it: true when it was on.
+func lift(affliction_id: StringName) -> bool:
+	if not _afflictions.lift(affliction_id):
+		return false
+	afflictions_changed.emit()
+	_check_speed()
+	return true
+
+## The afflictions on it that `item` lifts, eaten or drunk: those whose
+## `AfflictionData.cure_tag` it has.
+func find_cured_by(item: ItemData) -> Array[AfflictionData]:
+	var cured: Array[AfflictionData] = []
+	if item == null:
+		return cured
+	for affliction: AfflictionData in _afflictions.get_all():
+		if not affliction.cure_tag.is_empty() and item.has_tag(affliction.cure_tag):
+			cured.append(affliction)
+	return cured
 
 ## The afflictions on it now, in the order laid.
 func get_afflictions() -> Array[AfflictionData]:

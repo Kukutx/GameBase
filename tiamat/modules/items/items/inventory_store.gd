@@ -111,9 +111,11 @@ func has_tool(action: StringName) -> bool:
 	return false
 
 ## Eats one `item` the inventory holds, or drinks it when it is a potion: it
-## restores the player's vitals (`ItemData.restores`) and starts its food buff.
-## False, with a toast, when the inventory holds none or the item would do
-## nothing now (every vital it restores is full and it has no buff).
+## restores the player's vitals (`ItemData.restores`), starts its food buff and
+## is announced (`ItemsEvents.item_consumed`), for what else a module does with
+## it (`ItemData.register_consume_need()`). False, with a toast, when the
+## inventory holds none or the item would do nothing now (every vital it
+## restores is full, it has no buff and no module has a use for it).
 func consume(item: ItemData) -> bool:
 	if _consume_busy:
 		return false
@@ -206,7 +208,7 @@ func _consume(item: ItemData) -> bool:
 	var needed := item.food_buff_id != &""
 	for vital_id: StringName in item.restores:
 		needed = needed or (Vitals.has_vital(vital_id) and not Vitals.is_full(vital_id))
-	if not needed:
+	if not needed and not item.is_needed_by_others():
 		GameEvents.toast("You do not need that right now")
 		return false
 	if not remove_item(item.id, 1):
@@ -224,6 +226,7 @@ func _consume(item: ItemData) -> bool:
 		GameEvents.toastf("Drank %s%s", [item.display_name, gave])
 	else:
 		GameEvents.toastf("Ate %s%s", [item.display_name, gave])
+	ItemsEvents.item_consumed.emit(item.id)
 	return true
 
 ## The state after a transaction, as {"items", "definitions", "removed",

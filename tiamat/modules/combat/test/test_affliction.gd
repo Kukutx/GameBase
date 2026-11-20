@@ -4,8 +4,9 @@ extends GutTest
 ## ticks, one laid again, immunity, the player's and a creature's, one that
 ## slows them, the player's resistance, the HUD's line of those on the player,
 ## what lays them (a creature's strike or its elite form's, a hazard, a
-## weapon's tag, the chance a stat gives any of the player's hits) and what is
-## wrong with them.
+## weapon's tag, the chance a stat gives any of the player's hits), what lifts
+## one (an item tagged its cure the player drinks) and what is wrong with
+## them.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const HOSTILE_CREATURE_SCENE := preload("res://tiamat/modules/combat/combat/hostile_creature.tscn")
@@ -18,6 +19,8 @@ const POISON := &"fixture_poison"
 const SLOW := &"fixture_slow"
 ## The stat that is the chance any hit of the player's poisons.
 const POISON_CHANCE := &"fixture_poison_chance"
+## A potion that restores nothing and lifts the poison.
+const ANTIDOTE := &"fixture_antidote"
 
 var _vitals_snapshot: Dictionary
 var _inventory_snapshot: Dictionary
@@ -263,6 +266,29 @@ func test_any_hit_of_the_player_s_may_lay_one_by_the_chance_a_stat_gives() -> vo
 	GameStats.unregister_source(kindling)
 	assert_false(AfflictionData.find(BURN).rolls_chance(), "one without a chance stat never does")
 
+func test_an_item_tagged_its_cure_lifts_it_when_the_player_drinks_one() -> void:
+	var hurtbox := _player(Vector2.ZERO)
+	var antidote := ItemData.find(ANTIDOTE)
+	assert_true(antidote.is_edible(), "a potion that restores nothing is still drunk")
+	InventoryState.add_item_by_id(ANTIDOTE, 2)
+	assert_false(PlayerHurtbox.would_cure(antidote), "nothing on the player it cures")
+	assert_false(InventoryState.consume(antidote), "so the player has no need of it")
+	assert_true(hurtbox.afflict(AfflictionData.find(POISON)))
+	assert_true(hurtbox.afflict(AfflictionData.find(BURN)))
+	assert_true(PlayerHurtbox.would_cure(antidote))
+	assert_eq(hurtbox.find_cured_by(antidote), [AfflictionData.find(POISON)] as Array[AfflictionData])
+	watch_signals(hurtbox)
+	watch_signals(GameEvents)
+	assert_true(InventoryState.consume(antidote), "drunk at full health, for the poison")
+	assert_false(hurtbox.is_afflicted(POISON), "lifted")
+	assert_true(hurtbox.is_afflicted(BURN), "what it does not cure stays")
+	assert_signal_emitted(hurtbox, "afflictions_changed")
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Cured: Poison"])
+	assert_eq(InventoryState.get_quantity(ANTIDOTE), 1)
+	assert_false(PlayerHurtbox.would_cure(antidote))
+	assert_false(hurtbox.lift(POISON), "not on the player any more")
+	assert_false(PlayerHurtbox.would_cure(ItemData.find(&"fixture_gel")), "an item untagged cures nothing")
+
 func test_what_is_wrong_with_an_affliction_or_what_names_one() -> void:
 	var burn := AfflictionData.find(BURN)
 	assert_eq(burn.get_ticks(), 3, "three tenths in tenths, rounding aside")
@@ -293,6 +319,9 @@ func test_what_is_wrong_with_an_affliction_or_what_names_one() -> void:
 	elite.display_name = "Odd %s"
 	elite.affliction_id = &"fixture_missing"
 	assert_eq(elite.find_problems(ContentRegistry.active), PackedStringArray(["lays unknown affliction 'fixture_missing'"]))
+	assert_eq(PlayerHurtbox.find_cure_problems(ContentRegistry.active), PackedStringArray(), "the antidote cures the poison")
+	AfflictionData.find(BURN).cure_tag = "fixture_unheard_of"
+	assert_eq(PlayerHurtbox.find_cure_problems(ContentRegistry.active), PackedStringArray(["affliction 'fixture_burn' is cured by items tagged 'fixture_unheard_of', which no item is"]))
 
 # A body of `faction` with a hurtbox that no hit makes invincible, at the
 # origin.
@@ -328,13 +357,14 @@ func _creature(enemy_id: StringName, at: Vector2, elite: EliteData = null) -> Ho
 	return creature
 
 # The player's health, a burn, a poison any hit of the player's may lay by
-# chance and a slow, a slime of 30 health whose hits burn, a wisp that never
+# chance and an antidote cures, a slow, a slime of 30 health whose hits burn, a wisp that never
 # burns and a brand whose tag burns.
 func _fixture_content() -> Array:
 	var burn := _affliction(BURN, "Burn", 0.3, 0.1, 2)
 	burn.weapon_tag = "fixture_burns"
 	var poison := _affliction(POISON, "Poison", 0.6, 0.2, 1)
 	poison.chance_stat = POISON_CHANCE
+	poison.cure_tag = "fixture_cures_poison"
 	var slow := _affliction(SLOW, "Slow", 0.3, 0.1, 0)
 	slow.speed_scale = 0.5
 	var gel := ItemData.new()
@@ -344,6 +374,11 @@ func _fixture_content() -> Array:
 	brand.id = &"fixture_brand"
 	brand.display_name = "Brand"
 	brand.tags = PackedStringArray(["weapon", "fixture_burns"])
+	var antidote := ItemData.new()
+	antidote.id = ANTIDOTE
+	antidote.display_name = "Antidote"
+	antidote.kind = ItemData.Kind.POTION
+	antidote.tags = PackedStringArray(["fixture_cures_poison"])
 	var slime := EnemyData.new()
 	slime.id = &"fixture_slime"
 	slime.display_name = "Slime"
@@ -355,7 +390,7 @@ func _fixture_content() -> Array:
 	wisp.id = &"fixture_wisp"
 	wisp.display_name = "Wisp"
 	wisp.immune_to.assign([BURN])
-	return [burn, poison, slow, gel, brand, slime, wisp, ContentFixture.vital(HP)]
+	return [burn, poison, slow, gel, brand, antidote, slime, wisp, ContentFixture.vital(HP)]
 
 # A stat source that has afflictions last `scale` times as long on the
 # player.
