@@ -25,8 +25,7 @@ static func find(entry_id: StringName) -> SkillData:
 static func find_all() -> Array[SkillData]:
 	var result: Array[SkillData] = []
 	result.assign(ContentRegistry.active.get_entries(KIND))
-	result.sort_custom(func(a: SkillData, b: SkillData) -> bool:
-		return a.order < b.order or (a.order == b.order and String(a.id) < String(b.id)))
+	result.sort_custom(ContentEntry.listed_before)
 	return result
 
 func get_short_name() -> String:

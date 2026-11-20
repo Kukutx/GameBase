@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"ember_heart"
+order = 40
 display_name = "Ember Heart"
 description = "Reach depth 10."

@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"warden_felled"
+order = 30
 display_name = "Warden Felled"
 description = "Defeat an Ember Warden, the guardian of every fifth depth."

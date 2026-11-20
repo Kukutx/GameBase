@@ -65,6 +65,10 @@ func test_the_second_battle_of_each_station_has_its_own_achievement() -> void:
 	assert_true(GameProfile.is_unlocked(&"camp_stormed"))
 	assert_false(GameProfile.is_unlocked(&"pass_held"))
 
+func test_the_challenges_and_the_achievements_follow_the_campaign() -> void:
+	assert_eq(MiniGameDefinition.find_all().map(func(minigame: MiniGameDefinition) -> StringName: return minigame.id), [&"ford_battle", &"mill_battle", &"pass_battle", &"camp_battle"])
+	assert_eq(AchievementData.find_all().slice(0, 4).map(func(achievement: AchievementData) -> StringName: return achievement.id), [&"ford_held", &"mill_taken", &"pass_held", &"camp_stormed"], "each battle's achievement in the order it is fought")
+
 func test_every_star_of_the_four_battles_makes_a_master_of_the_field() -> void:
 	for battle: StringName in [&"ford_battle", &"mill_battle", &"pass_battle", &"camp_battle"]:
 		var definition := MiniGameDefinition.find(battle)

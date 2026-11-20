@@ -12,6 +12,9 @@ const KIND := &"minigame"
 @export var display_name := ""
 ## A line under the name there.
 @export_multiline var description := ""
+## Where it stands among the minigames the pause menu's Challenges list:
+## lower first, then by id (a campaign's battles in the order they are fought).
+@export var order := 0
 ## What must hold for the player to pick it there (`GameRules` syntax; empty:
 ## always): `MINIGAME_WON ford_battle` opens a battle once the one before it
 ## is won. A locked one says what it needs (`GameRules.describe()`).
@@ -47,10 +50,11 @@ const KIND := &"minigame"
 static func find(entry_id: StringName) -> MiniGameDefinition:
 	return ContentRegistry.active.get_entry(KIND, entry_id) as MiniGameDefinition
 
-## The running game's minigames, sorted by id.
+## The running game's minigames in their `order`.
 static func find_all() -> Array[MiniGameDefinition]:
 	var result: Array[MiniGameDefinition] = []
 	result.assign(ContentRegistry.active.get_entries(KIND))
+	result.sort_custom(ContentEntry.listed_before)
 	return result
 
 ## The key of the world state's count of the player's wins of minigame

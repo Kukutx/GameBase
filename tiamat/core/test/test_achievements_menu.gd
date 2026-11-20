@@ -66,6 +66,14 @@ func test_the_unlocked_come_first_in_their_order_and_a_hidden_one_keeps_to_itsel
 	pause.close()
 	assert_false(menu.visible, "closing the pause menu closes it")
 
+func test_the_locked_follow_their_order_after_the_unlocked() -> void:
+	AchievementData.find(&"fixture_a_first_step").order = 20
+	AchievementData.find(&"fixture_d_last").order = -10
+	var ids := func() -> Array: return AchievementsMenu.in_order().map(func(achievement: AchievementData) -> StringName: return achievement.id)
+	assert_eq(ids.call(), [&"fixture_d_last", &"fixture_b_far", &"fixture_c_secret", &"fixture_a_first_step"], "the lower order first, then by id")
+	GameProfile.unlock(&"fixture_a_first_step")
+	assert_eq(ids.call(), [&"fixture_a_first_step", &"fixture_d_last", &"fixture_b_far", &"fixture_c_secret"], "the unlocked still first")
+
 func test_a_locked_one_shows_how_far_the_player_is_and_each_its_icon() -> void:
 	var counting := _achievement(&"fixture_e_runner", "Runner", "Run ten times.")
 	counting.progress_flag = &"fixture_runs"

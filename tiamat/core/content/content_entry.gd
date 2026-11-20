@@ -19,6 +19,21 @@ extends Resource
 func get_custom_field(key: StringName, default_value: Variant = null) -> Variant:
 	return custom_fields.get(String(key), custom_fields.get(key, default_value))
 
+## Whether `a` comes before `b` in the lists the player reads of a kind whose
+## entries have an `order` (`RecordData`, `AchievementData`,
+## `MiniGameDefinition`): the lower order first, then by id; an entry without
+## one stands at 0. A kind sorts its `find_all()` with it
+## (`result.sort_custom(ContentEntry.listed_before)`), so content spaces its
+## orders out (10, 20, 30) and a later entry slots in between.
+static func listed_before(a: ContentEntry, b: ContentEntry) -> bool:
+	var a_order := _order_of(a)
+	var b_order := _order_of(b)
+	return a_order < b_order or (a_order == b_order and String(a.id) < String(b.id))
+
+static func _order_of(entry: ContentEntry) -> int:
+	var value: Variant = entry.get(&"order")
+	return value if value is int else 0
+
 ## What is wrong with this entry: its own fields and its references to other
 ## content of `registry`. Each problem reads after the entry's kind and id
 ## ("references unknown item 'x'"); the registry adds those.

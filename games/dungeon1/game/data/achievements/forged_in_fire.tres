@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"forged_in_fire"
+order = 110
 display_name = "Forged in Fire"
 description = "Reach depth 10 with Damage Taken on Heavy."

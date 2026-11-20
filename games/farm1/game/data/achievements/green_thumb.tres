@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"green_thumb"
+order = 10
 display_name = "Green Thumb"
 description = "Harvest your first crop."

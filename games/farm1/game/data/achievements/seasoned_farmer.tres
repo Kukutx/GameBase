@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_achievement")
 id = &"seasoned_farmer"
+order = 30
 display_name = "Seasoned Farmer"
 description = "Harvest 100 crops, counting every save."
 progress_flag = &"crops_harvested"

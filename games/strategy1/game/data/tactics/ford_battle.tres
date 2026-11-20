@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_definition")
 id = &"ford_battle"
+order = 10
 display_name = "Border Ford"
 description = "Hold the only ford over the river against the raiders."
 score_name = "Units Left"

@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ember_rampage"
+order = 60
 display_name = "Ember Rampage"
 description = "Defeat 15 creatures of the depths in a single run."
 progress_flag = &"most_creatures_in_a_run"

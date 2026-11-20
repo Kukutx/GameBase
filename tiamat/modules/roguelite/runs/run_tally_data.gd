@@ -27,8 +27,7 @@ static func find(entry_id: StringName) -> RunTallyData:
 static func find_all() -> Array[RunTallyData]:
 	var result: Array[RunTallyData] = []
 	result.assign(ContentRegistry.active.get_entries(KIND))
-	result.sort_custom(func(a: RunTallyData, b: RunTallyData) -> bool:
-		return a.order < b.order or (a.order == b.order and String(a.id) < String(b.id)))
+	result.sort_custom(ContentEntry.listed_before)
 	return result
 
 ## What the run going on raised it to.
