@@ -14,6 +14,8 @@ extends RefCounted
 
 ## The colour of the outline `outline()` draws around text over the world.
 const OUTLINE_COLOR := Color(0.02, 0.02, 0.03, 0.75)
+## The colour of the band `back()` draws behind a message over the world.
+const BAND_COLOR := Color(0.02, 0.02, 0.03, 0.7)
 ## The height of Android's smallest text, 12 sp, in millimetres.
 const MIN_TEXT_MM := 1.9
 ## The short side of a small phone's screen, in millimetres.
@@ -88,6 +90,47 @@ static func outline(label: Label) -> void:
 	label.add_theme_constant_override(&"outline_size", maxi(roundi(label.get_theme_font_size(&"font_size") / 4.0), 2))
 	label.add_theme_color_override(&"font_outline_color", OUTLINE_COLOR)
 
+## Draws a dark band behind `label`'s text while it has any, a little wider
+## and taller than the text, so a message over the world (a hint, a toast)
+## stands apart from the names and signs of the world under it. A label
+## backed once stays so.
+static func back(label: Label) -> void:
+	if label.has_meta(&"band"):
+		return
+	var band := _Band.new()
+	label.add_child(band, false, Node.INTERNAL_MODE_FRONT)
+	label.set_meta(&"band", band)
+	# It draws again whenever the label does: its text, size or font changed.
+	label.draw.connect(band.queue_redraw)
+
+## Where `label` draws its text, in its own coordinates, as its alignment
+## places it; an empty rect while it shows none.
+static func text_rect(label: Label) -> Rect2:
+	var shown := label.atr(label.text) if label.can_auto_translate() else label.text
+	if shown.is_empty():
+		return Rect2()
+	var font := label.get_theme_font(&"font")
+	var font_size := label.get_theme_font_size(&"font_size")
+	var box := label.get_theme_stylebox(&"normal")
+	var room := label.size - box.get_minimum_size()
+	var wraps := label.autowrap_mode != TextServer.AUTOWRAP_OFF
+	var size := font.get_multiline_string_size(shown, label.horizontal_alignment, room.x if wraps else -1.0, font_size)
+	if wraps or label.clip_text or label.text_overrun_behavior != TextServer.OVERRUN_NO_TRIMMING:
+		size.x = minf(size.x, room.x)
+	var left := box.get_margin(SIDE_LEFT)
+	match label.horizontal_alignment:
+		HORIZONTAL_ALIGNMENT_CENTER:
+			left += (room.x - size.x) / 2.0
+		HORIZONTAL_ALIGNMENT_RIGHT:
+			left += room.x - size.x
+	var top := box.get_margin(SIDE_TOP)
+	match label.vertical_alignment:
+		VERTICAL_ALIGNMENT_CENTER:
+			top += (room.y - size.y) / 2.0
+		VERTICAL_ALIGNMENT_BOTTOM:
+			top += room.y - size.y
+	return Rect2(left, top, size.x, size.y)
+
 # The theme font size `control` draws its text with, or empty for one that
 # draws none.
 static func _size_name(control: Control) -> StringName:
@@ -101,3 +144,23 @@ static func _size_name(control: Control) -> StringName:
 static func _scale_of(control: Control) -> float:
 	var scale := control.get_global_transform_with_canvas().get_scale().y if control.is_inside_tree() else 1.0
 	return scale if scale > 0.0 else 1.0
+
+# The band `back()` draws behind its label's text, under it.
+class _Band extends Control:
+	var _box := StyleBoxFlat.new()
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		show_behind_parent = true
+		_box.bg_color = ReadableText.BAND_COLOR
+
+	func _draw() -> void:
+		var label := get_parent() as Label
+		var rect := ReadableText.text_rect(label) if label != null else Rect2()
+		if not rect.has_area():
+			return
+		var font_size := label.get_theme_font_size(&"font_size")
+		_box.set_corner_radius_all(roundi(font_size * 0.4))
+		var across := font_size * 0.6
+		var down := font_size * 0.15
+		draw_style_box(_box, rect.grow_individual(across, down, across, down))

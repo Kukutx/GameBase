@@ -26,6 +26,10 @@ extends Label
 ## Whether its text has a dark outline, to read over any ground
 ## (`ReadableText.outline()`).
 @export var outlined := true
+## Whether a dark band stands behind its text while it shows a message, so
+## the message stands apart from the names and signs of the world under it
+## (`ReadableText.back()`).
+@export var backed := true
 
 var _waiting: PackedStringArray = []
 # How long each waiting message stays.
@@ -40,6 +44,8 @@ func _ready() -> void:
 	text = ""
 	if outlined:
 		ReadableText.outline(self)
+	if backed:
+		ReadableText.back(self)
 	if shows_toasts:
 		GameEvents.toast_requested.connect(show_message)
 	if shows_hints:
