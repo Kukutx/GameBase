@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/items/crafting/recipe_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"fire_roasted_tomatoes"
+display_name = "Fire-Roasted Tomatoes"
+category = 1
+ingredients = {"tomato": 2, "wood": 1}
+output_item_id = &"fire_roasted_tomatoes"
+output_quantity = 1
+condition = "SKILL_LEVEL combat 2"

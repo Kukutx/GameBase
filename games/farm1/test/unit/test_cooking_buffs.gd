@@ -69,6 +69,18 @@ func test_vegetable_stew_crafts_restores_stats_and_applies_work_buff() -> void:
 	assert_almost_eq(BuffState.get_stat_multiplier(&"move_speed"), 1.1, 0.001)
 	assert_almost_eq(BuffState.get_stat_multiplier(&"tool_energy"), 0.8, 0.001)
 
+func test_fire_roasted_tomatoes_set_foes_burning_by_chance_for_four_hours() -> void:
+	var recipe := CraftingState.get_recipe(&"fire_roasted_tomatoes")
+	assert_eq(recipe.category, RecipeData.Category.COOKING)
+	assert_eq(AfflictionData.find(&"burning").chance_stat, GameSetup.BURN_CHANCE_STAT)
+	InventoryState.add_item_by_id(&"fire_roasted_tomatoes", 1)
+	Vitals.set_value(&"hp", 50)
+	assert_true(InventoryState.consume(ItemData.find(&"fire_roasted_tomatoes")))
+	assert_true(BuffState.has_buff(&"fiery_belly"))
+	assert_eq(BuffState.get_minutes_remaining(&"fiery_belly"), 240)
+	assert_eq(GameStats.get_bonus(GameSetup.BURN_CHANCE_STAT), 20.0, "one blow or shot in five")
+	assert_eq(FoodBuffData.find(&"fiery_belly").describe_changes(), "Burn chance +20")
+
 func test_food_use_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"vegetable_stew", 2)
 	Vitals.set_value(&"energy", 40)

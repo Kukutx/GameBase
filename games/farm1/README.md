@@ -40,7 +40,7 @@ New content goes into the content pack `game/data/content.tres` and is read thro
 - Placeable storage, machines and persistent building placement; a shipping bin settled overnight
 - NPC schedules across towns, gifts, 0→10-heart relationship dialogue and five heart-event tiers per core NPC
 - A long mining quest chain, progression mail, daily contracts, seasonal festivals and chained town restoration projects
-- Six skills with Lv5/Lv10 perks (Combat's raise max health, Farming's max energy, as Vegetable Stew's Hearty Worker does for four hours), collections and archive milestones
+- Six skills with Lv5/Lv10 perks (Combat's raise max health, Farming's max energy, as Vegetable Stew's Hearty Worker does for four hours; at Combat 2 the kitchen roasts Fire-Roasted Tomatoes, two tomatoes over wood, whose Fiery Belly has one blow or shot in five set foes Burning for four hours, the game's `burn_chance` stat), collections and archive milestones
 - Eleven achievements kept across every save, six of them counted over every save (crops, fish, gifts, mining, the mine's chests, and Monster Scholar's kinds of creature the bestiary has met) with their progress shown in the game menu and the achievements menu, two for the mine's guardians, and one hidden; the achievements menu's Records shows the counts with the deepest floor, the guardians felled and the chests opened
 - The pause menu's Bestiary lists every kind of creature the farmer has defeated in the mines, across every save, with its health, its hits and its drop
 - Three save slots with primary/backup/temp crash recovery, periodic and travel autosave

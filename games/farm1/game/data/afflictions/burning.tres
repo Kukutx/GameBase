@@ -10,3 +10,4 @@ color = Color(1, 0.45, 0.15, 1)
 seconds = 2.0
 tick_seconds = 1.0
 tick_damage = 3
+chance_stat = &"burn_chance"
