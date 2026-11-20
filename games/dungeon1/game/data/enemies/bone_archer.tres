@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_data.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"bone_archer"
+display_name = "Bone Archer"
+fallback_color = Color(0.7, 0.75, 0.86, 1)
+max_health = 30
+move_speed = 40.0
+chase_radius = 180.0
+attack_range = 112.0
+contact_damage = 8
+attack_cooldown = 1.8
+windup_seconds = 0.35
+shot_speed = 170.0
+shot_color = Color(0.94, 0.92, 0.82, 1)
+drop_item_id = &"bone_shard"
+drop_quantity = 1
+combat_xp = 24

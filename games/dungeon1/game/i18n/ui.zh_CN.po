@@ -119,6 +119,9 @@ msgstr "洞穴史莱姆"
 msgid "Skeleton"
 msgstr "骷髅"
 
+msgid "Bone Archer"
+msgstr "骷髅弓手"
+
 msgid "Ember Wisp"
 msgstr "余烬幽火"
 

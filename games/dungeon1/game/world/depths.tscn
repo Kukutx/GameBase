@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="2_tier"]
@@ -18,6 +18,11 @@ minimum_depth = 1
 script = ExtResource("2_tier")
 enemy_id = &"skeleton"
 minimum_depth = 3
+
+[sub_resource type="Resource" id="Tier_archer"]
+script = ExtResource("2_tier")
+enemy_id = &"bone_archer"
+minimum_depth = 4
 
 [sub_resource type="Resource" id="Tier_wisp"]
 script = ExtResource("2_tier")
@@ -48,7 +53,7 @@ size = Vector2(36, 30)
 
 [node name="Depths" type="Node2D"]
 script = ExtResource("1_floor")
-enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_wisp"), SubResource("Tier_warden")])
+enemy_tiers = Array[ExtResource("2_tier")]([SubResource("Tier_slime"), SubResource("Tier_skeleton"), SubResource("Tier_archer"), SubResource("Tier_wisp"), SubResource("Tier_warden")])
 elite_odds = SubResource("EliteOdds_depths")
 camp_location_id = &"camp"
 camp_spawn_id = &"from_depths"
