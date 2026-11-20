@@ -1,7 +1,7 @@
 extends GutTest
 
 ## Ember Depths' runs: the depth a run reaches and what it raises in the
-## profile, how long a run lasts, how a floor lays out its enemies from the
+## profile (depth 10 on Heavy damage taken, one more), how long a run lasts, how a floor lays out its enemies from the
 ## run's random stream, and when the way on opens.
 
 const DEPTHS_SCENE := preload("res://game/world/depths.tscn")
@@ -16,6 +16,7 @@ var _player: Dictionary
 var _vitals_snapshot: Dictionary
 var _profile_path: String
 var _profile: Dictionary
+var _options: GameOptions
 
 func before_each() -> void:
 	_world = WorldState.to_save_data()
@@ -27,6 +28,8 @@ func before_each() -> void:
 	_vitals_snapshot = Vitals.to_save_data()
 	_profile_path = GameProfile.profile_path
 	_profile = GameProfile.to_save_data()
+	_options = GameSettings.options
+	GameSettings.options = GameOptions.of_running_game()
 	GameProfile.profile_path = TEST_PROFILE
 	GameProfile.load_save_data({})
 	WorldState.clear()
@@ -42,6 +45,7 @@ func after_each() -> void:
 	Vitals.load_save_data(_vitals_snapshot)
 	GameProfile.load_save_data(_profile)
 	GameProfile.profile_path = _profile_path
+	GameSettings.options = _options
 	for path: String in [TEST_PROFILE, TEST_PROFILE + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
@@ -95,6 +99,16 @@ func test_reaching_depth_five_and_ten_unlocks_the_achievements() -> void:
 	for _step: int in 5:
 		DepthRun.descend()
 	assert_true(GameProfile.is_unlocked(&"ember_heart"))
+	assert_false(GameProfile.is_unlocked(&"forged_in_fire"), "not on standard damage taken")
+
+func test_reaching_depth_ten_on_heavy_damage_taken_forges_one_more() -> void:
+	GameSettings.options.set_value(PlayerHurtbox.DAMAGE_TAKEN_OPTION, "Heavy")
+	DepthRun.start_run()
+	for _step: int in 8:
+		DepthRun.descend()
+	assert_false(GameProfile.is_unlocked(&"forged_in_fire"), "depth 9")
+	DepthRun.descend()
+	assert_true(GameProfile.is_unlocked(&"forged_in_fire"))
 
 func test_a_deeper_floor_spawns_more_enemies() -> void:
 	assert_eq(DepthFloor.get_enemy_count(1), 2)

@@ -148,6 +148,12 @@ msgstr "余烬之心"
 msgid "Reach depth 10."
 msgstr "抵达第 10 层。"
 
+msgid "Forged in Fire"
+msgstr "烈火淬炼"
+
+msgid "Reach depth 10 with Damage Taken on Heavy."
+msgstr "在承受伤害为「较重」时抵达第 10 层。"
+
 msgid "Day"
 msgstr "白昼"
 

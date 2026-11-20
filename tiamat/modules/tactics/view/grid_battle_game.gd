@@ -14,6 +14,10 @@ extends MiniGame
 ## commands, pressed twice, gives the battle up. It ends won or lost a moment
 ## after the battle does (`END_SECONDS`), with the units of the player's side
 ## left as its score, and tells `TacticsEvents`.
+##
+## Battle time runs at the game's speed (`TacticsSettings.battle_speed`) times
+## the player's choice (`SPEED_OPTION`, which `TacticsModule` declares), read
+## as the battle runs, so a change in the settings holds at once.
 
 enum Mode {
 	## Time passes; no unit of the player's waits for commands.
@@ -32,6 +36,11 @@ const CURSOR_ACTIONS := {
 	&"ui_left": Vector2i.LEFT, &"ui_right": Vector2i.RIGHT, &"ui_up": Vector2i.UP, &"ui_down": Vector2i.DOWN,
 }
 const CONFIRM_ACTIONS: Array[StringName] = [&"ui_accept", &"interact"]
+## The player's option of how fast a grid battle runs (`GameOption`), and how
+## much each of its choices speeds the game's speed; a choice not named here
+## keeps it.
+const SPEED_OPTION := &"grid_battle_speed"
+const SPEED_SCALES: Dictionary[String, float] = {"Slow": 0.5, "Standard": 1.0, "Fast": 1.5}
 
 var battle: AtbBattle
 var map: BattleMapData
@@ -114,7 +123,12 @@ func _process(delta: float) -> void:
 			var details := {"map": map.id}
 			finish(MiniGameResult.won(survivors, details) if battle.is_won() else MiniGameResult.lost(0, details))
 		return
-	battle.advance(delta * _speed)
+	battle.advance(delta * get_speed())
+
+## How many seconds of battle time pass in a second: the game's battle speed
+## at the player's choice (`SPEED_OPTION`).
+func get_speed() -> float:
+	return _speed * GameSettings.options.scale_of(SPEED_OPTION, SPEED_SCALES)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not has_input() or battle == null or battle.is_over():

@@ -36,3 +36,9 @@ msgstr "全选"
 
 msgid "Stop"
 msgstr "停止"
+
+msgid "Command Battle Speed"
+msgstr "指挥战斗速度"
+
+msgid "Standard"
+msgstr "标准"
