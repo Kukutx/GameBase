@@ -453,3 +453,12 @@ msgstr "寻宝者"
 
 msgid "Open 15 chests in the depths, counting every run."
 msgstr "在深处开启 15 个宝箱，所有冒险累计。"
+
+msgid "Ember Peddler"
+msgstr "余烬行商"
+
+msgid "No boon for sale"
+msgstr "没有可卖的祝福"
+
+msgid "Boon: %s — %dg"
+msgstr "祝福：%s — %dg"

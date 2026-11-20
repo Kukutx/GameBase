@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://game/depths/depth_floor.gd" id="1_floor"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/enemy_tier.gd" id="2_tier"]
@@ -10,6 +10,8 @@
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/elite_odds.gd" id="7_elite_odds"]
 [ext_resource type="Script" path="res://tiamat/modules/combat/combat/hazard_spread.gd" id="8_vents"]
 [ext_resource type="Resource" path="res://game/depths/chests.tres" id="9_chests"]
+[ext_resource type="PackedScene" path="res://tiamat/modules/items/shop/shop_stand.tscn" id="10_stand"]
+[ext_resource type="Resource" path="res://game/data/shops/ember_peddler.tres" id="11_peddler"]
 
 [sub_resource type="Resource" id="Tier_slime"]
 script = ExtResource("2_tier")
@@ -189,6 +191,10 @@ theme_override_colors/font_color = Color(0.98, 0.62, 0.36, 1)
 theme_override_font_sizes/font_size = 9
 text = "Ember Altar"
 horizontal_alignment = 1
+
+[node name="Peddler" parent="." instance=ExtResource("10_stand")]
+position = Vector2(-85, -96)
+shop = ExtResource("11_peddler")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 position = Vector2(0, 96)

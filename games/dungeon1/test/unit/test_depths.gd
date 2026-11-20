@@ -244,7 +244,7 @@ func test_from_the_third_depth_ember_vents_flare_clear_of_the_ways_in_and_on() -
 	var vents := depth_floor.get_vents()
 	assert_eq(vents.size(), 3)
 	var ways: Array[Vector2] = []
-	for way: String in ["ArrivalSpawn", "Stairs", "Rope", "EmberAltar"]:
+	for way: String in ["ArrivalSpawn", "Stairs", "Rope", "EmberAltar", "Peddler"]:
 		ways.append((depth_floor.get_node(way) as Node2D).position)
 	var player := depth_floor.get_node("Player")
 	var spots: Array = []
@@ -254,7 +254,7 @@ func test_from_the_third_depth_ember_vents_flare_clear_of_the_ways_in_and_on() -
 		assert_eq(vent.damage, 12, "and burns harder the deeper")
 		assert_lt(vent.get_index(), player.get_index(), "under the player")
 		for way: Vector2 in ways:
-			assert_gte(vent.position.distance_to(way), DepthFloor.VENT_CLEARANCE, "clear of the ways in and on and the altar")
+			assert_gte(vent.position.distance_to(way), DepthFloor.VENT_CLEARANCE, "clear of the ways in and on, the altar and the peddler")
 		for enemy: HostileCreature in depth_floor.get_enemies():
 			assert_gte(enemy.position.distance_to(vent.position), DepthFloor.ENEMY_SPACING, "no creature starts on one")
 	var again: Array = []
@@ -280,8 +280,8 @@ func test_now_and_then_a_floor_holds_a_chest_sealed_until_it_is_cleared() -> voi
 	assert_true(chest.locked, "sealed while creatures stand")
 	assert_false(chest.interactable.enabled)
 	assert_lt(chest.get_index(), depth_floor.get_node("Player").get_index(), "under the player")
-	for way: String in ["ArrivalSpawn", "Stairs", "Rope", "EmberAltar"]:
-		assert_gte(chest.position.distance_to((depth_floor.get_node(way) as Node2D).position), DepthFloor.VENT_CLEARANCE, "clear of the ways in and on and the altar")
+	for way: String in ["ArrivalSpawn", "Stairs", "Rope", "EmberAltar", "Peddler"]:
+		assert_gte(chest.position.distance_to((depth_floor.get_node(way) as Node2D).position), DepthFloor.VENT_CLEARANCE, "clear of the ways in and on, the altar and the peddler")
 	for vent: Hazard in depth_floor.get_vents():
 		assert_gte(chest.position.distance_to(vent.position), DepthFloor.VENT_CLEARANCE, "and of the vents")
 	var contents := chest.get_contents()
@@ -429,6 +429,63 @@ func test_an_ember_altar_rerolls_its_offer_once_for_30_coins() -> void:
 	DepthRun.start_run()
 	Wallet.set_money(29)
 	assert_false(_enter_floor().altar.can_reroll(), "short of 30")
+
+func test_from_the_second_depth_the_ember_peddler_now_and_then_waits_on_a_cleared_floor() -> void:
+	DepthRun.start_run()
+	var found := 0
+	for depth: int in range(1, 15):
+		DepthRun.track.set_depth(depth)
+		var has_peddler := _enter_floor().has_peddler()
+		if depth == 1 or depth % 5 == 0:
+			assert_false(has_peddler, "none at depth %d" % depth)
+		elif found == 0 and has_peddler:
+			found = depth
+	assert_gt(found, 0, "some floors have the peddler")
+	DepthRun.track.set_depth(found)
+	var depth_floor := _enter_floor()
+	assert_true(depth_floor.has_peddler(), "the same depth of the same run has it again")
+	assert_false(depth_floor.peddler.visible or depth_floor.peddler.interactable.enabled, "away while creatures stand")
+	assert_eq(depth_floor.peddler.shop, ShopData.find(&"ember_peddler"))
+	for enemy: HostileCreature in depth_floor.get_enemies():
+		enemy.take_damage(enemy.get_max_health())
+	await get_tree().process_frame
+	assert_true(depth_floor.peddler.visible and depth_floor.peddler.interactable.enabled, "waits once the floor is cleared")
+	assert_eq(depth_floor.find_scene_problems(ContentDB, null), PackedStringArray())
+
+func test_the_ember_peddler_sells_a_boon_once_a_depth_for_60_coins() -> void:
+	var shop := ShopData.find(&"ember_peddler")
+	var offer := shop.offers[0] as DepthBoonOffer
+	Wallet.set_money(100)
+	assert_null(offer.get_boon(), "none while no run goes on")
+	assert_eq(offer.get_label({}), "No boon for sale")
+	assert_false(offer.can_buy({}))
+	DepthRun.start_run()
+	DepthRun.track.set_depth(3)
+	var boon := offer.get_boon()
+	assert_not_null(boon)
+	assert_true(RunState.offer_boons(2, "peddler3").has(boon), "the run's to roll for the depth")
+	assert_eq(offer.excluded, [&"ember_tithe"] as Array[StringName], "never coins for coins")
+	assert_eq(offer.get_label({}), "Boon: %s — 60g" % boon.display_name)
+	Wallet.set_money(59)
+	assert_false(offer.can_buy({}), "short of 60")
+	Wallet.set_money(100)
+	assert_true(ShopState.buy_offer(shop, offer, {}))
+	assert_eq(Wallet.money, 40)
+	assert_eq(RunState.get_boon_stacks(boon.id), 1)
+	assert_true(offer.is_sold())
+	assert_false(ShopState.buy_offer(shop, offer, {}), "once a depth")
+	assert_eq(Wallet.money, 40)
+	assert_eq(offer.get_label({}), "No boon for sale")
+	DepthRun.track.set_depth(4)
+	Wallet.set_money(60)
+	assert_true(offer.can_buy({}), "the next depth's peddler sells again")
+	assert_eq(shop.get_buy_price(ItemData.find(&"health_potion")), 30, "potions, dearer than at camp")
+	assert_eq(shop.find_problems(ContentDB), PackedStringArray())
+	offer = offer.duplicate()
+	offer.pool = &"no_such_pool"
+	offer.excluded = [&"no_such_boon"]
+	assert_eq(offer.find_problems(ContentDB), PackedStringArray(["never sells unknown boon 'no_such_boon'",
+		"sells a boon of pool 'no_such_pool', which holds none it sells"]))
 
 func test_five_boons_in_one_run_bless_the_delver() -> void:
 	DepthRun.start_run()
