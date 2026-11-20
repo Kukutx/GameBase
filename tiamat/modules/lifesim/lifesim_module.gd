@@ -13,6 +13,7 @@ func install() -> void:
 	ContentDB.register_check(CollectionMilestoneData.find_cycle_problems)
 	ContentDB.register_check(_find_slot_problems)
 	LifesimRules.register(GameRules)
+	ItemSources.register(&"lifesim", find_item_sources)
 	for action: StringName in [FarmPlot.TILL_ACTION, FarmPlot.WATER_ACTION, MiningNode.TOOL_ACTION, FishingSpot.TOOL_ACTION]:
 		ItemData.register_tool_action(action)
 	GameStats.register_stat(&"tool_energy", "Tool energy cost")
@@ -45,6 +46,43 @@ func get_facts() -> Dictionary:
 	for event: CalendarEventData in EventState.get_active_events(location.id if location != null else &""):
 		events.append({"id": String(event.id), "name": event.display_name, "location_id": String(event.location_id)})
 	return {"active_events": events}
+
+## The ways to get items the module gives (`ItemSources`): a crop's harvest,
+## a fish, what is foraged and mined, an animal's products, a machine's
+## output, and the rewards of a festival and of a collection's milestone.
+static func find_item_sources(registry: ContentRegistry, sources: ItemSources) -> void:
+	var seeds := {}
+	for item: ItemData in registry.get_entries(ItemData.KIND):
+		if item.crop_id != &"" and not seeds.has(item.crop_id):
+			seeds[item.crop_id] = String(TranslationServer.translate(item.display_name))
+	for crop: CropData in registry.get_entries(CropData.KIND):
+		var planted: String = seeds.get(crop.id, String(TranslationServer.translate(crop.display_name)))
+		sources.add(crop.harvest_item_id, TranslationServer.translate("Grown from %s") % planted)
+	for fish: FishData in registry.get_entries(FishData.KIND):
+		sources.add(fish.item_id, _found_at(registry, fish.locations, TranslationServer.translate("Caught at %s"), TranslationServer.translate("Caught while fishing")))
+	for forage: ForageEntryData in registry.get_entries(ForageEntryData.KIND):
+		sources.add(forage.item_id, _found_at(registry, forage.locations, TranslationServer.translate("Foraged at %s"), TranslationServer.translate("Foraged")))
+	for node: MiningNodeData in registry.get_entries(MiningNodeData.KIND):
+		sources.add(node.drop_item_id, TranslationServer.translate("Mined from %s") % TranslationServer.translate(node.display_name))
+	for animal: FarmAnimalData in registry.get_entries(FarmAnimalData.KIND):
+		var produced: String = TranslationServer.translate("Produced by %s") % TranslationServer.translate(animal.display_name)
+		sources.add(animal.product_item_id, produced)
+		sources.add(animal.premium_product_item_id, produced)
+	for recipe: ProcessingRecipeData in registry.get_entries(ProcessingRecipeData.KIND):
+		sources.add(recipe.output_item_id, TranslationServer.translate("Processed from %s") % ItemSources.describe_amounts(registry, recipe.inputs))
+	for event: CalendarEventData in registry.get_entries(CalendarEventData.KIND):
+		sources.add_each(event.reward_items, TranslationServer.translate("Reward for %s") % TranslationServer.translate(event.display_name))
+	for milestone: CollectionMilestoneData in registry.get_entries(CollectionMilestoneData.KIND):
+		sources.add_each(milestone.reward_items, TranslationServer.translate("Reward for %s") % TranslationServer.translate(milestone.display_name))
+
+# `at` (translated already) naming the locations of `location_ids`, or
+# `anywhere` without any.
+static func _found_at(registry: ContentRegistry, location_ids: Array[StringName], at: String, anywhere: String) -> String:
+	var names := PackedStringArray()
+	for location_id: StringName in location_ids:
+		var location := registry.get_entry(WorldLocationData.KIND, location_id) as WorldLocationData
+		names.append(String(TranslationServer.translate(location.display_name)) if location != null else String(location_id))
+	return anywhere if names.is_empty() else at % ", ".join(names)
 
 ## The content the game puts in the module's slots must exist.
 func _find_slot_problems(registry: ContentRegistry) -> PackedStringArray:

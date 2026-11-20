@@ -60,6 +60,18 @@ func test_actions_change_flags_and_counters() -> void:
 	assert_true(GameRules.run_actions(PackedStringArray(["CLEAR_FLAG %s" % FLAG])))
 	assert_false(WorldState.get_bool(FLAG))
 
+func test_the_arguments_of_an_action_are_found_in_every_content_s_actions() -> void:
+	var trigger := TriggerData.new()
+	trigger.id = &"fixture_flags"
+	trigger.event = &"GameSession.new_game_started"
+	trigger.actions = PackedStringArray(["SET_FLAG a, ADD_FLAG b 2", "add_flag c"])
+	var registry := ContentFixture.use(self, [trigger])
+	var found := GameQuery.find_action_args(registry, &"ADD_FLAG")
+	assert_eq(found.size(), 2, "each clause of each text, whatever its case")
+	assert_eq(found[0], PackedStringArray(["b", "2"]))
+	assert_eq(found[1], PackedStringArray(["c"]))
+	assert_eq(GameQuery.find_action_args(registry, &"RESTORE_VITAL").size(), 0)
+
 func test_vital_conditions_and_actions_read_and_restore_a_vital() -> void:
 	var stamina := VitalData.new()
 	stamina.id = &"fixture_stamina"

@@ -155,6 +155,58 @@ func test_scene_nodes_report_broken_links() -> void:
 	assert_false(placed.contains("has no station id"))
 	assert_string_contains(placed, "references unknown recipe 'fixture_missing_recipe'")
 
+func test_an_item_tells_where_the_life_sim_gives_it() -> void:
+	var meadow := _location(&"fixture_meadow")
+	meadow.display_name = "Meadow"
+	var seed_item := _item(&"fixture_seed")
+	seed_item.display_name = "Berry Seeds"
+	seed_item.crop_id = &"fixture_bush"
+	var berry := _item(&"fixture_berry")
+	berry.display_name = "Berry"
+	var crop := CropData.new()
+	crop.id = &"fixture_bush"
+	crop.harvest_item_id = berry.id
+	var fish := FishData.new()
+	fish.id = &"fixture_fish"
+	fish.item_id = &"fixture_carp"
+	fish.locations = [meadow.id]
+	var forage := ForageEntryData.new()
+	forage.id = &"fixture_forage"
+	forage.item_id = &"fixture_mushroom"
+	var vein := MiningNodeData.new()
+	vein.id = &"fixture_vein"
+	vein.display_name = "Ore Vein"
+	vein.drop_item_id = &"fixture_ore"
+	var hen := FarmAnimalData.new()
+	hen.id = &"fixture_hen"
+	hen.display_name = "Hen"
+	hen.product_item_id = &"fixture_egg"
+	hen.premium_product_item_id = &"fixture_big_egg"
+	var press := ProcessingRecipeData.new()
+	press.id = &"fixture_press"
+	press.inputs = {"fixture_berry": 3}
+	press.output_item_id = &"fixture_jam"
+	var fair := CalendarEventData.new()
+	fair.id = &"fixture_fair"
+	fair.display_name = "Berry Fair"
+	fair.reward_items = {"fixture_jam": 1}
+	var registry := ContentRegistry.new()
+	for kind: StringName in ContentDB.get_kinds():
+		registry.register_kind(kind, ContentDB.get_kind_script(kind))
+	var pack := ContentPack.new()
+	pack.entries.assign([meadow, seed_item, berry, crop, fish, forage, vein, hen, press, fair])
+	registry.packs = [pack]
+	registry.index()
+	autofree(registry)
+	var sources := ItemSources.new()
+	LifesimModule.find_item_sources(registry, sources)
+	assert_eq(sources.get_ways(&"fixture_berry"), PackedStringArray(["Grown from Berry Seeds"]), "named by its seed")
+	assert_eq(sources.get_ways(&"fixture_carp"), PackedStringArray(["Caught at Meadow"]))
+	assert_eq(sources.get_ways(&"fixture_mushroom"), PackedStringArray(["Foraged"]), "anywhere")
+	assert_eq(sources.get_ways(&"fixture_ore"), PackedStringArray(["Mined from Ore Vein"]))
+	assert_eq(sources.get_ways(&"fixture_big_egg"), PackedStringArray(["Produced by Hen"]))
+	assert_eq(sources.get_ways(&"fixture_jam"), PackedStringArray(["Processed from Berry x3", "Reward for Berry Fair"]))
+
 func _item(id: StringName) -> ItemData:
 	var item := ItemData.new()
 	item.id = id

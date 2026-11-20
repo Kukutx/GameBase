@@ -36,7 +36,7 @@ New content goes into the content pack `game/data/content.tres` and is read thro
 - Fishing with location, season, time and weather pools and the reel minigame
 - A 120-floor Old Mine with persistent depth, an elevator that stops at floor 1 and every fifth floor reached, the player picking the floor, ore tiers, escalating enemies (slimes recoloured per tier), guardians that bar the ladder on every 25th floor (a Slime King on 25 and 50, a Void Monarch from 75; weekly respawn, ore drops and an achievement each), melee combat and renewable resource nodes
 - Farm animals with housing, feeding, happiness, naming, selling, premium products and 4→8→12 slot coop and barn expansions
-- Inventory, hotbar, shops, crafting, cooking, buffs, processing and copper→iron→gold→iridium tool and weapon upgrades
+- Inventory, hotbar, shops, crafting, cooking, buffs, processing and copper→iron→gold→iridium tool and weapon upgrades; the inventory tab shows the item chosen to bind with what it is and every way to get more, and a recipe says where to get each ingredient the player lacks
 - Placeable storage, machines and persistent building placement; a shipping bin settled overnight
 - NPC schedules across towns, gifts, 0→10-heart relationship dialogue and five heart-event tiers per core NPC
 - A long mining quest chain, progression mail, daily contracts, seasonal festivals and chained town restoration projects

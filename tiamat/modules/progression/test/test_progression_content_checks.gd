@@ -116,6 +116,33 @@ func test_a_project_completion_visual_reports_an_unknown_project() -> void:
 	root.add_child(bad_visual)
 	assert_eq(registry.find_scene_problems(root, null), PackedStringArray(["project completion visual 'Ruin' references unknown town project 'fixture_ruin'"]))
 
+func test_an_item_tells_where_progression_gives_it() -> void:
+	var hoe := _item(&"fixture_hoe")
+	hoe.display_name = "Hoe"
+	var quest := _quest(&"fixture_quest", &"")
+	quest.title = "Lost Ring"
+	quest.reward_items = {"fixture_ring": 1}
+	var mail := MailData.new()
+	mail.id = &"fixture_mail"
+	mail.sender_name = "Mira"
+	mail.reward_items = {"fixture_ring": 1}
+	var upgrade := ToolUpgradeData.new()
+	upgrade.id = &"fixture_upgrade"
+	upgrade.source_item_id = hoe.id
+	upgrade.result_item_id = &"fixture_copper_hoe"
+	var registry := ContentRegistry.new()
+	for kind: StringName in ContentDB.get_kinds():
+		registry.register_kind(kind, ContentDB.get_kind_script(kind))
+	var pack := ContentPack.new()
+	pack.entries.assign([hoe, quest, mail, upgrade])
+	registry.packs = [pack]
+	registry.index()
+	autofree(registry)
+	var sources := ItemSources.new()
+	ProgressionModule.find_item_sources(registry, sources)
+	assert_eq(sources.get_ways(&"fixture_ring"), PackedStringArray(["Reward for Lost Ring", "Sent by Mira"]))
+	assert_eq(sources.get_ways(&"fixture_copper_hoe"), PackedStringArray(["Upgraded from Hoe"]))
+
 func _item(id: StringName) -> ItemData:
 	var item := ItemData.new()
 	item.id = id
