@@ -23,6 +23,7 @@ The condition and action keys the core and the modules register with `GameRules`
 | `ITEM_TAG` | items | 2 | `ITEM_TAG <item> <tag>` | the item has the tag, as an objective that counts every fish caught asks of the event's item (`ITEM_TAG $item_id fish`). |
 | `LOCATION` | core | 1 or more | `LOCATION <id>...` | the player is in one of the locations. |
 | `MILESTONE_CLAIMED` | lifesim | 1 | `MILESTONE_CLAIMED <collection_milestone>` | the player claimed the milestone's reward. |
+| `MINIGAME_WON` | core | 1 or more | `MINIGAME_WON <minigame>...` | the player won each of the minigames in this save (`MiniGameHost` counts the wins). |
 | `MONEY_AT_LEAST` | items | 1 | `MONEY_AT_LEAST <n>` | the player has at least n money. |
 | `OPTION` | core | 2 or more | `OPTION <option> <value>...` | the player's option (`GameOption`) is one of the values: true or false for a switch, a choice's name (in quotes with a space: "Very Hard"), a number for a range. |
 | `OPTION_AT_LEAST` | core | 2 | `OPTION_AT_LEAST <option> <n>` | the player's number option is at least n. |

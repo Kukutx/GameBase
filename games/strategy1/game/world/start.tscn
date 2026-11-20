@@ -79,7 +79,8 @@ text = "To the lookout"
 
 [node name="WarTable" parent="." instance=ExtResource("5_station")]
 position = Vector2(110, -40)
-minigame_id = &"ford_battle"
+choices = Array[StringName]([&"ford_battle", &"mill_battle"])
+title = "Plan the Battle"
 
 [node name="Interactable" parent="WarTable" index="0"]
 prompt_text = "Plan the Battle"
@@ -110,7 +111,8 @@ horizontal_alignment = 1
 
 [node name="Muster" parent="." instance=ExtResource("5_station")]
 position = Vector2(-110, 50)
-minigame_id = &"pass_battle"
+choices = Array[StringName]([&"pass_battle", &"camp_battle"])
+title = "Lead the Troops"
 
 [node name="Interactable" parent="Muster" index="0"]
 prompt_text = "Lead the Troops"

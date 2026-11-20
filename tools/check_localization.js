@@ -79,8 +79,9 @@ function registeredCatalogs(game, layers) {
 }
 
 // Calls whose first argument is player-visible source text, including a toast
-// sent through a reference to GameEvents (`events.call("toastf", "...", args)`).
-const CALL_RE = /(?:\btr|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\s*/g;
+// sent through a reference to GameEvents (`events.call("toastf", "...", args)`)
+// and text a static function translates (`TranslationServer.translate()`).
+const CALL_RE = /(?:\btr|\bTranslationServer\.translate|GameEvents\.toastf?|\bset_prompt)\(|\.call\("toastf?",\s*/g;
 
 // A count's text, its singular and plural (`tr_n("%d heart", "%d hearts", n)`),
 // which a catalog translates as one entry with every plural form its language

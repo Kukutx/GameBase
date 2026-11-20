@@ -1,8 +1,9 @@
 extends "res://tiamat/core/test/runtime_smoke.gd"
 
 ## Plays Iron Banners: starts a new game with its first hint, talks to the
-## captain, opens the battle at the ford on the camp's war table and the
-## battle in the pass from the muster and leaves each, walks to the lookout
+## captain, picks the battle at the ford on the camp's war table (the mill
+## locked until the ford is won, and then open) and the battle in the pass
+## from the muster and leaves each, walks to the lookout
 ## and back through the portals, sleeps in the bed, saves, changes state and
 ## loads it back.
 
@@ -35,6 +36,14 @@ func _run() -> void:
 	var host := root.get_node("MiniGameHost")
 	_use(current_scene.get_node("WarTable/Interactable"))
 	await process_frame
+	var picker: Node = current_scene.get_node("WarTable").call("get_picker")
+	_check(picker != null and bool(picker.call("is_open")), "The war table did not list its battles")
+	if picker == null:
+		return
+	var buttons: Array = picker.call("get_buttons")
+	_check(buttons.size() == 2 and not bool(buttons[0].get("disabled")) and bool(buttons[1].get("disabled")), "The war table does not offer the ford with the mill locked until the ford is won")
+	buttons[0].emit_signal("pressed")
+	await process_frame
 	_check(bool(host.is_running()) and host.get_active_id() == &"ford_battle", "The war table did not open the battle at the ford")
 	var battles := root.find_children("*", "GridBattleGame", true, false)
 	# Untyped: a smoke script compiles before the autoloads that the module's
@@ -43,8 +52,26 @@ func _run() -> void:
 	host.cancel()
 	await process_frame
 	_check(not bool(host.is_running()), "The battle did not close")
+	# Once the ford is won, the war table opens the mill.
+	world_state.add_int(&"minigame:ford_battle:wins", 1)
+	_use(current_scene.get_node("WarTable/Interactable"))
+	await process_frame
+	buttons = picker.call("get_buttons")
+	_check(not bool(buttons[1].get("disabled")), "Winning the ford did not open the battle at the mill")
+	buttons[1].emit_signal("pressed")
+	await process_frame
+	battles = root.find_children("*", "GridBattleGame", true, false)
+	_check(host.get_active_id() == &"mill_battle" and battles.size() == 1 and int(battles[0].get("battle").get("units").size()) == 12, "The war table did not open the battle at the mill with its twelve units")
+	host.cancel()
+	await process_frame
 
 	_use(current_scene.get_node("Muster/Interactable"))
+	await process_frame
+	picker = current_scene.get_node("Muster").call("get_picker")
+	_check(picker != null and bool(picker.call("is_open")), "The muster did not list its battles")
+	if picker == null:
+		return
+	picker.call("get_buttons")[0].emit_signal("pressed")
 	await process_frame
 	_check(bool(host.is_running()) and host.get_active_id() == &"pass_battle", "The muster did not open the battle in the pass")
 	var fields := root.find_children("*", "RtsBattleGame", true, false)

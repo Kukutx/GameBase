@@ -1,0 +1,139 @@
+[gd_resource type="Resource" script_class="RtsMapData" load_steps=24 format=3]
+
+[ext_resource type="Script" path="res://tiamat/modules/rts/data/rts_map_data.gd" id="1_map"]
+[ext_resource type="Script" path="res://tiamat/modules/rts/data/rts_placement.gd" id="2_placement"]
+
+[sub_resource type="Resource" id="Placement_1"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 70)
+
+[sub_resource type="Resource" id="Placement_2"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 90)
+
+[sub_resource type="Resource" id="Placement_3"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 110)
+
+[sub_resource type="Resource" id="Placement_4"]
+script = ExtResource("2_placement")
+unit_id = &"spearman"
+faction_id = &"banners"
+position = Vector2(60, 130)
+
+[sub_resource type="Resource" id="Placement_5"]
+script = ExtResource("2_placement")
+unit_id = &"bowman"
+faction_id = &"banners"
+position = Vector2(36, 80)
+
+[sub_resource type="Resource" id="Placement_6"]
+script = ExtResource("2_placement")
+unit_id = &"bowman"
+faction_id = &"banners"
+position = Vector2(36, 100)
+
+[sub_resource type="Resource" id="Placement_7"]
+script = ExtResource("2_placement")
+unit_id = &"bowman"
+faction_id = &"banners"
+position = Vector2(36, 120)
+
+[sub_resource type="Resource" id="Placement_8"]
+script = ExtResource("2_placement")
+unit_id = &"rider"
+faction_id = &"banners"
+position = Vector2(80, 50)
+
+[sub_resource type="Resource" id="Placement_9"]
+script = ExtResource("2_placement")
+unit_id = &"rider"
+faction_id = &"banners"
+position = Vector2(80, 150)
+
+[sub_resource type="Resource" id="Placement_10"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(290, 64)
+
+[sub_resource type="Resource" id="Placement_11"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(290, 136)
+
+[sub_resource type="Resource" id="Placement_12"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(350, 70)
+
+[sub_resource type="Resource" id="Placement_13"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(350, 90)
+
+[sub_resource type="Resource" id="Placement_14"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(350, 110)
+
+[sub_resource type="Resource" id="Placement_15"]
+script = ExtResource("2_placement")
+unit_id = &"raider"
+faction_id = &"raiders"
+position = Vector2(350, 130)
+
+[sub_resource type="Resource" id="Placement_16"]
+script = ExtResource("2_placement")
+unit_id = &"brute"
+faction_id = &"raiders"
+position = Vector2(345, 100)
+
+[sub_resource type="Resource" id="Placement_17"]
+script = ExtResource("2_placement")
+unit_id = &"brute"
+faction_id = &"raiders"
+position = Vector2(370, 100)
+
+[sub_resource type="Resource" id="Placement_18"]
+script = ExtResource("2_placement")
+unit_id = &"slinger"
+faction_id = &"raiders"
+position = Vector2(395, 65)
+
+[sub_resource type="Resource" id="Placement_19"]
+script = ExtResource("2_placement")
+unit_id = &"slinger"
+faction_id = &"raiders"
+position = Vector2(395, 100)
+
+[sub_resource type="Resource" id="Placement_20"]
+script = ExtResource("2_placement")
+unit_id = &"slinger"
+faction_id = &"raiders"
+position = Vector2(395, 135)
+[sub_resource type="Resource" id="Placement_21"]
+script = ExtResource("2_placement")
+unit_id = &"brute"
+faction_id = &"raiders"
+position = Vector2(385, 80)
+
+[resource]
+script = ExtResource("1_map")
+id = &"raider_camp"
+display_name = "Raider Camp"
+size = Vector2(464, 200)
+obstacles = Array[Rect2]([Rect2(320, 40, 100, 8), Rect2(320, 152, 100, 8), Rect2(320, 40, 8, 40), Rect2(320, 120, 8, 40), Rect2(412, 40, 8, 120), Rect2(150, 20, 20, 20), Rect2(170, 162, 24, 18), Rect2(240, 92, 16, 16)])
+player_faction_id = &"banners"
+placements = Array[ExtResource("2_placement")]([SubResource("Placement_1"), SubResource("Placement_2"), SubResource("Placement_3"), SubResource("Placement_4"), SubResource("Placement_5"), SubResource("Placement_6"), SubResource("Placement_7"), SubResource("Placement_8"), SubResource("Placement_9"), SubResource("Placement_10"), SubResource("Placement_11"), SubResource("Placement_12"), SubResource("Placement_13"), SubResource("Placement_14"), SubResource("Placement_15"), SubResource("Placement_16"), SubResource("Placement_17"), SubResource("Placement_18"), SubResource("Placement_19"), SubResource("Placement_20"), SubResource("Placement_21")])
+computer_advances = false
