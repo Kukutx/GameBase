@@ -13,7 +13,9 @@ extends MiniGame
 ## unit has moved, Move becomes Undo Move while the battle lets the player take
 ## the move back (`AtbBattle.can_undo_move()`). While the player picks where
 ## a unit moves, the board marks the cells the foes could strike next
-## (`AtbBattle.get_danger()`), and the side says so of the cell picked. The
+## (`AtbBattle.get_danger()`), and the side says so of the cell picked; while
+## it picks what an action aims at, the side tells what it would do to each
+## unit it reaches (`AtbBattle.forecast()`: "Raider takes 6 and falls"). The
 ## board numbers the units whose turns come next
 ## (`GridBattleBoard.turns_shown`). Cancel
 ## (the touch controls' corner button on a touchscreen) goes back to the
@@ -301,6 +303,11 @@ func _show_info() -> void:
 	]
 	if _mode == Mode.PICK_MOVE and _board.danger.has(_board.cursor):
 		_info.text += "\n" + tr("Foes can strike here.")
+	if _mode == Mode.PICK_TARGET and _board.choices.has(_board.cursor):
+		for hit: Dictionary in battle.forecast(battle.get_turn_unit(), _action, _board.cursor):
+			var target_name := tr((hit["unit"] as GridUnit).data.display_name)
+			var line := tr("%s regains %d") if _action.effect == BattleActionData.Effect.HEAL else (tr("%s takes %d and falls") if bool(hit["defeats"]) else tr("%s takes %d"))
+			_info.text += "\n" + line % [target_name, int(hit["amount"])]
 
 func _on_turn_started(unit: GridUnit) -> void:
 	if unit.player_controlled:

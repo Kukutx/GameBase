@@ -107,6 +107,22 @@ func test_picking_a_move_marks_where_the_foes_could_strike() -> void:
 	assert_eq(game.get_mode(), GridBattleGame.Mode.COMMAND)
 	assert_true(board.danger.is_empty(), "gone once the player goes back to the commands")
 
+func test_aiming_tells_what_the_action_would_do() -> void:
+	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
+	var game := _game()
+	assert_true(await _until(func() -> bool: return game.get_mode() == GridBattleGame.Mode.COMMAND), "the knight's turn comes")
+	game.choose_command(0)
+	game.pick(Vector2i(1, 1))
+	game.choose_command(1)
+	assert_eq(game.get_mode(), GridBattleGame.Mode.PICK_TARGET)
+	var dummy := game.battle.get_unit_at(Vector2i(2, 1))
+	var told := tr("%s takes %d and falls") % [tr(dummy.data.display_name), 6]
+	var tells := func(text: String) -> bool: return game.find_children("*", "Label", true, false).any(func(label: Node) -> bool: return (label as Label).text.contains(text))
+	assert_true(tells.call(told), "7 would take the dummy's last 6")
+	assert_eq(dummy.health.current, 6, "told, not done")
+	game.get_board().cell_hovered.emit(Vector2i(0, 0))
+	assert_false(tells.call(told), "only while the cursor is on a cell to aim at")
+
 func test_the_commands_follow_what_the_foes_do_meanwhile() -> void:
 	(func() -> void: await MiniGameHost.run(MINIGAME)).call()
 	var game := _game()
