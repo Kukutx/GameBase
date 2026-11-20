@@ -88,6 +88,44 @@ func test_relationship_load_sanitizes_points_and_future_daily_markers() -> void:
 	assert_eq(int((saved["last_gift_day"] as Dictionary).get("fixture_npc", -1)), 12)
 	assert_eq(int((saved["last_gift_day"] as Dictionary).get("fixture_other_npc", -1)), 0)
 
+func test_profile_tells_how_it_takes_a_gift() -> void:
+	assert_eq(_profile.taste_of(ItemData.find(&"fixture_berry")), NpcProfileData.Taste.LOVED)
+	assert_eq(_profile.taste_of(ItemData.find(&"fixture_radish")), NpcProfileData.Taste.LIKED)
+	assert_eq(_profile.taste_of(ItemData.find(&"fixture_twig")), NpcProfileData.Taste.DISLIKED)
+	assert_eq(_profile.taste_of(_item(&"fixture_pebble")), NpcProfileData.Taste.NEUTRAL)
+
+func test_a_gift_tells_how_the_npc_takes_it_and_the_save_keeps_it() -> void:
+	WorldClock.set_time(3, 10 * 60)
+	for item_id: StringName in [&"fixture_berry", &"fixture_radish", &"fixture_twig"]:
+		InventoryState.add_item_by_id(item_id, 1)
+	var state := RelationshipManager.new()
+	add_child_autofree(state)
+	assert_eq(state.get_known_taste(&"fixture_npc", &"fixture_berry"), -1, "nothing is known before a gift")
+	assert_eq(state.describe_known_tastes(&"fixture_npc"), PackedStringArray())
+	assert_false(state.has_given_gift_today(&"fixture_npc"))
+	state.give_gift(_profile, &"fixture_twig")
+	assert_true(state.has_given_gift_today(&"fixture_npc"))
+	WorldClock.set_time(4, 10 * 60)
+	assert_false(state.has_given_gift_today(&"fixture_npc"), "a new day takes another gift")
+	state.give_gift(_profile, &"fixture_berry")
+	WorldClock.set_time(5, 10 * 60)
+	state.give_gift(_profile, &"fixture_radish")
+	assert_eq(state.get_known_taste(&"fixture_npc", &"fixture_berry"), NpcProfileData.Taste.LOVED)
+	var told := PackedStringArray([tr("Loves: %s") % "Fixture Berry", tr("Likes: %s") % "Fixture Radish", tr("Dislikes: %s") % "Fixture Twig"])
+	assert_eq(state.describe_known_tastes(&"fixture_npc"), told, "the best first")
+	assert_eq(state.describe_known_takers(&"fixture_twig"), PackedStringArray([tr("%s dislikes it") % "Fixture"]))
+	assert_eq(state.describe_known_takers(&"fixture_pebble"), PackedStringArray(), "an item never given")
+	var saved := state.to_save_data()
+	(saved["known_tastes"] as Dictionary)["fixture_npc"]["fixture_pebble"] = 9
+	(saved["known_tastes"] as Dictionary)["fixture_other_npc"] = "not tastes"
+	var restored := RelationshipManager.new()
+	add_child_autofree(restored)
+	restored.load_save_data(JSON.parse_string(JSON.stringify(saved)))
+	assert_eq(restored.describe_known_tastes(&"fixture_npc"), told, "a save keeps what the gifts told")
+	assert_eq(restored.get_known_taste(&"fixture_npc", &"fixture_pebble"), -1, "a taste out of range is dropped")
+	restored.load_save_data({"points": {}})
+	assert_eq(restored.describe_known_tastes(&"fixture_npc"), PackedStringArray(), "a save from before tastes were kept")
+
 func test_relationship_points_are_bounded_and_persist() -> void:
 	var state := RelationshipManager.new()
 	add_child_autofree(state)

@@ -3,7 +3,8 @@ extends GutTest
 ## The items module's menus, the crafting station, a shop's counter and a
 ## storage chest, each opened on content of the test's own, full and empty:
 ## the focus starts in the menu on a control that works, and every control
-## fits the view, a long list scrolling within it.
+## fits the view, a long list scrolling within it; and the chest keeps the
+## entry picked and moves the amount picked.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const MenuFit := preload("res://tiamat/core/test/menu_fit.gd")
@@ -66,6 +67,41 @@ func test_each_menu_holds_the_focus_and_fits_the_view_with_nothing_to_show() -> 
 	await _check(CRAFTING_MENU, func(menu: Node) -> void: menu.call("open"))
 	await _check(SHOP_MENU, func(menu: Node) -> void: menu.call("open", shop))
 	await _check(STORAGE_MENU, func(menu: Node) -> void: menu.call("open", CHEST, "Chest", 24))
+
+func test_the_chest_keeps_the_entry_picked_and_moves_the_amount_picked() -> void:
+	var items := _items().slice(0, 2)
+	ContentFixture.use(self, items)
+	StorageState.clear_container(CHEST)
+	InventoryState.add_item(items[0], 25)
+	InventoryState.add_item(items[1], 3)
+	var menu := STORAGE_MENU.instantiate() as StorageMenu
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	menu.open(CHEST, "Chest", 24)
+	assert_eq(menu.store_button.text, tr("Store %d →") % 1)
+	menu.store_button.pressed.emit()
+	assert_eq(StorageState.get_quantity(CHEST, items[0].id), 1)
+	assert_false(menu.store_button.disabled, "the entry stays picked, so another press stores again")
+	menu.amount_button.pressed.emit()
+	assert_eq(menu.store_button.text, tr("Store %d →") % 10)
+	menu.store_button.pressed.emit()
+	assert_eq(StorageState.get_quantity(CHEST, items[0].id), 11)
+	menu.amount_button.pressed.emit()
+	assert_eq(menu.take_button.text, tr("← Take all"))
+	menu.store_button.pressed.emit()
+	assert_eq(StorageState.get_quantity(CHEST, items[0].id), 25, "all of the stack")
+	assert_eq(InventoryState.get_quantity(items[0].id), 0)
+	assert_eq(menu.inventory_list.get_item_metadata(menu.inventory_list.get_selected_items()[0]), items[1].id,
+		"the entry now in the place of the one gone is picked")
+	menu.storage_list.select(0)
+	menu.storage_list.item_selected.emit(0)
+	menu.take_button.grab_focus()
+	menu.take_button.pressed.emit()
+	assert_eq(InventoryState.get_quantity(items[0].id), 25)
+	assert_true(menu.take_button.disabled, "nothing is left in the chest")
+	assert_true(menu.inventory_list.has_focus(), "the button closed hands the focus to the other list")
+	menu.close()
+	await get_tree().process_frame
 
 # Opens a menu of `scene` with `open`, and checks its focus and its fit.
 func _check(scene: PackedScene, open: Callable) -> void:

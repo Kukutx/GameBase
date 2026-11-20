@@ -9,6 +9,12 @@ extends ContentEntry
 
 const KIND := &"npc"
 
+## How they take an item as a gift, from the worst to the best
+## (`taste_of()`).
+enum Taste { DISLIKED, NEUTRAL, LIKED, LOVED }
+## The friendship a gift of each taste gives, before a birthday doubles it.
+const TASTE_POINTS: Dictionary[Taste, int] = {Taste.DISLIKED: -20, Taste.NEUTRAL: 15, Taste.LIKED: 45, Taste.LOVED: 80}
+
 ## The name the player reads.
 @export var display_name: String
 ## What they do in the world, in a few words ("Blacksmith").
@@ -100,22 +106,28 @@ func get_dialogue_title(base_title: String, hearts: int) -> String:
 			resolved = title
 	return resolved
 
-func friendship_for_gift(item: ItemData) -> int:
+## How they take `item` as a gift: an item they love, dislike or like by
+## its id, else by one of its tags they love or like, else neither.
+func taste_of(item: ItemData) -> Taste:
 	if item == null:
-		return 0
+		return Taste.NEUTRAL
 	if loved_items.has(item.id):
-		return 80
+		return Taste.LOVED
 	if disliked_items.has(item.id):
-		return -20
+		return Taste.DISLIKED
 	if liked_items.has(item.id):
-		return 45
+		return Taste.LIKED
 	for tag: String in loved_tags:
 		if item.has_tag(tag):
-			return 80
+			return Taste.LOVED
 	for tag: String in liked_tags:
 		if item.has_tag(tag):
-			return 45
-	return 15
+			return Taste.LIKED
+	return Taste.NEUTRAL
+
+## The friendship a gift of `item` gives them (`TASTE_POINTS`), 0 for none.
+func friendship_for_gift(item: ItemData) -> int:
+	return 0 if item == null else TASTE_POINTS[taste_of(item)]
 
 func find_problems(registry: ContentRegistry) -> PackedStringArray:
 	var problems := PackedStringArray()

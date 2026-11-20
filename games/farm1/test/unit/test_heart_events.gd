@@ -1,19 +1,21 @@
 extends GutTest
 
-## Farm1's NPCs, their dialogue and their heart events. How heart events match,
-## are seen and take priority in a conversation is tested with the NPC social
-## module.
+## Farm1's NPCs, their dialogue and their heart events, and what the game
+## menu's social tab tells of them. How heart events match, are seen and take
+## priority in a conversation is tested with the NPC social module.
 
 var _world_snapshot: Dictionary
 var _relationship_snapshot: Dictionary
 var _clock_snapshot: Dictionary
 var _memory_snapshot: Dictionary
+var _inventory_snapshot: Dictionary
 
 func before_each() -> void:
 	_world_snapshot = WorldState.to_save_data()
 	_relationship_snapshot = RelationshipState.to_save_data()
 	_clock_snapshot = WorldClock.to_save_data()
 	_memory_snapshot = NpcMemory.to_save_data()
+	_inventory_snapshot = InventoryState.to_save_data()
 	WorldState.clear()
 	RelationshipState.clear()
 	NpcMemory.clear()
@@ -24,6 +26,8 @@ func after_each() -> void:
 	RelationshipState.load_save_data(_relationship_snapshot)
 	NpcMemory.load_save_data(_memory_snapshot)
 	WorldClock.load_save_data(_clock_snapshot)
+	InventoryState.load_save_data(_inventory_snapshot)
+	InputLock.clear()
 
 func test_all_core_npcs_have_friendship_dialogue_stages_through_ten_hearts() -> void:
 	for npc_id: StringName in [&"mira", &"rowan", &"neri"]:
@@ -157,6 +161,29 @@ func test_mid_and_capstone_heart_events_respect_town_progress_flags() -> void:
 
 ## Leaves exactly Farm1's town projects `project_ids` completed, as donating
 ## their materials would.
+func test_the_menu_tells_todays_talk_and_gift_and_what_the_gifts_told() -> void:
+	var mira := NpcProfileData.find(&"mira")
+	InventoryState.add_item_by_id(&"berry", 1)
+	RelationshipState.record_talk(&"mira")
+	RelationshipState.give_gift(mira, &"berry")
+	var menu := (load("res://game/ui/game_menu.tscn") as PackedScene).instantiate() as GameMenu
+	add_child_autofree(menu)
+	await get_tree().process_frame
+	menu.open()
+	menu.call("_show_tab", "social")
+	var text := menu.content.get_parsed_text()
+	assert_string_contains(text, "%s, %s" % [tr("Talked today"), tr("Gift given today")])
+	assert_string_contains(text, tr("Loves: %s") % tr(ItemData.find(&"berry").display_name))
+	InventoryState.add_item_by_id(&"berry", 1)
+	menu.call("_show_tab", "inventory")
+	for index: int in menu.item_select.item_count:
+		if StringName(String(menu.item_select.get_item_metadata(index))) == &"berry":
+			menu.item_select.select(index)
+			menu.item_select.item_selected.emit(index)
+	assert_string_contains(menu.content.get_parsed_text(), tr("As a gift: %s") % (tr("%s loves it") % tr(mira.display_name)),
+		"the item tells who was found to love it")
+	menu.close()
+
 func _set_completed_projects(project_ids: Array[StringName]) -> void:
 	var state: Dictionary = {}
 	for project_id: StringName in project_ids:

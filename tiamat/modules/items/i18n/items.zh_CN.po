@@ -46,6 +46,9 @@ msgstr "购买 %s x%d — %dg（今日剩余 %d）"
 msgid "Amount: %d"
 msgstr "数量：%d"
 
+msgid "Amount: All"
+msgstr "数量：全部"
+
 msgid "%s\n%d/%d slots"
 msgstr "%s\n%d/%d 格"
 
@@ -133,6 +136,12 @@ msgstr "打开储物箱"
 msgid "Store 1 →"
 msgstr "存入 1 个 →"
 
+msgid "Store %d →"
+msgstr "存入 %d 个 →"
+
+msgid "Store all →"
+msgstr "全部存入 →"
+
 msgid "Stored"
 msgstr "已储存"
 
@@ -141,6 +150,12 @@ msgstr "工作台"
 
 msgid "← Take 1"
 msgstr "← 取出 1 个"
+
+msgid "← Take %d"
+msgstr "← 取出 %d 个"
+
+msgid "← Take all"
+msgstr "← 全部取出"
 
 msgid "Inventory: empty (%d/%d slots)"
 msgstr "背包：空（%d/%d 格）"
