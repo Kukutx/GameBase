@@ -3,8 +3,8 @@ extends GutTest
 ## How a unit the player does not command takes its turn (`GridBattleAi`): a
 ## defeat before more damage, a move only to bring a target in reach or to
 ## strike as hard from where fewer foes reach it, an action that recharges
-## only when ready, a heal for its hurt side, and a walk toward the nearest
-## foe when nothing is in reach.
+## only when ready, a leader before the rest, a heal for its hurt side, and a
+## walk toward the nearest foe when nothing is in reach.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const TacticsFixture := preload("res://tiamat/modules/tactics/test/tactics_fixture.gd")
@@ -65,6 +65,22 @@ func test_it_looses_an_action_that_recharges_when_ready_and_strikes_meanwhile() 
 	for _turn in 4:
 		TacticsFixture.give_turn(battle, captain)
 	assert_eq(used, [&"fixture_volley", &"fixture_strike", &"fixture_strike", &"fixture_volley"], "the volley over both knights, then strikes for two turns while it recharges")
+
+func test_a_leader_s_fall_is_worth_its_whole_side() -> void:
+	var battle := TacticsFixture.battle()
+	var raider := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(2, 2))
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(2, 1))
+	var captain := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(3, 2))
+	_add(battle, &"fixture_archer", FactionData.PLAYER, Vector2i(7, 5))
+	knight.health.set_current(4)
+	captain.health.set_current(4)
+	captain.leader = true
+	var strike := BattleActionData.find(&"fixture_strike")
+	assert_eq(battle.ai.score(battle, raider, strike, Vector2i(3, 2), raider.cell), 4 + GridBattleAi.DEFEAT_SCORE * 3, "the captain and the two who would flee")
+	assert_eq(battle.ai.score(battle, raider, strike, Vector2i(2, 1), raider.cell), 4 + GridBattleAi.DEFEAT_SCORE)
+	TacticsFixture.give_turn(battle, raider)
+	assert_false(captain.is_alive(), "it fells the leader")
+	assert_true(battle.is_over())
 
 func test_a_healer_mends_its_hurt_side() -> void:
 	var battle := TacticsFixture.battle()

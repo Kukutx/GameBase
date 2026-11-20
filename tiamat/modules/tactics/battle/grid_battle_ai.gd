@@ -3,8 +3,9 @@ extends RefCounted
 
 ## How a unit the player does not command takes its turn in a grid battle
 ## (`AtbBattle`): the move and the action, of those ready
-## (`GridUnit.is_ready()`), that do the most good now, a defeat above all (damage to its foes, health given back to its hurt side), moving
-## first only when that brings a better target in reach or, for the same good,
+## (`GridUnit.is_ready()`), that do the most good now, a defeat above all and
+## a leader's most (damage to its foes, health given back to its hurt side),
+## moving first only when that brings a better target in reach or, for the same good,
 ## a cell fewer of its foes could strike next (`AtbBattle.get_threats()`: an
 ## archer shoots from where the swordsman cannot reach it), and of those one
 ## in cover (`BattleGrid.is_cover()`); with nothing in
@@ -56,7 +57,8 @@ func best_plan(battle: AtbBattle, unit: GridUnit) -> Dictionary:
 	return best
 
 ## What `unit` taking `action` at `target` from `from` is worth: the health
-## it takes from foes, with `DEFEAT_SCORE` for each it defeats and
+## it takes from foes, with `DEFEAT_SCORE` for each it defeats (and for each
+## unit of its side that flees with a leader it defeats) and
 ## `DELAY_SCORE` for each point of gauge it sets back of those it leaves
 ## standing, or the health it gives back to its side.
 func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: Vector2i, from: Vector2i) -> int:
@@ -68,10 +70,14 @@ func score(battle: AtbBattle, unit: GridUnit, action: BattleActionData, target: 
 		else:
 			value += mini(amount, other.health.current)
 			if amount >= other.health.current:
-				value += DEFEAT_SCORE
+				value += DEFEAT_SCORE * (_side_of(battle, other) if other.leader else 1)
 			else:
 				value += roundi(battle.delay_of(action, other) * DELAY_SCORE)
 	return value
+
+# How many units of `leader`'s faction are in the battle, the leader too.
+func _side_of(battle: AtbBattle, leader: GridUnit) -> int:
+	return battle.units.filter(func(unit: GridUnit) -> bool: return unit.faction == leader.faction and unit.is_alive()).size()
 
 ## Moves `unit` as far as it can along the shortest way to its nearest foe
 ## (the earlier placed on a tie); it stays put when no way leads to one.

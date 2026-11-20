@@ -85,6 +85,20 @@ func test_a_map_sets_up_its_battle_with_the_player_commanding_their_side() -> vo
 	])
 	assert_true(battle.time_flows_while_choosing)
 
+func test_a_map_s_leader_leads_its_side_one_to_a_side() -> void:
+	var map := _map()
+	var chief := TacticsFixture.placement(&"fixture_raider", FactionData.MONSTERS, Vector2i(3, 1))
+	chief.leader = true
+	map.placements.append(chief)
+	assert_eq(map.find_problems(_registry), PackedStringArray())
+	var battle := AtbBattle.from_map(map)
+	assert_true(battle.get_unit_at(Vector2i(3, 1)).leader)
+	assert_false(battle.get_unit_at(Vector2i(3, 2)).leader)
+	var rival := TacticsFixture.placement(&"fixture_raider", FactionData.MONSTERS, Vector2i(1, 2))
+	rival.leader = true
+	map.placements.append(rival)
+	assert_eq(map.find_problems(_registry), PackedStringArray(["gives side 'monsters' two leaders"]))
+
 func test_a_unit_with_a_condition_joins_only_while_it_holds() -> void:
 	var map := _map()
 	var reinforcement := TacticsFixture.placement(&"fixture_knight", FactionData.PLAYER, Vector2i(0, 1))

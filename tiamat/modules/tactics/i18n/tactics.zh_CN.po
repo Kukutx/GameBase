@@ -90,3 +90,12 @@ msgstr "%s（%d 回合后就绪）"
 
 msgid "%s takes %d, turn delayed"
 msgstr "%s 将受到 %d 点伤害，行动延后"
+
+msgid "%s takes %d and falls; their side flees"
+msgstr "%s 将受到 %d 点伤害并倒下，其部众溃逃"
+
+msgid "Leader: their side flees when they fall"
+msgstr "首领：倒下时其部众溃逃"
+
+msgid "%s falls, and their side flees!"
+msgstr "%s 倒下了，其部众溃逃！"

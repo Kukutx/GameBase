@@ -309,6 +309,41 @@ func test_a_unit_delayed_by_one_that_filled_with_it_waits_for_its_gauge() -> voi
 	battle.advance(2.0)
 	assert_eq(started, [shield, raider] as Array[GridUnit], "which fills again two seconds on")
 
+func test_a_leader_s_fall_sends_the_rest_of_its_side_fleeing() -> void:
+	var battle := _battle()
+	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(1, 1))
+	var chief := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(2, 1))
+	var follower := _add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2i(6, 4))
+	chief.leader = true
+	chief.health.set_current(6)
+	var fled: Array[GridUnit] = []
+	var defeated: Array[GridUnit] = []
+	battle.unit_fled.connect(func(unit: GridUnit) -> void: fled.append(unit))
+	battle.unit_defeated.connect(func(unit: GridUnit) -> void: defeated.append(unit))
+	TacticsFixture.give_turn(battle, knight)
+	assert_true(battle.act(knight, BattleActionData.find(&"fixture_strike"), Vector2i(2, 1)))
+	assert_eq(defeated, [chief] as Array[GridUnit])
+	assert_eq(fled, [follower] as Array[GridUnit], "the rest of its side flees")
+	assert_true(follower.fled and not follower.is_alive() and not follower.health.is_depleted(), "gone, not defeated")
+	assert_null(battle.get_unit_at(Vector2i(6, 4)))
+	assert_true(battle.is_over() and battle.is_won())
+
+	var lost := _battle()
+	var captain := _add(lost, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))
+	var soldier := _add(lost, &"fixture_archer", FactionData.PLAYER, Vector2i(7, 5))
+	var guard := _add(lost, &"fixture_knight", &"fixture_guard", Vector2i(3, 1))
+	var raider := _add(lost, &"fixture_raider", FactionData.MONSTERS, Vector2i(1, 0))
+	captain.leader = true
+	captain.health.set_current(4)
+	TacticsFixture.give_turn(lost, raider)
+	assert_true(soldier.fled, "the player's side flees with its leader")
+	assert_false(guard.fled, "an ally of another faction stands")
+	assert_false(lost.is_over(), "and fights on")
+	raider.health.set_current(1)
+	TacticsFixture.give_turn(lost, guard)
+	assert_true(lost.is_over())
+	assert_true(lost.is_won(), "won with the ally left")
+
 func test_the_battle_ends_won_when_the_last_foe_falls_and_lost_when_the_player_s_side_does() -> void:
 	var battle := _battle()
 	var knight := _add(battle, &"fixture_knight", FactionData.PLAYER, Vector2i(0, 0))

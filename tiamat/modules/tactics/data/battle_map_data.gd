@@ -60,6 +60,7 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		if not grid.is_open(cell):
 			problems.append("makes cell %s rough, which is blocked or outside its grid" % cell)
 	var taken: Dictionary[Vector2i, bool] = {}
+	var led: Dictionary[StringName, bool] = {}
 	var players := 0
 	var others := 0
 	for placement: BattlePlacement in placements:
@@ -75,6 +76,10 @@ func find_problems(registry: ContentRegistry) -> PackedStringArray:
 		elif taken.has(placement.cell):
 			problems.append("places two units on cell %s" % placement.cell)
 		taken[placement.cell] = true
+		if placement.leader:
+			if led.has(placement.faction_id):
+				problems.append("gives side '%s' two leaders" % placement.faction_id)
+			led[placement.faction_id] = true
 		# A battle starts with a unit on each side whatever the conditions.
 		if not placement.condition.is_empty():
 			continue

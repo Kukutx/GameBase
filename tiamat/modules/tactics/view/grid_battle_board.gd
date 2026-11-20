@@ -6,7 +6,8 @@ extends Control
 ## cover (`cover_color`) and ripples on rough ground (`rough_color`), the
 ## cells a command may pick, the
 ## cells the foes could strike next (`danger`), the
-## cursor, the units with their health and gauges, the numbers of what an
+## cursor, the units with their health and gauges and a crown on a side's
+## leader (`leader_color`), the numbers of what an
 ## action took or gave back, the unit whose turn it is, and the units whose
 ## turns come next, numbered in their order (`turns_shown`). Units walk the
 ## path they took, unless the player asked for reduced motion. It reports the
@@ -49,6 +50,8 @@ const _EDGE_CORNERS: Dictionary[Vector2i, Vector2i] = {
 @export var heal_color := Color(0.5, 1.0, 0.6)
 @export var order_color := Color(1.0, 1.0, 1.0)
 @export var order_back_color := Color(0.08, 0.08, 0.1, 0.85)
+## The crown on the top right corner of a side's leader (`GridUnit.leader`).
+@export var leader_color := Color(1.0, 0.8, 0.25)
 ## How many of the turns to come the board numbers, each on its unit's top
 ## left corner, 1 the next (a unit's first among them); 0: none.
 @export_range(0, 9, 1) var turns_shown := 3
@@ -215,12 +218,29 @@ func _draw_unit(unit: GridUnit, origin: Vector2, side: float) -> void:
 		var font_size := maxi(roundi(side * 0.4), 8)
 		var initial := TranslationServer.translate(unit.data.display_name).left(1).to_upper()
 		draw_string(font, Vector2(rect.position.x, center.y + font_size * 0.35), initial, HORIZONTAL_ALIGNMENT_CENTER, side, font_size, ring)
+	if unit.leader:
+		_draw_crown(Rect2(rect.end.x - side * 0.4, rect.position.y + side * 0.03, side * 0.36, side * 0.24))
 	var bar := maxf(side * 0.08, 1.0)
 	var width := side - 4.0
 	var bottom := rect.end.y - 1.0
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar * 2.0 - 1.0, width, bar * 2.0 + 1.0), Color(0.0, 0.0, 0.0, 0.6))
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar * 2.0 - 1.0, width * unit.health.get_fraction(), bar), health_color if battle.is_on_player_side(unit) else damage_color)
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar, width * unit.get_gauge_fraction(), bar), gauge_color)
+
+# A crown filling `box`: three points over a band.
+func _draw_crown(box: Rect2) -> void:
+	var x := box.position.x
+	var y := box.position.y
+	var w := box.size.x
+	var h := box.size.y
+	var crown := PackedVector2Array([
+		Vector2(x, y + h), Vector2(x, y), Vector2(x + w * 0.25, y + h * 0.45),
+		Vector2(x + w * 0.5, y), Vector2(x + w * 0.75, y + h * 0.45), Vector2(x + w, y),
+		Vector2(x + w, y + h),
+	])
+	draw_colored_polygon(crown, leader_color)
+	crown.append(crown[0])
+	draw_polyline(crown, order_back_color, maxf(w * 0.08, 1.0))
 
 # The edge of the danger zone: each side of a cell in it whose neighbour is
 # not, a hair inside the cell.

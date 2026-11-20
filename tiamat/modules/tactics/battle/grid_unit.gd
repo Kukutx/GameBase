@@ -2,8 +2,9 @@ class_name GridUnit
 extends RefCounted
 
 ## A unit in a grid battle (`AtbBattle`): what kind it is, its side, its cell,
-## its health and its time gauge, what it has done on its turn, and which of
-## its actions still recharge (`BattleActionData.recharge_turns`).
+## its health and its time gauge, what it has done on its turn, which of its
+## actions still recharge (`BattleActionData.recharge_turns`), and whether it
+## leads its side or fled the battle.
 
 var data: BattleUnitData
 var faction: StringName
@@ -15,6 +16,10 @@ var gauge := 0.0
 var player_controlled := false
 ## Its place among the battle's units: on a tie, the earlier goes first.
 var index := 0
+## It leads its side, which flees once it falls (`BattlePlacement.leader`).
+var leader := false
+## It fled the battle when its side's leader fell.
+var fled := false
 ## What it has done on its turn so far.
 var has_moved := false
 var has_acted := false
@@ -31,8 +36,9 @@ func _init(unit_data: BattleUnitData, unit_faction: StringName, start_cell: Vect
 	player_controlled = controlled
 	health = Health.new(unit_data.max_health)
 
+## Whether it is still in the battle: it has health left and has not fled.
 func is_alive() -> bool:
-	return not health.is_depleted()
+	return not health.is_depleted() and not fled
 
 ## Starts its next turn: it has neither moved nor acted on it.
 func start_turn() -> void:
