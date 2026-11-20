@@ -8,7 +8,8 @@ extends MiniGame
 ## (`RtsUnitData.strong_against`). On a field with ground to hold
 ## (`RtsBattle.goal`), the battle's first line says which side wins by holding
 ## it and how long that takes, and the line tells whenever the side that
-## holds it changes.
+## holds it changes. It also tells when units arrive while the battle runs
+## (`RtsBattle.unit_arrived`), the player's or their foes'.
 ##
 ## With the mouse, a click selects one of the player's units and a dragged box
 ## selects those in it (Shift adds to the selection, or drops a unit from it);
@@ -101,6 +102,7 @@ func setup(settings: Dictionary) -> void:
 	battle.unit_defeated.connect(_on_unit_defeated)
 	battle.ended.connect(_on_ended)
 	battle.goal_changed.connect(_on_goal_changed)
+	battle.unit_arrived.connect(_on_unit_arrived)
 	_field.show_battle(battle)
 	var players := battle.get_player_units()
 	if not players.is_empty():
@@ -367,6 +369,9 @@ func _on_goal_changed(holder: RtsUnit) -> void:
 		_message.text = tr("Your units hold the ground.")
 	else:
 		_message.text = tr("The foes hold the ground!")
+
+func _on_unit_arrived(unit: RtsUnit) -> void:
+	_message.text = tr("Reinforcements arrive.") if battle.is_on_player_side(unit) else tr("Foe reinforcements arrive!")
 
 func _on_ended(won: bool) -> void:
 	_end_left = END_SECONDS

@@ -7,8 +7,10 @@ extends GutTest
 ## passes foes by while an attack-move fights them and goes on; an attack
 ## order follows its foe anywhere; the others advance when the battle says so,
 ## on the ground to hold when there is one; the side that takes that ground
-## wins once it stood there with no foe long enough; the same orders play the same battle; and it ends won, or
-## given up.
+## wins once it stood there with no foe long enough; units on their way
+## arrive in time, march when they come to the foes, and keep the battle
+## going until they came; the same orders play the same battle; and it ends
+## won, or given up.
 
 const ContentFixture := preload("res://tiamat/core/test/content_fixture.gd")
 const RtsFixture := preload("res://tiamat/modules/rts/test/rts_fixture.gd")
@@ -286,6 +288,52 @@ func test_the_others_advance_on_the_ground_to_hold() -> void:
 	battle.advance(1.5)
 	assert_eq(raider.order, RtsUnit.Order.ATTACK_MOVE)
 	assert_eq(raider.goal, Vector2(160.0, 20.0), "to the ground, not the footman")
+
+func test_units_on_their_way_arrive_in_time_and_keep_the_battle_going() -> void:
+	var battle := RtsFixture.battle()
+	battle.ended.connect(_on_ended)
+	var arrived: Array[RtsUnit] = []
+	battle.unit_arrived.connect(func(unit: RtsUnit) -> void: arrived.append(unit))
+	RtsFixture.add(battle, &"fixture_brute", FactionData.PLAYER, Vector2(150.0, 80.0))
+	RtsFixture.add(battle, &"fixture_raider", FactionData.MONSTERS, Vector2(160.0, 80.0))
+	battle.add_arrival(RtsUnitData.find(&"fixture_raider"), FactionData.MONSTERS, Vector2(300.0, 140.0), 12.0)
+	battle.add_arrival(RtsUnitData.find(&"fixture_medic"), FactionData.MONSTERS, Vector2(300.0, 20.0), 12.0)
+	battle.add_arrival(RtsUnitData.find(&"fixture_raider"), FactionData.MONSTERS, Vector2(300.0, 80.0), 8.0)
+	assert_eq(battle.arrivals.size(), 3)
+	assert_eq(battle.arrivals.get_next(), 8.0, "the soonest first")
+	assert_eq(battle.units.size(), 2, "on their way, not on the field")
+	battle.advance(6.0)
+	assert_eq(battle.get_living_units().size(), 1, "the brute felled the raider")
+	assert_false(battle.is_over(), "foes on their way fight on")
+	battle.advance(2.0)
+	assert_eq(arrived.size(), 1)
+	assert_lt(arrived[0].position.distance_to(Vector2(300.0, 80.0)), 2.0, "where it was placed, a step of its march on")
+	assert_eq(arrived[0].order, RtsUnit.Order.ATTACK_MOVE, "it marches, though the others wait")
+	battle.advance(4.0)
+	assert_eq(arrived.map(func(unit: RtsUnit) -> float: return roundf(unit.position.y / 10.0) * 10.0).slice(1), [140.0, 20.0], "two due at once come in the order added")
+	assert_eq(battle.arrivals.size(), 0)
+	assert_eq(battle.arrivals.get_next(), INF)
+	battle.advance(30.0)
+	assert_eq(_ended, [true] as Array[bool], "won once the last that came fell")
+
+	var held := RtsFixture.battle()
+	held.ended.connect(_on_ended)
+	RtsFixture.add(held, &"fixture_footman", FactionData.PLAYER, Vector2(150.0, 80.0))
+	RtsFixture.add(held, &"fixture_brute", FactionData.MONSTERS, Vector2(160.0, 80.0))
+	held.add_arrival(RtsUnitData.find(&"fixture_medic"), FactionData.PLAYER, Vector2(20.0, 20.0), 20.0)
+	held.add_arrival(RtsUnitData.find(&"fixture_footman"), FactionData.PLAYER, Vector2(20.0, 140.0), 30.0)
+	held.advance(10.0)
+	assert_eq(held.get_player_units().size(), 0, "the brute felled the footman")
+	assert_false(held.is_over(), "a footman on its way fights on for the player")
+
+	var lost := RtsFixture.battle()
+	RtsFixture.add(lost, &"fixture_footman", FactionData.PLAYER, Vector2(150.0, 80.0))
+	RtsFixture.add(lost, &"fixture_brute", FactionData.MONSTERS, Vector2(160.0, 80.0))
+	lost.add_arrival(RtsUnitData.find(&"fixture_medic"), FactionData.PLAYER, Vector2(20.0, 20.0), 20.0)
+	lost.advance(10.0)
+	assert_true(lost.is_over() and not lost.is_won(), "a healer on its way holds nothing")
+	lost.add_arrival(RtsUnitData.find(&"fixture_footman"), FactionData.PLAYER, Vector2(20.0, 140.0), 1.0)
+	assert_eq(lost.units.size(), 3, "one already due is placed at once")
 
 func test_the_same_orders_play_the_same_battle() -> void:
 	var first := _melee()

@@ -1,7 +1,8 @@
 extends GutTest
 
-## The battle in the pass, the muster's: its map and units hold, the way from
-## one side to the other runs through the pass, the battle comes to an end
+## The battle in the pass, the muster's: its map and units hold, a second band
+## of raiders comes 40 seconds in, the way from one side to the other runs
+## through the pass, the battle comes to an end
 ## when both sides fight it on their own, and each side has its counters.
 
 func test_the_pass_map_sets_up_both_sides_with_the_hills_between() -> void:
@@ -11,7 +12,12 @@ func test_the_pass_map_sets_up_both_sides_with_the_hills_between() -> void:
 	assert_eq(MiniGameDefinition.find(&"pass_battle").find_problems(ContentDB), PackedStringArray())
 	var battle := RtsBattle.from_map(map)
 	assert_eq(battle.get_player_units().size(), 9)
-	assert_eq(battle.units.filter(func(unit: RtsUnit) -> bool: return not battle.is_on_player_side(unit)).size(), 10)
+	assert_eq(battle.units.filter(func(unit: RtsUnit) -> bool: return not battle.is_on_player_side(unit)).size(), 6, "six raiders at first")
+	assert_eq(battle.arrivals.size(), 4, "and four on their way")
+	assert_eq(battle.arrivals.get_next(), 40.0)
+	assert_eq(battle.arrivals.get_all().map(func(arrival: RtsArrivals.Arrival) -> StringName: return arrival.data.id), [&"raider", &"raider", &"brute", &"slinger"])
+	battle.advance(40.0)
+	assert_eq(battle.units.size(), 19, "they came")
 	var at := Vector2(60.0, 20.0)
 	var way := battle.navigation.find_path(at, Vector2(400.0, 20.0))
 	assert_eq(way[way.size() - 1], Vector2(400.0, 20.0))

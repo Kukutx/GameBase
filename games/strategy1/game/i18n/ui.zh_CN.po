@@ -183,8 +183,8 @@ msgstr "在敌人强度为「强」时赢下一场战斗。"
 msgid "Hold the only ford over the river against the raiders."
 msgstr "守住河上唯一的渡口，挡住劫掠者。"
 
-msgid "Hold the pass between the hills as the raiders march on it."
-msgstr "劫掠者向两山之间的山口进军，守住它。"
+msgid "Hold the pass between the hills as the raiders march on it. A second band follows 40 seconds behind."
+msgstr "劫掠者向两山之间的山口进军，守住它。第二队人马在 40 秒后赶到。"
 
 msgid "Old Mill"
 msgstr "旧磨坊"

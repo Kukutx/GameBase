@@ -79,13 +79,15 @@ position = Vector2(400, 110)
 script = ExtResource("2_placement")
 unit_id = &"raider"
 faction_id = &"raiders"
-position = Vector2(400, 130)
+position = Vector2(452, 70)
+arrive_seconds = 40.0
 
 [sub_resource type="Resource" id="Placement_14"]
 script = ExtResource("2_placement")
 unit_id = &"raider"
 faction_id = &"raiders"
-position = Vector2(400, 150)
+position = Vector2(452, 90)
+arrive_seconds = 40.0
 
 [sub_resource type="Resource" id="Placement_15"]
 script = ExtResource("2_placement")
@@ -97,7 +99,8 @@ position = Vector2(420, 100)
 script = ExtResource("2_placement")
 unit_id = &"brute"
 faction_id = &"raiders"
-position = Vector2(420, 124)
+position = Vector2(452, 110)
+arrive_seconds = 40.0
 
 [sub_resource type="Resource" id="Placement_17"]
 script = ExtResource("2_placement")
@@ -115,7 +118,8 @@ position = Vector2(440, 112)
 script = ExtResource("2_placement")
 unit_id = &"slinger"
 faction_id = &"raiders"
-position = Vector2(436, 144)
+position = Vector2(452, 130)
+arrive_seconds = 40.0
 
 [resource]
 script = ExtResource("1_map")

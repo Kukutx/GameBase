@@ -4,7 +4,9 @@ extends Control
 ## The field of a command battle as the player sees it (`RtsBattleGame`): the
 ## ground and its obstacles, scaled to fit the field's size, the ground to
 ## hold (`RtsBattle.goal`, tinted for the side that holds it, with how far the
-## side that takes it is along its top), the units with
+## side that takes it is along its top), where units still on their way
+## arrive (`RtsBattle.arrivals`, ringed in their side's colour with the
+## seconds until the first comes), the units with
 ## their health, the units the player selected, with how far each that strikes
 ## from afar reaches (`get_range_rings()`), the blows and shots between
 ## units, where the player's last orders went, the box the player drags and
@@ -46,6 +48,9 @@ const TOUCH_DRAG_SHARE := 0.35
 @export var range_color := Color(0.5, 1.0, 0.55, 0.35)
 ## The edge of the ground to hold, and its tint while no side holds it.
 @export var goal_color := Color(1.0, 0.86, 0.35)
+## How far round the point units arrive at its ring goes, in pixels of the
+## field.
+@export var arrival_radius := 6.0
 
 var battle: RtsBattle
 ## The units the player selected, ringed.
@@ -178,6 +183,7 @@ func _draw() -> void:
 		draw_rect(Rect2(origin + obstacle.position * zoom, obstacle.size * zoom), obstacle_color)
 	if battle.goal != null:
 		_draw_goal(origin, zoom)
+	_draw_arrivals(zoom)
 	for entry: Dictionary in _marks:
 		var age: float = entry["age"]
 		var color: Color = attack_mark_color if bool(entry["attack"]) else move_mark_color
@@ -211,6 +217,22 @@ func _draw_goal(origin: Vector2, zoom: float) -> void:
 	draw_rect(rect, goal_color, false, maxf(zoom * 0.5, 1.0))
 	var taker_color := foe_side_color if FactionData.are_hostile(battle.goal.taker, battle.player_faction) else player_side_color
 	draw_rect(Rect2(rect.position, Vector2(rect.size.x * battle.goal.get_fraction(), maxf(zoom * 1.5, 2.0))), taker_color)
+
+# Rings where the units on their way arrive, the soonest at each point, with
+# the whole seconds until it comes.
+func _draw_arrivals(zoom: float) -> void:
+	var drawn: Array[Vector2] = []
+	var font := get_theme_default_font()
+	var font_size := maxi(roundi(arrival_radius * zoom), 8)
+	for arrival: RtsArrivals.Arrival in battle.arrivals.get_all():
+		if drawn.has(arrival.point):
+			continue
+		drawn.append(arrival.point)
+		var color := foe_side_color if FactionData.are_hostile(arrival.faction, battle.player_faction) else player_side_color
+		var at := to_screen(arrival.point)
+		draw_arc(at, arrival_radius * zoom, 0.0, TAU, 24, Color(color, 0.8), maxf(zoom * 0.5, 1.0))
+		var seconds := str(ceili(arrival.seconds - battle.time))
+		draw_string(font, at + Vector2(-arrival_radius * zoom, font_size * 0.35), seconds, HORIZONTAL_ALIGNMENT_CENTER, arrival_radius * zoom * 2.0, font_size, color)
 
 func _draw_unit(unit: RtsUnit, zoom: float) -> void:
 	var at := to_screen(unit.position)

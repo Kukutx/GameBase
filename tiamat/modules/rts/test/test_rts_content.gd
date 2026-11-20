@@ -65,6 +65,18 @@ func test_a_map_s_ground_to_hold_has_its_middle_on_open_ground() -> void:
 	map.goal_faction_id = FactionData.MONSTERS
 	assert_eq(RtsBattle.from_map(map).goal.taker, FactionData.MONSTERS)
 
+func test_a_unit_placed_to_arrive_later_is_on_its_way_as_the_battle_starts() -> void:
+	var map := _map()
+	var late := RtsFixture.placement(&"fixture_footman", FactionData.PLAYER, Vector2(20.0, 80.0))
+	late.arrive_seconds = 15.0
+	map.placements.append(late)
+	var battle := RtsBattle.from_map(map)
+	assert_eq(battle.units.size(), 2, "the others are there")
+	assert_eq(battle.arrivals.size(), 1)
+	assert_eq(battle.arrivals.get_next(), 15.0)
+	assert_eq(battle.arrivals.get_all()[0].point, late.position)
+	assert_eq(map.count_player_side(), 2, "it counts toward the units its side can field")
+
 func test_a_map_sets_up_its_battle_with_the_player_ordering_their_side() -> void:
 	var map := _map()
 	map.computer_advances = false
