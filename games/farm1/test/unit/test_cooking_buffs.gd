@@ -1,6 +1,6 @@
 extends GutTest
 
-# Farm1's dishes, its buffs and how its player eats. How buffs change stats,
+# Farm1's dishes, its buffs, the one that cures and how its player eats. How buffs change stats,
 # expire and are saved is tested on fixture content in
 # tiamat/modules/items/test/ and tiamat/modules/lifesim/test/
 # (test_cooking_buffs.gd).
@@ -80,6 +80,24 @@ func test_fire_roasted_tomatoes_set_foes_burning_by_chance_for_four_hours() -> v
 	assert_eq(BuffState.get_minutes_remaining(&"fiery_belly"), 240)
 	assert_eq(GameStats.get_bonus(GameSetup.BURN_CHANCE_STAT), 20.0, "one blow or shot in five")
 	assert_eq(FoodBuffData.find(&"fiery_belly").describe_changes(), "Burn chance +20")
+
+func test_seaweed_tonic_lifts_a_spitting_slime_s_poison() -> void:
+	var recipe := CraftingState.get_recipe(&"seaweed_tonic")
+	assert_eq(recipe.category, RecipeData.Category.COOKING)
+	assert_eq(recipe.ingredients, {"seaweed": 2, "berry": 1})
+	var player := CharacterBody2D.new()
+	player.add_to_group(&"player")
+	var hurtbox := PlayerHurtbox.new()
+	player.add_child(hurtbox)
+	add_child_autofree(player)
+	var poison := AfflictionData.find(EnemyData.find(&"spitting_slime").affliction_id)
+	assert_eq(poison.cure_tag, "antidote")
+	assert_true(hurtbox.afflict(poison, FactionData.MONSTERS))
+	InventoryState.add_item_by_id(&"seaweed_tonic", 1)
+	watch_signals(GameEvents)
+	assert_true(InventoryState.consume(ItemData.find(&"seaweed_tonic")), "eaten at full health, for the poison")
+	assert_false(hurtbox.is_afflicted(poison.id))
+	assert_signal_emitted_with_parameters(GameEvents, "toast_requested", ["Cured: Poisoned"])
 
 func test_food_use_blocks_item_removed_reentrancy() -> void:
 	InventoryState.add_item_by_id(&"vegetable_stew", 2)

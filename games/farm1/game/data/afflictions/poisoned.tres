@@ -10,3 +10,4 @@ color = Color(0.55, 0.95, 0.3, 1)
 seconds = 4.0
 tick_seconds = 1.0
 tick_damage = 1
+cure_tag = "antidote"
