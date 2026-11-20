@@ -10,7 +10,8 @@ extends MiniGame
 ## what picking it does (where the unit goes, what an action's area covers)
 ## and a second tap on it picks it, so a finger's slip picks nothing. Once the
 ## unit has moved, Move becomes Undo Move while the battle lets the player take
-## the move back (`AtbBattle.can_undo_move()`). Cancel
+## the move back (`AtbBattle.can_undo_move()`). The board numbers the units
+## whose turns come next (`GridBattleBoard.turns_shown`). Cancel
 ## (the touch controls' corner button on a touchscreen) goes back to the
 ## commands. Cancel at the
 ## commands, pressed twice, gives the battle up. It ends won or lost a moment

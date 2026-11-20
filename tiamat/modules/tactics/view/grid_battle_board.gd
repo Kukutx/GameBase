@@ -4,7 +4,8 @@ extends Control
 ## The grid of a grid battle as the player sees it (`GridBattleGame`): the
 ## cells, scaled to fit the board's size, the cells a command may pick, the
 ## cursor, the units with their health and gauges, the numbers of what an
-## action took or gave back, and the unit whose turn it is. Units walk the
+## action took or gave back, the unit whose turn it is, and the units whose
+## turns come next, numbered in their order (`turns_shown`). Units walk the
 ## path they took, unless the player asked for reduced motion. It reports the
 ## cell under the mouse and the cell clicked.
 
@@ -30,6 +31,11 @@ const WALK_CELLS_PER_SECOND := 8.0
 @export var gauge_color := Color(0.98, 0.82, 0.3)
 @export var damage_color := Color(1.0, 0.45, 0.4)
 @export var heal_color := Color(0.5, 1.0, 0.6)
+@export var order_color := Color(1.0, 1.0, 1.0)
+@export var order_back_color := Color(0.08, 0.08, 0.1, 0.85)
+## How many of the turns to come the board numbers, each on its unit's top
+## left corner, 1 the next (a unit's first among them); 0: none.
+@export_range(0, 9, 1) var turns_shown := 3
 
 var battle: AtbBattle
 var cursor := Vector2i.ZERO
@@ -76,6 +82,20 @@ func get_origin() -> Vector2:
 ## The cell at `point` on the board, which may lie outside the grid.
 func cell_at(point: Vector2) -> Vector2i:
 	return Vector2i(((point - get_origin()) / get_cell_size()).floor())
+
+## The units whose turns come next, each with its place among the next
+## `turns_shown` turns (1 the next; a unit that comes twice, its first), as
+## the board numbers them; none once the battle is over
+## (`AtbBattle.get_turn_order()`).
+func get_turn_marks() -> Dictionary[GridUnit, int]:
+	var marks: Dictionary[GridUnit, int] = {}
+	if battle == null or battle.is_over() or turns_shown <= 0:
+		return marks
+	var order := battle.get_turn_order(turns_shown)
+	for index in order.size():
+		if not marks.has(order[index]):
+			marks[order[index]] = index + 1
+	return marks
 
 ## Whether the units have walked where they went and the numbers have faded.
 func is_settled() -> bool:
@@ -138,6 +158,9 @@ func _draw() -> void:
 	for unit: GridUnit in battle.units:
 		if unit.is_alive():
 			_draw_unit(unit, origin, side)
+	var marks := get_turn_marks()
+	for unit: GridUnit in marks:
+		_draw_turn_mark(unit, marks[unit], origin, side)
 	if turn_unit != null and turn_unit.is_alive():
 		draw_rect(Rect2(origin + _shown.get(turn_unit, Vector2(turn_unit.cell)) * side, Vector2(side, side)).grow(-0.5), turn_color, false, 1.0)
 	if show_cursor:
@@ -172,6 +195,15 @@ func _draw_unit(unit: GridUnit, origin: Vector2, side: float) -> void:
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar * 2.0 - 1.0, width, bar * 2.0 + 1.0), Color(0.0, 0.0, 0.0, 0.6))
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar * 2.0 - 1.0, width * unit.health.get_fraction(), bar), health_color if battle.is_on_player_side(unit) else damage_color)
 	draw_rect(Rect2(rect.position.x + 2.0, bottom - bar, width * unit.get_gauge_fraction(), bar), gauge_color)
+
+# Its place among the turns to come, on its top left corner.
+func _draw_turn_mark(unit: GridUnit, place: int, origin: Vector2, side: float) -> void:
+	var radius := maxf(side * 0.2, 6.0)
+	var at: Vector2 = _shown.get(unit, Vector2(unit.cell))
+	var center := origin + at * side + Vector2(radius, radius)
+	draw_circle(center, radius, order_back_color)
+	var font_size := maxi(roundi(radius * 1.4), 8)
+	draw_string(get_theme_default_font(), Vector2(center.x - radius, center.y + font_size * 0.35), str(place), HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, font_size, order_color)
 
 func _cell_rect(cell: Vector2i, origin: Vector2, side: float) -> Rect2:
 	return Rect2(origin + Vector2(cell) * side, Vector2(side, side))
