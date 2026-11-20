@@ -2127,6 +2127,12 @@ msgstr "铱金之触"
 msgid "Upgrade a tool to iridium."
 msgstr "将一件工具升级为铱制。"
 
+msgid "Deepest Mine Floor"
+msgstr "矿洞最深层"
+
+msgid "Mine Guardians Felled"
+msgstr "击败的矿洞守卫"
+
 msgid "Crown of Gel"
 msgstr "凝胶王冠"
 

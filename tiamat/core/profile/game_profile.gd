@@ -108,6 +108,13 @@ func add_int(key: StringName, amount: int) -> int:
 	set_flag(key, get_int(key) + amount)
 	return get_int(key)
 
+## Raises a counter to `value` when that beats it, for a best: the deepest
+## floor, the longest run. Returns the counter.
+func raise_int(key: StringName, value: int) -> int:
+	if value > get_int(key):
+		set_flag(key, value)
+	return get_int(key)
+
 # Unlocks the achievements that count `key` and whose goal `count` reaches.
 func _unlock_reached(key: StringName, count: int) -> void:
 	for achievement: AchievementData in AchievementData.find_all():

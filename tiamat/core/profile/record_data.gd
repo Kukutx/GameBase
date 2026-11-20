@@ -4,8 +4,9 @@ extends ContentEntry
 ## A number the player's profile keeps across every save, shown under Records
 ## in the achievements menu (`AchievementsMenu`): crops harvested, the deepest
 ## depth reached. It reads a profile counter (`GameProfile`, `flag`) that
-## content raises with `ADD_PROFILE_FLAG`, usually from a trigger
-## (`TriggerData`) on what the player does, or that the game's code sets.
+## content raises with `ADD_PROFILE_FLAG` (a count) or `RAISE_PROFILE_FLAG` (a
+## best), usually from a trigger (`TriggerData`) on what the player does, or
+## that the game's code sets.
 
 const KIND := &"record"
 

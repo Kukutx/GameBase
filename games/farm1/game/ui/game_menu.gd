@@ -269,6 +269,11 @@ func _achievement_lines() -> PackedStringArray:
 				line += " (%s)" % AchievementsMenu.progress_text(achievement)
 			lines.append(line)
 	lines[0] = "[b]%s — %d/%d[/b]" % [tr("Achievements"), unlocked_count, achievements.size()]
+	var records := RecordData.find_all()
+	if not records.is_empty():
+		lines.append("[b]%s[/b]" % tr(AchievementsMenu.RECORDS_HEADING))
+		for record: RecordData in records:
+			lines.append("  " + tr("%s: %d") % [tr(record.display_name), record.get_value()])
 	return lines
 
 func _rebuild_hotbar_editor() -> void:

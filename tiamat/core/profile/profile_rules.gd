@@ -13,6 +13,7 @@ static func register(rules: GameRulesService) -> void:
 	rules.register_action(&"UNLOCK_ACHIEVEMENT", _unlock_achievement, 1, 1, [AchievementData.KIND])
 	rules.register_action(&"SET_PROFILE_FLAG", _set_profile_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_FLAG_VALUE])
 	rules.register_action(&"ADD_PROFILE_FLAG", _add_profile_flag, 1, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_INT])
+	rules.register_action(&"RAISE_PROFILE_FLAG", _raise_profile_flag, 2, 2, [GameRulesService.ARG_TEXT, GameRulesService.ARG_INT])
 	rules.register_action(&"SHOW_HINT", _show_hint, 1, 1, [HintData.KIND])
 
 ## ACHIEVEMENT_UNLOCKED <achievement>: the player unlocked it, in any save.
@@ -52,6 +53,12 @@ static func _set_profile_flag(args: PackedStringArray, _context: Dictionary) -> 
 ## ADD_PROFILE_FLAG <key> [n]: adds n (default 1) to the profile's counter.
 static func _add_profile_flag(args: PackedStringArray, _context: Dictionary) -> bool:
 	GameProfile.add_int(StringName(args[0]), int(args[1]) if args.size() > 1 else 1)
+	return true
+
+## RAISE_PROFILE_FLAG <key> <n>: raises the profile's counter to n when n
+## beats it, for a best such as the deepest floor reached.
+static func _raise_profile_flag(args: PackedStringArray, _context: Dictionary) -> bool:
+	GameProfile.raise_int(StringName(args[0]), int(args[1]))
 	return true
 
 ## SHOW_HINT <hint>: shows the hint (`GameEvents.hint_requested`) unless it
