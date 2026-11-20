@@ -78,6 +78,14 @@ func test_a_mine_guardian_unlocks_its_achievement_and_counts_toward_a_record() -
 	assert_true(GameProfile.is_unlocked(&"into_the_void"))
 	assert_eq(RecordData.find(&"guardians_felled").get_value(), 2)
 
+func test_every_kind_of_the_mine_defeated_makes_a_monster_scholar() -> void:
+	var kinds := EnemyData.find_all()
+	assert_eq(AchievementData.find(&"monster_scholar").goal, kinds.size(), "every kind the game has")
+	for enemy: EnemyData in kinds:
+		assert_false(GameProfile.is_unlocked(&"monster_scholar"))
+		Bestiary.record(enemy.id)
+	assert_true(GameProfile.is_unlocked(&"monster_scholar"))
+
 func test_the_deepest_mine_floor_record_keeps_the_best_of_every_save() -> void:
 	GameTriggers.fire(&"MineState.deepest_floor_changed", {"floor": 30})
 	GameTriggers.fire(&"MineState.deepest_floor_changed", {"floor": 12})

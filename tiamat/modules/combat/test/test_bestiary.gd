@@ -36,6 +36,28 @@ func test_each_defeat_counts_toward_its_kind_in_the_profile() -> void:
 	assert_eq(GameProfile.get_int(&"defeated:fixture_slime"), 2, "kept with the profile, across every save")
 	assert_eq(Bestiary.count(&"fixture_missing"), 0, "a kind the game does not have is not counted")
 
+func test_the_profile_counts_the_kinds_met_which_an_achievement_can_count() -> void:
+	var know_them := AchievementData.new()
+	know_them.id = &"fixture_know_them"
+	know_them.display_name = "Know Them"
+	know_them.description = "Defeat every kind."
+	know_them.progress_flag = Bestiary.KINDS_FLAG
+	know_them.goal = 3
+	ContentFixture.use(self, _fixture_content() + [know_them])
+	Bestiary.record(&"fixture_slime")
+	Bestiary.record(&"fixture_slime")
+	assert_eq(GameProfile.get_int(Bestiary.KINDS_FLAG), 1, "a kind again is not another kind")
+	Bestiary.record(&"fixture_king")
+	Bestiary.record(&"fixture_missing")
+	assert_eq(GameProfile.get_int(Bestiary.KINDS_FLAG), 2, "a kind the game does not have is none")
+	assert_eq(Bestiary.find_met().map(func(enemy: EnemyData) -> StringName: return enemy.id), [&"fixture_slime", &"fixture_king"], "weakest first")
+	assert_eq(GameProfile.get_progress(&"fixture_know_them"), 2)
+	assert_false(GameProfile.is_unlocked(&"fixture_know_them"))
+	GameProfile.set_flag(Bestiary.flag_of(&"fixture_bat"), 4)
+	Bestiary.record(&"fixture_slime")
+	assert_eq(GameProfile.get_int(Bestiary.KINDS_FLAG), 3, "a profile from before the counter catches up with the next defeat")
+	assert_true(GameProfile.is_unlocked(&"fixture_know_them"))
+
 func test_the_bestiary_lists_the_kinds_met_weakest_first() -> void:
 	assert_eq(Bestiary.describe(), PackedStringArray(), "nothing before the first defeat")
 	Bestiary.record(&"fixture_king")
